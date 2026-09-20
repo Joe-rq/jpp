@@ -90,3 +90,8 @@ passed; the guide now includes the JSON-export example that author needed.
 [Independent author output](demos/methods/independent-output.json)
 
 [Implementation commit / 实现提交](https://github.com/Towow-ai/jpp/commit/fbf2456)
+
+Linux CI exposed a BSD-only `sed -i ''` in an existing shell probe. The candidate
+now uses portable output-and-rename syntax; the goal and truth assertions remain
+unchanged. A direct file-content regression passes. The final wheel includes
+[this portability fix / 可移植修复](https://github.com/Towow-ai/jpp/commit/567c742).
