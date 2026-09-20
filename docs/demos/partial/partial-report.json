@@ -1,0 +1,693 @@
+{
+  "fixture": "Fixed observations and actual local checks; not real-model quality",
+  "used_before_complete": {
+    "members": [
+      "A",
+      "B"
+    ],
+    "cost": 9
+  },
+  "initial": {
+    "best": {
+      "members": [
+        "A",
+        "B"
+      ],
+      "cost": 9
+    },
+    "pending": [
+      "C",
+      "D"
+    ],
+    "evidence": [
+      {
+        "id": "5d00f95cff91d608a131244066566db01a1b2e355864a560e881b019566a1ba1",
+        "label": "A",
+        "question": {
+          "op": "test",
+          "text": "候选符合当前任务需要吗？",
+          "calib": "demo.flag",
+          "scale": [],
+          "anchors": null,
+          "evidence": [],
+          "prior": "none",
+          "phys": null,
+          "agg": "exists"
+        },
+        "resolved": true,
+        "value": true,
+        "cause": null,
+        "model_id": "synthetic-composition-fixture-v1",
+        "exit": "act",
+        "uncertainty_policy": null,
+        "provisional": false,
+        "material_hashes": [
+          "8b323ade7abe97bc"
+        ]
+      },
+      {
+        "id": "eee61869cb61e0a7cf856f469cb3cd973c6b5e1594cb4e50d09f625853ab0c1e",
+        "label": "B",
+        "question": {
+          "op": "test",
+          "text": "候选符合当前任务需要吗？",
+          "calib": "demo.flag",
+          "scale": [],
+          "anchors": null,
+          "evidence": [],
+          "prior": "none",
+          "phys": null,
+          "agg": "exists"
+        },
+        "resolved": true,
+        "value": true,
+        "cause": null,
+        "model_id": "synthetic-composition-fixture-v1",
+        "exit": "act",
+        "uncertainty_policy": null,
+        "provisional": false,
+        "material_hashes": [
+          "5b175d5364317e69"
+        ]
+      },
+      {
+        "id": "473a53358302daca88403e9f4c1917c294eb78fa055f4517aae9d9d43285b501",
+        "label": "C",
+        "question": {
+          "op": "test",
+          "text": "候选符合当前任务需要吗？",
+          "calib": "demo.flag",
+          "scale": [],
+          "anchors": null,
+          "evidence": [],
+          "prior": "none",
+          "phys": null,
+          "agg": "exists"
+        },
+        "resolved": false,
+        "value": null,
+        "cause": "band",
+        "model_id": "synthetic-composition-fixture-v1",
+        "exit": "unsure",
+        "uncertainty_policy": "retain",
+        "provisional": false,
+        "material_hashes": [
+          "527970cb5cc62a47"
+        ]
+      },
+      {
+        "id": "f73174778d09c5b518713c45a797375a8d66a86292089756200c85e28eaf597c",
+        "label": "D",
+        "question": {
+          "op": "test",
+          "text": "候选符合当前任务需要吗？",
+          "calib": "demo.flag",
+          "scale": [],
+          "anchors": null,
+          "evidence": [],
+          "prior": "none",
+          "phys": null,
+          "agg": "exists"
+        },
+        "resolved": false,
+        "value": null,
+        "cause": "band",
+        "model_id": "synthetic-composition-fixture-v1",
+        "exit": "unsure",
+        "uncertainty_policy": "retain",
+        "provisional": false,
+        "material_hashes": [
+          "bbb2f7d5ed1258a8"
+        ]
+      }
+    ],
+    "checks_so_far": [
+      "A",
+      "B"
+    ]
+  },
+  "improved": {
+    "best": {
+      "members": [
+        "C"
+      ],
+      "cost": 2
+    },
+    "pending": [
+      "D"
+    ],
+    "evidence": [
+      {
+        "id": "5d00f95cff91d608a131244066566db01a1b2e355864a560e881b019566a1ba1",
+        "label": "A",
+        "question": {
+          "op": "test",
+          "text": "候选符合当前任务需要吗？",
+          "calib": "demo.flag",
+          "scale": [],
+          "anchors": null,
+          "evidence": [],
+          "prior": "none",
+          "phys": null,
+          "agg": "exists"
+        },
+        "resolved": true,
+        "value": true,
+        "cause": null,
+        "model_id": "synthetic-composition-fixture-v1",
+        "exit": "act",
+        "uncertainty_policy": null,
+        "provisional": false,
+        "material_hashes": [
+          "8b323ade7abe97bc"
+        ]
+      },
+      {
+        "id": "eee61869cb61e0a7cf856f469cb3cd973c6b5e1594cb4e50d09f625853ab0c1e",
+        "label": "B",
+        "question": {
+          "op": "test",
+          "text": "候选符合当前任务需要吗？",
+          "calib": "demo.flag",
+          "scale": [],
+          "anchors": null,
+          "evidence": [],
+          "prior": "none",
+          "phys": null,
+          "agg": "exists"
+        },
+        "resolved": true,
+        "value": true,
+        "cause": null,
+        "model_id": "synthetic-composition-fixture-v1",
+        "exit": "act",
+        "uncertainty_policy": null,
+        "provisional": false,
+        "material_hashes": [
+          "5b175d5364317e69"
+        ]
+      },
+      {
+        "id": "473a53358302daca88403e9f4c1917c294eb78fa055f4517aae9d9d43285b501",
+        "label": "C",
+        "question": {
+          "op": "test",
+          "text": "候选符合当前任务需要吗？",
+          "calib": "demo.flag",
+          "scale": [],
+          "anchors": null,
+          "evidence": [],
+          "prior": "none",
+          "phys": null,
+          "agg": "exists"
+        },
+        "resolved": false,
+        "value": null,
+        "cause": "band",
+        "model_id": "synthetic-composition-fixture-v1",
+        "exit": "unsure",
+        "uncertainty_policy": "retain",
+        "provisional": false,
+        "material_hashes": [
+          "527970cb5cc62a47"
+        ]
+      },
+      {
+        "id": "f73174778d09c5b518713c45a797375a8d66a86292089756200c85e28eaf597c",
+        "label": "D",
+        "question": {
+          "op": "test",
+          "text": "候选符合当前任务需要吗？",
+          "calib": "demo.flag",
+          "scale": [],
+          "anchors": null,
+          "evidence": [],
+          "prior": "none",
+          "phys": null,
+          "agg": "exists"
+        },
+        "resolved": false,
+        "value": null,
+        "cause": "band",
+        "model_id": "synthetic-composition-fixture-v1",
+        "exit": "unsure",
+        "uncertainty_policy": "retain",
+        "provisional": false,
+        "material_hashes": [
+          "bbb2f7d5ed1258a8"
+        ]
+      },
+      {
+        "id": "823ffcb0f15a80c4f9438986c402c4838320d47acc46f473e9fbf194247d01f2",
+        "label": "C",
+        "question": {
+          "op": "test",
+          "text": "候选符合当前任务需要吗？",
+          "calib": "demo.flag",
+          "scale": [],
+          "anchors": null,
+          "evidence": [],
+          "prior": "none",
+          "phys": null,
+          "agg": "exists"
+        },
+        "resolved": true,
+        "value": true,
+        "cause": null,
+        "model_id": "synthetic-composition-fixture-v1",
+        "exit": "act",
+        "uncertainty_policy": null,
+        "provisional": false,
+        "material_hashes": [
+          "d4cba30064f91b47"
+        ]
+      }
+    ],
+    "checks_so_far": [
+      "A",
+      "B",
+      "C"
+    ]
+  },
+  "final": {
+    "best": {
+      "members": [
+        "C"
+      ],
+      "cost": 2
+    },
+    "pending": [],
+    "evidence": [
+      {
+        "id": "5d00f95cff91d608a131244066566db01a1b2e355864a560e881b019566a1ba1",
+        "label": "A",
+        "question": {
+          "op": "test",
+          "text": "候选符合当前任务需要吗？",
+          "calib": "demo.flag",
+          "scale": [],
+          "anchors": null,
+          "evidence": [],
+          "prior": "none",
+          "phys": null,
+          "agg": "exists"
+        },
+        "resolved": true,
+        "value": true,
+        "cause": null,
+        "model_id": "synthetic-composition-fixture-v1",
+        "exit": "act",
+        "uncertainty_policy": null,
+        "provisional": false,
+        "material_hashes": [
+          "8b323ade7abe97bc"
+        ]
+      },
+      {
+        "id": "eee61869cb61e0a7cf856f469cb3cd973c6b5e1594cb4e50d09f625853ab0c1e",
+        "label": "B",
+        "question": {
+          "op": "test",
+          "text": "候选符合当前任务需要吗？",
+          "calib": "demo.flag",
+          "scale": [],
+          "anchors": null,
+          "evidence": [],
+          "prior": "none",
+          "phys": null,
+          "agg": "exists"
+        },
+        "resolved": true,
+        "value": true,
+        "cause": null,
+        "model_id": "synthetic-composition-fixture-v1",
+        "exit": "act",
+        "uncertainty_policy": null,
+        "provisional": false,
+        "material_hashes": [
+          "5b175d5364317e69"
+        ]
+      },
+      {
+        "id": "473a53358302daca88403e9f4c1917c294eb78fa055f4517aae9d9d43285b501",
+        "label": "C",
+        "question": {
+          "op": "test",
+          "text": "候选符合当前任务需要吗？",
+          "calib": "demo.flag",
+          "scale": [],
+          "anchors": null,
+          "evidence": [],
+          "prior": "none",
+          "phys": null,
+          "agg": "exists"
+        },
+        "resolved": false,
+        "value": null,
+        "cause": "band",
+        "model_id": "synthetic-composition-fixture-v1",
+        "exit": "unsure",
+        "uncertainty_policy": "retain",
+        "provisional": false,
+        "material_hashes": [
+          "527970cb5cc62a47"
+        ]
+      },
+      {
+        "id": "f73174778d09c5b518713c45a797375a8d66a86292089756200c85e28eaf597c",
+        "label": "D",
+        "question": {
+          "op": "test",
+          "text": "候选符合当前任务需要吗？",
+          "calib": "demo.flag",
+          "scale": [],
+          "anchors": null,
+          "evidence": [],
+          "prior": "none",
+          "phys": null,
+          "agg": "exists"
+        },
+        "resolved": false,
+        "value": null,
+        "cause": "band",
+        "model_id": "synthetic-composition-fixture-v1",
+        "exit": "unsure",
+        "uncertainty_policy": "retain",
+        "provisional": false,
+        "material_hashes": [
+          "bbb2f7d5ed1258a8"
+        ]
+      },
+      {
+        "id": "823ffcb0f15a80c4f9438986c402c4838320d47acc46f473e9fbf194247d01f2",
+        "label": "C",
+        "question": {
+          "op": "test",
+          "text": "候选符合当前任务需要吗？",
+          "calib": "demo.flag",
+          "scale": [],
+          "anchors": null,
+          "evidence": [],
+          "prior": "none",
+          "phys": null,
+          "agg": "exists"
+        },
+        "resolved": true,
+        "value": true,
+        "cause": null,
+        "model_id": "synthetic-composition-fixture-v1",
+        "exit": "act",
+        "uncertainty_policy": null,
+        "provisional": false,
+        "material_hashes": [
+          "d4cba30064f91b47"
+        ]
+      },
+      {
+        "id": "674d1be9c2c782ccbc960584e021946366304f2bf37cff59a5bc10a8c0df060c",
+        "label": "D",
+        "question": {
+          "op": "test",
+          "text": "候选符合当前任务需要吗？",
+          "calib": "demo.flag",
+          "scale": [],
+          "anchors": null,
+          "evidence": [],
+          "prior": "none",
+          "phys": null,
+          "agg": "exists"
+        },
+        "resolved": true,
+        "value": false,
+        "cause": null,
+        "model_id": "synthetic-composition-fixture-v1",
+        "exit": "ignore",
+        "uncertainty_policy": null,
+        "provisional": false,
+        "material_hashes": [
+          "f4935f26b3edcd44"
+        ]
+      }
+    ],
+    "checks_so_far": [
+      "A",
+      "B",
+      "C"
+    ]
+  },
+  "stronger_requirement_met": true,
+  "original_still_pending": [
+    "C",
+    "D"
+  ],
+  "original_evidence_retained": true,
+  "terminal": true,
+  "calls": 6,
+  "actions": 3,
+  "dynamic": [
+    {
+      "component": "continue_with_only_promising_unresolved",
+      "operation": "bind",
+      "call_id": 10,
+      "generated_description": {
+        "name": "supply_strategy → continue_exact_constraint_combinations",
+        "operation": "then",
+        "input": "Partial",
+        "output": "Partial",
+        "effects": [
+          "do",
+          "judge",
+          "transform"
+        ],
+        "parameters": {},
+        "warnings": [],
+        "children": [
+          {
+            "name": "supply_strategy",
+            "operation": "leaf",
+            "input": "Partial",
+            "output": "Component",
+            "effects": [],
+            "parameters": {},
+            "warnings": [],
+            "children": []
+          },
+          {
+            "name": "continue_exact_constraint_combinations",
+            "operation": "then",
+            "input": "Component",
+            "output": "Partial",
+            "effects": [
+              "do",
+              "judge",
+              "transform"
+            ],
+            "parameters": {},
+            "warnings": [],
+            "children": [
+              {
+                "name": "continue_checkpoint",
+                "operation": "then",
+                "input": "Component",
+                "output": "Partial",
+                "effects": [
+                  "do",
+                  "judge",
+                  "transform"
+                ],
+                "parameters": {},
+                "warnings": [],
+                "children": [
+                  {
+                    "name": "carry_checkpoint → advance_candidate_checks",
+                    "operation": "then",
+                    "input": "Component",
+                    "output": "CandidateState",
+                    "effects": [
+                      "do",
+                      "judge",
+                      "transform"
+                    ],
+                    "parameters": {},
+                    "warnings": [],
+                    "children": [
+                      {
+                        "name": "carry_checkpoint",
+                        "operation": "leaf",
+                        "input": "Component",
+                        "output": "tuple",
+                        "effects": [],
+                        "parameters": {},
+                        "warnings": [],
+                        "children": []
+                      },
+                      {
+                        "name": "advance_candidate_checks",
+                        "operation": "leaf",
+                        "input": "tuple",
+                        "output": "CandidateState",
+                        "effects": [
+                          "do",
+                          "judge",
+                          "transform"
+                        ],
+                        "parameters": {},
+                        "warnings": [],
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "name": "expose_checkpoint",
+                    "operation": "leaf",
+                    "input": "CandidateState",
+                    "output": "Partial",
+                    "effects": [],
+                    "parameters": {},
+                    "warnings": [],
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "partial_exact_constraint_combinations",
+                "operation": "leaf",
+                "input": "Partial",
+                "output": "Partial",
+                "effects": [],
+                "parameters": {},
+                "warnings": [],
+                "children": []
+              }
+            ]
+          }
+        ]
+      },
+      "continuation_trace_start": 13,
+      "continuation_trace_end": 29
+    },
+    {
+      "component": "continue_with_all_remaining_unresolved",
+      "operation": "bind",
+      "call_id": 29,
+      "generated_description": {
+        "name": "supply_strategy → continue_exact_constraint_combinations",
+        "operation": "then",
+        "input": "Partial",
+        "output": "Partial",
+        "effects": [
+          "do",
+          "judge",
+          "transform"
+        ],
+        "parameters": {},
+        "warnings": [],
+        "children": [
+          {
+            "name": "supply_strategy",
+            "operation": "leaf",
+            "input": "Partial",
+            "output": "Component",
+            "effects": [],
+            "parameters": {},
+            "warnings": [],
+            "children": []
+          },
+          {
+            "name": "continue_exact_constraint_combinations",
+            "operation": "then",
+            "input": "Component",
+            "output": "Partial",
+            "effects": [
+              "do",
+              "judge",
+              "transform"
+            ],
+            "parameters": {},
+            "warnings": [],
+            "children": [
+              {
+                "name": "continue_checkpoint",
+                "operation": "then",
+                "input": "Component",
+                "output": "Partial",
+                "effects": [
+                  "do",
+                  "judge",
+                  "transform"
+                ],
+                "parameters": {},
+                "warnings": [],
+                "children": [
+                  {
+                    "name": "carry_checkpoint → advance_candidate_checks",
+                    "operation": "then",
+                    "input": "Component",
+                    "output": "CandidateState",
+                    "effects": [
+                      "do",
+                      "judge",
+                      "transform"
+                    ],
+                    "parameters": {},
+                    "warnings": [],
+                    "children": [
+                      {
+                        "name": "carry_checkpoint",
+                        "operation": "leaf",
+                        "input": "Component",
+                        "output": "tuple",
+                        "effects": [],
+                        "parameters": {},
+                        "warnings": [],
+                        "children": []
+                      },
+                      {
+                        "name": "advance_candidate_checks",
+                        "operation": "leaf",
+                        "input": "tuple",
+                        "output": "CandidateState",
+                        "effects": [
+                          "do",
+                          "judge",
+                          "transform"
+                        ],
+                        "parameters": {},
+                        "warnings": [],
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "name": "expose_checkpoint",
+                    "operation": "leaf",
+                    "input": "CandidateState",
+                    "output": "Partial",
+                    "effects": [],
+                    "parameters": {},
+                    "warnings": [],
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "partial_exact_constraint_combinations",
+                "operation": "leaf",
+                "input": "Partial",
+                "output": "Partial",
+                "effects": [],
+                "parameters": {},
+                "warnings": [],
+                "children": []
+              }
+            ]
+          }
+        ]
+      },
+      "continuation_trace_start": 32,
+      "continuation_trace_end": 48
+    }
+  ],
+  "direct_equivalent": true,
+  "direct_calls": 6
+}

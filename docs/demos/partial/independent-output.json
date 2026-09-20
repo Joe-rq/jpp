@@ -1,0 +1,274 @@
+{
+  "strategy": "highest-cost unresolved candidate first, one per step",
+  "initial": {
+    "cheapest": {
+      "members": [
+        "A",
+        "B"
+      ],
+      "cost": 9
+    },
+    "pending": [
+      "C",
+      "D"
+    ],
+    "evidence_count": 4
+  },
+  "after_one": {
+    "cheapest": {
+      "members": [
+        "A",
+        "B"
+      ],
+      "cost": 9
+    },
+    "pending": [
+      "C"
+    ],
+    "evidence_count": 5
+  },
+  "changed_requirement": "cost <= 2 and no pending questions",
+  "completed": {
+    "cheapest": {
+      "members": [
+        "C"
+      ],
+      "cost": 2
+    },
+    "pending": [],
+    "evidence_count": 6
+  },
+  "stats": {
+    "program": "validate_candidates \u2192 partial_exact_constraint_combinations \u2192 product",
+    "layers": 3,
+    "questions_per_layer": [
+      4,
+      1,
+      1
+    ],
+    "calls_per_layer": [
+      4,
+      1,
+      1
+    ],
+    "questions": 6,
+    "calls": 6,
+    "fusion_rate": 1.0,
+    "ledger_hits": 0,
+    "cache_hits": 0,
+    "stopped_layers": 0,
+    "fission": 0,
+    "tokens": 2326,
+    "cost": 0.0,
+    "unsure": 2,
+    "exits": 6,
+    "spec": {
+      "lift": 0,
+      "vectorize": 0,
+      "hits": 0,
+      "unused": 0,
+      "dropped": 0,
+      "aborted": 0
+    },
+    "returned_unsure": 0,
+    "warnings": [
+      "W-opaque",
+      "W-opaque",
+      "W-dynamic",
+      "W-dynamic"
+    ],
+    "effect_requests": {
+      "gen": 0,
+      "do": 3,
+      "ask": 0,
+      "transform": 2
+    }
+  },
+  "observation_calls": 6,
+  "local_checks": 3,
+  "trace": [
+    {
+      "component": "validate_candidates \u2192 partial_exact_constraint_combinations \u2192 product"
+    },
+    {
+      "component": "validate_candidates \u2192 partial_exact_constraint_combinations"
+    },
+    {
+      "component": "validate_candidates"
+    },
+    {
+      "component": "batch_observe"
+    },
+    {
+      "component": "unresolved_questions"
+    },
+    {
+      "component": "accepted_candidates"
+    },
+    {
+      "component": "all_observation_evidence"
+    },
+    {
+      "component": "partial_exact_constraint_combinations"
+    },
+    {
+      "component": "exact_constraint_combinations"
+    },
+    {
+      "component": "product"
+    },
+    {
+      "component": "identity"
+    },
+    {
+      "component": "continue_with_expensive_first_one \u2192 product"
+    },
+    {
+      "component": "continue_with_expensive_first_one"
+    },
+    {
+      "component": "identity"
+    },
+    {
+      "component": "choose_continuation"
+    },
+    {
+      "component": "supply_strategy \u2192 continue_exact_constraint_combinations"
+    },
+    {
+      "component": "supply_strategy"
+    },
+    {
+      "component": "continue_exact_constraint_combinations"
+    },
+    {
+      "component": "continue_checkpoint"
+    },
+    {
+      "component": "carry_checkpoint \u2192 advance_candidate_checks"
+    },
+    {
+      "component": "carry_checkpoint"
+    },
+    {
+      "component": "advance_candidate_checks"
+    },
+    {
+      "component": "unresolved_questions"
+    },
+    {
+      "component": "expensive_first_one"
+    },
+    {
+      "component": "batch_observe"
+    },
+    {
+      "component": "expose_checkpoint"
+    },
+    {
+      "component": "unresolved_questions"
+    },
+    {
+      "component": "accepted_candidates"
+    },
+    {
+      "component": "all_observation_evidence"
+    },
+    {
+      "component": "partial_exact_constraint_combinations"
+    },
+    {
+      "component": "exact_constraint_combinations"
+    },
+    {
+      "component": "product"
+    },
+    {
+      "component": "identity"
+    },
+    {
+      "component": "bind"
+    },
+    {
+      "component": "identity"
+    },
+    {
+      "component": "select_caller"
+    },
+    {
+      "component": "cheap_and_complete"
+    },
+    {
+      "component": "iterate \u2192 iteration_packet"
+    },
+    {
+      "component": "iterate"
+    },
+    {
+      "component": "cheap_and_complete"
+    },
+    {
+      "component": "continue_with_expensive_first_one"
+    },
+    {
+      "component": "identity"
+    },
+    {
+      "component": "choose_continuation"
+    },
+    {
+      "component": "supply_strategy \u2192 continue_exact_constraint_combinations"
+    },
+    {
+      "component": "supply_strategy"
+    },
+    {
+      "component": "continue_exact_constraint_combinations"
+    },
+    {
+      "component": "continue_checkpoint"
+    },
+    {
+      "component": "carry_checkpoint \u2192 advance_candidate_checks"
+    },
+    {
+      "component": "carry_checkpoint"
+    },
+    {
+      "component": "advance_candidate_checks"
+    },
+    {
+      "component": "unresolved_questions"
+    },
+    {
+      "component": "expensive_first_one"
+    },
+    {
+      "component": "batch_observe"
+    },
+    {
+      "component": "expose_checkpoint"
+    },
+    {
+      "component": "unresolved_questions"
+    },
+    {
+      "component": "accepted_candidates"
+    },
+    {
+      "component": "all_observation_evidence"
+    },
+    {
+      "component": "partial_exact_constraint_combinations"
+    },
+    {
+      "component": "exact_constraint_combinations"
+    },
+    {
+      "component": "cheap_and_complete"
+    },
+    {
+      "component": "iteration_packet"
+    }
+  ]
+}
