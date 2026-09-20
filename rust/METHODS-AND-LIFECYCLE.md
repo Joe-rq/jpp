@@ -20,11 +20,11 @@ checker. The old `Fn(Int) -> Int` syntax retains unknown/inferred effects.
 claim full static linearity. Unknown paths still have the limits documented by
 the core. Creating or returning a method does not execute its body.
 
-Snapshot boundary: this delivery uses core package four (`d021f33`). It propagates
-the declared method row into effect checking, but does not yet reject every actual
-method argument that exceeds a parameter's declared row. The core owner has added
-that separate argument-contract check in its subsequent package; it is not part of
-this snapshot. Do not treat these annotations as complete static enforcement.
+Snapshot boundary: core package four (`d021f33`) is supplemented with the core
+owner's committed argument-contract check and regression from `0ffe7ed`.
+Recognized named methods and explicitly annotated function literals are checked
+against parameter effect bounds. Unresolved dynamic paths retain the documented
+limits; these annotations are not complete static enforcement for every program.
 
 `examples/library-methods.jpp` returns a composed method, stores it in a record,
 and invokes it through the library. Its output is `[4,6,42]` and `42`.
@@ -84,7 +84,9 @@ failures, pending state and effect identities remain owned by the core.
 
 The existing fixture keys remain valid. New optional arrays are `generations`
 (`prompt`, `retry_seq`, `output`) and `responses` (the same state/question/answer
-fields as `observations`). Omit a response to leave `ask` pending. The fixed
+fields as `observations`). Answer variants must match the operation (`test`/`Noul`,
+`select`/`Choice`, `measure`/`Score`); incompatible records are fixture errors before
+execution. Omit a response to leave `ask` pending. The fixed
 generator matches the existing core's prompt/retry key; it does not model
 context-sensitive generation or implement an algorithm in the CLI.
 

@@ -199,3 +199,18 @@ fn replay_rejects_unrecorded_file_writes_and_input_overflow_is_a_fail_value() {
     );
     assert_eq!(temp.run(&["run", "read.jpp"])["value"], true);
 }
+
+#[test]
+fn mismatched_response_is_a_fixture_error_not_a_runtime_panic() {
+    let temp = Temp::new();
+    temp.write("ask.jpp", "budget {calls:0,cost:0,escalate:1}; handle(ask(state(mat(\"x\")), test(\"ok?\", \"human\")), {act:fn(){true}, ignore:fn(){false}, unsure:fn(u){{pending:u}}})");
+    temp.write("bad.json", r#"{"responses":[{"on":["x"],"op":"test","text":"ok?","calib":"human","answer":{"Choice":[1.0]}}]}"#);
+    let output = temp.call(&["run", "ask.jpp", "--fixtures", "bad.json"]);
+    let error = String::from_utf8_lossy(&output.stderr);
+    assert!(!output.status.success());
+    assert!(
+        error.contains("bad.json") && error.contains("requires a Noul answer"),
+        "{error}"
+    );
+    assert!(!error.contains("panicked"), "{error}");
+}

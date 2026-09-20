@@ -393,3 +393,68 @@ fn apply(m, f) -> Record !{{judge}} {{ f(m) }}
     assert!(report.find("W-effect").is_some(), "两个调用点都传纯方法，judge 确实用不上：\n{}", report.render());
     assert!(report.is_ok(), "这只是提示，不拦程序：\n{}", report.render());
 }
+
+/// 参数**类型位**上的效应行是对实参的契约：类型说只收纯方法，传一个会 judge 的进来就是错，
+/// 诊断指着**传错东西的那个实参**。
+///
+/// 这条直接拿 core AST 搭，不走前端——`Fn(A) -!{judge}-> B` 那套文法归 Codex，落地时间与
+/// core 不同步；`tests/effect_rows_typed.rs` 是它的源码级对照，等前端那一版进了再一起跑。
+#[test]
+fn 实参必须在参数类型的效应行之内() {
+    use jpp_core::ast::{Block, Budget, Expr, ExprKind, Function, MethodType, Parameter, Program, Span, Statement, Type};
+
+    let sp = Span::new(0, 1);
+    let at = Span::new(40, 44); // 实参 peek 的位置
+    let record = || Type::Named("Record".into());
+    // f 的类型：只收纯方法
+    let pure_method = Type::Method(MethodType::omega(vec![record()], record(), &[]));
+
+    let leaf = |name: &str, effects: &[&str]| Statement::Function {
+        name: name.into(),
+        function: Function {
+            parameters: vec![Parameter { name: "m".into(), annotation: None, span: sp }],
+            result_type: Some(record()),
+            effects: Some(effects.iter().map(|e| e.to_string()).collect()),
+            body: Block::expr(Expr::int(0, sp)),
+        },
+        span: sp,
+    };
+
+    let program = |arg: &str, param_type: Type, apply_effects: &[&str]| Program {
+        budget: Some(Budget { calls: 1, cost: 0.0, depth: None, escalate: None }),
+        body: Block::new(
+            vec![
+                leaf("peek", &["judge"]),
+                leaf("plain", &[]),
+                Statement::Function {
+                    name: "apply".into(),
+                    function: Function {
+                        parameters: vec![Parameter { name: "f".into(), annotation: Some(param_type), span: sp }],
+                        result_type: Some(record()),
+                        effects: Some(apply_effects.iter().map(|e| e.to_string()).collect()),
+                        body: Block::expr(Expr::call_name("f", vec![Expr::int(1, sp)], sp)),
+                    },
+                    span: sp,
+                },
+            ],
+            Some(Expr::call_name("apply", vec![Expr::name(arg, at)], sp)),
+            sp,
+        ),
+        span: sp,
+    };
+
+    // 传会 judge 的方法给只收纯方法的位置：报在实参上
+    let report = check(&program("peek", pure_method.clone(), &[]));
+    let d = effect_error(&report, "peek 会 judge，而参数类型只收纯方法");
+    assert!(d.message.contains("peek"), "报文要点出是哪个实参：{}", d.message);
+    assert_eq!(d.span, at, "位置要指着实参本身");
+
+    // 传纯方法就没事
+    assert_clean("传纯方法", &check(&program("plain", pure_method, &[])));
+
+    // 把参数类型放宽到 judge 就没事了——注意 apply 自己的标注也得跟着放宽：
+    // 参数类型说这个位置会 judge，那 apply 的函数体就真的会 judge
+    let wide = Type::Method(MethodType::omega(vec![record()], record(), &["judge"]));
+    let report = check(&program("peek", wide, &["judge"]));
+    assert!(report.find("E-effect").is_none(), "参数类型与 apply 的标注都放宽后不该报：\n{}", report.render());
+}

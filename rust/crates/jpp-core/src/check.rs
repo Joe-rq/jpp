@@ -1045,6 +1045,69 @@ impl Checker {
         }
         let inst = self.instantiate_all(p);
         self.declared_vs_row(&inst);
+        self.param_contracts(p);
+    }
+
+    /// 参数**类型位**上的效应行是契约：`f: Fn(A) -!{judge}-> B` 说的是「这个位置只收效应不超过
+    /// judge 的方法」。实参超出就报在**调用点**——诊断该指着传错东西的地方，不是函数定义。
+    ///
+    /// 这一条是效应行跟着**类型**走才有的能力：不靠推断、不靠调用点实例化，标了就当场有约束。
+    fn param_contracts(&mut self, p: &Program) {
+        let mut found: Vec<Diagnostic> = vec![];
+        walk_block(&p.body, &mut |e| {
+            let ExprKind::Call { function, arguments } = &e.kind else { return };
+            let ExprKind::Name(callee) = &function.kind else { return };
+            let Some(ids) = self.by_name.get(callee.as_str()) else { return };
+            if ids.len() != 1 {
+                return;
+            }
+            for (k, param) in self.functions[ids[0]].params.iter().enumerate() {
+                let Some(t) = &param.annotation else { continue };
+                let Some((Some(row), _)) = t.as_method() else { continue };
+                let allowed: BTreeSet<String> = row.iter().cloned().collect();
+                let Some(arg) = arguments.get(k) else { continue };
+                let Some((who, actual)) = self.arg_effects(arg) else { continue };
+                let missing: Vec<String> = actual.difference(&allowed).cloned().collect();
+                if missing.is_empty() {
+                    continue;
+                }
+                let all: Vec<String> = allowed.union(&actual).cloned().collect();
+                found.push(Diagnostic::error(
+                    "E-effect",
+                    format!(
+                        "{callee} 的第 {} 个参数 {} 标成只收 !{{{}}} 的方法，这次传的 {who} 会 {}：类型上的效应行是契约，实参必须在它之内。修法：把参数类型标成 -!{{{}}}->，或换一个不带这些效应的方法",
+                        k + 1,
+                        param.name,
+                        allowed.iter().cloned().collect::<Vec<_>>().join(", "),
+                        missing.join(", "),
+                        all.join(", ")
+                    ),
+                    arg.span,
+                ));
+            }
+        });
+        self.out.extend(found);
+    }
+
+    /// 实参静态认得出的效应集：具名方法或带 `!{…}` 的字面方法才算，其余不判（宁可漏报也不误报）
+    fn arg_effects(&self, a: &Expr) -> Option<(String, BTreeSet<String>)> {
+        match &a.kind {
+            ExprKind::Name(g) => {
+                let ids = self.by_name.get(g.as_str())?;
+                if ids.len() != 1 {
+                    return None;
+                }
+                let f = &self.functions[ids[0]];
+                let row = match &f.declared {
+                    Some(d) => d.iter().cloned().collect(),
+                    None if !f.row.open() => f.row.concrete.clone(),
+                    None => return None,
+                };
+                Some((g.clone(), row))
+            }
+            ExprKind::Function(f) => f.effects.as_ref().map(|d| ("这个字面方法".to_string(), d.iter().cloned().collect())),
+            _ => None,
+        }
     }
 
     fn owner_of(&self, i: usize) -> Owner {

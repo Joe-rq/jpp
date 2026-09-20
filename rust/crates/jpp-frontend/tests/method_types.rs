@@ -50,3 +50,15 @@ fn malformed_rows_have_a_source_location() {
     let error = parse(src).unwrap_err();
     assert!(error.render("broken.jpp", src).contains("broken.jpp:2:"));
 }
+
+#[test]
+fn effectful_argument_cannot_satisfy_a_pure_method_parameter() {
+    let src = "budget {calls:1,cost:0}; fn effect() -> Unit !{judge} { unit } fn apply(f: Fn() -!{}-> Unit) !{} { f() } apply(effect)";
+    let report = jpp_core::check::check(&lower(&parse(src).unwrap()).unwrap());
+    let error = report
+        .find("E-effect")
+        .expect("the actual method must respect the parameter row");
+    assert_eq!(&src[error.span.start..error.span.end], "effect");
+    let pure = src.replace("!{judge}", "!{}");
+    assert!(jpp_core::check::check(&lower(&parse(&pure).unwrap()).unwrap()).is_ok());
+}
