@@ -35,6 +35,8 @@ Python suites; its result is recorded on the pull request.
 
 [Grammar / 文法](../rust/FRONTEND.md) · [Equivalent source and core usage / 等价用法](../rust/COMPARISON.md).
 
+[Implementation commit / 实现提交](https://github.com/Towow-ai/jpp/commit/d39b036).
+
 ## 2026-09-20: focused OCaml experiments alongside Rust / Rust 主线允许具体 OCaml 实验
 
 The [Rust ADR](adr/0001-rust-kernel.md) now permits OCaml experiments around
