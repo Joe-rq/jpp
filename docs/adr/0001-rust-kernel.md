@@ -1,7 +1,7 @@
 # ADR 0001: Rust kernel and standalone J++ source / Rust 内核与独立源码
 
-Date / 日期: 2026-09-20. Status / 状态: accepted implementation direction;
-construction is starting, not a delivered Rust runtime.
+Date / 日期: 2026-09-20. Status / 状态: accepted; first source-to-execution package
+implemented. / 决定已采纳，首个源码到执行整包已实现。
 
 ## Decision / 决定
 
@@ -84,10 +84,12 @@ reference behavior for the migration.
 
 ## Current status / 当前状态
 
-This commit records the decision and updates the design entry points only. The
-Rust lexer/parser, common program representation, checker, runtime and CLI are
-being built together under `rust/`; they are not claimed as available by this ADR.
-Delivered behavior will be documented with commands, results and commit links.
+The first implementation is available under [`rust/`](../../rust/README.md):
+source parsing, shared checking and execution, method composition, adaptive
+inquiry, partial-result continuation and ledger replay. Fixed observations verify
+the execution mechanisms. This does not imply feature parity with every Python
+optimization or validation of real-model quality.
 
-本次提交只公布路线和验收目标。Rust 工程正在开始建设；本页不表示 Rust 运行时或
-独立源码执行已经交付。后续实际进展继续以代码、运行结果和提交链接公开。
+首包已实现源码→检查→执行，包含方法组合、选问、部分结果续接及账本重放。
+[包内说明](../../rust/README.md)给出具体运行命令，[进度页](../progress.md)保留本次
+结果和验证口径。旧路线提交只记录决定，本节随实际交付更新。

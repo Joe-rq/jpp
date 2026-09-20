@@ -8,7 +8,7 @@
 
 J++ is an experimental programming-language project exploring semantic judgment as a programmable operation. Questions are values. Methods are values. A composed method can become a building block in another method.
 
-The published implementation is a **Python 3.12 embedded language**, retained as a behavior reference and experiment tool. **New language construction now uses one Rust kernel and standalone `.jpp` source.** The parser, checker, runtime and CLI milestone is starting; Rust execution is not yet claimed as delivered. [Read the decision and acceptance target](docs/adr/0001-rust-kernel.md).
+**Write standalone `.jpp` source and run it with the native Rust implementation.** It parses source, checks language rules and executes methods through one shared kernel. The earlier Python 3.12 embedded implementation remains available as a behavior reference and experiment tool. [Rust package and examples](rust/README.md) · [Language implementation decision](docs/adr/0001-rust-kernel.md).
 
 ## Why we are doing this
 
@@ -27,6 +27,26 @@ The [325-profile real-source comparison](https://towow-ai.github.io/jpp/demos/to
 [Discovery roadmap (中文)](docs/towow-discovery-roadmap.zh-CN.md) records candidate-pool bottlenecks, reusable Towow research assets and the next bounded experiment. Its offline diagnostic script requires no model calls.
 
 The [composable discovery application](https://towow-ai.github.io/jpp/demos/towow/teams/) runs different task plans through the same J++ composition and feeds a two-member proposal back in to nominate a third member. Its API accepts replaceable questions, routing and combination functions. Three synthetic live examples, exact replay and the unsuccessful fixed-slot exploration control are documented in the [iteration report](docs/towow-discovery-iteration.zh-CN.md); this is a bounded application component, not a delivered distributed discovery network.
+
+## Run standalone J++
+
+```sh
+git clone https://github.com/towow-ai/jpp.git
+cd jpp/rust
+cargo build --locked --workspace
+cargo run -p jpp-cli -- run examples/composition.jpp
+cargo run -p jpp-cli -- run examples/adaptive.jpp --fixtures examples/fixtures/adaptive.json
+cargo run -p jpp-cli -- run examples/partial.jpp --fixtures examples/fixtures/partial.json
+```
+
+The three programs compose methods, locate 731 among 1,000 candidates in ten
+questions, and improve a usable cost-9 candidate combination to cost 2 by changing
+the continuation strategy. The source contains the algorithms; the CLI supplies
+fixed observations and a local recording action. No model API is called.
+[Grammar](rust/FRONTEND.md) · [Source and direct-core equivalence](rust/COMPARISON.md).
+
+Building needs Rust; the installed native executable runs without Python or Cargo.
+Use the explicit executable path if the retained Python `jpp` command is also installed.
 
 ## Run the retained Python reference
 
@@ -70,7 +90,7 @@ assert execute(method, "hello", runtime()).value == 10
 
 The same interface supports methods that ask questions, choose subsequent methods, or iterate over feedback. `inquire(...)` and `feedback(...)` are themselves composition constructors; their strategies can be replaced without changing the runtime.
 
-## What is here
+## What is in the retained Python implementation
 
 | Layer | Current implementation |
 |---|---|

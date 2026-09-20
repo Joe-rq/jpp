@@ -1,0 +1,41 @@
+// Algorithm control lives here: choose each question using the previous answer.
+budget {calls: 10, cost: 0, depth: 256};
+fn observe(m: Mat, q: Question) -> Record !{judge} {
+    let exit = cut(judge(state(m), q));
+    let result = handle(exit, {
+        act: fn() { {resolved: true, value: true} },
+        ignore: fn() { {resolved: true, value: false} },
+        unsure: fn(cause) { {resolved: false, value: unit, cause: cause} }
+    });
+    {resolved: result.resolved, value: result.value, exit: exit, material: m,
+     question: q, id: m.hash + "|" + text(q)}
+}
+fn resolved(o) -> Bool { o.resolved }
+fn answer(o) -> Bool { if o.resolved { o.value } else { pending("answer is unresolved") } }
+fn step(s: Record) -> Record !{judge} {
+    let midpoint = (s.lo + s.hi) / 2;
+    let q = test("target < " + text(midpoint), "fixture");
+    let o = observe(s.material, q);
+    if resolved(o) {
+        if answer(o) {
+            {lo: s.lo, hi: midpoint, material: s.material, evidence: append(s.evidence, o), pending: []}
+        } else {
+            {lo: midpoint, hi: s.hi, material: s.material, evidence: append(s.evidence, o), pending: []}
+        }
+    } else {
+        {lo: s.lo, hi: s.hi, material: s.material, evidence: append(s.evidence, o), pending: [o]}
+    }
+}
+
+fn done(s: Record) -> Bool { s.hi - s.lo <= 1 || len(s.pending) > 0 }
+
+fn solve(input: Mat, method: Fn(Record) -> Record) -> Record !{judge} {
+    loop(10, {lo: 0, hi: 1000, material: input, evidence: [], pending: []}, fn(s, index) {
+        let next = if done(s) { s } else { method(s) };
+        if done(next) { stop(next) } else { next }
+    })
+}
+
+let result = solve(mat({target: 731}), step);
+{target: result.lo, candidates_left: result.hi - result.lo,
+ questions: len(result.evidence), pending: result.pending, evidence: result.evidence}

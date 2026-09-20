@@ -1,0 +1,7 @@
+[workspace]
+resolver = "3"
+members = ["crates/jpp-core", "crates/jpp-frontend", "crates/jpp-cli"]
+
+[workspace.package]
+edition = "2024"
+license = "MIT"

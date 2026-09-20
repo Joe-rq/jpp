@@ -3,6 +3,17 @@ on: [push, pull_request]
 permissions:
   contents: read
 jobs:
+  rust-source:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - run: cargo test --locked --workspace
+        working-directory: rust
+      - run: cargo run --locked -p jpp-cli -- run examples/adaptive.jpp --fixtures examples/fixtures/adaptive.json
+        working-directory: rust
+      - run: cargo run --locked -p jpp-cli -- run examples/partial.jpp --fixtures examples/fixtures/partial.json
+        working-directory: rust
   offline:
     runs-on: ubuntu-latest
     strategy:
