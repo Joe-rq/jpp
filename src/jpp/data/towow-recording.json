@@ -1,0 +1,1104 @@
+{
+  "model": "jev-1.13.0",
+  "created_utc": "2026-09-20T09:30:08.618168+00:00",
+  "requests": [
+    {
+      "key": "144fce27616824c20aeb62ed926bdbcdeeec4f8c4123f30574376364e7e25915",
+      "state": {
+        "on": {
+          "signal": "最近创业很累，每天一直处理问题，不想再听大道理。我也不知道我需要什么，只想有一会儿不用自己撑着。"
+        },
+        "ctx": [
+          {
+            "local_context": "经常加班，希望试试安静有人陪的周末短途出行。愿意与其他创业者共同体验并反馈，但不提供车辆、咨询或组织服务。",
+            "person": "he"
+          }
+        ]
+      },
+      "questions": {
+        "e11_0_q0": {
+          "type": "noul",
+          "instructions": "根据 on.signal 的处境，ctx[0].local_context 是否明确记载了接收方本人能提供的一种具体支持、活动或服务，值得让发送者了解？只读给定材料。相似处境、单纯想参加、投资兴趣、第三人的能力不算本人直接提供。无需诊断或推断疾病。"
+        },
+        "e12_0_q0": {
+          "type": "noul",
+          "instructions": "ctx[0].local_context 是否明确提到一个具体联系人，其能力可能回应 on.signal 的处境，值得进一步读取该联系人的上下文？必须有材料中的具体转介线索，不能猜想人脉。"
+        }
+      },
+      "answers": {
+        "e11_0_q0": {
+          "type": "noul",
+          "noul": 0.18
+        },
+        "e12_0_q0": {
+          "type": "noul",
+          "noul": 0.08
+        }
+      },
+      "input_tokens": 586,
+      "estimated_cost_usd": 2.461e-05,
+      "elapsed_ms": 1574.94
+    },
+    {
+      "key": "a7572bdd41732e5c20103e7c7280782ab0af699f006558319249ff16724f7a02",
+      "state": {
+        "on": {
+          "signal": "最近创业很累，每天一直处理问题，不想再听大道理。我也不知道我需要什么，只想有一会儿不用自己撑着。"
+        },
+        "ctx": [
+          {
+            "local_context": "运营创业者社群，有几位成员想尝试不谈工作的轻松出行。若出现具体司机和陪伴式出行方案，愿意招募一次小规模试用；自己没有司机，不能独立提供这项服务。",
+            "person": "tang"
+          }
+        ]
+      },
+      "questions": {
+        "e7_0_q0": {
+          "type": "noul",
+          "instructions": "根据 on.signal 的处境，ctx[0].local_context 是否明确记载了接收方本人能提供的一种具体支持、活动或服务，值得让发送者了解？只读给定材料。相似处境、单纯想参加、投资兴趣、第三人的能力不算本人直接提供。无需诊断或推断疾病。"
+        },
+        "e8_0_q0": {
+          "type": "noul",
+          "instructions": "ctx[0].local_context 是否明确提到一个具体联系人，其能力可能回应 on.signal 的处境，值得进一步读取该联系人的上下文？必须有材料中的具体转介线索，不能猜想人脉。"
+        }
+      },
+      "answers": {
+        "e7_0_q0": {
+          "type": "noul",
+          "noul": 0.09
+        },
+        "e8_0_q0": {
+          "type": "noul",
+          "noul": 0.15
+        }
+      },
+      "input_tokens": 606,
+      "estimated_cost_usd": 2.545e-05,
+      "elapsed_ms": 1578.149
+    },
+    {
+      "key": "67140f33b9d7aaef44de6eed8ba621342a65e99b226d9a8eb801d14d4cccf2db",
+      "state": {
+        "on": {
+          "signal": "最近创业很累，每天一直处理问题，不想再听大道理。我也不知道我需要什么，只想有一会儿不用自己撑着。"
+        },
+        "ctx": [
+          {
+            "local_context": "工作后不想参加课程或被说教，想试试有人开车、自己可以放空的短途出行。愿意参与一次具体的体验试用。没有可以提供给别人的服务，也没有可转介的联系人。",
+            "person": "an"
+          }
+        ]
+      },
+      "questions": {
+        "e9_0_q0": {
+          "type": "noul",
+          "instructions": "根据 on.signal 的处境，ctx[0].local_context 是否明确记载了接收方本人能提供的一种具体支持、活动或服务，值得让发送者了解？只读给定材料。相似处境、单纯想参加、投资兴趣、第三人的能力不算本人直接提供。无需诊断或推断疾病。"
+        },
+        "e10_0_q0": {
+          "type": "noul",
+          "instructions": "ctx[0].local_context 是否明确提到一个具体联系人，其能力可能回应 on.signal 的处境，值得进一步读取该联系人的上下文？必须有材料中的具体转介线索，不能猜想人脉。"
+        }
+      },
+      "answers": {
+        "e10_0_q0": {
+          "type": "noul",
+          "noul": 0.02
+        },
+        "e9_0_q0": {
+          "type": "noul",
+          "noul": 0.08
+        }
+      },
+      "input_tokens": 605,
+      "estimated_cost_usd": 2.541e-05,
+      "elapsed_ms": 1648.558
+    },
+    {
+      "key": "2af16439d486f9dab991b5514ac9856e174cc995cf16d9015e62e6d917e631a4",
+      "state": {
+        "on": {
+          "signal": "最近创业很累，每天一直处理问题，不想再听大道理。我也不知道我需要什么，只想有一会儿不用自己撑着。"
+        },
+        "ctx": [
+          {
+            "local_context": "自己不能提供专业支持或组织活动。儿子阿舟是司机，很会体贴乘客，过去常带心情低落的创业者沿海兜风，一路轻松聊天。可以介绍他们认识。",
+            "person": "lan"
+          }
+        ]
+      },
+      "questions": {
+        "e3_0_q0": {
+          "type": "noul",
+          "instructions": "根据 on.signal 的处境，ctx[0].local_context 是否明确记载了接收方本人能提供的一种具体支持、活动或服务，值得让发送者了解？只读给定材料。相似处境、单纯想参加、投资兴趣、第三人的能力不算本人直接提供。无需诊断或推断疾病。"
+        },
+        "e4_0_q0": {
+          "type": "noul",
+          "instructions": "ctx[0].local_context 是否明确提到一个具体联系人，其能力可能回应 on.signal 的处境，值得进一步读取该联系人的上下文？必须有材料中的具体转介线索，不能猜想人脉。"
+        }
+      },
+      "answers": {
+        "e3_0_q0": {
+          "type": "noul",
+          "noul": 0.1
+        },
+        "e4_0_q0": {
+          "type": "noul",
+          "noul": 0.87
+        }
+      },
+      "input_tokens": 598,
+      "estimated_cost_usd": 2.512e-05,
+      "elapsed_ms": 1649.941
+    },
+    {
+      "key": "c7c6a1a749275c827f633465cf1fa21f45e26665f8b40832684c615286c1e7eb",
+      "state": {
+        "on": {
+          "signal": "最近创业很累，每天一直处理问题，不想再听大道理。我也不知道我需要什么，只想有一会儿不用自己撑着。"
+        },
+        "ctx": [
+          {
+            "local_context": "专注数据库索引与存储引擎优化，目前只参与数据库技术问题，不参与线下服务项目，无相关联系人。",
+            "person": "bo"
+          }
+        ]
+      },
+      "questions": {
+        "e15_0_q0": {
+          "type": "noul",
+          "instructions": "根据 on.signal 的处境，ctx[0].local_context 是否明确记载了接收方本人能提供的一种具体支持、活动或服务，值得让发送者了解？只读给定材料。相似处境、单纯想参加、投资兴趣、第三人的能力不算本人直接提供。无需诊断或推断疾病。"
+        },
+        "e16_0_q0": {
+          "type": "noul",
+          "instructions": "ctx[0].local_context 是否明确提到一个具体联系人，其能力可能回应 on.signal 的处境，值得进一步读取该联系人的上下文？必须有材料中的具体转介线索，不能猜想人脉。"
+        }
+      },
+      "answers": {
+        "e15_0_q0": {
+          "type": "noul",
+          "noul": 0.07
+        },
+        "e16_0_q0": {
+          "type": "noul",
+          "noul": 0.02
+        }
+      },
+      "input_tokens": 579,
+      "estimated_cost_usd": 2.432e-05,
+      "elapsed_ms": 1675.496
+    },
+    {
+      "key": "0f564a4c0bde8817253a9cebd8c482a25f28af035298372e22e6237c8c473f6d",
+      "state": {
+        "on": {
+          "signal": "最近创业很累，每天一直处理问题，不想再听大道理。我也不知道我需要什么，只想有一会儿不用自己撑着。"
+        },
+        "ctx": [
+          {
+            "local_context": "专注工业窑炉耐火材料的热稳定性。本周仅讨论陶瓷配方与企业采购，不组织休闲活动，无相关联系人。",
+            "person": "yu"
+          }
+        ]
+      },
+      "questions": {
+        "e13_0_q0": {
+          "type": "noul",
+          "instructions": "根据 on.signal 的处境，ctx[0].local_context 是否明确记载了接收方本人能提供的一种具体支持、活动或服务，值得让发送者了解？只读给定材料。相似处境、单纯想参加、投资兴趣、第三人的能力不算本人直接提供。无需诊断或推断疾病。"
+        },
+        "e14_0_q0": {
+          "type": "noul",
+          "instructions": "ctx[0].local_context 是否明确提到一个具体联系人，其能力可能回应 on.signal 的处境，值得进一步读取该联系人的上下文？必须有材料中的具体转介线索，不能猜想人脉。"
+        }
+      },
+      "answers": {
+        "e13_0_q0": {
+          "type": "noul",
+          "noul": 0.06
+        },
+        "e14_0_q0": {
+          "type": "noul",
+          "noul": 0.02
+        }
+      },
+      "input_tokens": 581,
+      "estimated_cost_usd": 2.44e-05,
+      "elapsed_ms": 1811.517
+    },
+    {
+      "key": "8d70d96b6e2848ac37bce6633b536759f2dbb2ab7bb6fcf9e4f31991a4429e57",
+      "state": {
+        "on": {
+          "signal": "最近创业很累，每天一直处理问题，不想再听大道理。我也不知道我需要什么，只想有一会儿不用自己撑着。"
+        },
+        "ctx": [
+          {
+            "local_context": "提供支持性倾听，常与承受工作压力的创业者交流。本周有一个可预约时段。只愿提供本人专业范围内的支持，不根据一句话诊断，也不承担交通服务。",
+            "person": "mei"
+          }
+        ]
+      },
+      "questions": {
+        "e1_0_q0": {
+          "type": "noul",
+          "instructions": "根据 on.signal 的处境，ctx[0].local_context 是否明确记载了接收方本人能提供的一种具体支持、活动或服务，值得让发送者了解？只读给定材料。相似处境、单纯想参加、投资兴趣、第三人的能力不算本人直接提供。无需诊断或推断疾病。"
+        },
+        "e2_0_q0": {
+          "type": "noul",
+          "instructions": "ctx[0].local_context 是否明确提到一个具体联系人，其能力可能回应 on.signal 的处境，值得进一步读取该联系人的上下文？必须有材料中的具体转介线索，不能猜想人脉。"
+        }
+      },
+      "answers": {
+        "e1_0_q0": {
+          "type": "noul",
+          "noul": 0.81
+        },
+        "e2_0_q0": {
+          "type": "noul",
+          "noul": 0.54
+        }
+      },
+      "input_tokens": 600,
+      "estimated_cost_usd": 2.52e-05,
+      "elapsed_ms": 1942.848
+    },
+    {
+      "key": "a42ad4c7d77ff2434105dd77bbe816def36b56a8007a3d5085ccd20b8f014390",
+      "state": {
+        "on": {
+          "signal": "最近创业很累，每天一直处理问题，不想再听大道理。我也不知道我需要什么，只想有一会儿不用自己撑着。"
+        },
+        "ctx": [
+          {
+            "local_context": "研究给高压工作人群提供短时恢复体验的新服务。有具体提供者和参与者时，愿意开展小规模可行性讨论。自己不提供个人咨询、陪伴或出行服务；只收到一个人说累，还不足以形成投资讨论材料。",
+            "person": "qiao"
+          }
+        ]
+      },
+      "questions": {
+        "e5_0_q0": {
+          "type": "noul",
+          "instructions": "根据 on.signal 的处境，ctx[0].local_context 是否明确记载了接收方本人能提供的一种具体支持、活动或服务，值得让发送者了解？只读给定材料。相似处境、单纯想参加、投资兴趣、第三人的能力不算本人直接提供。无需诊断或推断疾病。"
+        },
+        "e6_0_q0": {
+          "type": "noul",
+          "instructions": "ctx[0].local_context 是否明确提到一个具体联系人，其能力可能回应 on.signal 的处境，值得进一步读取该联系人的上下文？必须有材料中的具体转介线索，不能猜想人脉。"
+        }
+      },
+      "answers": {
+        "e5_0_q0": {
+          "type": "noul",
+          "noul": 0.07
+        },
+        "e6_0_q0": {
+          "type": "noul",
+          "noul": 0.04
+        }
+      },
+      "input_tokens": 621,
+      "estimated_cost_usd": 2.608e-05,
+      "elapsed_ms": 3104.393
+    },
+    {
+      "key": "158978d45c99d42e0c1b86f05e6cb990e42cd4e97afa1e4e42a0beb52b3ace30",
+      "state": {
+        "on": {
+          "signal": "最近创业很累，每天一直处理问题，不想再听大道理。我也不知道我需要什么，只想有一会儿不用自己撑着。"
+        },
+        "ctx": [
+          {
+            "local_context": "过去多次陪工作压力很大的创业者沿海开车兜风，安静倾听，不强迫聊天。能提供司机与陪伴式出行服务；本周时间还没有确认，暂时不能接受安排。",
+            "person": "zhou"
+          }
+        ]
+      },
+      "questions": {
+        "e17_0_q0": {
+          "type": "noul",
+          "instructions": "根据 on.signal 的处境，ctx[0].local_context 是否明确记载了接收方本人能提供的一种具体支持、活动或服务，值得让发送者了解？只读给定材料。相似处境、单纯想参加、投资兴趣、第三人的能力不算本人直接提供。无需诊断或推断疾病。"
+        },
+        "e18_0_q0": {
+          "type": "noul",
+          "instructions": "ctx[0].local_context 是否明确确认了接收方本人当前可以提供该项支持的时间或可用性？待确认、暂时不能、仅过去的经历都不算确认。"
+        }
+      },
+      "answers": {
+        "e17_0_q0": {
+          "type": "noul",
+          "noul": 0.93
+        },
+        "e18_0_q0": {
+          "type": "noul",
+          "noul": 0.04
+        }
+      },
+      "input_tokens": 585,
+      "estimated_cost_usd": 2.457e-05,
+      "elapsed_ms": 1029.845
+    },
+    {
+      "key": "f25f0cb5bbda1afdde7c09f559377cee4e1c979915ceb542e2ff09d70c3075e6",
+      "state": {
+        "on": {
+          "candidate": {
+            "id": "candidate:zhou",
+            "members": [
+              "lin",
+              "lan",
+              "zhou"
+            ],
+            "signal": "最近创业很累，每天一直处理问题，不想再听大道理。我也不知道我需要什么，只想有一会儿不用自己撑着。",
+            "support": "过去多次陪工作压力很大的创业者沿海开车兜风，安静倾听，不强迫聊天。能提供司机与陪伴式出行服务；本周时间还没有确认，暂时不能接受安排。",
+            "availability": false,
+            "provisional": true,
+            "basis": [
+              "2d4343f06103bb7008ceebce5bc0b8fd981eaed827a73548209526c119d646b0",
+              "e241cd8057296bd2149931fcf7e44598f482583fb3311cde48dc078aaeb2f7c9"
+            ]
+          }
+        },
+        "ctx": [
+          {
+            "local_context": "经常加班，希望试试安静有人陪的周末短途出行。愿意与其他创业者共同体验并反馈，但不提供车辆、咨询或组织服务。",
+            "person": "he"
+          }
+        ]
+      },
+      "questions": {
+        "e27_0_q0": {
+          "type": "noul",
+          "instructions": "ctx[0].local_context 中描述的具体兴趣或能力，与 on.candidate.support 描述的服务内容是否相关？只判断内容上的联系，忽略提供者目前有没有空。泛泛的任何项目都能用的技能不算。"
+        },
+        "e28_0_q0": {
+          "type": "noul",
+          "instructions": "ctx[0].local_context 是否明确表示愿意参与试用、组织试用或讨论 on.candidate.support 所描述的这类服务？只判断接收方的意愿，忽略提供者目前有没有空。"
+        }
+      },
+      "answers": {
+        "e27_0_q0": {
+          "type": "noul",
+          "noul": 0.81
+        },
+        "e28_0_q0": {
+          "type": "noul",
+          "noul": 0.81
+        }
+      },
+      "input_tokens": 802,
+      "estimated_cost_usd": 3.368e-05,
+      "elapsed_ms": 926.018
+    },
+    {
+      "key": "b61c36b3ed373f806f8c5a481275d476900cf7d63264f3c4348027189df4de06",
+      "state": {
+        "on": {
+          "candidate": {
+            "id": "candidate:zhou",
+            "members": [
+              "lin",
+              "lan",
+              "zhou"
+            ],
+            "signal": "最近创业很累，每天一直处理问题，不想再听大道理。我也不知道我需要什么，只想有一会儿不用自己撑着。",
+            "support": "过去多次陪工作压力很大的创业者沿海开车兜风，安静倾听，不强迫聊天。能提供司机与陪伴式出行服务；本周时间还没有确认，暂时不能接受安排。",
+            "availability": false,
+            "provisional": true,
+            "basis": [
+              "2d4343f06103bb7008ceebce5bc0b8fd981eaed827a73548209526c119d646b0",
+              "e241cd8057296bd2149931fcf7e44598f482583fb3311cde48dc078aaeb2f7c9"
+            ]
+          }
+        },
+        "ctx": [
+          {
+            "local_context": "专注数据库索引与存储引擎优化，目前只参与数据库技术问题，不参与线下服务项目，无相关联系人。",
+            "person": "bo"
+          }
+        ]
+      },
+      "questions": {
+        "e31_0_q0": {
+          "type": "noul",
+          "instructions": "ctx[0].local_context 中描述的具体兴趣或能力，与 on.candidate.support 描述的服务内容是否相关？只判断内容上的联系，忽略提供者目前有没有空。泛泛的任何项目都能用的技能不算。"
+        },
+        "e32_0_q0": {
+          "type": "noul",
+          "instructions": "ctx[0].local_context 是否明确表示愿意参与试用、组织试用或讨论 on.candidate.support 所描述的这类服务？只判断接收方的意愿，忽略提供者目前有没有空。"
+        }
+      },
+      "answers": {
+        "e31_0_q0": {
+          "type": "noul",
+          "noul": 0.04
+        },
+        "e32_0_q0": {
+          "type": "noul",
+          "noul": 0.02
+        }
+      },
+      "input_tokens": 795,
+      "estimated_cost_usd": 3.339e-05,
+      "elapsed_ms": 925.252
+    },
+    {
+      "key": "1cdd9cfce211da77db3b735eacc3541473ee815fe1cd4893651120221b49b12d",
+      "state": {
+        "on": {
+          "candidate": {
+            "id": "candidate:zhou",
+            "members": [
+              "lin",
+              "lan",
+              "zhou"
+            ],
+            "signal": "最近创业很累，每天一直处理问题，不想再听大道理。我也不知道我需要什么，只想有一会儿不用自己撑着。",
+            "support": "过去多次陪工作压力很大的创业者沿海开车兜风，安静倾听，不强迫聊天。能提供司机与陪伴式出行服务；本周时间还没有确认，暂时不能接受安排。",
+            "availability": false,
+            "provisional": true,
+            "basis": [
+              "2d4343f06103bb7008ceebce5bc0b8fd981eaed827a73548209526c119d646b0",
+              "e241cd8057296bd2149931fcf7e44598f482583fb3311cde48dc078aaeb2f7c9"
+            ]
+          }
+        },
+        "ctx": [
+          {
+            "local_context": "研究给高压工作人群提供短时恢复体验的新服务。有具体提供者和参与者时，愿意开展小规模可行性讨论。自己不提供个人咨询、陪伴或出行服务；只收到一个人说累，还不足以形成投资讨论材料。",
+            "person": "qiao"
+          }
+        ]
+      },
+      "questions": {
+        "e21_0_q0": {
+          "type": "noul",
+          "instructions": "ctx[0].local_context 中描述的具体兴趣或能力，与 on.candidate.support 描述的服务内容是否相关？只判断内容上的联系，忽略提供者目前有没有空。泛泛的任何项目都能用的技能不算。"
+        },
+        "e22_0_q0": {
+          "type": "noul",
+          "instructions": "ctx[0].local_context 是否明确表示愿意参与试用、组织试用或讨论 on.candidate.support 所描述的这类服务？只判断接收方的意愿，忽略提供者目前有没有空。"
+        }
+      },
+      "answers": {
+        "e21_0_q0": {
+          "type": "noul",
+          "noul": 0.61
+        },
+        "e22_0_q0": {
+          "type": "noul",
+          "noul": 0.58
+        }
+      },
+      "input_tokens": 837,
+      "estimated_cost_usd": 3.515e-05,
+      "elapsed_ms": 931.543
+    },
+    {
+      "key": "a09a15b68940ea4e8e197907418064ef848294af61e78998cba03f7fc551b988",
+      "state": {
+        "on": {
+          "candidate": {
+            "id": "candidate:zhou",
+            "members": [
+              "lin",
+              "lan",
+              "zhou"
+            ],
+            "signal": "最近创业很累，每天一直处理问题，不想再听大道理。我也不知道我需要什么，只想有一会儿不用自己撑着。",
+            "support": "过去多次陪工作压力很大的创业者沿海开车兜风，安静倾听，不强迫聊天。能提供司机与陪伴式出行服务；本周时间还没有确认，暂时不能接受安排。",
+            "availability": false,
+            "provisional": true,
+            "basis": [
+              "2d4343f06103bb7008ceebce5bc0b8fd981eaed827a73548209526c119d646b0",
+              "e241cd8057296bd2149931fcf7e44598f482583fb3311cde48dc078aaeb2f7c9"
+            ]
+          }
+        },
+        "ctx": [
+          {
+            "local_context": "运营创业者社群，有几位成员想尝试不谈工作的轻松出行。若出现具体司机和陪伴式出行方案，愿意招募一次小规模试用；自己没有司机，不能独立提供这项服务。",
+            "person": "tang"
+          }
+        ]
+      },
+      "questions": {
+        "e23_0_q0": {
+          "type": "noul",
+          "instructions": "ctx[0].local_context 中描述的具体兴趣或能力，与 on.candidate.support 描述的服务内容是否相关？只判断内容上的联系，忽略提供者目前有没有空。泛泛的任何项目都能用的技能不算。"
+        },
+        "e24_0_q0": {
+          "type": "noul",
+          "instructions": "ctx[0].local_context 是否明确表示愿意参与试用、组织试用或讨论 on.candidate.support 所描述的这类服务？只判断接收方的意愿，忽略提供者目前有没有空。"
+        }
+      },
+      "answers": {
+        "e23_0_q0": {
+          "type": "noul",
+          "noul": 0.94
+        },
+        "e24_0_q0": {
+          "type": "noul",
+          "noul": 0.9
+        }
+      },
+      "input_tokens": 822,
+      "estimated_cost_usd": 3.452e-05,
+      "elapsed_ms": 964.336
+    },
+    {
+      "key": "45defa99a4fa787dbb5b294a65a12f1c7f1733f23087002eae4e9e884bfd1af7",
+      "state": {
+        "on": {
+          "candidate": {
+            "id": "candidate:zhou",
+            "members": [
+              "lin",
+              "lan",
+              "zhou"
+            ],
+            "signal": "最近创业很累，每天一直处理问题，不想再听大道理。我也不知道我需要什么，只想有一会儿不用自己撑着。",
+            "support": "过去多次陪工作压力很大的创业者沿海开车兜风，安静倾听，不强迫聊天。能提供司机与陪伴式出行服务；本周时间还没有确认，暂时不能接受安排。",
+            "availability": false,
+            "provisional": true,
+            "basis": [
+              "2d4343f06103bb7008ceebce5bc0b8fd981eaed827a73548209526c119d646b0",
+              "e241cd8057296bd2149931fcf7e44598f482583fb3311cde48dc078aaeb2f7c9"
+            ]
+          }
+        },
+        "ctx": [
+          {
+            "local_context": "工作后不想参加课程或被说教，想试试有人开车、自己可以放空的短途出行。愿意参与一次具体的体验试用。没有可以提供给别人的服务，也没有可转介的联系人。",
+            "person": "an"
+          }
+        ]
+      },
+      "questions": {
+        "e25_0_q0": {
+          "type": "noul",
+          "instructions": "ctx[0].local_context 中描述的具体兴趣或能力，与 on.candidate.support 描述的服务内容是否相关？只判断内容上的联系，忽略提供者目前有没有空。泛泛的任何项目都能用的技能不算。"
+        },
+        "e26_0_q0": {
+          "type": "noul",
+          "instructions": "ctx[0].local_context 是否明确表示愿意参与试用、组织试用或讨论 on.candidate.support 所描述的这类服务？只判断接收方的意愿，忽略提供者目前有没有空。"
+        }
+      },
+      "answers": {
+        "e25_0_q0": {
+          "type": "noul",
+          "noul": 0.93
+        },
+        "e26_0_q0": {
+          "type": "noul",
+          "noul": 0.93
+        }
+      },
+      "input_tokens": 821,
+      "estimated_cost_usd": 3.448e-05,
+      "elapsed_ms": 964.05
+    },
+    {
+      "key": "97537b9f191887259d0a103accfeab8146d5d166463333300e81eb7cb7db3bd1",
+      "state": {
+        "on": {
+          "candidate": {
+            "id": "candidate:zhou",
+            "members": [
+              "lin",
+              "lan",
+              "zhou"
+            ],
+            "signal": "最近创业很累，每天一直处理问题，不想再听大道理。我也不知道我需要什么，只想有一会儿不用自己撑着。",
+            "support": "过去多次陪工作压力很大的创业者沿海开车兜风，安静倾听，不强迫聊天。能提供司机与陪伴式出行服务；本周时间还没有确认，暂时不能接受安排。",
+            "availability": false,
+            "provisional": true,
+            "basis": [
+              "2d4343f06103bb7008ceebce5bc0b8fd981eaed827a73548209526c119d646b0",
+              "e241cd8057296bd2149931fcf7e44598f482583fb3311cde48dc078aaeb2f7c9"
+            ]
+          }
+        },
+        "ctx": [
+          {
+            "local_context": "提供支持性倾听，常与承受工作压力的创业者交流。本周有一个可预约时段。只愿提供本人专业范围内的支持，不根据一句话诊断，也不承担交通服务。",
+            "person": "mei"
+          }
+        ]
+      },
+      "questions": {
+        "e19_0_q0": {
+          "type": "noul",
+          "instructions": "ctx[0].local_context 中描述的具体兴趣或能力，与 on.candidate.support 描述的服务内容是否相关？只判断内容上的联系，忽略提供者目前有没有空。泛泛的任何项目都能用的技能不算。"
+        },
+        "e20_0_q0": {
+          "type": "noul",
+          "instructions": "ctx[0].local_context 是否明确表示愿意参与试用、组织试用或讨论 on.candidate.support 所描述的这类服务？只判断接收方的意愿，忽略提供者目前有没有空。"
+        }
+      },
+      "answers": {
+        "e19_0_q0": {
+          "type": "noul",
+          "noul": 0.44
+        },
+        "e20_0_q0": {
+          "type": "noul",
+          "noul": 0.06
+        }
+      },
+      "input_tokens": 816,
+      "estimated_cost_usd": 3.427e-05,
+      "elapsed_ms": 975.326
+    },
+    {
+      "key": "78f572c9d546ce3bb91530ac8ff2ba72a08c68ca7ac1d585f234fdaec0ccda13",
+      "state": {
+        "on": {
+          "candidate": {
+            "id": "candidate:zhou",
+            "members": [
+              "lin",
+              "lan",
+              "zhou"
+            ],
+            "signal": "最近创业很累，每天一直处理问题，不想再听大道理。我也不知道我需要什么，只想有一会儿不用自己撑着。",
+            "support": "过去多次陪工作压力很大的创业者沿海开车兜风，安静倾听，不强迫聊天。能提供司机与陪伴式出行服务；本周时间还没有确认，暂时不能接受安排。",
+            "availability": false,
+            "provisional": true,
+            "basis": [
+              "2d4343f06103bb7008ceebce5bc0b8fd981eaed827a73548209526c119d646b0",
+              "e241cd8057296bd2149931fcf7e44598f482583fb3311cde48dc078aaeb2f7c9"
+            ]
+          }
+        },
+        "ctx": [
+          {
+            "local_context": "专注工业窑炉耐火材料的热稳定性。本周仅讨论陶瓷配方与企业采购，不组织休闲活动，无相关联系人。",
+            "person": "yu"
+          }
+        ]
+      },
+      "questions": {
+        "e29_0_q0": {
+          "type": "noul",
+          "instructions": "ctx[0].local_context 中描述的具体兴趣或能力，与 on.candidate.support 描述的服务内容是否相关？只判断内容上的联系，忽略提供者目前有没有空。泛泛的任何项目都能用的技能不算。"
+        },
+        "e30_0_q0": {
+          "type": "noul",
+          "instructions": "ctx[0].local_context 是否明确表示愿意参与试用、组织试用或讨论 on.candidate.support 所描述的这类服务？只判断接收方的意愿，忽略提供者目前有没有空。"
+        }
+      },
+      "answers": {
+        "e29_0_q0": {
+          "type": "noul",
+          "noul": 0.05
+        },
+        "e30_0_q0": {
+          "type": "noul",
+          "noul": 0.02
+        }
+      },
+      "input_tokens": 797,
+      "estimated_cost_usd": 3.347e-05,
+      "elapsed_ms": 1015.171
+    },
+    {
+      "key": "9c908259992cbab60b8448c9deba842a5f785ae35ef2c631d5f2d87254f6d3b5",
+      "state": {
+        "on": {
+          "signal": "最近创业很累，每天一直处理问题，不想再听大道理。我也不知道我需要什么，只想有一会儿不用自己撑着。"
+        },
+        "ctx": [
+          {
+            "local_context": "过去多次陪工作压力很大的创业者沿海开车兜风，安静倾听，不强迫聊天。能提供司机与陪伴式出行服务；现在确认本周六下午有空，愿意提供一次两小时的陪伴式出行体验。",
+            "person": "zhou"
+          }
+        ]
+      },
+      "questions": {
+        "e17_0_q0": {
+          "type": "noul",
+          "instructions": "根据 on.signal 的处境，ctx[0].local_context 是否明确记载了接收方本人能提供的一种具体支持、活动或服务，值得让发送者了解？只读给定材料。相似处境、单纯想参加、投资兴趣、第三人的能力不算本人直接提供。无需诊断或推断疾病。"
+        },
+        "e18_0_q0": {
+          "type": "noul",
+          "instructions": "ctx[0].local_context 是否明确确认了接收方本人当前可以提供该项支持的时间或可用性？待确认、暂时不能、仅过去的经历都不算确认。"
+        }
+      },
+      "answers": {
+        "e17_0_q0": {
+          "type": "noul",
+          "noul": 0.95
+        },
+        "e18_0_q0": {
+          "type": "noul",
+          "noul": 0.95
+        }
+      },
+      "input_tokens": 596,
+      "estimated_cost_usd": 2.503e-05,
+      "elapsed_ms": 870.645
+    },
+    {
+      "key": "79728ef0735474146fd0a72adcfed6849603b4dd866e0c563a7c584eddcedcf2",
+      "state": {
+        "on": {
+          "candidate": {
+            "id": "candidate:zhou",
+            "members": [
+              "lin",
+              "lan",
+              "zhou"
+            ],
+            "signal": "最近创业很累，每天一直处理问题，不想再听大道理。我也不知道我需要什么，只想有一会儿不用自己撑着。",
+            "support": "过去多次陪工作压力很大的创业者沿海开车兜风，安静倾听，不强迫聊天。能提供司机与陪伴式出行服务；现在确认本周六下午有空，愿意提供一次两小时的陪伴式出行体验。",
+            "availability": true,
+            "provisional": true,
+            "basis": [
+              "4281fc96f010ad8b2c61fc06022fd5dcb96738a5515bff3d9da6aa96ace641d7",
+              "e149e4cfc92350fb4bb27f507354c5fc5a8c70efd14fba79b94d53e6e198b1c9"
+            ]
+          }
+        },
+        "ctx": [
+          {
+            "local_context": "经常加班，希望试试安静有人陪的周末短途出行。愿意与其他创业者共同体验并反馈，但不提供车辆、咨询或组织服务。",
+            "person": "he"
+          }
+        ]
+      },
+      "questions": {
+        "e27_0_q0": {
+          "type": "noul",
+          "instructions": "ctx[0].local_context 中描述的具体兴趣或能力，与 on.candidate.support 描述的服务内容是否相关？只判断内容上的联系，忽略提供者目前有没有空。泛泛的任何项目都能用的技能不算。"
+        },
+        "e28_0_q0": {
+          "type": "noul",
+          "instructions": "ctx[0].local_context 是否明确表示愿意参与试用、组织试用或讨论 on.candidate.support 所描述的这类服务？只判断接收方的意愿，忽略提供者目前有没有空。"
+        }
+      },
+      "answers": {
+        "e27_0_q0": {
+          "type": "noul",
+          "noul": 0.8
+        },
+        "e28_0_q0": {
+          "type": "noul",
+          "noul": 0.84
+        }
+      },
+      "input_tokens": 812,
+      "estimated_cost_usd": 3.41e-05,
+      "elapsed_ms": 875.84
+    },
+    {
+      "key": "49bb5ac9f148b0015b9c8897bbfc158355db40f1f8741d25d327647710bf3e1e",
+      "state": {
+        "on": {
+          "candidate": {
+            "id": "candidate:zhou",
+            "members": [
+              "lin",
+              "lan",
+              "zhou"
+            ],
+            "signal": "最近创业很累，每天一直处理问题，不想再听大道理。我也不知道我需要什么，只想有一会儿不用自己撑着。",
+            "support": "过去多次陪工作压力很大的创业者沿海开车兜风，安静倾听，不强迫聊天。能提供司机与陪伴式出行服务；现在确认本周六下午有空，愿意提供一次两小时的陪伴式出行体验。",
+            "availability": true,
+            "provisional": true,
+            "basis": [
+              "4281fc96f010ad8b2c61fc06022fd5dcb96738a5515bff3d9da6aa96ace641d7",
+              "e149e4cfc92350fb4bb27f507354c5fc5a8c70efd14fba79b94d53e6e198b1c9"
+            ]
+          }
+        },
+        "ctx": [
+          {
+            "local_context": "运营创业者社群，有几位成员想尝试不谈工作的轻松出行。若出现具体司机和陪伴式出行方案，愿意招募一次小规模试用；自己没有司机，不能独立提供这项服务。",
+            "person": "tang"
+          }
+        ]
+      },
+      "questions": {
+        "e23_0_q0": {
+          "type": "noul",
+          "instructions": "ctx[0].local_context 中描述的具体兴趣或能力，与 on.candidate.support 描述的服务内容是否相关？只判断内容上的联系，忽略提供者目前有没有空。泛泛的任何项目都能用的技能不算。"
+        },
+        "e24_0_q0": {
+          "type": "noul",
+          "instructions": "ctx[0].local_context 是否明确表示愿意参与试用、组织试用或讨论 on.candidate.support 所描述的这类服务？只判断接收方的意愿，忽略提供者目前有没有空。"
+        }
+      },
+      "answers": {
+        "e23_0_q0": {
+          "type": "noul",
+          "noul": 0.93
+        },
+        "e24_0_q0": {
+          "type": "noul",
+          "noul": 0.91
+        }
+      },
+      "input_tokens": 832,
+      "estimated_cost_usd": 3.494e-05,
+      "elapsed_ms": 890.802
+    },
+    {
+      "key": "e011ef338d34b097551dc906dd591f121b8cda3c61431f62f67496bf1ee0c0dc",
+      "state": {
+        "on": {
+          "candidate": {
+            "id": "candidate:zhou",
+            "members": [
+              "lin",
+              "lan",
+              "zhou"
+            ],
+            "signal": "最近创业很累，每天一直处理问题，不想再听大道理。我也不知道我需要什么，只想有一会儿不用自己撑着。",
+            "support": "过去多次陪工作压力很大的创业者沿海开车兜风，安静倾听，不强迫聊天。能提供司机与陪伴式出行服务；现在确认本周六下午有空，愿意提供一次两小时的陪伴式出行体验。",
+            "availability": true,
+            "provisional": true,
+            "basis": [
+              "4281fc96f010ad8b2c61fc06022fd5dcb96738a5515bff3d9da6aa96ace641d7",
+              "e149e4cfc92350fb4bb27f507354c5fc5a8c70efd14fba79b94d53e6e198b1c9"
+            ]
+          }
+        },
+        "ctx": [
+          {
+            "local_context": "提供支持性倾听，常与承受工作压力的创业者交流。本周有一个可预约时段。只愿提供本人专业范围内的支持，不根据一句话诊断，也不承担交通服务。",
+            "person": "mei"
+          }
+        ]
+      },
+      "questions": {
+        "e19_0_q0": {
+          "type": "noul",
+          "instructions": "ctx[0].local_context 中描述的具体兴趣或能力，与 on.candidate.support 描述的服务内容是否相关？只判断内容上的联系，忽略提供者目前有没有空。泛泛的任何项目都能用的技能不算。"
+        },
+        "e20_0_q0": {
+          "type": "noul",
+          "instructions": "ctx[0].local_context 是否明确表示愿意参与试用、组织试用或讨论 on.candidate.support 所描述的这类服务？只判断接收方的意愿，忽略提供者目前有没有空。"
+        }
+      },
+      "answers": {
+        "e19_0_q0": {
+          "type": "noul",
+          "noul": 0.51
+        },
+        "e20_0_q0": {
+          "type": "noul",
+          "noul": 0.12
+        }
+      },
+      "input_tokens": 826,
+      "estimated_cost_usd": 3.469e-05,
+      "elapsed_ms": 907.212
+    },
+    {
+      "key": "04d79bd0d6bd84dafcb4172824c37ff77ff3c618476e0f993bccce58317d96a4",
+      "state": {
+        "on": {
+          "candidate": {
+            "id": "candidate:zhou",
+            "members": [
+              "lin",
+              "lan",
+              "zhou"
+            ],
+            "signal": "最近创业很累，每天一直处理问题，不想再听大道理。我也不知道我需要什么，只想有一会儿不用自己撑着。",
+            "support": "过去多次陪工作压力很大的创业者沿海开车兜风，安静倾听，不强迫聊天。能提供司机与陪伴式出行服务；现在确认本周六下午有空，愿意提供一次两小时的陪伴式出行体验。",
+            "availability": true,
+            "provisional": true,
+            "basis": [
+              "4281fc96f010ad8b2c61fc06022fd5dcb96738a5515bff3d9da6aa96ace641d7",
+              "e149e4cfc92350fb4bb27f507354c5fc5a8c70efd14fba79b94d53e6e198b1c9"
+            ]
+          }
+        },
+        "ctx": [
+          {
+            "local_context": "专注数据库索引与存储引擎优化，目前只参与数据库技术问题，不参与线下服务项目，无相关联系人。",
+            "person": "bo"
+          }
+        ]
+      },
+      "questions": {
+        "e31_0_q0": {
+          "type": "noul",
+          "instructions": "ctx[0].local_context 中描述的具体兴趣或能力，与 on.candidate.support 描述的服务内容是否相关？只判断内容上的联系，忽略提供者目前有没有空。泛泛的任何项目都能用的技能不算。"
+        },
+        "e32_0_q0": {
+          "type": "noul",
+          "instructions": "ctx[0].local_context 是否明确表示愿意参与试用、组织试用或讨论 on.candidate.support 所描述的这类服务？只判断接收方的意愿，忽略提供者目前有没有空。"
+        }
+      },
+      "answers": {
+        "e31_0_q0": {
+          "type": "noul",
+          "noul": 0.04
+        },
+        "e32_0_q0": {
+          "type": "noul",
+          "noul": 0.02
+        }
+      },
+      "input_tokens": 805,
+      "estimated_cost_usd": 3.381e-05,
+      "elapsed_ms": 907.023
+    },
+    {
+      "key": "75360908ab0d47e531288c8b5fabb2e13eba6882a42ebf6b843444f24394b7c7",
+      "state": {
+        "on": {
+          "candidate": {
+            "id": "candidate:zhou",
+            "members": [
+              "lin",
+              "lan",
+              "zhou"
+            ],
+            "signal": "最近创业很累，每天一直处理问题，不想再听大道理。我也不知道我需要什么，只想有一会儿不用自己撑着。",
+            "support": "过去多次陪工作压力很大的创业者沿海开车兜风，安静倾听，不强迫聊天。能提供司机与陪伴式出行服务；现在确认本周六下午有空，愿意提供一次两小时的陪伴式出行体验。",
+            "availability": true,
+            "provisional": true,
+            "basis": [
+              "4281fc96f010ad8b2c61fc06022fd5dcb96738a5515bff3d9da6aa96ace641d7",
+              "e149e4cfc92350fb4bb27f507354c5fc5a8c70efd14fba79b94d53e6e198b1c9"
+            ]
+          }
+        },
+        "ctx": [
+          {
+            "local_context": "专注工业窑炉耐火材料的热稳定性。本周仅讨论陶瓷配方与企业采购，不组织休闲活动，无相关联系人。",
+            "person": "yu"
+          }
+        ]
+      },
+      "questions": {
+        "e29_0_q0": {
+          "type": "noul",
+          "instructions": "ctx[0].local_context 中描述的具体兴趣或能力，与 on.candidate.support 描述的服务内容是否相关？只判断内容上的联系，忽略提供者目前有没有空。泛泛的任何项目都能用的技能不算。"
+        },
+        "e30_0_q0": {
+          "type": "noul",
+          "instructions": "ctx[0].local_context 是否明确表示愿意参与试用、组织试用或讨论 on.candidate.support 所描述的这类服务？只判断接收方的意愿，忽略提供者目前有没有空。"
+        }
+      },
+      "answers": {
+        "e29_0_q0": {
+          "type": "noul",
+          "noul": 0.04
+        },
+        "e30_0_q0": {
+          "type": "noul",
+          "noul": 0.02
+        }
+      },
+      "input_tokens": 807,
+      "estimated_cost_usd": 3.389e-05,
+      "elapsed_ms": 1008.935
+    },
+    {
+      "key": "290d8794e97c5c715d9e80d12a40b492ddfd12db229ddeae9460df2a39293cc3",
+      "state": {
+        "on": {
+          "candidate": {
+            "id": "candidate:zhou",
+            "members": [
+              "lin",
+              "lan",
+              "zhou"
+            ],
+            "signal": "最近创业很累，每天一直处理问题，不想再听大道理。我也不知道我需要什么，只想有一会儿不用自己撑着。",
+            "support": "过去多次陪工作压力很大的创业者沿海开车兜风，安静倾听，不强迫聊天。能提供司机与陪伴式出行服务；现在确认本周六下午有空，愿意提供一次两小时的陪伴式出行体验。",
+            "availability": true,
+            "provisional": true,
+            "basis": [
+              "4281fc96f010ad8b2c61fc06022fd5dcb96738a5515bff3d9da6aa96ace641d7",
+              "e149e4cfc92350fb4bb27f507354c5fc5a8c70efd14fba79b94d53e6e198b1c9"
+            ]
+          }
+        },
+        "ctx": [
+          {
+            "local_context": "工作后不想参加课程或被说教，想试试有人开车、自己可以放空的短途出行。愿意参与一次具体的体验试用。没有可以提供给别人的服务，也没有可转介的联系人。",
+            "person": "an"
+          }
+        ]
+      },
+      "questions": {
+        "e25_0_q0": {
+          "type": "noul",
+          "instructions": "ctx[0].local_context 中描述的具体兴趣或能力，与 on.candidate.support 描述的服务内容是否相关？只判断内容上的联系，忽略提供者目前有没有空。泛泛的任何项目都能用的技能不算。"
+        },
+        "e26_0_q0": {
+          "type": "noul",
+          "instructions": "ctx[0].local_context 是否明确表示愿意参与试用、组织试用或讨论 on.candidate.support 所描述的这类服务？只判断接收方的意愿，忽略提供者目前有没有空。"
+        }
+      },
+      "answers": {
+        "e25_0_q0": {
+          "type": "noul",
+          "noul": 0.92
+        },
+        "e26_0_q0": {
+          "type": "noul",
+          "noul": 0.95
+        }
+      },
+      "input_tokens": 831,
+      "estimated_cost_usd": 3.49e-05,
+      "elapsed_ms": 1009.962
+    },
+    {
+      "key": "8887a792c19954bf747988336f17d2fff508b0b967d0eb9ee222c5d153034c49",
+      "state": {
+        "on": {
+          "candidate": {
+            "id": "candidate:zhou",
+            "members": [
+              "lin",
+              "lan",
+              "zhou"
+            ],
+            "signal": "最近创业很累，每天一直处理问题，不想再听大道理。我也不知道我需要什么，只想有一会儿不用自己撑着。",
+            "support": "过去多次陪工作压力很大的创业者沿海开车兜风，安静倾听，不强迫聊天。能提供司机与陪伴式出行服务；现在确认本周六下午有空，愿意提供一次两小时的陪伴式出行体验。",
+            "availability": true,
+            "provisional": true,
+            "basis": [
+              "4281fc96f010ad8b2c61fc06022fd5dcb96738a5515bff3d9da6aa96ace641d7",
+              "e149e4cfc92350fb4bb27f507354c5fc5a8c70efd14fba79b94d53e6e198b1c9"
+            ]
+          }
+        },
+        "ctx": [
+          {
+            "local_context": "研究给高压工作人群提供短时恢复体验的新服务。有具体提供者和参与者时，愿意开展小规模可行性讨论。自己不提供个人咨询、陪伴或出行服务；只收到一个人说累，还不足以形成投资讨论材料。",
+            "person": "qiao"
+          }
+        ]
+      },
+      "questions": {
+        "e21_0_q0": {
+          "type": "noul",
+          "instructions": "ctx[0].local_context 中描述的具体兴趣或能力，与 on.candidate.support 描述的服务内容是否相关？只判断内容上的联系，忽略提供者目前有没有空。泛泛的任何项目都能用的技能不算。"
+        },
+        "e22_0_q0": {
+          "type": "noul",
+          "instructions": "ctx[0].local_context 是否明确表示愿意参与试用、组织试用或讨论 on.candidate.support 所描述的这类服务？只判断接收方的意愿，忽略提供者目前有没有空。"
+        }
+      },
+      "answers": {
+        "e21_0_q0": {
+          "type": "noul",
+          "noul": 0.76
+        },
+        "e22_0_q0": {
+          "type": "noul",
+          "noul": 0.62
+        }
+      },
+      "input_tokens": 847,
+      "estimated_cost_usd": 3.557e-05,
+      "elapsed_ms": 1115.879
+    }
+  ]
+}

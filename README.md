@@ -20,6 +20,8 @@ We do not yet know every application this will enable. We want others to constru
 
 Our first application question comes from Towow: can a fuzzy intent meet different participants' local contexts to produce new cooperation possibilities, with ongoing results and candidate combinations participating in further discovery? [Read the research proposal (中文)](docs/first-problem-towow.zh-CN.md).
 
+Run `jpp towow` for a ten-participant example with recorded real JEV responses and an interactive trace. It composes local discovery, a referral, and further discovery from the resulting combination. The default is offline; `--live` uses the configured JEV backend. [Example, measured timings, and reproduction (中文)](docs/towow-demo.zh-CN.md).
+
 ## Try it
 
 
@@ -74,7 +76,7 @@ This is an early alpha. APIs may change. Real-model quality requires separate ev
 
 ## Help shape the language
 
-Current research is clarifying question/material/result interfaces, improving examples for new readers, and exploring more algorithm constructions. Live-backend evaluation and independent syntax are subsequent milestones. [Dated progress report](docs/progress.md) · [Roadmap](ROADMAP.md).
+Current research is clarifying question/material/result interfaces, improving examples for new readers, and exploring more algorithm constructions. The Towow example includes a first live-backend trace; broader backend evaluation and independent syntax remain subsequent milestones. [Dated progress report](docs/progress.md) · [Roadmap](ROADMAP.md).
 
 The most useful contribution is a new method built from existing components, together with an example that runs. Tell us where composition becomes awkward, what you had to duplicate, and which primitive would eliminate that duplication. [Start here](CONTRIBUTING.md).
 
