@@ -64,6 +64,26 @@ The fix is a one-line classification. The lesson is about the shape of the speci
 
 The implementation went one step further than the proposal, and that step is the transferable part. The single entry point for reading an answer was renamed to say so (`Reading::answer_after_flush()`), with the criterion in its doc comment. **A criterion written in the authority text still has to be looked up; written on the only entry point, everyone who reads an answer walks into it.** (`Reading::answer_after_flush()` is at `crates/jpp-core/src/value.rs:269` in the workspace core — again, not in this repository.)
 
+## Three seams of the same shape, found after this update was drafted / 同一形状的三条缝
+
+The research documents synced here were still moving while this update was written, and the last thing they picked up is the sharpest, so it belongs in the update rather than only in the log. The kernel turned out to have **three places where a three-valued fact was silently flattened to two**, each one an optimistic default standing in for something the code could not actually determine:
+
+1. **`("==", _, _) => Bool(l.equals(&r).unwrap_or(false))`.** `equals` returning `None` means *not comparable*; `unwrap_or(false)` turned that into *not equal*. J-01 stops a bare reading from being compared, but a reading inside a list or a record field escaped through here.
+2. **`json_to_effect_value` parsed a material's `taint` with `.unwrap_or(Taint::Trusted)`.** An untrusted material that made a round trip through the ledger came back trusted.
+3. **`mat(content(dirty))` — two lines of ordinary source.** `content` unwraps a material to its bare value, leaving taint and origin on the shell; `mat` wraps it again down the literal path and gets `Trusted`.
+
+They are ranked by what they cost, not by how easily they fire. The first loses a comparison result. The second loses **provenance** — and `12` §2.11's whole taint algebra, plus the constitution's single IFC rule that a judgment on untrusted material may not on its own release an irreversible `do`, are built on that one field. **A laundered material is clean everywhere it goes afterwards, and nothing downstream will ever notice.** The third is the worst, because it needs no special condition at all: it is a path the language already offers, and on it the IFC rule does not fail loudly — it just stops applying. **A rule that never errors and only stops applying is not a rule.**
+
+Three findings came out of this that outlast the bugs:
+
+- **The Python reference did not have the taint hole; the port introduced it.** `foundation/jv/store.py:97` reads `taint=ev["taint"]` by direct index, so a missing field raises `KeyError` and fails loudly. The Rust port "hardened" that into a defensive default. **Turning a loud failure into a defensive fallback during a port is often quietly removing a discipline** — the original author's willingness to index directly was itself a judgment that the field could not be missing. Ask whether the thing that used to crash was an oversight or a deliberate alarm.
+- **The shared cause is not `unwrap_or`.** The third seam is a `_ =>` fallback arm and uses no `unwrap_or` at all. The shared cause is *an optimistic default standing in for something undetermined*, which is why the rule now says plainly that **grepping for `unwrap_or` does not count as having checked**.
+- **Guarding against false rejection matters as much as guarding against laundering, and is easier to forget** — a false rejection gets complained about, laundering does not. The fix therefore ships with a negative test that `mat("literal")` and `mat({record})` written in source stay trusted, because the test is *where the content came from*, not *which function it passed through*.
+
+This is the same mistake as row 30 of the constitution's borrowing table — SQL's three-valued `WHERE` flattened to two, logged there as a thirty-year trap. **We made, inside our own interpreter, the error this language exists to prevent.** The standing proposal against `12` is an implementation-level rule: a fallback leans toward refusing, never toward releasing; on any branch that cannot determine the answer, ask who the default is speaking for. Saying "certain" for uncertain, or "trusted" for untrusted, is how three values become two.
+
+A second pass also landed in the same window. **`lift` sends a later judgment on the same state along with the first site**: on a three-question program written one-read-one-judge at a time, `lift` on costs 1 call in 1 layer, `lift` off costs 3 calls in 3 layers. Two self-corrections by the implementer are the part worth keeping. A first red test turned out to pass without `lift` at all — both registrations sat before the same `cut`, so laziness alone already put them in one layer — and rather than keeping it as filler it was renamed to say what it actually tests, because **a test that measures the wrong thing is worse than no test: it gets cited as evidence later.** And the first version of the gain was layers 2 → 1, which has **no consumer** — `budget.layers` does not exist and `schedule` has not landed — so it was rewritten until the difference showed up in call count, where the already-landed `fuse` consumes it. **Shipping an optimisation with no consumer, and leaving a switch that does nothing, are the same mistake.**
+
 ## Known limits and what this round does not do / 已知限制与未做项
 
 From `14` §8, each with the authority text that excludes it. These are excluded deliberately, not missed, and none of them is excluded for being hard:
@@ -91,6 +111,16 @@ Two further scoping notes. The raw agent results behind `14` (`foundation/experi
 
 **一个被测试抓住的真 bug。** `allocate` 读的是「离决定带多远」，那是**答案上的量**，而它不在 `12` §2.2 的刷新点清单里，于是拿到的全是未答读数，选出 `[0,1,2,3]` 而正确答案是 `[2,4,6,8]`。修法是一行归类，教训在规范的形式上：**清单形式会静默失效**——每加一个读答案的操作都要记得补清单，漏补的失效方式是给出错误结果而不是报错。现在对 `12` 立着的提议是改成判据优先：*凡结果依赖于答案的操作皆是刷新点*，清单降为例子，这样新增的读答案操作默认即是刷新点，要例外才需论证。实现比提议多走了一步，而那一步才是可迁移的：读答案的唯一入口改名成 `Reading::answer_after_flush()`，判据写在它的文档注释里。**判据写在依据里仍要人去读，写在唯一入口上才是机制。**
 
+**同一形状的三条缝（本文起草之后才查出来，因为最要紧所以补进正文）。** 内核上查出**三处把三值静默压成两值**的地方，每一处都是在代码其实判不准的位置替它做了乐观的默认：(1) `("==", _, _) => Bool(l.equals(&r).unwrap_or(false))`——`equals` 返回 `None` 意思是「**不可比**」，`unwrap_or(false)` 把它吃成「**不相等**」；J-01 只拦裸读数，装进列表或记录字段就从这里漏过去。(2) `json_to_effect_value` 反序列化材料时 `taint` 解析失败一律 `.unwrap_or(Taint::Trusted)`——**一份 untrusted 材料经账本往返回来会变成 trusted**。(3) **`mat(content(脏))`，两行普通源码**——`content` 把材料拆成裸值（taint 与 origin 留在壳上），`mat` 包回去走字面量路径给 `Trusted`。
+
+**严重度按「丢的是什么」排，不按「多容易触发」排。** 第一条丢一个比较结果；第二条丢的是**来源可信度**，而 `12` §2.11 的整个 taint 代数、以及宪法登记表 IFC 那行唯一那条纪律「不可信材料上的判断不得单独放行不可逆 `do`」全建在这一个字段上——**一个被洗白的材料之后走到哪里都是干净的，没有任何地方会再发现**。第三条最重，因为它不需要任何特殊条件，是语言里现成的一条路径，而在这条路上 IFC 那条纪律不会报错、只是失效——**一条不会报错只会失效的纪律，等于没有**。
+
+三条由此长出来的结论比 bug 本身耐用：**Python 参照实现没有那个 taint 洞，是移植时新引入的**——`foundation/jv/store.py:97` 用的是直接索引 `taint=ev["taint"]`，字段缺失当场 KeyError、响亮地失败，Rust 移植时把它「加固」成了防御性兜底；**移植时把「响亮失败」改成「防御性兜底」，往往是在悄悄削弱一条纪律**，因为原作者敢直接索引本身就是一个判断。**共同点不是 `unwrap_or`**——第三条是 `_ =>` 兜底臂，根本没用它；共同点是「在说不准的地方替不确定做了乐观的默认」，所以通则明写「**只 grep `unwrap_or` 不算查干净**」。**防假拒绝与防洗白一样重要，而前者更容易被忽略**——假拒绝会有人抱怨，洗白没人会抱怨，所以修法配了反面测试保证源码里的 `mat("字面量")`、`mat({记录})` 仍是 trusted，判断标准是「这份内容是不是从 untrusted 材料里拆出来的」，不是「有没有经过 `mat()`」。
+
+这与宪法登记表第 30 行「SQL 三值 `WHERE`（反面）：三值在 WHERE/CHECK 被隐式打成两值，三十年的坑」是同一个错——**我们在自己的解释器里犯了这门语言存在的理由所要防的那件事**。对 `12` 立着的提议是一条实现层通则：兜底值往「拒绝」那边倒，不往「放行」那边倒；在任何说不准的分支上先问一句这个默认值在替谁说话。
+
+**同一窗口内 `lift` 也落地了**：同状态的后续判断随首个站点一起发；一个「读一个判一个」写法的三题程序，`lift` 开 **1 次调用 / 1 层**，关 **3 次 / 3 层**。实现者的两处自我纠正比结果值钱：第一版红测试其实不开 `lift` 也过（两次登记都在同一个 `cut` 之前，惰性自己就攒成一层），他没留着充数而是改名说清它到底测什么——**一条测错东西的测试比没有测试更坏，它以后会被当成证据**；第一版差值取的是层数 2→1，而层数**没有消费者**（`budget.layers` 不存在、`schedule` 未落地），于是改到调用数上，让已落地的 `fuse` 当场消费它——**做一件没有消费者的优化，和留一个什么也不做的开关，是同一个错**。
+
 **已知限制与本轮未做项**（照 `14` 第八节，每条都引依据原文；都是明确排除不是漏掉，也都不是因为难）：**效应变量 `!{ε}` 的显式语法**——`13` §2 原文「留待实际需求，不作为本版前置」；顺带修掉一处相关缺陷：效应名表定义后全树零引用，于是 `!{ε}` 被当成一个叫 ε 的具体效应解析成功，再报一条指向错误方向的错，比不写标注还糟，现在认不得的效应名报专门的诊断。**完整线性类型系统**——`13` §3 原文「不要求所有值都使用线性类型」；要追踪的义务是未决结果而不是所有值，运行期记账加少量静态检查是被接受的 v1。**保形弃权域**——两边实现都没有，`12` §G4 列为缺口，本版不做。**运行时续延做恢复**——宿主的 `async`、effect handler、协程都是 one-shot 且都不可序列化，都不能承担跨进程恢复；立着的提议是挂起与恢复只以账本为准，任何运行时续延只许作为同一次进程内的实现细节，不得让恢复路径绕过账本记账。现在写进规范比事后回收便宜，因为它的失效方式是 J-18 在没人注意时失效、账本从审计物悄悄退化成缓存。
 
 两条范围说明：`14` 引用的两份原始代理结果（`foundation/experiments/审计/*.json`）留在研究工作区、不公开，所以 `14` 里那两个路径在本仓库解析不到；`14` 第九节列了五条要项目负责人裁的问题，其中一条涉及第三方资料，公开副本按 `tools/sync-from-workspace.sh` 对每份同步文档都执行的同一套脱敏机制有意不展开细节。
@@ -111,17 +141,19 @@ Two further scoping notes. The raw agent results behind `14` (`foundation/experi
 
 ## Verified on the workspace kernel, which is not in this repository / 在工作区内核上复跑（该内核不在本仓库）
 
-These were re-run for this update on a clean extract of the research workspace's committed tree (`a0b0260`), outside that workspace and outside this repository. They are reported here because the update describes them; **none of this code is in this repository's `rust/`.**
+These were re-run for this update on a clean extract of the research workspace's committed tree (`d85c174`), outside that workspace and outside this repository. They are reported here because the update describes them; **none of this code is in this repository's `rust/`.**
 
 | Check | Result |
 |---|---|
-| `cargo test` on the extracted workspace core | 111 passed, 0 failed, 1 ignored (a doc-test); 22 test binaries |
+| `cargo test` on the extracted workspace core | 117 passed, 0 failed, 1 ignored (a doc-test); 24 test binaries |
 | `13`'s six rules (`tests/v13_rules.rs`) | 8 tests, all passing, each named after the clause it checks (`第一条` … `第六条`) |
 | Fusion ablation (`tests/lazy_layers.rs`) | `fuse` on: 3 calls; `fuse` off: 6 calls — the 3 states × 2 questions figure quoted above, asserted in both directions |
+| `lift` ablation (`tests/lazy_layers.rs`) | on: 1 call / 1 layer; off: 3 calls / 3 layers, on a three-question one-read-one-judge program |
+| The three seams (`tests/invariants.rs`) | 8 tests green, including one per seam and a negative test that source-level `mat("literal")` stays trusted |
 
 ## Workspace measurements, not re-run for this update / 工作区实测，本次未复跑
 
-Source: `research/地基/DECISIONS.md` and `research/地基/14-实施计划-把语言做完整-v1.md`. The decision log records the suite growing 103 → 108 → 112 as the packages landed; the 111 above is what the committed tree actually gives today, and the difference is uncommitted work in the workspace, not a discrepancy to reconcile.
+Source: `research/地基/DECISIONS.md` and `research/地基/14-实施计划-把语言做完整-v1.md`. The decision log records the suite growing 103 → 108 → 112 → 117 as the packages landed; 117 is what the committed tree gives today and is the figure re-run above.
 
 - `allocate` on a warm key, difference = random − allocate: `noul` in-band tie rate 89% → 51%, +0.068 at k=30 (0.110 against 0.178); `choice` 3% tie rate, +0.034 at k=10; `score` 75% tie rate, +0.085 at k=30. Two caveats travel with these figures in the source and are not dropped here: **no interval estimate was made and they do not extrapolate**, and the `score` column is the weak one — its high in-band tie rate is exactly the condition under which the ordering stops discriminating.
 - The two agent rounds behind `14` cost $0; cumulative paid model spend for this line of work is about $0.35.
