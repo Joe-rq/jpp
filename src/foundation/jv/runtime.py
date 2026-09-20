@@ -1,0 +1,1135 @@
+"""运行时（§4 编译 pass、§6.0 执行模型）。
+
+逐语句即时执行；`judge`/`do` 惰性登记；到刷新点（cut / fit / .content / gen·transform·ask 的输入含期物 /
+程序返回）时：先解析 `do`（按依赖分波并发），再把已登记的 `judge` 排成**一层**，跑七个 pass，一层一次发出。
+每个 pass 一个开关（`passes` 字典），给消融留门。
+"""
+
+from __future__ import annotations
+
+import hashlib
+import inspect
+import json
+import os
+import threading
+import time
+import warnings
+from concurrent.futures import ThreadPoolExecutor
+from typing import Any, Callable
+
+from foundation.core.canon import H, canon
+
+from . import ir
+from .calib import CalibStore, FitRegistry
+from .effects import DoEffect, JudgeEffect, MatFuture
+from .ir import (_is, Act, Action, At, Budget, CalibRef, Escalated, Exit, Fail, Ignore, JvError, JvTypeError,
+                 Mat, Pending, Pick, Q, Reading, Readings, ReadingsVec, State, Unsure, _Future, site_of,
+                 TRUSTED, UNTRUSTED)
+from .store import Books, MatStore, HANDLER_VERSION, cache_key, effect_key, ledger_key
+
+PROFILE_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "profile", "profiles")
+DEFAULT_PASSES = {"lift": True, "fuse": True, "fission": True, "lower": True, "schedule": True,
+                  "plan": True, "ledger": True}
+_CURRENT: list["Runtime"] = []
+
+
+class _Marker:
+    def __init__(self, name):
+        self.name = name
+
+    def __repr__(self):
+        return f"jv.{self.name}"
+
+
+class _EscalateMarker(_Marker):
+    """既是 handler 的 `then=jv.escalate` 标记，也可作 `return jv.escalate(x)` 调用。"""
+
+    def __call__(self, payload: Any = None, note: str = "") -> Escalated:
+        rt = current()
+        e = Escalated(payload, note)
+        rt._escalations += 1
+        rt._check_escalate_budget()
+        rt.stats["escalated"].append({"site": site_of(), "note": note})
+        return e
+
+
+escalate = _EscalateMarker("escalate")
+drop = _Marker("drop")
+provisional = _Marker("provisional")
+
+
+class _Prior:
+    none = "none"
+    pass_count = "pass_count"
+
+
+prior = _Prior()
+
+
+def current() -> "Runtime":
+    if not _CURRENT:
+        raise JvError("没有运行时：先 jv.use(jv.Runtime(client=...)) 或 with jv.Runtime(...):")
+    return _CURRENT[-1]
+
+
+def load_profile(name: str = "jev-1.13.0") -> dict:
+    p = os.path.join(PROFILE_DIR, f"{name}.json")
+    with open(p, encoding="utf-8") as fh:
+        return json.load(fh)
+
+
+class Runtime:
+    def __init__(self, client, *, profile: dict | str | None = "jev-1.13.0", root: str | None = None,
+                 passes: dict | None = None, max_workers: int | None = None,
+                 generator: Callable | None = None, calib: CalibStore | None = None,
+                 fits: FitRegistry | None = None, retry: str = "none"):
+        self.client = client
+        self.profile = load_profile(profile) if isinstance(profile, str) else (profile or {})
+        self.model_id = self.profile.get("model_version") or getattr(client, "model_id", "unknown")
+        self.root = root
+        self.passes = dict(DEFAULT_PASSES, **(passes or {}))
+        conc = int((self.profile.get("concurrency") or {}).get("lower_bound_ok", 8))
+        self.max_workers = max_workers or min(8, conc)
+        self.generator = generator
+        self.calib = calib or CalibStore(os.path.join(root, "calib") if root else None)
+        self.fits = fits or FitRegistry()
+        self.retry = retry
+        self.mats = MatStore(os.path.join(root, "mats.jsonl") if root else None)
+        self.books: Books | None = None
+        self.budget: Budget = Budget()
+        self.program_name = ""
+        self._seq = 0
+        self._segment = 0
+        self._fusion_ok = True
+        self.pending_judges: list[JudgeEffect] = []
+        self.pending_dos: list[DoEffect] = []
+        self.exits: list[Exit] = []
+        self._escalations = 0
+        self._loop_keys: list[set] = []
+        self._lock = threading.Lock()
+        self._transform_seen: dict[str, str] = {}
+        self._pending_ask: list[dict] = []
+        self._frames: list[_Frame] = []                     # 嵌套程序的子账帧栈
+        self.reset_stats()
+
+    # ------------------------------------------------------------ 生命周期
+    def reset_stats(self):
+        self.stats = {"calls": 0, "questions": 0, "tokens": 0, "cost": 0.0, "layers": [],
+                      "ledger_hits": 0, "cache_hits": 0, "warnings": [], "unsure": 0, "exits": 0,
+                      "escalated": [], "do": 0, "gen": 0, "transform": 0, "ask": 0, "fission": 0}
+
+    def __enter__(self):
+        _CURRENT.append(self)
+        return self
+
+    def __exit__(self, *exc):
+        _CURRENT.remove(self)
+        self.mats.close()
+
+    def use(self):
+        _CURRENT.append(self)
+        return self
+
+    def warn(self, msg: str):
+        self.stats["warnings"].append(msg)
+        warnings.warn(msg, stacklevel=3)
+
+    def header(self, budget: Budget) -> dict:
+        return {"budget": budget.to_dict(), "profile_hash": H(self.profile),
+                "model_id": self.model_id, "render_version": ir.RENDER_VERSION,
+                "handler_version": HANDLER_VERSION, "retry": self.retry}
+
+    def begin(self, name: str, budget: Budget) -> "_Frame":
+        """进入一个 `@jv.program`。最外层：重置统计、开账本、写账本头；内层：只压一个子账帧，复用运行时。"""
+        if self._frames:                                        # 嵌套：程序调用程序
+            f = _Frame(name, budget, parent=self._frames[-1], calls0=self.stats["calls"], cost0=self.stats["cost"],
+                       layers0=len(self.stats["layers"]), esc0=self._escalations, depth=len(self._frames))
+            self._frames.append(f)
+            return f
+        self.program_name = name
+        self.budget = budget
+        self.reset_stats()
+        self.pending_judges.clear()
+        self.pending_dos.clear()
+        self.exits.clear()
+        self._escalations = 0
+        self._segment = 0
+        self._fusion_ok = True
+        self._transform_seen.clear()
+        self._pending_ask.clear()
+        root = os.path.join(self.root, "books", name) if self.root else None
+        self.books = Books(root, self.header(budget))
+        if self.books.header_warning:
+            self.warn(self.books.header_warning)          # J-18
+        f = _Frame(name, budget, parent=None, calls0=0, cost0=0.0, layers0=0, esc0=0, depth=0)
+        self._frames = [f]
+        return f
+
+    def end(self, result: Any = None, *, check_consumed: bool = True):
+        """离开当前帧：刷新；只核本帧作用域内的 Exit.consumed（J-05）；最外层落账本。"""
+        f = self._frames[-1] if self._frames else None
+        try:
+            self.flush(reason="return")
+            if self.books and (f is None or f.parent is None):
+                self.books.save()
+            if check_consumed:
+                scope = f.exits if f is not None else self.exits
+                bad = [e for e in scope if _is(e, Unsure) and not e.__dict__.get("consumed")]
+                if bad:
+                    who = f"程序 {f.name} " if f is not None else "程序"
+                    raise JvError(f"J-05: {who}返回前有 {len(bad)} 个未消费的 Unsure（{[e.cause for e in bad][:5]}）。"
+                                  f"修法：用 match 的 case jv.Unsure(c) 或 jv.consume(exits, unsure=jv.drop) 消费它们。")
+            if f is not None:
+                self.stats.setdefault("frames", []).append(f.report(self))
+            b = f.budget if f is not None else self.budget
+            if b.unsure is not None:
+                n_exits = len(f.exits) if f is not None else self.stats["exits"]
+                n_unsure = sum(1 for e in (f.exits if f is not None else self.exits) if _is(e, Unsure))
+                if n_exits and n_unsure / n_exits > b.unsure:
+                    self.warn(f"W-unsure: {f.name if f else ''} 实测 unsure 率 {n_unsure / n_exits:.2f} 超预算 {b.unsure}（J-10）")
+            return result
+        finally:
+            if f is not None and self._frames and self._frames[-1] is f:
+                self._frames.pop()
+
+    def abort_frame(self):
+        """异常路径离开当前帧（Pending / 静态检查错 / 宿主异常），不核 J-05。"""
+        if self._frames:
+            self._frames.pop()
+
+    @property
+    def frame(self) -> "_Frame | None":
+        return self._frames[-1] if self._frames else None
+
+    # ------------------------------------------------------------ 统计（jv stats，§8-10）
+    def stats_report(self) -> dict:
+        """一条程序跑完后的层数、每层题数/调用数、融合率、账本命中、钱。"""
+        layers = self.stats["layers"]
+        q = sum(l["questions"] for l in layers)
+        c = sum(l["calls"] for l in layers)
+        return {"program": self.program_name, "layers": len(layers),
+                "questions_per_layer": [l["questions"] for l in layers],
+                "calls_per_layer": [l["calls"] for l in layers],
+                "questions": q, "calls": c, "fusion_rate": round(q / c, 2) if c else None,
+                "ledger_hits": self.stats["ledger_hits"], "cache_hits": self.stats["cache_hits"],
+                "stopped_layers": sum(1 for l in layers if l.get("stopped")),
+                "fission": self.stats["fission"], "tokens": self.stats["tokens"], "cost": round(self.stats["cost"], 6),
+                "unsure": self.stats["unsure"], "exits": self.stats["exits"],
+                "warnings": [w.split(":")[0] for w in self.stats["warnings"]]}
+
+    # ------------------------------------------------------------ 档案数
+    def delta_for(self, phys: str) -> float:
+        d = (self.profile.get("delta") or {})
+        key = {"noul": "noul", "choice": "choice_prob_chosen", "score": "score"}[phys]
+        try:
+            return float(d[key]["immediate"]["p99"])
+        except (KeyError, TypeError):
+            return {"noul": 0.05, "choice": 0.15, "score": 0.15}[phys]
+
+    def text_window(self) -> int:
+        """对象槽内单段材料的可用窗口：`window.text_slots.claim_bearing_ctx.usable_lower`（§2.1、B5）。"""
+        try:
+            return int(self.profile["window"]["text_slots"]["claim_bearing_ctx"]["usable_lower"])
+        except (KeyError, TypeError, ValueError):
+            pass
+        try:
+            return int(self.profile["window"]["noul_claim_bearing"]["bound"]["token"])
+        except (KeyError, TypeError):
+            return 500
+
+    def safety_lines(self) -> tuple[float, float]:
+        """冷校准键的保守线：只从档案 `lines.safety_default` 取（§1「凡是数字都是档案字段」）。
+        字段缺失/未测 → J-15：取「无线」（hi=1, lo=0，临时出口全部 Unsure(band)）并报 W-untested。"""
+        d = (self.profile.get("lines") or {}).get("safety_default")
+        if not isinstance(d, dict) or d.get("value") == "未测" or "hi" not in d or "lo" not in d:
+            if not getattr(self, "_warned_safety", False):
+                self._warned_safety = True
+                self.warn("W-untested: 档案缺 lines.safety_default（冷校准保守线），J-15 取无线：冷键不给临时出口")
+            return 1.0, 0.0
+        return float(d["hi"]), float(d["lo"])
+
+    def json_ctx_window(self) -> int:
+        try:
+            ks = self.profile["window"]["json_slots"]["claim_bearing_ctx"]["flip_frac_by_ctx_tokens"]
+            return max(int(k.strip("~")) for k in ks)
+        except (KeyError, TypeError, ValueError):
+            return 1800
+
+    def k_limit(self, cand_tokens: int) -> tuple[int | None, str]:
+        """返回 (K_max | None=未测, 档名)。"""
+        kl = (self.profile.get("k_limit") or {}).get("by_candidate_tokens") or {}
+        if cand_tokens <= 120:
+            v = kl.get("<=120", {}).get("K_max", 16)
+            return (int(v) if v != "未测" else None), "<=120"
+        if cand_tokens < 300:
+            v = kl.get("120-250", {}).get("K_max", "未测")
+            return (int(v) if v != "未测" else None), "120-250"
+        v = kl.get(">=300", {}).get("K_max", 4)
+        return (int(v) if v != "未测" else None), ">=300"
+
+    def price(self) -> float:
+        try:
+            return float(self.profile["cost"]["price_usd_per_input_token"])
+        except (KeyError, TypeError):
+            return 4.2e-8
+
+    # ------------------------------------------------------------ 构造子（纯）
+    @staticmethod
+    def state(on, ctx=None, ref=None, over=None, repr="json") -> State:
+        return State(on=on, ctx=list(ctx or []), ref=list(ref or []), over=list(over or []), repr=repr)
+
+    def _next(self) -> int:
+        self._seq += 1
+        return self._seq
+
+    # ------------------------------------------------------------ judge（惰性）
+    def judge(self, s, *qs: Q):
+        if not qs:
+            raise JvError("judge 至少一题")
+        for q in qs:
+            if not isinstance(q, Q):
+                raise JvTypeError(f"judge 的题必须是 jv.test/select/measure 的结果，收到 {type(q).__name__}")
+        vec = isinstance(s, (list, tuple))
+        states = list(s) if vec else [s]
+        for st in states:
+            if not isinstance(st, State):
+                raise JvTypeError("J-11: judge 的状态必须是 jv.state(...) 的结果")
+            if any(q.op == "select" for q in qs) and not st.over:
+                raise JvError("select 题需要 over 槽（候选集）；修法：jv.state(..., over=[...])")
+        eff = JudgeEffect(states=states, qs=list(qs), site=site_of(), seq=self._next(), rt=self,
+                          vectorized=vec, segment=self._segment, frame=self.frame)
+        eff.readings = ReadingsVec(eff) if vec else Readings(eff)
+        self.pending_judges.append(eff)
+        if not self.passes["lift"]:
+            self.flush(reason="nolift")
+        return eff.readings
+
+    # ------------------------------------------------------------ do（惰性）
+    def do(self, action: Action, *args, iter_seq: int | None = None, guard=None) -> MatFuture:
+        if not isinstance(action, Action):
+            raise JvTypeError("do 的第一个参数必须是 jv.Action")
+        if iter_seq is None:
+            raise JvError(f"J-13: do({action.name}) 缺 iter_seq。修法：循环里用 it.n / range 变量作序号，直线段用 0。")
+        if not action.reversible:
+            self._check_guard(action, guard)                        # J-08
+        eff = DoEffect(action=action, args=list(args), iter_seq=iter_seq, site=site_of(), seq=self._next(),
+                       guard=guard)
+        eff.future = MatFuture(self, eff)
+        self.pending_dos.append(eff)
+        self.stats["do"] += 1
+        return eff.future
+
+    def _check_guard(self, action: Action, guard):
+        gs = guard if isinstance(guard, (list, tuple)) else ([guard] if guard is not None else [])
+        ok = any(_is(g, Act) and g.taint == TRUSTED for g in gs) or \
+             any(_is(g, Exit) and g.detail.get("from_ask") for g in gs)
+        for g in gs:
+            if _is(g, Exit):
+                g.__dict__["consumed"] = True
+        if not ok:
+            raise JvError(f"J-08: 不可逆动作 {action.name} 的守卫里没有来自 trusted 状态的 Act（或 ask 的答案）。"
+                          f"修法：guard=[e] 且 e 由 trusted 材料的判断产生，或经 jv.ask。")
+
+    # ------------------------------------------------------------ gen（一登记就发）
+    def gen(self, prompt: str, ctx=None, n: int = 4, retry_seq: int | None = None, generator=None) -> list[Mat]:
+        if retry_seq is None:
+            raise JvError("J-13: gen 缺 retry_seq。修法：循环里用 it.n / range 变量，regen 必须递增。")
+        ctx = list(ctx or [])
+        for m in ctx:
+            ir._check_mat(m, "ctx")
+        if any(isinstance(m, _Future) and m._resolved is None for m in ctx):
+            self.flush(reason="gen-input")
+        mats = [m.resolve() if isinstance(m, _Future) else (m.as_mat() if _is(m, Exit) else m) for m in ctx]
+        site = site_of()
+        key = effect_key("gen", site, H(prompt), [m.hash for m in mats], n, retry_seq)
+        taint = ir._join_taint(m.taint for m in mats)
+        rec = self.books.effects.get(key) if (self.books and self.passes["ledger"]) else None
+        if rec is not None:
+            outs = rec["outputs"]
+        else:
+            g = generator or self.generator
+            if g is None:
+                raise JvError("gen 没有生成器：Runtime(generator=...) 或 gen(..., generator=...)")
+            t0 = time.time()
+            try:
+                outs = list(g(prompt, mats, n, retry_seq) or [])
+            except Exception as e:                                   # 失败 = 空（E9b 30%）
+                self.warn(f"W-gen-fail: {site} {e}")
+                outs = []
+            if self.books:
+                self.books.effects.put(key, {"kind": "gen", "outputs": outs, "secs": round(time.time() - t0, 3)})
+        self.stats["gen"] += 1
+        res = []
+        for i, o in enumerate(outs):
+            m = Mat(content=o, origin=("gen", site, key, i), taint=taint)
+            self.mats.add(m, site)
+            res.append(m)
+        return res
+
+    # ------------------------------------------------------------ ask（异步；Pending 是程序级出口）
+    def ask(self, s: State, q: Q) -> Exit:
+        if not isinstance(s, State) or not isinstance(q, Q):
+            raise JvTypeError("ask(state, q)")
+        if not s.is_ready():
+            self.flush(reason="ask-input")
+        rs = s.resolved()
+        key = effect_key("ask", "", rs.structure_hash, q.text_hash)
+        self._escalations += 1
+        self._check_escalate_budget()
+        self.stats["ask"] += 1
+        rec = self.books.effects.get(key) if self.books else None
+        if rec and rec.get("answer"):
+            a = rec["answer"]
+            cls = {"act": Act, "ignore": Ignore, "pick": Pick, "at": At}[a["kind"]]
+            kw = {"p": 1.0, "q_hash": q.text_hash, "taint": TRUSTED, "detail": {"from_ask": True}}
+            e = cls(a["k"], **kw) if a["kind"] == "pick" else (cls(a["level"], **kw) if a["kind"] == "at" else cls(**kw))
+            self._register_exit(e)
+            return e
+        if self.books:
+            self.books.effects.put(key, {"kind": "ask", "state": rs.slots(), "q": q.text, "answer": None})
+            self.books.save()
+        raise Pending(key, rs.structure_hash, q.text_hash)
+
+    def answer(self, key: str, kind: str, k: int | None = None, level: int | None = None):
+        """人答到达（校准集入口）：写入效应账本，下次运行重放时 ask 返回该出口。"""
+        rec = self.books.effects.get(key) if self.books else None
+        if rec is None:
+            raise KeyError(key)
+        rec["answer"] = {"kind": kind, "k": k, "level": level}
+        self.books.effects.put(key, rec)
+        self.books.save()
+
+    def _check_escalate_budget(self):
+        if not self._frames:
+            if self.budget.escalate is not None and self._escalations > self.budget.escalate:
+                raise JvError(f"J-07: escalate 次数 {self._escalations} 超预算 {self.budget.escalate}")
+            return
+        for f in self._frames:                                # 每一层子账都核（内层计入外层）
+            used = self._escalations - f.esc0
+            if f.budget.escalate is not None and used > f.budget.escalate:
+                raise JvError(f"J-07: 程序 {f.name} escalate 次数 {used} 超预算 {f.budget.escalate}")
+
+    # ------------------------------------------------------------ transform（记账）
+    def transform(self, f: Callable, *args):
+        if not callable(f):
+            raise JvTypeError("transform 的第一个参数必须是可调用")
+        if any(isinstance(a, _Future) and a._resolved is None for a in args):
+            self.flush(reason="transform-input")
+        mats = [a.resolve() if isinstance(a, _Future) else a for a in args]
+        site = site_of()
+        try:
+            src = inspect.getsource(f)
+        except (OSError, TypeError):
+            src = getattr(f, "__qualname__", repr(f))
+        f_hash = H(getattr(f, "__qualname__", "?"), hashlib.sha256(src.encode()).hexdigest()[:16])
+        key = effect_key("transform", site, f_hash, [m.hash if isinstance(m, Mat) else canon(m) for m in mats])
+        taint = ir._join_taint(m.taint for m in mats if isinstance(m, Mat))
+        out = f(*mats)
+        out_hash = H(_plain(out))
+        prev = self._transform_seen.get(key)
+        rec = self.books.effects.get(key) if (self.books and self.passes["ledger"]) else None
+        replay_val = None
+        if prev is not None and prev != out_hash:
+            self._impure(f, site)
+        elif rec is not None and rec["out_hash"] != out_hash:
+            self._impure(f, site)
+            replay_val = rec["out"]
+        self._transform_seen[key] = out_hash if prev is None else prev
+        if self.books and rec is None:
+            self.books.effects.put(key, {"kind": "transform", "out_hash": out_hash, "out": _plain(out)})
+        self.stats["transform"] += 1
+        val = replay_val if replay_val is not None else out
+        return self._wrap_out(val, ("transform", site, key), taint)
+
+    def _impure(self, f, site):
+        self.warn(f"W-impure: transform({getattr(f, '__qualname__', f)}) 在 {site} 同输入异输出；本直线段禁融合，重放取账本。")
+        self._fusion_ok = False
+
+    def _wrap_out(self, val, origin: tuple, taint: str):
+        if isinstance(val, Mat):
+            return val
+        if isinstance(val, dict) and set(val) == {"__mat__"}:
+            val = val["__mat__"]
+        if isinstance(val, (list, tuple)):
+            return [self._wrap_out(v, origin + (i,), taint) for i, v in enumerate(val)]
+        m = Mat(content=val, origin=origin, taint=taint)
+        self.mats.add(m, origin[1] if len(origin) > 1 else "")
+        return m
+
+    # ------------------------------------------------------------ loop
+    def loop(self, bound: int, variant=None):
+        if bound is None or variant is None:
+            raise JvError("J-06: loop 必带 bound 与 variant。修法：jv.loop(bound=N, variant=jv.decreasing(lambda: 计量))")
+        return _Loop(self, bound, variant)
+
+    # ------------------------------------------------------------ 刷新（层边界）
+    def flush(self, reason: str = ""):
+        self._resolve_dos()
+        ready = [j for j in self.pending_judges if j.ready() and not j.done]
+        if not ready:
+            return
+        self.pending_judges = [j for j in self.pending_judges if j not in ready]
+        self._run_layer(ready, reason)
+        self._segment += 1
+        self._fusion_ok = True
+
+    # —— do：按依赖分波并发
+    def _resolve_dos(self):
+        while True:
+            todo = [d for d in self.pending_dos if not d.done]
+            if not todo:
+                self.pending_dos.clear()
+                return
+            wave = [d for d in todo if d.ready()]
+            if not wave:
+                raise JvError("do 依赖环")
+            if len(wave) > 1 and any(d.deps() for d in todo if d not in wave):
+                pass
+            if self.passes["schedule"] and len(wave) > 1:
+                with ThreadPoolExecutor(max_workers=self.max_workers) as ex:
+                    list(ex.map(self._exec_do, wave))
+            else:
+                for d in wave:
+                    self._exec_do(d)
+
+    def _exec_do(self, d: DoEffect):
+        args = [a.resolve() if isinstance(a, _Future) else (a.as_mat() if _is(a, Exit) else a) for a in d.args]
+        arg_hashes = [a.hash if isinstance(a, Mat) else canon(a) for a in args]
+        d.key = effect_key("do", d.site, d.action.name, arg_hashes, d.iter_seq)
+        in_taint = ir._join_taint(a.taint for a in args if isinstance(a, Mat))
+        taint = {"trusted": TRUSTED, "untrusted": UNTRUSTED, "inherit": in_taint}[d.action.taint_out]
+        rec = self.books.effects.get(d.key) if (self.books and self.passes["ledger"]) else None
+        if rec is None:
+            fn = d.action.fn
+            if fn is None:
+                from foundation.core import registry
+                fn = registry.lookup(d.action.name)
+            t0 = time.time()
+            try:
+                out = fn(*args)
+                rec = {"kind": "do", "out": _plain(out), "fail": None, "secs": round(time.time() - t0, 3)}
+            except Exception as e:
+                rec = {"kind": "do", "out": None, "fail": f"{type(e).__name__}: {e}", "secs": round(time.time() - t0, 3)}
+            if self.books:
+                with self._lock:
+                    self.books.effects.put(d.key, rec)
+        if rec["fail"] is not None:
+            d.future.fail = Fail(reason=rec["fail"], action=d.action.name)
+            m = Mat(content={"fail": rec["fail"], "action": d.action.name}, origin=("do", d.site, d.key, "fail"), taint=taint)
+        else:
+            m = Mat(content=rec["out"], origin=("do", d.site, d.key), taint=taint)
+        with self._lock:
+            self.mats.add(m, d.site)
+        d.future._resolved = m
+        d.done = True
+
+    # —— judge：一层
+    def _run_layer(self, effs: list[JudgeEffect], reason: str):
+        plans = []                                        # 每个 (effect, obj_index) 一个 plan
+        for j in effs:
+            for k, st in enumerate(j.states):
+                rs = st.resolved()
+                self._check_window(rs, j.site)
+                plans.append(self._plan(j, k, rs))
+        calls = self._calls_from_plans(plans)
+        groups = {c["group"] for c in calls}
+        n_layer = len(self.stats["layers"]) + 1
+        # 预算（层边界核，J-07；属 plan pass，关掉即不核）。嵌套程序：每个子账帧各核自己的预算，
+        # 某帧超 → 该帧及其内层登记的判断停并记 Unsure(budget)，外层的判断照发；最外层超 → 整层停。
+        stopped_plans: list = []
+        if self.passes["plan"]:
+            over = self._frames_over_budget(n_layer, plans, calls)
+            if over:
+                stopped_plans = [p for p in plans if any(fr in over for fr in _chain(p["eff"].frame))] \
+                    if self._frames else list(plans)
+        if stopped_plans:
+            names = sorted({fr.name for p in stopped_plans for fr in _chain(p["eff"].frame) if fr in over}) if self._frames else [self.program_name]
+            self.warn(f"W-budget: 第 {n_layer} 层 程序 {names} 超预算，其 {len(stopped_plans)} 个状态不发，读数记 Unsure(budget)")
+            for p in stopped_plans:
+                for item in p["items"]:
+                    item["reading"]._ans = {"phys": item["phys"], "stop": "budget", "p": 0.0, "value": None, "probs": {}}
+            keep = [p for p in plans if p not in stopped_plans]
+            if not keep:
+                for j in effs:
+                    j.done = True
+                self.stats["layers"].append({"reason": reason, "calls": 0, "questions": 0, "states": len(plans), "stopped": True})
+                return
+            plans = keep
+            calls = self._calls_from_plans(plans)
+        # 发出
+        if self.passes["schedule"] and len(calls) > 1:
+            with ThreadPoolExecutor(max_workers=self.max_workers) as ex:
+                list(ex.map(self._exec_call, calls))
+        else:
+            for c in calls:
+                self._exec_call(c)
+        # 合回读数
+        for p in plans:
+            self._collect(p)
+        for j in effs:
+            j.done = True
+        self.stats["layers"].append({"reason": reason, "calls": sum(1 for c in calls if c.get("sent")),
+                                     "questions": sum(len(c["items"]) for c in calls), "states": len(plans),
+                                     "fused_groups": len(groups)})
+
+    def _calls_from_plans(self, plans: list) -> list:
+        """融合：同状态哈希 + 同段（W-impure 段不融合）。关 fuse = 逐题调用（§4 表「不做会坏什么」）。"""
+        groups: dict[str, list] = {}
+        for p in plans:
+            fuse = self.passes["fuse"] and (self._fusion_ok or p["eff"].segment != self._segment)
+            if fuse:
+                groups.setdefault(p["state_hash"], []).append(p)
+            else:
+                for item in p["items"]:
+                    groups[f"{p['state_hash']}#{item['qid']}"] = [dict(p, items=[item])]
+        calls = []
+        for gk, ps in groups.items():
+            qmap: dict[str, dict] = {}
+            for p in ps:
+                for item in p["items"]:
+                    qmap[item["qid"]] = item
+            ids = list(qmap)                                  # 一次调用 ≤ 200 题
+            for i in range(0, len(ids), 200):
+                calls.append({"state": ps[0]["render"], "state_hash": ps[0]["state_hash"], "group": gk,
+                              "items": {qid: qmap[qid] for qid in ids[i:i + 200]},
+                              "frames": {fr for p in ps for fr in _chain(p["eff"].frame)}})
+        return calls
+
+    def _frames_over_budget(self, n_layer: int, plans: list, calls: list) -> set:
+        """哪些子账帧在本层会超预算（层 / 调用 / 钱）。无帧时用 self.budget（返回 {None} 表示整层停）。"""
+        if not self._frames:
+            b = self.budget
+            if (b.layers is not None and n_layer > b.layers) or \
+               (b.calls is not None and self.stats["calls"] + len(calls) > b.calls) or \
+               (b.cost is not None and self.stats["cost"] >= b.cost):
+                return {None}
+            return set()
+        over = set()
+        for f in self._frames:
+            b = f.budget
+            planned = sum(1 for c in calls if f in c["frames"])
+            if b.layers is not None and (n_layer - f.layers0) > b.layers:
+                over.add(f)
+            if b.calls is not None and (self.stats["calls"] - f.calls0) + planned > b.calls:
+                over.add(f)
+            if b.cost is not None and (self.stats["cost"] - f.cost0) >= b.cost:
+                over.add(f)
+        return over
+
+    def _check_window(self, rs, site: str):
+        if not self.passes["fission"]:
+            return
+        ctx_tokens = sum(m.tokens for m in rs.ctx) + sum(m.tokens for m in rs.ref)
+        if ctx_tokens > self.json_ctx_window():
+            self.warn(f"W-window: {site} 语境槽 {ctx_tokens} token 超 JSON 槽已测窗口 {self.json_ctx_window()}（P24 上限未测）")
+
+    def _plan(self, j: JudgeEffect, k: int, rs) -> dict:
+        """下沉 + 裂变：把一个 (状态, 题组) 变成物理题项。"""
+        items: list[dict] = []
+        state_hash = rs.structure_hash
+        render = rs.render()
+        on_tokens = sum(m.tokens for m in (rs.on if isinstance(rs.on, tuple) else (rs.on,)))
+        for qi, q in enumerate(j.qs):
+            reading = j.readings[k][qi] if j.vectorized else j.readings[qi]
+            base = {"reading": reading, "q": q, "site": j.site, "run_seq": j.run_seq, "chunk": None}
+            pre = f"e{j.seq}_{k}_"
+            if q.op == "test":
+                phys = "noul"
+                if self.passes["fission"] and on_tokens > self.text_window() and not isinstance(rs.on, tuple) \
+                        and isinstance(rs.on.content, str):
+                    chunks = _chunk(rs.on.content, self.text_window())
+                    self.stats["fission"] += 1
+                    for ci, ch in enumerate(chunks):
+                        sub = ir.ResolvedState(on=Mat(content=ch, origin=rs.on.origin, taint=rs.on.taint,
+                                                      derived_from=rs.on.derived_from), ctx=rs.ctx, ref=rs.ref, over=())
+                        items.append(dict(base, qid=f"{pre}q{qi}_c{ci}", phys=phys, perm_seed=0, chunk=ci,
+                                          question={"type": "noul", "instructions": q.text},
+                                          sub_state=sub.render(), sub_hash=sub.structure_hash))
+                    continue
+                items.append(dict(base, qid=f"{pre}q{qi}", phys=phys, perm_seed=0,
+                                  question={"type": "noul", "instructions": q.text}))
+            elif q.op == "select":
+                K = len(rs.over)
+                cand_tokens = max(m.tokens for m in rs.over)
+                kmax, band = self.k_limit(cand_tokens)
+                hard = int((self.profile.get("k_limit") or {}).get("hard_max_options", 255))
+                use_choice = self.passes["lower"] and kmax is not None and K <= kmax and K <= hard
+                if self.passes["lower"] and kmax is None:
+                    self.warn(f"W-untested: 候选 {cand_tokens} token 落在档案未测档 {band}，select 取保守物理形式 K-noul（J-15）")
+                if q.phys == "choice":
+                    use_choice = K <= hard
+                # 裂变（§4.3）：对象槽超窗 → 分块 K-noul，每块每候选一题，合回按候选取 max 再决
+                if self.passes["fission"] and on_tokens > self.text_window() and not isinstance(rs.on, tuple) \
+                        and isinstance(rs.on.content, str):
+                    chunks = _chunk(rs.on.content, self.text_window())
+                    self.stats["fission"] += 1
+                    for ci, ch in enumerate(chunks):
+                        sub = ir.ResolvedState(on=Mat(content=ch, origin=rs.on.origin, taint=rs.on.taint,
+                                                      derived_from=rs.on.derived_from), ctx=rs.ctx, ref=rs.ref, over=rs.over)
+                        for i in range(K):
+                            items.append(dict(base, qid=f"{pre}q{qi}_c{ci}_k{i}", phys="noul", perm_seed=0, cand=i, chunk=ci,
+                                              question={"type": "noul", "instructions": f"对候选 c{i}：{q.text}"},
+                                              sub_state=sub.render(), sub_hash=sub.structure_hash))
+                    continue
+                if use_choice:
+                    opts = [f"c{i}" for i in range(K)]
+                    perms = [list(range(K)), list(range(K))[::-1]] if K > 1 else [list(range(K))]
+                    for ps, perm in enumerate(perms):
+                        # 选项描述直接放候选原文（一跳字面，H4）：E-IR-SMOKE 第一遍证明「候选 c0 → 查槽」是多出的一跳
+                        crit = {opts[i]: rs.over[i].text() for i in perm}
+                        items.append(dict(base, qid=f"{pre}q{qi}_p{ps}", phys="choice", perm_seed=ps,
+                                          question={"type": "choice", "instructions": q.text, "criteria": crit}))
+                else:
+                    for i in range(K):
+                        items.append(dict(base, qid=f"{pre}q{qi}_k{i}", phys="noul", perm_seed=0, cand=i,
+                                          question={"type": "noul", "instructions": f"对候选 c{i}：{q.text}"}))
+            else:
+                levels = list(q.scale)
+                # 裂变（§4.3）：对象槽超窗 → 每块一道 score，合回按出口计数
+                if self.passes["fission"] and on_tokens > self.text_window() and not isinstance(rs.on, tuple) \
+                        and isinstance(rs.on.content, str):
+                    chunks = _chunk(rs.on.content, self.text_window())
+                    self.stats["fission"] += 1
+                    for ci, ch in enumerate(chunks):
+                        sub = ir.ResolvedState(on=Mat(content=ch, origin=rs.on.origin, taint=rs.on.taint,
+                                                      derived_from=rs.on.derived_from), ctx=rs.ctx, ref=rs.ref, over=())
+                        items.append(dict(base, qid=f"{pre}q{qi}_c{ci}", phys="score", perm_seed=0, chunk=ci,
+                                          question={"type": "score", "instructions": q.text, "criteria": levels},
+                                          sub_state=sub.render(), sub_hash=sub.structure_hash))
+                    continue
+                items.append(dict(base, qid=f"{pre}q{qi}", phys="score", perm_seed=0,
+                                  question={"type": "score", "instructions": q.text, "criteria": levels}))
+        for it in items:                                  # 键里的题标识不含效应序号（同状态同题同站点 → 同键，重放/键重复即停）
+            it["kid"] = it["qid"][len(f"e{j.seq}_{k}_"):]
+        return {"eff": j, "k": k, "rs": rs, "state_hash": state_hash, "render": render, "items": items}
+
+    def _exec_call(self, call: dict):
+        """一次融合调用：先查账本/缓存，缺的才发。子状态（裂变块）单独发。"""
+        by_state: dict[str, dict] = {}
+        for qid, it in call["items"].items():
+            sh = it.get("sub_hash", call["state_hash"])
+            g = by_state.setdefault(sh, {"render": it.get("sub_state", call["state"]), "items": {}})
+            g["items"][qid] = it
+        for sh, g in by_state.items():
+            missing = {}
+            for qid, it in g["items"].items():
+                kid = it.get("kid", qid)
+                lk = ledger_key(self.model_id, sh, it["q"].text_hash, it["phys"], ir.RENDER_VERSION,
+                                it["perm_seed"], it["run_seq"], it["site"] + "/" + kid)
+                ck = cache_key(sh, it["q"].text_hash + "/" + kid, it["phys"], ir.RENDER_VERSION, self.model_id)
+                it["ledger_key"], it["cache_key"] = lk, ck
+                ans = self.books.ledger.get(lk) if (self.books and self.passes["ledger"]) else None
+                if ans is not None:
+                    it["answer"] = ans
+                    self.stats["ledger_hits"] += 1
+                    continue
+                cans = self.books.cache.get(ck) if (self.books and self.passes["ledger"]) else None
+                if cans is not None and it["run_seq"] == 0:
+                    it["answer"] = cans
+                    self.stats["cache_hits"] += 1
+                    if self.books:
+                        self.books.ledger.put(lk, cans)
+                    continue
+                missing[qid] = it["question"]
+            if not missing:
+                continue
+            try:
+                answers, tokens, cost = self.client.ask(g["render"], missing)
+            except Exception as e:
+                self.warn(f"W-call-fail: {e}")
+                for qid in missing:
+                    g["items"][qid]["answer"] = {"type": "fail", "error": str(e)}
+                continue
+            call["sent"] = True
+            with self._lock:
+                self.stats["calls"] += 1
+                self.stats["questions"] += len(missing)
+                self.stats["tokens"] += tokens
+                self.stats["cost"] += cost
+            for qid in missing:
+                a = answers[qid]
+                g["items"][qid]["answer"] = a
+                if self.books:
+                    with self._lock:
+                        self.books.ledger.put(g["items"][qid]["ledger_key"], a)
+                        self.books.cache.put(g["items"][qid]["cache_key"], a)
+
+    def _collect(self, p: dict):
+        """把物理题项合回每题一条读数。"""
+        by_q: dict[int, list[dict]] = {}
+        for it in p["items"]:
+            by_q.setdefault(id(it["reading"]), []).append(it)
+        rs = p["rs"]
+        for items in by_q.values():
+            r: Reading = items[0]["reading"]
+            q: Q = items[0]["q"]
+            if any(it["answer"].get("type") == "fail" for it in items):
+                r._ans = {"phys": items[0]["phys"], "fail": True, "p": 0.0, "value": None, "probs": {}}
+                continue
+            if any(isinstance(m.content, dict) and "fail" in m.content and m.origin[:1] == ("do",)
+                   for m in rs.all_mats):
+                r._ans = {"phys": items[0]["phys"], "fail": True, "p": 0.0, "value": None, "probs": {}}
+                continue
+            if q.op == "test":
+                ps = [float(it["answer"]["noul"]) for it in items]
+                p_ = max(ps) if q.agg == "exists" else min(ps)
+                new = {"phys": "noul", "p": p_, "value": p_, "probs": {"noul": p_}, "chunks": len(items) if items[0]["chunk"] is not None else 0}
+            elif q.op == "select":
+                if items[0]["phys"] == "choice":
+                    picks, probs_all = [], []
+                    for it in items:
+                        a = it["answer"]
+                        probs = {kk: float(v) for kk, v in a["probabilities"].items()}
+                        opt = a.get("choice") or max(probs, key=probs.get)
+                        picks.append(int(opt[1:]))
+                        probs_all.append({int(kk[1:]): v for kk, v in probs.items()})
+                    from collections import Counter
+                    mode, cnt = Counter(picks).most_common(1)[0]
+                    p_ = sum(pr.get(mode, 0.0) for pr in probs_all) / len(probs_all)
+                    new = {"phys": "choice", "p": p_, "value": mode, "probs": probs_all[0],
+                           "mode_share": cnt / len(picks), "perms": len(items)}
+                else:
+                    probs: dict = {}
+                    for it in items:                      # 裂变块：同候选跨块取 max（exists）
+                        probs[it["cand"]] = max(probs.get(it["cand"], 0.0), float(it["answer"]["noul"]))
+                    order = sorted(probs, key=lambda i: -probs[i])
+                    top = order[0]
+                    second = probs[order[1]] if len(order) > 1 else 0.0
+                    n_chunks = len({it["chunk"] for it in items}) if items[0]["chunk"] is not None else 0
+                    new = {"phys": "noul", "p": probs[top], "value": top, "probs": probs, "second": second,
+                           "mode_share": 1.0, "knoul": True, "chunks": n_chunks}
+            else:
+                from collections import Counter
+                from foundation.core.outlet import score_level
+                lv_all, pr_all = [], []
+                for it in items:
+                    a = it["answer"]
+                    pr = {str(kk): float(v) for kk, v in a["probabilities"].items()}
+                    lv_all.append(score_level(a["score"], len(q.scale)))
+                    pr_all.append(pr)
+                if len(items) == 1:
+                    lvl = lv_all[0]
+                    new = {"phys": "score", "p": pr_all[0].get(str(lvl), 0.0), "value": lvl, "probs": pr_all[0]}
+                else:                                     # 裂变块：按出口计数，众数档；p = 众数占比 × 众数档均值概率
+                    lvl, cnt = Counter(lv_all).most_common(1)[0]
+                    share = cnt / len(lv_all)
+                    mean_p = sum(pr.get(str(lvl), 0.0) for pr in pr_all) / len(pr_all)
+                    new = {"phys": "score", "p": share * mean_p, "value": lvl, "probs": pr_all[0],
+                           "mode_share": share, "chunks": len(items)}
+            if r._ans is not None and r._ans.get("runs") is not None:
+                runs = r._ans["runs"] + [new]
+                r._ans = dict(new, runs=runs)
+            else:
+                r._ans = new
+
+    # ------------------------------------------------------------ cut（内核桥）
+    def cut(self, r, cost: tuple | None = None):
+        if isinstance(r, ReadingsVec):
+            return [self.cut(x, cost) for x in r]
+        if isinstance(r, Readings):
+            if len(r) != 1:
+                raise JvError("cut 收到多题读数向量；修法：jv.cut(r[i]) 指定题")
+            r = r[0]
+        if _is(r, Exit):
+            return r
+        if not isinstance(r, Reading):
+            raise JvTypeError(f"J-01: cut 只接受读数，收到 {type(r).__name__}")
+        ans = r._need()
+        q = r.q
+        rs = r.effect.states[r.obj_index].resolved()
+        kw = {"q_hash": q.text_hash, "taint": rs.taint, "reading": r}
+        rec = self.calib.get(q.calib.key)
+        # J-02 禁自指：状态里含由本题派生的材料
+        if q.text_hash in rs.derived_from:
+            raise JvError(f"J-02: 由题「{q.text[:20]}」派生的材料回到了再问该题的状态（禁自指）。"
+                          f"修法：换题，或把派生材料放进另一条校准键的题。")
+        if ans.get("stop"):
+            return self._register_exit(Unsure(ans["stop"], **kw))
+        if ans.get("fail"):
+            return self._register_exit(Unsure("fail", **kw))
+        for slot in q.evidence:                                  # J-09 先于信任 p
+            if not getattr(rs, slot, None):
+                return self._register_exit(Unsure("insufficient", detail={"missing": slot}, **kw))
+        if rec.status == "停岗":
+            return self._register_exit(Unsure("drift", **kw))
+        if cost is not None and not rec.cost_matrix:
+            self.warn(f"W-cost-unfit: 校准键 {q.calib.key} 无代价矩阵记录，cost 参数忽略；线只从记录来（I4）")
+        delta = rec.delta if rec.delta is not None else self.delta_for(ans["phys"])
+        if rec.status == "冷":
+            s_hi, s_lo = self.safety_lines()
+            prov = self._decide(ans, q, rs, s_hi, s_lo, delta, kw, provisional=True)
+            return self._register_exit(Unsure("cold", detail={"provisional": prov}, **kw))
+        return self._register_exit(self._decide(ans, q, rs, rec.hi, rec.lo, delta, kw))
+
+    def _decide(self, ans: dict, q: Q, rs, hi: float, lo: float, delta: float, kw: dict, provisional=False) -> Exit:
+        kw = dict(kw, provisional=provisional)
+        p = float(ans["p"])
+        if q.op == "test":
+            if p >= hi + delta:
+                return Act(p=p, **kw)
+            if p <= lo - delta:
+                return Ignore(p=p, **kw)
+            return Unsure("band", p=p, **kw)
+        if q.op == "select":
+            if q.prior == "pass_count":
+                pc = [(m.content.get("pass_count") if isinstance(m.content, dict) else None) for m in rs.over]
+                if all(x is not None for x in pc):
+                    best = max(pc)
+                    if pc[0] == best:
+                        return Pick(0, p=1.0, detail={"prior": "default-keeps"}, **kw)
+                    elig = [i for i, x in enumerate(pc) if x == best]
+                    if len(elig) == 1:
+                        return Pick(elig[0], p=1.0, detail={"prior": "pass-count"}, **kw)
+                    probs = {i: ans["probs"].get(i, 0.0) for i in elig}
+                    top = max(probs, key=probs.get)
+                    return Pick(top, p=probs[top], detail={"prior": "tie-by-reading"}, **kw) \
+                        if probs[top] >= hi + delta else Unsure("band", p=probs[top], **kw)
+            if ans.get("mode_share", 1.0) < 1.0:
+                return Unsure("tie", p=p, detail={"mode_share": ans["mode_share"]}, **kw)
+            if ans.get("knoul") and (p - ans.get("second", 0.0)) <= delta:
+                return Unsure("tie", p=p, detail={"second": ans.get("second")}, **kw)
+            if p >= hi + delta:
+                return Pick(int(ans["value"]), p=p, **kw)
+            return Unsure("band", p=p, **kw)
+        if p >= hi + delta:
+            return At(int(ans["value"]), p=p, **kw)
+        return Unsure("band", p=p, **kw)
+
+    def _register_exit(self, e: Exit) -> Exit:
+        self.exits.append(e)
+        if self._frames:
+            self._frames[-1].exits.append(e)
+        self.stats["exits"] += 1
+        if _is(e, Unsure):
+            self.stats["unsure"] += 1
+        if self._loop_keys:
+            self._loop_keys[-1].add(H(e.q_hash, e.kind, getattr(e.reading, "run_seq", 0),
+                                      e.reading.effect.states[e.reading.obj_index].resolved().structure_hash
+                                      if e.reading is not None else ""))
+        return e
+
+    # ------------------------------------------------------------ fit（桥库）
+    def fit(self, ref: ir.FitRef, *rs: Reading):
+        rec = self.fits.get(ref.name)
+        if rec is None:
+            raise JvError(f"J-16: fit {ref.name} 未注册；fit 只认注册表签名。修法：用训练过程注册，或改用 cut。")
+        if len(rs) != len(rec["features"]):
+            raise JvError(f"J-16/J-04: fit {ref.name} 期望 {len(rec['features'])} 个读数，收到 {len(rs)}")
+        for r, (ck, fk) in zip(rs, rec["features"]):
+            if not isinstance(r, Reading):
+                raise JvTypeError("J-01: fit 只接受读数")
+            if r.q.calib.key != ck or _fp_kind(r) != fk:
+                raise JvError(f"J-04: fit {ref.name} 的输入指纹 ({r.q.calib.key}, {_fp_kind(r)}) 与注册特征 ({ck}, {fk}) 不同")
+        score = float(rec["fn"](*[float(r._need()["p"]) for r in rs]))
+        return _Score(score, ref, rs)
+
+    def cut_score(self, s: "_Score", calib: CalibRef):
+        rec = self.calib.get(calib.key)
+        fitrec = self.fits.get(s.ref.name)
+        if rec.set_id and rec.set_id == fitrec["trained_from"]:
+            raise JvError(f"J-16: fit {s.ref.name} 的训练集与保形集相同（{rec.set_id}），不相交约束违反")
+        kw = {"q_hash": H("fit", s.ref.name), "taint": ir._join_taint(
+            r.effect.states[r.obj_index].resolved().taint for r in s.readings)}
+        if rec.status != "上岗":
+            return self._register_exit(Unsure("cold", **kw))
+        delta = rec.delta or 0.0
+        if s.value >= rec.hi + delta:
+            return self._register_exit(Act(p=s.value, **kw))
+        if s.value <= rec.lo - delta:
+            return self._register_exit(Ignore(p=s.value, **kw))
+        return self._register_exit(Unsure("band", p=s.value, **kw))
+
+    # ------------------------------------------------------------ handler 库（§5）
+    def handle(self, c, then=None, regen: bool = False, keep=_Marker("nokeep"), **kw):
+        e = c if _is(c, Exit) else self._last_unsure(c)
+        if e is None:
+            raise JvError(f"handle: 找不到 cause={c} 的 Unsure")
+        cause = e.cause
+        e.__dict__["consumed"] = True
+        if cause == "cold":
+            prov = e.detail.get("provisional")
+            if prov is not None and not _is(prov, Unsure):
+                prov.__dict__["consumed"] = True
+                self._register_exit(prov)
+                return prov
+        elif cause == "band" and e.reading is not None and e.reading.effect.run_seq == 0:
+            e2 = self._rerun(e.reading)
+            if not _is(e2, Unsure):
+                return e2
+            e2.__dict__["consumed"] = True
+        elif cause == "budget":
+            return e
+        if regen:
+            return None
+        if not isinstance(keep, _Marker):
+            return keep
+        if then is escalate:
+            if e.reading is None:
+                return escalate(e, note=cause)
+            return self.ask(e.reading.effect.states[e.reading.obj_index], e.reading.q)
+        if then is drop or then is None:
+            return None
+        if callable(then):
+            return then(e)
+        return None
+
+    def _last_unsure(self, cause: str):
+        lm = Exit._last_matched
+        if _is(lm, Unsure) and lm.cause == cause:
+            return lm
+        for e in reversed(self.exits):
+            if _is(e, Unsure) and e.cause == cause and not e.__dict__.get("consumed"):
+                return e
+        for e in reversed(self.exits):
+            if _is(e, Unsure) and e.cause == cause:
+                return e
+        return None
+
+    def _rerun(self, r: Reading) -> Exit:
+        """band → 同状态同题重跑一次（run_seq+1），agg 后重切。"""
+        eff = r.effect
+        j2 = JudgeEffect(states=[eff.states[r.obj_index]], qs=[r.q], site=eff.site, seq=self._next(), rt=self,
+                         run_seq=eff.run_seq + 1, segment=self._segment)
+        j2.readings = Readings(j2)
+        self.pending_judges.append(j2)
+        self.flush(reason="rerun")
+        r2 = j2.readings[0]
+        a1, a2 = r._ans, r2._ans
+        merged = ir._merge_runs([a1, a2], a1["phys"])
+        merged["runs"] = [a1, a2]
+        r._ans = merged
+        return self.cut(r)
+
+    def consume(self, exits, unsure=drop):
+        """批量消费向量化出口（J-05）。unsure=jv.drop 记账丢弃；jv.escalate 逐个 ask（可能 Pending）。"""
+        out = []
+        for e in exits:
+            if _is(e, Unsure):
+                if unsure is escalate:
+                    out.append(self.handle(e, then=escalate))
+                else:
+                    e.__dict__["consumed"] = True
+                    out.append(None)
+            else:
+                e.__dict__["consumed"] = True
+                out.append(e)
+        return out
+
+    def on_truth(self, key: str, fn: Callable):
+        """真值回填入口：登记回调；真值到达时写校准集（延迟真值通道）。"""
+        self.stats.setdefault("on_truth", []).append(key)
+        self._truth_hooks = getattr(self, "_truth_hooks", {})
+        self._truth_hooks[key] = fn
+
+    def on_fail(self, expr, alt):
+        if isinstance(expr, _Future):
+            expr.resolve()
+            if expr.fail is not None:
+                return alt
+            return expr
+        if isinstance(expr, Mat) and isinstance(expr.content, dict) and "fail" in expr.content:
+            return alt
+        return expr
+
+
+class _Frame:
+    """嵌套 `@jv.program` 的子账帧：预算是外层的子账，Exit.consumed 只核本帧作用域。"""
+
+    def __init__(self, name: str, budget: Budget, parent, calls0: int, cost0: float, layers0: int, esc0: int, depth: int):
+        self.name, self.budget, self.parent = name, budget, parent
+        self.calls0, self.cost0, self.layers0, self.esc0, self.depth = calls0, cost0, layers0, esc0, depth
+        self.exits: list = []
+
+    def report(self, rt: "Runtime") -> dict:
+        return {"name": self.name, "depth": self.depth, "calls": rt.stats["calls"] - self.calls0,
+                "layers": len(rt.stats["layers"]) - self.layers0, "cost": round(rt.stats["cost"] - self.cost0, 6),
+                "exits": len(self.exits), "unsure": sum(1 for e in self.exits if _is(e, Unsure)),
+                "escalations": rt._escalations - self.esc0}
+
+    def __repr__(self):
+        return f"Frame({self.name}, depth={self.depth})"
+
+
+def _chain(frame):
+    """帧及其全部外层帧（子账计入外层总数）。"""
+    while frame is not None:
+        yield frame
+        frame = frame.parent
+
+
+class _Score:
+    def __init__(self, value: float, ref, readings):
+        self.value, self.ref, self.readings = value, ref, readings
+
+    def __repr__(self):
+        return f"Score({self.value:.3f}, fit={self.ref.name})"
+
+
+def _fp_kind(r: Reading) -> str:
+    st = r.effect.states[r.obj_index]
+    if r.q.op == "select":
+        return f"select/K={len(st.over)}"
+    if r.q.op == "measure":
+        return f"measure/{len(r.q.scale)}"
+    return "test"
+
+
+class _It:
+    def __init__(self, n: int):
+        self.n = n
+
+    def __repr__(self):
+        return f"it(n={self.n})"
+
+
+class _Loop:
+    def __init__(self, rt: Runtime, bound: int, variant):
+        self.rt, self.bound, self.variant = rt, bound, variant
+        self.stopped_by: str | None = None
+
+    def __iter__(self):
+        prev = None
+        self.rt._loop_keys.append(set())
+        seen_keys: set = set()
+        try:
+            for n in range(self.bound):
+                v = self.variant()
+                if prev is not None and not (v < prev):
+                    self.stopped_by = "noprogress"
+                    self.rt.stats.setdefault("noprogress", []).append({"n": n, "variant": v})
+                    return
+                prev = v
+                before = set(self.rt._loop_keys[-1])
+                yield _It(n)
+                new = self.rt._loop_keys[-1] - before
+                if new and new & seen_keys:
+                    self.stopped_by = "keyrepeat"
+                    self.rt.stats.setdefault("noprogress", []).append({"n": n, "keyrepeat": True})
+                    return
+                seen_keys |= new
+            self.stopped_by = "bound"
+        finally:
+            self.rt._loop_keys.pop()
+
+
+class decreasing:
+    """宿主变式：严格递减的计量。"""
+
+    def __init__(self, fn: Callable[[], float]):
+        self.fn = fn
+
+    def __call__(self):
+        return self.fn()
+
+
+def _chunk(text: str, tokens: int) -> list[str]:
+    n = max(1, int(tokens * 1.3))
+    return [text[i:i + n] for i in range(0, len(text), n)] or [text]
+
+
+def _plain(x):
+    if isinstance(x, Mat):
+        return {"__mat__": x.content}
+    if isinstance(x, (list, tuple)):
+        return [_plain(v) for v in x]
+    return x

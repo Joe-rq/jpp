@@ -1,0 +1,34 @@
+"""Offline, executable tour of J++ composition mechanisms."""
+import argparse
+import json
+from foundation import jv
+from jev_compose import execute
+from jev_compose.examples import (InquiryState, absolute_value_problem,
+    enumerate_candidates, make_inquiry, make_synthesis)
+from jev_compose.fixtures import runtime
+
+
+def demo():
+    inquiry = execute(make_inquiry(), InquiryState(jv.mat({"target": 731}), tuple(range(1000))), runtime())
+    found = inquiry.value.state
+    synthesis = execute(make_synthesis(), absolute_value_problem(), runtime(generator=enumerate_candidates))
+    built = synthesis.value.state
+    assert found.remaining == (731,)
+    assert len(found.observations) <= 10
+    assert built.solution is not None
+    return {
+        "mode": "offline synthetic observations; no model API requests",
+        "inquiry": {"candidates": 1000, "identified": found.remaining[0],
+                    "questions": len(found.observations)},
+        "synthesis": {"expression": built.solution.content["expression"],
+                      "trials": len(built.trials), "verified_inputs": 9,
+                      "generator": "finite enumeration, not an LLM"},
+        "actual_api_cost_usd": 0,
+    }
+
+
+def main(argv=None):
+    parser = argparse.ArgumentParser(prog="jpp", description="J++ experimental language")
+    parser.add_argument("command", choices=["demo"], nargs="?", default="demo")
+    parser.parse_args(argv)
+    print(json.dumps(demo(), ensure_ascii=False, indent=2))

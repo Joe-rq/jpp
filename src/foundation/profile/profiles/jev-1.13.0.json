@@ -1,0 +1,506 @@
+{
+ "model_version": "jev-1.13.0",
+ "date": "2026-09-20",
+ "sources": [
+  "E1",
+  "E2",
+  "E3",
+  "E4v2",
+  "E5",
+  "E5-neutral",
+  "E8",
+  "E9",
+  "E9b",
+  "E9c",
+  "E9d",
+  "E10",
+  "E-CAL-0",
+  "E-JSON",
+  "E-JSON-hi"
+ ],
+ "window": {
+  "representation_note": "窗口常数按 state 表示分列：text_slots = [JVR] 文字槽标记；json_slots = JSON 具名槽（E-JSON/E-JSON-hi）。",
+  "text_slots": {
+   "claim_bearing_ctx": {
+    "flip_frac_by_ctx_tokens": {
+     "~100": 0.143,
+     "~1000": 0.607,
+     "~1800": 0.571
+    },
+    "mean_abs_delta_by_ctx_tokens": {
+     "~100": 0.0329,
+     "~1000": 0.3946,
+     "~1800": 0.4293
+    },
+    "onset_dose_docs": 4,
+    "n_per_cell": 28,
+    "bound": {
+     "kind": "upper",
+     "token": 1000,
+     "reason": "≈1,000 token 带主张语境下翻转 60.7%，读数被语境接管；E5 的 500 处 median 0.11 是 lower"
+    },
+    "usable_lower": 500,
+    "source": "E-JSON + E-JSON-hi + E5"
+   }
+  },
+  "json_slots": {
+   "claim_bearing_ctx": {
+    "flip_frac_by_ctx_tokens": {
+     "~100": 0.071,
+     "~1000": 0.071,
+     "~1800": 0.036
+    },
+    "mean_abs_delta_by_ctx_tokens": {
+     "~100": 0.0211,
+     "~1000": 0.0361,
+     "~1800": 0.0354
+    },
+    "onset_dose_docs": null,
+    "n_per_cell": 28,
+    "bound": {
+     "kind": "lower",
+     "token": 1800,
+     "reason": "≈1,800 token 带主张语境翻转 3.6%，未触发"
+    },
+    "upper": {
+     "value": "未测",
+     "by": "window_repr --repr json（3k / 5k / 8k 剂量，尚未包装）"
+    },
+    "source": "E-JSON + E-JSON-hi"
+   }
+  },
+  "noul_claim_bearing": {
+   "unit": "filler token (nominal) → median/max |drift| of noul reading",
+   "median_drift": {
+    "500": 0.11,
+    "2000": 0.1233,
+    "8000": 0.2467
+   },
+   "max_drift": {
+    "500": 0.1733,
+    "2000": 0.2,
+    "8000": 0.3167
+   },
+   "flips_beyond_noise": {
+    "500": 0,
+    "2000": 0,
+    "8000": 0
+   },
+   "n_survivors": 11,
+   "reps": 3,
+   "representation": "text",
+   "bound": {
+    "kind": "lower",
+    "token": 500,
+    "reason": "500 处 median 0.11 已 ≥ 2δ_noul；更小的剂量未测（文字渲染下的常数，见 text_slots）"
+   }
+  },
+  "noul_neutral": {
+   "representation": "text",
+   "median_drift": {
+    "2000": 0.02,
+    "8000": 0.0167
+   },
+   "max_drift": {
+    "2000": 0.08,
+    "8000": 0.09
+   },
+   "n": 6,
+   "reps": 3,
+   "bound": {
+    "kind": "lower",
+    "token": 8000,
+    "reason": "8000 中性填充 median 0.017，未见带偏"
+   }
+  },
+  "choice": {
+   "notes_100tok_candidates": {
+    "max_state_tokens_ok": 1760,
+    "consistency": 1.0,
+    "K": 16,
+    "bound": "lower",
+    "n_runs": 30
+   },
+   "code_300tok_candidates": {
+    "max_state_tokens_ok": 1528,
+    "consistency": 0.83,
+    "K": 8,
+    "bound": "lower",
+    "n_runs": 30
+   },
+   "source": "E10 组 1"
+  },
+  "score": {
+   "max_state_tokens_ok": 821,
+   "anchors": 10,
+   "rerun_consistency": 0.98,
+   "bound": "lower",
+   "source": "E10 组 2"
+  }
+ },
+ "delta": {
+  "noul": {
+   "immediate": {
+    "n": 420,
+    "p95": 0.03,
+    "p99": 0.04,
+    "max": 0.05
+   },
+   "after_gap": {
+    "n": 140,
+    "p95": 0.0305,
+    "p99": 0.0461,
+    "max": 0.07
+   }
+  },
+  "choice_prob_chosen": {
+   "immediate": {
+    "n": 120,
+    "p95": 0.06,
+    "p99": 0.0781,
+    "max": 0.11
+   },
+   "after_gap": {
+    "n": 40,
+    "p95": 0.05,
+    "p99": 0.0866,
+    "max": 0.11
+   }
+  },
+  "choice_confidence": {
+   "immediate": {
+    "n": 120,
+    "p95": 0.0805,
+    "p99": 0.1162,
+    "max": 0.18
+   },
+   "after_gap": {
+    "n": 40,
+    "p95": 0.0705,
+    "p99": 0.1288,
+    "max": 0.16
+   }
+  },
+  "score": {
+   "immediate": {
+    "n": 60,
+    "p95": 0.08,
+    "p99": 0.1141,
+    "max": 0.12
+   },
+   "after_gap": {
+    "n": 20,
+    "p95": 0.071,
+    "p99": 0.0862,
+    "max": 0.09
+   }
+  }
+ },
+ "flip_rate": {
+  "choice_argmax_rerun": {
+   "rate": 0.0333,
+   "n": 120,
+   "ci95": [
+    0.013,
+    0.083
+   ],
+   "source": "E1"
+  },
+  "noul_outlet_under_filler": {
+   "flips": {
+    "500": 0,
+    "2000": 0,
+    "8000": 0
+   },
+   "source": "E5",
+   "note": "过线翻转按迟滞 δ 判，三档剂量均 0"
+  }
+ },
+ "batch_invariance": {
+  "noul": {
+   "alone_vs_batched_mean_abs_diff": {
+    "in10": 0.0111,
+    "in50": 0.0092,
+    "in200": 0.0128,
+    "shuffled200": 0.0099
+   },
+   "max": {
+    "in10": 0.07,
+    "in50": 0.0867,
+    "in200": 0.09,
+    "shuffled200": 0.08
+   },
+   "n_per_condition": 30,
+   "reps": 3,
+   "choice_label_mismatch": {
+    "alone": "0/18",
+    "in10": "0/18",
+    "in50": "0/18",
+    "in200": "0/18",
+    "shuffled200": "0/18"
+   },
+   "source": "E2/E3"
+  },
+  "score": {
+   "cross_batch_mode_consistency": 0.9,
+   "with_peers_vs_alone": 0.8,
+   "within_config_rerun": 0.97,
+   "n_objects": 20,
+   "batches": 4,
+   "reps": 3,
+   "ci95_cross_batch": [
+    0.699,
+    0.972
+   ],
+   "source": "E10 组 3",
+   "rule": "状态只放锚与对象不放同伴时才可跨材料偏序排序"
+  },
+  "choice_same_call_perm_crosstalk": {
+   "value": "未测",
+   "by": "E-PERM-SAME-CALL（预注册草案见 experiments/EXPERIMENTS.md）"
+  }
+ },
+ "cost": {
+  "price_usd_per_input_token": 4.2000000000000006e-08,
+  "output_billed": false,
+  "tokens_by_n_questions_300tok_state": {
+   "1": 570,
+   "10": 1048,
+   "50": 2530,
+   "200": 8080
+  },
+  "tokens_per_question": 37.7,
+  "latency_median_by_n": {
+   "1": 0.876,
+   "10": 0.797,
+   "50": 0.91,
+   "200": 1.069
+  },
+  "ratio_50_over_1_time": 1.039,
+  "regression": {
+   "intercept_tokens": 271,
+   "state_char_coef": 1.0,
+   "question_char_coef": 0.88,
+   "n_calls": 1088,
+   "source": "E8 回归"
+  }
+ },
+ "concurrency": {
+  "lower_bound_ok": 32,
+  "throughput_calls_per_s": {
+   "c8": 9,
+   "c32": 35
+  },
+  "latency_s": {
+   "p50": 0.868,
+   "p95": 1.026,
+   "max": 1.135
+  },
+  "n_http": 146,
+  "n429": 0,
+  "n529": 0,
+  "upper_bound": {
+   "value": "未测",
+   "by": "concurrency（≥64；E10 在并发 16 + 大状态时见 SSL EOF，上限与状态大小相关）"
+  },
+  "source": "E8"
+ },
+ "k_limit": {
+  "by_candidate_tokens": {
+   "<=120": {
+    "K_max": 16,
+    "consistency": 1.0,
+    "source": "E10 笔记段"
+   },
+   "120-250": {
+    "K_max": "未测",
+    "by": "choice_k（补测一格）"
+   },
+   ">=300": {
+    "K_max": 4,
+    "reason": "E10 K=8 一致率 0.83 但 E9b/E9c/E9d 8 选项首位偏置 25–39%；默认改 K 道 noul 一层",
+    "source": "E10 + E9b/E9c/E9d"
+   }
+  },
+  "hard_max_options": 255,
+  "source_hard_max": "官方文档 D1"
+ },
+ "position_bias": {
+  "choice_argmax_consistency_E10": {
+   "code_K16": {
+    "mode_share_mean": 0.67,
+    "n_sets": 2,
+    "runs_per_set": 15
+   },
+   "code_K2": {
+    "mode_share_mean": 1.0,
+    "n_sets": 2,
+    "runs_per_set": 15
+   },
+   "code_K4": {
+    "mode_share_mean": 0.8,
+    "n_sets": 2,
+    "runs_per_set": 15
+   },
+   "code_K8": {
+    "mode_share_mean": 0.83,
+    "n_sets": 2,
+    "runs_per_set": 15
+   },
+   "notes_K16": {
+    "mode_share_mean": 1.0,
+    "n_sets": 2,
+    "runs_per_set": 15
+   },
+   "notes_K2": {
+    "mode_share_mean": 0.83,
+    "n_sets": 2,
+    "runs_per_set": 15
+   },
+   "notes_K4": {
+    "mode_share_mean": 0.8,
+    "n_sets": 2,
+    "runs_per_set": 15
+   },
+   "notes_K8": {
+    "mode_share_mean": 0.83,
+    "n_sets": 2,
+    "runs_per_set": 15
+   }
+  },
+  "note_E10": "16 集里 14 集重跑一致率 1.00；不一致全来自换顺序，7 次翻转里 6 次新众数落在第 0 位",
+  "choice_first_pos_share_E9_8way": {
+   "first": 0.23,
+   "second": 0.18,
+   "uniform": 0.125
+  },
+  "noul_position_effect_E9": {
+   "reading_range_mean": 0.07,
+   "p95": 0.24
+  },
+  "choice_pos_dist_E9c_8way": [
+   0.253,
+   0.218,
+   0.057,
+   0.057,
+   0.103,
+   0.149,
+   0.08,
+   0.08
+  ],
+  "choice_first_pos_share_E9c": 0.253,
+  "choice_first_pos_share_E9d": 0.391,
+  "uniform_reference": 0.125
+ },
+ "anchors": {
+  "expected_level_drift_vs_0": {
+   "3": 0.26,
+   "5": 0.28,
+   "10": 0.25
+  },
+  "adjacent_config_drift": {
+   "3->5": 0.15,
+   "5->10": 0.07
+  },
+  "argmax_consistency": {
+   "0v5": 0.75,
+   "3v5": 0.75,
+   "5v10": 0.9
+  },
+  "within_config_rerun": {
+   "0": 0.98,
+   "3": 0.97,
+   "5": 1.0,
+   "10": 0.98
+  },
+  "convergence_point": 5,
+  "default_per_level": 1,
+  "n_objects": 20,
+  "reps": 5,
+  "source": "E10 组 2"
+ },
+ "calibration": {
+  "ece_by_source": {
+   "e9 纯字面 noul": {
+    "n": 240,
+    "ece": 0.108,
+    "brier": 0.04,
+    "auc": 0.709
+   },
+   "e9b 纯字面": {
+    "n": 336,
+    "ece": 0.069,
+    "brier": 0.137,
+    "auc": 0.788
+   },
+   "e9b 执行示例后": {
+    "n": 56,
+    "ece": 0.087,
+    "brier": 0.077,
+    "auc": 0.953
+   },
+   "e9c 纯字面": {
+    "n": 696,
+    "ece": 0.228,
+    "brier": 0.285,
+    "auc": 0.618
+   },
+   "e9c 执行示例后": {
+    "n": 112,
+    "ece": 0.223,
+    "brier": 0.256,
+    "auc": 0.629
+   },
+   "e9d 带失败摘要": {
+    "n": 696,
+    "ece": 0.18,
+    "brier": 0.23,
+    "auc": 0.718
+   },
+   "choice p_max": {
+    "n": 246,
+    "ece": 0.281,
+    "brier": 0.24,
+    "auc": 0.624
+   }
+  },
+  "rule": "校准是字面化程度的函数：错误字面可见时 ECE ≈ 0.07 可当概率；不可见时 ECE ≈ 0.23 只当序数",
+  "zh_reliability_curve": {
+   "value": "未测",
+   "by": "E-CAL 正式版（e_cal_labels.csv 300 条待 Nature 标注）"
+  },
+  "source": "E-CAL-0"
+ },
+ "language": {
+  "probe_gap_zh_mean": 0.597,
+  "probe_gap_en_mean": 0.65,
+  "n_questions": 10,
+  "rule": "默认中文题面；个别题英文缝更大，按题选",
+  "source": "E3"
+ },
+ "state_representation_default": "json_slots",
+ "modalities_accepted": [
+  "text"
+ ],
+ "question_types": [
+  "noul",
+  "choice",
+  "score"
+ ],
+ "notes": "值为「未测」的字段带 by= 指向该由 run.py 的哪一项测；上界/下界见各 bound 字段。",
+ "field_stats": {
+  "filled": 277,
+  "untested": 5
+ },
+ "lines": {
+  "safety_default": {
+   "hi": 0.75,
+   "lo": 0.25,
+   "n": 0,
+   "bound": "none",
+   "status": "待 E-CAL 定（非实测常数）",
+   "source": "沿用 v0 core/params.DEFAULTS.safety_default_hi/lo（施工单 v0.2 常数）；jv 冷校准的临时出口用它，非档案实测",
+   "by": "E-CAL（e_cal_labels.csv 300 条标注后按域扫线）"
+  }
+ }
+}
