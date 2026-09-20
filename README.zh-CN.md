@@ -22,6 +22,8 @@ J++ 是一门正在开发的实验性编程语言。我们想让语义判断成�
 
 第一个应用是**通爻发现实验台**：[216 人 × 20 种意图](https://towow-ai.github.io/jpp/demos/towow/population/)可以切换意图、查看具体人物和词面检索对照；[十人组合实验](https://towow-ai.github.io/jpp/demos/towow/lab/)可以关闭转介或组合，检查哪些结果消失。两个页面都可以在浏览器执行当前 J++ 源码，模型层使用已公开的真实 JEV 回答录制。原有[图谱动画与介绍](https://towow-ai.github.io/jpp/)继续保留。[案例、实测速度与复现方法](docs/towow-demo.zh-CN.md)。
 
+新增[325 人真实来源关系对照](https://towow-ai.github.io/jpp/demos/towow/real/)：在同一批职业资料上比较七种检索与判断组合，核对 963 条旧关系标签，逐人查看找到与漏掉的候选。公开真实调用录制、全部结果和离线复现程序。[结果与历史口径](docs/towow-real-relations-results.zh-CN.md)。
+
 ## 五分钟运行
 
 

@@ -22,6 +22,8 @@ Our first application question comes from Towow: can a fuzzy intent meet differe
 
 The first application is the **Towow discovery lab**. Explore [216 participants and 20 intents](https://towow-ai.github.io/jpp/demos/towow/population/), inspect profiles and compare a semantic-plus-lexical method against BM25, or [disable referral/composition in the ten-person experiment](https://towow-ai.github.io/jpp/demos/towow/lab/). Both pages execute the current J++ Python sources in the browser using published real JEV response recordings. [Animated explanation](https://towow-ai.github.io/jpp/) · [Measurements and reproduction (中文)](docs/towow-demo.zh-CN.md).
 
+The [325-profile real-source comparison](https://towow-ai.github.io/jpp/demos/towow/real/) evaluates seven retrieval/judgment compositions against 963 historical proxy relation labels. Inspect individual candidates, regressions, exact response recordings and offline reproduction. [Results and evaluation scope (中文)](docs/towow-real-relations-results.zh-CN.md).
+
 ## Try it
 
 

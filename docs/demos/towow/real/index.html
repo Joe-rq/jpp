@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>J++ · 找回真实来源资料中的关系</title><link rel="stylesheet" href="../lab/style.css"><link rel="stylesheet" href="style.css"></head>
+<body><main>
+<header><a class="brand" href="../">J++ <span>FIRST APPLICATION · TOWOW</span></a><nav><a href="../population/">216 人合成案例</a><a href="../lab/">组合实验</a></nav></header>
+<div class="eyebrow">可检查的发现实验 / 03 · 真实来源资料</div>
+<h1>他们已有的关系，<br>能从上下文找回来吗？</h1>
+<p class="lead">325 份来自公开科研、开源与创业资料的职业描述。让程序先看各自的上下文，再用旧实验留下的关系记录核对：哪些人被找到，哪些没有，换一种组合方法会怎样。</p>
+<div class="headline-metrics"><div><strong>325</strong><span>主体档案</span></div><div><strong>963</strong><span>当前可核对的关系标签</span></div><div><strong>1 / 5 / 10 / 20</strong><span>固定候选数量，比较找回情况</span></div></div>
+<p class="mode">这是实际 JEV 计算结果的公开回放，浏览不会产生费用。姓名、账号、联系方式与直接链接已移除；职业内容仍可能使人物被间接识别。共同论文、组织或团队标签是关系线索，不等于每一对人都确认过合作意愿。</p>
+
+<section class="panel"><h2>同样只给你十个人，哪种方法找回更多？</h2><p>各方法使用同一批资料。下表先看已有关系是否出现在候选中；未知关系不当作错误。点击方法后，图谱与候选名单同步切换。</p><div class="table-scroll"><table><thead><tr><th>方法</th><th>前 1</th><th>前 5</th><th>前 10</th><th>前 20</th></tr></thead><tbody id="metrics"></tbody></table></div><p id="finding" class="finding"></p><p class="small">主表沿用“任一方向找到即命中”的无向关系口径。完整导出同时保留有向口径、候选总数和每类关系结果。这里不是准确率：标签没有覆盖全部可能关系。</p></section>
+
+<section class="panel"><h2>多找到的关系，与丢掉的关系</h2><p id="changes-summary"></p><div class="controls"><div><label for="added">查看新增找回的一对</label><select id="added"><option value="">选择关系</option></select></div><div><label for="lost">查看不再进入前十的一对</label><select id="lost"><option value="">选择关系</option></select></div></div><p class="small">选择后，图谱跳到能找到这条边的方法与出发方，并展示双方上下文。这些是旧名单中的关系，新增找回不等于新发生了合作。</p></section>
+<section class="panel controls"><div><label for="source">从谁的上下文出发</label><select id="source"></select></div><div><label for="method">查看哪种方法</label><select id="method"></select></div><div><label for="count">展示候选数量</label><select id="count"><option>10</option><option>5</option><option>20</option><option>1</option></select></div></section>
+<section class="graph-workspace"><div class="panel graph-panel"><div class="section-head"><h2 id="graph-title">读取关系图谱</h2><span id="local-metric" class="small"></span></div><div class="legend"><span><i class="known"></i>候选中已有关系标签</span><span><i class="novel"></i>候选中尚无关系标签</span><span><i class="missed"></i>已知关系未进候选</span></div><svg id="network" viewBox="0 0 680 570" role="group" aria-label="325个主体的发现图谱"></svg><p class="small">所有圆点的位置固定。亮线表示所选方法给出的候选；点击节点，阅读双方材料和已有标签。动画展示已完成计算的结果。</p></div>
+<aside class="panel detail"><div class="eyebrow">上下文如何相遇</div><h2 id="person-title">选择一个候选</h2><p id="relation-status"></p><h3>出发方的资料</h3><p id="source-context"></p><h3>候选方的资料</h3><p id="target-context"></p><p id="judgment" class="mode"></p></aside></section>
+
+<section class="panel"><h2>这个主体的候选名单</h2><div id="candidate-list" class="candidate-list"></div></section>
+<article><h2>从你记得的九成多，走向可比较的发现能力</h2><p>通爻旧报告记录过 98.65%，恢复数据重跑后为 893／972，即 91.87%。旧方法每人最多重排 160 个候选，实际平均提名约 80.5 人；因此不能把它和这里的前十召回率直接比较。现在固定候选数量，同时公开找到与漏掉的关系，才能看出方法究竟把谁排到了前面。</p><p>现存 325 份规范化资料缺少一个旧关系端点，对应 9 条边。本次保留这个差异，使用可对应到资料的 963 条关系。其中有共同论文、同一开源组织和同一创业团队，也有 24 条人工挑选的跨来源种子关联。它们的来源与意义不同，完整结果按关系类型分别列出。</p>
+<h2>这次 J++ 具体做了什么</h2><p>本地词面检索和 MiniLM 向量检索先给出候选，再用一个固定的融合规则排序。J++ 将每一对上下文交给同一类问题，组织并行计算、保存判断，并让排序结果继续成为下一步输入。实验保留了“只处理前二十候选”和“展开更多候选”的结果，也区分接受一个确定等级与对不确定读数做相对排序。</p><p>相对排序只表示哪些材料更值得先看，并不把尚无把握的关系变成确定事实。页面会保留不确定状态；没有历史标签的新候选仍需要读材料、联系本人或独立评阅。</p>
+<h2>怎样进一步检验“陌生发现”</h2><p>现有资料中仍有共同论文内容和公司等直接线索，因此这个实验检验的是已有关系的恢复。严格的陌生发现测试，还应使用合作发生前或与目标合作无关的材料，把后来发生的合作留作标签。仅删除姓名或论文标题，若共同摘要仍在，就不能声称模型已在没有直接线索的情况下预测了合作。</p><p id="costs"></p><p><a href="https://github.com/Towow-ai/jpp/blob/main/docs/towow-real-relations-plan.zh-CN.md">实验规则与历史口径</a> · <a href="https://github.com/Towow-ai/jpp/blob/main/src/jpp/towow_real.py">实际 J++ 程序</a> · <a href="results.json" download>下载页面全部结果</a> · <a href="recording.jsonl.gz" download>下载原始请求与回答录制</a></p></article>
+<footer><a href="../">动画与完整介绍</a> · <a href="../population/">216 人与 20 种意图</a> · <a href="../lab/">可执行组合实验</a><p id="status" role="status">正在加载计算结果…</p></footer>
+</main><script type="module" src="app.js"></script></body></html>
