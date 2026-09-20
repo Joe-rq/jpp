@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from contextvars import ContextVar
 from dataclasses import dataclass, field
+from types import MappingProxyType
 from typing import Any, Callable, Generic, TypeVar, get_origin
 
 from foundation import jv
@@ -45,19 +46,38 @@ class Component(Generic[I, O]):
     name: str
     input_type: Any
     output_type: Any
-    function: Callable[[I], O] = field(repr=False, compare=False)
+    function: Callable[[I], O] | None = field(repr=False, compare=False)
     effects: frozenset[str] = frozenset()
     operation: str = "leaf"
     children: tuple[Component, ...] = ()
     parameters: tuple[tuple[str, Any], ...] = ()
     warnings: tuple[str, ...] = ()
 
+    def __post_init__(self):
+        # These nodes are executable structure, not labels attached to closures.
+        if self.operation in ("then", "branch"):
+            if self.function is not None:
+                raise CompositionError("Structural then/branch nodes cannot carry a separate execution closure")
+            expected = 2 if self.operation == "then" else 3
+            if len(self.children) != expected:
+                raise CompositionError(f"{self.operation} requires {expected} children")
+            declared = frozenset().union(*(c.effects for c in self.children))
+            if self.effects != declared:
+                raise CompositionError("Structural capabilities must match children; use replace_at to rebuild")
+
     def __call__(self, value: I) -> O:
         _check_value(self.input_type, value, f"{self.name} input")
         events = _events.get()
         if events is not None:
             events.append({"component": self.name, "operation": self.operation})
-        result = self.function(value)
+        if self.operation == "then":
+            first, second = self.children
+            result = second(first(value))
+        elif self.operation == "branch":
+            predicate, yes, no = self.children
+            result = (yes if predicate(value) else no)(value)
+        else:
+            result = self.function(value)
         _check_value(self.output_type, result, f"{self.name} output")
         return result
 
@@ -66,20 +86,31 @@ class Component(Generic[I, O]):
             raise CompositionError(f"Cannot connect {self.name}:{_label(self.output_type)} "
                                    f"to {other.name}:{_label(other.input_type)}")
 
-        def sequence(value):
-            return other(self(value))
-
         return Component(name or f"{self.name} → {other.name}", self.input_type, other.output_type,
-                         sequence, self.effects | other.effects, "then", (self, other))
+                         None, self.effects | other.effects, "then", (self, other))
 
     def bind(self, factory: Callable[[O], Component[O, T]], output_type: Any,
-             *, effects: frozenset[str], name: str = "bind") -> Component[I, T]:
+             *, effects: frozenset[str], factory_effects: frozenset[str] | None = None,
+             name: str = "bind") -> Component[I, T]:
         """Choose/construct the next component from this result, then execute it.
 
         To return a component as data, use an ordinary component with Component
         as output_type. `bind` explicitly executes the selected continuation.
+        `effects` bounds the returned continuation, not the factory. A factory
+        may itself call capabilities: declare factory_effects, pass a Component,
+        or leave it unknown (represented by '*'). Empty is a declaration, never
+        a proof of purity. The shared planner treats bind as an opaque boundary.
         """
         allowed = frozenset(effects)
+        if isinstance(factory, Component):
+            if not _accepts(factory.input_type, self.output_type) or not _accepts(Component, factory.output_type):
+                raise CompositionError("bind factory component must accept the preceding result and return Component")
+            if factory_effects is None:
+                factory_effects = factory.effects
+            elif not factory.effects <= frozenset(factory_effects):
+                raise CompositionError("factory_effects omits the factory component's declared capabilities")
+        factory_caps = frozenset({"*"}) if factory_effects is None else frozenset(factory_effects)
+        factory_contract = "unknown" if "*" in factory_caps else "declared"
 
         def continuation(value):
             intermediate = self(value)
@@ -93,8 +124,12 @@ class Component(Generic[I, O]):
             return next_component(intermediate)
 
         return Component(name, self.input_type, output_type, continuation,
-                         self.effects | allowed, "bind", (self,),
-                         (("factory", getattr(factory, "__name__", "factory")),))
+                         self.effects | allowed | factory_caps, "bind", (self,),
+                         (("factory", getattr(factory, "name", getattr(factory, "__name__", "factory"))),
+                          ("factory_effects", None if factory_effects is None else tuple(sorted(factory_caps))),
+                          ("factory_contract", factory_contract),
+                          ("continuation_effects", tuple(sorted(allowed)))),
+                         ("W-dynamic: bind factory and continuation execute at runtime; capability declarations are not purity proofs",))
 
     def describe(self) -> dict:
         return {"name": self.name, "operation": self.operation,
@@ -102,6 +137,44 @@ class Component(Generic[I, O]):
                 "effects": sorted(self.effects), "parameters": dict(self.parameters),
                 "warnings": list(self.warnings),
                 "children": [child.describe() for child in self.children]}
+
+    def structure(self):
+        """Versioned shared-planner input, projected from the executing nodes.
+
+        Only then/branch/identity/leaf are structural in v1. Other operations
+        explicitly remain opaque. Callables are retained, not serialized.
+        """
+        def node(part):
+            structural = part.operation in ("then", "branch", "identity", "leaf")
+            operation = part.operation if structural else "opaque"
+            data = {"operation": operation, "name": part.name,
+                    "input": _label(part.input_type), "output": _label(part.output_type),
+                    "effects": tuple(sorted(part.effects)),
+                    "effects_contract": ("unknown" if "*" in part.effects else
+                                         "structural" if operation in ("then", "branch", "identity") else "declared"),
+                    "children": tuple(node(child) for child in part.children) if structural else (),
+                    "parameters": MappingProxyType(dict(part.parameters))}
+            if operation in ("leaf", "opaque"):
+                data["function"] = part.function
+            if not structural:
+                data["source_operation"] = part.operation
+            return MappingProxyType(data)
+        return MappingProxyType({"version": 1, "root": node(self)})
+
+    def replace_at(self, path: tuple[int, ...], replacement: Component) -> Component:
+        """Rebuild one child of the supported immutable then/branch structure."""
+        if not path:
+            return replacement
+        if self.operation not in ("then", "branch"):
+            raise CompositionError("replace_at traverses then/branch only; opaque methods must be rebuilt by their factory")
+        index, *tail = path
+        if type(index) is not int or index < 0 or index >= len(self.children):
+            raise CompositionError("replace_at child index is out of range")
+        children = list(self.children)
+        children[index] = children[index].replace_at(tuple(tail), replacement)
+        if self.operation == "then":
+            return children[0].then(children[1], name=self.name)
+        return branch(*children, name=self.name)
 
     def program(self, *, name: str | None = None, budget=None):
         """Compile this component's entry to the existing public jv decorator."""
@@ -111,7 +184,11 @@ class Component(Generic[I, O]):
             return calculation(value)
 
         entry.__name__ = name or self.name
-        return jv.program(budget=budget or jv.Budget())(entry)
+        structure = calculation.structure()
+        entry.__jv_structure__ = structure
+        compiled = jv.program(budget=budget or jv.Budget())(entry)
+        compiled.__jv_structure__ = structure
+        return compiled
 
 
 def component(name: str, input_type: Any, output_type: Any, *, effects=()):
@@ -137,10 +214,7 @@ def branch(predicate: Component, yes: Component, no: Component, *, name="branch"
     if not _accepts(predicate.input_type, yes.input_type):
         raise CompositionError("branch predicate has incompatible input")
 
-    def choose(value):
-        return (yes if predicate(value) else no)(value)
-
-    return Component(name, yes.input_type, yes.output_type, choose,
+    return Component(name, yes.input_type, yes.output_type, None,
                      predicate.effects | yes.effects | no.effects, "branch", (predicate, yes, no))
 
 

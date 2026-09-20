@@ -7,6 +7,9 @@ CalibRef / FitRef / Action / Budget。J-01 在这里用 Python 类型层拦：Re
 
 from __future__ import annotations
 
+import dis
+import sys
+
 import inspect
 import os
 from dataclasses import dataclass, field
@@ -57,9 +60,14 @@ def site_of(depth_hint: int = 0) -> str:
 
 # ---------------------------------------------------------------- Mat
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, eq=False)
 class Mat:
-    """唯一材料类型（§2）。不可变；哈希只看内容 + 地址 + 模态 + 渲染版本。"""
+    """唯一材料类型（§2）。不可变。
+
+    相等与哈希只看内容 + 地址 + 模态 + 渲染版本（`hash` 属性），不看来源链与 taint：
+    同一段文字从两处取来是「同一份材料」，可以进 set / dict / `in`。
+    Mat 不是字符串：`"x" in m`、`for ch in m`、`m == "x"` 都是类型错，要看内容用 `m.content` / `m.text()`。
+    """
     content: Any                                   # str | dict | list
     addr: str = ""
     modality: str = "text"
@@ -84,6 +92,27 @@ class Mat:
     def __repr__(self) -> str:
         s = self.text()
         return f"Mat({s[:40]!r}{'…' if len(s) > 40 else ''}, taint={self.taint}, origin={self.origin[:1]})"
+
+    def __eq__(self, other):
+        if isinstance(other, Mat):
+            return self.hash == other.hash
+        if isinstance(other, _Future):
+            return self.hash == other.resolve().hash
+        if isinstance(other, (str, int, float, dict, list)):
+            raise JvTypeError("Mat 不能与裸值比较。修法：m.content == 值，或 m.text() == 字符串。")
+        return NotImplemented
+
+    def __hash__(self):
+        return hash(self.hash)
+
+    def __contains__(self, item):
+        raise JvTypeError("Mat 不是字符串，`x in m` 无定义。修法：x in m.content（或 m.text()）。")
+
+    def __iter__(self):
+        raise JvTypeError("Mat 不可迭代；它是一份材料不是字符串/列表。修法：用 m.content。")
+
+    def __len__(self):
+        raise JvTypeError("Mat 无长度。修法：len(m.content)。")
 
 
 def lit(content: Any, addr: str = "", modality: str = "text") -> Mat:
@@ -117,10 +146,27 @@ class Action:
     reversible: bool = True
     fail_types: tuple = ()
     taint_out: str = "inherit"                  # trusted | untrusted | inherit
+    registered: bool = False                    # 经 jv.register_action 登记（可信来自来源登记，W-self-trusted）
+    reason: str = ""                            # 登记时给的「为什么它的输出可信/不可信」
 
     def __post_init__(self):
         if self.taint_out not in ("trusted", "untrusted", "inherit"):
             raise JvError(f"Action.taint_out 只能是 trusted|untrusted|inherit：{self.taint_out}")
+
+
+ACTIONS: dict = {}                                  # S 库动作注册表：name → Action
+
+
+def register_action(name: str, fn: Any = None, *, taint_out: str = "inherit", reason: str = "",
+                    cost: float = 0.0, latency: float = 0.0, reversible: bool = True, fail_types: tuple = ()) -> Action:
+    """S 库登记一个动作（§2.5、§2.11）。taint_out="trusted" 必须给 reason（可信来自来源登记，不来自程序自报）。"""
+    if taint_out == "trusted" and not reason.strip():
+        raise JvError(f"register_action({name!r}): taint_out=trusted 必须给 reason（这个执行器的输出为什么可信）。"
+                      f"修法：jv.register_action(name, fn, taint_out='trusted', reason='仓库自带测试框架，输出不含用户文本')")
+    a = Action(name=name, fn=fn, cost=cost, latency=latency, reversible=reversible, fail_types=tuple(fail_types),
+               taint_out=taint_out, registered=True, reason=reason)
+    ACTIONS[name] = a
+    return a
 
 
 @dataclass(frozen=True)
@@ -199,6 +245,24 @@ class _Future:
         if name.startswith("_"):
             raise AttributeError(name)
         return getattr(self.resolve(), name)
+
+    def __eq__(self, other):
+        if isinstance(other, _Future):                  # 期物之间按身份比（运行时内部用，不触发刷新）
+            return self is other
+        if isinstance(other, Mat):
+            return self.resolve() == other
+        if isinstance(other, (str, int, float, dict, list)):
+            raise JvTypeError("期物不能与裸值比较。修法：f.content == 值（读 .content 是刷新点）。")
+        return NotImplemented
+
+    def __hash__(self):
+        return id(self)
+
+    def __contains__(self, item):
+        raise JvTypeError("期物不是字符串，`x in f` 无定义。修法：x in f.content（读 .content 是刷新点）。")
+
+    def __iter__(self):
+        raise JvTypeError("期物不可迭代。修法：用 f.content。")
 
 
 MatLike = Mat | _Future
@@ -509,16 +573,25 @@ class ReadingsVec(_NoArith):
         delta = self.effect.rt.delta_for(rs[0]._ans["phys"]) if rs else 0.0
         keyed = sorted(range(len(rs)), key=lambda k: -_rank_value(rs[k]._ans))
         tiers: list[list[int]] = []
+        failed: list[int] = []
         for k in keyed:
             v = _rank_value(rs[k]._ans)
+            if v == float("-inf"):                       # 失败 / 停止的读数（J-12）单独一档排最后
+                failed.append(k)
+                continue
             if tiers and abs(_rank_value(rs[tiers[-1][-1]]._ans) - v) <= delta:
                 tiers[-1].append(k)
             else:
                 tiers.append([k])
+        if failed:
+            tiers.append(failed)
         return tiers
 
 
 def _rank_value(ans: dict) -> float:
+    """排序键。失败/停止的读数（J-12：值不是数）排最后一档，不抛 TypeError。"""
+    if ans.get("fail") or ans.get("stop") or ans.get("value") is None and ans["phys"] == "score":
+        return float("-inf")
     if ans["phys"] == "score":
         return float(ans["value"]) + float(ans["p"]) * 0.001
     return float(ans["p"])
@@ -543,11 +616,39 @@ class _ExitMeta(type):
         return type.__call__(impl, *args, **kw)
 
     def __instancecheck__(cls, inst):
+        if isinstance(inst, _NoArith):                 # 读数 / 读数向量当出口 match（§6.3 模式 1，向量元素形态）
+            raise JvTypeError(f"J-01: 把读数 {type(inst).__name__} 当出口用（match / isinstance jv.{cls.__name__}）；"
+                              f"读数不是出口。修法：先 jv.cut(r) 得出口，向量用 jv.cut(jv.judge([...], q)) 再解包。")
         ok = type.__instancecheck__(cls, inst)
         if ok and isinstance(getattr(inst, "__dict__", None), dict):
-            inst.__dict__["consumed"] = True
-            Exit._last_matched = inst
+            # J-05：只有 match / jv.handle / jv.consume 消费 Unsure；裸 isinstance(e, jv.Unsure) 只是看一眼，不算处理
+            # （否则任何包装层一判种类，J-05 就失效）。Act / Ignore / Pick / At 不需消费，命中即标记只作记账。
+            public = getattr(cls, "_public", cls)
+            if public is not Unsure or _caller_is_match():
+                inst.__dict__["consumed"] = True
+                Exit._last_matched = inst
         return ok
+
+
+_MATCH_OFFSETS: dict = {}
+
+
+def _caller_is_match() -> bool:
+    """__instancecheck__ 的调用者是 `match … case jv.X()`（MATCH_CLASS）还是 `isinstance(...)`（CALL）。
+
+    CPython 从 MATCH_CLASS 与 isinstance 都进 __instancecheck__，无法从参数区分；
+    看调用帧当前指令的操作码可以区分（3.12 实测：MATCH_CLASS vs CALL）。取不到帧时保守当 isinstance。
+    """
+    try:
+        f = sys._getframe(2)
+    except ValueError:
+        return False
+    code = f.f_code
+    offs = _MATCH_OFFSETS.get(code)
+    if offs is None:
+        offs = {i.offset for i in dis.get_instructions(code) if i.opname == "MATCH_CLASS"}
+        _MATCH_OFFSETS[code] = offs
+    return f.f_lasti in offs
 
 
 class Exit(metaclass=_ExitMeta):

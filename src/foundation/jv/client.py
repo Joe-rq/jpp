@@ -11,6 +11,72 @@ from typing import Any, Callable
 
 from foundation.core.canon import H
 
+from .ir import JvError
+
+
+def validate_answers(questions: dict[str, dict], answers: Any) -> dict[str, dict]:
+    """客户端返回体校验（真机与 FakeClient 共用，运行时每次调用后立即核）。
+
+    键不合即 JvError 带修法，不许静默变成全 Unsure。返回规范化后的答案：
+      noul  → {"type": "noul", "noul": p}                        p ∈ [0, 1]
+      choice→ {"type": "choice", "choice": "c1", "probabilities": {"c0": …, "c1": …}}   键 = criteria 的键
+      score → {"type": "score", "score": 档位下标(float), "probabilities": {"0": …, "1": …}}  键 = "0".."n-1"
+    """
+    if not isinstance(answers, dict):
+        raise JvError(f"客户端返回体必须是 {{qid: 答案}} 字典，收到 {type(answers).__name__}")
+    out: dict[str, dict] = {}
+    for qid, q in questions.items():
+        t = q["type"]
+        a = answers.get(qid)
+        if not isinstance(a, dict):
+            raise JvError(f"客户端返回缺题 {qid}（{t}）或答案不是字典：{a!r}。修法：rule/客户端对每个 qid 返回一个字典")
+        if t == "noul":
+            v = a.get("noul")
+            if not isinstance(v, (int, float)) or isinstance(v, bool) or not 0.0 <= float(v) <= 1.0:
+                raise JvError(f"noul 题 {qid} 的返回体要 {{'type': 'noul', 'noul': p}}，p 是 0–1 的数；收到 {a!r}。"
+                              f"修法：{{'type': 'noul', 'noul': 0.93}}")
+            out[qid] = {"type": "noul", "noul": float(v)}
+        elif t == "choice":
+            opts = [str(k) for k in q["criteria"]]
+            probs = a.get("probabilities")
+            if not isinstance(probs, dict) or not probs:
+                raise JvError(f"choice 题 {qid} 的返回体缺 probabilities（按选项键 {opts} 的字典）；收到 {a!r}。"
+                              f"修法：{{'type': 'choice', 'choice': 'c0', 'probabilities': {{'c0': 0.9, 'c1': 0.1}}}}")
+            bad = [k for k in probs if str(k) not in opts]
+            if bad:
+                raise JvError(f"choice 题 {qid} 的 probabilities 键 {bad} 不是选项键；选项键是 {opts}（候选按 over 下标叫 c0, c1, …）。"
+                              f"修法：probabilities 的键用 q['criteria'] 的键")
+            choice = a.get("choice")
+            if choice is not None and str(choice) not in opts:
+                raise JvError(f"choice 题 {qid} 的 choice={choice!r} 不是选项键 {opts}。修法：choice 用 q['criteria'] 的键")
+            pr = {str(k): float(v) for k, v in probs.items()}
+            out[qid] = {"type": "choice", "choice": str(choice) if choice is not None else max(pr, key=pr.get),
+                        "probabilities": pr, **({"confidence": a["confidence"]} if "confidence" in a else {})}
+        elif t == "score":
+            levels = list(q["criteria"])
+            n = len(levels)
+            sc = a.get("score")
+            if isinstance(sc, bool) or not isinstance(sc, (int, float)):
+                raise JvError(f"score 题 {qid} 的 score 必须是档位**下标**（0..{n - 1} 的数），不是标签；收到 {sc!r}（档位 {levels}）。"
+                              f"修法：{{'type': 'score', 'score': {levels.index(sc) if sc in levels else 0}.0, 'probabilities': {{'0': …}}}}")
+            probs = a.get("probabilities")
+            if not isinstance(probs, dict) or not probs:
+                raise JvError(f"score 题 {qid} 的返回体缺 probabilities（按档位下标 '0'..'{n - 1}' 的字典）；收到 {a!r}。"
+                              f"修法：{{'type': 'score', 'score': 2.0, 'probabilities': {{'0': 0.05, '1': 0.05, '2': 0.9}}}}")
+            pr: dict[str, float] = {}
+            for k, v in probs.items():
+                ks = str(k)
+                if not ks.lstrip("-").isdigit() or not 0 <= int(ks) < n:
+                    hint = f"（{ks!r} 看起来是标签；档位 {levels} 的下标是 0..{n - 1}）" if ks in [str(l) for l in levels] else ""
+                    raise JvError(f"score 题 {qid} 的 probabilities 键 {ks!r} 不是档位下标{hint}。"
+                                  f"修法：probabilities 的键用 '0'..'{n - 1}'（或 int），值是该档概率")
+                pr[str(int(ks))] = float(v)
+            out[qid] = {"type": "score", "score": float(sc), "probabilities": pr,
+                        **({"confidence": a["confidence"]} if "confidence" in a else {})}
+        else:
+            raise JvError(f"未知题型 {t}（qid={qid}）")
+    return out
+
 
 class JevClient:
     def __init__(self, model_version: str = "jev-1.13.0", transport: Callable[[dict], dict] | None = None):

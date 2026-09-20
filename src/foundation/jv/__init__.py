@@ -13,11 +13,14 @@ import functools
 from typing import Any
 
 from . import ir as _ir
-from .calib import CalibRecord, CalibStore, FitRegistry
+from .calib import CalibRecord, CalibStore, FitRegistry, cost_line
 from .client import FakeClient, JevClient
-from .ir import (Act, Action, At, Budget, CalibRef, Escalated, Exit, Fail, FitRef, Ignore, JvError, JvTypeError,
-                 Mat, Pending, Pick, Q, Reading, Readings, ReadingsVec, State, Unsure, lit)
+from .ir import (ACTIONS, Act, Action, At, Budget, CalibRef, Escalated, Exit, Fail, FitRef, Ignore, JvError,
+                 JvTypeError, Mat, MatLike, Pending, Pick, Q, Reading, Readings, ReadingsVec, State, Unsure, lit,
+                 register_action)
+from .client import validate_answers
 from .runtime import (Runtime, current, decreasing, drop, escalate, prior, provisional, _Score)
+from . import runtime as _runtime
 from .checker import check, CheckReport
 from .plan import plan, PlanReport, Sym
 
@@ -25,7 +28,14 @@ __all__ = ["Runtime", "FakeClient", "JevClient", "Budget", "Action", "Mat", "lit
            "measure", "judge", "cut", "fit", "gen", "do", "ask", "transform", "loop", "decreasing", "handle",
            "consume", "on_truth", "on_fail", "program", "calib", "fitref", "anchors", "prior", "Act", "Ignore",
            "Unsure", "Pick", "At", "drop", "escalate", "provisional", "Pending", "Fail", "Escalated", "JvError",
-           "JvTypeError", "check", "current", "use", "mat", "plan", "PlanReport", "Sym", "stats"]
+           "JvTypeError", "check", "current", "use", "mat", "plan", "PlanReport", "Sym", "stats", "allocate", "unsure_bound", "budget",
+           "cost_line",
+           "register_action", "ACTIONS", "MatLike", "answer", "validate_answers", "Exit", "Readings", "Reading"]
+
+
+def answer(key: str, kind: str, k: int | None = None, level: int | None = None):
+    """人答到达：kind ∈ act | ignore | pick(k=) | at(level=)。写进效应账本，下次运行同一程序时 jv.ask 返回该出口。"""
+    return current().answer(key, kind, k=k, level=level)
 
 
 def stats() -> dict:
@@ -67,8 +77,19 @@ def _need_calib(c):
 
 
 # ---------------------------------------------------------------- 效应与桥（转发到当前运行时）
+_SCALAR = (str, int, float, bool, type(None))
+
+
 def mat(content: Any, addr: str = "") -> Mat:
-    return lit(content, addr)
+    """字面量材料（= jv.lit）。在 @jv.program 帧内对非标量实参报 W-literal-from-host：
+    宿主计算出来的对象应经 jv.transform 记账进槽（J-11 补丁提议，README §7）。"""
+    m = lit(content, addr)
+    if _runtime._CURRENT:
+        rt = _runtime._CURRENT[-1]
+        if rt.frame is not None and not isinstance(content, _SCALAR):
+            rt.warn(f"W-literal-from-host: 程序帧内 jv.mat({type(content).__name__}) 的实参不是标量字面量，像是宿主计算的结果；"
+                    f"进槽会绕过来源链（J-11）。修法：jv.transform(f, *mats) 记账后再进槽，或在程序外用 jv.lit 造输入")
+    return m
 
 
 def state(on, ctx=None, ref=None, over=None, repr="json") -> State:
@@ -121,6 +142,21 @@ def handle(c, then=None, regen: bool = False, **kw):
 
 def consume(exits, unsure=drop):
     return current().consume(exits, unsure=unsure)
+
+
+def allocate(readings, k: int) -> list[int]:
+    """把 k 份复核分给最不确定的读数（§5 组合子；§7「判断力花在哪」）。返回下标列表。"""
+    return current().allocate(readings, k)
+
+
+def unsure_bound(readings) -> dict:
+    """J-10：整批读数的 unsure 期望数上界（联合界）与独立估计。"""
+    return current().unsure_bound(readings)
+
+
+def budget() -> Budget:
+    """当前 program 帧的 Budget（嵌套时是内层的）。"""
+    return current().current_budget()
 
 
 def on_truth(key: str, fn):

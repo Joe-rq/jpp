@@ -25,7 +25,7 @@ class MatFuture(_Future):
         return f"MatFuture({self.effect.action.name}@{self.effect.site}, {'done' if self._resolved else 'lazy'})"
 
 
-@dataclass
+@dataclass(eq=False)
 class DoEffect:
     action: Action
     args: list                      # MatLike | 普通值
@@ -44,7 +44,7 @@ class DoEffect:
         return [a for a in self.args if isinstance(a, MatFuture) and a._resolved is None]
 
 
-@dataclass
+@dataclass(eq=False)
 class JudgeEffect:
     states: list[State]
     qs: list[Q]

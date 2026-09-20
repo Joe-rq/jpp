@@ -20,7 +20,8 @@ from typing import Any, Callable
 from foundation.core.canon import H, canon
 
 from . import ir
-from .calib import CalibStore, FitRegistry
+from .calib import CalibStore, FitRegistry, cost_line
+from .client import validate_answers
 from .effects import DoEffect, JudgeEffect, MatFuture
 from .ir import (_is, Act, Action, At, Budget, CalibRef, Escalated, Exit, Fail, Ignore, JvError, JvTypeError,
                  Mat, Pending, Pick, Q, Reading, Readings, ReadingsVec, State, Unsure, _Future, site_of,
@@ -110,13 +111,15 @@ class Runtime:
         self._transform_seen: dict[str, str] = {}
         self._pending_ask: list[dict] = []
         self._frames: list[_Frame] = []                     # 嵌套程序的子账帧栈
+        self._mem_books: dict[str, Books] = {}              # root=None 时按程序名保留在内存的账本（人答后重跑仍能重放）
+        self._warned_actions: set[str] = set()
         self.reset_stats()
 
     # ------------------------------------------------------------ 生命周期
     def reset_stats(self):
         self.stats = {"calls": 0, "questions": 0, "tokens": 0, "cost": 0.0, "layers": [],
                       "ledger_hits": 0, "cache_hits": 0, "warnings": [], "unsure": 0, "exits": 0,
-                      "escalated": [], "do": 0, "gen": 0, "transform": 0, "ask": 0, "fission": 0}
+                      "escalated": [], "do": 0, "do_cost": 0.0, "gen": 0, "transform": 0, "ask": 0, "fission": 0}
 
     def __enter__(self):
         _CURRENT.append(self)
@@ -158,7 +161,12 @@ class Runtime:
         self._transform_seen.clear()
         self._pending_ask.clear()
         root = os.path.join(self.root, "books", name) if self.root else None
-        self.books = Books(root, self.header(budget))
+        if root is None and name in self._mem_books and self._mem_books[name].header_matches(self.header(budget)):
+            self.books = self._mem_books[name]           # 无 root：同一运行时里同名程序复用内存账本（ask 人答后重跑即重放）
+        else:
+            self.books = Books(root, self.header(budget))
+            if root is None:
+                self._mem_books[name] = self.books
         if self.books.header_warning:
             self.warn(self.books.header_warning)          # J-18
         f = _Frame(name, budget, parent=None, calls0=0, cost0=0.0, layers0=0, esc0=0, depth=0)
@@ -170,6 +178,7 @@ class Runtime:
         f = self._frames[-1] if self._frames else None
         try:
             self.flush(reason="return")
+            result = _materialize(result)                    # 返回值里的期物解析成 Mat（保留来源链与 taint；.content 一步可得）
             if self.books and (f is None or f.parent is None):
                 self.books.save()
             if check_consumed:
@@ -310,6 +319,11 @@ class Runtime:
             raise JvTypeError("do 的第一个参数必须是 jv.Action")
         if iter_seq is None:
             raise JvError(f"J-13: do({action.name}) 缺 iter_seq。修法：循环里用 it.n / range 变量作序号，直线段用 0。")
+        if action.taint_out == "trusted" and not action.registered and action.name not in self._warned_actions:
+            self._warned_actions.add(action.name)
+            self.warn(f"W-self-trusted: 动作 {action.name} 自声明 taint_out=trusted 但未经 S 库登记；可信来自来源登记（I6），"
+                      f"不来自程序自报。修法：jv.register_action({action.name!r}, fn, taint_out='trusted', reason='为什么它的输出可信')，"
+                      f"否则用 'inherit' / 'untrusted' 并让守卫经 jv.ask")
         if not action.reversible:
             self._check_guard(action, guard)                        # J-08
         eff = DoEffect(action=action, args=list(args), iter_seq=iter_seq, site=site_of(), seq=self._next(),
@@ -327,8 +341,16 @@ class Runtime:
             if _is(g, Exit):
                 g.__dict__["consumed"] = True
         if not ok:
-            raise JvError(f"J-08: 不可逆动作 {action.name} 的守卫里没有来自 trusted 状态的 Act（或 ask 的答案）。"
-                          f"修法：guard=[e] 且 e 由 trusted 材料的判断产生，或经 jv.ask。")
+            kinds = [g.kind if _is(g, Exit) else type(g).__name__ for g in gs]
+            hint = ""
+            if any(k in ("pick", "at") for k in kinds):
+                hint = " 守卫只收 test 题的 Act（一个被判为真的命题）；Pick/At 是选择或档位，不是命题，请再问一道 test 题作守卫。"
+            elif any(k == "unsure" for k in kinds):
+                hint = " Unsure 不能放行；先 handle（补证据 / 问人）。"
+            elif any(k == "act" for k in kinds):
+                hint = " Act 来自 untrusted 状态（gen 输出、不可信执行器输出）；可信来自来源登记（I6），请用 trusted 材料重判或经 jv.ask。"
+            raise JvError(f"J-08: 不可逆动作 {action.name} 的守卫里没有来自 trusted 状态的 Act（或 ask 的答案）；收到 {kinds}。"
+                          f"修法：guard=[e] 且 e 由 trusted 材料的 test 题产生，或经 jv.ask。{hint}")
 
     # ------------------------------------------------------------ gen（一登记就发）
     def gen(self, prompt: str, ctx=None, n: int = 4, retry_seq: int | None = None, generator=None) -> list[Mat]:
@@ -391,10 +413,21 @@ class Runtime:
         raise Pending(key, rs.structure_hash, q.text_hash)
 
     def answer(self, key: str, kind: str, k: int | None = None, level: int | None = None):
-        """人答到达（校准集入口）：写入效应账本，下次运行重放时 ask 返回该出口。"""
+        """人答到达（校准集入口）：写入效应账本，下次运行同名程序时 ask 返回该出口。
+
+        kind：test 题答 "act" / "ignore"；select 题答 "pick" 并给 k（over 下标）；measure 题答 "at" 并给 level（scale 下标）。
+        """
+        if kind not in ("act", "ignore", "pick", "at"):
+            raise JvError(f"answer 的 kind 只能是 act | ignore | pick | at，收到 {kind!r}。修法：test 题 'act'/'ignore'；"
+                          f"select 题 'pick' 并给 k=；measure 题 'at' 并给 level=")
+        if kind == "pick" and k is None:
+            raise JvError("answer(kind='pick') 必须给 k=（over 的下标）")
+        if kind == "at" and level is None:
+            raise JvError("answer(kind='at') 必须给 level=（scale 的 0 起下标）")
         rec = self.books.effects.get(key) if self.books else None
         if rec is None:
-            raise KeyError(key)
+            raise KeyError(f"{key}：这个运行时的账本里没有这条 ask。修法：在抛出 Pending 的同一个 Runtime 里调 jv.answer(e.key, …)，"
+                           f"或给 Runtime(root=目录) 让账本落盘后在新运行时里答")
         rec["answer"] = {"kind": kind, "k": k, "level": level}
         self.books.effects.put(key, rec)
         self.books.save()
@@ -422,9 +455,20 @@ class Runtime:
         except (OSError, TypeError):
             src = getattr(f, "__qualname__", repr(f))
         f_hash = H(getattr(f, "__qualname__", "?"), hashlib.sha256(src.encode()).hexdigest()[:16])
-        key = effect_key("transform", site, f_hash, [m.hash if isinstance(m, Mat) else canon(m) for m in mats])
-        taint = ir._join_taint(m.taint for m in mats if isinstance(m, Mat))
-        out = f(*mats)
+        key = effect_key("transform", site, f_hash, [_arg_hash(m) for m in mats])
+        taint = ir._join_taint(_taints(mats))
+        try:
+            out = f(*mats)
+        except Exception as e:                                   # J-12：宿主变换失败是值，不崩
+            self.warn(f"W-transform-fail: transform({getattr(f, '__qualname__', f)}) 在 {site}：{type(e).__name__}: {e}")
+            self.stats["transform"] += 1
+            fm = Mat(content={"fail": f"{type(e).__name__}: {e}", "transform": getattr(f, "__qualname__", "?")},
+                     origin=("transform", site, key, "fail"), taint=taint)
+            fm.__dict__["fail"] = Fail(reason=f"{type(e).__name__}: {e}", action=f"transform:{getattr(f, '__qualname__', '?')}")
+            self.mats.add(fm, site)
+            if self.books and (self.books.effects.get(key) is None):
+                self.books.effects.put(key, {"kind": "transform", "out_hash": H({"fail": True}), "out": fm.content, "fail": fm.content["fail"]})
+            return fm
         out_hash = H(_plain(out))
         prev = self._transform_seen.get(key)
         rec = self.books.effects.get(key) if (self.books and self.passes["ledger"]) else None
@@ -494,9 +538,9 @@ class Runtime:
 
     def _exec_do(self, d: DoEffect):
         args = [a.resolve() if isinstance(a, _Future) else (a.as_mat() if _is(a, Exit) else a) for a in d.args]
-        arg_hashes = [a.hash if isinstance(a, Mat) else canon(a) for a in args]
+        arg_hashes = [_arg_hash(a) for a in args]
         d.key = effect_key("do", d.site, d.action.name, arg_hashes, d.iter_seq)
-        in_taint = ir._join_taint(a.taint for a in args if isinstance(a, Mat))
+        in_taint = ir._join_taint(_taints(args))
         taint = {"trusted": TRUSTED, "untrusted": UNTRUSTED, "inherit": in_taint}[d.action.taint_out]
         rec = self.books.effects.get(d.key) if (self.books and self.passes["ledger"]) else None
         if rec is None:
@@ -520,6 +564,9 @@ class Runtime:
             m = Mat(content=rec["out"], origin=("do", d.site, d.key), taint=taint)
         with self._lock:
             self.mats.add(m, d.site)
+            if d.action.cost:                                # Action.cost 计入帧预算的 cost（层边界核）
+                self.stats["cost"] += float(d.action.cost)
+                self.stats["do_cost"] += float(d.action.cost)
         d.future._resolved = m
         d.done = True
 
@@ -740,6 +787,7 @@ class Runtime:
                 for qid in missing:
                     g["items"][qid]["answer"] = {"type": "fail", "error": str(e)}
                 continue
+            answers = validate_answers(missing, answers)         # 返回体键不合即 JvError（不静默成 Unsure）
             call["sent"] = True
             with self._lock:
                 self.stats["calls"] += 1
@@ -766,7 +814,7 @@ class Runtime:
             if any(it["answer"].get("type") == "fail" for it in items):
                 r._ans = {"phys": items[0]["phys"], "fail": True, "p": 0.0, "value": None, "probs": {}}
                 continue
-            if any(isinstance(m.content, dict) and "fail" in m.content and m.origin[:1] == ("do",)
+            if any(isinstance(m.content, dict) and "fail" in m.content and m.origin[:1] in (("do",), ("transform",))
                    for m in rs.all_mats):
                 r._ans = {"phys": items[0]["phys"], "fail": True, "p": 0.0, "value": None, "probs": {}}
                 continue
@@ -824,7 +872,7 @@ class Runtime:
 
     # ------------------------------------------------------------ cut（内核桥）
     def cut(self, r, cost: tuple | None = None):
-        if isinstance(r, ReadingsVec):
+        if isinstance(r, (ReadingsVec, list, tuple)):     # 向量化：出口列表与输入顺序一一对齐
             return [self.cut(x, cost) for x in r]
         if isinstance(r, Readings):
             if len(r) != 1:
@@ -852,14 +900,27 @@ class Runtime:
                 return self._register_exit(Unsure("insufficient", detail={"missing": slot}, **kw))
         if rec.status == "停岗":
             return self._register_exit(Unsure("drift", **kw))
-        if cost is not None and not rec.cost_matrix:
-            self.warn(f"W-cost-unfit: 校准键 {q.calib.key} 无代价矩阵记录，cost 参数忽略；线只从记录来（I4）")
         delta = rec.delta if rec.delta is not None else self.delta_for(ans["phys"])
         if rec.status == "冷":
             s_hi, s_lo = self.safety_lines()
             prov = self._decide(ans, q, rs, s_hi, s_lo, delta, kw, provisional=True)
             return self._register_exit(Unsure("cold", detail={"provisional": prov}, **kw))
-        return self._register_exit(self._decide(ans, q, rs, rec.hi, rec.lo, delta, kw))
+        hi, lo = rec.hi, rec.lo
+        cost_mat = cost if cost is not None else ((rec.cost_matrix.get("fp"), rec.cost_matrix.get("fn"))
+                                                  if rec.cost_matrix else None)
+        if cost_mat is not None:                                 # 代价比线（§2.3）：只从标注集算，不由程序手写
+            if q.op != "test":
+                raise JvError(f"cut(cost=) 只对 test 题有定义（select/measure 的代价线未定）；题「{q.text[:20]}」是 {q.op}")
+            if not rec.samples:
+                self.warn(f"W-cost-unfit: 校准键 {q.calib.key} 无标注集（samples），cost 参数忽略；线只从记录来（I4）")
+            elif not rec.label_set_id or rec.label_set_id == rec.set_id:
+                raise JvError(f"J-16: 校准键 {q.calib.key} 的标注集 id（{rec.label_set_id!r}）必须给出且 ≠ 保形集 id（{rec.set_id!r}）"
+                              f"；代价线与保形线不能同源。修法：calib.put(..., samples=…, label_set_id='…', set_id='…') 两者不同")
+            else:
+                cl = cost_line(rec.samples, *cost_mat)
+                hi = lo = cl["line"]
+                kw["detail"] = {"cost_line": cl}
+        return self._register_exit(self._decide(ans, q, rs, hi, lo, delta, kw))
 
     def _decide(self, ans: dict, q: Q, rs, hi: float, lo: float, delta: float, kw: dict, provisional=False) -> Exit:
         kw = dict(kw, provisional=provisional)
@@ -893,7 +954,7 @@ class Runtime:
             return Unsure("band", p=p, **kw)
         if p >= hi + delta:
             return At(int(ans["value"]), p=p, **kw)
-        return Unsure("band", p=p, **kw)
+        return Unsure("band", p=p, detail={"nearest_level": int(ans["value"]) if ans.get("value") is not None else None}, **kw)
 
     def _register_exit(self, e: Exit) -> Exit:
         self.exits.append(e)
@@ -907,6 +968,67 @@ class Runtime:
                                       e.reading.effect.states[e.reading.obj_index].resolved().structure_hash
                                       if e.reading is not None else ""))
         return e
+
+    # ------------------------------------------------------------ 判断力分配（§5 组合子 allocate；§7「判断力花在哪」；J-10）
+    def _readings_list(self, readings) -> list[Reading]:
+        if isinstance(readings, ReadingsVec):
+            if len(readings.effect.qs) != 1:
+                raise JvError("allocate / unsure_bound 需要单题的向量化读数；多题请先取 [r[i] for r in rs]")
+            return [r[0] for r in readings]
+        if isinstance(readings, Readings):
+            return list(readings)
+        out = []
+        for r in readings:
+            if isinstance(r, Readings) and len(r) == 1:
+                r = r[0]
+            if not isinstance(r, Reading):
+                raise JvTypeError(f"J-01: allocate / unsure_bound 只接受读数，收到 {type(r).__name__}")
+            out.append(r)
+        return out
+
+    def _uncertainty(self, r: Reading) -> float:
+        """与决定带的距离取负：带内 = 0（最不确定），带外越远越确定。线来自校准记录（I4），冷键用保守线。"""
+        ans = r._need()
+        rec = self.calib.get(r.q.calib.key)
+        delta = rec.delta if rec.delta is not None else self.delta_for(ans["phys"])
+        hi, lo = (rec.hi, rec.lo) if rec.status == "上岗" else self.safety_lines()
+        p = float(ans["p"])
+        top, bot = hi + delta, lo - delta
+        if bot <= p <= top:
+            return 0.0 - 1e-6 * abs(p - (top + bot) / 2) * 0.0      # 带内并列（0），不再按中点细分
+        return -min(abs(p - top), abs(p - bot))
+
+    def allocate(self, readings, k: int) -> list[int]:
+        """把 k 份复核（人、第二传感器、更贵的执行）分给最不确定的读数：返回下标，按不确定度降序。
+        合法性：它像 cut 一样只读校准线，不做跨题算术；返回宿主整数，不返回读数。"""
+        rs = self._readings_list(readings)
+        if k is None or k < 0:
+            raise JvError("allocate: k 必须是非负整数（通常取 Budget.escalate）")
+        self.flush(reason="allocate")
+        scored = sorted(range(len(rs)), key=lambda i: (-self._uncertainty(rs[i]), i))
+        return scored[:min(k, len(rs))]
+
+    def unsure_bound(self, readings) -> dict:
+        """J-10：整批读数落入 unsure 的期望数——联合界 Σuᵢ（上界）与独立估计 1−Π(1−uᵢ)（只作参考）。
+        uᵢ 取各题校准记录的 unsure_rate；无记录的题计入 n_unknown，界里按 1 计（最保守）。"""
+        rs = self._readings_list(readings)
+        us, unknown = [], 0
+        for r in rs:
+            rec = self.calib.get(r.q.calib.key)
+            u = rec.unsure_rate if rec.status == "上岗" else None
+            if u is None:
+                unknown += 1
+                us.append(1.0)
+            else:
+                us.append(float(u))
+        prod = 1.0
+        for u in us:
+            prod *= (1.0 - u)
+        return {"n": len(rs), "union_bound": round(min(sum(us), float(len(rs))), 4),
+                "independent_any": round(1.0 - prod, 4), "n_unknown": unknown}
+
+    def current_budget(self) -> Budget:
+        return self._frames[-1].budget if self._frames else self.budget
 
     # ------------------------------------------------------------ fit（桥库）
     def fit(self, ref: ir.FitRef, *rs: Reading):
@@ -1086,6 +1208,7 @@ class _Loop:
     def __init__(self, rt: Runtime, bound: int, variant):
         self.rt, self.bound, self.variant = rt, bound, variant
         self.stopped_by: str | None = None
+        self.stopped_exit: Unsure | None = None
 
     def __iter__(self):
         prev = None
@@ -1095,21 +1218,32 @@ class _Loop:
             for n in range(self.bound):
                 v = self.variant()
                 if prev is not None and not (v < prev):
-                    self.stopped_by = "noprogress"
-                    self.rt.stats.setdefault("noprogress", []).append({"n": n, "variant": v})
+                    self._stop("noprogress", n, {"variant": v, "prev": prev})
                     return
                 prev = v
                 before = set(self.rt._loop_keys[-1])
                 yield _It(n)
                 new = self.rt._loop_keys[-1] - before
                 if new and new & seen_keys:
-                    self.stopped_by = "keyrepeat"
-                    self.rt.stats.setdefault("noprogress", []).append({"n": n, "keyrepeat": True})
+                    self._stop("keyrepeat", n, {"keyrepeat": True})
                     return
                 seen_keys |= new
             self.stopped_by = "bound"
         finally:
             self.rt._loop_keys.pop()
+
+
+    def _stop(self, why: str, n: int, detail: dict):
+        """无进展 / 键重复即停（P6、§5 handler `noprogress → 退出记账`）：显式记一个 Unsure(noprogress) 出口，
+        循环本身就是它的 handler（退出即记账），故置 consumed；同时 warn W-noprogress 让它可见。"""
+        self.stopped_by = why
+        e = Unsure("noprogress", detail=dict(detail, n=n, by=why))
+        e.__dict__["consumed"] = True
+        self.stopped_exit = e
+        self.rt._register_exit(e)
+        self.rt.stats.setdefault("noprogress", []).append({"n": n, **detail})
+        self.rt.warn(f"W-noprogress: jv.loop 第 {n} 轮{('变式不降 ' + repr(detail.get('variant'))) if why == 'noprogress' else '账本键重复'}，"
+                     f"停止并记 Unsure(noprogress)（P6）")
 
 
 class decreasing:
@@ -1127,9 +1261,45 @@ def _chunk(text: str, tokens: int) -> list[str]:
     return [text[i:i + n] for i in range(0, len(text), n)] or [text]
 
 
+def _arg_hash(x) -> str:
+    """效应参数的键：Mat 用其哈希；列表/字典递归；其余规范化 JSON（D2：材料列表也能进 transform/do）。"""
+    if isinstance(x, Mat):
+        return x.hash
+    if isinstance(x, _Future):
+        return _arg_hash(x.resolve())
+    if _is(x, Exit):
+        return _arg_hash(x.as_mat())
+    if isinstance(x, (list, tuple)):
+        return H([_arg_hash(v) for v in x])
+    if isinstance(x, dict):
+        return H({str(k): _arg_hash(v) for k, v in x.items()})
+    return canon(x)
+
+
+def _taints(xs):
+    for x in xs:
+        if isinstance(x, Mat):
+            yield x.taint
+        elif isinstance(x, (list, tuple)):
+            yield from _taints(x)
+
+
 def _plain(x):
     if isinstance(x, Mat):
         return {"__mat__": x.content}
     if isinstance(x, (list, tuple)):
         return [_plain(v) for v in x]
+    return x
+
+
+def _materialize(x):
+    """程序返回值：期物 → Mat；列表/元组/字典递归。出口、Escalated、标量原样。"""
+    if isinstance(x, _Future):
+        return x.resolve()
+    if isinstance(x, list):
+        return [_materialize(v) for v in x]
+    if isinstance(x, tuple):
+        return tuple(_materialize(v) for v in x)
+    if isinstance(x, dict):
+        return {k: _materialize(v) for k, v in x.items()}
     return x

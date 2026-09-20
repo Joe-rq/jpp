@@ -14,10 +14,11 @@ from __future__ import annotations
 import ast
 import inspect
 import textwrap
+from collections.abc import Mapping
 from dataclasses import dataclass, field
 
 from .checker import _is_jv, _jv_name, _kw, check
-from .ir import Action, Budget
+from .ir import Action, Budget, JvError
 
 T_GEN = "T_gen"                       # 生成器时延符号（档案 profile_gen 未建，留符号）
 S_TOK = "s"                           # 状态 token 符号
@@ -134,6 +135,7 @@ class PlanReport:
     unsure_bound: Sym = field(default_factory=Sym)
     cost_formula: str = ""
     warnings: list[str] = field(default_factory=list)
+    structure: object | None = None       # __jv_structure__ 路径读到的 root 节点（供核对，不参与序列化）
 
     def render(self) -> str:
         w = max([len(r.stmt) for r in self.rows] + [8])
@@ -165,6 +167,12 @@ def plan(fn, budget: Budget | None = None, rt=None, profile: dict | None = None)
         except Exception:
             rt = None
     profile = profile or (rt.profile if rt is not None else {})
+    structure = getattr(fn, "__jv_structure__", None)
+    if structure is None and inner is not fn:
+        structure = getattr(inner, "__jv_structure__", None)
+    if structure is not None:
+        name = getattr(inner, "__name__", None) or getattr(fn, "__name__", None) or "?"
+        return _plan_from_structure(structure, budget, rt, profile, name)
     rep = PlanReport(program=inner.__name__, budget=budget)
     try:
         src = textwrap.dedent(inspect.getsource(inner))
@@ -186,6 +194,151 @@ def plan(fn, budget: Budget | None = None, rt=None, profile: dict | None = None)
     return rep
 
 
+# ---------------------------------------------------------------- __jv_structure__（组合库贯通路径）
+# 协议（Claude的评审回复.md §「三处要改」第 3 条）：程序包装前 entry 与包装后函数均可挂
+#     __jv_structure__ = {"version": 1, "root": node}
+# node 是 Mapping，字段 operation/name/input/output/effects/effects_contract/children（tuple of node）。
+# 这条路径只读结构、只做符号成本合成，绝不触发任何执行；PlanReport 仍是唯一返回类型。
+_SYM_FIELDS = ("calls", "questions", "layers", "gen_calls", "gen_latency",
+               "do_calls", "do_cost", "asks", "unsure_bound")
+# 每种 effect 关联的 Sym 字段：第一个是判断「AST 是否见到」的主字段，其余是同一调用点派生的字段——
+# 主字段查零后，整组一起记未知（judge 未见到时 questions/layers/unsure_bound 也不该显示确定 0）。
+_EFFECT_FIELDS = {"judge": ("calls", "questions", "layers", "unsure_bound"),
+                   "gen": ("gen_calls", "gen_latency"),
+                   "do": ("do_calls", "do_cost"),
+                   "ask": ("asks",)}
+_STRUCT_OPS = {"leaf", "identity", "then", "branch", "opaque"}
+
+
+def _zero_cost() -> dict[str, Sym]:
+    return {k: Sym(0) for k in _SYM_FIELDS}
+
+
+def _struct_warn(rep: PlanReport, msg: str) -> None:
+    if msg not in rep.warnings:
+        rep.warnings.append(msg)
+
+
+def _sym_upper_bound(a: Sym, b: Sym, field: str, rep: PlanReport) -> Sym:
+    """branch 两臂的保守上界：数值取 max；同表达式直接复用；不可比较的符号按和值取上界并告警。"""
+    if a.is_numeric and b.is_numeric:
+        return Sym(max(a.value, b.value))
+    if a.terms == b.terms:
+        return a
+    _struct_warn(rep, f"W-branch-bound: 字段 {field} 两臂开销 {a!r} 与 {b!r} 不可比较，按和值取保守上界")
+    return a + b
+
+
+def _node_name(node: Mapping) -> str:
+    return str(node.get("name") or node.get("operation") or "?")
+
+
+def _cost_of_leaf(node: Mapping, rt, profile: dict, rep: PlanReport) -> dict[str, Sym]:
+    name = _node_name(node)
+    declared = tuple(node.get("effects") or ())
+    contract = node.get("effects_contract")
+    fn = node.get("function")
+    if fn is not None and not callable(fn):
+        raise JvError(f"jv.plan: 叶 {name} 的 function 不可调用（{type(fn).__name__}），坏结构")
+
+    # 无 function / 声明 '*'（未声明动态能力）/ contract=unknown：整叶未经证明，不摊到单个 effect 上，
+    # 全部 9 项资源记未知符号——协议明文「未知不当纯证明」，这条不是可选优化。
+    if fn is None or "*" in declared or contract == "unknown":
+        reason = "无 function" if fn is None else ("effects 含 '*'" if "*" in declared else f"effects_contract={contract!r}")
+        _struct_warn(rep, f"W-opaque: 叶 {name}（{reason}）未经证明，全部资源记未知符号，不当 0 计划")
+        return {k: Sym.var(f"leaf:{name}:{k}") for k in _SYM_FIELDS}
+
+    sub = plan(fn, rt=rt, profile=profile)
+    for w in sub.warnings:
+        _struct_warn(rep, w)
+    if any(w.startswith("W-nosource") for w in sub.warnings):
+        _struct_warn(rep, f"W-opaque: 叶 {name} 无源码，全部资源记未知符号，不当 0 计划")
+        return {k: Sym.var(f"leaf:{name}:{k}") for k in _SYM_FIELDS}
+
+    cost = {k: getattr(sub, k) for k in _SYM_FIELDS}
+    rep.rows.extend(sub.rows)
+    for eff in declared:
+        fields = _EFFECT_FIELDS.get(eff)
+        if fields is None:
+            continue
+        primary = cost[fields[0]]
+        primary_is_zero = primary.is_numeric and primary.value == 0   # 只在明确数值 0 时补未知；符号非零估计原样保留
+        if primary_is_zero:
+            for f_ in fields:
+                cost[f_] = Sym.var(f"leaf:{name}:{eff}:{f_}")
+            _struct_warn(rep, f"W-opaque: 叶 {name} 声明 effect={eff}，AST 未见对应调用，"
+                              f"相关字段 {fields} 记为未知符号，不当 0 计划")
+    return cost
+
+
+def _cost_of_then(node: Mapping, rt, profile: dict, rep: PlanReport) -> dict[str, Sym]:
+    children = node.get("children") or ()
+    if len(children) != 2:
+        raise JvError(f"jv.plan: then 节点 {_node_name(node)} 需要恰好 2 个 children（左右两段），实得 {len(children)}")
+    left = _cost_of_node(children[0], rt, profile, rep)
+    right = _cost_of_node(children[1], rt, profile, rep)
+    return {k: left[k] + right[k] for k in _SYM_FIELDS}
+
+
+def _cost_of_branch(node: Mapping, rt, profile: dict, rep: PlanReport) -> dict[str, Sym]:
+    children = node.get("children") or ()
+    if len(children) != 3:
+        raise JvError(f"jv.plan: branch 节点 {_node_name(node)} 需要恰好 3 个 children（predicate/yes/no），实得 {len(children)}")
+    pred = _cost_of_node(children[0], rt, profile, rep)
+    yes = _cost_of_node(children[1], rt, profile, rep)
+    no = _cost_of_node(children[2], rt, profile, rep)
+    return {k: pred[k] + _sym_upper_bound(yes[k], no[k], k, rep) for k in _SYM_FIELDS}
+
+
+def _cost_of_opaque(node: Mapping, rep: PlanReport) -> dict[str, Sym]:
+    name = _node_name(node)
+    source_op = node.get("source_operation", "?")
+    effects = tuple(node.get("effects") or ())
+    cost = {k: Sym.var(f"opaque:{name}:{k}") for k in _SYM_FIELDS}
+    _struct_warn(rep, f"W-opaque: 节点 {name}（{source_op}）未贯通，资源按未知符号处理，不当 0 计划")
+    if "*" in effects:
+        _struct_warn(rep, f"W-dynamic: 节点 {name}（{source_op}）effects 含 '*'，未声明的动态能力，禁止按 0 计划")
+    return cost
+
+
+def _cost_of_node(node, rt, profile: dict, rep: PlanReport) -> dict[str, Sym]:
+    if not isinstance(node, Mapping):
+        raise JvError(f"jv.plan: __jv_structure__ 节点必须是 Mapping，实得 {type(node).__name__}")
+    op = node.get("operation")
+    if op not in _STRUCT_OPS:
+        raise JvError(f"jv.plan: __jv_structure__ 节点 operation={op!r} 未知；支持 {sorted(_STRUCT_OPS)}")
+    if op == "leaf":
+        return _cost_of_leaf(node, rt, profile, rep)
+    if op == "identity":
+        return _zero_cost()
+    if op == "then":
+        return _cost_of_then(node, rt, profile, rep)
+    if op == "branch":
+        return _cost_of_branch(node, rt, profile, rep)
+    return _cost_of_opaque(node, rep)
+
+
+def _plan_from_structure(structure, budget: Budget, rt, profile: dict, fallback_name: str) -> PlanReport:
+    if not isinstance(structure, Mapping):
+        raise JvError(f"jv.plan: __jv_structure__ 必须是 Mapping，实得 {type(structure).__name__}")
+    version = structure.get("version")
+    if version != 1:
+        raise JvError(f"jv.plan: 未知 __jv_structure__ 版本 {version!r}，仅支持 version=1")
+    root = structure.get("root")
+    if not isinstance(root, Mapping):
+        raise JvError("jv.plan: __jv_structure__ 缺少合法的 root 节点（Mapping）")
+    rep = PlanReport(program=fallback_name if fallback_name != "?" else _node_name(root), budget=budget)
+    cost = _cost_of_node(root, rt, profile, rep)
+    for k in _SYM_FIELDS:
+        setattr(rep, k, cost[k])
+    price = (profile.get("cost") or {}).get("price_usd_per_input_token", 4.2e-8)
+    reg = (profile.get("cost") or {}).get("regression") or {}
+    icpt, per_q = reg.get("intercept_tokens", 271), (profile.get("cost") or {}).get("tokens_per_question", 38)
+    rep.cost_formula = f"({rep.calls!r}) × ({icpt} + {S_TOK}) × {price:.1e} + ({rep.questions!r}) × {per_q} × {price:.1e}"
+    rep.structure = root
+    return rep
+
+
 class _Estimator(ast.NodeVisitor):
     def __init__(self, rep: PlanReport, g: dict, rt, profile: dict, src_lines: list[str]):
         self.rep, self.g, self.rt, self.profile, self.src = rep, g, rt, profile, src_lines
@@ -202,6 +355,7 @@ class _Estimator(ast.NodeVisitor):
         self.escalate_sites = Sym(0)
         self.visiting: set[str] = set()            # 程序调用程序的递归护栏
         self.sizes: dict[str, Sym] = {}            # 名字 → 已知的列表规模（gen 的 n、字面列表、生成式）
+        self.judge_mult: dict[str, Sym] = {}       # 读数变量（含解包元素） → 登记时的倍率（D3：循环里 cut 循环外的向量只算一层）
 
     # —— 工具
     def m(self) -> Sym:
@@ -307,7 +461,18 @@ class _Estimator(ast.NodeVisitor):
         self.generic_visit(node)
         self.mult.pop()
 
+    def _bind_elems(self, target, it):
+        """`for e in R` / `for c, e in zip(cmds, R)`：解包元素继承 R 的登记倍率。"""
+        names = [n.id for n in ast.walk(target) if isinstance(n, ast.Name)]
+        srcs = [it] if not (isinstance(it, ast.Call) and isinstance(it.func, ast.Name) and it.func.id in ("zip", "enumerate")) else it.args
+        for a in srcs:
+            base = a.value if isinstance(a, ast.Subscript) else a
+            if isinstance(base, ast.Name) and base.id in self.judge_mult:
+                for n in names:
+                    self.judge_mult[n] = self.judge_mult[base.id]
+
     def visit_For(self, node: ast.For):
+        self._bind_elems(node.target, node.iter)
         self._enter(node, self._iter_mult(node.iter, node.lineno))
 
     def visit_While(self, node: ast.While):
@@ -319,6 +484,8 @@ class _Estimator(ast.NodeVisitor):
         for gen in node.generators:
             m = m * self._iter_mult(gen.iter, node.lineno)
         # 生成式里的 judge/do/cut 按倍率算，但 judge([...]) 的列表参数在 _states_count 里单独处理
+        for gen in node.generators:
+            self._bind_elems(gen.target, gen.iter)
         self.mult.append(self.m() * m)
         self.visit(node.elt)
         for gen in node.generators:
@@ -348,14 +515,18 @@ class _Estimator(ast.NodeVisitor):
             elif name == "do" and self._action_of(v) is not None and self._action_of(v).taint_out == "untrusted":
                 self.untrusted_names.add(tgt.id)
             elif name == "judge":
+                self.judge_mult[tgt.id] = self.m()
                 if any(isinstance(n, ast.Name) and n.id in self.untrusted_names for n in ast.walk(v.args[0])) if v.args else False:
                     self.judge_untrusted.add(tgt.id)
             elif name == "cut":
+                self.judge_mult.pop(tgt.id, None)
                 if any(isinstance(n, ast.Name) and n.id in self.judge_untrusted for n in ast.walk(v)) or \
                         any(isinstance(n, ast.Call) and _is_jv(n, "judge") and n.args and
                             any(isinstance(x, ast.Name) and x.id in self.untrusted_names for x in ast.walk(n.args[0]))
                             for n in ast.walk(v)):
                     self.exit_untrusted.add(tgt.id)
+            else:
+                self.judge_mult.pop(tgt.id, None)
         self.generic_visit(node)
 
     def visit_NamedExpr(self, node: ast.NamedExpr):
@@ -397,8 +568,11 @@ class _Estimator(ast.NodeVisitor):
         elif name in ("cut", "fit"):
             if self.cur_stmt is not None and id(self.cur_stmt) not in self.stmt_layer_done:
                 self.stmt_layer_done.add(id(self.cur_stmt))
-                self.rep.layers = self.rep.layers + m
-                self.row(node, "cut/层", m, "刷新点：本语句记一层（上界）")
+                # 被 cut 的读数若在循环外登记（向量解包后逐个 cut），层按登记处倍率算：整个向量一次刷新就绪
+                srcs = [n.id for n in ast.walk(node) if isinstance(n, ast.Name) and n.id in self.judge_mult]
+                lm = self.judge_mult[srcs[0]] if srcs else m
+                self.rep.layers = self.rep.layers + lm
+                self.row(node, "cut/层", lm, "刷新点：本语句记一层（上界）" + ("；读数在循环外登记，整向量一层" if srcs and lm != m else ""))
         elif name == "gen":
             nk = _kw(node, "n")
             n = self._const_int(nk) if nk is not None else 4

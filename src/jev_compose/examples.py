@@ -90,6 +90,8 @@ def enumerate_candidates(prompt, context, n, retry_seq):
 def verify_expression(candidate, specification):
     expression = candidate.content["expression"]
     spec = specification.content
+    if not spec["domain"] or len(spec["domain"]) != len(spec["expected"]):
+        raise ValueError("A finite specification needs nonempty, equally sized input and expected lists")
     for x, expected in zip(spec["domain"], spec["expected"]):
         actual = evaluate_expression(expression, x)
         if actual != expected:
@@ -99,7 +101,12 @@ def verify_expression(candidate, specification):
             "guarantee": "All declared finite-domain inputs were executed"}
 
 
-VERIFY = jv.Action("composition.verify_expression", fn=verify_expression, taint_out="trusted")
+if hasattr(jv, "register_action"):
+    VERIFY = jv.register_action("composition.verify_expression", fn=verify_expression, taint_out="trusted",
+                                reason="Repository checker executes a restricted finite expression grammar against every declared input")
+else:
+    # The immutable kernel snapshot predates the public action registry.
+    VERIFY = jv.Action("composition.verify_expression", fn=verify_expression, taint_out="trusted")
 
 
 @dataclass(frozen=True)
@@ -184,8 +191,6 @@ def identified_target(result):
 
 def make_solver_from_strategy(strategy: Component, *, name="chosen_solver") -> Component:
     """A program returns a solver; bind explicitly calls that resulting program."""
-    def choose_solver(state):
-        return strategy(state)
     effects = frozenset({"judge", "transform"})
     from .core import identity
-    return identity(InquiryState).bind(choose_solver, Iteration, effects=effects, name=name)
+    return identity(InquiryState).bind(strategy, Iteration, effects=effects, name=name)

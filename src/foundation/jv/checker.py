@@ -93,6 +93,8 @@ class _Checker(ast.NodeVisitor):
         self.has_unsure_handling = False
         self.q_names: dict[str, str] = {}          # 变量 → 题文本（追 J-02）
         self.warned_dynamic = False                # W-dynamic 只报一次
+        self.warned_self_trusted: set = set()      # W-self-trusted 每个动作一次
+        self.params: set[str] = set()              # 程序参数名（jv.mat 的实参若是参数不算宿主计算）
 
     # —— 记录
     def _line(self, node) -> str:
@@ -142,8 +144,10 @@ class _Checker(ast.NodeVisitor):
     def visit_Match(self, node: ast.Match):
         subj = node.subject
         if isinstance(subj, ast.Name) and subj.id in self.judge_vars:
-            self.err(node, f"J-01: match 的对象 {subj.id} 是 judge 返回的读数向量，不是出口。修法：取 [i] 再 jv.cut，"
-                           f"如 match jv.cut({subj.id}[0])")
+            self.err(node, f"J-01: match 的对象 {subj.id} 是 judge 返回的读数（向量或其解包元素），不是出口。修法：取 [i] 再 jv.cut，"
+                           f"如 match jv.cut({subj.id}[0])；向量用 jv.cut(jv.judge([...], q)) 再解包")
+        elif isinstance(subj, ast.Subscript) and self._reading_expr(subj):
+            self.err(node, f"J-01: match 的对象 {ast.unparse(subj)} 是读数向量的元素，不是出口。修法：match jv.cut({ast.unparse(subj)})")
         if _is_jv(subj, "judge"):
             self.err(node, "J-01: match 直接作用在 jv.judge(...) 上；judge 返回读数向量。修法：match jv.cut(jv.judge(...)[0])")
         kinds = set()
@@ -194,6 +198,12 @@ class _Checker(ast.NodeVisitor):
                 obj = self.g.get(act.id)
                 if isinstance(obj, Action) and not obj.reversible and _kw(node, "guard") is None:
                     self.err(node, f"J-08: 不可逆动作 {obj.name} 没有 guard=。修法：guard=[e]，e 来自 trusted 状态的 Act，或经 jv.ask")
+                if isinstance(obj, Action) and obj.taint_out == "trusted" and not obj.registered \
+                        and obj.name not in self.warned_self_trusted:
+                    self.warned_self_trusted.add(obj.name)
+                    self.warn(node, f"W-self-trusted: 动作 {obj.name} 在程序模块里自声明 taint_out=trusted；可信来自来源登记（I6），"
+                                    f"不来自程序自报。修法：jv.register_action({obj.name!r}, fn, taint_out='trusted', reason='为什么可信')，"
+                                    f"或改 'inherit'/'untrusted' 并让不可逆动作的守卫经 jv.ask")
             if self.loop_assigned_do:
                 for a in ast.walk(node):
                     if isinstance(a, ast.Name) and a.id in self.loop_assigned_do[-1]:
@@ -220,7 +230,28 @@ class _Checker(ast.NodeVisitor):
                 self.err(node, "J-16: fit 的第一个参数必须是 jv.fitref(\"名\")（注册表签名）")
         if name in ("handle", "consume"):
             self.has_unsure_handling = True
+        if name in ("mat", "lit") and node.args and not self._literal_arg(node.args[0]):
+            self.warn(node, f"W-literal-from-host: jv.{name}({ast.unparse(node.args[0])[:40]}) 的实参不是字面量也不是程序参数，"
+                            f"是宿主计算的结果；它进槽会绕过来源链（J-11）。修法：jv.transform(f, *mats) 记账后再进槽")
+        if isinstance(node.func, ast.Name) and node.func.id == "isinstance" and len(node.args) == 2 \
+                and self._reading_expr(node.args[0]) and _is_jv(node.args[1]):
+            self.err(node, f"J-01: isinstance({ast.unparse(node.args[0])}, jv.{_jv_name(node.args[1])}) 的对象是读数不是出口。"
+                           f"修法：先 jv.cut 得出口（向量：jv.cut(jv.judge([...], q)) 再解包）")
         self.generic_visit(node)
+
+    def _literal_arg(self, e) -> bool:
+        """jv.mat / jv.lit 的合法实参：常量、常量容器、程序参数名、f-string 常量。"""
+        if isinstance(e, ast.Constant):
+            return True
+        if isinstance(e, (ast.List, ast.Tuple, ast.Set)):
+            return all(self._literal_arg(x) for x in e.elts)
+        if isinstance(e, ast.Dict):
+            return all(self._literal_arg(x) for x in list(e.keys) + list(e.values) if x is not None)
+        if isinstance(e, ast.Name):
+            return e.id in self.params
+        if isinstance(e, ast.JoinedStr):
+            return all(isinstance(v, ast.Constant) or (isinstance(v, ast.FormattedValue) and self._literal_arg(v.value)) for v in e.values)
+        return False
 
     def _const_seq(self, node: ast.Call, what: str, fix: str):
         """J-13：循环里常量序号。若调用的参数含循环变量（键随参数变，不碰撞）降为 W-seq-const。"""
@@ -275,25 +306,64 @@ class _Checker(ast.NodeVisitor):
                 self.err(node, f"J-02: 状态里含由题 {a.id} 派生的出口，再问 {a.id}（禁自指）。修法：换题或换校准键")
 
     # —— 循环
-    def _enter_loop(self, node, targets=()):
+    def _enter_loop(self, node, targets=(), iters=()):
         self.loop_depth += 1
         self.loop_assigned_do.append(set())
         self.loop_vars.append({n.id for t in targets for n in ast.walk(t) if isinstance(n, ast.Name)})
+        for t, it in zip(targets, iters):
+            self._bind_reading_elems(t, it)
         self.generic_visit(node)
         self.loop_vars.pop()
         self.loop_assigned_do.pop()
         self.loop_depth -= 1
 
+    def _reading_expr(self, e) -> bool:
+        """表达式是读数向量（judge 变量、其下标、或 jv.judge(...) 本身）。"""
+        if isinstance(e, ast.Name):
+            return e.id in self.judge_vars
+        if isinstance(e, ast.Subscript):
+            return self._reading_expr(e.value)
+        return _is_jv(e, "judge")
+
+    def _bind_reading_elems(self, target, it):
+        """`for e in R` / `for c, e in zip(cmds, R)` / `for i, e in enumerate(R)`：解包出来的元素名记为读数变量（§6.3 模式 1 扩展）。"""
+        names = [n for n in ast.walk(target) if isinstance(n, ast.Name)]
+        if self._reading_expr(it):
+            for n in names:
+                self.judge_vars.add(n.id)
+            return
+        if isinstance(it, ast.Call) and isinstance(it.func, ast.Name) and it.func.id in ("zip", "enumerate"):
+            args = it.args if it.func.id == "zip" else [None] + it.args
+            elts = target.elts if isinstance(target, ast.Tuple) else [target]
+            if len(elts) == len(args):
+                for t, a in zip(elts, args):
+                    if a is not None and self._reading_expr(a):
+                        for n in ast.walk(t):
+                            if isinstance(n, ast.Name):
+                                self.judge_vars.add(n.id)
+            elif any(a is not None and self._reading_expr(a) for a in args):
+                for n in names:
+                    self.judge_vars.add(n.id)
+
     def visit_For(self, node: ast.For):
-        self._enter_loop(node, [node.target])
+        self._enter_loop(node, [node.target], [node.iter])
 
     def visit_While(self, node: ast.While):
         self._enter_loop(node)
 
     def visit_ListComp(self, node: ast.ListComp):
-        self._enter_loop(node, [g.target for g in node.generators])
+        self._enter_loop(node, [g.target for g in node.generators], [g.iter for g in node.generators])
+
+    visit_GeneratorExp = visit_ListComp
+    visit_SetComp = visit_ListComp
 
     def visit_FunctionDef(self, node: ast.FunctionDef):
+        a = node.args
+        self.params |= {x.arg for x in a.args + a.posonlyargs + a.kwonlyargs}
+        if a.vararg:
+            self.params.add(a.vararg.arg)
+        if a.kwarg:
+            self.params.add(a.kwarg.arg)
         self.generic_visit(node)
         if self.has_do and not self.has_unsure_handling:
             self.warn(node, "W-fail: 程序含 jv.do 但没有任何 Unsure 处理（handle/consume/case jv.Unsure）；do 失败按 J-12 走 Unsure(fail)，返回前会按 J-05 报错")

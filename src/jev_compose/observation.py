@@ -43,6 +43,11 @@ class Request:
 
 @dataclass(frozen=True)
 class Observation:
+    """A captured outcome; ``id`` identifies the request, not an execution attempt.
+
+    The same request can produce a known outcome in one scope and an unresolved
+    outcome in another (for example, with no budget). Each remains its own value.
+    """
     id: str
     request: Request = field(repr=False, compare=False)
     resolved: bool
@@ -56,24 +61,28 @@ class Observation:
                 "question": question_to_dict(self.request.question),
                 "resolved": self.resolved, "value": self.value, "cause": self.cause,
                 "model_id": self.model_id, "exit": self.decision.kind,
+                "uncertainty_policy": "retain" if not self.resolved else None,
                 "provisional": self.decision.provisional,
                 "material_hashes": [m.hash for m in self.request.state.resolved().all_mats]}
 
 
 def _capture(request, decision) -> Observation:
-    # Match the exit once and explicitly retain uncertainty, instead of dropping it.
-    if isinstance(decision, jv.Unsure):
-        known, value, cause = False, None, decision.cause
-    elif isinstance(decision, jv.Act):
-        known, value, cause = True, True, None
-    elif isinstance(decision, jv.Ignore):
-        known, value, cause = True, False, None
-    elif isinstance(decision, jv.Pick):
-        known, value, cause = True, decision.k, None
-    elif isinstance(decision, jv.At):
-        known, value, cause = True, decision.level, None
-    else:
-        raise TypeError(f"Unknown jv exit: {type(decision).__name__}")
+    # observe's explicit policy is to retain an Unsure as a first-class partial
+    # result (including the original exit), never turn it into a guessed value.
+    # `match` is the public responsibility-transfer boundary in the current jv.
+    match decision:
+        case jv.Unsure(c):
+            known, value, cause = False, None, c
+        case jv.Act():
+            known, value, cause = True, True, None
+        case jv.Ignore():
+            known, value, cause = True, False, None
+        case jv.Pick(k):
+            known, value, cause = True, k, None
+        case jv.At(level):
+            known, value, cause = True, level, None
+        case _:
+            raise TypeError(f"Unknown jv exit: {type(decision).__name__}")
     model_id = jv.current().model_id
     return Observation(request.fingerprint(model_id), request, known, value, cause, decision, model_id)
 
@@ -113,10 +122,12 @@ def at_least(observations, count: int) -> CountAnswer:
 
 
 def refine(observations, replacements: dict[str, Request]) -> tuple[Observation, ...]:
-    """Re-observe only unresolved identities explicitly given replacement requests.
+    """Re-observe unresolved occurrences selected by their request IDs.
 
-    Keep known observations; all references to the same unknown receive the same
-    replacement. Changing evidence/question creates a new observation identity.
+    Keep every known observation unchanged, even if it has the same request ID
+    as an unresolved occurrence. Unresolved occurrences sharing a selected ID
+    receive one shared replacement. Evidence/question changes alter request IDs;
+    IDs do not distinguish separate execution attempts of the same request.
     """
     items = tuple(observations)
     unresolved = {o.id for o in items if not o.resolved}
@@ -126,4 +137,4 @@ def refine(observations, replacements: dict[str, Request]) -> tuple[Observation,
     ids = list(replacements)
     values = batch_observe([replacements[i] for i in ids])
     updated = dict(zip(ids, values))
-    return tuple(updated.get(o.id, o) for o in items)
+    return tuple(o if o.resolved else updated.get(o.id, o) for o in items)

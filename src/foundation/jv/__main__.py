@@ -53,9 +53,13 @@ def cmd_check(args) -> int:
 def cmd_stats(args) -> int:
     from foundation.jv.examples import six
     passes = _passes_from(args)
-    rows = six.run_all(root=args.root, passes=passes)
+    from foundation.jv.examples import seven, strength
+    def _rows():
+        return (six.run_all(root=args.root, passes=passes) + [seven.run_seven(root=args.root, passes=passes)]
+                + [{k: v for k, v in r.items() if k != "结果"} for r in strength.run_all(root=args.root, passes=passes)])
+    rows = _rows()
     if args.replay:
-        rows = six.run_all(root=args.root, passes=passes)
+        rows = _rows()
     print(six.stats_table(rows, title=f"passes={ {k for k, v in passes.items() if not v} or '全开'}"))
     if args.json:
         print(json.dumps(rows, ensure_ascii=False, default=str))

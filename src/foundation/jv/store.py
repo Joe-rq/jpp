@@ -56,6 +56,9 @@ class Books:
         self.cache = Ledger(os.path.join(root, "cache.json") if root else None)
         self.effects = Ledger(os.path.join(root, "effects.json") if root else None)   # do/gen/ask/transform
 
+    def header_matches(self, header: dict) -> bool:
+        return getattr(self, "header", None) == header
+
     def save(self) -> None:
         self.ledger.save()
         self.cache.save()
