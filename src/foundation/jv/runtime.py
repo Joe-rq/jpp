@@ -896,7 +896,8 @@ class Runtime:
         if ans.get("fail"):
             return self._register_exit(Unsure("fail", **kw))
         for slot in q.evidence:                                  # J-09 先于信任 p
-            if not getattr(rs, slot, None):
+            v = getattr(rs, slot, None)                          # Mat 无真值：只判 None 与空列表
+            if v is None or (isinstance(v, (list, tuple)) and not v):
                 return self._register_exit(Unsure("insufficient", detail={"missing": slot}, **kw))
         if rec.status == "停岗":
             return self._register_exit(Unsure("drift", **kw))
