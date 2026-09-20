@@ -6,6 +6,18 @@ from pathlib import Path
 from jpp.cli import main
 
 
+def test_partial_command_writes_complete_report(tmp_path, capsys):
+    target = tmp_path / "partial.json"
+    main(["partial", "--output", str(target)])
+    report = json.loads(target.read_text())
+    assert report["direct_equivalent"]
+    assert report["used_before_complete"]["cost"] == 9
+    assert report["improved"]["best"]["cost"] == 2
+    assert report["improved"]["pending"] == ["D"]
+    assert report["calls"] == 6 and report["actions"] == 3
+    assert len(report["dynamic"]) == 2
+
+
 def test_methods_command_writes_requested_report(tmp_path, capsys):
     target = tmp_path / "report.json"
     main(["methods", "--output", str(target)])

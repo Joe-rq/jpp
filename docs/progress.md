@@ -126,3 +126,35 @@ The concurrent browser-demo update is preserved. Its existing source-bundle
 builder was rerun so browser code and the installed package use the same reviewed
 sources; the artifact-consistency checks pass.
 并发浏览器演示已保留，沿原脚本重建源码包，避免网页继续加载旧计划器。
+
+## 2026-09-20: composable partial results and continuation / 可组合的部分结果与继续求解
+
+`0.1.0a3` adds `Partial`, `checkpoint`, `map_partial` and `continue_with` to the
+existing composition library. A caller can use a sufficient candidate combination
+while some judgments remain unresolved, then change strategy and continue through
+the same exact combination algorithm. No new runtime or kernel changes.
+
+现在可以先拿到成本9的可用组合，C/D仍未决；只补问C就得到成本2的组合，之后换策略
+处理D。A/B/C各检查一次。`jpp partial --output partial-report.json` 实际运行整个过程，
+再与直接手写控制程序对照，结果、证据及观察/动作次数一致。
+
+[Guide and direct comparison / 用法与对照](partial-results.md) ·
+[Execution record / 执行记录](demos/partial/partial-report.json) ·
+[Installation / 安装记录](demos/partial/installation.json)
+
+Verified: the full release suite passed 534 tests in Python 3.12; the subsequently
+added independent-author regression passed separately. The wheel was installed
+and run outside the source tree, including the documented caller. An independent
+author read only the public docs and wrote an expensive-first, one-at-a-time
+strategy, composed with then/product/iterate/bind; it uses the same algorithms and
+protocol. Its new caller requires both cost <= 2 and no remaining questions.
+
+验证覆盖干净安装、完整程序、内核预算、观察/材料身份、已执行工作保留及新策略再组合。
+独立作者的统计字段疑问已补入文档。固定观察下总计6次调用、3次本地检查、2次材料
+更新；精确组合投影仍会重算。这是接口复用与执行语义验证，不是模型质量提升实验。
+下一步由新的算法使用需求决定，跨进程继续方法持久化尚未加入。
+
+[Independent strategy / 独立策略](../examples/priority_resume.py) ·
+[Its output / 实际输出](demos/partial/independent-output.json)
+
+[Implementation and evidence commit / 实现与依据提交](https://github.com/Towow-ai/jpp/commit/4e19377)

@@ -1,0 +1,23 @@
+{
+  "version": "0.1.0a3",
+  "import": "isolated Python 3.12 environment / site-packages/jev_compose/__init__.py",
+  "wheel_sha256": "a41e8878a217ed7418eac486e37441a8639191dea660727490d085a06a4bc25c",
+  "composition_modules": [
+    "jev_compose/__init__.py",
+    "jev_compose/ablations.py",
+    "jev_compose/algorithms.py",
+    "jev_compose/core.py",
+    "jev_compose/examples.py",
+    "jev_compose/fixtures.py",
+    "jev_compose/ir_example.py",
+    "jev_compose/method_example.py",
+    "jev_compose/observation.py",
+    "jev_compose/partial.py",
+    "jev_compose/partial_example.py"
+  ],
+  "python_files": 82,
+  "commands": [
+    "jpp partial --output partial-report.json",
+    "python documented_caller.py"
+  ]
+}

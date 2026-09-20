@@ -2,7 +2,7 @@
 
 J++ currently uses Python 3.12+ as its public builder. Install from this checkout
 with `python -m pip install .`, or install a delivered wheel with
-`python -m pip install /path/to/jpp_language-0.1.0a2-py3-none-any.whl`.
+`python -m pip install /path/to/jpp_language-0.1.0a3-py3-none-any.whl`.
 No research directory, PYTHONPATH setting, or kernel snapshot is needed.
 
 当前入口是 Python 构建器。安装后在任意普通工作目录运行：
@@ -10,6 +10,7 @@ No research directory, PYTHONPATH setting, or kernel snapshot is needed.
 ```sh
 jpp demo
 jpp methods --output method-report.json
+jpp partial --output partial-report.json
 ```
 
 The second command runs a complete feedback method, constructs nested checking
@@ -18,6 +19,12 @@ actual dynamic structures and outputs. `[0]` produces `x`; `[-4,...,4]` produces
 `x if x >= 0 else -x`. These are finite-domain checks with synthetic observations,
 not measured JEV accuracy. Output is written to your chosen file, never into the
 installed package. Full source: `jev_compose.method_example` (included in wheel).
+
+`jpp partial` uses an already sufficient candidate combination while other
+questions remain unresolved, then changes the strategy and improves it without
+repeating prior checks. See [partial results and continuations](partial-results.md)
+for the protocol, complete example and direct-control comparison.
+`jpp partial` 演示先使用足够的部分结果，再换策略补问；旧检查保留。
 
 ## Define, compose, execute
 
