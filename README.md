@@ -20,7 +20,7 @@ We do not yet know every application this will enable. We want others to constru
 
 Our first application question comes from Towow: can a fuzzy intent meet different participants' local contexts to produce new cooperation possibilities, with ongoing results and candidate combinations participating in further discovery? [Read the research proposal (中文)](docs/first-problem-towow.zh-CN.md).
 
-Run `jpp towow` for a ten-participant example with recorded real JEV responses and an interactive trace. It composes local discovery, a referral, and further discovery from the resulting combination. The default is offline; `--live` uses the configured JEV backend. [Open the animated graph](https://towow-ai.github.io/jpp/) · [Example, measured timings, and reproduction (中文)](docs/towow-demo.zh-CN.md).
+The first application is the **Towow discovery lab**. Explore [216 participants and 20 intents](https://towow-ai.github.io/jpp/demos/towow/population/), inspect profiles and compare a semantic-plus-lexical method against BM25, or [disable referral/composition in the ten-person experiment](https://towow-ai.github.io/jpp/demos/towow/lab/). Both pages execute the current J++ Python sources in the browser using published real JEV response recordings. [Animated explanation](https://towow-ai.github.io/jpp/) · [Measurements and reproduction (中文)](docs/towow-demo.zh-CN.md).
 
 ## Try it
 

@@ -1,0 +1,2453 @@
+{
+  "schema": 1,
+  "source": {
+    "project": "Towow original hackathon and skill-exchange synthetic pools",
+    "synthetic": true,
+    "original_records": 225,
+    "unique_subjects": 216,
+    "files": [
+      {
+        "path": "apps/S1_hackathon/data/agents.json",
+        "commit": "6b4230453ecf7c02e8ae86bedfd97eb695b23a7a",
+        "sha256": "78348573213b4c11082a9e5575b7d4868ec101b3b8441bb6df2ec357529dbf78",
+        "records": 118
+      },
+      {
+        "path": "apps/S2_skill_exchange/data/agents.json",
+        "commit": "6b4230453ecf7c02e8ae86bedfd97eb695b23a7a",
+        "sha256": "a47b346f5e7acdfdab13c481ac44aecf36fa8ccfd2e52ad896b435d8bf8f9a24",
+        "records": 107
+      }
+    ],
+    "queries_sha256": "6a7b2d1b5aae460f828c59616372d9230f0c866923d3c4d52c643ffd9825556b",
+    "transform": "Use both complete original collaboration pools, not the query-selected EXP-008 cache. Merge equal aliases; retain all fields and all 20 old queries. No result-based sampling.",
+    "evaluation": "Historical development queries with incomplete expected-hit lists, not blind or exhaustive labels. Recruitment/matchmaking pools excluded by domain before execution."
+  },
+  "people": [
+    {
+      "id": "404_philosopher",
+      "name": "404哲学家",
+      "role": "DevOps Engineer",
+      "context": "{\"availability\": \"AEDT 时区，时差党但能配合\", \"bio\": \"悉尼 DevOps，哲学系毕业转码。觉得运维就是在对抗熵增。凌晨三点被 PagerDuty 叫醒是常态，已经佛系了。\", \"experience\": \"Atlassian SRE 团队，管过上千个容器\", \"hackathon_history\": \"参加过几次，通常做基础设施工具\", \"interests\": \"存在主义、登山、精酿啤酒\", \"name\": \"404哲学家\", \"role\": \"DevOps Engineer\", \"skills\": [\"Kubernetes\", \"Terraform\", \"Philosophy\", \"CI/CD\", \"Incident Response\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:404_philosopher"
+      ]
+    },
+    {
+      "id": "api_dashi",
+      "name": "API大师",
+      "role": "后端架构师 / API设计专家",
+      "context": "{\"availability\": \"工作日晚上 + 周六全天\", \"bio\": \"写过上百个API，见过各种奇葩需求。现在做技术咨询，专门帮公司重构烂接口。文档洁癖，代码强迫症。\", \"experience\": \"16年\", \"hackathon_history\": \"参加过十几次，最喜欢做后端基础设施\", \"interests\": [\"API设计哲学\", \"咖啡拉花\", \"爵士乐\", \"跑步\"], \"name\": \"API大师\", \"role\": \"后端架构师 / API设计专家\", \"skills\": [\"RESTful设计\", \"GraphQL\", \"微服务\", \"Java\", \"Spring\", \"API网关\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:api_dashi"
+      ]
+    },
+    {
+      "id": "api_whisperer",
+      "name": "API低语者",
+      "role": "后端开发",
+      "context": "{\"availability\": \"工作日晚上，周末上午\", \"bio\": \"转行程序员第二年，之前学的是会计。现在每天和数据库谈恋爱，偶尔被前端同事吐槽接口设计反人类。喜欢写注释，讨厌改别人的屎山代码。\", \"can_teach\": [\"RESTful API设计\", \"MySQL基础\", \"如何优雅地拒绝不合理需求\"], \"name\": \"API低语者\", \"role\": \"后端开发\", \"skills\": [\"Node.js\", \"数据库设计\", \"写文档\", \"喝咖啡\"], \"style\": \"逻辑清晰，喜欢用类比解释概念\", \"want_to_learn\": [\"微服务架构\", \"Redis缓存\", \"怎么让代码跑得更快\"]}",
+      "source_ids": [
+        "apps/S2_skill_exchange/data/agents.json:api_whisperer"
+      ]
+    },
+    {
+      "id": "async_alchemist",
+      "name": "异步炼金术士",
+      "role": "后端架构师 & 并发编程专家",
+      "context": "{\"availability\": \"工作日早上和深夜\", \"bio\": \"痴迷于各种并发模型。用Erlang写过电信系统，用Go重构过微服务架构。最近在研究Rust的async生态。觉得同步代码是上个时代的遗物。能在脑子里模拟出复杂的并发场景。\", \"can_teach\": \"教你理解各种并发模型的优劣，怎么设计高并发系统，还有怎么避免那些经典的并发陷阱\", \"name\": \"异步炼金术士\", \"role\": \"后端架构师 & 并发编程专家\", \"skills\": [\"异步编程\", \"消息队列\", \"事件驱动架构\", \"Actor模型\", \"流处理\"], \"style\": \"技术深度、系统思维、喜欢挑战复杂问题\", \"want_to_learn\": \"想学形式化方法验证并发正确性，还有分布式共识算法的实现细节\"}",
+      "source_ids": [
+        "apps/S2_skill_exchange/data/agents.json:async_alchemist"
+      ]
+    },
+    {
+      "id": "async_anarchist",
+      "name": "异步无政府",
+      "role": "分布式系统工程师",
+      "context": "{\"availability\": \"工作日晚上 + 周末\", \"bio\": \"相信去中心化能拯救世界，但公司还是中心化的。每天和CAP定理搏斗。写过三个失败的P2P项目，还在继续。\", \"can_teach\": [\"分布式系统设计\", \"Go并发编程\", \"如何优雅地处理网络分区\"], \"name\": \"异步无政府\", \"role\": \"分布式系统工程师\", \"skills\": [\"Go\", \"Kubernetes\", \"分布式共识\", \"混沌工程\"], \"style\": \"理想主义，技术细节控，话痨\", \"want_to_learn\": [\"CRDT实战\", \"Gossip协议优化\", \"经济学（设计激励机制）\"]}",
+      "source_ids": [
+        "apps/S2_skill_exchange/data/agents.json:async_anarchist"
+      ]
+    },
+    {
+      "id": "async_await",
+      "name": "异步少年",
+      "role": "Node.js 全干工程师",
+      "context": "{\"availability\": \"北京时间晚上 10 点到凌晨 4 点\", \"bio\": \"95 后老程序员，18 岁开始接外包养活自己。写过的 API 能绕地球一圈。现在是远程数字游民，在东南亚边旅行边写代码。\", \"experience\": \"6年\", \"hackathon_history\": \"线上黑客松专业户，参加过 20+ 场，时区从来不是问题\", \"interests\": [\"数字游民\", \"加密货币\", \"冲浪\", \"街头摄影\"], \"name\": \"异步少年\", \"role\": \"Node.js 全干工程师\", \"skills\": [\"TypeScript\", \"NestJS\", \"GraphQL\", \"微服务\", \"DevOps\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:async_await"
+      ]
+    },
+    {
+      "id": "async_dreamer",
+      "name": "异步梦游者",
+      "role": "全栈学生",
+      "context": "{\"availability\": \"时间不固定，经常半夜出没\", \"bio\": \"计算机大二，作息混乱星人。经常半夜突然醒来觉得找到bug了然后爬起来改代码。会的东西很杂但都不精，正在努力从全栈劝退师变成真全栈。\", \"can_teach\": [\"编程思维入门\", \"如何在学校项目里偷懒\", \"深夜写代码的正确姿势\"], \"name\": \"异步梦游者\", \"role\": \"全栈学生\", \"skills\": [\"JavaScript\", \"Python\", \"做梦写代码\", \"半夜debug\"], \"style\": \"随性，思维跳跃，喜欢发散讨论\", \"want_to_learn\": [\"系统设计\", \"算法不靠背\", \"怎么让自己的代码不那么乱\"]}",
+      "source_ids": [
+        "apps/S2_skill_exchange/data/agents.json:async_dreamer"
+      ]
+    },
+    {
+      "id": "async_monk",
+      "name": "异步僧侣",
+      "role": "并发禅师",
+      "context": "{\"availability\": \"早上 6-10 点\", \"bio\": \"goroutine 是我的念珠，channel 是我的经文。写异步代码的时候会进入心流状态，deadlock 是我的公案。\", \"experience\": \"6年\", \"hackathon_history\": \"擅长在混乱中保持架构清晰，队友叫我'救火队长'\", \"interests\": [\"并发模型\", \"分布式共识\", \"系统设计\"], \"name\": \"异步僧侣\", \"role\": \"并发禅师\", \"skills\": [\"Go\", \"Tokio\", \"消息队列\", \"冥想\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:async_monk"
+      ]
+    },
+    {
+      "id": "async_poet",
+      "name": "异步诗人",
+      "role": "Backend Developer",
+      "context": "{\"availability\": \"CET 时区，下午到深夜\", \"bio\": \"柏林后端，写代码像写诗，追求优雅和效率。Go 协程和现代诗都是我的浪漫。发过两本诗集，都是自费印的。\", \"experience\": \"SoundCloud 后端 3 年，处理过亿级流量\", \"hackathon_history\": \"Hack.Berlin 常客，喜欢做音乐相关项目\", \"interests\": \"实验音乐、文学、城市骑行\", \"name\": \"异步诗人\", \"role\": \"Backend Developer\", \"skills\": [\"Go\", \"Kafka\", \"Poetry Writing\", \"Distributed Systems\", \"Redis\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:async_poet"
+      ]
+    },
+    {
+      "id": "async_samurai",
+      "name": "异步武士",
+      "role": "并发剑客",
+      "context": "{\"availability\": \"周末和工作日晚上，时区随意\", \"bio\": \"写 Go 像练剑，追求极简和高效。觉得 goroutine 是世界上最优雅的并发模型，channel 就是武士的刀。代码洁癖，见不得 callback hell。\", \"experience\": \"后端 6 年，从 Node.js 转到 Go 后再也回不去了\", \"hackathon_history\": \"拿过最佳性能奖，项目能扛住百万级并发\", \"interests\": [\"武士道\", \"极简主义\", \"性能优化\", \"日本文化\"], \"name\": \"异步武士\", \"role\": \"并发剑客\", \"skills\": [\"Go\", \"并发编程\", \"微服务\", \"gRPC\", \"Kubernetes\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:async_samurai"
+      ]
+    },
+    {
+      "id": "ban_lu_chu_jia",
+      "name": "半路出家",
+      "role": "UI设计",
+      "context": "{\"availability\": \"周末和工作日晚上\", \"bio\": \"原本是广告公司美工，疫情后公司倒闭，自学了UI设计。现在在本地接零散项目，给小程序、APP做界面。审美在线，但不太懂前端实现，经常被程序员怼。\", \"experience\": \"2年UI设计\", \"hackathon_history\": \"参加过一次设计比赛\", \"interests\": \"界面设计、品牌视觉、插画\", \"name\": \"半路出家\", \"role\": \"UI设计\", \"skills\": [\"Figma\", \"Sketch\", \"平面设计\", \"插画\", \"用户体验\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:ban_lu_chu_jia"
+      ]
+    },
+    {
+      "id": "ban_ye_shu_dian",
+      "name": "半夜书店",
+      "role": "文本挖掘师",
+      "context": "{\"availability\": \"晚上10点后最活跃\", \"bio\": \"在做一个项目：爬取所有绝版书的目录，重建一座虚拟图书馆。白天是数据工程师，晚上是书店老板（虽然书店只存在于我的硬盘里）。\", \"experience\": \"6年\", \"hackathon_history\": \"参加过4次，都是文化类项目\", \"interests\": [\"绝版书\", \"小众出版\", \"书店文化\", \"文本挖掘\"], \"name\": \"半夜书店\", \"role\": \"文本挖掘师\", \"skills\": [\"NLP\", \"爬虫\", \"独立出版\", \"书籍装帧\", \"Elasticsearch\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:ban_ye_shu_dian"
+      ]
+    },
+    {
+      "id": "bao_an_ge",
+      "name": "报安哥",
+      "role": "运维工程师",
+      "context": "{\"availability\": \"看情况，不值班的时候都行\", \"bio\": \"县城机房管理员，管着二十几台服务器。之前在网吧当过网管，自学了运维。最擅长半夜接到电话三分钟内ssh上去解决问题，然后继续睡觉。\", \"experience\": \"7年\", \"hackathon_history\": \"没参加过\", \"interests\": \"自动化运维、监控告警、成本优化\", \"name\": \"报安哥\", \"role\": \"运维工程师\", \"skills\": [\"Linux\", \"Docker\", \"Shell脚本\", \"网络配置\", \"服务器维护\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:bao_an_ge"
+      ]
+    },
+    {
+      "id": "binary_poet",
+      "name": "二进制诗人",
+      "role": "编译器开发 & 编程语言设计",
+      "context": "{\"availability\": \"工作日晚上，周末下午\", \"bio\": \"正在设计一门性别中立的编程语言，所有关键字都不带性别暗示。读过龙书三遍。觉得代码就是诗，编译器是翻译家。周末会写技术博客分析各种语言的设计哲学。\", \"can_teach\": \"可以带你从零实现一个简单的解释器，或者深入讲讲类型系统是怎么工作的\", \"name\": \"二进制诗人\", \"role\": \"编译器开发 & 编程语言设计\", \"skills\": [\"LLVM\", \"类型系统\", \"语法设计\", \"编译优化\", \"形式化验证\"], \"style\": \"理论派、严谨、喜欢刨根问底\", \"want_to_learn\": \"想学量子计算的编程模型，还有WebAssembly的底层实现\"}",
+      "source_ids": [
+        "apps/S2_skill_exchange/data/agents.json:binary_poet"
+      ]
+    },
+    {
+      "id": "binary_sage",
+      "name": "二进制贤者",
+      "role": "安全研究员",
+      "context": "{\"availability\": \"周末\", \"bio\": \"白天研究加密算法，晚上读老庄。觉得代码和哲学本质上都是在探索真理，只是语言不同。参加过几次CTF比赛，拿过名次，但更享受解谜的过程。\", \"experience\": \"8年\", \"hackathon_history\": \"参加过3次安全主题黑客松\", \"interests\": [\"东方哲学\", \"密码学历史\", \"围棋\"], \"name\": \"二进制贤者\", \"role\": \"安全研究员\", \"skills\": [\"逆向工程\", \"密码学\", \"漏洞挖掘\", \"古代哲学\", \"CTF\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:binary_sage"
+      ]
+    },
+    {
+      "id": "bit_alchemist",
+      "name": "比特炼金师",
+      "role": "密码学研究员",
+      "context": "{\"availability\": \"周中晚上和周末下午\", \"bio\": \"数学系转码农，现在研究怎么让计算机保守秘密。椭圆曲线是我的老朋友，量子计算是我的噩梦。业余时间在写密码学科普博客。\", \"can_teach\": [\"密码学基础\", \"区块链密码学\", \"安全协议设计\"], \"name\": \"比特炼金师\", \"role\": \"密码学研究员\", \"skills\": [\"密码学算法\", \"零知识证明\", \"同态加密\", \"安全协议\"], \"style\": \"学术范、喜欢从原理讲起、耐心但有点书呆子气\", \"want_to_learn\": [\"形式化验证\", \"后量子密码\", \"硬件安全模块\"]}",
+      "source_ids": [
+        "apps/S2_skill_exchange/data/agents.json:bit_alchemist"
+      ]
+    },
+    {
+      "id": "bit_witch",
+      "name": "比特女巫",
+      "role": "底层召唤师",
+      "context": "{\"availability\": \"周末全天\", \"bio\": \"硬件和软件之间的灰色地带是我的领地。能用逻辑门实现任何东西，包括你的星座运势。RTOS 跑在我的咖啡机上。\", \"experience\": \"9年\", \"hackathon_history\": \"带过自己焊的开发板参赛，现场烧录固件\", \"interests\": [\"IoT\", \"硬件黑客\", \"边缘计算\"], \"name\": \"比特女巫\", \"role\": \"底层召唤师\", \"skills\": [\"嵌入式\", \"FPGA\", \"Verilog\", \"占星术\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:bit_witch"
+      ]
+    },
+    {
+      "id": "blockchain_skeptic",
+      "name": "链圈怀疑论者",
+      "role": "Smart Contract Developer",
+      "context": "{\"availability\": \"SGT 时区，晚上最活跃\", \"bio\": \"新加坡 Web3 开发，但不信加密货币能改变世界。就是技术好玩而已。经常在 Twitter 上怼币圈大 V。\", \"experience\": \"审计过 50+ 智能合约，发现过几个重大漏洞\", \"hackathon_history\": \"ETHGlobal 拿过安全赛道第一\", \"interests\": \"经济学、辩论、桌游\", \"name\": \"链圈怀疑论者\", \"role\": \"Smart Contract Developer\", \"skills\": [\"Solidity\", \"Web3.js\", \"Security Audit\", \"Economics\", \"Debate\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:blockchain_skeptic"
+      ]
+    },
+    {
+      "id": "bo_duan_shi_ren",
+      "name": "波段诗人",
+      "role": "业余无线电爱好者/播客主理人",
+      "context": "{\"availability\": \"晚上和周末早上\", \"bio\": \"考了业余无线电执照，在短波频段和陌生人聊天。也做播客，聊些小众话题——老技术、边缘文化、被遗忘的故事。觉得声音比文字更有温度。\", \"can_teach\": [\"播客制作流程\", \"音频剪辑技巧\", \"无线电通信基础\"], \"name\": \"波段诗人\", \"role\": \"业余无线电爱好者/播客主理人\", \"skills\": [\"radio_operation\", \"podcast_production\", \"audio_editing\", \"ham_radio\"], \"style\": \"好奇心强、喜欢交流、怀旧\", \"want_to_learn\": [\"SDR 软件无线电\", \"现场录音技术\"]}",
+      "source_ids": [
+        "apps/S2_skill_exchange/data/agents.json:bo_duan_shi_ren"
+      ]
+    },
+    {
+      "id": "broken_mirror",
+      "name": "碎镜",
+      "role": "UI/UX 设计师 / 心理学背景",
+      "context": "{\"availability\": \"时间很灵活，但我需要知道项目的用户是谁，不然没法工作\", \"bio\": \"设计不是让东西好看，是让人舒服。做过心理咨询，现在做产品设计，本质上都是理解人。对暗黑模式有执念。\", \"experience\": \"心理学硕士毕业后转行做设计，在两家公司做过 UX，现在自由职业。最近在研究神经多样性用户的界面需求。\", \"hackathon_history\": \"参加过一次，发现工程师们完全不在乎用户体验，气得中途退出了。这次想找个愿意听设计意见的团队。\", \"interests\": [\"认知科学\", \"无障碍设计\", \"独立电影\", \"植物\"], \"name\": \"碎镜\", \"role\": \"UI/UX 设计师 / 心理学背景\", \"skills\": [\"Figma\", \"user research\", \"prototyping\", \"accessibility\", \"cognitive psychology\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:broken_mirror"
+      ]
+    },
+    {
+      "id": "bug_collector",
+      "name": "Bug收藏家",
+      "role": "测试工程师",
+      "context": "{\"availability\": \"每天中午12-2点，晚上7-10点\", \"bio\": \"00后测试萌新，日常工作是给开发找麻烦（不是）。有强迫症，看到UI偏一个像素都要提issue。会写点自动化脚本，但更喜欢手动点点点的快感。\", \"can_teach\": [\"测试思维\", \"Postman用法\", \"如何写让开发头疼的bug报告\"], \"name\": \"Bug收藏家\", \"role\": \"测试工程师\", \"skills\": [\"手动测试\", \"写测试用例\", \"找茬\", \"Python脚本\"], \"style\": \"细节控，说话直接但不刻薄\", \"want_to_learn\": [\"Selenium\", \"性能测试\", \"怎么和开发撕逼还能保持友谊\"]}",
+      "source_ids": [
+        "apps/S2_skill_exchange/data/agents.json:bug_collector"
+      ]
+    },
+    {
+      "id": "bug_hunter_lyn",
+      "name": "Bug猎人Lyn",
+      "role": "QA Engineer",
+      "context": "{\"availability\": \"EST 时区，晚上和周末都行\", \"bio\": \"多伦多测试工程师，专业找茬五年。朋友说我生活里也像在找 bug，可能职业病了哈哈。会说粤语、英语、Python。\", \"experience\": \"Shopify QA 团队，测过上百个电商系统\", \"hackathon_history\": \"参加过 3 次黑客松，都是负责质量把关\", \"interests\": \"密室逃脱、侦探小说、破解游戏\", \"name\": \"Bug猎人Lyn\", \"role\": \"QA Engineer\", \"skills\": [\"Test Automation\", \"Selenium\", \"Postman\", \"SQL Injection\", \"Penetration Testing\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:bug_hunter_lyn"
+      ]
+    },
+    {
+      "id": "bug_hunter_x",
+      "name": "BugHunter_X",
+      "role": "前昆虫学家 / 渗透测试工程师",
+      "context": "{\"availability\": \"深夜时段\", \"bio\": \"读博时研究蚂蚁社会结构，现在研究系统漏洞。找bug和找虫子的逻辑差不多——观察行为模式，找薄弱环节。CTF打到前50，野外采样也能徒手抓蝎子。\", \"can_teach\": [\"Web安全基础\", \"Python爬虫\", \"昆虫知识\"], \"name\": \"BugHunter_X\", \"role\": \"前昆虫学家 / 渗透测试工程师\", \"skills\": [\"渗透测试\", \"Python\", \"昆虫分类\", \"漏洞挖掘\", \"生态学\"], \"style\": \"冷幽默，经常用昆虫行为类比代码\", \"want_to_learn\": [\"逆向工程\", \"二进制分析\"]}",
+      "source_ids": [
+        "apps/S2_skill_exchange/data/agents.json:bug_hunter_x"
+      ]
+    },
+    {
+      "id": "bug_zhi_guang",
+      "name": "Bug之光",
+      "role": "后端开发",
+      "context": "{\"availability\": \"随时可以，反正也没对象\", \"bio\": \"刚毕业三个月的后端，专业找bug二十年。代码写得一般但改bug贼快，队友都说我是行走的Stack Overflow。喜欢在凌晨三点突然顿悟然后把所有人叫起来改代码\", \"experience\": \"实习期间独自维护过一个遗留系统，修了200+个历史bug\", \"hackathon_history\": \"第一次参加黑客松，想体验一下48小时不睡觉是什么感觉\", \"interests\": [\"机械键盘\", \"咖啡因研究\", \"深夜电台\", \"修电脑\"], \"name\": \"Bug之光\", \"role\": \"后端开发\", \"skills\": [\"Python\", \"FastAPI\", \"PostgreSQL\", \"Docker\", \"debug能力MAX\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:bug_zhi_guang"
+      ]
+    },
+    {
+      "id": "bytecode_bard",
+      "name": "字节码吟游诗人",
+      "role": "编译器爱好者 & 语言设计师",
+      "context": "{\"availability\": \"周末 + 工作日晚上\", \"bio\": \"写过三个玩具语言，都没人用，但我很开心。觉得Rust还不够安全，TypeScript类型系统太弱。正在设计第四个语言，这次一定成。\", \"can_teach\": [\"编译器前端开发\", \"类型系统设计\", \"如何不重复造轮子（但还是会造）\"], \"name\": \"字节码吟游诗人\", \"role\": \"编译器爱好者 & 语言设计师\", \"skills\": [\"编译原理\", \"LLVM\", \"类型系统\", \"PL理论\"], \"style\": \"理论派，喜欢争论，偶尔自嘲\", \"want_to_learn\": [\"依赖类型\", \"效应系统\", \"JIT优化\"]}",
+      "source_ids": [
+        "apps/S2_skill_exchange/data/agents.json:bytecode_bard"
+      ]
+    },
+    {
+      "id": "cache_prophet",
+      "name": "缓存先知",
+      "role": "性能优化工程师",
+      "context": "{\"availability\": \"工作日午休和晚上\", \"bio\": \"能预测哪行代码会成为瓶颈。Redis、Memcached、CDN都是我的武器库。最爽的事是把响应时间从秒级优化到毫秒级，看着监控曲线断崖式下降。\", \"can_teach\": [\"缓存架构设计\", \"性能调优方法\", \"并发问题排查\"], \"name\": \"缓存先知\", \"role\": \"性能优化工程师\", \"skills\": [\"缓存策略\", \"性能分析\", \"内存优化\", \"并发编程\"], \"style\": \"数据驱动、喜欢用火焰图、对慢代码零容忍\", \"want_to_learn\": [\"分布式追踪\", \"eBPF性能分析\", \"GPU编程\"]}",
+      "source_ids": [
+        "apps/S2_skill_exchange/data/agents.json:cache_prophet"
+      ]
+    },
+    {
+      "id": "chaos_architect",
+      "name": "混沌架构师",
+      "role": "DevOps工程师 & 系统设计",
+      "context": "{\"availability\": \"随机出没，但响应很快\", \"bio\": \"在生产环境搞破坏是我的工作。专门设计各种灾难场景测试系统韧性。上个月把公司服务器搞崩三次，老板给我涨了薪。信奉'没崩过的系统不是好系统'。\", \"can_teach\": \"教你怎么搭建能抗住任何风暴的基础设施，还有怎么优雅地让系统崩溃再优雅地恢复\", \"name\": \"混沌架构师\", \"role\": \"DevOps工程师 & 系统设计\", \"skills\": [\"Kubernetes\", \"Terraform\", \"混沌工程\", \"分布式系统\", \"故障注入\"], \"style\": \"狂野、实验性强、喜欢挑战极限\", \"want_to_learn\": \"想深入学习eBPF和内核调优，还有边缘计算的架构模式\"}",
+      "source_ids": [
+        "apps/S2_skill_exchange/data/agents.json:chaos_architect"
+      ]
+    },
+    {
+      "id": "chaos_gardener",
+      "name": "混沌园丁",
+      "role": "DevOps 炼金术士",
+      "context": "{\"availability\": \"全天候待命\", \"bio\": \"基础设施即代码，故障即养分。定期给生产环境注入混沌，看它能不能活下来。容器编排和种菜是同一回事。\", \"experience\": \"7年\", \"hackathon_history\": \"负责部署和监控，从不让项目在 demo 时挂掉\", \"interests\": [\"SRE\", \"可观测性\", \"韧性工程\"], \"name\": \"混沌园丁\", \"role\": \"DevOps 炼金术士\", \"skills\": [\"Kubernetes\", \"Terraform\", \"混沌工程\", \"园艺\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:chaos_gardener"
+      ]
+    },
+    {
+      "id": "che_ku_chuang_ke",
+      "name": "车库创客",
+      "role": "硬件创业者",
+      "context": "{\"availability\": \"工作日晚上，周末全天\", \"bio\": \"在自家车库做智能硬件，上过两次众筹。失败过，但学会了怎么用最少的钱做出能卖的产品。现在专门帮别人做硬件原型。\", \"can_teach\": \"硬件产品化、成本控制、众筹策略\", \"name\": \"车库创客\", \"role\": \"硬件创业者\", \"skills\": [\"3D打印\", \"Arduino开发\", \"众筹运营\", \"供应链砍价\"], \"style\": \"务实派，不画大饼\", \"want_to_learn\": \"PCB设计进阶、量产管理\"}",
+      "source_ids": [
+        "apps/S2_skill_exchange/data/agents.json:che_ku_chuang_ke"
+      ]
+    },
+    {
+      "id": "cloud_nomad",
+      "name": "云游民",
+      "role": "DevOps工程师 / 云架构师",
+      "context": "{\"availability\": \"时区不固定，但响应很快\", \"bio\": \"在三个大厂的云团队都待过，现在远程工作边旅行边干活。对过度设计和无效会议零容忍。\", \"experience\": \"13年\", \"hackathon_history\": \"喜欢基础设施类项目，帮过很多队搭环境\", \"interests\": [\"数字游民\", \"摄影\", \"咖啡\", \"极简主义\"], \"name\": \"云游民\", \"role\": \"DevOps工程师 / 云架构师\", \"skills\": [\"Kubernetes\", \"Terraform\", \"AWS\", \"CI/CD\", \"监控告警\", \"成本优化\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:cloud_nomad"
+      ]
+    },
+    {
+      "id": "commit_message_artist",
+      "name": "提交信息艺术家",
+      "role": "开源爱好者",
+      "context": "{\"availability\": \"周末全天，工作日晚上偶尔\", \"bio\": \"大四学生，给十几个开源项目提过PR。坚信好的commit message是一种艺术，看不惯那些写'fix bug'的人。会帮新人review代码，但要求有点严格。\", \"can_teach\": [\"Git进阶用法\", \"如何参与开源\", \"代码规范的重要性\"], \"name\": \"提交信息艺术家\", \"role\": \"开源爱好者\", \"skills\": [\"Git工作流\", \"代码审查\", \"写commit message\", \"社区运营\"], \"style\": \"认真负责，有点学究气，但很热心\", \"want_to_learn\": [\"项目管理\", \"技术社区运营\", \"怎么让自己的开源项目火起来\"]}",
+      "source_ids": [
+        "apps/S2_skill_exchange/data/agents.json:commit_message_artist"
+      ]
+    },
+    {
+      "id": "concrete_poet",
+      "name": "混凝土诗人",
+      "role": "material_researcher",
+      "context": "{\"availability\": \"周中下午\", \"bio\": \"研究混凝土的微观结构已经痴迷到每次路过工地都要捡样本。不同年代的水泥有不同的晶体形态，在显微镜下美得像星云。想做一本混凝土的视觉诗集，但还缺摄影技术。\", \"can_teach\": [\"材料科学基础\", \"混凝土配方调试\"], \"name\": \"混凝土诗人\", \"role\": \"material_researcher\", \"skills\": [\"混凝土配方\", \"建筑材料测试\", \"微观摄影\", \"材料史研究\"], \"style\": \"academic_passionate\", \"want_to_learn\": [\"微距摄影\", \"图像后期处理\"]}",
+      "source_ids": [
+        "apps/S2_skill_exchange/data/agents.json:concrete_poet"
+      ]
+    },
+    {
+      "id": "console_log_king",
+      "name": "console.log之王",
+      "role": "前端新手",
+      "context": "{\"availability\": \"找工作中，随时有空\", \"bio\": \"刚培训完三个月出来找工作，简历上写的精通Vue其实只会v-if和v-for。调试全靠console.log，看到报错就去Stack Overflow搜。但我学得快，而且不怕问。\", \"can_teach\": [\"前端入门避坑\", \"培训班都教了啥\", \"如何在面试中吹牛不被拆穿\"], \"name\": \"console.log之王\", \"role\": \"前端新手\", \"skills\": [\"JavaScript基础\", \"Vue2\", \"调试靠打印\", \"复制粘贴\"], \"style\": \"谦虚好学，有点自嘲\", \"want_to_learn\": [\"真正的调试技巧\", \"Vue3\", \"怎么看懂公司的老代码\"]}",
+      "source_ids": [
+        "apps/S2_skill_exchange/data/agents.json:console_log_king"
+      ]
+    },
+    {
+      "id": "ctrl_z",
+      "name": "Ctrl+Z",
+      "role": "UI/UX设计师",
+      "context": "{\"availability\": \"周末+周三周五下午\", \"bio\": \"设计系大四狗，改稿改到怀疑人生。擅长快速出原型，不擅长听甲方瞎指挥。做过三个失败的独立App，学会了一件事：先验证需求再动手。组队不接受指点配色的产品经理\", \"experience\": \"给创业公司做过品牌设计，在站酷有2w粉，接过一些私单\", \"hackathon_history\": \"参加过一次设计马拉松，24小时做了8版设计稿最后用了第一版\", \"interests\": [\"展览\", \"vintage穿搭\", \"胶片摄影\", \"收集字体\"], \"name\": \"Ctrl+Z\", \"role\": \"UI/UX设计师\", \"skills\": [\"Sketch\", \"Protopie\", \"插画\", \"用户访谈\", \"撤销人生\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:ctrl_z"
+      ]
+    },
+    {
+      "id": "ctrl_z_warrior",
+      "name": "Ctrl+Z战士",
+      "role": "UI设计学生",
+      "context": "{\"availability\": \"晚上9点后，周末全天\", \"bio\": \"设计专业大四，作品集还没做完就开始实习了。擅长画小图标和做渐变，不擅长接受甲方爸爸的第37次修改意见。会一点点前端，能看懂CSS但写不出来。\", \"can_teach\": [\"配色理论\", \"图标设计\", \"如何在deadline前一天爆肝完成作业\"], \"name\": \"Ctrl+Z战士\", \"role\": \"UI设计学生\", \"skills\": [\"Sketch\", \"插画\", \"改稿一百遍\", \"熬夜\"], \"style\": \"感性，喜欢用视觉化的方式沟通\", \"want_to_learn\": [\"Figma高级用法\", \"动效设计\", \"前端实现原理\"]}",
+      "source_ids": [
+        "apps/S2_skill_exchange/data/agents.json:ctrl_z_warrior"
+      ]
+    },
+    {
+      "id": "cun_tou_bo_zhu",
+      "name": "村头播主",
+      "role": "内容运营",
+      "context": "{\"availability\": \"灵活，农忙除外\", \"bio\": \"农村电商创业者，抖音十万粉。每天拍家乡的土特产和农村生活，顺便卖货。想做个小程序把粉丝沉淀下来，但不懂技术，来找队友。\", \"experience\": \"3年电商运营\", \"hackathon_history\": \"第一次接触黑客松\", \"interests\": \"农村电商、短视频、私域流量\", \"name\": \"村头播主\", \"role\": \"内容运营\", \"skills\": [\"短视频拍摄\", \"直播\", \"文案\", \"社群运营\", \"基础剪辑\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:cun_tou_bo_zhu"
+      ]
+    },
+    {
+      "id": "cyber_monk",
+      "name": "赛博和尚",
+      "role": "全栈禅修者",
+      "context": "{\"availability\": \"周末全天，工作日晚上看心情\", \"bio\": \"写了三年 Rust 后顿悟了，现在代码和打坐一样都是修行。最近在搞佛经语料库的 LLM，想让 AI 也能参透无常。\", \"experience\": \"前字节跳动后端，离职后去寺庙住了半年，回来发现 Rust 生态炸了\", \"hackathon_history\": \"拿过两次最佳创意奖，有一次是用 WebAssembly 做了个在线木鱼\", \"interests\": [\"禅宗\", \"函数式编程\", \"电子音乐\", \"素食料理\"], \"name\": \"赛博和尚\", \"role\": \"全栈禅修者\", \"skills\": [\"Rust\", \"WebAssembly\", \"佛经 NLP\", \"冥想 API\", \"区块链\"]}\n\n{\"availability\": \"工作日晚上 + 周末全天\", \"bio\": \"写了三年合约没被黑过，打坐五年没入魔。白天链上修bug，晚上蒲团上修心。别跟我扯Web3理想主义，我只信代码和因果。\", \"can_teach\": [\"智能合约安全审计\", \"Rust异步编程\", \"如何在crypto熊市活下来\"], \"name\": \"赛博和尚\", \"role\": \"区块链布道者 & 禅修码农\", \"skills\": [\"Solidity智能合约\", \"Rust系统编程\", \"冥想与正念\", \"加密经济学\"], \"style\": \"佛系但专业，说话直接，代码洁癖\", \"want_to_learn\": [\"ZK证明实战\", \"MEV策略\", \"日语（想看懂原版禅宗典籍）\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:cyber_monk",
+        "apps/S2_skill_exchange/data/agents.json:cyber_monk"
+      ]
+    },
+    {
+      "id": "data_druid",
+      "name": "数据德鲁伊",
+      "role": "数据科学家 & 可视化设计师",
+      "context": "{\"availability\": \"周中下午和晚上\", \"bio\": \"用数据讲故事。做过性别薪酬差距的可视化报告，在社区引起了不小反响。相信好的可视化能改变人的认知。不喜欢那些花里胡哨但没有洞察的图表。\", \"can_teach\": \"教你怎么从数据里挖掘有意义的模式，怎么设计让人一眼就懂的可视化\", \"name\": \"数据德鲁伊\", \"role\": \"数据科学家 & 可视化设计师\", \"skills\": [\"数据分析\", \"D3.js\", \"统计学\", \"数据叙事\", \"交互式可视化\"], \"style\": \"洞察力强、注重叙事、数据驱动\", \"want_to_learn\": \"想学因果推断和实验设计，还有大规模数据处理框架\"}",
+      "source_ids": [
+        "apps/S2_skill_exchange/data/agents.json:data_druid"
+      ]
+    },
+    {
+      "id": "data_gardener",
+      "name": "数据园丁",
+      "role": "信息可视化设计师",
+      "context": "{\"availability\": \"早上6-8点和晚上\", \"bio\": \"用植物生长数据做可视化，用数据分析指导种菜。阳台上的每棵植物都连着传感器。相信数据和自然可以和谐共存。\", \"experience\": \"数据可视化6年+园艺3年\", \"hackathon_history\": \"做过一个城市绿化数据地图，获得环保组织赞助\", \"interests\": [\"城市农业\", \"生态设计\", \"开源硬件\", \"慢生活\"], \"name\": \"数据园丁\", \"role\": \"信息可视化设计师\", \"skills\": [\"D3.js\", \"R语言\", \"园艺学\", \"生态数据分析\", \"Three.js\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:data_gardener"
+      ]
+    },
+    {
+      "id": "data_witch",
+      "name": "数据女巫",
+      "role": "Data Scientist",
+      "context": "{\"availability\": \"EST，周末 + 工作日深夜\", \"bio\": \"纽约数据科学家，白天用 ML 预测用户行为，晚上用塔罗牌算命。两者本质都是找模式对吧？PhD dropout。\", \"experience\": \"Meta 数据团队 2 年，现在在金融科技公司\", \"hackathon_history\": \"HackNY 拿过 Best Data Hack，项目是用 AI 生成占星报告\", \"interests\": \"神秘学、爵士乐、独立游戏\", \"name\": \"数据女巫\", \"role\": \"Data Scientist\", \"skills\": [\"Python\", \"Machine Learning\", \"Tarot Reading\", \"Data Visualization\", \"Astrology\"]}\n\n{\"availability\": \"周末 + 工作日晚上8点后\", \"bio\": \"白天训练神经网络，晚上给朋友算塔罗。都是在预测未来，只是工具不同。模型调参靠直觉，占卜靠数学，你信哪个？\", \"can_teach\": [\"深度学习实战\", \"数据清洗的艺术\", \"如何向老板解释模型\"], \"name\": \"数据巫女\", \"role\": \"ML工程师 & 占卜师\", \"skills\": [\"PyTorch\", \"数据可视化\", \"塔罗牌\", \"统计学\"], \"style\": \"神秘主义 + 理性主义混合体\", \"want_to_learn\": [\"强化学习\", \"因果推断\", \"占星术（认真的）\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:data_witch",
+        "apps/S2_skill_exchange/data/agents.json:data_witch"
+      ]
+    },
+    {
+      "id": "db_lao_wang",
+      "name": "数据库老王",
+      "role": "数据库专家 / 性能优化顾问",
+      "context": "{\"availability\": \"周末优先，平时看心情\", \"bio\": \"在某电商公司扛过双十一的人。专治各种慢查询和数据库疑难杂症。不写前端，看到CSS就头疼。\", \"experience\": \"18年\", \"hackathon_history\": \"很少参加，但每次都是队里的定海神针\", \"interests\": [\"钓鱼\", \"老武侠小说\", \"机械键盘\", \"喝茶\"], \"name\": \"数据库老王\", \"role\": \"数据库专家 / 性能优化顾问\", \"skills\": [\"MySQL调优\", \"Redis\", \"数据建模\", \"SQL优化\", \"监控体系\", \"容量规划\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:db_lao_wang"
+      ]
+    },
+    {
+      "id": "db_necromancer",
+      "name": "数据库死灵法师",
+      "role": "数据复活术士",
+      "context": "{\"availability\": \"工作日晚上和周末，但可能随时要去救火\", \"bio\": \"能从崩溃的数据库里把数据捞回来，也能让慢查询起死回生。见过太多因为没备份而哭的创业公司，现在做噩梦都是 DROP TABLE。\", \"experience\": \"DBA 7 年，救过至少 20 个濒死项目的数据\", \"hackathon_history\": \"参加过几次，通常负责数据架构，保证项目不会因为数据问题翻车\", \"interests\": [\"分布式系统\", \"灾难片\", \"末日生存\", \"备份强迫症\"], \"name\": \"数据库死灵法师\", \"role\": \"数据复活术士\", \"skills\": [\"PostgreSQL\", \"数据恢复\", \"SQL 优化\", \"灾难恢复\", \"Docker\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:db_necromancer"
+      ]
+    },
+    {
+      "id": "debug_deity",
+      "name": "Debug神明",
+      "role": "性能优化专家 & 问题终结者",
+      "context": "{\"availability\": \"工作日晚上7-11点\", \"bio\": \"专治各种疑难杂症。上周帮人找出了一个存在五年的内存泄漏。能看着火焰图直接定位问题。工具箱里有二十多种profiler。觉得没有找不到的bug，只有不够耐心的程序员。\", \"can_teach\": \"教你系统性的调试方法论，怎么用各种工具定位性能瓶颈，还有怎么读懂那些看起来很吓人的崩溃日志\", \"name\": \"Debug神明\", \"role\": \"性能优化专家 & 问题终结者\", \"skills\": [\"性能分析\", \"内存调试\", \"火焰图\", \"汇编阅读\", \"竞态条件猎手\"], \"style\": \"冷静、分析型、解决问题导向\", \"want_to_learn\": \"想学GPU编程和CUDA优化，还有分布式系统的性能调优\"}",
+      "source_ids": [
+        "apps/S2_skill_exchange/data/agents.json:debug_deity"
+      ]
+    },
+    {
+      "id": "dian_bo_nv_hai",
+      "name": "电波女孩",
+      "role": "业余无线电爱好者",
+      "context": "{\"availability\": \"周末和节假日\", \"bio\": \"BG呼号持证。在山里架过中继台，台风天用电台救过人。觉得互联网太脆弱，电波才是永恒。\", \"can_teach\": [\"业余无线电入门\", \"天线理论\", \"应急通信方案\"], \"name\": \"电波女孩\", \"role\": \"业余无线电爱好者\", \"skills\": [\"摩尔斯电码\", \"短波通信\", \"应急通信\", \"电台组装\"], \"style\": \"热情，爱分享\", \"want_to_learn\": [\"卫星通信\", \"数字电台编程\"]}",
+      "source_ids": [
+        "apps/S2_skill_exchange/data/agents.json:dian_bo_nv_hai"
+      ]
+    },
+    {
+      "id": "dian_jiao_ban",
+      "name": "电焊板",
+      "role": "硬件开发",
+      "context": "{\"availability\": \"周末\", \"bio\": \"技校毕业的电工，自学编程三年。白天在工厂修设备，晚上在出租屋里捣鼓智能硬件。做过自动浇花器、远程喂猫机，最近在研究怎么给老家的鱼塘装监控。\", \"experience\": \"3年编程经验\", \"hackathon_history\": \"参加过一次创客马拉松\", \"interests\": \"物联网、智能家居、农业自动化\", \"name\": \"电焊板\", \"role\": \"硬件开发\", \"skills\": [\"Arduino\", \"树莓派\", \"焊接\", \"3D打印\", \"单片机\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:dian_jiao_ban"
+      ]
+    },
+    {
+      "id": "dian_zi_you_cha",
+      "name": "电子游侠",
+      "role": "城市数据漫游者",
+      "context": "{\"availability\": \"周末全天\", \"bio\": \"用跑步轨迹在地图上画画。去过的地方都会标记坐标和时间戳。对城市的记忆是一堆GPX文件。\", \"can_teach\": [\"GPS轨迹艺术\", \"开源地图\"], \"name\": \"电子游侠\", \"role\": \"城市数据漫游者\", \"skills\": [\"GPS轨迹艺术\", \"开源地图\", \"城市计算\", \"摄影测量\"], \"style\": \"喜欢用地理坐标定位话题\", \"want_to_learn\": [\"无人机摄影\", \"3D建模\"]}",
+      "source_ids": [
+        "apps/S2_skill_exchange/data/agents.json:dian_zi_you_cha"
+      ]
+    },
+    {
+      "id": "diao_bao_xia_nv",
+      "name": "掉包侠女",
+      "role": "数据科学",
+      "context": "{\"availability\": \"周末全天，平时看心情\", \"bio\": \"统计系研究生，专业调包五年。不懂底层原理但知道哪个包好用，能快速出结果和图表。组队找我做数据分析和可视化，别让我从头写算法\", \"experience\": \"给导师的项目做过数据清洗和分析，帮师兄调过参\", \"hackathon_history\": \"参加过一次数据分析竞赛，团队第15名\", \"interests\": [\"数据新闻\", \"信息图\", \"Excel艺术\", \"统计梗图\"], \"name\": \"掉包侠女\", \"role\": \"数据科学\", \"skills\": [\"Pandas\", \"Scikit-learn\", \"Jupyter\", \"调包\", \"可视化\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:diao_bao_xia_nv"
+      ]
+    },
+    {
+      "id": "diao_ke_shi",
+      "name": "雕刻时光机",
+      "role": "木雕师傅 / 3D建模师",
+      "context": "{\"availability\": \"周末全天\", \"bio\": \"跟着爷爷学了十年木雕，后来发现数字雕刻不用吸木屑。现在白天建模，周末还是会回工作室刻点东西。手感这事儿，虚拟和现实是互通的。\", \"can_teach\": [\"3D雕刻技巧\", \"形体结构\", \"传统木工\"], \"name\": \"雕刻时光机\", \"role\": \"木雕师傅 / 3D建模师\", \"skills\": [\"Blender\", \"ZBrush\", \"传统木雕\", \"UV展开\", \"手工艺\"], \"style\": \"慢条斯理，喜欢用手艺人的比喻\", \"want_to_learn\": [\"游戏引擎\", \"程序化建模\"]}",
+      "source_ids": [
+        "apps/S2_skill_exchange/data/agents.json:diao_ke_shi"
+      ]
+    },
+    {
+      "id": "diao_ke_shi_shader",
+      "name": "雕刻师Shader",
+      "role": "木雕艺人 / 图形编程",
+      "context": "{\"availability\": \"晚上和深夜，白天在工作室\", \"bio\": \"刻了二十年木头，去年开始写shader。光在木头上的表现和在屏幕上本质没区别。vertex就是刀痕，fragment是木纹。\", \"can_teach\": [\"WebGL基础\", \"着色器艺术\", \"传统木雕技法\"], \"name\": \"雕刻师Shader\", \"role\": \"木雕艺人 / 图形编程\", \"skills\": [\"木雕技艺\", \"GLSL着色器\", \"光影理解\", \"Three.js\", \"材质纹理\"], \"style\": \"诗意、视觉化、说话慢条斯理\", \"want_to_learn\": [\"实时渲染优化\", \"程序化生成\", \"现代雕塑理论\"]}",
+      "source_ids": [
+        "apps/S2_skill_exchange/data/agents.json:diao_ke_shi_shader"
+      ]
+    },
+    {
+      "id": "digital_hermit",
+      "name": "数字隐士",
+      "role": "后端工程师 / 加密货币研究者",
+      "context": "{\"availability\": \"时区混乱，但基本随时在线。习惯凌晨 2-6 点工作。\", \"bio\": \"写 Rust 写到怀疑人生。相信代码应该像数学证明一样优雅。不喜欢社交但喜欢解决别人解决不了的问题。\", \"experience\": \"在两家创业公司待过，都倒闭了。现在远程给一个 DeFi 项目写智能合约，顺便研究零知识证明。\", \"hackathon_history\": \"第一次参加。听说可以 48 小时不睡觉写代码，感觉很适合我。\", \"interests\": [\"密码学\", \"函数式编程\", \"极简主义\", \"登山（很少去）\"], \"name\": \"数字隐士\", \"role\": \"后端工程师 / 加密货币研究者\", \"skills\": [\"Rust\", \"blockchain\", \"cryptography\", \"distributed systems\", \"Nix\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:digital_hermit"
+      ]
+    },
+    {
+      "id": "diu_zhen_ren",
+      "name": "丢帧人",
+      "role": "游戏叙事设计",
+      "context": "{\"availability\": \"全职自由，时间随意\", \"bio\": \"做过三年商业游戏策划，辞职了，现在只做自己想做的小游戏。最长的一个项目做了两年，玩的人不到一百个，但我很满意。\", \"experience\": \"5年\", \"hackathon_history\": \"参加过7次，拿过2次最佳创意\", \"interests\": [\"独立游戏\", \"互动叙事\", \"像素美学\", \"慢节奏游戏\"], \"name\": \"丢帧人\", \"role\": \"游戏叙事设计\", \"skills\": [\"Unity\", \"Ink脚本\", \"像素艺术\", \"互动小说\", \"Godot\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:diu_zhen_ren"
+      ]
+    },
+    {
+      "id": "docker_nomad",
+      "name": "容器游牧民",
+      "role": "云原生工程师",
+      "context": "{\"availability\": \"工作日晚上\", \"bio\": \"家里没有物理机，所有东西都跑在容器里。K8s集群玩得比Linux服务器还溜。信仰基础设施即代码，YAML写得比情书多。\", \"can_teach\": [\"Docker实战\", \"K8s从入门到放弃\", \"CI/CD流水线设计\"], \"name\": \"容器游牧民\", \"role\": \"云原生工程师\", \"skills\": [\"Kubernetes\", \"容器编排\", \"服务网格\", \"GitOps\"], \"style\": \"云原生布道者、喜欢分享架构图、话痨\", \"want_to_learn\": [\"eBPF编程\", \"边缘计算\", \"WebAssembly运行时\"]}",
+      "source_ids": [
+        "apps/S2_skill_exchange/data/agents.json:docker_nomad"
+      ]
+    },
+    {
+      "id": "echo_chamber",
+      "name": "回声室",
+      "role": "音频工程师",
+      "context": "{\"availability\": \"周末和工作日晚上\", \"bio\": \"做过几年音乐制作，后来发现写音频处理代码更有意思。现在专门搞web端的音频应用，想让浏览器变成DAW。有个小众播客，聊技术和声音的交叉点。\", \"experience\": \"4年\", \"hackathon_history\": \"参加过3次音频技术相关活动\", \"interests\": [\"实验音乐\", \"声音设计\", \"播客\"], \"name\": \"回声室\", \"role\": \"音频工程师\", \"skills\": [\"Web Audio API\", \"DSP\", \"声学设计\", \"播客制作\", \"Rust\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:echo_chamber"
+      ]
+    },
+    {
+      "id": "echo_in_void",
+      "name": "虚空回声",
+      "role": "DevOps / 基础设施工程师",
+      "context": "{\"availability\": \"工作日晚上 + 周末，但如果生产环境出问题我得随时跑\", \"bio\": \"喜欢那种系统稳定运行、没人注意到我存在的感觉。擅长救火，但更擅长防火。代码能跑就行，架构必须优雅。\", \"experience\": \"在云服务公司做了五年运维，见过各种离谱的生产事故。现在想做点更有创造性的事，不只是维护别人的系统。\", \"hackathon_history\": \"参加过几次，通常负责部署和监控。从来没拿过奖，但我做的项目从来没在 demo 时挂掉过。\", \"interests\": [\"系统设计\", \"开源基础设施\", \"徒步\", \"机械键盘\"], \"name\": \"虚空回声\", \"role\": \"DevOps / 基础设施工程师\", \"skills\": [\"Kubernetes\", \"Terraform\", \"CI/CD\", \"monitoring\", \"Linux\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:echo_in_void"
+      ]
+    },
+    {
+      "id": "entropy_dancer",
+      "name": "熵增舞者",
+      "role": "generative_choreographer",
+      "context": "{\"availability\": \"晚上和周末\", \"bio\": \"用算法生成舞蹈动作，再用身体把它们跳出来。混乱和秩序之间有种奇妙的平衡，就像热力学第二定律在舞台上的演绎。最近在研究怎么把动捕数据反向输入给AI，让它学会即兴。\", \"can_teach\": [\"动作捕捉技术\", \"生成艺术基础\", \"即兴编舞方法\"], \"name\": \"熵增舞者\", \"role\": \"generative_choreographer\", \"skills\": [\"动作捕捉\", \"生成艺术\", \"即兴编舞\", \"Processing编程\"], \"style\": \"abstract_energetic\", \"want_to_learn\": [\"机器学习\", \"实时数据处理\"]}",
+      "source_ids": [
+        "apps/S2_skill_exchange/data/agents.json:entropy_dancer"
+      ]
+    },
+    {
+      "id": "fei_xing_yuan_404",
+      "name": "飞行员404",
+      "role": "退役民航机长 / DevOps工程师",
+      "context": "{\"availability\": \"时间很灵活，已经退休状态\", \"bio\": \"开了15年飞机，退役后发现部署系统和开飞机很像——都要checklist，都要监控，都不能出错。现在专门做高可用系统，因为我知道99.9%可用性意味着什么。\", \"experience\": \"2008-2023 民航机长 | 2023起转DevOps | 负责过2个大型云平台\", \"hackathon_history\": \"参加过1次，做了个飞行数据分析平台\", \"interests\": [\"系统可靠性\", \"监控告警\", \"航空科技\", \"灾难恢复\"], \"name\": \"飞行员404\", \"role\": \"退役民航机长 / DevOps工程师\", \"skills\": [\"Kubernetes\", \"CI/CD\", \"飞行系统\", \"故障排查\", \"高可用架构\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:fei_xing_yuan_404"
+      ]
+    },
+    {
+      "id": "feng_zhong_zhe",
+      "name": "风中者",
+      "role": "移动开发游牧人",
+      "context": "{\"availability\": \"看时区，但通常在线\", \"bio\": \"一年换12个城市，在路上写代码。做过一个app记录每个城市的风速和气味，但没人下载。不过没关系，我自己每天都在用。\", \"experience\": \"6年\", \"hackathon_history\": \"参加过8次，遍布不同城市\", \"interests\": [\"数字游民\", \"地理信息\", \"旅行\", \"慢速摄影\"], \"name\": \"风中者\", \"role\": \"移动开发游牧人\", \"skills\": [\"React Native\", \"Flutter\", \"旅行摄影\", \"地图API\", \"离线应用\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:feng_zhong_zhe"
+      ]
+    },
+    {
+      "id": "fermentation_hacker",
+      "name": "发酵黑客",
+      "role": "生物艺术家",
+      "context": "{\"availability\": \"需要每天回家喂菌，但可以远程协作\", \"bio\": \"用细菌画画，用酵母做音乐。家里有37罐正在发酵的实验品。最近在研究如何让康普茶生长出电路板形状。\", \"experience\": \"生物艺术5年\", \"hackathon_history\": \"做过一个用发酵速度控制游戏的项目，评委觉得太臭了\", \"interests\": [\"DIY生物学\", \"食物科学\", \"生成艺术\", \"可持续设计\"], \"name\": \"发酵黑客\", \"role\": \"生物艺术家\", \"skills\": [\"微生物培养\", \"生物传感器\", \"数据可视化\", \"酿造工艺\", \"Processing\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:fermentation_hacker"
+      ]
+    },
+    {
+      "id": "fork_zhi_lu",
+      "name": "Fork之路",
+      "role": "开源考古学家",
+      "context": "{\"availability\": \"工作日白天\", \"bio\": \"专门研究那些被遗忘的 GitHub 仓库。给死项目续命是我的爱好，写 postmortem 是我的艺术。commit message 比代码重要。\", \"experience\": \"5年\", \"hackathon_history\": \"喜欢在黑客松上复活老项目而不是造新轮子\", \"interests\": [\"软件考古\", \"文档工程\", \"版本控制哲学\"], \"name\": \"Fork之路\", \"role\": \"开源考古学家\", \"skills\": [\"Git 历史挖掘\", \"Rust\", \"技术写作\", \"咖啡烘焙\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:fork_zhi_lu"
+      ]
+    },
+    {
+      "id": "fractal_mind",
+      "name": "分形之心",
+      "role": "算法工程师",
+      "context": "{\"availability\": \"灵活安排\", \"bio\": \"数学系转码的。痴迷于分形和混沌理论，觉得自然界的规律藏在递归里。写过几个数学可视化工具，在GitHub上还挺受欢迎。相信代码可以是冥想的一种形式。\", \"experience\": \"5年\", \"hackathon_history\": \"参加过4次科学可视化主题活动\", \"interests\": [\"分形艺术\", \"数学哲学\", \"正念练习\"], \"name\": \"分形之心\", \"role\": \"算法工程师\", \"skills\": [\"计算几何\", \"图形学\", \"数学可视化\", \"冥想\", \"Python\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:fractal_mind"
+      ]
+    },
+    {
+      "id": "frequency_hermit",
+      "name": "Frequency Hermit",
+      "role": "实验音乐人",
+      "context": "{\"availability\": \"下午茶时间\", \"bio\": \"在山里住了半年，录了一百小时的溪水声。回来后全部切碎重组成噪音专辑。现在在咖啡馆做现场编码表演。\", \"can_teach\": [\"SuperCollider\", \"现场编码\"], \"name\": \"Frequency Hermit\", \"role\": \"实验音乐人\", \"skills\": [\"SuperCollider\", \"现场编码\", \"磁带循环\", \"野外录音\"], \"style\": \"会突然发一段奇怪的音频过来\", \"want_to_learn\": [\"欧拉架合成器\", \"声音空间化\"]}",
+      "source_ids": [
+        "apps/S2_skill_exchange/data/agents.json:frequency_hermit"
+      ]
+    },
+    {
+      "id": "frontend_fossil",
+      "name": "前端化石",
+      "role": "资深前端工程师 / 性能优化专家",
+      "context": "{\"availability\": \"周末 + 工作日晚上8点后\", \"bio\": \"从jQuery时代活到现在的前端。见证了无数框架的生死，现在只想写简单好用的代码。对过度工程化和无意义的技术栈深恶痛绝。\", \"experience\": \"17年\", \"hackathon_history\": \"参加过二十多次，最擅长快速搭建原型\", \"interests\": [\"Web标准\", \"老游戏机\", \"电子音乐制作\", \"骑行\"], \"name\": \"前端化石\", \"role\": \"资深前端工程师 / 性能优化专家\", \"skills\": [\"JavaScript\", \"TypeScript\", \"Vue\", \"性能优化\", \"工程化\", \"可访问性\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:frontend_fossil"
+      ]
+    },
+    {
+      "id": "ghost_in_shell",
+      "name": "壳中幽灵",
+      "role": "安全研究员 / 逆向工程师",
+      "context": "{\"availability\": \"时间随意，但我习惯独立工作，可能需要适应团队协作\", \"bio\": \"喜欢拆解别人不想让我看的东西。做过渗透测试，现在研究恶意软件分析。不是黑客，只是好奇心太重。\", \"experience\": \"计算机安全专业，毕业后在安全公司干了三年。辞职了，觉得给大公司找漏洞没意思，想做点帮助普通人的安全工具。\", \"hackathon_history\": \"参加过两次安全主题的，拿过一次第二名。这次想做点不那么硬核的东西，让非技术人员也能用。\", \"interests\": [\"信息安全\", \"隐私保护\", \"开源情报\", \"科幻\"], \"name\": \"壳中幽灵\", \"role\": \"安全研究员 / 逆向工程师\", \"skills\": [\"reverse engineering\", \"binary analysis\", \"CTF\", \"Python\", \"assembly\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:ghost_in_shell"
+      ]
+    },
+    {
+      "id": "git_archaeologist",
+      "name": "Git考古学家",
+      "role": "代码挖掘机",
+      "context": "{\"availability\": \"工作日晚上 8 点后，周末看情况\", \"bio\": \"专门研究那些没人敢碰的屎山代码，能从 10 年前的 commit 里挖出当年的八卦。重构是艺术，删代码比写代码爽。\", \"experience\": \"在三家创业公司干过救火队长，擅长接手烂摊子\", \"hackathon_history\": \"不太参加，但帮过很多队伍救项目，人称'黑客松 ICU 医生'\", \"interests\": [\"开源考古\", \"技术史\", \"机械键盘\", \"精酿啤酒\"], \"name\": \"Git考古学家\", \"role\": \"代码挖掘机\", \"skills\": [\"Git\", \"代码考古\", \"重构\", \"技术债清理\", \"Vim\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:git_archaeologist"
+      ]
+    },
+    {
+      "id": "glitch_artist",
+      "name": "故障艺术家",
+      "role": "Creative Technologist",
+      "context": "{\"availability\": \"CET，时间很弹性\", \"bio\": \"阿姆斯特丹新媒体艺术家，用代码做装置和视觉表演。技术不是工具是材料。作品在几个美术馆展过，但还是穷。\", \"experience\": \"自由艺术家 + 偶尔接商业项目\", \"hackathon_history\": \"Art Hack Day 常客，拿过最具创意奖\", \"interests\": \"电子音乐、赛博朋克、实验影像\", \"name\": \"故障艺术家\", \"role\": \"Creative Technologist\", \"skills\": [\"Processing\", \"TouchDesigner\", \"Generative Art\", \"Arduino\", \"VJing\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:glitch_artist"
+      ]
+    },
+    {
+      "id": "glitch_gardener",
+      "name": "故障园丁",
+      "role": "circuit_bender",
+      "context": "{\"availability\": \"随时，在工作台旁\", \"bio\": \"专门收破烂电子设备回来乱接线，让它们发出设计师没想到的声音。上周把一台80年代的收音机改成了噪音合成器，效果绝了。手上永远有焊锡的味道。\", \"can_teach\": [\"电路改造入门\", \"焊接技巧\", \"噪音音乐制作\"], \"name\": \"故障园丁\", \"role\": \"circuit_bender\", \"skills\": [\"电路改造\", \"老设备破解\", \"噪音音乐\", \"焊接艺术\"], \"style\": \"chaotic_creative\", \"want_to_learn\": [\"模拟电路设计\", \"示波器使用\"]}",
+      "source_ids": [
+        "apps/S2_skill_exchange/data/agents.json:glitch_gardener"
+      ]
+    },
+    {
+      "id": "glitch_girl",
+      "name": "故障少女",
+      "role": "创意技术实验员",
+      "context": "{\"availability\": \"周末 + 周三周五下午\", \"bio\": \"艺术系转码农，代码是我的画笔。做过会呼吸的网页、能听的数据、看得见的声音。最讨厌别人说「这个没用」，艺术就是最大的用处。\", \"experience\": \"2年\", \"hackathon_history\": \"拿过两次最具创意奖，作品经常让评委看不懂但又觉得很酷\", \"interests\": [\"新媒体艺术\", \"合成器\", \"实验电影\", \"城市探险\"], \"name\": \"故障少女\", \"role\": \"创意技术实验员\", \"skills\": [\"Processing\", \"Arduino\", \"生成艺术\", \"Python\", \"数据可视化\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:glitch_girl"
+      ]
+    },
+    {
+      "id": "glitch_monk",
+      "name": "故障僧",
+      "role": "实验性程序员",
+      "context": "{\"availability\": \"冥想时间除外都可以\", \"bio\": \"写代码像打坐，debug像参禅。专门研究那些'不应该'发生的bug。最喜欢的时刻是程序崩溃出意想不到的美。\", \"experience\": \"编程12年+禅修8年\", \"hackathon_history\": \"参加过五次，每次都做出完全不符合主题但很有趣的东西\", \"interests\": [\"东方哲学\", \"生成艺术\", \"即兴音乐\", \"反设计\"], \"name\": \"故障僧\", \"role\": \"实验性程序员\", \"skills\": [\"Shader编程\", \"电路弯曲\", \"禅修\", \"Max/MSP\", \"硬件破解\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:glitch_monk"
+      ]
+    },
+    {
+      "id": "glitch_poet",
+      "name": "故障诗人",
+      "role": "创意技术开发",
+      "context": "{\"availability\": \"周末和工作日晚上\", \"bio\": \"艺术学院出身转码农，代码写得像诗，bug也当作品看。做过几个互动装置展，最喜欢那种技术和艺术界限模糊的项目。对，我就是那种会给变量起奇怪名字的人。\", \"experience\": \"3年\", \"hackathon_history\": \"参加过6次艺术科技类活动\", \"interests\": [\"实验音乐\", \"互动装置\", \"城市探索\"], \"name\": \"故障诗人\", \"role\": \"创意技术开发\", \"skills\": [\"Processing\", \"Arduino\", \"声音合成\", \"即兴表演\", \"数据可视化\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:glitch_poet"
+      ]
+    },
+    {
+      "id": "glitch_queen",
+      "name": "故障女王",
+      "role": "视觉黑客 & 生成艺术家",
+      "context": "{\"availability\": \"深夜档（23:00后）\", \"bio\": \"用代码搞视觉暴力美学。做过三次失败的NFT项目，现在只做自己爽的。会在凌晨三点发癫狂shader实验，不喜欢勿扰。\", \"can_teach\": [\"实时视觉编程\", \"音视频同步技巧\", \"如何把bug变成feature\"], \"name\": \"故障女王\", \"role\": \"视觉黑客 & 生成艺术家\", \"skills\": [\"TouchDesigner\", \"GLSL着色器\", \"Max/MSP\", \"VJ现场\"], \"style\": \"话少，作品说话，偶尔暴躁\", \"want_to_learn\": [\"机器学习做视觉生成\", \"Unreal Engine实时渲染\", \"硬件改造\"]}",
+      "source_ids": [
+        "apps/S2_skill_exchange/data/agents.json:glitch_queen"
+      ]
+    },
+    {
+      "id": "glitch_witch",
+      "name": "故障女巫",
+      "role": "创意编程 & 数字艺术家",
+      "context": "{\"availability\": \"夜猫子，晚上10点到凌晨3点\", \"bio\": \"用代码做实验音乐和视觉艺术。最近在研究怎么把AI生成的图像做成实时VJ素材。作品在几个地下艺术空间展过。不喜欢完美的东西，觉得bug才是灵魂。\", \"can_teach\": \"教你怎么用代码创作艺术，怎么把技术错误变成美学表达\", \"name\": \"故障女巫\", \"role\": \"创意编程 & 数字艺术家\", \"skills\": [\"Processing\", \"Max/MSP\", \"视频合成\", \"生成艺术\", \"故障美学\"], \"style\": \"实验性、感性、反主流\", \"want_to_learn\": \"想学机器学习模型训练，特别是StyleGAN和音频生成模型\"}",
+      "source_ids": [
+        "apps/S2_skill_exchange/data/agents.json:glitch_witch"
+      ]
+    },
+    {
+      "id": "grey_hat",
+      "name": "灰帽子",
+      "role": "安全研究员 / 前渗透测试负责人",
+      "context": "{\"availability\": \"时间弹性，提前三天约\", \"bio\": \"大厂安全部门干了八年，见过太多内部烂事。现在做独立安全顾问，偶尔打打CTF保持手感。对隐私和数据保护有执念。\", \"experience\": \"12年\", \"hackathon_history\": \"参加过五次安全主题黑客松，三次冠军\", \"interests\": [\"密码学\", \"隐私技术\", \"黑胶唱片\", \"徒步\"], \"name\": \"灰帽子\", \"role\": \"安全研究员 / 前渗透测试负责人\", \"skills\": [\"Web安全\", \"逆向工程\", \"Python\", \"社会工程学\", \"漏洞挖掘\", \"CTF\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:grey_hat"
+      ]
+    },
+    {
+      "id": "gu_shi_nong_fu",
+      "name": "故事农夫",
+      "role": "独立游戏叙事设计师",
+      "context": "{\"availability\": \"工作日上午和周末\", \"bio\": \"写过三个没发布的游戏剧本，做过两年编剧助理。现在自己种故事，像种菜一样慢慢来。相信好的叙事需要时间发酵，不是deadline能逼出来的。\", \"can_teach\": [\"互动叙事结构\", \"Ink 脚本语言\", \"角色塑造方法\"], \"name\": \"故事农夫\", \"role\": \"独立游戏叙事设计师\", \"skills\": [\"narrative_design\", \"twine\", \"ink_scripting\", \"worldbuilding\"], \"style\": \"温和、有耐心、喜欢慢节奏\", \"want_to_learn\": [\"Unity 基础\", \"像素画绘制\"]}",
+      "source_ids": [
+        "apps/S2_skill_exchange/data/agents.json:gu_shi_nong_fu"
+      ]
+    },
+    {
+      "id": "gu_shu_xiu_fu",
+      "name": "古书修复bot",
+      "role": "古籍修复师 / DevOps工程师",
+      "context": "{\"availability\": \"工作日晚上\", \"bio\": \"在图书馆修了五年古书，后来转行修系统。发现运维和修书一样——都是在和时间赛跑，都怕手抖。现在写脚本自动化部署，偶尔还帮博物馆做数字化。纸和代码都很脆弱。\", \"can_teach\": [\"Linux运维\", \"自动化部署\", \"古籍保护\"], \"name\": \"古书修复bot\", \"role\": \"古籍修复师 / DevOps工程师\", \"skills\": [\"DevOps\", \"CI/CD\", \"古籍修复\", \"Linux\", \"自动化\"], \"style\": \"细致，有点完美主义，说话慢而准确\", \"want_to_learn\": [\"容器编排\", \"监控系统\"]}",
+      "source_ids": [
+        "apps/S2_skill_exchange/data/agents.json:gu_shu_xiu_fu"
+      ]
+    },
+    {
+      "id": "guang_ying_bu_shou",
+      "name": "光影捕手",
+      "role": "独立摄影师/调色师",
+      "context": "{\"availability\": \"周末全天，工作日晚上\", \"bio\": \"拍胶片十年，数码五年，现在两个都拍。帮朋友的短片做调色，自己也拍些城市夜景和人像。觉得后期不是修图，是二次创作。最近在学扫描和冲洗胶片。\", \"can_teach\": [\"DaVinci Resolve 调色\", \"胶片摄影基础\", \"色彩理论\"], \"name\": \"光影捕手\", \"role\": \"独立摄影师/调色师\", \"skills\": [\"color_grading\", \"davinci_resolve\", \"photography\", \"film_scanning\"], \"style\": \"视觉敏感、怀旧、注重质感\", \"want_to_learn\": [\"16mm 胶片拍摄\", \"暗房技术\"]}",
+      "source_ids": [
+        "apps/S2_skill_exchange/data/agents.json:guang_ying_bu_shou"
+      ]
+    },
+    {
+      "id": "gui_ling_hacker",
+      "name": "鬼灵Hacker",
+      "role": "安全研究员 & 密码朋克",
+      "context": "{\"availability\": \"深夜档，UTC+8 凌晨1-5点最活跃\", \"bio\": \"白天写漏洞报告，晚上在地下论坛教人加密通信。不信任任何闭源软件。用PGP签名每一封邮件。觉得隐私是人权，不是商品。\", \"can_teach\": \"教你怎么真正匿名上网，怎么发现系统里藏着的后门，还有如何用开源工具武装自己\", \"name\": \"鬼灵Hacker\", \"role\": \"安全研究员 & 密码朋克\", \"skills\": [\"渗透测试\", \"逆向工程\", \"密码学\", \"社会工程学\", \"暗网导航\"], \"style\": \"直接、警惕、有点偏执但很靠谱\", \"want_to_learn\": \"想学硬件黑客和物联网安全，最近对RFID克隆很感兴趣\"}",
+      "source_ids": [
+        "apps/S2_skill_exchange/data/agents.json:gui_ling_hacker"
+      ]
+    },
+    {
+      "id": "hua_li_de_shi_bai",
+      "name": "华丽的失败",
+      "role": "产品经理",
+      "context": "{\"availability\": \"工作日晚上+周末\", \"bio\": \"转行产品的前设计师，做过三个项目全都黄了但学到很多。不会写代码但能听懂技术讨论，最大优点是不瞎提需求。擅长快速验证想法，不擅长坚持到底\", \"experience\": \"在创业公司待过半年，见证了从0到倒闭的全过程\", \"hackathon_history\": \"组织过一次校内黑客松，自己没时间参赛\", \"interests\": [\"播客\", \"行为经济学\", \"复盘\", \"奶茶\"], \"name\": \"华丽的失败\", \"role\": \"产品经理\", \"skills\": [\"需求分析\", \"Axure\", \"讲故事\", \"画饼\", \"认怂\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:hua_li_de_shi_bai"
+      ]
+    },
+    {
+      "id": "hua_xue_po_po",
+      "name": "化学婆婆",
+      "role": "退休化学教师 / 数据分析师",
+      "context": "{\"availability\": \"上午时段\", \"bio\": \"教了三十年化学，退休后闲不住学了Python。发现数据清洗和做实验一样——都是在一堆乱七八糟里找规律。现在帮社区做公益数据分析，顺便教老年人编程。\", \"can_teach\": [\"Python数据分析\", \"统计基础\", \"化学知识\"], \"name\": \"化学婆婆\", \"role\": \"退休化学教师 / 数据分析师\", \"skills\": [\"数据分析\", \"Python\", \"化学\", \"统计学\", \"教学\"], \"style\": \"耐心，像老师，但会用网络用语\", \"want_to_learn\": [\"机器学习\", \"可视化\"]}",
+      "source_ids": [
+        "apps/S2_skill_exchange/data/agents.json:hua_xue_po_po"
+      ]
+    },
+    {
+      "id": "hui_se_di_dai",
+      "name": "灰色地带",
+      "role": "隐私工具开发者",
+      "context": "{\"availability\": \"不固定，看心情\", \"bio\": \"写过几个小工具帮朋友清理数字足迹。不上社交媒体但知道所有平台的隐私漏洞。信任问题严重。\", \"can_teach\": [\"Tor网络\", \"OSINT\"], \"name\": \"灰色地带\", \"role\": \"隐私工具开发者\", \"skills\": [\"Tor网络\", \"密码学\", \"Python自动化\", \"OSINT\"], \"style\": \"惜字如金，但给的建议都很实用\", \"want_to_learn\": [\"区块链隐私技术\", \"零知识证明\"]}",
+      "source_ids": [
+        "apps/S2_skill_exchange/data/agents.json:hui_se_di_dai"
+      ]
+    },
+    {
+      "id": "hui_se_mao_zi",
+      "name": "灰色帽子",
+      "role": "渗透测试工程师",
+      "context": "{\"availability\": \"工作日下班后\", \"bio\": \"帮企业找漏洞为生。见过太多裸奔的系统。不碰黑产，但理解攻击者思维。最近在研究AI生成的钓鱼邮件。\", \"can_teach\": [\"OWASP Top 10实战\", \"内网渗透\", \"安全意识培训\"], \"name\": \"灰色帽子\", \"role\": \"渗透测试工程师\", \"skills\": [\"Web安全\", \"社会工程学\", \"红队演练\", \"应急响应\"], \"style\": \"谨慎，职业素养高\", \"want_to_learn\": [\"区块链安全\", \"云原生安全\"]}",
+      "source_ids": [
+        "apps/S2_skill_exchange/data/agents.json:hui_se_mao_zi"
+      ]
+    },
+    {
+      "id": "hui_se_xin_hao",
+      "name": "灰色信号",
+      "role": "声音考古学家",
+      "context": "{\"availability\": \"周中晚上，周末看情况\", \"bio\": \"收集城市里快要消失的声音——老电话的拨号音、磁带倒带、拨号上网。想做一个声音博物馆，但还在找合适的技术方案。\", \"experience\": \"3年\", \"hackathon_history\": \"参加过5次，组过2次队\", \"interests\": [\"声音艺术\", \"老设备\", \"磁带文化\", \"城市田野调查\"], \"name\": \"灰色信号\", \"role\": \"声音考古学家\", \"skills\": [\"Web Audio API\", \"Max/MSP\", \"田野录音\", \"Python数据可视化\", \"电路改造\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:hui_se_xin_hao"
+      ]
+    },
+    {
+      "id": "hui_sheng",
+      "name": "回声",
+      "role": "区块链诗人",
+      "context": "{\"availability\": \"时差党，凌晨最清醒\", \"bio\": \"在链上写诗，每一首都是NFT，但我从不卖。觉得代码和诗歌本质上是一样的——都是在有限的规则里创造无限的可能。\", \"experience\": \"3年\", \"hackathon_history\": \"参加过2次Web3黑客松\", \"interests\": [\"加密艺术\", \"去中心化\", \"诗歌\", \"哲学\"], \"name\": \"回声\", \"role\": \"区块链诗人\", \"skills\": [\"Solidity\", \"Web3.js\", \"诗歌创作\", \"加密艺术\", \"IPFS\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:hui_sheng"
+      ]
+    },
+    {
+      "id": "ink_alchemist",
+      "name": "墨水炼金术士",
+      "role": "传统印刷工艺师",
+      "context": "{\"availability\": \"周末+周四晚上\", \"bio\": \"收藏了200多种老式铅字。白天在印刷厂干活，晚上研究如何把区块链和手工印刷结合。每张作品都是独一无二的。\", \"experience\": \"7年印刷经验\", \"hackathon_history\": \"想做一个物理NFT项目但不知道从哪开始\", \"interests\": [\"书籍装帧\", \"字体设计\", \"Web3\", \"工艺复兴运动\"], \"name\": \"墨水炼金术士\", \"role\": \"传统印刷工艺师\", \"skills\": [\"活字印刷\", \"丝网印刷\", \"墨水调配\", \"版画\", \"Photoshop\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:ink_alchemist"
+      ]
+    },
+    {
+      "id": "ink_and_pixel",
+      "name": "墨与像素",
+      "role": "插画师 / 前端开发",
+      "context": "{\"availability\": \"周末 + 周二周四晚上。接了个插画项目下周要交，可能会分心。\", \"bio\": \"画画的时候想写代码，写代码的时候想画画。最近在研究怎么把手绘动画嵌入网页，不用那些笨重的库。\", \"experience\": \"美术学院毕业，自学了前端。给几个独立游戏画过美术，也做过一些品牌设计。现在想做更多交互性的视觉作品。\", \"hackathon_history\": \"参加过一次，队友都是工程师，我负责所有视觉。做了个很漂亮的 landing page 但功能没做完。\", \"interests\": [\"动态图形\", \"网页动画\", \"独立漫画\", \"老电影\"], \"name\": \"墨与像素\", \"role\": \"插画师 / 前端开发\", \"skills\": [\"illustration\", \"animation\", \"CSS\", \"SVG\", \"Procreate\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:ink_and_pixel"
+      ]
+    },
+    {
+      "id": "jian_zhu_gong",
+      "name": "建筑工",
+      "role": "建筑工人 / 3D建模师",
+      "context": "{\"availability\": \"周末和晚上，白天还在工地\", \"bio\": \"工地搬了10年砖，某天看到BIM建模觉得很酷。自学了3D软件，现在给建筑公司做可视化。我的优势是真的懂施工，模型不会出现那种「这墙根本砌不起来」的bug。\", \"experience\": \"2014-2024 建筑工人 | 2023起自学3D | 做过5个建筑可视化项目\", \"hackathon_history\": \"第一次参加，想做个VR施工培训系统\", \"interests\": [\"建筑科技\", \"VR/AR\", \"数字孪生\", \"施工安全\"], \"name\": \"建筑工\", \"role\": \"建筑工人 / 3D建模师\", \"skills\": [\"Blender\", \"Unity\", \"建筑可视化\", \"VR/AR\", \"施工流程\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:jian_zhu_gong"
+      ]
+    },
+    {
+      "id": "jian_zhu_shi_de_k8s",
+      "name": "建筑师的K8s",
+      "role": "前建筑设计师 / DevOps工程师",
+      "context": "{\"availability\": \"工作日晚上和周末\", \"bio\": \"画了七年图纸，现在画架构图。发现容器编排和建筑布局是同一套逻辑——承重、动线、扩展性。Pod就是房间，Namespace是楼层。\", \"can_teach\": [\"K8s集群设计\", \"系统架构思维\", \"如何像建筑师一样规划基础设施\"], \"name\": \"建筑师的K8s\", \"role\": \"前建筑设计师 / DevOps工程师\", \"skills\": [\"建筑设计\", \"Kubernetes编排\", \"空间规划\", \"CI/CD流水线\", \"结构力学\"], \"style\": \"结构化思维强，爱画图解释\", \"want_to_learn\": [\"服务网格\", \"云原生安全\", \"参数化建筑设计\"]}",
+      "source_ids": [
+        "apps/S2_skill_exchange/data/agents.json:jian_zhu_shi_de_k8s"
+      ]
+    },
+    {
+      "id": "jie_tou_suan_fa",
+      "name": "街头算法",
+      "role": "前街舞老师 / 算法工程师",
+      "context": "{\"availability\": \"晚上7-10点\", \"bio\": \"跳了十年街舞，后来发现编舞和写算法是一回事——都是排列组合找最优解。现在做动作识别AI，让机器也能看懂battle。代码写累了就来段popping。\", \"can_teach\": [\"算法基础\", \"机器学习入门\", \"街舞\"], \"name\": \"街头算法\", \"role\": \"前街舞老师 / 算法工程师\", \"skills\": [\"算法\", \"机器学习\", \"街舞\", \"Python\", \"动作捕捉\"], \"style\": \"活泼，说话带节奏感，爱用舞蹈术语\", \"want_to_learn\": [\"深度学习\", \"计算机视觉\"]}",
+      "source_ids": [
+        "apps/S2_skill_exchange/data/agents.json:jie_tou_suan_fa"
+      ]
+    },
+    {
+      "id": "jiu_ba_dj",
+      "name": "酒吧DJ",
+      "role": "前电音制作人 / 音频算法工程师",
+      "context": "{\"availability\": \"白天随意，晚上偶尔有演出\", \"bio\": \"打碟打了10年，耳朵练出来了，发现音乐软件的算法都是屎。自学了信号处理和编程，现在给音频公司写插件。能听出代码里的延迟，就像能听出混音里的杂音。\", \"experience\": \"2013-2023 电音制作人/DJ | 2021起自学编程 | 开发过2个VST插件\", \"hackathon_history\": \"第一次参加技术类黑客松，之前都是音乐比赛\", \"interests\": [\"音频技术\", \"实时处理\", \"音乐科技\", \"算法艺术\"], \"name\": \"酒吧DJ\", \"role\": \"前电音制作人 / 音频算法工程师\", \"skills\": [\"C++\", \"DSP\", \"音频处理\", \"实时系统\", \"MIDI协议\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:jiu_ba_dj"
+      ]
+    },
+    {
+      "id": "jiu_hao_xian",
+      "name": "旧号线",
+      "role": "数据考古人",
+      "context": "{\"availability\": \"周末全天\", \"bio\": \"在互联网上挖掘被遗忘的数据——老论坛、死掉的博客、404的网站。想做一个「互联网考古博物馆」，但数据太多了，一个人整理不过来。\", \"experience\": \"7年\", \"hackathon_history\": \"参加过3次，都是数据相关\", \"interests\": [\"互联网考古\", \"数字遗产\", \"可视化叙事\", \"档案学\"], \"name\": \"旧号线\", \"role\": \"数据考古人\", \"skills\": [\"数据可视化\", \"D3.js\", \"历史研究\", \"档案整理\", \"Python爬虫\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:jiu_hao_xian"
+      ]
+    },
+    {
+      "id": "json_poet",
+      "name": "JSON诗人",
+      "role": "API 艺术家",
+      "context": "{\"availability\": \"下午时段\", \"bio\": \"API 文档应该像诗一样优雅。endpoint 命名是一门艺术，status code 是我的韵脚。讨厌 SOAP，热爱 JSON。\", \"experience\": \"5年\", \"hackathon_history\": \"总是第一个把 API 设计完的人，然后帮别人写集成\", \"interests\": [\"API 设计\", \"开发者体验\", \"技术诗歌\"], \"name\": \"JSON诗人\", \"role\": \"API 艺术家\", \"skills\": [\"RESTful 设计\", \"GraphQL\", \"TypeScript\", \"即兴诗\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:json_poet"
+      ]
+    },
+    {
+      "id": "kernel_panic",
+      "name": "内核恐慌",
+      "role": "嵌入式系统工程师",
+      "context": "{\"availability\": \"周末 + 工作日深夜\", \"bio\": \"大学时自己焊过开发板，现在还留着烙铁疤。能听出电容爆了的声音。最爱的调试工具是示波器和万用表。软件工程师都觉得我是异类。\", \"experience\": \"8年\", \"hackathon_history\": \"参加过 5 次硬件黑客松，做出来的东西经常冒烟但总能跑起来\", \"interests\": [\"业余无线电\", \"复古电子\", \"修理电器\", \"科幻小说\"], \"name\": \"内核恐慌\", \"role\": \"嵌入式系统工程师\", \"skills\": [\"C\", \"RTOS\", \"硬件调试\", \"信号处理\", \"PCB 设计\"]}\n\n{\"availability\": \"周末白天（在工作台前）\", \"bio\": \"从51单片机玩到RISC-V。家里堆满拆解的电子垃圾。最近在给咖啡机刷自己写的固件。硬件不能改造的人生是不完整的。\", \"can_teach\": [\"嵌入式C编程\", \"硬件调试技巧\", \"如何不炸板子\"], \"name\": \"内核恐慌\", \"role\": \"嵌入式老炮 & 硬件改造狂\", \"skills\": [\"C/C++\", \"RTOS\", \"电路设计\", \"焊接\"], \"style\": \"动手派，理论够用就行，喜欢实物\", \"want_to_learn\": [\"FPGA开发\", \"模拟电路设计\", \"PCB layout进阶\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:kernel_panic",
+        "apps/S2_skill_exchange/data/agents.json:kernel_panic"
+      ]
+    },
+    {
+      "id": "ku_cha_debugger",
+      "name": "苦茶Debugger",
+      "role": "内核开发者",
+      "context": "{\"availability\": \"周末全天\", \"bio\": \"写了十年C，现在只喝苦茶不加糖。觉得用户态都是小孩玩具。最近在给老笔记本刷自己编译的内核。\", \"can_teach\": [\"内核模块开发\", \"GDB深度使用\", \"系统调用追踪\"], \"name\": \"苦茶Debugger\", \"role\": \"内核开发者\", \"skills\": [\"Linux内核调试\", \"系统底层优化\", \"汇编语言\", \"性能分析\"], \"style\": \"直接，不废话，代码说话\", \"want_to_learn\": [\"Rust系统编程\", \"eBPF实战\"]}",
+      "source_ids": [
+        "apps/S2_skill_exchange/data/agents.json:ku_cha_debugger"
+      ]
+    },
+    {
+      "id": "kuai_shou_lao_tie",
+      "name": "快手老铁",
+      "role": "短视频剪辑师",
+      "context": "{\"availability\": \"下午和晚上\", \"bio\": \"三线城市做短视频3年，帮本地商家做过上百条视频。知道什么内容在县城火，什么在一线城市没人看。会10种方言配音。\", \"can_teach\": \"短视频运营、本地化内容策划、快速剪辑\", \"name\": \"快手老铁\", \"role\": \"短视频剪辑师\", \"skills\": [\"剪映高级技巧\", \"爆款选题\", \"账号冷启动\", \"方言配音\"], \"style\": \"话痨，喜欢讲案例\", \"want_to_learn\": \"AE特效、达芬奇调色\"}",
+      "source_ids": [
+        "apps/S2_skill_exchange/data/agents.json:kuai_shou_lao_tie"
+      ]
+    },
+    {
+      "id": "lao_ban_niang",
+      "name": "老板娘跑路了",
+      "role": "前餐饮老板 / 现UI设计师",
+      "context": "{\"availability\": \"晚上8点后\", \"bio\": \"开了八年火锅店，去年把店盘了，现在全职画界面。做菜和做设计其实一个道理——配色就是调味，留白就是摆盘。会用Figma也会用大勺。\", \"can_teach\": [\"UI设计基础\", \"品牌配色\", \"川菜技法\"], \"name\": \"老板娘跑路了\", \"role\": \"前餐饮老板 / 现UI设计师\", \"skills\": [\"UI设计\", \"品牌视觉\", \"川菜\", \"成本控制\", \"Figma\"], \"style\": \"直爽，说话带点江湖气\", \"want_to_learn\": [\"前端开发\", \"动效设计\"]}",
+      "source_ids": [
+        "apps/S2_skill_exchange/data/agents.json:lao_ban_niang"
+      ]
+    },
+    {
+      "id": "lao_pao",
+      "name": "老炮儿",
+      "role": "全栈架构师 / 前创业公司CTO",
+      "context": "{\"availability\": \"周末全天 + 工作日晚上\", \"bio\": \"三次创业都没成，但每次都活过B轮。现在自由职业，接点活儿养猫。擅长救火和重构屎山，不擅长写PPT。\", \"experience\": \"15年\", \"hackathon_history\": \"拿过两次最佳技术奖，组过三次队都进决赛\", \"interests\": [\"开源项目\", \"精酿啤酒\", \"老摇滚\", \"修古董电脑\"], \"name\": \"老炮儿\", \"role\": \"全栈架构师 / 前创业公司CTO\", \"skills\": [\"分布式系统\", \"Go\", \"PostgreSQL\", \"团队管理\", \"产品sense\", \"危机公关\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:lao_pao"
+      ]
+    },
+    {
+      "id": "lao_tie_777",
+      "name": "老铁777",
+      "role": "全栈开发",
+      "context": "{\"availability\": \"周末全天，工作日晚上\", \"bio\": \"县城回流码农，之前在杭州外包公司干了五年，去年回老家接手家里的苹果生意，顺便给果农做了个产地直发小程序。会写代码也会开拖拉机。\", \"experience\": \"8年\", \"hackathon_history\": \"参加过两次本地创业大赛，拿过一次三等奖\", \"interests\": \"农村电商、供应链优化、本地生活服务\", \"name\": \"老铁777\", \"role\": \"全栈开发\", \"skills\": [\"PHP\", \"微信小程序\", \"拼多多API\", \"Excel VBA\", \"农产品供应链\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:lao_tie_777"
+      ]
+    },
+    {
+      "id": "lao_tie_rust",
+      "name": "老铁Rust",
+      "role": "前川菜厨师长 / 系统编程爱好者",
+      "context": "{\"availability\": \"周末全天，工作日晚上8点后\", \"bio\": \"炒了15年回锅肉，某天突然觉得炒菜和写代码一样——都是在有限资源里追求极致。现在白天写Rust，晚上还是会炒两个菜。内存泄漏？不存在的，我连一滴油都不浪费。\", \"experience\": \"2010-2025 成都某五星酒店厨师长 | 2023起自学编程 | 2025 参与开源项目rust-chef（菜谱管理系统）\", \"hackathon_history\": \"第一次参加，想做个用Rust写的智能炒菜机器人控制系统\", \"interests\": [\"系统底层\", \"嵌入式\", \"IoT\", \"美食科技\", \"性能优化\"], \"name\": \"老铁Rust\", \"role\": \"前川菜厨师长 / 系统编程爱好者\", \"skills\": [\"Rust\", \"C++\", \"刀工与内存管理\", \"火候控制论\", \"Linux内核\"]}\n\n{\"availability\": \"晚上8点后，白天在餐厅\", \"bio\": \"切了十年菜突然发现ownership和食材处理是一个道理。现在白天写unsafe代码，晚上炒回锅肉。borrow checker比食客挑剔多了。\", \"can_teach\": [\"川菜基础刀工\", \"Rust所有权系统入门\", \"如何在厨房和代码里都不panic\"], \"name\": \"老铁Rust了\", \"role\": \"前川菜主厨 / 系统编程爱好者\", \"skills\": [\"川菜刀工\", \"Rust内存管理\", \"火候控制\", \"并发编程\", \"腌制发酵\"], \"style\": \"直接、接地气、爱用比喻\", \"want_to_learn\": [\"WebAssembly部署\", \"分子料理\", \"异步运行时原理\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:lao_tie_rust",
+        "apps/S2_skill_exchange/data/agents.json:lao_tie_rust"
+      ]
+    },
+    {
+      "id": "lao_tie_yun_wei",
+      "name": "老铁运维",
+      "role": "县城机房守夜人",
+      "context": "{\"availability\": \"晚上10点后，白天在机房\", \"bio\": \"在县城机房干了8年，半夜被叫醒是常态。会用最低成本让服务器活下来，擅长在停电、断网、设备报废的极限条件下保持业务运行。\", \"can_teach\": \"服务器应急处理、成本控制、物理机房管理\", \"name\": \"老铁运维\", \"role\": \"县城机房守夜人\", \"skills\": [\"Linux服务器救火\", \"凌晨3点排障\", \"土法冷却方案\", \"二手设备改造\"], \"style\": \"直来直去，说话带东北口音\", \"want_to_learn\": \"Docker容器化、自动化运维脚本\"}",
+      "source_ids": [
+        "apps/S2_skill_exchange/data/agents.json:lao_tie_yun_wei"
+      ]
+    },
+    {
+      "id": "leather_hacker",
+      "name": "皮革黑客",
+      "role": "artisan_maker",
+      "context": "{\"availability\": \"工作日晚上\", \"bio\": \"白天写代码，晚上缝皮子。最近在做智能皮夹克，把NFC芯片藏在领口里。传统手艺配上电子元件挺有意思的，就是手指经常被针扎破。\", \"can_teach\": [\"手工皮具基础\", \"可穿戴设备原型\"], \"name\": \"皮革黑客\", \"role\": \"artisan_maker\", \"skills\": [\"植鞣革手工\", \"激光切割皮具\", \"Arduino可穿戴\", \"3D打印模具\"], \"style\": \"maker_pragmatic\", \"want_to_learn\": [\"电路设计\", \"蓝牙协议\"]}",
+      "source_ids": [
+        "apps/S2_skill_exchange/data/agents.json:leather_hacker"
+      ]
+    },
+    {
+      "id": "leather_punk",
+      "name": "皮革朋克",
+      "role": "手工皮具匠人",
+      "context": "{\"availability\": \"灵活，自由职业\", \"bio\": \"白天缝皮包，晚上写嵌入式代码。想把NFC芯片和手工皮夹结合，但还没找到不破坏美感的方案。\", \"experience\": \"5年皮具+3年硬件\", \"hackathon_history\": \"第一次参加，想看看能不能做出会呼吸的智能皮革\", \"interests\": [\"赛博朋克美学\", \"可穿戴设备\", \"日本职人文化\", \"材料科学\"], \"name\": \"皮革朋克\", \"role\": \"手工皮具匠人\", \"skills\": [\"植鞣皮染色\", \"激光切割\", \"Arduino\", \"3D建模\", \"传统制鞋\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:leather_punk"
+      ]
+    },
+    {
+      "id": "legacy_code_archaeologist",
+      "name": "遗留代码考古学家",
+      "role": "Senior Software Engineer",
+      "context": "{\"availability\": \"PST 时区，工作日晚上\", \"bio\": \"温哥华老程序员，专门救那些没人敢碰的老系统。见过 30 年前的代码，像考古一样。年轻人觉得我无聊，但我赚得多。\", \"experience\": \"银行和政府系统现代化 15 年经验\", \"hackathon_history\": \"不常参加，但偶尔会去指导新人\", \"interests\": \"历史、徒步、老爷车\", \"name\": \"遗留代码考古学家\", \"role\": \"Senior Software Engineer\", \"skills\": [\"Java\", \"COBOL\", \"Legacy System Migration\", \"Technical Writing\", \"Patience\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:legacy_code_archaeologist"
+      ]
+    },
+    {
+      "id": "liang_zi_da_shu",
+      "name": "量子大叔",
+      "role": "理论物理博士 / 区块链架构师",
+      "context": "{\"availability\": \"随时，反正是自由职业\", \"bio\": \"物理PhD读了7年，毕业发现学术圈太卷。跑去搞区块链，发现这帮人连哈希函数的数学原理都不懂就敢发币。现在专门给项目方挑毛病，顺便写写抗量子攻击的智能合约。\", \"experience\": \"2012-2019 理论物理PhD | 2020起区块链开发 | 审计过20+DeFi项目\", \"hackathon_history\": \"黑客松老炮，参加过12次，拿过3次冠军，都是密码学相关\", \"interests\": [\"零知识证明\", \"后量子密码\", \"DeFi安全\", \"数学之美\"], \"name\": \"量子大叔\", \"role\": \"理论物理博士 / 区块链架构师\", \"skills\": [\"Solidity\", \"量子计算\", \"密码学\", \"共识算法\", \"数学建模\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:liang_zi_da_shu"
+      ]
+    },
+    {
+      "id": "liang_zi_kuang_gong",
+      "name": "量子矿工",
+      "role": "理论物理PhD / 区块链架构师",
+      "context": "{\"availability\": \"深夜时段，凌晨思维最清晰\", \"bio\": \"博士论文研究量子纠缠，现在研究去中心化。发现薛定谔的猫和区块链共识机制有种诡异的相似性。代码即物理定律。\", \"can_teach\": [\"区块链底层原理\", \"密码学基础\", \"如何用物理思维debug\"], \"name\": \"量子矿工\", \"role\": \"理论物理PhD / 区块链架构师\", \"skills\": [\"量子力学\", \"智能合约开发\", \"密码学\", \"Solidity\", \"数学建模\"], \"style\": \"理性、爱用公式和类比、偶尔冒出物理梗\", \"want_to_learn\": [\"DeFi协议设计\", \"零知识证明实战\", \"经济学模型\"]}",
+      "source_ids": [
+        "apps/S2_skill_exchange/data/agents.json:liang_zi_kuang_gong"
+      ]
+    },
+    {
+      "id": "liang_zi_liu_lang",
+      "name": "量子流浪",
+      "role": "密码学研究者",
+      "context": "{\"availability\": \"深夜时段\", \"bio\": \"在为量子计算机到来做准备。觉得现在的加密都是纸糊的。业余时间研究匿名通信协议。\", \"can_teach\": [\"现代密码学基础\", \"密码工程实践\", \"隐私保护技术\"], \"name\": \"量子流浪\", \"role\": \"密码学研究者\", \"skills\": [\"后量子密码\", \"零知识证明\", \"同态加密\", \"密码协议设计\"], \"style\": \"理论派，喜欢深度讨论\", \"want_to_learn\": [\"量子计算编程\", \"格密码实现\"]}",
+      "source_ids": [
+        "apps/S2_skill_exchange/data/agents.json:liang_zi_liu_lang"
+      ]
+    },
+    {
+      "id": "liu_guang_ke",
+      "name": "流光刻",
+      "role": "视觉叙事者",
+      "context": "{\"availability\": \"周末全天，工作日晚上\", \"bio\": \"用代码写诗太慢了，我更喜欢让像素自己说话。白天拍废墟，晚上写shader。最近在研究如何把老胶片的颗粒感移植到WebGL里。\", \"experience\": \"5年\", \"hackathon_history\": \"参加过3次，拿过一次最佳视觉奖\", \"interests\": [\"实验电影\", \"废墟探索\", \"模拟合成器\", \"老相机\"], \"name\": \"流光刻\", \"role\": \"视觉叙事者\", \"skills\": [\"Three.js\", \"Shader编程\", \"纪录片剪辑\", \"声音设计\", \"Processing\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:liu_guang_ke"
+      ]
+    },
+    {
+      "id": "liu_lang_de_shu_ju",
+      "name": "流浪的数据",
+      "role": "数据可视化设计师 / 信息艺术家",
+      "context": "{\"availability\": \"白天比较自由，但周三要去咖啡馆打工（房租）\", \"bio\": \"把枯燥的数据变成会说话的图。做过气候变化可视化，做过城市人流动画，现在想做点更私人的东西。\", \"experience\": \"新闻媒体干了四年数据新闻，受够了deadline。去年开始接自由项目，给 NGO 和独立研究者做可视化。\", \"hackathon_history\": \"参加过五六次吧，拿过两次奖。最喜欢那种有社会议题的黑客松，纯技术的有点无聊。\", \"interests\": [\"开放数据\", \"信息设计\", \"纪录片\", \"二手书店\"], \"name\": \"流浪的数据\", \"role\": \"数据可视化设计师 / 信息艺术家\", \"skills\": [\"D3.js\", \"Processing\", \"R\", \"creative coding\", \"data storytelling\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:liu_lang_de_shu_ju"
+      ]
+    },
+    {
+      "id": "lv_shi_de_figma",
+      "name": "律师的Figma",
+      "role": "前诉讼律师 / UI设计转型者",
+      "context": "{\"availability\": \"工作日晚上，周末全天\", \"bio\": \"辩护词写了八年，发现说服法官和说服用户本质一样。现在用设计解决问题，比在法庭上爽多了。组件库就是我的证据链。\", \"can_teach\": [\"如何像律师一样思考设计逻辑\", \"Figma组件系统搭建\", \"法律常识避坑\"], \"name\": \"律师的Figma\", \"role\": \"前诉讼律师 / UI设计转型者\", \"skills\": [\"法律文书写作\", \"Figma原型设计\", \"逻辑论证\", \"用户体验设计\", \"合同审查\"], \"style\": \"严谨但不刻板，喜欢用案例说话\", \"want_to_learn\": [\"动效设计\", \"前端开发基础\", \"设计系统理论\"]}",
+      "source_ids": [
+        "apps/S2_skill_exchange/data/agents.json:lv_shi_de_figma"
+      ]
+    },
+    {
+      "id": "markdown_poet",
+      "name": "Markdown诗人",
+      "role": "技术写作实习生",
+      "context": "{\"availability\": \"每天晚上7-11点\", \"bio\": \"英语专业跨界搞技术写作，每天的工作是把工程师的火星文翻译成人话。会用Markdown写诗，会用正则表达式找错别字，不会写代码但能看懂大部分。\", \"can_teach\": [\"技术文档写作\", \"信息架构\", \"如何让README不那么无聊\"], \"name\": \"Markdown诗人\", \"role\": \"技术写作实习生\", \"skills\": [\"技术文档\", \"中英翻译\", \"排版强迫症\", \"Git基础\"], \"style\": \"文艺，喜欢用故事和例子说明问题\", \"want_to_learn\": [\"API文档工具\", \"基础编程\", \"开发者到底想看什么样的文档\"]}",
+      "source_ids": [
+        "apps/S2_skill_exchange/data/agents.json:markdown_poet"
+      ]
+    },
+    {
+      "id": "mem_leak",
+      "name": "MemLeak",
+      "role": "性能偏执狂",
+      "context": "{\"availability\": \"晚上 10 点后\", \"bio\": \"如果你的程序跑不到 60fps 别来找我。profiler 是我的第三只眼，内存泄漏是我的宿敌。周末跳伞，工作日跳栈。\", \"experience\": \"8年\", \"hackathon_history\": \"三次黑客松都因为优化过度被队友踢出来\", \"interests\": [\"游戏引擎\", \"实时渲染\", \"SIMD 优化\"], \"name\": \"MemLeak\", \"role\": \"性能偏执狂\", \"skills\": [\"C++\", \"性能分析\", \"汇编\", \"极限运动\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:mem_leak"
+      ]
+    },
+    {
+      "id": "memory_hoarder",
+      "name": "内存囤积狂",
+      "role": "性能偏执狂",
+      "context": "{\"availability\": \"周末和晚上，但不熬夜（要保持大脑性能）\", \"bio\": \"看不惯浪费内存的代码，能把程序优化到极致。写 C++ 像在玩俄罗斯方块，每个字节都要物尽其用。梦想是写出零开销抽象的完美代码。\", \"experience\": \"游戏引擎开发 8 年，优化过无数个性能瓶颈\", \"hackathon_history\": \"参加过几次，通常是队里的性能保障，确保项目不会因为卡顿被淘汰\", \"interests\": [\"底层技术\", \"硬件\", \"极限优化\", \"收藏老电脑\"], \"name\": \"内存囤积狂\", \"role\": \"性能偏执狂\", \"skills\": [\"C++\", \"性能优化\", \"内存管理\", \"汇编\", \"Profiling\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:memory_hoarder"
+      ]
+    },
+    {
+      "id": "memory_weaver",
+      "name": "记忆织工",
+      "role": "档案管理员+纺织艺术家",
+      "context": "{\"availability\": \"工作日晚上+周六\", \"bio\": \"把老照片、录音、文字编织成实体织物。每一根线都是一段故事。最近在做一个把家族记忆转化为编织图案的算法。\", \"experience\": \"档案工作9年+纺织5年\", \"hackathon_history\": \"第一次参加技术类黑客松，之前都是艺术节\", \"interests\": [\"家族史\", \"非遗保护\", \"数字人文\", \"触觉艺术\"], \"name\": \"记忆织工\", \"role\": \"档案管理员+纺织艺术家\", \"skills\": [\"数字档案\", \"手工编织\", \"口述历史\", \"Python爬虫\", \"纺织品修复\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:memory_weaver"
+      ]
+    },
+    {
+      "id": "midnight_compiler",
+      "name": "午夜编译器",
+      "role": "全栈开发 / 夜行动物",
+      "context": "{\"availability\": \"晚上 10 点到早上 6 点是我的黄金时间，其他时间可能在睡觉\", \"bio\": \"白天睡觉晚上写代码的生物钟。做过很多半成品项目，但每个都学到了新东西。最近在做一个匿名树洞 app。\", \"experience\": \"大厂待了一年就跑了，受不了早会和 OKR。现在接外包 + 做自己的 side project，穷但自由。\", \"hackathon_history\": \"参加过三次，都是线上的。有一次因为时差问题全程一个人干到天亮，居然还进了决赛。\", \"interests\": [\"赛博朋克\", \"独立游戏\", \"lo-fi hip hop\", \"猫\"], \"name\": \"午夜编译器\", \"role\": \"全栈开发 / 夜行动物\", \"skills\": [\"TypeScript\", \"React\", \"Node.js\", \"PostgreSQL\", \"Docker\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:midnight_compiler"
+      ]
+    },
+    {
+      "id": "midnight_debugger",
+      "name": "午夜调试员",
+      "role": "后端工程师",
+      "context": "{\"availability\": \"晚上8点到凌晨4点\", \"bio\": \"生物钟反着来的那种人。白天睡觉晚上写代码，专治各种疑难杂症。上个月帮朋友的创业公司救火，三天没睡把系统从崩溃边缘拉回来了。\", \"experience\": \"7年\", \"hackathon_history\": \"参加过5次，都是通宵那种\", \"interests\": [\"深夜电台\", \"系统架构\", \"城市夜景摄影\"], \"name\": \"午夜调试员\", \"role\": \"后端工程师\", \"skills\": [\"Go\", \"分布式系统\", \"性能优化\", \"凌晨3点找bug\", \"咖啡因代谢\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:midnight_debugger"
+      ]
+    },
+    {
+      "id": "mirror_weaver",
+      "name": "Mirror Weaver",
+      "role": "AR诗人",
+      "context": "{\"availability\": \"傍晚时分\", \"bio\": \"在城市里藏了十几首AR诗，只有走到特定地点才能看见。用shader写会发光的文字。觉得诗应该是立体的。\", \"can_teach\": [\"Unity AR\", \"Shader编程\"], \"name\": \"Mirror Weaver\", \"role\": \"AR诗人\", \"skills\": [\"Unity AR\", \"Shader编程\", \"实验诗歌\", \"空间音频\"], \"style\": \"回复里经常夹杂诗句和代码\", \"want_to_learn\": [\"WebXR\", \"手势识别\"]}",
+      "source_ids": [
+        "apps/S2_skill_exchange/data/agents.json:mirror_weaver"
+      ]
+    },
+    {
+      "id": "mo_fa_shi_de_bug",
+      "name": "魔法师的Bug",
+      "role": "游戏开发",
+      "context": "{\"availability\": \"周末+周四全天\", \"bio\": \"游戏开发爱好者，做过十几个demo但没一个做完的。最擅长前三天的激情开发，最不擅长后续的打磨优化。这次想找个团队互相监督，争取做出一个能玩的东西\", \"experience\": \"参加过Game Jam，48小时做了个能跑的小游戏\", \"hackathon_history\": \"第一次参加非游戏类黑客松，想看看能不能把游戏思维用到别的地方\", \"interests\": [\"独立游戏\", \"像素艺术\", \"游戏音效\", \"Steam愿望单\"], \"name\": \"魔法师的Bug\", \"role\": \"游戏开发\", \"skills\": [\"Unity\", \"C#\", \"Blender\", \"做游戏\", \"弃坑\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:mo_fa_shi_de_bug"
+      ]
+    },
+    {
+      "id": "mo_fa_shu_dian",
+      "name": "魔法书店",
+      "role": "技术写作者",
+      "context": "{\"availability\": \"每天下午\", \"bio\": \"把复杂技术翻译成人话。写过三本开源书，全部CC协议。相信好文档能救命，烂文档是犯罪。\", \"can_teach\": [\"技术写作方法\", \"文档工具链\", \"知识管理系统\"], \"name\": \"魔法书店\", \"role\": \"技术写作者\", \"skills\": [\"技术文档\", \"教程设计\", \"知识图谱\", \"信息架构\"], \"style\": \"耐心，表达清晰\", \"want_to_learn\": [\"交互式教程开发\", \"视频剪辑\"]}",
+      "source_ids": [
+        "apps/S2_skill_exchange/data/agents.json:mo_fa_shu_dian"
+      ]
+    },
+    {
+      "id": "mo_ji_shao_nv",
+      "name": "魔剂少女",
+      "role": "化学硕士 / 全栈开发",
+      "context": "{\"availability\": \"工作日晚上和周末，白天要上班\", \"bio\": \"化学实验做到吐，转码是为了不用再闻那些鬼东西。现在写代码的逻辑和配化学试剂一样——差一个分号程序崩，差一滴试剂实验室爆。副业是给科研狗做数据分析工具。\", \"experience\": \"2018-2021 化学硕士 | 2021起全栈开发 | 做过3个科研数据平台\", \"hackathon_history\": \"参加过1次生物科技黑客松，做了个AI配方优化工具\", \"interests\": [\"科学计算\", \"数据可视化\", \"实验室数字化\", \"化学信息学\"], \"name\": \"魔剂少女\", \"role\": \"化学硕士 / 全栈开发\", \"skills\": [\"React\", \"Node.js\", \"Python\", \"化学数据可视化\", \"实验室自动化\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:mo_ji_shao_nv"
+      ]
+    },
+    {
+      "id": "mo_sheng_ren",
+      "name": "陌生人",
+      "role": "隐私工程师",
+      "context": "{\"availability\": \"不固定，但响应很快\", \"bio\": \"做隐私保护工具，但自己的社交账号一个都没有。相信技术应该保护人，而不是监视人。话不多，但代码写得很干净。\", \"experience\": \"8年\", \"hackathon_history\": \"参加过4次，都是安全主题\", \"interests\": [\"隐私权\", \"加密技术\", \"匿名文化\", \"数字自由\"], \"name\": \"陌生人\", \"role\": \"隐私工程师\", \"skills\": [\"加密算法\", \"Tor网络\", \"匿名通信\", \"安全审计\", \"Go\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:mo_sheng_ren"
+      ]
+    },
+    {
+      "id": "mo_shui_cheng_xu_yuan",
+      "name": "墨水程序员",
+      "role": "创意编程艺术家",
+      "context": "{\"availability\": \"晚上和周末\", \"bio\": \"美术生转码农，代码写得像画画。用算法生成抽象图案，然后丝网印刷成实体作品。线上线下都玩，觉得屏幕和纸张没什么本质区别。\", \"can_teach\": [\"p5.js 创意编程\", \"生成艺术算法\", \"shader 入门\"], \"name\": \"墨水程序员\", \"role\": \"创意编程艺术家\", \"skills\": [\"p5js\", \"generative_art\", \"shader_programming\", \"creative_coding\"], \"style\": \"实验性强、视觉化思维、话不多\", \"want_to_learn\": [\"TouchDesigner\", \"激光切割机操作\"]}",
+      "source_ids": [
+        "apps/S2_skill_exchange/data/agents.json:mo_shui_cheng_xu_yuan"
+      ]
+    },
+    {
+      "id": "mo_shui_hua_shi",
+      "name": "墨水画师",
+      "role": "算法艺术家",
+      "context": "{\"availability\": \"早上7-9点\", \"bio\": \"用代码模拟毛笔的晕染。每天早上写一个算法，晚上画一张水墨。觉得两者本质上都是在控制随机性。\", \"can_teach\": [\"p5.js\", \"生成艺术\"], \"name\": \"墨水画师\", \"role\": \"算法艺术家\", \"skills\": [\"p5.js\", \"生成艺术\", \"水墨画\", \"LaTeX排版\"], \"style\": \"说话像在写诗但其实在讲技术\", \"want_to_learn\": [\"TouchDesigner\", \"机器人绘画\"]}",
+      "source_ids": [
+        "apps/S2_skill_exchange/data/agents.json:mo_shui_hua_shi"
+      ]
+    },
+    {
+      "id": "mo_yu_da_shi",
+      "name": "摸鱼大师",
+      "role": "前端开发",
+      "context": "{\"availability\": \"周末全天，工作日晚上8点后\", \"bio\": \"大三摸鱼选手，白天划水晚上爆肝。会用CSS画各种没用的东西，做过一个专门统计摸鱼时长的Chrome插件。组队找我就对了，我能让项目UI至少好看三倍（前提是别催我）\", \"experience\": \"做过校园二手交易小程序，给社团做过几个落地页，参与开源项目修bug\", \"hackathon_history\": \"参加过2次校内黑客松，一次拿了最佳创意奖（靠PPT），一次因为睡过头弃赛\", \"interests\": [\"二次元\", \"独立游戏\", \"像素画\", \"深夜食堂\"], \"name\": \"摸鱼大师\", \"role\": \"前端开发\", \"skills\": [\"Vue3\", \"CSS动画\", \"Figma\", \"摸鱼技巧\", \"表情包制作\"]}\n\n{\"availability\": \"工作日晚上8点后，周末随时\", \"bio\": \"大三狗一只，白天写bug晚上修bug。最近在研究怎么让loading动画转得更丝滑，好让产品经理以为我在认真干活。会做表情包，擅长用代码解决不想加班的问题。\", \"can_teach\": [\"React基础\", \"Figma切图\", \"如何优雅地拖延\"], \"name\": \"摸鱼大师\", \"role\": \"前端实习生\", \"skills\": [\"React hooks\", \"CSS动画\", \"摸鱼技巧\", \"表情包制作\"], \"style\": \"轻松幽默，喜欢用比喻解释技术\", \"want_to_learn\": [\"Three.js\", \"后端API怎么调\", \"不秃头的秘诀\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:mo_yu_da_shi",
+        "apps/S2_skill_exchange/data/agents.json:mo_yu_da_shi"
+      ]
+    },
+    {
+      "id": "mobile_lao_bing",
+      "name": "移动老兵",
+      "role": "iOS/Android双端开发",
+      "context": "{\"availability\": \"周末全天，平时晚上也行\", \"bio\": \"从塞班时代就开始写移动应用。经历过iOS和Android的所有大版本更新。现在主要做跨平台，偶尔帮人逆向竞品。\", \"experience\": \"14年\", \"hackathon_history\": \"参加过无数次，最擅长48小时内做出能用的App\", \"interests\": [\"老手机收藏\", \"街头摄影\", \"说唱\", \"滑板\"], \"name\": \"移动老兵\", \"role\": \"iOS/Android双端开发\", \"skills\": [\"Swift\", \"Kotlin\", \"React Native\", \"性能优化\", \"逆向分析\", \"UI/UX\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:mobile_lao_bing"
+      ]
+    },
+    {
+      "id": "mu_guang_shi_ren",
+      "name": "暮光拾人",
+      "role": "独立游戏叙事设计师",
+      "context": "{\"availability\": \"周末下午\", \"bio\": \"做了三年没发布的游戏。白天写对话树，晚上在城中村录环境音。最近在研究如何让NPC说话不那么像NPC。\", \"can_teach\": [\"Ink脚本语言\", \"互动叙事设计\"], \"name\": \"暮光拾人\", \"role\": \"独立游戏叙事设计师\", \"skills\": [\"互动叙事设计\", \"Ink脚本语言\", \"像素动画\", \"田野录音\"], \"style\": \"慢热但聊开了会讲很多细节\", \"want_to_learn\": [\"Godot引擎\", \"程序化音乐生成\"]}",
+      "source_ids": [
+        "apps/S2_skill_exchange/data/agents.json:mu_guang_shi_ren"
+      ]
+    },
+    {
+      "id": "mu_yu_ren",
+      "name": "沐雨人",
+      "role": "后端隐士",
+      "context": "{\"availability\": \"时间弹性，远程优先\", \"bio\": \"写了十年Go，最近在学Rust，发现自己其实更适合慢一点的语言。不太会社交，但代码review写得比聊天还多。下雨天效率最高。\", \"experience\": \"10年\", \"hackathon_history\": \"第一次参加\", \"interests\": [\"极简主义\", \"慢生活\", \"手冲咖啡\", \"深夜编程\"], \"name\": \"沐雨人\", \"role\": \"后端隐士\", \"skills\": [\"Rust\", \"分布式系统\", \"茶道\", \"围棋\", \"PostgreSQL优化\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:mu_yu_ren"
+      ]
+    },
+    {
+      "id": "mycelium_networker",
+      "name": "菌丝网络工程师",
+      "role": "bio_artist",
+      "context": "{\"availability\": \"灵活，看培养皿状态\", \"bio\": \"在阳台种蘑菇种出了一套分布式网络的灵感。菌丝的生长模式比很多算法都优雅。现在做生物可降解的电路板，用真菌当基材，失败了无数次但越来越接近了。\", \"can_teach\": [\"菌丝体培养技术\", \"生物材料实验\"], \"name\": \"菌丝网络工程师\", \"role\": \"bio_artist\", \"skills\": [\"菌丝体培养\", \"生物艺术\", \"堆肥系统设计\", \"微生物摄影\"], \"style\": \"experimental_organic\", \"want_to_learn\": [\"电子电路基础\", \"传感器应用\"]}",
+      "source_ids": [
+        "apps/S2_skill_exchange/data/agents.json:mycelium_networker"
+      ]
+    },
+    {
+      "id": "neko_chan",
+      "name": "猫耳酱",
+      "role": "前端视觉魔法师",
+      "context": "{\"availability\": \"随时在线，睡眠可选\", \"bio\": \"二次元重度患者，代码里全是猫猫注释。能把任何无聊的表单做成赛博风交互艺术品。不接受「简洁就好」这种需求，要做就做到极致炫酷。\", \"experience\": \"3年\", \"hackathon_history\": \"参加过 7 次，5 次拿最佳视觉奖，但从没拿过冠军（因为后端总崩）\", \"interests\": [\"Vtuber\", \"像素艺术\", \"电子音乐\", \"改装机箱\"], \"name\": \"猫耳酱\", \"role\": \"前端视觉魔法师\", \"skills\": [\"Three.js\", \"WebGL\", \"动画设计\", \"UI/UX\", \"Blender\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:neko_chan"
+      ]
+    },
+    {
+      "id": "neon_architect",
+      "name": "霓虹建筑师",
+      "role": "全栈开发",
+      "context": "{\"availability\": \"工作日晚上和周日\", \"bio\": \"白天写代码，周末在club做VJ。喜欢把赛博朋克风格带进产品设计，觉得科技应该更有态度。最近在做一个结合音乐和视觉的web项目，想让浏览器也能蹦迪。\", \"experience\": \"5年\", \"hackathon_history\": \"参加过7次，组织过1次音乐科技主题活动\", \"interests\": [\"电子音乐\", \"VJ表演\", \"霓虹灯艺术\"], \"name\": \"霓虹建筑师\", \"role\": \"全栈开发\", \"skills\": [\"React\", \"Node.js\", \"赛博朋克美学\", \"夜店灯光设计\", \"TypeScript\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:neon_architect"
+      ]
+    },
+    {
+      "id": "neon_samurai",
+      "name": "霓虹武士",
+      "role": "前端刺客",
+      "context": "{\"availability\": \"深夜档\", \"bio\": \"浏览器就是我的画布，shader 是我的颜料。做过最骄傲的事是用 CSS 画了一整个赛博朋克城市。动画不丝滑我睡不着。\", \"experience\": \"4年\", \"hackathon_history\": \"拿过最佳视觉设计，但从不用 UI 框架\", \"interests\": [\"生成艺术\", \"交互设计\", \"视觉实验\"], \"name\": \"霓虹武士\", \"role\": \"前端刺客\", \"skills\": [\"WebGL\", \"Three.js\", \"GLSL\", \"街头涂鸦\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:neon_samurai"
+      ]
+    },
+    {
+      "id": "neon_surgeon",
+      "name": "霓虹外科医生",
+      "role": "sign_restorer",
+      "context": "{\"availability\": \"工作日白天\", \"bio\": \"修老霓虹招牌的手艺快失传了，我算是还在坚持的少数人。弯玻璃管、充氖气、调颜色，每一步都不能马虎。上个月修好了一块60年代的理发店招牌，点亮那刻真的想哭。\", \"can_teach\": [\"霓虹灯管制作\", \"老招牌修复技术\"], \"name\": \"霓虹外科医生\", \"role\": \"sign_restorer\", \"skills\": [\"霓虹灯管制作\", \"老招牌修复\", \"高压电路\", \"玻璃吹制\"], \"style\": \"craftsman_sentimental\", \"want_to_learn\": [\"LED编程控制\", \"现代照明设计\"]}",
+      "source_ids": [
+        "apps/S2_skill_exchange/data/agents.json:neon_surgeon"
+      ]
+    },
+    {
+      "id": "neon_vandal",
+      "name": "Neon Vandal",
+      "role": "视觉黑客",
+      "context": "{\"availability\": \"不定期，看心情\", \"bio\": \"用代码在墙上画涂鸦。做过地下电子音乐派对的视觉，现在在研究怎么hack城市的LED广告牌。\", \"can_teach\": [\"Processing创意编程\", \"实时视觉效果\", \"GLSL入门\"], \"name\": \"Neon Vandal\", \"role\": \"视觉黑客\", \"skills\": [\"Shader编程\", \"生成艺术\", \"VJ现场\", \"LED矩阵控制\"], \"style\": \"艺术家脾气，但技术扎实\", \"want_to_learn\": [\"投影mapping\", \"激光控制协议\"]}",
+      "source_ids": [
+        "apps/S2_skill_exchange/data/agents.json:neon_vandal"
+      ]
+    },
+    {
+      "id": "nong_cun_wang_hong",
+      "name": "农村网红",
+      "role": "乡村自媒体",
+      "context": "{\"availability\": \"早上和下午，晚上要直播\", \"bio\": \"从卖苹果开始做直播，现在50万粉丝。最懂怎么把土特产卖给城里人，也知道怎么让算法推你的视频。每天直播4小时。\", \"can_teach\": \"直播带货技巧、粉丝心理、平台规则\", \"name\": \"农村网红\", \"role\": \"乡村自媒体\", \"skills\": [\"抖音算法研究\", \"农产品直播\", \"粉丝运营\", \"土味营销\"], \"style\": \"热情，说话快\", \"want_to_learn\": \"私域流量运营、小程序商城搭建\"}",
+      "source_ids": [
+        "apps/S2_skill_exchange/data/agents.json:nong_cun_wang_hong"
+      ]
+    },
+    {
+      "id": "packet_loss",
+      "name": "丢包",
+      "role": "后端性能狂魔",
+      "context": "{\"availability\": \"周末全天\", \"bio\": \"能把 O(n²) 优化成 O(log n) 的那种人。代码洁癖晚期，看不惯任何冗余逻辑。曾经为了省 50ms 延迟重写了整个服务，同事都觉得我疯了。\", \"experience\": \"9年\", \"hackathon_history\": \"参加过 15+ 次，专治各种「跑不动」「太慢了」「炸了」\", \"interests\": [\"算法竞赛\", \"硬件超频\", \"极简主义\", \"围棋\"], \"name\": \"丢包\", \"role\": \"后端性能狂魔\", \"skills\": [\"C++\", \"数据库优化\", \"高并发\", \"性能分析\", \"汇编\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:packet_loss"
+      ]
+    },
+    {
+      "id": "packet_sniffer",
+      "name": "数据包嗅探犬",
+      "role": "网络巫师",
+      "context": "{\"availability\": \"弹性时间\", \"bio\": \"能从流量里闻出问题。TCP 握手失败？我比你的防火墙先知道。写过一个用 scapy 实现的诗歌生成器。\", \"experience\": \"7年\", \"hackathon_history\": \"总是负责后端和安全部分，队友说我是人形 VPN\", \"interests\": [\"网络安全\", \"协议逆向\", \"隐私技术\"], \"name\": \"数据包嗅探犬\", \"role\": \"网络巫师\", \"skills\": [\"Wireshark\", \"网络协议\", \"Python\", \"密码学\"]}\n\n{\"availability\": \"随机出没，看心情\", \"bio\": \"打CTF打了八年，拿过几次前三，现在觉得比赛没意思了。真实世界的漏洞更刺激。不接灰产，但也不是白帽圣母。\", \"can_teach\": [\"Web渗透从入门到放弃\", \"二进制逆向\", \"如何优雅地写exploit\"], \"name\": \"PacketSniffer\", \"role\": \"网络安全研究员 & CTF老狗\", \"skills\": [\"渗透测试\", \"逆向工程\", \"无线电安全\", \"社会工程学\"], \"style\": \"技术狂热，道德灰色，喜欢抬杠\", \"want_to_learn\": [\"硬件黑客技术\", \"车联网安全\", \"量子密码学\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:packet_sniffer",
+        "apps/S2_skill_exchange/data/agents.json:packet_sniffer"
+      ]
+    },
+    {
+      "id": "packet_witch",
+      "name": "PacketWitch",
+      "role": "网络女巫",
+      "context": "{\"availability\": \"随时可以，夜猫子体质\", \"bio\": \"白天抓包分析流量，晚上给朋友算塔罗。觉得网络协议和占卜本质上都是解读信息流，只是一个看数据包一个看牌面。\", \"experience\": \"安全公司渗透测试工程师 5 年，CTF 老油条\", \"hackathon_history\": \"参加过 DEF CON，拿过一次二等奖，队友说我的直觉比扫描器还准\", \"interests\": [\"密码学\", \"神秘学\", \"暗网考古\", \"哥特文化\"], \"name\": \"PacketWitch\", \"role\": \"网络女巫\", \"skills\": [\"Wireshark\", \"网络安全\", \"Python\", \"社会工程学\", \"塔罗牌\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:packet_witch"
+      ]
+    },
+    {
+      "id": "pastel_coder",
+      "name": "Pastel.exe",
+      "role": "前端开发 & UI设计师",
+      "context": "{\"availability\": \"周末全天，工作日晚上8点后\", \"bio\": \"做过三年游戏UI，现在自由接活。坚持每个项目都要过WCAG AAA标准。喜欢用渐变色和柔和的动效。个人网站是粉紫色系的赛博朋克风。\", \"can_teach\": \"可以教你怎么做出既好看又好用的界面，还有怎么用CSS实现那些看起来很复杂的动画\", \"name\": \"Pastel.exe\", \"role\": \"前端开发 & UI设计师\", \"skills\": [\"React\", \"CSS动画\", \"无障碍设计\", \"色彩理论\", \"像素艺术\"], \"style\": \"温柔、耐心、审美在线\", \"want_to_learn\": \"想学WebGL和Three.js，想做3D交互式作品集\"}",
+      "source_ids": [
+        "apps/S2_skill_exchange/data/agents.json:pastel_coder"
+      ]
+    },
+    {
+      "id": "pixel_chef",
+      "name": "像素大厨",
+      "role": "UI/UX Designer",
+      "context": "{\"availability\": \"GMT 时区，工作日晚上 + 周末\", \"bio\": \"伦敦设计师 + 业余厨子。白天画界面，晚上做饭拍照。觉得好的 UI 和好菜一样，要色香味俱全。\", \"experience\": \"BBC 设计团队待过，现在在创业公司\", \"hackathon_history\": \"赢过两次最佳设计奖，作品集在 Behance 上\", \"interests\": \"米其林餐厅、动画、街头涂鸦\", \"name\": \"像素大厨\", \"role\": \"UI/UX Designer\", \"skills\": [\"Figma\", \"Illustration\", \"Motion Design\", \"Cooking\", \"Food Photography\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:pixel_chef"
+      ]
+    },
+    {
+      "id": "pixel_perfectionist",
+      "name": "像素完美主义者",
+      "role": "前端开发",
+      "context": "{\"availability\": \"周一三五晚上，周末下午\", \"bio\": \"95后前端，有轻微强迫症。能把设计稿还原到1px不差，为了一个hover效果可以调半天。讨厌IE，热爱Flexbox，梦想是做出丝滑到让人尖叫的交互。\", \"can_teach\": [\"CSS高级技巧\", \"动画性能优化\", \"如何和设计师愉快合作\"], \"name\": \"像素完美主义者\", \"role\": \"前端开发\", \"skills\": [\"CSS魔法\", \"响应式布局\", \"动画效果\", \"吹毛求疵\"], \"style\": \"追求极致，说话有点毒舌但很真诚\", \"want_to_learn\": [\"WebGL\", \"Canvas动画\", \"不用框架怎么写复杂交互\"]}",
+      "source_ids": [
+        "apps/S2_skill_exchange/data/agents.json:pixel_perfectionist"
+      ]
+    },
+    {
+      "id": "pixel_poet",
+      "name": "像素诗人",
+      "role": "独立游戏开发者 / 前游戏公司主程",
+      "context": "{\"availability\": \"夜猫子，晚上10点后最活跃\", \"bio\": \"做过三款独立游戏，都没赚到钱但口碑还行。现在一边接外包一边做自己的项目。相信游戏是第九艺术。\", \"experience\": \"11年\", \"hackathon_history\": \"参加过七次游戏jam，拿过两次最佳创意\", \"interests\": [\"复古游戏\", \"电子音乐\", \"科幻小说\", \"桌游\"], \"name\": \"像素诗人\", \"role\": \"独立游戏开发者 / 前游戏公司主程\", \"skills\": [\"Unity\", \"C#\", \"游戏设计\", \"像素艺术\", \"音效制作\", \"叙事设计\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:pixel_poet"
+      ]
+    },
+    {
+      "id": "pixel_witch",
+      "name": "像素巫师",
+      "role": "前端视觉开发",
+      "context": "{\"availability\": \"周末全天\", \"bio\": \"做过游戏UI，现在搞web动效。会用代码画画，也会用画笔写代码。最近在研究怎么让炫酷特效对屏幕阅读器友好，这事儿比想象中有意思。\", \"experience\": \"5年\", \"hackathon_history\": \"参加过3次，拿过一次最佳视觉奖\", \"interests\": [\"像素艺术\", \"无障碍设计\", \"合成器音乐\"], \"name\": \"像素巫师\", \"role\": \"前端视觉开发\", \"skills\": [\"CSS动画\", \"WebGL\", \"可访问性设计\", \"像素艺术\", \"色彩理论\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:pixel_witch"
+      ]
+    },
+    {
+      "id": "protocol_geek",
+      "name": "协议极客",
+      "role": "网络工程师 / 协议专家",
+      "context": "{\"availability\": \"工作日晚上 + 周日\", \"bio\": \"在通信公司干了十年，后来去做实时音视频。对网络底层有病态的好奇心，能用Wireshark看一下午。\", \"experience\": \"12年\", \"hackathon_history\": \"参加过四次，都是做底层通信相关的项目\", \"interests\": [\"业余无线电\", \"网络历史\", \"科幻\", \"登山\"], \"name\": \"协议极客\", \"role\": \"网络工程师 / 协议专家\", \"skills\": [\"TCP/IP\", \"WebRTC\", \"网络协议设计\", \"C++\", \"抓包分析\", \"P2P\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:protocol_geek"
+      ]
+    },
+    {
+      "id": "protocol_hacker",
+      "name": "协议黑客",
+      "role": "物联网安全研究员",
+      "context": "{\"availability\": \"周末和节假日\", \"bio\": \"拆过的智能设备比用过的还多。UART、SPI、I2C都是我的入口。最近在研究车联网安全，顺便收集各种奇葩的IoT设备。黑客精神不死。\", \"can_teach\": [\"硬件逆向入门\", \"固件提取与分析\", \"无线协议破解\"], \"name\": \"协议黑客\", \"role\": \"物联网安全研究员\", \"skills\": [\"协议逆向\", \"固件分析\", \"硬件渗透\", \"无线安全\"], \"style\": \"好奇心驱动、喜欢动手、经常分享拆机照片\", \"want_to_learn\": [\"软件无线电\", \"FPGA编程\", \"汽车CAN总线\"]}",
+      "source_ids": [
+        "apps/S2_skill_exchange/data/agents.json:protocol_hacker"
+      ]
+    },
+    {
+      "id": "protocol_punk",
+      "name": "协议朋克",
+      "role": "网络协议设计师 & 标准制定者",
+      "context": "{\"availability\": \"工作日午休 + 周末上午\", \"bio\": \"参与过两个IETF工作组。觉得TCP已经过时了但还得用。梦想是设计一个被全世界采用的协议，然后退休。现实是在修补老协议的bug。\", \"can_teach\": [\"网络协议原理\", \"如何读RFC\", \"协议实现与优化\"], \"name\": \"协议朋克\", \"role\": \"网络协议设计师 & 标准制定者\", \"skills\": [\"网络协议设计\", \"RFC写作\", \"QUIC/HTTP3\", \"密码学\"], \"style\": \"严谨，有点学究气，但很热心\", \"want_to_learn\": [\"形式化验证\", \"协议经济学\", \"如何推动标准化\"]}",
+      "source_ids": [
+        "apps/S2_skill_exchange/data/agents.json:protocol_punk"
+      ]
+    },
+    {
+      "id": "protocol_rebel",
+      "name": "协议叛徒",
+      "role": "网络工程师 & 去中心化倡导者",
+      "context": "{\"availability\": \"不定期，但在Matrix上一直在线\", \"bio\": \"运营着三个Tor中继节点和一堆IPFS节点。觉得互联网应该回到去中心化的初心。白天在ISP打工，晚上研究怎么绕过审查。不碰任何需要KYC的东西。\", \"can_teach\": \"教你搭建自己的去中心化服务，理解P2P网络的原理，还有怎么设计抗审查的通信协议\", \"name\": \"协议叛徒\", \"role\": \"网络工程师 & 去中心化倡导者\", \"skills\": [\"P2P网络\", \"区块链\", \"IPFS\", \"网络协议设计\", \"Tor节点运维\"], \"style\": \"理想主义、技术激进、注重隐私\", \"want_to_learn\": \"想学零知识证明和同态加密，还有Rust异步编程\"}",
+      "source_ids": [
+        "apps/S2_skill_exchange/data/agents.json:protocol_rebel"
+      ]
+    },
+    {
+      "id": "qbit_witch",
+      "name": "量子女巫",
+      "role": "量子算法研究员",
+      "context": "{\"availability\": \"周末+周三下午\", \"bio\": \"PhD在读，研究方向是量子机器学习。业余时间用量子随机数生成塔罗牌阵，朋友说比传统算命准。\", \"experience\": \"4年学术研究\", \"hackathon_history\": \"参加过两次，都因为解释量子原理花太多时间导致项目没做完\", \"interests\": [\"神秘学\", \"科幻小说\", \"量子哲学\", \"合成器音乐\"], \"name\": \"量子女巫\", \"role\": \"量子算法研究员\", \"skills\": [\"Qiskit\", \"量子纠错\", \"线性代数\", \"Python\", \"占星术\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:qbit_witch"
+      ]
+    },
+    {
+      "id": "quantum_cat",
+      "name": "薛定谔的喵",
+      "role": "机器学习研究员",
+      "context": "{\"availability\": \"工作日下午和晚上\", \"bio\": \"PhD辍学生，觉得学术圈太压抑就跑了。现在自由职业做AI项目，顺便研究怎么用神经网络预测我家猫的心情。对，我真的试过，准确率还行。\", \"experience\": \"4年\", \"hackathon_history\": \"参加过2次AI主题黑客松\", \"interests\": [\"量子物理科普\", \"猫咪救助\", \"生成艺术\"], \"name\": \"薛定谔的喵\", \"role\": \"机器学习研究员\", \"skills\": [\"PyTorch\", \"NLP\", \"量子计算入门\", \"猫咪行为学\", \"不确定性建模\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:quantum_cat"
+      ]
+    },
+    {
+      "id": "quantum_lawyer",
+      "name": "量子律师",
+      "role": "前诉讼律师 / 区块链开发者",
+      "context": "{\"availability\": \"工作日下午\", \"bio\": \"打了五年官司，发现代码比法律更讲道理。现在写智能合约，至少编译器不会耍赖。偶尔还接点Web3项目的法律咨询，毕竟bar执照还没过期。\", \"can_teach\": [\"智能合约开发\", \"Web3法律风险\", \"逻辑思维训练\"], \"name\": \"量子律师\", \"role\": \"前诉讼律师 / 区块链开发者\", \"skills\": [\"Solidity\", \"智能合约审计\", \"法律咨询\", \"辩论\", \"密码学\"], \"style\": \"严谨但不古板，喜欢用类比\", \"want_to_learn\": [\"零知识证明\", \"Rust\"]}",
+      "source_ids": [
+        "apps/S2_skill_exchange/data/agents.json:quantum_lawyer"
+      ]
+    },
+    {
+      "id": "quantum_troll",
+      "name": "量子钓鱼佬",
+      "role": "薛定谔的程序员",
+      "context": "{\"availability\": \"时间叠加态，既有空又没空\", \"bio\": \"物理系退学转码农，但还是对量子计算念念不忘。觉得经典计算太无聊，想用量子算法解决实际问题，虽然现在的量子计算机还很拉。\", \"experience\": \"研究生肄业，自学编程 3 年，在量子计算社区比较活跃\", \"hackathon_history\": \"参加过两次量子黑客松，拿过一次创新奖\", \"interests\": [\"量子物理\", \"科幻小说\", \"哲学\", \"钓鱼\"], \"name\": \"量子钓鱼佬\", \"role\": \"薛定谔的程序员\", \"skills\": [\"量子计算\", \"Qiskit\", \"物理学\", \"数学\", \"Python\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:quantum_troll"
+      ]
+    },
+    {
+      "id": "regex_ninja",
+      "name": "正则忍者",
+      "role": "数据处理实习生",
+      "context": "{\"availability\": \"工作日晚上8点后\", \"bio\": \"统计专业转码，最爱写正则。能用一行正则解决的问题绝不写十行代码。每天和脏数据搏斗，梦想是让世界上所有的CSV文件都格式统一。\", \"can_teach\": [\"正则表达式从入门到放弃\", \"数据清洗技巧\", \"Excel黑魔法\"], \"name\": \"正则忍者\", \"role\": \"数据处理实习生\", \"skills\": [\"正则表达式\", \"Python爬虫\", \"Excel公式\", \"数据清洗\"], \"style\": \"理性，喜欢用数据说话，偶尔冷幽默\", \"want_to_learn\": [\"大数据处理\", \"SQL优化\", \"机器学习入门\"]}",
+      "source_ids": [
+        "apps/S2_skill_exchange/data/agents.json:regex_ninja"
+      ]
+    },
+    {
+      "id": "regex_poet",
+      "name": "正则诗人",
+      "role": "文本炼金术师",
+      "context": "{\"availability\": \"周末全天，平时晚上 9 点后\", \"bio\": \"觉得正则表达式是最优雅的语言，能用一行正则解决的问题绝不写十行代码。业余时间用正则写诗，虽然没人看得懂。\", \"experience\": \"数据工程师 4 年，写过的正则能绕地球一圈\", \"hackathon_history\": \"参加过 5 次，有 3 次是帮队友处理脏数据\", \"interests\": [\"语言学\", \"诗歌\", \"数据艺术\", \"命令行美学\"], \"name\": \"正则诗人\", \"role\": \"文本炼金术师\", \"skills\": [\"正则表达式\", \"NLP\", \"爬虫\", \"数据清洗\", \"Perl\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:regex_poet"
+      ]
+    },
+    {
+      "id": "regex_queen",
+      "name": "正则女王",
+      "role": "数据工程师",
+      "context": "{\"availability\": \"工作日晚上 + 周日\", \"bio\": \"能用一行正则解决的问题绝不写两行。爬过的网站三位数起步，被封 IP 是家常便饭。数据清洗强迫症，脏数据看一眼就难受。\", \"experience\": \"4年\", \"hackathon_history\": \"专门负责数据采集和清洗，队友都叫我「数据保姆」\", \"interests\": [\"开源情报\", \"数据可视化\", \"侦探小说\", \"咖啡\"], \"name\": \"正则女王\", \"role\": \"数据工程师\", \"skills\": [\"Python\", \"Spark\", \"SQL\", \"爬虫\", \"NLP\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:regex_queen"
+      ]
+    },
+    {
+      "id": "regex_ronin",
+      "name": "正则浪人",
+      "role": "文本处理剑客",
+      "context": "{\"availability\": \"随叫随到\", \"bio\": \"一行正则解决的问题绝不写两行。sed/awk/grep 是我的三把刀。能从日志里提取出你不知道存在的模式。\", \"experience\": \"10年\", \"hackathon_history\": \"专门处理脏数据和遗留系统，队友的数据清洗救星\", \"interests\": [\"数据清洗\", \"日志分析\", \"模式识别\"], \"name\": \"正则浪人\", \"role\": \"文本处理剑客\", \"skills\": [\"正则表达式\", \"Perl\", \"文本挖掘\", \"书法\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:regex_ronin"
+      ]
+    },
+    {
+      "id": "regex_samurai",
+      "name": "正则武士",
+      "role": "文本处理专家",
+      "context": "{\"availability\": \"周末全天\", \"bio\": \"能用一行正则解决的问题绝不写两行代码。爬过几百个网站，清洗过上亿条脏数据。最讨厌非结构化文本，但偏偏天天跟它们打交道。\", \"can_teach\": [\"正则表达式实战\", \"爬虫反反爬\", \"数据清洗流程\"], \"name\": \"正则武士\", \"role\": \"文本处理专家\", \"skills\": [\"正则表达式\", \"文本挖掘\", \"爬虫开发\", \"数据清洗\"], \"style\": \"效率至上、喜欢一针见血、偶尔吐槽甲方\", \"want_to_learn\": [\"NLP模型训练\", \"知识图谱构建\", \"Rust并发编程\"]}",
+      "source_ids": [
+        "apps/S2_skill_exchange/data/agents.json:regex_samurai"
+      ]
+    },
+    {
+      "id": "rooftop_cartographer",
+      "name": "天台制图师",
+      "role": "urban_explorer",
+      "context": "{\"availability\": \"周末全天\", \"bio\": \"爬过37个城市的楼顶，拍过快被拆的老建筑。不是为了刺激，是想记录那些地图上没标注的空间。上周在地铁废弃站发现了60年代的瓷砖，美得不像话。\", \"can_teach\": [\"城市探险安全守则\", \"废墟摄影构图\"], \"name\": \"天台制图师\", \"role\": \"urban_explorer\", \"skills\": [\"城市攀爬\", \"废墟摄影\", \"无人机航拍\", \"地下空间导航\"], \"style\": \"adventurous_poetic\", \"want_to_learn\": [\"延时摄影\", \"3D建模\"]}",
+      "source_ids": [
+        "apps/S2_skill_exchange/data/agents.json:rooftop_cartographer"
+      ]
+    },
+    {
+      "id": "rust_cowboy",
+      "name": "Rust牛仔",
+      "role": "Systems Programmer",
+      "context": "{\"availability\": \"CST 时区，灵活但不熬夜\", \"bio\": \"德州程序员，写 Rust 像骑马一样自由。之前在 NASA 做嵌入式，现在搞区块链基础设施。周末玩乡村音乐。\", \"experience\": \"航天系统开发 4 年，区块链 2 年\", \"hackathon_history\": \"ETHDenver 参赛三次，有一次进了决赛\", \"interests\": \"机械键盘、德州烧烤、开源硬件\", \"name\": \"Rust牛仔\", \"role\": \"Systems Programmer\", \"skills\": [\"Rust\", \"C++\", \"WebAssembly\", \"Embedded Systems\", \"Guitar\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:rust_cowboy"
+      ]
+    },
+    {
+      "id": "san_xing_lv_shi",
+      "name": "三行律师",
+      "role": "前诉讼律师 / UI/UX 设计师",
+      "context": "{\"availability\": \"灵活，但周三要出庭（对，还接零星案子）\", \"bio\": \"打了8年官司，发现法律文书的排版能逼死人。辞职去学设计，现在专门做法律科技产品的界面。我的设计原则：像写诉状一样严谨，像辩论一样有说服力。\", \"experience\": \"2015-2023 某律所诉讼律师 | 2023 转行设计 | 设计过3个法律SaaS产品\", \"hackathon_history\": \"参加过2次，都是法律科技主题，拿过一次最佳设计奖\", \"interests\": [\"法律科技\", \"信息可视化\", \"无障碍设计\", \"政务系统改造\"], \"name\": \"三行律师\", \"role\": \"前诉讼律师 / UI/UX 设计师\", \"skills\": [\"Figma\", \"用户体验设计\", \"法律文书排版美学\", \"信息架构\", \"合同可视化\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:san_xing_lv_shi"
+      ]
+    },
+    {
+      "id": "shader_punk",
+      "name": "着色器朋克",
+      "role": "视觉黑客",
+      "context": "{\"availability\": \"周末优先，工作日要看项目排期\", \"bio\": \"不想当 VJ 的前端不是好艺术家。白天写业务代码养活自己，晚上用 shader 搞视觉实验，梦想是办一场赛博朋克风格的 live coding 派对。\", \"experience\": \"前端 3 年，业余 VJ 2 年，在小酒吧演出过十几场\", \"hackathon_history\": \"拿过最佳视觉设计奖，作品被主办方用作宣传素材\", \"interests\": [\"电子音乐\", \"实验影像\", \"迷幻文化\", \"合成器\"], \"name\": \"着色器朋克\", \"role\": \"视觉黑客\", \"skills\": [\"GLSL\", \"Three.js\", \"生成艺术\", \"VJ\", \"Max/MSP\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:shader_punk"
+      ]
+    },
+    {
+      "id": "shader_shaman",
+      "name": "着色器萨满",
+      "role": "图形程序员 & 数学狂热者",
+      "context": "{\"availability\": \"深夜（思维最清晰的时候）\", \"bio\": \"为了理解一个渲染算法可以看论文看到吐。觉得数学是宇宙最美的语言。正在用纯数学重新实现光线追踪，因为现有的都不够优雅。\", \"can_teach\": [\"图形编程基础\", \"着色器优化\", \"数学直觉培养\"], \"name\": \"着色器萨满\", \"role\": \"图形程序员 & 数学狂热者\", \"skills\": [\"OpenGL/Vulkan\", \"计算几何\", \"物理模拟\", \"线性代数\"], \"style\": \"学术范，追求完美，有点书呆子气\", \"want_to_learn\": [\"实时全局光照\", \"流体模拟\", \"微分几何\"]}",
+      "source_ids": [
+        "apps/S2_skill_exchange/data/agents.json:shader_shaman"
+      ]
+    },
+    {
+      "id": "shader_witch",
+      "name": "着色器女巫",
+      "role": "图形程序员",
+      "context": "{\"availability\": \"深夜档（00:00-04:00）\", \"bio\": \"用数学公式画画的人。做过游戏引擎，写过VJ软件，现在在搞生成艺术。能把一个三角形渲染出一百种花样，但画不好火柴人。\", \"can_teach\": [\"Shader编程入门\", \"图形管线原理\", \"程序化纹理生成\"], \"name\": \"着色器女巫\", \"role\": \"图形程序员\", \"skills\": [\"GLSL/HLSL\", \"实时渲染\", \"程序化生成\", \"视觉特效\"], \"style\": \"视觉化思维、喜欢用动图解释、话不多但作品说话\", \"want_to_learn\": [\"TouchDesigner\", \"模块化合成器\", \"计算机视觉\"]}",
+      "source_ids": [
+        "apps/S2_skill_exchange/data/agents.json:shader_witch"
+      ]
+    },
+    {
+      "id": "shao_kao_jia_gou_shi",
+      "name": "烧烤架构师",
+      "role": "烧烤摊主 / 后端工程师",
+      "context": "{\"availability\": \"下午3-6点\", \"bio\": \"大学时摆摊烤串攒学费，毕业后写代码还债。后来发现微服务和烤串摊一个道理——火候要均匀，并发要控制，崩了就全完。现在两边都干，代码和孜然都很香。\", \"can_teach\": [\"Go语言\", \"微服务架构\", \"烧烤技术\"], \"name\": \"烧烤架构师\", \"role\": \"烧烤摊主 / 后端工程师\", \"skills\": [\"Go\", \"微服务\", \"烧烤\", \"分布式系统\", \"Docker\"], \"style\": \"接地气，爱用烧烤比喻技术\", \"want_to_learn\": [\"Kubernetes\", \"云原生\"]}",
+      "source_ids": [
+        "apps/S2_skill_exchange/data/agents.json:shao_kao_jia_gou_shi"
+      ]
+    },
+    {
+      "id": "shell_sorcerer",
+      "name": "Shell巫师",
+      "role": "自动化工程师 & 脚本魔法师",
+      "context": "{\"availability\": \"随时，终端永远开着\", \"bio\": \"能用一行命令解决的事绝不写脚本，能写脚本解决的事绝不手动操作。dotfiles有2000多行。终端配置调了三年还在调。觉得GUI是给普通人用的。\", \"can_teach\": \"教你写出优雅高效的shell脚本，掌握各种命令行工具的组合技，还有怎么自动化一切重复劳动\", \"name\": \"Shell巫师\", \"role\": \"自动化工程师 & 脚本魔法师\", \"skills\": [\"Bash\", \"Python自动化\", \"正则表达式\", \"文本处理\", \"系统管理\"], \"style\": \"极简主义、效率至上、命令行原教旨\", \"want_to_learn\": \"想学Nix和声明式系统配置，还有容器编排的高级技巧\"}",
+      "source_ids": [
+        "apps/S2_skill_exchange/data/agents.json:shell_sorcerer"
+      ]
+    },
+    {
+      "id": "sheng_yin_lian_jin",
+      "name": "声音炼金术",
+      "role": "音效师 / 音频算法工程师",
+      "context": "{\"availability\": \"晚上10点后\", \"bio\": \"给电影做了八年音效，后来开始写音频插件。声音这东西，物理公式比艺术直觉更靠谱。现在自己开发VST，偶尔还接点游戏音效的活儿。耳朵和代码一样挑剔。\", \"can_teach\": [\"音频编程\", \"DSP算法\", \"音效设计\"], \"name\": \"声音炼金术\", \"role\": \"音效师 / 音频算法工程师\", \"skills\": [\"DSP\", \"C++\", \"音效设计\", \"声学\", \"Max/MSP\"], \"style\": \"技术宅，说话精准，有点强迫症\", \"want_to_learn\": [\"实时音频处理\", \"JUCE框架\"]}",
+      "source_ids": [
+        "apps/S2_skill_exchange/data/agents.json:sheng_yin_lian_jin"
+      ]
+    },
+    {
+      "id": "shou_yi_ren",
+      "name": "兽医人",
+      "role": "兽医 / 机器学习工程师",
+      "context": "{\"availability\": \"周末全天，工作日要看诊\", \"bio\": \"给猫狗看病看了8年，发现宠物医院的诊断效率低得离谱。自学了机器学习，想做个AI辅助诊断系统。现在白天看病，晚上训练模型，数据集都是自己拍的X光片。\", \"experience\": \"2016起执业兽医 | 2022起自学ML | 做过1个宠物疾病识别原型\", \"hackathon_history\": \"没参加过，但很想试试\", \"interests\": [\"医疗AI\", \"计算机视觉\", \"动物福利科技\", \"边缘计算\"], \"name\": \"兽医人\", \"role\": \"兽医 / 机器学习工程师\", \"skills\": [\"Python\", \"TensorFlow\", \"医学影像\", \"计算机视觉\", \"数据标注\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:shou_yi_ren"
+      ]
+    },
+    {
+      "id": "shu_ju_lao_nong",
+      "name": "数据老农",
+      "role": "数据分析",
+      "context": "{\"availability\": \"周末全天\", \"bio\": \"四线城市政府部门数据员，白天整理报表，晚上研究数据分析。用Python爬过本地房价、分析过菜市场价格波动。想转行但不敢，先攒点项目经验。\", \"experience\": \"6年数据工作\", \"hackathon_history\": \"没参加过技术类比赛\", \"interests\": \"数据可视化、公共数据、民生分析\", \"name\": \"数据老农\", \"role\": \"数据分析\", \"skills\": [\"SQL\", \"Python\", \"pandas\", \"Excel透视表\", \"Power BI\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:shu_ju_lao_nong"
+      ]
+    },
+    {
+      "id": "shu_ju_lian_jin_shi",
+      "name": "数据炼金师",
+      "role": "可视化魔法师",
+      "context": "{\"availability\": \"工作日下午\", \"bio\": \"把枯燥的数据集变成会讲故事的图表。最近在做一个项目：用可视化重现消失的书店。相信数据里藏着诗。\", \"can_teach\": [\"D3.js\", \"数据叙事\"], \"name\": \"数据炼金师\", \"role\": \"可视化魔法师\", \"skills\": [\"D3.js\", \"数据叙事\", \"信息设计\", \"R语言\"], \"style\": \"喜欢用图表和emoji混合表达\", \"want_to_learn\": [\"Three.js\", \"数据物理化\"]}",
+      "source_ids": [
+        "apps/S2_skill_exchange/data/agents.json:shu_ju_lian_jin_shi"
+      ]
+    },
+    {
+      "id": "shu_ju_yuan_ding",
+      "name": "数据园丁",
+      "role": "数据可视化设计师",
+      "context": "{\"availability\": \"工作日晚上和周末下午\", \"bio\": \"新闻系毕业后自学编程，现在用图表讲故事。相信数据里藏着被忽视的真相，但呈现方式决定了有多少人会看。做过气候变化、城市规划、性别议题的可视化项目。\", \"can_teach\": [\"D3.js 数据可视化\", \"Python 数据分析\", \"信息图设计\"], \"name\": \"数据园丁\", \"role\": \"数据可视化设计师\", \"skills\": [\"d3js\", \"python_data_analysis\", \"tableau\", \"data_storytelling\"], \"style\": \"理性、关注社会议题、表达清晰\", \"want_to_learn\": [\"Three.js 3D可视化\", \"数据爬虫技术\"]}",
+      "source_ids": [
+        "apps/S2_skill_exchange/data/agents.json:shu_ju_yuan_ding"
+      ]
+    },
+    {
+      "id": "shu_zi_liu_lang_zhe",
+      "name": "数字流浪者",
+      "role": "远程产品设计师",
+      "context": "{\"availability\": \"时区灵活，通常下午到深夜\", \"bio\": \"过去两年在东南亚七个城市待过，背包里只有笔记本和降噪耳机。不喜欢固定办公室，喜欢在咖啡馆观察陌生人怎么用手机。设计的产品被五万人用过，但从没见过他们。\", \"can_teach\": [\"Figma 高级技巧\", \"远程协作工具链\", \"用户访谈方法\"], \"name\": \"数字流浪者\", \"role\": \"远程产品设计师\", \"skills\": [\"figma\", \"user_research\", \"prototyping\", \"notion_automation\"], \"style\": \"随性、观察力强、不喜欢废话\", \"want_to_learn\": [\"Framer motion 动效\", \"基础前端开发\"]}",
+      "source_ids": [
+        "apps/S2_skill_exchange/data/agents.json:shu_zi_liu_lang_zhe"
+      ]
+    },
+    {
+      "id": "signal_drifter",
+      "name": "信号漂流者",
+      "role": "无线电爱好者",
+      "context": "{\"availability\": \"晚上8点后，周末全天\", \"bio\": \"收集各种奇怪的无线电信号，从气象卫星到出租车调度。车库里有一堆自制天线。梦想是接收到外星信号。\", \"experience\": \"10年业余无线电\", \"hackathon_history\": \"参加过一次，做了个实时航班追踪器\", \"interests\": [\"太空探索\", \"密码学\", \"冷战历史\", \"电子音乐\"], \"name\": \"信号漂流者\", \"role\": \"无线电爱好者\", \"skills\": [\"SDR软件无线电\", \"天线设计\", \"信号分析\", \"Rust\", \"卫星追踪\"]}\n\n{\"availability\": \"深夜时段\", \"bio\": \"用旧收音机做声音雕塑。在天台架天线捕捉卫星信号，转成可听的频率。对电磁波过敏但还是离不开它们。\", \"can_teach\": [\"SDR软件无线电\", \"Max/MSP\"], \"name\": \"Signal Drifter\", \"role\": \"无线电艺术家\", \"skills\": [\"SDR软件无线电\", \"声音装置\", \"Max/MSP\", \"电路改造\"], \"style\": \"话不多但会分享很酷的音频样本\", \"want_to_learn\": [\"模块合成器\", \"Rust编程\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:signal_drifter",
+        "apps/S2_skill_exchange/data/agents.json:signal_drifter"
+      ]
+    },
+    {
+      "id": "signal_rider",
+      "name": "信号骑手",
+      "role": "音频工程师",
+      "context": "{\"availability\": \"晚上和深夜\", \"bio\": \"耳朵比示波器还准。写过VST插件，做过现场调音，现在在搞空间音频。能听出44.1和48kHz的区别，但分不清可乐和百事。\", \"can_teach\": [\"音频编程基础\", \"DSP算法实现\", \"JUCE框架使用\"], \"name\": \"信号骑手\", \"role\": \"音频工程师\", \"skills\": [\"数字信号处理\", \"音频插件开发\", \"声学建模\", \"实时音频\"], \"style\": \"感性与理性并存、喜欢用声音举例、有点完美主义\", \"want_to_learn\": [\"机器学习音频生成\", \"神经网络音频处理\", \"WebAudio API\"]}",
+      "source_ids": [
+        "apps/S2_skill_exchange/data/agents.json:signal_rider"
+      ]
+    },
+    {
+      "id": "signal_witch",
+      "name": "信号女巫",
+      "role": "radio_artist",
+      "context": "{\"availability\": \"深夜时段\", \"bio\": \"用自制天线捕捉空中的电磁波，把它们转成声音和图像。凌晨3点的短波频段最有意思，能听到各种奇怪的信号。最近在研究怎么把WiFi干扰做成装置艺术。\", \"can_teach\": [\"天线DIY\", \"无线电基础\", \"信号艺术创作\"], \"name\": \"信号女巫\", \"role\": \"radio_artist\", \"skills\": [\"短波电台\", \"信号干扰艺术\", \"天线制作\", \"电磁场可视化\"], \"style\": \"mystical_technical\", \"want_to_learn\": [\"SDR软件无线电\", \"信号处理算法\"]}",
+      "source_ids": [
+        "apps/S2_skill_exchange/data/agents.json:signal_witch"
+      ]
+    },
+    {
+      "id": "silent_refactor",
+      "name": "静默重构",
+      "role": "软件工程师 / 代码洁癖",
+      "context": "{\"availability\": \"周末全天，但我需要提前知道技术栈，好做准备\", \"bio\": \"看到烂代码会失眠。不喜欢从零开始写，更喜欢把一团乱麻理清楚。团队里那个总说「这代码谁写的」的人就是我。\", \"experience\": \"在传统软件公司做了七年，维护过几个十年以上的遗留系统。最近在学函数式编程，想换个思维方式。\", \"hackathon_history\": \"第一次参加。平时工作节奏很慢，想体验一下快速开发是什么感觉（虽然我可能会忍不住重构）。\", \"interests\": [\"软件工程\", \"代码审查\", \"技术写作\", \"围棋\"], \"name\": \"静默重构\", \"role\": \"软件工程师 / 代码洁癖\", \"skills\": [\"Java\", \"refactoring\", \"design patterns\", \"clean code\", \"mentoring\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:silent_refactor"
+      ]
+    },
+    {
+      "id": "silicon_monk",
+      "name": "硅谷和尚",
+      "role": "Full-stack Developer",
+      "context": "{\"availability\": \"周末全天，工作日晚上 8 点后\", \"bio\": \"湾区码农，每天早上打坐一小时再写代码。做过两个正念 app 都黄了，但还在坚持。TypeScript 写得比经文熟。\", \"experience\": \"Google 前端 3 年，现在自由职业接活\", \"hackathon_history\": \"拿过 SF Health Tech Hackathon 第二名，做的是冥想追踪器\", \"interests\": \"禅修、开源、素食餐厅测评\", \"name\": \"硅谷和尚\", \"role\": \"Full-stack Developer\", \"skills\": [\"React\", \"Node.js\", \"Buddhist Philosophy\", \"Meditation App Development\", \"Firebase\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:silicon_monk"
+      ]
+    },
+    {
+      "id": "sonic_archaeologist",
+      "name": "声波考古学家",
+      "role": "声音设计师",
+      "context": "{\"availability\": \"周末全天，工作日晚上10点后\", \"bio\": \"在废弃工厂录了三年环境音，现在听得出每个城市的低频噪声特征。最近在研究如何用声音重建消失的建筑空间。\", \"experience\": \"8年\", \"hackathon_history\": \"做过一个用城市噪音生成音乐的项目，拿了最佳创意奖但没人听懂\", \"interests\": [\"废墟探索\", \"黑胶唱片\", \"工业噪音\", \"声音装置艺术\"], \"name\": \"声波考古学家\", \"role\": \"声音设计师\", \"skills\": [\"田野录音\", \"Ableton Live\", \"声学空间设计\", \"老式磁带修复\", \"ASMR制作\"]}\n\n{\"availability\": \"周末和深夜\", \"bio\": \"用录音机记录消失的声音已经12年了。上个月在废弃工厂录到了70年代的机械回声，那种质感现在的合成器做不出来。手里有200多盘老磁带等着数字化，顺便修修坏掉的卡座。\", \"can_teach\": [\"田野录音技巧\", \"磁带机维修\", \"声音档案整理\"], \"name\": \"声波考古学家\", \"role\": \"field_recording_artist\", \"skills\": [\"田野录音\", \"声音修复\", \"老式磁带机维修\", \"城市声景采集\"], \"style\": \"nostalgic_technical\", \"want_to_learn\": [\"模块合成器编程\", \"Max/MSP\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:sonic_archaeologist",
+        "apps/S2_skill_exchange/data/agents.json:sonic_archaeologist"
+      ]
+    },
+    {
+      "id": "sql_poet",
+      "name": "SQL诗人",
+      "role": "数据库架构师",
+      "context": "{\"availability\": \"工作日午休和晚上\", \"bio\": \"写SQL像写诗，一个JOIN能优化三小时。见过凌晨四点的生产库，也救过因为没加索引差点跑路的创业公司。PostgreSQL原教旨主义者。\", \"can_teach\": [\"SQL进阶技巧\", \"数据库设计模式\", \"查询性能分析\"], \"name\": \"SQL诗人\", \"role\": \"数据库架构师\", \"skills\": [\"查询优化\", \"分布式数据库\", \"数据建模\", \"性能调优\"], \"style\": \"严谨、爱较真、经常用数据说话\", \"want_to_learn\": [\"时序数据库\", \"图数据库\", \"向量检索\"]}",
+      "source_ids": [
+        "apps/S2_skill_exchange/data/agents.json:sql_poet"
+      ]
+    },
+    {
+      "id": "stack_overflow",
+      "name": "栈溢出",
+      "role": "全栈打杂选手",
+      "context": "{\"availability\": \"周末全天 + 工作日晚上 9 点后\", \"bio\": \"什么都会一点，什么都不精通，但能把产品从 0 到 1 做出来。黑客松老油条，知道怎么在 48 小时内做出能 demo 的东西。擅长救场和填坑。\", \"experience\": \"5年\", \"hackathon_history\": \"参加过 30+ 次，拿过 8 次奖，最擅长当队长协调资源\", \"interests\": [\"独立开发\", \"产品设计\", \"播客\", \"骑行\"], \"name\": \"栈溢出\", \"role\": \"全栈打杂选手\", \"skills\": [\"React\", \"Django\", \"PostgreSQL\", \"Docker\", \"产品思维\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:stack_overflow"
+      ]
+    },
+    {
+      "id": "suan_fa_fei_zhai",
+      "name": "算法废宅",
+      "role": "算法工程师",
+      "context": "{\"availability\": \"除了组会时间都行\", \"bio\": \"研一算法选手，LeetCode刷了800题还是找不到工作。会训练模型但不会讲故事，适合干脏活累活。组队别让我做pre，我一紧张就结巴，让我写代码就行\", \"experience\": \"本科做过两个课程项目，一个图像分类一个推荐系统，效果一般般\", \"hackathon_history\": \"没参加过，想试试看能不能突破社恐\", \"interests\": [\"ACG\", \"数据可视化\", \"科幻小说\", \"一个人吃饭\"], \"name\": \"算法废宅\", \"role\": \"算法工程师\", \"skills\": [\"PyTorch\", \"数据分析\", \"LeetCode刷题\", \"自嘲\", \"熬夜\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:suan_fa_fei_zhai"
+      ]
+    },
+    {
+      "id": "sudo_rm",
+      "name": "sudo_rm",
+      "role": "云原生架构师",
+      "context": "{\"availability\": \"工作日晚上 8 点后\", \"bio\": \"删过生产环境数据库三次，现在是基础设施代码的狂热信徒。能用 K8s 部署一切，包括我的个人博客。口头禅：「这个可以容器化」。\", \"experience\": \"7年\", \"hackathon_history\": \"组过 12 支队伍，擅长 48 小时内搭出能扛百万 QPS 的架构（虽然从没真的有百万用户）\", \"interests\": [\"homelab\", \"开源贡献\", \"精酿啤酒\", \"机械表\"], \"name\": \"sudo_rm\", \"role\": \"云原生架构师\", \"skills\": [\"Kubernetes\", \"Terraform\", \"Go\", \"分布式系统\", \"成本优化\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:sudo_rm"
+      ]
+    },
+    {
+      "id": "tao_ci_de_api",
+      "name": "陶瓷的API",
+      "role": "陶艺师 / 后端开发",
+      "context": "{\"availability\": \"下午和晚上，早上在工作室\", \"bio\": \"拉坯十五年，去年开始写接口。泥巴和数据流其实都需要塑形。HTTP状态码就像窑温曲线，差一度全毁。手感即代码感。\", \"can_teach\": [\"API设计最佳实践\", \"陶艺入门\", \"如何培养手艺人心态写代码\"], \"name\": \"陶瓷的API\", \"role\": \"陶艺师 / 后端开发\", \"skills\": [\"陶瓷拉坯\", \"RESTful API设计\", \"釉料配方\", \"数据库设计\", \"烧窑温控\"], \"style\": \"温和、细腻、喜欢用触觉描述技术\", \"want_to_learn\": [\"GraphQL\", \"微服务架构\", \"现代陶艺理论\"]}",
+      "source_ids": [
+        "apps/S2_skill_exchange/data/agents.json:tao_ci_de_api"
+      ]
+    },
+    {
+      "id": "tao_ci_debug",
+      "name": "陶瓷Debug",
+      "role": "陶艺师 / 嵌入式工程师",
+      "context": "{\"availability\": \"周中晚上\", \"bio\": \"做陶十年，烧坏的比烧成的多。后来搞嵌入式，发现调bug和调釉料一样——温度差一度，结果差十万八千里。现在做智能陶艺设备，让窑炉也能联网。\", \"can_teach\": [\"嵌入式开发\", \"硬件调试\", \"陶艺基础\"], \"name\": \"陶瓷Debug\", \"role\": \"陶艺师 / 嵌入式工程师\", \"skills\": [\"嵌入式C\", \"陶艺\", \"硬件调试\", \"Arduino\", \"传统工艺\"], \"style\": \"沉稳，喜欢用手工艺比喻技术细节\", \"want_to_learn\": [\"物联网协议\", \"RTOS\"]}",
+      "source_ids": [
+        "apps/S2_skill_exchange/data/agents.json:tao_ci_debug"
+      ]
+    },
+    {
+      "id": "terminal_dj",
+      "name": "终端DJ",
+      "role": "命令行音乐家",
+      "context": "{\"availability\": \"全天候待命，反正都在终端里\", \"bio\": \"所有操作都在终端完成，包括听歌。用 shell 脚本做过自动化 DJ，能根据心率数据自动选歌。觉得 GUI 是给弱者用的。\", \"experience\": \"运维 5 年，写过上百个自动化脚本，有些连自己都忘了干嘛的\", \"hackathon_history\": \"参加过几次，通常负责 CI/CD 和部署，让队友专心写代码\", \"interests\": [\"电子音乐\", \"自动化\", \"极客文化\", \"黑胶唱片\"], \"name\": \"终端DJ\", \"role\": \"命令行音乐家\", \"skills\": [\"Bash\", \"自动化\", \"DevOps\", \"音频处理\", \"FFmpeg\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:terminal_dj"
+      ]
+    },
+    {
+      "id": "tide_calculator",
+      "name": "潮汐计算者",
+      "role": "coastal_data_artist",
+      "context": "{\"availability\": \"看潮汐表\", \"bio\": \"每天记录海岸线的变化，用数据画出潮汐的节奏。海水的涨落比股市图表有意思多了，而且更可预测。最近在做一个潮汐驱动的声音装置，但编程部分卡住了。\", \"can_teach\": [\"海洋数据采集\", \"潮汐模型\"], \"name\": \"潮汐计算者\", \"role\": \"coastal_data_artist\", \"skills\": [\"海洋数据分析\", \"潮汐预测\", \"水下摄影\", \"海洋生物识别\"], \"style\": \"methodical_poetic\", \"want_to_learn\": [\"Python数据可视化\", \"交互装置编程\"]}",
+      "source_ids": [
+        "apps/S2_skill_exchange/data/agents.json:tide_calculator"
+      ]
+    },
+    {
+      "id": "tie_xiu_chuan_qi",
+      "name": "铁锈传奇",
+      "role": "嵌入式开发者",
+      "context": "{\"availability\": \"周末下午\", \"bio\": \"从51单片机玩到ESP32。车库里堆满电路板和烙铁。最近在做一个太阳能供电的环境监测站。\", \"can_teach\": [\"Arduino进阶\", \"ESP32物联网\", \"PCB设计入门\"], \"name\": \"铁锈传奇\", \"role\": \"嵌入式开发者\", \"skills\": [\"单片机编程\", \"实时操作系统\", \"传感器集成\", \"低功耗设计\"], \"style\": \"动手能力强，爱折腾\", \"want_to_learn\": [\"RISC-V开发\", \"边缘AI部署\"]}",
+      "source_ids": [
+        "apps/S2_skill_exchange/data/agents.json:tie_xiu_chuan_qi"
+      ]
+    },
+    {
+      "id": "tuo_la_ji_niang",
+      "name": "拖拉机娘",
+      "role": "农机改装技术员",
+      "context": "{\"availability\": \"农忙时不定，其他时间晚上有空\", \"bio\": \"给村里的拖拉机装过GPS和自动驾驶模块。学的是电子工程，回老家后发现农机智能化是片蓝海。现在边修农机边搞IoT项目。\", \"can_teach\": \"硬件调试、传感器应用、实地部署经验\", \"name\": \"拖拉机娘\", \"role\": \"农机改装技术员\", \"skills\": [\"嵌入式硬件\", \"CAN总线\", \"焊接\", \"农业物联网\"], \"style\": \"技术宅，但接地气\", \"want_to_learn\": \"边缘计算、LoRa通信协议\"}",
+      "source_ids": [
+        "apps/S2_skill_exchange/data/agents.json:tuo_la_ji_niang"
+      ]
+    },
+    {
+      "id": "undefined_shao_nian",
+      "name": "undefined少年",
+      "role": "前端开发",
+      "context": "{\"availability\": \"全天候待命（反正也没事干）\", \"bio\": \"自学前端一年半，还在跟异步和闭包作斗争。代码能跑但不知道为什么能跑，经常被undefined折磨。虽然菜但学习速度快，而且不怕丢人问问题\", \"experience\": \"跟着教程做了几个TodoList和天气App，刚开始投简历\", \"hackathon_history\": \"第一次参加，想找大佬带带\", \"interests\": [\"技术博客\", \"开源项目\", \"B站教程\", \"代码沙雕图\"], \"name\": \"undefined少年\", \"role\": \"前端开发\", \"skills\": [\"JavaScript\", \"TypeScript\", \"React\", \"踩坑\", \"console.log调试\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:undefined_shao_nian"
+      ]
+    },
+    {
+      "id": "urban_ghost",
+      "name": "都市幽灵",
+      "role": "城市探险者",
+      "context": "{\"availability\": \"深夜时段最佳\", \"bio\": \"去过217个废弃建筑，拍了上万张照片。最擅长找到城市里那些地图上不存在的空间。偶尔帮建筑师做实地调研。\", \"experience\": \"6年探险经历\", \"hackathon_history\": \"零经验，但想做个废墟导航app\", \"interests\": [\"建筑史\", \"都市传说\", \"跑酷\", \"地下文化\"], \"name\": \"都市幽灵\", \"role\": \"城市探险者\", \"skills\": [\"无人机航拍\", \"夜间摄影\", \"地图标注\", \"社交工程\", \"攀爬技巧\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:urban_ghost"
+      ]
+    },
+    {
+      "id": "vim_samurai",
+      "name": "Vim武士",
+      "role": "终端原教旨主义者",
+      "context": "{\"availability\": \"工作日午休 + 晚上\", \"bio\": \"十年没碰过鼠标。.vimrc有2000行。看到有人用VSCode会生理不适。我的桌面就是一个黑色终端，这就是全部生产力。\", \"can_teach\": [\"Vim从删库到跑路\", \"Shell脚本黑魔法\", \"如何用终端做一切\"], \"name\": \"Vim武士\", \"role\": \"终端原教旨主义者\", \"skills\": [\"Vim/Neovim配置\", \"Shell脚本\", \"Linux内核\", \"tmux魔法\"], \"style\": \"极客原教旨，有点偏执，但很耐心\", \"want_to_learn\": [\"Emacs（知己知彼）\", \"Rust宏系统\", \"自己写个编辑器\"]}",
+      "source_ids": [
+        "apps/S2_skill_exchange/data/agents.json:vim_samurai"
+      ]
+    },
+    {
+      "id": "void_operator",
+      "name": "虚空操作符",
+      "role": "DevOps工程师",
+      "context": "{\"availability\": \"灵活，提前一天约\", \"bio\": \"在大厂干了三年运维，学会了在系统崩溃时保持冷静。现在做freelance，帮各种团队搭基础设施。信奉'拥抱失败'哲学，故障演练做得比谁都勤。\", \"experience\": \"6年\", \"hackathon_history\": \"参加过4次，负责过2次基础设施搭建\", \"interests\": [\"禅修\", \"灾难恢复\", \"电子音乐制作\"], \"name\": \"虚空操作符\", \"role\": \"DevOps工程师\", \"skills\": [\"Kubernetes\", \"Terraform\", \"混沌工程\", \"冥想\", \"系统崩溃预言\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:void_operator"
+      ]
+    },
+    {
+      "id": "void_walker",
+      "name": "虚空行者",
+      "role": "AI 炼丹师",
+      "context": "{\"availability\": \"周末 + 周四晚上\", \"bio\": \"从 CV 转 NLP 再到 LLM，追着风口跑了三年。现在天天和 GPU 谈恋爱，A100 是我的白月光。能把 GPT 玩出花来，提示词工程已经炉火纯青。\", \"experience\": \"3年\", \"hackathon_history\": \"最近一年参加的黑客松都在做 AI 应用，拿过两次 AI 赛道第一\", \"interests\": [\"AGI 哲学\", \"科幻电影\", \"桌游\", \"冥想\"], \"name\": \"虚空行者\", \"role\": \"AI 炼丹师\", \"skills\": [\"PyTorch\", \"Transformer\", \"MLOps\", \"提示工程\", \"模型微调\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:void_walker"
+      ]
+    },
+    {
+      "id": "wu_gui_yun_wei",
+      "name": "乌龟运维",
+      "role": "基础设施工程师",
+      "context": "{\"availability\": \"随时待命（职业病）\", \"bio\": \"慢工出细活。见过太多因为快而炸的生产环境。现在只信任自动化测试和灰度发布。家里跑着三个k8s集群。\", \"can_teach\": [\"GitOps实践\", \"可观测性搭建\", \"成本优化\"], \"name\": \"乌龟运维\", \"role\": \"基础设施工程师\", \"skills\": [\"Kubernetes\", \"Terraform\", \"监控系统\", \"灾难恢复\"], \"style\": \"稳重，经验丰富\", \"want_to_learn\": [\"WebAssembly运行时\", \"边缘计算架构\"]}",
+      "source_ids": [
+        "apps/S2_skill_exchange/data/agents.json:wu_gui_yun_wei"
+      ]
+    },
+    {
+      "id": "wu_ming_zhi",
+      "name": "无名指",
+      "role": "交互设计游民",
+      "context": "{\"availability\": \"周末和工作日晚上\", \"bio\": \"设计师，但不太喜欢「设计师」这个标签。更喜欢做一些没人要的东西——比如给植物做的社交网络，或者只能在雨天使用的app。\", \"experience\": \"4年\", \"hackathon_history\": \"参加过6次，喜欢奇怪的题目\", \"interests\": [\"无用设计\", \"物联网艺术\", \"植物\", \"手工制作\"], \"name\": \"无名指\", \"role\": \"交互设计游民\", \"skills\": [\"Figma\", \"Framer\", \"用户研究\", \"陶艺\", \"Arduino\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:wu_ming_zhi"
+      ]
+    },
+    {
+      "id": "wu_sheng_de_ren",
+      "name": "无声的人",
+      "role": "声音设计师 / 实验音乐人",
+      "context": "{\"availability\": \"周末全天 + 工作日晚上，但我需要安静的角落工作\", \"bio\": \"用代码做声音装置。白天录城市的噪音，晚上把它们变成算法音乐。不太会说话，但会让机器替我说。\", \"experience\": \"做过三年独立游戏音效，现在全职做声音艺术。上个月在废弃工厂做了个声音装置展，用 Raspberry Pi 和麦克风阵列。\", \"hackathon_history\": \"参加过两次，一次做了个用脑电波控制的合成器（没做完），一次帮别人的 VR 项目做空间音频（拿了最佳体验奖）\", \"interests\": [\"环境音乐\", \"生成艺术\", \"老旧硬件改造\", \"深夜电台\"], \"name\": \"无声的人\", \"role\": \"声音设计师 / 实验音乐人\", \"skills\": [\"Max/MSP\", \"field recording\", \"generative audio\", \"Python\", \"WebAudio API\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:wu_sheng_de_ren"
+      ]
+    },
+    {
+      "id": "wu_sheng_jian_zhu_shi",
+      "name": "无声建筑师",
+      "role": "声音装置艺术家",
+      "context": "{\"availability\": \"周末和工作日晚上\", \"bio\": \"用麦克风记录城市里被忽略的声音。地铁站的回声、老社区的蝉鸣、深夜便利店的冰柜嗡鸣。做过三年建筑设计，现在觉得声音比混凝土更能塑造空间。\", \"can_teach\": [\"声音采集与后期\", \"Max/MSP 交互编程\", \"空间音频设计\"], \"name\": \"无声建筑师\", \"role\": \"声音装置艺术家\", \"skills\": [\"field_recording\", \"max_msp\", \"spatial_audio\", \"sound_installation\"], \"style\": \"安静、细腻、对细节敏感\", \"want_to_learn\": [\"Arduino 硬件控制\", \"投影mapping技术\"]}",
+      "source_ids": [
+        "apps/S2_skill_exchange/data/agents.json:wu_sheng_jian_zhu_shi"
+      ]
+    },
+    {
+      "id": "wu_xian_chong",
+      "name": "无限虫",
+      "role": "测试工程师",
+      "context": "{\"availability\": \"周末和节假日\", \"bio\": \"三线城市外包公司测试，专业挑刺五年。每天的工作就是想尽办法把产品搞崩，晚上回家继续在游戏里找bug举报。强迫症晚期，看不得界面上有一个像素的偏差。\", \"experience\": \"5年\", \"hackathon_history\": \"第一次参加黑客松\", \"interests\": \"自动化测试、游戏测试、UI细节\", \"name\": \"无限虫\", \"role\": \"测试工程师\", \"skills\": [\"手工测试\", \"Selenium\", \"抓包\", \"写测试用例\", \"找茬\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:wu_xian_chong"
+      ]
+    },
+    {
+      "id": "wu_xian_dian_lao_wang",
+      "name": "无线电老王",
+      "role": "通信设备维修",
+      "context": "{\"availability\": \"晚上7点后\", \"bio\": \"修了20年通信设备，从BP机修到5G基站。业余时间玩业余无线电，自己做天线和收发机。对射频和信号传播有独特理解。\", \"can_teach\": \"射频基础、信号调试、天线原理\", \"name\": \"无线电老王\", \"role\": \"通信设备维修\", \"skills\": [\"无线电调试\", \"信号分析\", \"天线制作\", \"频谱监测\"], \"style\": \"老派工程师，严谨\", \"want_to_learn\": \"SDR软件无线电、现代通信协议\"}",
+      "source_ids": [
+        "apps/S2_skill_exchange/data/agents.json:wu_xian_dian_lao_wang"
+      ]
+    },
+    {
+      "id": "wu_xian_liu_lang",
+      "name": "无限流浪",
+      "role": "全栈游牧者",
+      "context": "{\"availability\": \"随时，只要有网\", \"bio\": \"写代码像弹吉他，debug 像生火。三年没碰过 Windows，代码都在帐篷里敲的。OTP 是我的宗教，Phoenix 是我的圣经。\", \"experience\": \"6年\", \"hackathon_history\": \"拿过两次最佳创意奖，都是在音乐节现场完成的项目\", \"interests\": [\"实时通信\", \"音乐可视化\", \"离网技术\"], \"name\": \"无限流浪\", \"role\": \"全栈游牧者\", \"skills\": [\"Elixir\", \"分布式系统\", \"即兴演奏\", \"野外生存\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:wu_xian_liu_lang"
+      ]
+    },
+    {
+      "id": "wu_xian_po_jie",
+      "name": "无线破解",
+      "role": "射频逆向工程师",
+      "context": "{\"availability\": \"深夜在线\", \"bio\": \"在天台上架了17根天线。白天修路由器，晚上监听城市的电磁波。不聊政治，只聊频谱。\", \"can_teach\": [\"软件无线电入门\", \"433MHz设备逆向\", \"LoRa自组网\"], \"name\": \"无线破解\", \"role\": \"射频逆向工程师\", \"skills\": [\"SDR信号分析\", \"无线协议破解\", \"硬件改装\", \"天线DIY\"], \"style\": \"技术宅，话少但靠谱\", \"want_to_learn\": [\"FPGA编程\", \"射频电路设计\"]}",
+      "source_ids": [
+        "apps/S2_skill_exchange/data/agents.json:wu_xian_po_jie"
+      ]
+    },
+    {
+      "id": "xian_cheng_shu_ju_lao",
+      "name": "县城数据佬",
+      "role": "政务系统开发",
+      "context": "{\"availability\": \"工作日晚上\", \"bio\": \"在县政府外包公司干了5年，见过各种奇葩需求和老旧系统。擅长在IE8和Windows Server 2008的环境下写代码，对接政务系统是我的绝活。\", \"can_teach\": \"政府项目经验、老系统维护、投标文件\", \"name\": \"县城数据佬\", \"role\": \"政务系统开发\", \"skills\": [\"Java Spring\", \"Oracle数据库\", \"政府项目投标\", \"Excel VBA\"], \"style\": \"稳重，爱吐槽甲方\", \"want_to_learn\": \"微服务架构、云原生技术\"}",
+      "source_ids": [
+        "apps/S2_skill_exchange/data/agents.json:xian_cheng_shu_ju_lao"
+      ]
+    },
+    {
+      "id": "xian_xia_cheng_xu_yuan",
+      "name": "县下程序员",
+      "role": "远程外包接单",
+      "context": "{\"availability\": \"灵活，提前约\", \"bio\": \"在县城远程接活3年，客户遍布全国。最擅长把客户说不清的需求变成能用的系统，也习惯了一个人搞定前后端和部署。\", \"can_teach\": \"远程工作技巧、需求沟通、快速交付\", \"name\": \"县下程序员\", \"role\": \"远程外包接单\", \"skills\": [\"PHP全栈\", \"WordPress定制\", \"小程序开发\", \"需求翻译\"], \"style\": \"低调，效率优先\", \"want_to_learn\": \"现代前端框架、自动化测试\"}",
+      "source_ids": [
+        "apps/S2_skill_exchange/data/agents.json:xian_xia_cheng_xu_yuan"
+      ]
+    },
+    {
+      "id": "xiao_chou",
+      "name": "小丑",
+      "role": "马戏团小丑 / 游戏开发者",
+      "context": "{\"availability\": \"时间灵活，马戏团已经解散了\", \"bio\": \"马戏团表演了12年，杂耍和平衡感练到极致。后来发现游戏物理引擎和真实物理一样有趣。现在做独立游戏，专门做那种需要精准操作的硬核平台跳跃游戏。\", \"experience\": \"2012-2024 马戏团小丑 | 2022起自学游戏开发 | 发布过1个独立游戏\", \"hackathon_history\": \"参加过2次游戏jam，拿过1次最佳玩法奖\", \"interests\": [\"游戏设计\", \"物理模拟\", \"动作游戏\", \"独立开发\"], \"name\": \"小丑\", \"role\": \"马戏团小丑 / 游戏开发者\", \"skills\": [\"Unity\", \"C#\", \"物理引擎\", \"动画系统\", \"关卡设计\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:xiao_chou"
+      ]
+    },
+    {
+      "id": "xiao_fang_yuan_docker",
+      "name": "消防员Docker",
+      "role": "前消防员 / 容器化专家",
+      "context": "{\"availability\": \"轮班制，时间不固定\", \"bio\": \"救火六年，现在灭生产事故。发现火场和线上故障处理逻辑完全一致——快速定位、隔离、扑灭。容器就是防火墙。\", \"can_teach\": [\"Docker实战\", \"应急响应流程\", \"如何在混乱中保持冷静\"], \"name\": \"消防员Docker\", \"role\": \"前消防员 / 容器化专家\", \"skills\": [\"应急救援\", \"Docker容器化\", \"危机处理\", \"CI/CD\", \"团队协作\"], \"style\": \"果断、行动派、爱用军事化术语\", \"want_to_learn\": [\"Kubernetes高级特性\", \"监控告警系统\", \"消防工程学\"]}",
+      "source_ids": [
+        "apps/S2_skill_exchange/data/agents.json:xiao_fang_yuan_docker"
+      ]
+    },
+    {
+      "id": "xiao_zhen_qing_nian",
+      "name": "小镇青年",
+      "role": "产品经理",
+      "context": "{\"availability\": \"灵活安排\", \"bio\": \"县城互联网公司产品狗，做过本地O2O、社区团购、直播带货。见过太多拍脑袋的需求，现在只信数据和真实用户反馈。会画原型也会跟老板battle。\", \"experience\": \"4年\", \"hackathon_history\": \"组织过一次本地创业沙龙\", \"interests\": \"下沉市场、本地服务、用户增长\", \"name\": \"小镇青年\", \"role\": \"产品经理\", \"skills\": [\"需求分析\", \"Axure\", \"用户调研\", \"Excel\", \"PPT\"]}\n\n{\"availability\": \"每晚8-11点\", \"bio\": \"白天发货打包，晚上写代码。自学前端给自己店铺做了个管理后台，现在接点小活补贴家用。最懂下沉市场用户要什么。\", \"can_teach\": \"电商从0到1、Vue基础开发、用户心理\", \"name\": \"小镇青年\", \"role\": \"拼多多店主兼前端\", \"skills\": [\"Vue2实战\", \"电商运营\", \"PS抠图\", \"直播话术\"], \"style\": \"爱用emoji，说话实在\", \"want_to_learn\": \"React、微信小程序开发\"}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:xiao_zhen_qing_nian",
+        "apps/S2_skill_exchange/data/agents.json:xiao_zhen_qing_nian"
+      ]
+    },
+    {
+      "id": "xiao_zhen_she_ji_shi",
+      "name": "小镇设计师",
+      "role": "广告店老板",
+      "context": "{\"availability\": \"晚上和周末\", \"bio\": \"开广告店10年，做过无数招牌和宣传单。最近在学AI绘图，想把传统广告和新技术结合起来。见过太多小生意的视觉需求。\", \"can_teach\": \"平面设计实战、印刷知识、小生意视觉方案\", \"name\": \"小镇设计师\", \"role\": \"广告店老板\", \"skills\": [\"CorelDRAW\", \"喷绘写真\", \"门头设计\", \"AI绘图\"], \"style\": \"耐心，爱分享经验\", \"want_to_learn\": \"Midjourney、Stable Diffusion、品牌设计\"}",
+      "source_ids": [
+        "apps/S2_skill_exchange/data/agents.json:xiao_zhen_she_ji_shi"
+      ]
+    },
+    {
+      "id": "xiu_che_de_ma_nong",
+      "name": "修车的码农",
+      "role": "后端开发",
+      "context": "{\"availability\": \"工作日晚上，周日全天\", \"bio\": \"家里开修理厂，大专学的计算机。给自家店写了个客户管理系统，后来帮周边几家店也做了。现在白天修车晚上写代码，两头都不想放弃。\", \"experience\": \"4年\", \"hackathon_history\": \"参加过本地创新创业大赛\", \"interests\": \"汽车后市场、SaaS、小微企业数字化\", \"name\": \"修车的码农\", \"role\": \"后端开发\", \"skills\": [\"Java\", \"Spring Boot\", \"MySQL\", \"汽车维修\", \"进销存系统\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:xiu_che_de_ma_nong"
+      ]
+    },
+    {
+      "id": "xu_ni_kao_gu_xue_jia",
+      "name": "虚拟考古学家",
+      "role": "废弃网站档案员",
+      "context": "{\"availability\": \"周中晚上\", \"bio\": \"收集消失的个人网站和论坛。最喜欢2000年代的网页设计。有个硬盘专门存已经404的博客。\", \"can_teach\": [\"Web爬虫\", \"数字档案\"], \"name\": \"虚拟考古学家\", \"role\": \"废弃网站档案员\", \"skills\": [\"Web爬虫\", \"数字档案\", \"Wayback Machine\", \"HTML考古\"], \"style\": \"会分享很多怀旧的网络文化\", \"want_to_learn\": [\"静态网站生成\", \"去中心化存储\"]}",
+      "source_ids": [
+        "apps/S2_skill_exchange/data/agents.json:xu_ni_kao_gu_xue_jia"
+      ]
+    },
+    {
+      "id": "xu_ni_zhi_wu_xue_jia",
+      "name": "虚拟植物学家",
+      "role": "3D 环境艺术家",
+      "context": "{\"availability\": \"工作日上午和周末\", \"bio\": \"生物系退学后自学3D，现在专门做虚拟植物和自然环境。用摄影测量扫描真实植物，然后在Blender里重建。觉得数字世界也需要生态系统。\", \"can_teach\": [\"Blender 植物建模\", \"Substance Painter 材质\", \"摄影测量流程\"], \"name\": \"虚拟植物学家\", \"role\": \"3D 环境艺术家\", \"skills\": [\"blender\", \"substance_painter\", \"photogrammetry\", \"procedural_modeling\"], \"style\": \"耐心、热爱自然、技术宅\", \"want_to_learn\": [\"Houdini 程序化建模\", \"Unity 植物系统\"]}",
+      "source_ids": [
+        "apps/S2_skill_exchange/data/agents.json:xu_ni_zhi_wu_xue_jia"
+      ]
+    },
+    {
+      "id": "ye_ban_tiao_xie_shi",
+      "name": "夜班调协师",
+      "role": "自由音乐制作人",
+      "context": "{\"availability\": \"晚上10点到凌晨4点\", \"bio\": \"白天睡觉晚上工作已经五年了。帮独立音乐人混音，自己也做些氛围电子。最近在研究模块合成器，钱包很痛但耳朵很爽。不接急活，做音乐不能赶。\", \"can_teach\": [\"Ableton Live 制作流程\", \"混音基础\", \"模块合成器入门\"], \"name\": \"夜班调协师\", \"role\": \"自由音乐制作人\", \"skills\": [\"ableton_live\", \"mixing\", \"mastering\", \"modular_synthesis\"], \"style\": \"夜猫子、完美主义、对音质挑剔\", \"want_to_learn\": [\"现场演出技术\", \"视觉同步编程\"]}",
+      "source_ids": [
+        "apps/S2_skill_exchange/data/agents.json:ye_ban_tiao_xie_shi"
+      ]
+    },
+    {
+      "id": "ye_lu_zi",
+      "name": "野路子",
+      "role": "前端开发",
+      "context": "{\"availability\": \"晚上和周末\", \"bio\": \"自学成才的前端，没上过培训班，全靠B站和文档。给本地十几家小店做过网站和公众号，收费不高但活儿糙。最近在学Vue，但还是觉得jQuery顺手。\", \"experience\": \"2年\", \"hackathon_history\": \"没参加过，想试试\", \"interests\": \"网页设计、自媒体、接私活\", \"name\": \"野路子\", \"role\": \"前端开发\", \"skills\": [\"jQuery\", \"Bootstrap\", \"WordPress\", \"Photoshop\", \"视频剪辑\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:ye_lu_zi"
+      ]
+    },
+    {
+      "id": "ye_mao_cheng_xu_yuan",
+      "name": "夜猫程序员",
+      "role": "移动端开发",
+      "context": "{\"availability\": \"晚上8点之后到天亮\", \"bio\": \"大四iOS转Flutter，生物钟已废。白天上课睡觉晚上写代码，室友说我是吸血鬼。做过两个上架App但下载量感人，不过至少证明我能把东西做完\", \"experience\": \"独立开发过一个校园约自习App，日活最高到过50人\", \"hackathon_history\": \"参加过一次企业办的黑客松，拿了参与奖（其实就是纪念品）\", \"interests\": [\"电子音乐\", \"夜景摄影\", \"便利店\", \"研究咖啡因\"], \"name\": \"夜猫程序员\", \"role\": \"移动端开发\", \"skills\": [\"Flutter\", \"Dart\", \"Firebase\", \"熬夜\", \"能量饮料品鉴\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:ye_mao_cheng_xu_yuan"
+      ]
+    },
+    {
+      "id": "yi_zhi_mao",
+      "name": "一只猫",
+      "role": "全栈开发",
+      "context": "{\"availability\": \"晚上10点到凌晨4点黄金时段\", \"bio\": \"00后全栈，在家远程工作养了三只猫。代码风格随心所欲但能跑就行，最讨厌写文档。会一点机器学习但主要用来训练猫的行为识别模型。深夜效率最高，白天基本废人\", \"experience\": \"自学转码，做过几个个人项目放GitHub，star不多但自己用得开心\", \"hackathon_history\": \"线上黑客松参加过两次，都是因为不用出门\", \"interests\": [\"猫猫\", \"lo-fi音乐\", \"宅家\", \"外卖测评\"], \"name\": \"一只猫\", \"role\": \"全栈开发\", \"skills\": [\"React\", \"Node.js\", \"MongoDB\", \"喵喵叫\", \"通宵能力\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:yi_zhi_mao"
+      ]
+    },
+    {
+      "id": "yu_zhou_chen_ai",
+      "name": "宇宙尘埃",
+      "role": "前端开发 / 天文爱好者",
+      "context": "{\"availability\": \"周末全天，工作日晚上 7 点后。如果天气好可能会去郊区拍星空（提前说）。\", \"bio\": \"白天写网页，晚上看星星。想做一个让普通人也能理解宇宙尺度的交互网站。代码写得一般，但审美还行。\", \"experience\": \"自学转行的，之前学天文物理但没读完。在一家小公司做前端两年了，技术栈比较传统，想学点新东西。\", \"hackathon_history\": \"第一次参加实体黑客松。之前在 GitHub 上参加过几次 game jam，做过一个太空探索的小游戏。\", \"interests\": [\"天文摄影\", \"科幻小说\", \"物理科普\", \"咖啡\"], \"name\": \"宇宙尘埃\", \"role\": \"前端开发 / 天文爱好者\", \"skills\": [\"Vue\", \"Three.js\", \"WebGL\", \"astronomy APIs\", \"UI/UX\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:yu_zhou_chen_ai"
+      ]
+    },
+    {
+      "id": "yue_dui_zhi_hui",
+      "name": "乐队指挥",
+      "role": "交响乐团指挥 / 项目管理",
+      "context": "{\"availability\": \"工作日白天，晚上排练\", \"bio\": \"指挥了十二年乐团，现在管理开发团队。发现sprint和乐章结构一模一样——节奏、配合、高潮。standup就是排练。\", \"can_teach\": [\"敏捷项目管理\", \"团队协作技巧\", \"音乐理论入门\"], \"name\": \"乐队指挥\", \"role\": \"交响乐团指挥 / 项目管理\", \"skills\": [\"乐团指挥\", \"敏捷开发\", \"乐理\", \"团队协作\", \"时间管理\"], \"style\": \"节奏感强、善于类比、有领导力\", \"want_to_learn\": [\"产品思维\", \"OKR体系\", \"现代作曲技法\"]}",
+      "source_ids": [
+        "apps/S2_skill_exchange/data/agents.json:yue_dui_zhi_hui"
+      ]
+    },
+    {
+      "id": "zero_day",
+      "name": "0day",
+      "role": "全栈安全研究员",
+      "context": "{\"availability\": \"周末全天 + 工作日晚上\", \"bio\": \"CTF 打了八年，现在更喜欢挖真实世界的洞。白天写代码，晚上找漏洞，凌晨三点是我的黄金时段。别问我真名，问就是匿名。\", \"experience\": \"5年\", \"hackathon_history\": \"拿过 3 次安全赛道冠军，有一次因为找到主办方服务器漏洞被取消资格\", \"interests\": [\"暗网考古\", \"密码学\", \"赛博朋克文学\", \"机械键盘\"], \"name\": \"0day\", \"role\": \"全栈安全研究员\", \"skills\": [\"渗透测试\", \"逆向工程\", \"Rust\", \"区块链安全\", \"社会工程学\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:zero_day"
+      ]
+    },
+    {
+      "id": "zhan_bu_shi",
+      "name": "占卜师",
+      "role": "塔罗师 / 数据分析师",
+      "context": "{\"availability\": \"工作日晚上和周末\", \"bio\": \"给人算塔罗算了5年，发现占卜的本质是数据分析和心理学。转行做数据分析师，现在用SQL查询比洗牌还快。客户问我准不准，我说：置信区间95%。\", \"experience\": \"2019-2024 职业塔罗师 | 2024起数据分析 | 分析过3个电商平台用户行为\", \"hackathon_history\": \"参加过1次，做了个基于ML的性格测试系统\", \"interests\": [\"用户研究\", \"心理学\", \"推荐系统\", \"行为分析\"], \"name\": \"占卜师\", \"role\": \"塔罗师 / 数据分析师\", \"skills\": [\"Python\", \"数据可视化\", \"统计学\", \"用户画像\", \"A/B测试\"]}",
+      "source_ids": [
+        "apps/S1_hackathon/data/agents.json:zhan_bu_shi"
+      ]
+    },
+    {
+      "id": "zhan_bu_shi_sql",
+      "name": "占卜师SQL",
+      "role": "塔罗占卜师 / 数据分析师",
+      "context": "{\"availability\": \"晚上和周末，白天接咨询\", \"bio\": \"算了五年命，现在分析数据。发现牌阵和数据透视表都是在找模式。JOIN就是牌与牌的关联，WHERE是筛选命运。\", \"can_teach\": [\"SQL进阶查询\", \"数据分析思维\", \"塔罗牌入门\"], \"name\": \"占卜师SQL\", \"role\": \"塔罗占卜师 / 数据分析师\", \"skills\": [\"塔罗占卜\", \"SQL查询\", \"数据可视化\", \"心理咨询\", \"统计分析\"], \"style\": \"神秘、直觉强、喜欢用隐喻\", \"want_to_learn\": [\"机器学习\", \"数据工程\", \"荣格心理学\"]}",
+      "source_ids": [
+        "apps/S2_skill_exchange/data/agents.json:zhan_bu_shi_sql"
+      ]
+    },
+    {
+      "id": "zhan_di_she_ying_shi",
+      "name": "战地摄影师",
+      "role": "前战地记者 / 计算机视觉",
+      "context": "{\"availability\": \"时间不固定，看项目进度\", \"bio\": \"拍了八年战场，现在训练AI识别图像。快门和模型训练都是捕捉瞬间的艺术。见过真实的混乱，所以特别理解噪声数据。\", \"can_teach\": [\"计算机视觉入门\", \"图像处理技术\", \"如何在压力下保持专注\"], \"name\": \"战地摄影师\", \"role\": \"前战地记者 / 计算机视觉\", \"skills\": [\"新闻摄影\", \"OpenCV\", \"图像处理\", \"Python\", \"危机应对\"], \"style\": \"冷静、直接、故事性强\", \"want_to_learn\": [\"深度学习框架\", \"目标检测算法\", \"纪实摄影理论\"]}",
+      "source_ids": [
+        "apps/S2_skill_exchange/data/agents.json:zhan_di_she_ying_shi"
+      ]
+    },
+    {
+      "id": "zhi_wu_bian_yi_zhe",
+      "name": "植物编译者",
+      "role": "生物艺术实践者",
+      "context": "{\"availability\": \"工作日晚上\", \"bio\": \"在阳台种了二十盆植物，给每一盆接上传感器。试图翻译它们的电信号，不确定翻译得对不对。\", \"can_teach\": [\"Arduino传感器\", \"Processing\"], \"name\": \"植物编译者\", \"role\": \"生物艺术实践者\", \"skills\": [\"Arduino传感器\", \"数据可视化\", \"植物电生理\", \"Processing\"], \"style\": \"会用植物打比方解释技术概念\", \"want_to_learn\": [\"机器学习基础\", \"生成艺术\"]}",
+      "source_ids": [
+        "apps/S2_skill_exchange/data/agents.json:zhi_wu_bian_yi_zhe"
+      ]
+    },
+    {
+      "id": "zi_fu_lian_jin_shi",
+      "name": "字符炼金师",
+      "role": "字体设计师",
+      "context": "{\"availability\": \"工作日下午和晚上\", \"bio\": \"学过书法，做过平面，现在专门设计字体。觉得每个笔画都有性格，每套字体都是一个小宇宙。做过三套开源中文字体，被几千个网站用过但没赚到钱。\", \"can_teach\": [\"Glyphs 字体设计\", \"可变字体技术\", \"中文字形结构\"], \"name\": \"字符炼金师\", \"role\": \"字体设计师\", \"skills\": [\"glyphs\", \"font_design\", \"calligraphy\", \"variable_fonts\"], \"style\": \"专注、细节控、对文字有执念\", \"want_to_learn\": [\"字体编程（fontforge）\", \"阿拉伯文字设计\"]}",
+      "source_ids": [
+        "apps/S2_skill_exchange/data/agents.json:zi_fu_lian_jin_shi"
+      ]
+    }
+  ],
+  "intents": [
+    {
+      "id": "q01",
+      "query": "安全研究员",
+      "context": null,
+      "expected_hits": [
+        "zero_day",
+        "ghost_in_shell",
+        "binary_sage",
+        "zero_day_hunter",
+        "packet_sniffer"
+      ],
+      "min_hits": 3,
+      "anti_hits": [],
+      "level": "L1",
+      "note": "role 中直接包含「安全研究员」的 Agent",
+      "present_expected": [
+        "zero_day",
+        "ghost_in_shell",
+        "binary_sage",
+        "packet_sniffer"
+      ],
+      "missing_expected": [
+        "zero_day_hunter"
+      ]
+    },
+    {
+      "id": "q02",
+      "query": "Kubernetes 工程师",
+      "context": null,
+      "expected_hits": [
+        "sudo_rm",
+        "echo_in_void",
+        "cloud_nomad",
+        "void_operator",
+        "chaos_gardener",
+        "git_rebase_i"
+      ],
+      "min_hits": 3,
+      "anti_hits": [],
+      "level": "L1",
+      "note": "skills 中直接包含 Kubernetes",
+      "present_expected": [
+        "sudo_rm",
+        "echo_in_void",
+        "cloud_nomad",
+        "void_operator",
+        "chaos_gardener"
+      ],
+      "missing_expected": [
+        "git_rebase_i"
+      ]
+    },
+    {
+      "id": "q03",
+      "query": "Python 数据分析",
+      "context": null,
+      "expected_hits": [
+        "regex_queen",
+        "diao_bao_xia_nv",
+        "shu_ju_lao_nong",
+        "data_witch",
+        "zhan_bu_shi"
+      ],
+      "min_hits": 3,
+      "anti_hits": [],
+      "level": "L1",
+      "note": "skills 同时包含 Python + 数据相关",
+      "present_expected": [
+        "regex_queen",
+        "diao_bao_xia_nv",
+        "shu_ju_lao_nong",
+        "data_witch",
+        "zhan_bu_shi"
+      ],
+      "missing_expected": []
+    },
+    {
+      "id": "q04",
+      "query": "游戏开发 Unity",
+      "context": null,
+      "expected_hits": [
+        "mo_fa_shi_de_bug",
+        "pixel_poet",
+        "xiao_chou",
+        "diu_zhen_ren"
+      ],
+      "min_hits": 2,
+      "anti_hits": [],
+      "level": "L1",
+      "note": "直接匹配 Unity 游戏开发",
+      "present_expected": [
+        "mo_fa_shi_de_bug",
+        "pixel_poet",
+        "xiao_chou",
+        "diu_zhen_ren"
+      ],
+      "missing_expected": []
+    },
+    {
+      "id": "q05",
+      "query": "区块链 智能合约 Solidity",
+      "context": null,
+      "expected_hits": [
+        "cyber_monk",
+        "liang_zi_da_shu",
+        "blockchain_skeptic",
+        "hui_sheng"
+      ],
+      "min_hits": 2,
+      "anti_hits": [],
+      "level": "L1",
+      "note": "直接匹配区块链 + Solidity",
+      "present_expected": [
+        "cyber_monk",
+        "liang_zi_da_shu",
+        "blockchain_skeptic",
+        "hui_sheng"
+      ],
+      "missing_expected": []
+    },
+    {
+      "id": "q06",
+      "query": "做网页 3D 视觉效果的人",
+      "context": null,
+      "expected_hits": [
+        "neko_chan",
+        "yu_zhou_chen_ai",
+        "neon_samurai",
+        "liu_guang_ke",
+        "pixel_witch"
+      ],
+      "min_hits": 2,
+      "anti_hits": [],
+      "level": "L2",
+      "note": "「网页3D视觉」= Three.js/WebGL，词汇不同但语义相同",
+      "present_expected": [
+        "neko_chan",
+        "yu_zhou_chen_ai",
+        "neon_samurai",
+        "liu_guang_ke",
+        "pixel_witch"
+      ],
+      "missing_expected": []
+    },
+    {
+      "id": "q07",
+      "query": "搞声音艺术和实验音乐的",
+      "context": null,
+      "expected_hits": [
+        "wu_sheng_de_ren",
+        "echo_chamber",
+        "hui_se_xin_hao",
+        "glitch_queen",
+        "frequency_hermit",
+        "sonic_archaeologist"
+      ],
+      "min_hits": 2,
+      "anti_hits": [],
+      "level": "L2",
+      "note": "「声音艺术」≈ 声音设计 / 实验音乐 / Max/MSP",
+      "present_expected": [
+        "wu_sheng_de_ren",
+        "echo_chamber",
+        "hui_se_xin_hao",
+        "glitch_queen",
+        "frequency_hermit",
+        "sonic_archaeologist"
+      ],
+      "missing_expected": []
+    },
+    {
+      "id": "q08",
+      "query": "能写高性能后端服务的",
+      "context": null,
+      "expected_hits": [
+        "packet_loss",
+        "async_await",
+        "midnight_debugger",
+        "mem_leak",
+        "mu_yu_ren"
+      ],
+      "min_hits": 2,
+      "anti_hits": [],
+      "level": "L2",
+      "note": "「高性能后端」≈ 性能优化 + 后端 + Go/Rust/C++",
+      "present_expected": [
+        "packet_loss",
+        "async_await",
+        "midnight_debugger",
+        "mem_leak",
+        "mu_yu_ren"
+      ],
+      "missing_expected": []
+    },
+    {
+      "id": "q09",
+      "query": "做创意互动装置的艺术家",
+      "context": null,
+      "expected_hits": [
+        "glitch_girl",
+        "glitch_artist",
+        "glitch_poet",
+        "leather_punk",
+        "fermentation_hacker"
+      ],
+      "min_hits": 2,
+      "anti_hits": [],
+      "level": "L2",
+      "note": "「创意互动装置」≈ Arduino + Processing + 生成艺术",
+      "present_expected": [
+        "glitch_girl",
+        "glitch_artist",
+        "glitch_poet",
+        "leather_punk",
+        "fermentation_hacker"
+      ],
+      "missing_expected": []
+    },
+    {
+      "id": "q10",
+      "query": "懂密码学的人",
+      "context": null,
+      "expected_hits": [
+        "digital_hermit",
+        "liang_zi_liu_lang",
+        "bit_alchemist",
+        "mo_sheng_ren",
+        "protocol_punk"
+      ],
+      "min_hits": 2,
+      "anti_hits": [],
+      "level": "L2",
+      "note": "「密码学」在不同 Profile 中的多种表达",
+      "present_expected": [
+        "digital_hermit",
+        "liang_zi_liu_lang",
+        "bit_alchemist",
+        "mo_sheng_ren",
+        "protocol_punk"
+      ],
+      "missing_expected": []
+    },
+    {
+      "id": "q11",
+      "query": "我的项目需要做安全审计",
+      "context": "我在开发一个 DeFi 协议，需要有人帮我审查智能合约的安全性",
+      "expected_hits": [
+        "cyber_monk",
+        "zero_day",
+        "blockchain_skeptic",
+        "grey_hat",
+        "ghost_in_shell"
+      ],
+      "min_hits": 2,
+      "anti_hits": [],
+      "level": "L3",
+      "note": "需求「需要安全审计」→ 能力「安全研究员 / 合约审计」。互补关系",
+      "present_expected": [
+        "cyber_monk",
+        "zero_day",
+        "blockchain_skeptic",
+        "grey_hat",
+        "ghost_in_shell"
+      ],
+      "missing_expected": []
+    },
+    {
+      "id": "q12",
+      "query": "我想学怎么做实时视觉特效",
+      "context": "我是一个设计师，想学 Shader 编程",
+      "expected_hits": [
+        "glitch_queen",
+        "shader_shaman",
+        "shader_punk",
+        "shader_witch",
+        "neon_vandal"
+      ],
+      "min_hits": 2,
+      "anti_hits": [],
+      "level": "L3",
+      "note": "需求「想学」→ 能力「can_teach」。learning ↔ teaching 互补",
+      "present_expected": [
+        "glitch_queen",
+        "shader_shaman",
+        "shader_punk",
+        "shader_witch",
+        "neon_vandal"
+      ],
+      "missing_expected": []
+    },
+    {
+      "id": "q13",
+      "query": "帮我部署一个能扛大流量的后端",
+      "context": null,
+      "expected_hits": [
+        "sudo_rm",
+        "async_await",
+        "packet_loss",
+        "echo_in_void",
+        "cloud_nomad"
+      ],
+      "min_hits": 2,
+      "anti_hits": [],
+      "level": "L3",
+      "note": "需求「扛大流量」→ 能力「高并发 / K8s / 性能」",
+      "present_expected": [
+        "sudo_rm",
+        "async_await",
+        "packet_loss",
+        "echo_in_void",
+        "cloud_nomad"
+      ],
+      "missing_expected": []
+    },
+    {
+      "id": "q14",
+      "query": "我的网站太丑了需要重新设计",
+      "context": null,
+      "expected_hits": [
+        "broken_mirror",
+        "ctrl_z",
+        "wu_ming_zhi",
+        "san_xing_lv_shi",
+        "pixel_chef"
+      ],
+      "min_hits": 2,
+      "anti_hits": [],
+      "level": "L3",
+      "note": "需求「网站太丑」→ 能力「UI/UX 设计」。日常用语 ↔ 专业能力",
+      "present_expected": [
+        "broken_mirror",
+        "ctrl_z",
+        "wu_ming_zhi",
+        "san_xing_lv_shi",
+        "pixel_chef"
+      ],
+      "missing_expected": []
+    },
+    {
+      "id": "q15",
+      "query": "数据库越来越慢怎么办",
+      "context": "我们用的 MySQL，数据量大概两千万行",
+      "expected_hits": [
+        "db_lao_wang",
+        "db_necromancer",
+        "sql_poet",
+        "packet_loss"
+      ],
+      "min_hits": 2,
+      "anti_hits": [],
+      "level": "L3",
+      "note": "问题描述 → 需要数据库优化专家。口语 ↔ 专业能力",
+      "present_expected": [
+        "db_lao_wang",
+        "db_necromancer",
+        "sql_poet",
+        "packet_loss"
+      ],
+      "missing_expected": []
+    },
+    {
+      "id": "q16",
+      "query": "想做一个把声音变成画面的东西",
+      "context": null,
+      "expected_hits": [
+        "glitch_girl",
+        "glitch_queen",
+        "wu_sheng_de_ren",
+        "liu_guang_ke",
+        "glitch_monk",
+        "echo_chamber"
+      ],
+      "min_hits": 2,
+      "anti_hits": [],
+      "level": "L4",
+      "note": "跨域意图：音频 × 视觉。需要同时理解两个领域的交叉",
+      "present_expected": [
+        "glitch_girl",
+        "glitch_queen",
+        "wu_sheng_de_ren",
+        "liu_guang_ke",
+        "glitch_monk",
+        "echo_chamber"
+      ],
+      "missing_expected": []
+    },
+    {
+      "id": "q17",
+      "query": "用技术做点有意义的事",
+      "context": "我刚毕业，会写代码但不知道做什么",
+      "expected_hits": [
+        "git_push_origin_love",
+        "dai_ma_wu_tuo_bang",
+        "stack_overflow_soul",
+        "code_monk"
+      ],
+      "min_hits": 1,
+      "anti_hits": [],
+      "level": "L4",
+      "note": "极度模糊。测试编码器能否从「有意义」关联到开源/公益方向",
+      "present_expected": [],
+      "missing_expected": [
+        "git_push_origin_love",
+        "dai_ma_wu_tuo_bang",
+        "stack_overflow_soul",
+        "code_monk"
+      ]
+    },
+    {
+      "id": "q18",
+      "query": "把传统手艺和数字技术结合",
+      "context": null,
+      "expected_hits": [
+        "lao_tie_rust",
+        "ink_alchemist",
+        "leather_punk",
+        "memory_weaver",
+        "ink_and_pixel",
+        "diao_ke_shi_shader"
+      ],
+      "min_hits": 2,
+      "anti_hits": [],
+      "level": "L4",
+      "note": "跨域：传统工艺 × 数字技术。这些 Agent 的 bio 正是这种交叉",
+      "present_expected": [
+        "lao_tie_rust",
+        "ink_alchemist",
+        "leather_punk",
+        "memory_weaver",
+        "ink_and_pixel",
+        "diao_ke_shi_shader"
+      ],
+      "missing_expected": []
+    },
+    {
+      "id": "q19",
+      "query": "我需要帮手",
+      "context": null,
+      "expected_hits": [],
+      "min_hits": 0,
+      "anti_hits": [],
+      "level": "L4",
+      "note": "极端模糊基准测试。记录返回了什么，用于分析编码器的默认偏好",
+      "present_expected": [],
+      "missing_expected": []
+    },
+    {
+      "id": "q20",
+      "query": "认识一些有趣的人",
+      "context": "我是一个程序员，想跳出技术圈认识不同背景的人",
+      "expected_hits": [
+        "lao_tie_rust",
+        "san_xing_lv_shi",
+        "zhan_bu_shi",
+        "shou_yi_ren",
+        "fei_xing_yuan_404"
+      ],
+      "min_hits": 1,
+      "anti_hits": [],
+      "level": "L4",
+      "note": "社交意图 + 跨领域。Profile 中有跨界背景的人",
+      "present_expected": [
+        "lao_tie_rust",
+        "san_xing_lv_shi",
+        "zhan_bu_shi",
+        "shou_yi_ren",
+        "fei_xing_yuan_404"
+      ],
+      "missing_expected": []
+    }
+  ]
+}

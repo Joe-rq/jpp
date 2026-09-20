@@ -231,10 +231,10 @@ def extend_combinations(flow):
 METHOD = discover.then(expand_relays).then(extend_combinations, name="towow_discovery")
 
 
-def run_once(scenario, client, root, *, workers=8):
-    rt = jv.Runtime(client, root=str(root), max_workers=workers)
+def run_once(scenario, client, root, *, workers=8, method=METHOD, passes=None):
+    rt = jv.Runtime(client, root=str(root), max_workers=workers, passes=passes)
     start = perf_counter()
-    result = execute(METHOD, Discovery(deepcopy(scenario)), rt,
+    result = execute(method, Discovery(deepcopy(scenario)), rt,
                      budget=jv.Budget(calls=40, cost=0.02))
     return {"elapsed_ms": round((perf_counter() - start) * 1000, 3),
             "stats": result.stats, "direct": result.value.direct, "relays": result.value.relays,

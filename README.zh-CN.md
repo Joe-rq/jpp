@@ -20,7 +20,7 @@ J++ 是一门正在开发的实验性编程语言。我们想让语义判断成�
 
 我们的第一个应用构想来自通爻：一个模糊意图能否在不同主体的上下文中产生合作可能，而这些进行中的计算和候选组合又继续参与发现？[阅读问题与构想](docs/first-problem-towow.zh-CN.md)。
 
-十人案例已经可运行：`jpp towow`。它用真实 JEV 响应的离线录制展示“模糊意图 → 转介 → 三方候选 → 新参与者”，并生成可点击的计算轨迹。[直接打开图谱演示](https://towow-ai.github.io/jpp/) · [查看案例、实测速度与复现方法](docs/towow-demo.zh-CN.md)。
+第一个应用是**通爻发现实验台**：[216 人 × 20 种意图](https://towow-ai.github.io/jpp/demos/towow/population/)可以切换意图、查看具体人物和词面检索对照；[十人组合实验](https://towow-ai.github.io/jpp/demos/towow/lab/)可以关闭转介或组合，检查哪些结果消失。两个页面都可以在浏览器执行当前 J++ 源码，模型层使用已公开的真实 JEV 回答录制。原有[图谱动画与介绍](https://towow-ai.github.io/jpp/)继续保留。[案例、实测速度与复现方法](docs/towow-demo.zh-CN.md)。
 
 ## 五分钟运行
 
