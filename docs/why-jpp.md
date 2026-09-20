@@ -41,7 +41,7 @@ Move provides another example: abilities such as `copy` and `drop` control what 
 
 These examples do not establish that J++ will succeed. They help us ask our own question: what support should a language provide for semantic judgments, question values, solving methods and unresolved observations?
 
-We start with a Python embedded implementation so executable programs can reveal the necessary rules. Independent syntax can follow demonstrated needs. A future implementation in Rust, OCaml or another language should be justified by concrete runtime requirements.
+We started with a Python embedded implementation so executable programs could reveal the necessary rules. Standalone `.jpp` source now runs through one Rust kernel, including method composition, adaptive inquiry and partial-result continuation. The [native package](../rust/README.md) documents what is implemented; the Python programs remain useful behavior references.
 
 ## From a judgment to a reusable algorithm
 

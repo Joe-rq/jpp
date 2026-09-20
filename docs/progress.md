@@ -2,6 +2,18 @@
 
 Updated: 2026-09-21. This is a dated report, not an automatically updated dashboard.
 
+## 2026-09-21: align all project entry points / 同步项目各入口的交付状态
+
+The source package was already merged in [PR #12](https://github.com/Towow-ai/jpp/pull/12).
+This update corrects stale Python-only and future-syntax wording across current scope,
+roadmap, contributor/developer guides, project motivation and verification records.
+Original dated results remain labeled as history. The next outcomes are source-library
+reuse, consistent composition rules and a bounded application using `.jpp`.
+
+代码已在主分支，本次补齐此前没跟上的介绍：明确独立源码已经交付、Python 指南的
+适用范围，以及后续工作怎样验收。检查文档链接与现状表述；不改运行代码，也不发起
+模型实验。
+
 ## 2026-09-21: standalone source runs on Rust / 独立源码到 Rust 执行贯通
 
 The [native Rust package](../rust/README.md) now parses `.jpp` source, lowers it to
