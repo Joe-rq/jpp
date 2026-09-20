@@ -2,7 +2,8 @@ import json
 
 from foundation import jv
 from jev_compose import execute
-from jpp.towow_real import REAL_METHOD, evaluate, order_candidates
+from jpp.towow_real import REAL_METHOD, evaluate, order_candidates, JournalClient
+from jpp.towow import CallBudget, fingerprint
 
 
 def test_real_relation_labels_never_enter_judgment_inputs(tmp_path):
@@ -56,3 +57,18 @@ def test_relative_order_does_not_require_accepting_uncertain_relations(tmp_path)
     result=execute(order_candidates,payload,rt)
     assert result.value['rankings']['a']==['b','c']
     assert all(g['level'] is None for g in result.value['grades']['a'].values())
+
+
+def test_replay_handles_a_cached_subset_without_changing_questions(tmp_path):
+    state={'on':'same exact profile'}
+    questions={'q0':{'type':'score','instructions':'first'},'q1':{'type':'score','instructions':'second'}}
+    answers={'q0':{'score':0},'q1':{'score':2}}
+    path=tmp_path/'recording.jsonl'
+    path.write_text(json.dumps({'key':fingerprint(state,questions),'state':state,'questions':questions,
+                                'answers':answers,'estimated_cost_usd':.01})+'\n')
+    client=JournalClient(path,live=False,budget=CallBudget())
+    result,tokens,cost=client.ask(state,{'q1':questions['q1']})
+    assert result=={'q1':answers['q1']} and tokens==cost==0
+    import pytest
+    with pytest.raises(ValueError,match='Recorded response missing'):
+        client.ask(state,{'q1':{'type':'score','instructions':'changed'}})

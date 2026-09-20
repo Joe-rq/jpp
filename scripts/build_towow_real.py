@@ -45,7 +45,7 @@ def build(run_dir, public):
               'finding': f"每人前十候选：本地融合找到 {hits['rrf']} 条，J++ 前二十等级排序找到 {hits['cut20']} 条，全量等级排序找到 {hits['cut324']} 条；独立配对后的等级排序找到 {hits['pair_cut20']} 条，相对排序找到 {hits['order20']} 条。所有结果都保留，方法的价值以比较结果为准。",
               'cost_summary': f'本组真实来源实验累计录制 {len(records):,} 个后端请求，估算调用费用 ${cost:.6f}；加此前十人及合成案例约 ${cost + .04149542:.6f}。费用按录制中的 token 计价估算，非账单。网页回放不产生费用。计时与缓存口径见结果文档。',
               'estimated_cost_usd': cost, 'recorded_requests': len(records),
-              'execution_source_commit': '5068a3c',
+              'runtime_base_commit': '5068a3c', 'experiment_source_commit': '231a03d',
               'timing_notes': {'cut20': 'Recovered from an interrupted run using recorded answers; elapsed_seconds is not cold inference time.',
                                'cut324': 'End-to-end expansion, reusing the already judged top twenty; not a fully cold all-pairs run.',
                                'order20': 'Independent pair requests, first successful live run; includes local J++ execution and HTTP scheduling.'},

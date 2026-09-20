@@ -142,6 +142,18 @@ class JournalClient(RecordedClient):
         self.journal_path=path
         self.journal_lock=Lock()
         self.prior_cost=sum(r['estimated_cost_usd'] for r in records)
+        self.recorded_questions={}
+        self.ambiguous_questions=set()
+        if not live:
+            # Parallel cache hits can change the physical grouping of a replay.
+            # Match the same state, exact question ID and body, never a nearby text.
+            for record in records:
+                for qid,question in record['questions'].items():
+                    key=fingerprint(record['state'],{qid:question})
+                    answer=record['answers'][qid]
+                    if key in self.recorded_questions and self.recorded_questions[key]!=answer:
+                        self.ambiguous_questions.add(key)
+                    self.recorded_questions[key]=answer
         if live:
             self.budget.spent=self.prior_cost
 
@@ -149,6 +161,10 @@ class JournalClient(RecordedClient):
         key=fingerprint(state,questions)
         if self.live and key in self.saved:
             return deepcopy(self.saved[key]['answers']),0,0.0
+        if not self.live and key not in self.saved:
+            keys={qid:fingerprint(state,{qid:q}) for qid,q in questions.items()}
+            if all(k in self.recorded_questions and k not in self.ambiguous_questions for k in keys.values()):
+                return {qid:deepcopy(self.recorded_questions[k]) for qid,k in keys.items()},0,0.0
         response=super().ask(state,questions)
         if self.live:
             with self.lock:
@@ -173,9 +189,15 @@ def run(data,retrieval,client,root,*,limit=20,batch_size=20,mode='cut'):
     start=perf_counter()
     for offset in range(0,total_limit,batch_size):
         candidates={p['id']:ranking[p['id']][offset:min(offset+batch_size,total_limit)] for p in people}
-        rt=jv.Runtime(client,root=str(root),max_workers=32 if mode=='order' else 8)
+        # Exact transcript replay preserves separate answers to duplicate texts
+        # within a fused request. A content-only ledger may collapse these into
+        # one value after the live run; it is not the authoritative transcript.
+        rt=jv.Runtime(client,root=str(root),max_workers=32 if mode=='order' else 8,
+                      passes={'ledger':False} if not client.live else None)
         result=execute(order_candidates if mode=='order' else REAL_METHOD,{'people':people,'candidates':candidates},rt,
                        budget=jv.Budget(calls=20000,cost=4.95))
+        if 'W-call-fail' in result.stats.get('warnings',[]):
+            raise RuntimeError('A model or replay request failed. The incomplete batch is not an evaluation result; resume from the journal.')
         for source,values in result.value['grades'].items():
             grades[source].update(values)
         if mode=='order':
@@ -196,6 +218,7 @@ def run(data,retrieval,client,root,*,limit=20,batch_size=20,mode='cut'):
             'metrics':evaluate(data,{**retrieval['methods'],**extra,'jpp':jpp}),
             'batches':batches,'elapsed_seconds':perf_counter()-start,
             'calls':sum(b['calls'] for b in batches),'ledger_hits':sum(b['ledger_hits'] for b in batches),
+            'replay_policy':'Exact recorded requests; content ledger disabled offline to retain distinct answers for duplicated texts.' if not client.live else 'Live requests with runtime ledger.',
             'levels':LEVELS,'scope':'Recovery of existing proxy relations. Direct relationship signals remain in professional descriptions. Uncalibrated semantic levels; no precision or unseen-cooperation claim.'}
 
 
