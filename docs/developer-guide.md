@@ -1,11 +1,11 @@
-# Write and reuse complete methods / 编写并复用完整方法
+# Retained Python method guide / 保留的 Python 方法指南
 
-J++ currently uses Python 3.12+ as its public builder. Install from this checkout
+For standalone J++ source, use the [Rust guide](../rust/README.md) and [implemented grammar](../rust/FRONTEND.md). This page documents the retained Python 3.12+ builder. Install it from this checkout
 with `python -m pip install .`, or install a delivered wheel with
 `python -m pip install /path/to/jpp_language-0.1.0a3-py3-none-any.whl`.
 No research directory, PYTHONPATH setting, or kernel snapshot is needed.
 
-当前入口是 Python 构建器。安装后在任意普通工作目录运行：
+本页保留 Python 构建器的使用方法；正式独立源码入口见上面的 Rust 指南。安装 Python 包后可以运行：
 
 ```sh
 jpp demo

@@ -48,6 +48,10 @@ fixed observations and a local recording action. No model API is called.
 Building needs Rust; the installed native executable runs without Python or Cargo.
 Use the explicit executable path if the retained Python `jpp` command is also installed.
 
+The native delivery passed 41 Rust tests and GitHub's Rust/Python checks.
+[Next steps](ROADMAP.md): reusable source-library methods, consistent composition
+rules and an application using standalone source.
+
 ## Run the retained Python reference
 
 

@@ -4,11 +4,14 @@ J++ is early-stage. A small executable method teaches us more than a large specu
 
 ## Start locally
 
-Follow the README, run `jpp demo`, then `python -m pytest -q`. Use Python 3.12 or newer.
+For language work, follow the [native source guide](rust/README.md): run `cargo test --locked --workspace` from `rust/`, then run the `.jpp` examples. The parser, shared checker/runtime and CLI live in separate crates within one implementation.
+
+语言开发从 `rust/` 开始。优先提交一个能运行的 `.jpp` 方法，说明它怎样继续参与组合。Python 参考实现的维护与实验仍按 README 中的 Python 安装步骤运行。
 
 Useful first contributions:
 
-- Build a new solver using `component`, `then`, `bind` or `iterate`.
+- Build a new `.jpp` solver using method values, questions, exact computation and bounded iteration.
+- Extract a method reused by two source programs, showing what duplicated code it removes.
 - Turn an awkward composition into a minimal reproducible example.
 - Improve an installation step or translate an API explanation.
 - Compare an algorithm using the library with the same algorithm without it.

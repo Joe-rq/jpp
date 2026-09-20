@@ -6,6 +6,6 @@
 
 同步后续研究成果时，只提取有关源码与测试，在这个仓库重新运行 README 的安装、演示和测试。不要把私人讨论、运行凭据或未经整理的实验数据整目录导入。
 
-当前分发名是 `jpp-language`，命令名是 `jpp`，显示名称是 J++。尚未向 PyPI 注册或发布。源码中的 `foundation.jv` 和 `jev_compose` 暂时保留兼容名称。
+Python 参考包的分发名是 `jpp-language`，命令名是 `jpp`，显示名称是 J++。尚未向 PyPI 注册或发布。源码中的 `foundation.jv` 和 `jev_compose` 保留兼容名称。正式原生源码实现位于 `rust/`，由 Cargo 构建，也生成名为 `jpp` 的命令；安装和验证时明确区分两者。原生交付需运行 `cargo test --locked --workspace` 及 README 中的完整源码例子。
 
 首发材料位于 `launch/`；这些是可复制的文案，没有自动向社交渠道发帖。封面源文件是 `assets/social-card.svg`。
