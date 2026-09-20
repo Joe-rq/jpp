@@ -148,3 +148,5 @@ protocol. Its new caller requires both cost <= 2 and no remaining questions.
 
 [Independent strategy / 独立策略](../examples/priority_resume.py) ·
 [Its output / 实际输出](demos/partial/independent-output.json)
+
+[Implementation and evidence commit / 实现与依据提交](https://github.com/Towow-ai/jpp/commit/4e19377)
