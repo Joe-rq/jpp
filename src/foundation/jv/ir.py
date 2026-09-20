@@ -737,11 +737,18 @@ class Fail:
     detail: dict = field(default_factory=dict)
 
 
-class Escalated:
-    """`jv.escalate(x)` 的返回值：程序把 x 交给人，记账。"""
+class FailList(list):
+    """列表型 `jv.transform` 失败时的返回值（J-12「失败是值」）：形状仍是 list（空），`isinstance(x, list)` 为真、
+    `if not xs` 照常用；`.fail` 记原因；`jv.on_fail(xs, 替代)` 认它。"""
+    fail: "Fail | None" = None
 
-    def __init__(self, payload: Any, note: str = ""):
+
+class Escalated:
+    """`jv.escalate(x, note, exits=)` 的返回值：程序把 x 交给人，记账；`exits` 是随之被消费（记为 escalate）的出口。"""
+
+    def __init__(self, payload: Any, note: str = "", exits: list | None = None):
         self.payload, self.note = payload, note
+        self.exits = list(exits or [])
 
     def __repr__(self):
         return f"Escalated({self.note or type(self.payload).__name__})"

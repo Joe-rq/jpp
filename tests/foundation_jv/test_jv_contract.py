@@ -236,6 +236,30 @@ def transform_receives_mats_and_lists():
     run(lambda rt: jv.transform(f, jv.lit("a"), [jv.lit("b")])); assert seen["t"] == ("Mat", "list", "Mat")
 def transform_refreshes_do_inputs():
     out, _, _ = run(lambda rt: jv.transform(lambda m: m.content + "!", jv.do(ACT, jv.lit("a"), iter_seq=0)).content); assert out == "ok!"
+def transform_fail_list_type_returns_empty_list():
+    def f(xs) -> list:
+        raise RuntimeError("x")
+    out, ws, _ = run(lambda rt: (lambda xs: (xs, isinstance(xs, jv.FailList)))(jv.transform(f, [jv.lit("a")])))
+    assert out[0] == [] and out[1] and any("W-transform-fail" in w for w in ws)
+def transform_subset_keeps_original_mat():
+    def body(rt):
+        ms = [jv.lit("a"), jv.lit("b")]
+        out = jv.transform(lambda xs: [xs[1].content], ms)
+        return out[0] is ms[1]
+    out, _, _ = run(body); assert out is True
+def judge_select_single_candidate_trivial():
+    def body(rt):
+        e = jv.cut(jv.judge(jv.state(on=jv.lit("a"), over=[jv.lit("唯一")]), S()))
+        return isinstance(e, jv.Pick) and e.k == 0 and rt.stats["calls"] == 0
+    out, _, _ = run(body); assert out is True
+def escalate_exits_consumed():
+    def body(rt):
+        e = jv.cut(jv.judge(jv.state(on=jv.lit("a")), T())[0])
+        r = jv.escalate(["a"], exits=[e])
+        return e.consumed and r.exits == [e]
+    out, _, _ = run(body, client=jv.FakeClient(lambda t, qid, q: {"noul": 0.5} if q["type"] == "noul" else None)); assert out is True
+def register_action_inherit_reason_optional():
+    a = jv.register_action("contract_inherit_g6", fn=lambda m: m.content, taint_out="inherit", reason=""); assert a.registered
 def transform_fail_is_value():
     def bad(m): raise ValueError("x")
     out, ws, _ = run(lambda rt: jv.transform(bad, jv.lit("a"))); assert "fail" in out.content and any("W-transform-fail" in w for w in ws)
@@ -304,6 +328,18 @@ def program_static_error_raises():
         with pytest.raises(jv.JvError): p()
 def program_returns_materialized():
     out, _, _ = run(lambda rt: [jv.do(ACT, jv.lit("a"), iter_seq=0)]); assert isinstance(out[0], jv.Mat)
+def program_return_annotation_hands_unsure():
+    """J-05「被返回类型消费」：返回注解含 Unsure 才能把 Unsure 原样交给调用者；没注解仍是 J-05。"""
+    band = jv.FakeClient(rule=lambda text, qid, q: {"type": "noul", "noul": 0.5} if q["type"] == "noul" else None)
+    with rt_with(client=band) as rt:
+        @jv.program(budget=jv.Budget(calls=5), check_static=False)
+        def ok() -> jv.Exit:
+            return jv.cut(jv.judge(jv.state(on=jv.lit("a")), T())[0])
+        assert isinstance(ok(), jv.Unsure) and rt.stats["returned_unsure"] == 1
+        @jv.program(budget=jv.Budget(calls=5), check_static=False)
+        def bad():
+            return jv.cut(jv.judge(jv.state(on=jv.lit("a")), T())[0])
+        with pytest.raises(jv.JvError, match="返回注解"): bad()
 
 def fake_client_text_keys():
     seen = {}
@@ -391,6 +427,9 @@ CELLS = [
     ("transform", "输出", transform_output_mat), ("transform", "列表", transform_list_wraps_each), ("transform", "空输入", transform_empty_list),
     ("transform", "taint", transform_taint_joins_args), ("transform", "实参", transform_receives_mats_and_lists),
     ("transform", "刷新", transform_refreshes_do_inputs), ("transform", "失败", transform_fail_is_value),
+    ("transform", "失败-列表型", transform_fail_list_type_returns_empty_list), ("transform", "子集保留原材料", transform_subset_keeps_original_mat),
+    ("judge", "单候选 select", judge_select_single_candidate_trivial), ("escalate", "exits 消费", escalate_exits_consumed),
+    ("register_action", "空输入", register_action_inherit_reason_optional),
     ("loop", "输出", loop_yields_n), ("loop", "失败", loop_missing_variant), ("loop", "无进展", loop_noprogress_is_consumed_unsure),
     ("handle", "消费", handle_consumes_and_returns), ("handle", "escalate", handle_escalate_asks),
     ("consume", "输出", consume_output_list), ("consume", "空输入", consume_empty), ("consume", "Act 透传", consume_act_passthrough),
@@ -399,6 +438,7 @@ CELLS = [
     ("on_fail", "透传", on_fail_passthrough),
     ("Budget", "默认", budget_defaults_unbounded), ("Budget", "layers", budget_layers_counts_judge_layers), ("Budget", "超层", budget_layers_exceeded_marks_unsure_budget),
     ("program", "静态错", program_static_error_raises), ("program", "返回值", program_returns_materialized),
+    ("program", "返回注解", program_return_annotation_hands_unsure),
     ("FakeClient", "text 键", fake_client_text_keys), ("FakeClient", "失败", fake_client_bad_body_is_error),
     ("register_action", "失败", register_action_trusted_needs_reason), ("Action", "自封可信", action_self_trusted_warns),
     ("Exit", "属性", exit_attrs), ("Exit", "==类", exit_eq_class_warns_false), ("Exit", "as_mat", exit_as_mat_derived_from), ("Unsure", "cause", unsure_bad_cause),

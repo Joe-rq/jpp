@@ -198,7 +198,9 @@ def plan(fn, budget: Budget | None = None, rt=None, profile: dict | None = None)
 # 协议（Claude的评审回复.md §「三处要改」第 3 条）：程序包装前 entry 与包装后函数均可挂
 #     __jv_structure__ = {"version": 1, "root": node}
 # node 是 Mapping，字段 operation/name/input/output/effects/effects_contract/children（tuple of node）。
-# 这条路径只读结构、只做符号成本合成，绝不触发任何执行；PlanReport 仍是唯一返回类型。
+# operation ∈ {leaf, identity, then, branch, opaque, product, iterate, bind}。
+# 这条路径只读结构、只做符号成本合成，绝不触发任何执行（尤其 bind 的 factory 绝不在计划期被调用）；
+# PlanReport 仍是唯一返回类型。
 _SYM_FIELDS = ("calls", "questions", "layers", "gen_calls", "gen_latency",
                "do_calls", "do_cost", "asks", "unsure_bound")
 # 每种 effect 关联的 Sym 字段：第一个是判断「AST 是否见到」的主字段，其余是同一调用点派生的字段——
@@ -207,7 +209,7 @@ _EFFECT_FIELDS = {"judge": ("calls", "questions", "layers", "unsure_bound"),
                    "gen": ("gen_calls", "gen_latency"),
                    "do": ("do_calls", "do_cost"),
                    "ask": ("asks",)}
-_STRUCT_OPS = {"leaf", "identity", "then", "branch", "opaque"}
+_STRUCT_OPS = {"leaf", "identity", "then", "branch", "opaque", "product", "iterate", "bind"}
 
 
 def _zero_cost() -> dict[str, Sym]:
@@ -290,6 +292,46 @@ def _cost_of_branch(node: Mapping, rt, profile: dict, rep: PlanReport) -> dict[s
     return {k: pred[k] + _sym_upper_bound(yes[k], no[k], k, rep) for k in _SYM_FIELDS}
 
 
+def _cost_of_product(node: Mapping, rt, profile: dict, rep: PlanReport) -> dict[str, Sym]:
+    children = node.get("children") or ()
+    if len(children) == 0:
+        raise JvError(f"jv.plan: product 节点 {_node_name(node)} 需要至少 1 个 children，实得 0")
+    total = _zero_cost()
+    for child in children:
+        c = _cost_of_node(child, rt, profile, rep)
+        total = {k: total[k] + c[k] for k in _SYM_FIELDS}
+    return total
+
+
+def _cost_of_iterate(node: Mapping, rt, profile: dict, rep: PlanReport) -> dict[str, Sym]:
+    children = node.get("children") or ()
+    if len(children) != 2:
+        raise JvError(f"jv.plan: iterate 节点 {_node_name(node)} 需要恰好 2 个 children（step/done），实得 {len(children)}")
+    limit = (node.get("parameters") or {}).get("limit")
+    if not isinstance(limit, int) or isinstance(limit, bool) or limit < 0:
+        raise JvError(f"jv.plan: iterate 节点 {_node_name(node)} 的 parameters.limit 必须是非负整数，实得 {limit!r}")
+    step = _cost_of_node(children[0], rt, profile, rep)
+    done = _cost_of_node(children[1], rt, profile, rep)
+    # 先查 done 再决定是否进 step：最多 N 步、最多 N+1 次 done 检查；N=0 只查一次 done，不进 step。保守上界，不是精确值。
+    return {k: step[k] * limit + done[k] * (limit + 1) for k in _SYM_FIELDS}
+
+
+def _cost_of_bind(node: Mapping, rt, profile: dict, rep: PlanReport) -> dict[str, Sym]:
+    children = node.get("children") or ()
+    if len(children) != 2:
+        raise JvError(f"jv.plan: bind 节点 {_node_name(node)} 需要恰好 2 个 children（前段/factory），实得 {len(children)}")
+    name = _node_name(node)
+    prefix = _cost_of_node(children[0], rt, profile, rep)
+    factory = _cost_of_node(children[1], rt, profile, rep)      # factory 自身声明的 effects/contract 沿其子节点（通常是 leaf）既有规则算
+    # factory 的返回值（continuation）只在运行期产生；静态计划绝不调用 factory，所以 continuation 的
+    # 真实结构永远未知。parameters.continuation_effects 即便声明为空元组，也不能当作「已知零」——
+    # 空声明只是作者声明，不是证明（同 leaf 规则）。全字段记未知符号并告警 W-dynamic。
+    continuation = {k: Sym.var(f"bind:{name}:continuation:{k}") for k in _SYM_FIELDS}
+    _struct_warn(rep, f"W-dynamic: 节点 {name}（bind）的 continuation 由 factory 运行期产生，"
+                       f"静态计划不调用 factory，资源按未知符号处理，不当 0 计划")
+    return {k: prefix[k] + factory[k] + continuation[k] for k in _SYM_FIELDS}
+
+
 def _cost_of_opaque(node: Mapping, rep: PlanReport) -> dict[str, Sym]:
     name = _node_name(node)
     source_op = node.get("source_operation", "?")
@@ -315,6 +357,12 @@ def _cost_of_node(node, rt, profile: dict, rep: PlanReport) -> dict[str, Sym]:
         return _cost_of_then(node, rt, profile, rep)
     if op == "branch":
         return _cost_of_branch(node, rt, profile, rep)
+    if op == "product":
+        return _cost_of_product(node, rt, profile, rep)
+    if op == "iterate":
+        return _cost_of_iterate(node, rt, profile, rep)
+    if op == "bind":
+        return _cost_of_bind(node, rt, profile, rep)
     return _cost_of_opaque(node, rep)
 
 

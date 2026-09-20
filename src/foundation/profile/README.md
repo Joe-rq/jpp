@@ -1,5 +1,3 @@
-> 注意：`run.py` 与 `build_from_raw.py` 会读 `~/.typesafe-key` 调用真机并付费；跑前先在实验预注册里写明假设与上限。
-
 # 模型档案测试组
 
 把 E1–E10 的实验包装成按模型版本一键重跑的测试组，产出 `profiles/<model>.json`。

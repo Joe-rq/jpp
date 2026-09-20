@@ -17,9 +17,9 @@ from .calib import CalibRecord, CalibStore, FitRegistry, cost_line
 from .client import FakeClient, JevClient
 from .ir import (ACTIONS, Act, Action, At, Budget, CalibRef, Escalated, Exit, Fail, FitRef, Ignore, JvError,
                  JvTypeError, Mat, MatLike, Pending, Pick, Q, Reading, Readings, ReadingsVec, State, Unsure, lit,
-                 register_action)
+                 register_action, FailList)
 from .client import validate_answers
-from .runtime import (Runtime, current, decreasing, drop, escalate, prior, provisional, _Score)
+from .runtime import (Runtime, current, decreasing, drop, escalate, prior, provisional, _Score, admits_unsure)
 from . import runtime as _runtime
 from .checker import check, CheckReport
 from .plan import plan, PlanReport, Sym
@@ -30,7 +30,8 @@ __all__ = ["Runtime", "FakeClient", "JevClient", "Budget", "Action", "Mat", "lit
            "Unsure", "Pick", "At", "drop", "escalate", "provisional", "Pending", "Fail", "Escalated", "JvError",
            "JvTypeError", "check", "current", "use", "mat", "plan", "PlanReport", "Sym", "stats", "allocate", "unsure_bound", "budget",
            "cost_line",
-           "register_action", "ACTIONS", "MatLike", "answer", "validate_answers", "Exit", "Readings", "Reading"]
+           "register_action", "ACTIONS", "MatLike", "answer", "validate_answers", "Exit", "Readings", "Reading",
+           "FailList"]
 
 
 def answer(key: str, kind: str, k: int | None = None, level: int | None = None):
@@ -178,6 +179,7 @@ def program(budget: Budget | None = None, *, check_static: bool = True):
 
     def deco(fn):
         report_holder: dict = {}
+        returns_unsure = admits_unsure(fn)                       # J-05「被返回类型消费」：注解含 Unsure 才允许原样返回
 
         @functools.wraps(fn)
         def wrapper(*args, **kwargs):
@@ -185,7 +187,7 @@ def program(budget: Budget | None = None, *, check_static: bool = True):
             if check_static and "report" not in report_holder:
                 report_holder["report"] = check(fn)
             rep: CheckReport | None = report_holder.get("report")
-            frame = rt.begin(fn.__name__, budget)                # 最外层开账本；内层压子账帧
+            frame = rt.begin(fn.__name__, budget, fn=fn, returns_unsure=returns_unsure)   # 最外层开账本；内层压子账帧
             try:
                 if rep is not None:
                     for w in rep.warnings:
@@ -219,6 +221,7 @@ def program(budget: Budget | None = None, *, check_static: bool = True):
         wrapper.__jv_program__ = True
         wrapper.__jv_budget__ = budget
         wrapper.__jv_fn__ = fn
+        wrapper.__jv_returns_unsure__ = returns_unsure
         wrapper.check = lambda: check(fn)
         wrapper.plan = lambda rt=None: plan(fn, budget=budget, rt=rt)
         return wrapper

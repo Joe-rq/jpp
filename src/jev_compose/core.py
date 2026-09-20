@@ -55,27 +55,65 @@ class Component(Generic[I, O]):
 
     def __post_init__(self):
         # These nodes are executable structure, not labels attached to closures.
-        if self.operation in ("then", "branch"):
+        if self.operation in ("then", "branch", "product", "iterate", "bind"):
             if self.function is not None:
-                raise CompositionError("Structural then/branch nodes cannot carry a separate execution closure")
-            expected = 2 if self.operation == "then" else 3
+                raise CompositionError("Structural nodes cannot carry a separate execution closure")
+            expected = {"then": 2, "branch": 3, "iterate": 2, "bind": 2}.get(self.operation, len(self.children))
             if len(self.children) != expected:
                 raise CompositionError(f"{self.operation} requires {expected} children")
             declared = frozenset().union(*(c.effects for c in self.children))
+            if self.operation == "bind":
+                declared |= frozenset(dict(self.parameters)["continuation_effects"])
+                factory_caps = dict(self.parameters)["factory_effects"]
+                declared |= frozenset({"*"}) if factory_caps is None else frozenset(factory_caps)
             if self.effects != declared:
                 raise CompositionError("Structural capabilities must match children; use replace_at to rebuild")
 
     def __call__(self, value: I) -> O:
         _check_value(self.input_type, value, f"{self.name} input")
         events = _events.get()
+        event = {"component": self.name, "operation": self.operation}
         if events is not None:
-            events.append({"component": self.name, "operation": self.operation})
+            event["call_id"] = len(events)
+            events.append(event)
         if self.operation == "then":
             first, second = self.children
             result = second(first(value))
         elif self.operation == "branch":
             predicate, yes, no = self.children
             result = (yes if predicate(value) else no)(value)
+        elif self.operation == "product":
+            result = tuple(child(value) for child in self.children)
+        elif self.operation == "iterate":
+            step, done = self.children
+            limit = dict(self.parameters)["limit"]
+            state = value
+            for n in range(limit + 1):
+                if done(state):
+                    result = Iteration(state, n, "done")
+                    break
+                if n < limit:
+                    state = step(state)
+            else:
+                result = Iteration(state, limit, "limit")
+        elif self.operation == "bind":
+            first, factory = self.children
+            intermediate = first(value)
+            next_component = factory(intermediate)
+            if not isinstance(next_component, Component):
+                raise CompositionError("bind factory must return a Component")
+            if not _accepts(self.output_type, next_component.output_type):
+                raise CompositionError("bind continuation has an incompatible result type")
+            if not _accepts(next_component.input_type, first.output_type):
+                raise CompositionError("bind continuation has an incompatible input type")
+            if not next_component.effects <= frozenset(dict(self.parameters)["continuation_effects"]):
+                raise CompositionError("bind continuation uses undeclared effects")
+            event["generated_structure"] = next_component.structure()
+            event["generated_description"] = next_component.describe()
+            event["continuation_trace_start"] = len(events) if events is not None else None
+            result = next_component(intermediate)
+            event["continuation_trace_end"] = len(events) if events is not None else None
+            event["result"] = result
         else:
             result = self.function(value)
         _check_value(self.output_type, result, f"{self.name} output")
@@ -99,7 +137,8 @@ class Component(Generic[I, O]):
         `effects` bounds the returned continuation, not the factory. A factory
         may itself call capabilities: declare factory_effects, pass a Component,
         or leave it unknown (represented by '*'). Empty is a declaration, never
-        a proof of purity. The shared planner treats bind as an opaque boundary.
+        a proof of purity. The shared planner sees prefix and factory while the
+        generated continuation remains unknown until this execution.
         """
         allowed = frozenset(effects)
         if isinstance(factory, Component):
@@ -112,19 +151,13 @@ class Component(Generic[I, O]):
         factory_caps = frozenset({"*"}) if factory_effects is None else frozenset(factory_effects)
         factory_contract = "unknown" if "*" in factory_caps else "declared"
 
-        def continuation(value):
-            intermediate = self(value)
-            next_component = factory(intermediate)
-            if not isinstance(next_component, Component):
-                raise CompositionError("bind factory must return a Component")
-            if not _accepts(output_type, next_component.output_type):
-                raise CompositionError("bind continuation has an incompatible result type")
-            if not next_component.effects <= allowed:
-                raise CompositionError("bind continuation uses undeclared effects")
-            return next_component(intermediate)
+        factory_node = factory
+        if not isinstance(factory, Component):
+            factory_node = Component(getattr(factory, "name", getattr(factory, "__name__", "factory")),
+                                     self.output_type, Component, factory, factory_caps)
 
-        return Component(name, self.input_type, output_type, continuation,
-                         self.effects | allowed | factory_caps, "bind", (self,),
+        return Component(name, self.input_type, output_type, None,
+                         self.effects | allowed | factory_caps, "bind", (self, factory_node),
                          (("factory", getattr(factory, "name", getattr(factory, "__name__", "factory"))),
                           ("factory_effects", None if factory_effects is None else tuple(sorted(factory_caps))),
                           ("factory_contract", factory_contract),
@@ -141,17 +174,17 @@ class Component(Generic[I, O]):
     def structure(self):
         """Versioned shared-planner input, projected from the executing nodes.
 
-        Only then/branch/identity/leaf are structural in v1. Other operations
-        explicitly remain opaque. Callables are retained, not serialized.
+        All public combinators are structural in v1. Arbitrary custom operations
+        remain opaque. Callables are retained, not serialized.
         """
         def node(part):
-            structural = part.operation in ("then", "branch", "identity", "leaf")
+            structural = part.operation in ("then", "branch", "identity", "leaf", "product", "iterate", "bind")
             operation = part.operation if structural else "opaque"
             data = {"operation": operation, "name": part.name,
                     "input": _label(part.input_type), "output": _label(part.output_type),
                     "effects": tuple(sorted(part.effects)),
                     "effects_contract": ("unknown" if "*" in part.effects else
-                                         "structural" if operation in ("then", "branch", "identity") else "declared"),
+                                         "structural" if operation in ("then", "branch", "identity", "product", "iterate", "bind") else "declared"),
                     "children": tuple(node(child) for child in part.children) if structural else (),
                     "parameters": MappingProxyType(dict(part.parameters))}
             if operation in ("leaf", "opaque"):
@@ -162,11 +195,11 @@ class Component(Generic[I, O]):
         return MappingProxyType({"version": 1, "root": node(self)})
 
     def replace_at(self, path: tuple[int, ...], replacement: Component) -> Component:
-        """Rebuild one child of the supported immutable then/branch structure."""
+        """Rebuild a child of immutable composition, rechecking its contracts."""
         if not path:
             return replacement
-        if self.operation not in ("then", "branch"):
-            raise CompositionError("replace_at traverses then/branch only; opaque methods must be rebuilt by their factory")
+        if self.operation not in ("then", "branch", "product", "iterate", "bind"):
+            raise CompositionError("replace_at requires a structural component")
         index, *tail = path
         if type(index) is not int or index < 0 or index >= len(self.children):
             raise CompositionError("replace_at child index is out of range")
@@ -174,6 +207,15 @@ class Component(Generic[I, O]):
         children[index] = children[index].replace_at(tuple(tail), replacement)
         if self.operation == "then":
             return children[0].then(children[1], name=self.name)
+        if self.operation == "product":
+            return product(*children, name=self.name)
+        if self.operation == "iterate":
+            return iterate(*children, limit=dict(self.parameters)["limit"], name=self.name)
+        if self.operation == "bind":
+            return children[0].bind(children[1], self.output_type,
+                                    effects=frozenset(dict(self.parameters)["continuation_effects"]),
+                                    factory_effects=(None if dict(self.parameters)["factory_effects"] is None
+                                                     else frozenset(dict(self.parameters)["factory_effects"])), name=self.name)
         return branch(*children, name=self.name)
 
     def program(self, *, name: str | None = None, budget=None):
@@ -228,7 +270,7 @@ def product(*parts: Component, name="product") -> Component:
     if any(p.input_type != parts[0].input_type for p in parts):
         raise CompositionError("product components must accept the same input type")
     return Component(name, parts[0].input_type, tuple,
-                     lambda value: tuple(p(value) for p in parts),
+                     None,
                      frozenset().union(*(p.effects for p in parts)), "product", parts)
 
 
@@ -242,19 +284,10 @@ class Iteration(Generic[T]):
 def iterate(step: Component, done: Component, *, limit: int, name="iterate") -> Component:
     if step.input_type != step.output_type or not _accepts(done.input_type, step.input_type):
         raise CompositionError("iterate requires S→S and S→bool")
-    if done.output_type is not bool or limit < 0:
+    if done.output_type is not bool or type(limit) is not int or limit < 0:
         raise CompositionError("iterate needs a boolean stop condition and nonnegative limit")
 
-    def loop(value):
-        state = value
-        for n in range(limit + 1):
-            if done(state):
-                return Iteration(state, n, "done")
-            if n < limit:
-                state = step(state)
-        return Iteration(state, limit, "limit")
-
-    return Component(name, step.input_type, Iteration, loop, step.effects | done.effects,
+    return Component(name, step.input_type, Iteration, None, step.effects | done.effects,
                      "iterate", (step, done), (("limit", limit),))
 
 
