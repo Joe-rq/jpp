@@ -111,7 +111,7 @@ This is an early alpha. APIs may change. Real-model quality requires separate ev
 
 ## Help shape the language
 
-Current research is clarifying question/material/result interfaces, improving examples for new readers, and exploring more algorithm constructions. The Towow example includes a first live-backend trace; broader backend evaluation and independent syntax remain subsequent milestones. [Dated progress report](docs/progress.md) · [Roadmap](ROADMAP.md).
+Standalone syntax and Rust execution are delivered. Current work is to resolve correctness findings from review, make source methods reusable, clarify composition rules and extend measured backend evaluation. The Towow examples include published live-backend recordings on the retained Python path. [Dated progress report](docs/progress.md) · [Roadmap](ROADMAP.md).
 
 The most useful contribution is a new method built from existing components, together with an example that runs. Tell us where composition becomes awkward, what you had to duplicate, and which primitive would eliminate that duplication. [Start here](CONTRIBUTING.md).
 
