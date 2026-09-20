@@ -75,6 +75,17 @@ fn ty(t: &a::Type) -> c::Type {
         a::Type::Function(args, result) => {
             c::Type::Function(args.iter().map(ty).collect(), Box::new(ty(result)))
         }
+        a::Type::Method {
+            parameters,
+            result,
+            effects,
+            captures_responsibility,
+        } => c::Type::Method(c::MethodType {
+            params: parameters.iter().map(ty).collect(),
+            ret: Box::new(ty(result)),
+            effects: effects.clone(),
+            captures_responsibility: *captures_responsibility,
+        }),
     }
 }
 fn function(f: &a::Function) -> c::Function {

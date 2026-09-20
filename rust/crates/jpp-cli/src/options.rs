@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 
-pub const HELP: &str = "J++ native source tools\nUsage:\n  jpp parse <file.jpp> [--ast]\n  jpp check <file.jpp>\n  jpp run <file.jpp> [--fixtures <file.json>] [--output <report.json>]\n          [--ledger-out <ledger.json>] [--replay <ledger.json>]\n\nRun uses fixed observations; no model API requests are made.";
+pub const HELP: &str = "J++ native source tools\nUsage:\n  jpp parse <file.jpp> [--ast]\n  jpp check <file.jpp>\n  jpp run <file.jpp> [--fixtures <file.json>] [--output <report.json>]\n          [--ledger-out <ledger.json>] [--replay <ledger.json> | --resume <ledger.json>]\n\nLeading relative imports load source libraries. Run uses fixed generation/judgment/response records; no model API requests are made. Registered actions: record_check, read_json(path), write_json(path,value). File paths use the working directory. Resume may perform unrecorded actions; replay rejects them.";
 
 #[derive(Debug, PartialEq)]
 pub enum Command {
@@ -17,6 +17,7 @@ pub struct RunOptions {
     pub output: Option<PathBuf>,
     pub ledger_out: Option<PathBuf>,
     pub replay: Option<PathBuf>,
+    pub resume: Option<PathBuf>,
 }
 
 pub fn parse(args: &[String]) -> Result<Command, String> {
@@ -59,6 +60,7 @@ pub fn parse(args: &[String]) -> Result<Command, String> {
         output: None,
         ledger_out: None,
         replay: None,
+        resume: None,
     };
     let mut i = 2;
     while i < args.len() {
@@ -67,6 +69,7 @@ pub fn parse(args: &[String]) -> Result<Command, String> {
             "--output" => &mut options.output,
             "--ledger-out" => &mut options.ledger_out,
             "--replay" => &mut options.replay,
+            "--resume" => &mut options.resume,
             other => return Err(format!("unknown run option '{other}'")),
         };
         if target.is_some() {
@@ -78,6 +81,11 @@ pub fn parse(args: &[String]) -> Result<Command, String> {
             .ok_or_else(|| format!("{} requires a file path", args[i]))?;
         *target = Some(value.into());
         i += 2;
+    }
+    if options.replay.is_some() && options.resume.is_some() {
+        return Err(
+            "use either --replay (no new requests) or --resume (continue with the client)".into(),
+        );
     }
     Ok(Command::Run(options))
 }
@@ -117,6 +125,7 @@ mod tests {
             vec!["run", "a.jpp", "--output", "--replay", "x"],
             vec!["run", "a.jpp", "--fixtures", "a", "--fixtures", "b"],
             vec!["check", "a.jpp", "--ast"],
+            vec!["run", "a.jpp", "--resume", "a", "--replay", "b"],
         ] {
             assert!(parse(&args(&argv)).is_err(), "{argv:?}");
         }

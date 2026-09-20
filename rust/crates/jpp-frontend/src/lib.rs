@@ -2,6 +2,7 @@
 pub mod ast;
 pub mod diagnostic;
 mod lexer;
+pub mod loader;
 mod lower;
 mod parser;
 
