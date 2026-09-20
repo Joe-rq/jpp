@@ -1,0 +1,14 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>J++ · 从一个想法到合作提议</title><link rel="stylesheet" href="../lab/style.css"><link rel="stylesheet" href="style.css"></head>
+<body><main>
+<header><a class="brand" href="../">J++ <span>FIRST APPLICATION · TOWOW</span></a><nav><a href="../population/">216 人意图发现</a><a href="../real/">真实来源关系对照</a></nav></header>
+<div class="eyebrow">可组合的发现 / 04 · 让候选组合继续参与计算</div>
+<h1>一个想法，能否长出<br>新的合作关系？</h1>
+<p class="lead">同一套 J++ 发现程序，接收不同的意图、判断问题和组合规则。它从 216 个合成主体的上下文中提出候选，让组合继续接受判断，也允许上一次的组合成为下一次发现的输入。</p>
+<p class="mode">这是实际 JEV 计算的公开回放，页面操作不调用模型。人物来自旧实验的合成资料；示例中的贡献方向由应用配置提供。这里交付的是可替换规则、可续接的发现应用接口；输出是待确认的提议。</p>
+<section class="panel"><label for="case">换一个任务，使用同一套发现程序</label><select id="case"></select><h2 id="signal-text">读取意图…</h2><p id="case-description"></p><p>先输入局部上下文，判断可能提供什么贡献；再输入成员组成的候选方案，判断贡献能不能接起来。已有组合可以成为新的输入，原始成员资料与之前未决的判断继续保留。</p><p id="run-summary">正在读取实际运行记录…</p><p id="reuse-summary" class="small"></p><div class="controls"><button id="show-people" type="button">查看单人候选</button><button id="show-teams" type="button">查看组合提议</button><button id="replay" type="button">重放图谱过程</button></div><p id="stage" role="status"></p></section>
+<section class="workspace"><div class="panel"><h2>同一个意图，怎样找到不同贡献</h2><svg id="network" viewBox="0 0 760 570" role="group" aria-label="从216个合成主体到合作候选的图谱"></svg><p class="small">圆点是合成主体。不同贡献的候选分别亮起，随后连成接受复核的组合。动画只回放已记录的计算，不表示模型正在运行。</p></div><aside class="panel"><h2 id="detail-title">选择一个人或组合</h2><div id="detail"></div></aside></section>
+<section class="panel"><h2 id="list-title">合作提议</h2><div id="proposals"></div></section>
+<article><h2>为什么这比一张推荐名单多了一步</h2><p>两个人分别拥有能力，并不自动意味着他们愿意或能够合作。这个程序将成员资料、贡献和原始想法一起交给下一次判断，保留不能确定的部分，并给出开始讨论前还需要确认的问题。关掉组合步骤时，程序只返回单人候选；打开以后，才会产生这些可继续处理的提议。</p><p>通爻研究里的目标更进一步：接收方依自己的上下文提出关系，发送方不必预先知道该找谁；候选组合还能继续改变发现。当前这一版先实现可替换的提名与组合接口、组合续接和观察复用。示例配置由开发者编写；自动形成局部算子、网络传播与大规模动态路由仍是后续工作。</p><h2>自己运行与改写</h2><p>命令行程序可以用录制回答复现，也可以在自己的调用预算内改写输入并运行。每个提议都保留成员、分工、输入资料、暂定判断与待确认条件，方便其他程序接着使用。应用复用 J++ 已有的组合运行时，正式独立语言仍沿 Rust 路线建设。</p><p><a href="https://github.com/Towow-ai/jpp/blob/main/src/jpp/towow_teams.py">查看应用代码</a> · <a href="https://github.com/Towow-ai/jpp/blob/main/docs/towow-discovery-iteration.zh-CN.md">方法、结果与复现</a> · <a id="download-result" href="results.json" download>下载当前结果</a> · <a href="recording.jsonl.gz" download>下载这些示例的判断录制</a></p></article>
+<footer><a href="../">回到完整介绍</a><p id="status" role="status">读取结果中…</p></footer>
+</main><script type="module" src="app.js"></script></body></html>

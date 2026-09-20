@@ -2,6 +2,14 @@
 
 Updated: 2026-09-20. This is a dated report, not an automatically updated dashboard.
 
+## 2026-09-20: composable discovery application / 可续接的发现应用
+
+新增[可替换计划的发现组件](towow-discovery-iteration.zh-CN.md)：同一 J++ 组合接受不同意图、问题、路由和组合函数；提议保留原成员与上下文，可以作为下一轮输入。216 个合成主体上的三个真实运行分别完成 20、20、12 个判断，最后一个将后端两人提议续接为含安全检查成员的三人提议。三个案例在安装后的 wheel 中用录制完全复现，重复执行新增请求 0。公开[交互图谱](https://towow-ai.github.io/jpp/demos/towow/teams/)与调用接口，未将其称为通用规划器或分布式网络。
+
+The new application accepts caller-authored plans and replaceable routing/combination functions; nominations preserve their members and can seed later discovery. Three live synthetic runs used the same implementation, followed by installed-wheel replay, zero-request warm reruns and a no-combination comparison. Existing J++ composition and observation mechanisms are reused; the formal Rust kernel direction is unchanged.
+
+325 人固定二十名额的来源探索对照得到 681 条前十命中，低于原 J++ 的 697；7 条跨来源种子进入候选池后仍没有留在前十，因此没有替换默认方法。The fixed-slot exploration control regressed and remains visible rather than replacing the default. 本轮新增估算 JEV 费用约 $0.041700；累计约 $1.530903（已授权总预算 $5）。本地 544 项检查通过，包含一次子进程导入环境修正后的定向复查；浏览器与线上部署另按发布记录核验。
+
 ## 2026-09-20: focused OCaml experiments alongside Rust / Rust 主线允许具体 OCaml 实验
 
 The [Rust ADR](adr/0001-rust-kernel.md) now permits OCaml experiments around

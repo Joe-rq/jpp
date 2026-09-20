@@ -1,0 +1,38 @@
+{
+  "intent": {
+    "id": "q16",
+    "query": "想做一个把声音变成画面的东西",
+    "context": null,
+    "level": "L4"
+  },
+  "facets": [
+    {
+      "id": "audio",
+      "label": "音频输入与处理",
+      "search_text": "声音 音频 音乐 采样 实时处理 合成 Max/MSP 声音艺术",
+      "question": "档案是否记载了本人具备可用于这个意图的具体音频输入、声音设计或音频处理能力？指出依据；单纯兴趣或想学习不算。"
+    },
+    {
+      "id": "visual",
+      "label": "视觉输出与图形",
+      "search_text": "画面 视觉 图形 Shader 实时视觉特效 WebGL Three.js Processing",
+      "question": "档案是否记载了本人具备可用于这个意图的具体视觉输出、图形编程或实时视觉效果能力？指出依据；单纯兴趣或想学习不算。"
+    }
+  ],
+  "max_candidates": 8,
+  "scale": [
+    "没有具体贡献",
+    "只有泛泛关联",
+    "有具体互补贡献",
+    "有明确的共同实现路径"
+  ],
+  "combination": {
+    "facets": [
+      "audio",
+      "visual"
+    ],
+    "question": "结合意图与这两份档案，判断成员能否形成有具体依据的互补合作构型。不能把泛泛兴趣相加，也不能编造意愿、时间或已发生合作。",
+    "next_question": "你们是否愿意共同做一个最小原型？各自何时有空，先验证哪一种输入与输出？"
+  },
+  "max_combinations": 4
+}
