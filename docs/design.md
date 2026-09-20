@@ -2,23 +2,24 @@
 
 ## Read the language specifications / 阅读语言规范
 
-**The grammar design exists.** The archived language specification contains lexical rules (§1), a full EBNF proposal (§2), types, semantics and example programs. It is a historical design study, not syntax accepted by the current implementation. The current design makes semantic judgment a first-class effect in a general-purpose language, using an IR and a Python builder; independent surface syntax is deferred indefinitely.
+**Rust and standalone J++ source are now the implementation direction.** The [2026-09-20 decision](adr/0001-rust-kernel.md) starts one Rust kernel plus a parser, language checker and CLI. This supersedes the earlier indefinite deferral of independent syntax. Construction is starting; this page does not claim a delivered Rust runtime.
 
-**文法设计已经存在。** 历史语言规范包含词法（§1）、完整 EBNF 提案（§2）、类型、语义和示例程序。它已归档为设计研究，不是当前实现可解析的源码语法。现行方向是以语义判断为一等效应的通用语言，采用 IR 与 Python 构建器，独立表面文法无限期推迟。
+**正式方向已改为 Rust 内核与独立 J++ 源码。** [新的施工决定](adr/0001-rust-kernel.md)替代此前独立文法无限期推迟的安排。先实现解析、检查与解释执行，交付完整源码程序。历史 EBNF 仍是参考；新文法由实际完整程序决定，不原样恢复旧限制。当前 Rust 工作刚开始。
 
 | Read / 阅读 | Status and contents / 状态与内容 |
 |---|---|
-| [Current IR and class contract / 现行 IR 与类契约](../research/地基/12-IR与类契约-v0.1.md) | §2 six IR forms; §3 type/checker rules; §4 passes; §6 Python builder; §9 build order. Design requirements and dated research states are not a claim that every requirement has shipped. / 六形式、类型纪律、编译 pass、构建器及建造顺序；规范中的要求和历史研究状态不等于全部已交付。 |
+| [Rust implementation decision / Rust 施工决定](adr/0001-rust-kernel.md) | Current direction and first acceptance milestone. / 当前路线与首包验收。 |
+| [IR and class contract / IR 与类契约](../research/地基/12-IR与类契约-v0.1.md) | Semantic reference and historical Python construction contract; its indefinite syntax deferral is superseded. / 语义参考及历史 Python 施工契约，其中无限期推迟文法的排期已被替代。 |
 | [Archived language specification and EBNF / 历史语言规范与 EBNF](../research/地基/11-语言规范-v1.md) | Earlier standalone surface-language proposal, retained for design history; no delivered parser or standalone compiler for this grammar. / 早期独立源码语言提案；尚未交付解析该文法的 parser 或独立编译器。 |
 | [Design decisions / 设计决策记录](../research/地基/DECISIONS.md) | Records the move from the surface-language proposal to the IR-first route. / 记录从表面文法转向 IR 先行的决策。 |
 | [Write and debug methods / 编写与调试方法](developer-guide.md) | Current composition API, executable examples and plan inspection. / 当前组合 API、可执行例子与计划检查。 |
 | [Research index / 研究索引](../research/README.md) | Original Chinese specifications, algebra, reviews and experiment records. / 中文规范原件、组合代数、评审与实验记录。 |
 
-The project intent is to use Python to run concrete examples and algorithms first, then develop an independent language. “Deferred indefinitely” records the current contract's scheduling decision, not a permanent decision to stay in Python. The future language's syntax, migration path and implementation remain to be designed and delivered.
+The Python programs remain executable behavior references and experiment tools. New formal kernel and language-interface construction now moves to Rust. The following sections describe the retained Python implementation, not the new Rust grammar or delivered Rust behavior.
 
-项目意图是先用 Python 跑通具体实例和算法，再发展独立语言。“无限期推迟”记录的是现行契约中的排期决定，并不表示永久停留在 Python。未来语言的语法、迁移方式与实现仍需设计和交付。
+Python 程序保留为可运行行为对照及实验工具。正式内核和独立接口的新建设现在转到 Rust。以下内容描述保留的 Python 实现，不代表新的 Rust 文法或已实现的 Rust 行为。
 
-## What source looks like today / 当前源码怎样写
+## Retained Python source / 保留的 Python 源码
 
 Programs are Python source. The builder is exported by [`foundation.jv`](../src/foundation/jv/__init__.py); Python supplies functions, data structures and control flow. The six IR forms below describe semantic operations, **not a separate source-parser grammar**. For full builder programs, read §6 of the current contract and the [kernel guide](../src/foundation/jv/README.md).
 
@@ -74,8 +75,8 @@ Binary search and counterexample-guided search are established algorithms. J++ e
 
 ## Language versus implementation
 
-The language goal is broader than the current Python implementation. The historical grammar is available above, but the current contract defers independent surface syntax indefinitely while the IR, builder and working compositions are developed. No standalone lexer/parser/compiler for that historical grammar has been delivered in this release.
+The language goal is broader than the retained Python implementation. The new Rust milestone is a complete source-to-execution path with composable methods and explicit unresolved results. The historical grammar remains available for reference; it is not automatically the grammar of the new implementation.
 
-语言目标比当前 Python 实现更广。历史文法可直接阅读；当前契约仍将独立表面语法无限期推迟，先完善 IR、构建器与可运行组合。本版本没有交付针对历史文法的独立词法器、解析器或编译器。
+语言目标比保留的 Python 实现更广。新整包要交付源码到执行的完整路径，并保留方法组合与未决结果。历史文法可直接阅读，但不会自动成为新实现的文法。
 
 See [composition API in Chinese](composition.zh-CN.md) for exact current operations.

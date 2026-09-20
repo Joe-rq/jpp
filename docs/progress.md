@@ -2,6 +2,23 @@
 
 Updated: 2026-09-20. This is a dated report, not an automatically updated dashboard.
 
+## 2026-09-20: Rust and standalone source selected / 选定 Rust 与独立源码
+
+The formal language implementation now moves to one Rust kernel with a `.jpp`
+parser, J++ type/effect checker and CLI. This replaces the previous indefinite
+deferral of independent syntax. [Decision and first acceptance milestone](adr/0001-rust-kernel.md).
+
+正式语言建设转到 Rust；Python已发布成果保留作行为对照、实验与必要适配，不再
+继续扩大正式 Python 内核或接口。本次只更新路线、设计入口和中英 README，检查了
+链接及现状措辞；尚未交付 Rust 执行能力。下一项可验证成果是源码→检查→运行的
+完整程序，覆盖自适应选问及部分结果继续求解，不只是语法展示。
+
+This documentation-only update does not change the existing runnable examples.
+Rust construction is starting; subsequent updates will include actual build and
+source-program execution evidence.
+
+[Decision commit / 路线提交](https://github.com/Towow-ai/jpp/commit/e04265e)
+
 ## 2026-09-20: language design and grammar entry / 语言设计与文法入口
 
 The [design page](design.md) now links directly to the already published current IR/class contract and historical language specification, including its lexical rules and full EBNF. The READMEs and research index expose these links; the historical specification has a bilingual archive notice. Current source remains Python builder code: the old grammar has no delivered standalone parser/compiler, and the current contract defers independent surface syntax without a delivery date; this does not replace the intent to develop an independent language after validating examples and algorithms. The guide distinguishes six IR forms, typed exits, composition and runtime behavior from design requirements.
