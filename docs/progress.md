@@ -206,9 +206,9 @@ Two compiler passes (`speculate`, `vectorize`) make judgment fusion independent 
 
 ### 2026-09-21: a falsified scenario, a calibration reading, and the Rust kernel starting / 一个被证伪的场景、一次校准读数、Rust 内核开工
 
-No new runtime capability this round. E9f-2b′ **failed**: predicting which paragraphs an author will ask to change is not decidable in one literal hop (n = 1,564 paragraphs, AUC 0.541 against a bet of 0.70; a length-and-digits heuristic scored higher at ~~0.638~~ **[0.643 — see the correction entry below]**, and a `haiku` judge sat on the random line too). E-CAL's final run passed none of its falsification criteria and about half its bets: Chinese `noul` readings are usable as probabilities (ECE 0.057), ~~`choice` showed no first-position bias (permutation consistency 1.000)~~ **[withdrawn 2026-09-21 — measurement artefact; see the correction entry below]**, `score` hit the adjacent band 0.964 — while `noul` AUC (0.748), `choice` argmax (0.757) and `score` MAE (0.553) all came in under their bets, and the 300 items turned out to be built from about 45 independent paragraphs, so effective n is 17–26 rather than 100. The formal kernel moves to Rust ([ADR 0001](adr/0001-rust-kernel.md)); its core is still being built in the research workspace and ~~**no Rust source is published yet**~~ **[overtaken the same day — a Rust workspace landed under `rust/` on the front-end line; see the Status block in that update]**. 535 tests pass on Python 3.12 and 3.13 in this repository. Details and every number: [2026-09-21 update](updates/2026-09-21-two-experiments-and-rust-start.md).
+No new runtime capability this round. E9f-2b′ **failed**: predicting which paragraphs an author will ask to change is not decidable in one literal hop (n = 1,564 paragraphs, AUC 0.541 against a bet of 0.70; a length-and-digits heuristic scored higher at ~~0.638~~ **[0.643 — see the correction entry below]**, and a `haiku` judge sat on the random line too). E-CAL's final run passed none of its falsification criteria and about half its bets: Chinese `noul` readings are usable as probabilities (ECE 0.057), ~~`choice` showed no first-position bias (permutation consistency 1.000)~~ **[withdrawn 2026-09-21 — measurement artefact; see the correction entry below]**, `score` hit the adjacent band 0.964 — while `noul` AUC (0.748), `choice` argmax (0.757) and `score` MAE (0.553) all came in under their bets, and the 300 items turned out to be built from about 45 independent paragraphs, so effective n is 17–26 rather than 100. **[Scope added 2026-09-21: the calibration set behind every number in this paragraph is the both-models-agree subset, not a random sample, and is optimistically biased by an amount now measured for two of the three question types — see the entry below.]** The formal kernel moves to Rust ([ADR 0001](adr/0001-rust-kernel.md)); its core is still being built in the research workspace and ~~**no Rust source is published yet**~~ **[overtaken the same day — a Rust workspace landed under `rust/` on the front-end line; see the Status block in that update]**. 535 tests pass on Python 3.12 and 3.13 in this repository. Details and every number: [2026-09-21 update](updates/2026-09-21-two-experiments-and-rust-start.md).
 
-本轮没有新的运行能力。E9f-2b′ **失败**：段级预测「作者会要求改这一段吗」在一跳字面下不可判（n = 1,564 段，AUC 0.541，赌的是 0.70；长度加数字的启发式基线反而更高，~~0.638~~**〔更正为 0.643，见下方更正条目〕**；haiku 裁判同样在随机线上）。E-CAL 正式版三条证伪判据一条都没触发、赌值对了一半：中文 `noul` 读数可以当概率用（ECE 0.057），~~`choice` 无首位偏置（置换一致 1.000）~~**〔2026-09-21 作废：测量假象，见下方更正条目〕**，`score` 相邻档 0.964；但 `noul` AUC 0.748、`choice` argmax 0.757、`score` MAE 0.553 全部低于赌值，且 300 条题面只由约 45 个独立段落重组而成，有效 n 在 17–26 之间而不是 100。正式内核转 Rust（[ADR 0001](adr/0001-rust-kernel.md)），core 仍在研究工作区建设中，~~**Rust 源码尚未公开同步**~~**〔当日即被事实追上：前端那条线已把 Rust 工作区推到 `rust/` 下，见该更新的「现状」块〕**。本仓库在 Python 3.12 与 3.13 上各通过 535 项测试。细节与全部数字见 [2026-09-21 更新](updates/2026-09-21-two-experiments-and-rust-start.md)。
+本轮没有新的运行能力。E9f-2b′ **失败**：段级预测「作者会要求改这一段吗」在一跳字面下不可判（n = 1,564 段，AUC 0.541，赌的是 0.70；长度加数字的启发式基线反而更高，~~0.638~~**〔更正为 0.643，见下方更正条目〕**；haiku 裁判同样在随机线上）。E-CAL 正式版三条证伪判据一条都没触发、赌值对了一半：中文 `noul` 读数可以当概率用（ECE 0.057），~~`choice` 无首位偏置（置换一致 1.000）~~**〔2026-09-21 作废：测量假象，见下方更正条目〕**，`score` 相邻档 0.964；但 `noul` AUC 0.748、`choice` argmax 0.757、`score` MAE 0.553 全部低于赌值，且 300 条题面只由约 45 个独立段落重组而成，有效 n 在 17–26 之间而不是 100。**〔范围补注，2026-09-21：本段每个数字背后的校准集都是「两模型都同意」的子集，不是随机样本，同向乐观有偏，偏多少对三种题型里的两种已经测出来——见下方条目。〕**正式内核转 Rust（[ADR 0001](adr/0001-rust-kernel.md)），core 仍在研究工作区建设中，~~**Rust 源码尚未公开同步**~~**〔当日即被事实追上：前端那条线已把 Rust 工作区推到 `rust/` 下，见该更新的「现状」块〕**。本仓库在 Python 3.12 与 3.13 上各通过 535 项测试。细节与全部数字见 [2026-09-21 更新](updates/2026-09-21-two-experiments-and-rust-start.md)。
 
 ### 2026-09-21: correcting a published result / 更正一条已发布的结论
 
@@ -242,6 +242,49 @@ $0.0027 → **$0.045**、调用 1,633 次（实验脚本的 `reset_stats()` 望�
 标明，不删：[2026-09-21 更新](updates/2026-09-21-two-experiments-and-rust-start.md)
 每节加了更正块，四个研究文件一并重新同步（含两个后续实验的预注册）。本次只改文档，`src/` 未动；Python 3.12 与
 3.13 各通过 544 项测试。
+
+### 2026-09-21: a scope for four published numbers, a conformal design result, and a withdrawn labelling plan / 四个已发布数字的适用范围、一个保形设计结论、一条被撤回的标注计划
+
+The `noul` ECE 0.057, `noul` AUC 0.748, `choice` argmax 0.757 and `score`
+adjacent-band 0.964 numbers above need a scope they did not have: E-CAL's
+ground truth is dual-model labelling, and the 202 items that carry it agree
+100.0% of the time between the two labelling models, against 81.1% among the
+95 that do not — the calibration set is, by construction, the subset the
+models agree on, not a random sample, and every number computed on it is
+optimistically biased. **This does not withdraw the numbers**; it scopes them.
+The bias direction is now measured, not just hypothesized, for two of the
+three question types — `noul`'s error rate reads as **at least 0.392, not
+0.301** — while the same free predictor **reverses on `score`**, exactly the
+type with the least labelling coverage. A new design,
+`设计/保形弃权域-设计-2026-09-21.md`, asks whether conformal risk control can
+turn these thresholds into finite-sample guarantees on the 297 already-paid-for
+readings: it **cannot**, for any of the three question types (tightest bounds
+0.319 / 0.269 / 0.251, so any ≤20% target is infeasible), with the same scope
+above applying to those three bounds too. A prototype crate
+(`foundation/experiments/conformal-proto/`) ships alongside it — not part of
+`rust/`, not built by this repository's own tests — currently 9 passed, 1
+failed on purpose (a test that demonstrated a gap since closed by the
+certificate gate it argues for). The pre-registered plan to close the scope
+by labelling 22 more `noul` items is **withdrawn**: those 22 items do not
+exist in the material; a real path (`E-NOUL-HI`) is pre-registered in their
+place. Documentation only — `src/` unchanged. Full account:
+[2026-09-21 update](updates/2026-09-21-scope-note-and-conformal-fail.md).
+
+上面 noul ECE 0.057、noul AUC 0.748、choice argmax 0.757、score 相邻档 0.964
+这四个数需要一个此前没写的适用范围：E-CAL 的真值是模型双标，有真值的 202 条里两个标
+注模型一致率 100.0%，没有真值的 95 条里只有 81.1%——校准集在定义上就是「两模型都同
+意」的子集，不是随机样本，算在它上面的每个数都同向乐观有偏。**这不是把那些数作
+废**，是给它们加范围。偏倚方向现在对三种题型里的两种已经测出来，不再只是假设——
+noul 的错误率要读成**至少 0.392，不是 0.301**——而同一个免费预测器在 **score 上反
+向**，恰恰是标注覆盖最低的那一型。新设计 `设计/保形弃权域-设计-2026-09-21.md` 问：
+保形风险控制能不能把这些阈值变成带有限样本保证的数字，用的是已付费的 297 条读数：
+**不能**，三种题型都不能（最紧上界 0.319 / 0.269 / 0.251，任何 ≤20% 目标都无解），
+上面同一条范围同样适用于这三个上界。配套的原型 crate
+（`foundation/experiments/conformal-proto/`）不属于 `rust/`，也不在本仓库自己的测试
+范围内——当前 9 通过、1 条故意失败（它当初测的缺口已被它自己主张的证书门堵上）。原定
+靠再标 22 条 `noul` 来拆掉范围的计划**已撤回**：那 22 条在材料里不存在；换成预注册
+`E-NOUL-HI` 里的真路径。本次只改文档，`src/` 未动。完整内容见
+[2026-09-21 更新](updates/2026-09-21-scope-note-and-conformal-fail.md)。
 
 # 2026-09-20 — Install, compose and inspect complete methods / 安装并使用完整方法
 

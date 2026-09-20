@@ -280,6 +280,17 @@ but neither was confident are reported separately as a check arm
 | `score` | adjacent-band hit | 0.85 | **0.964** | PASS |
 | `score` | expected-band MAE | 0.5 | 0.553 | marginal FAIL |
 
+> **Scope added 2026-09-21.** The "all" column above is the both-models-agree
+> calibration set, not a random sample of the material (202/202 agreement
+> where ground truth exists, 77/95 where it does not) — every number in this
+> table is optimistically biased by an amount now measured for two of the
+> three question types. See
+> [`docs/updates/2026-09-21-scope-note-and-conformal-fail.md`](2026-09-21-scope-note-and-conformal-fail.md).
+> **范围补注（2026-09-21）**：上表「全体」栏是「两模型都同意」的校准集，不是材料的
+> 随机样本（有真值处一致率 202/202，无真值处 77/95）——表中每个数字都同向乐观有偏，
+> 偏多少现在对三种题型里的两种已经测出来了，见
+> [`docs/updates/2026-09-21-scope-note-and-conformal-fail.md`](2026-09-21-scope-note-and-conformal-fail.md)。
+
 **The `noul` reliability curve is monotone and close to the diagonal** (n = 73):
 0.15 → 0.00, 0.25 → 0.00, 0.55 → 0.54, 0.66 → 0.59, 0.74 → 0.74, 0.83 → 1.00. The
 falsification criterion — "ECE > 0.10 means the reading is ordinal only" — does
@@ -328,7 +339,9 @@ these keys have no entry in `calib.json` yet, and by J-03 a threshold may only
 come from a calibration record. Producing those records is what this run was for;
 they are stamped `label_source: 模型双标+人抽检`.
 
-**Why discrimination came in low, and what would make it right.**
+**Why discrimination came in low, and what would make it right.** *(The AUC/argmax/MAE
+numbers below carry the same 2026-09-21 scope note as the table above — see
+[`docs/updates/2026-09-21-scope-note-and-conformal-fail.md`](2026-09-21-scope-note-and-conformal-fail.md).)*
 
 1. `noul` AUC 0.748 rather than 0.85: the bet extrapolated from E9f code
    correctness, where truth is objective and literally visible. Here truth is
@@ -357,7 +370,10 @@ diffed line by line against v1 to confirm that everything removed came from
 evidence blocks. Without that assertion, those 28 items would have gone to Jev
 with stems that no longer matched their labels.
 
-**中文摘要。** ~~三条证伪判据一条都没触发~~ **（2026-09-21 更正：两条经检验未触发，
+**中文摘要。**〔**范围补注，2026-09-21**：下面「全体」栏是「两模型都同意」的校准集，
+不是随机样本，见
+[`docs/updates/2026-09-21-scope-note-and-conformal-fail.md`](2026-09-21-scope-note-and-conformal-fail.md)。〕
+~~三条证伪判据一条都没触发~~ **（2026-09-21 更正：两条经检验未触发，
 第三条「置换一致 < 0.75」没能被检验，见本节末「更正」）**，赌值只对了一半。真值是模型双标（Fable 与
 Opus 一致且至少一方高置信），所以「全体」栏只含有真值的条目：noul 73 / choice 74 /
 score 55；两模型一致但都非高置信的另列核对臂（21 / 20 / 36）。286 次调用、$0.0096。
@@ -419,8 +435,12 @@ set.
 
 **What survives.** The `noul` results (ECE 0.057, monotone reliability curve),
 the `score` results (adjacent band 0.964) and every discrimination number
-(`noul` AUC 0.748, `choice` argmax 0.757, `score` MAE 0.553) are untouched, as is
-the effective-n finding (17–26, not 100). The scope sentence "the bias is a
+(`noul` AUC 0.748, `choice` argmax 0.757, `score` MAE 0.553) are untouched by
+*this* correction, as is the effective-n finding (17–26, not 100) — but see the
+scope note added 2026-09-21:
+[`docs/updates/2026-09-21-scope-note-and-conformal-fail.md`](2026-09-21-scope-note-and-conformal-fail.md),
+"untouched" describes this correction only, not the calibration set's
+selection bias. The scope sentence "the bias is a
 property of the key, not of the question type" still stands on its own terms;
 this run did not test it. The proposal that the permute-and-vote pass should be
 switched **per key** also stands, but its justification changes: the basis is now
@@ -449,6 +469,8 @@ n = 7 上没有检验力~~‡；预注册里「置换一致 < 0.75 → 首位偏
 长候选 select 的偏置，得先补 `k_limit` 的 120–250 档，或在题集里强制 `phys="choice"`。
 **没受影响的**：noul（ECE 0.057、曲线单调）、score（相邻 0.964）、全部判别力数字
 （noul AUC 0.748、choice argmax 0.757、score MAE 0.553）与「有效 n 17–26 而非 100」。
+**「没受影响」说的只是这次更正，不是校准集的选择偏倚**——范围补注见 2026-09-21
+[`docs/updates/2026-09-21-scope-note-and-conformal-fail.md`](2026-09-21-scope-note-and-conformal-fail.md)。
 「偏置是键的性质不是题型的性质」这句本身仍成立，只是本次没有检验它；「置换取众数按键
 开关」的提议也仍成立，但依据改为「该键实测的置换一致率，没有这个数就保守开」。这件事
 本身是一个发现：同一个 `select` 在同一批材料上走了两种物理形式，而汇总指标把两条路的
@@ -495,7 +517,11 @@ re-run anything to catch this, only to read the printout past the ground-truth
 filter.
 
 **What survives.** Every other number in §2 — the `noul` and `score` results,
-the discrimination figures, the effective-*n* finding — is untouched. The scope
+the discrimination figures, the effective-*n* finding — is untouched by *this*
+correction (see the 2026-09-21 scope note on the calibration set's selection
+bias:
+[`docs/updates/2026-09-21-scope-note-and-conformal-fail.md`](2026-09-21-scope-note-and-conformal-fail.md)).
+The scope
 statement "the bias is a property of the key, not of the question type" still
 stands and this run still does not test it.
 
@@ -520,7 +546,10 @@ stands and this run still does not test it.
 同样落在「和未测无法区分」的唯一那个值上。这 8 条读数当时就打印在同一次核查的
 输出里，不需要重跑任何东西才能抓到这一点，只需要把打印结果看过真值过滤那一步
 之后再往下看一眼。**没受影响的部分**：§2 其余全部数字——`noul` 与 `score` 的结果、
-判别力数字、有效 n 的发现——都不受影响；「偏置是键的性质、不是题型的性质」这句
+判别力数字、有效 n 的发现——就本次更正而言都不受影响；**校准集本身的选择偏倚是另一条
+限定**，见 2026-09-21 范围补注
+[`docs/updates/2026-09-21-scope-note-and-conformal-fail.md`](2026-09-21-scope-note-and-conformal-fail.md)。
+「偏置是键的性质、不是题型的性质」这句
 适用范围的话仍然成立，本次仍然没有检验它。
 
 ## 3. The formal kernel moves to Rust; no Rust source is public yet / 正式内核转 Rust；Rust 源码尚未公开
