@@ -1,0 +1,10 @@
+{
+  "used_before_complete": {"members": ["A", "B"], "cost": 9},
+  "initial": {"best": {"members": ["A", "B"], "cost": 9}, "pending": ["C", "D"]},
+  "improved": {"best": {"members": ["C"], "cost": 2}, "pending": ["D"]},
+  "final": {"best": {"members": ["C"], "cost": 2}, "pending": []},
+  "terminal": true,
+  "observations": 6,
+  "checked_once_in_order": ["A", "B", "C"],
+  "revised_materials": ["C", "D"]
+}

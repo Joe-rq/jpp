@@ -1,6 +1,39 @@
 # J++ progress / 项目进度
 
-Updated: 2026-09-20. This is a dated report, not an automatically updated dashboard.
+Updated: 2026-09-21. This is a dated report, not an automatically updated dashboard.
+
+## 2026-09-21: standalone source runs on Rust / 独立源码到 Rust 执行贯通
+
+The [native Rust package](../rust/README.md) now parses `.jpp` source, lowers it to
+the shared program representation, checks language rules and executes it through
+one kernel. The CLI includes `parse`, `check`, `run`, fixed observation loading,
+JSON reports and ledger replay. No Python interpreter is used on this path.
+
+现在可以直接写 `.jpp` 文件并运行。源码里的方法可以作为参数、返回方法，再参与
+下一次组合。前端只负责表达和转换，执行规则由共同 Rust 内核承担。原 Python 包和
+通爻实验保留可用，本次没有扩展 Python 正式内核。
+
+| Executed program / 实际程序 | Observed result / 结果 |
+| --- | --- |
+| Nested composition / 组合再组合 | 20 → 43; source and direct core program return identical JSON / 源码与直接内核构造结果相同 |
+| Adaptive questions / 自适应选问 | 731 located among 1,000 candidates in 10 fixed observations / 十题定位 731 |
+| Partial continuation / 部分结果继续求解 | Cost 9 with C/D pending → cost 2 with D pending → complete; 6 observations, A/B/C checked once / 保留旧观察和检查 |
+| Replay / 重放 | Same value; zero fresh judgment calls and zero repeated local checks / 返回值相同，无新调用和重复动作 |
+
+Validation in an independent publication checkout: **38 Rust tests passed**, with
+one documentation snippet explicitly ignored. Tests cover source execution,
+direct core algorithms, syntax/source positions, known literal argument type
+errors, budget stopping and replay. A native installation outside the research
+checkout ran the complete programs with an empty PATH; Python and Cargo were not
+available to the executable. Formatting checks passed. CI also runs the retained
+Python suites; its result is recorded on the pull request.
+
+独立发布目录 38 项 Rust 测试通过。原生安装在项目外、PATH 为空时仍可运行；明显
+参数类型错误会定位到 `.jpp` 文件行列并提前停止。静态检查覆盖明确子集，动态规则
+仍由运行时检查。固定观察与合成校准验证执行机制，不是模型准确率实验；方法闭包
+在源码重跑时重建，账本没有被描述为任意闭包的跨进程序列化。
+
+[Grammar / 文法](../rust/FRONTEND.md) · [Equivalent source and core usage / 等价用法](../rust/COMPARISON.md).
 
 ## 2026-09-20: focused OCaml experiments alongside Rust / Rust 主线允许具体 OCaml 实验
 

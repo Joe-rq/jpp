@@ -8,7 +8,7 @@
 
 J++ 是一门正在开发的实验性编程语言。我们想让语义判断成为可以编程的基本操作：问题可以保存、传递和组合；求解方法也可以保存、传递和组合；复杂方法封装以后，仍然可以成为下一个方法的基本单元。
 
-已经交付的 **Python 3.12 嵌入式语言、内核和组合库**保留为行为对照及实验工具。**正式语言建设现在选择 Rust 单一内核与独立 `.jpp` 源码**，开始建设解析、检查、执行与 CLI 的完整路径；当前不宣称 Rust 执行已经交付。[路线决定与验收目标](docs/adr/0001-rust-kernel.md)。
+**现在可以直接写 `.jpp` 源码，用原生 Rust 程序检查并运行。** 函数、问题和组合方法交给同一个内核执行。此前的 Python 3.12 嵌入式实现保留为行为对照和实验工具。[Rust 安装与完整例子](rust/README.md) · [语言实现路线](docs/adr/0001-rust-kernel.md)。
 
 ## 我们最初感受到的直觉
 
@@ -25,6 +25,25 @@ J++ 是一门正在开发的实验性编程语言。我们想让语义判断成�
 新增[325 人真实来源关系对照](https://towow-ai.github.io/jpp/demos/towow/real/)：在同一批职业资料上比较七种检索与判断组合，核对 963 条旧关系标签，逐人查看找到与漏掉的候选。公开真实调用录制、全部结果和离线复现程序。[结果与历史口径](docs/towow-real-relations-results.zh-CN.md)。
 
 [网络发现的下一步](docs/towow-discovery-roadmap.zh-CN.md)：定位候选入口与排序的漏失，整理旧通爻研究中可复用的语料、转介、多人组合和动态网络接口，提供零 API 费用的诊断脚本。
+
+## 直接运行 J++ 源码
+
+```sh
+git clone https://github.com/towow-ai/jpp.git
+cd jpp/rust
+cargo build --locked --workspace
+cargo run -p jpp-cli -- run examples/composition.jpp
+cargo run -p jpp-cli -- run examples/adaptive.jpp --fixtures examples/fixtures/adaptive.json
+cargo run -p jpp-cli -- run examples/partial.jpp --fixtures examples/fixtures/partial.json
+```
+
+三个程序分别展示：组合方法再参与组合；自己选择十道问题，在 1,000 个候选里找到
+731；先取得成本 9 的可用组合，再换一种策略继续问，得到成本 2 的方案，旧检查不
+重复做。算法写在 `.jpp` 源码中，运行器只提供固定观察和记录动作，本次不调用模型。
+[源码文法](rust/FRONTEND.md) · [与直接构造内核程序的等价对照](rust/COMPARISON.md)。
+
+构建时需要 Rust；安装后的原生程序无须 Python 或 Cargo。若同时安装了旧 Python
+版本，两者都叫 `jpp`，请使用原生程序的完整路径区分。
 
 ## 运行保留的 Python 对照
 
@@ -48,7 +67,7 @@ Windows 使用 `.venv\Scripts\activate` 激活环境。
 
 ## 我们现在正在做什么
 
-公开 alpha 的安装入口、组合库和通爻案例继续可用。现在的新整包是独立 J++ 源码到 Rust 执行：方法定义与组合、自适应选问，以及未决候选接精确组合并继续求解。此前“独立文法无限期推迟”的排期已由新决定替代，历史成果保留。
+公开 Python alpha 的安装入口、组合库和通爻案例继续可用。独立 J++ 源码到 Rust 执行已贯通：方法定义与组合、自适应选问，以及未决候选接精确组合并继续求解。首包使用固定观察验证执行机制；真实模型表现和更大规模应用需要各自的实验。
 
 首个公开快照的 25 项机制测试通过，Linux 上 Python 3.12、3.13 两组 CI 通过。[进度页](docs/progress.md)区分已经发布的成果、研究中的工作与下一步要验证的问题；[路线图](ROADMAP.md)给出各阶段的完成标准。
 
@@ -58,7 +77,7 @@ Windows 使用 `.venv\Scripts\activate` 激活环境。
 
 因此，我们同时研究问题本身如何表达、方法之间如何连接、不确定性如何保留，以及精确算法如何与模型判断配合。语言的价值，要由别人使用它构造出的程序体现。
 
-当前已有顺序组合、分支、动态选择方法、迭代、问题序列化，以及自适应提问和反例反馈两种算法构造器。源码入口分别是 `foundation.jv` 和 `jev_compose`，`jpp demo` 是可直接运行的体验入口。
+保留的 Python 实现已有顺序组合、分支、动态选择方法、迭代、问题序列化，以及自适应提问和反例反馈两种算法构造器。其入口是 `foundation.jv` 和 `jev_compose`，`jpp demo` 是旧版体验入口。原生源码入口位于 `rust/`；两者能力不自动视为完全相同。
 
 我们最希望收到这样的贡献：用已有基本单元构造一种新方法，附上能运行的例子，并告诉我们哪些地方还需要重复劳动。[贡献指南](CONTRIBUTING.md)列出了具体入口。
 

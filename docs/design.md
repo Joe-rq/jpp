@@ -2,14 +2,16 @@
 
 ## Read the language specifications / 阅读语言规范
 
-**Rust and standalone J++ source are now the implementation direction.** The [2026-09-20 decision](adr/0001-rust-kernel.md) starts one Rust kernel plus a parser, language checker and CLI. This supersedes the earlier indefinite deferral of independent syntax. Construction is starting; this page does not claim a delivered Rust runtime.
+**Standalone J++ source now executes through one Rust kernel.** The [native package](../rust/README.md) includes parsing, shared checking, interpretation and CLI commands. Read the [implemented grammar](../rust/FRONTEND.md), [source/direct-core equivalence](../rust/COMPARISON.md) and [implementation decision](adr/0001-rust-kernel.md).
 
-**正式方向已改为 Rust 内核与独立 J++ 源码。** [新的施工决定](adr/0001-rust-kernel.md)替代此前独立文法无限期推迟的安排。先实现解析、检查与解释执行，交付完整源码程序。历史 EBNF 仍是参考；新文法由实际完整程序决定，不原样恢复旧限制。当前 Rust 工作刚开始。
+**独立 J++ 源码已能通过 Rust 内核运行。** [原生包](../rust/README.md)提供解析、共同检查和解释执行；组合方法、自适应选问及部分结果继续求解都写成可运行源码。历史 EBNF 仍是设计参考，实际支持的源码形式见[当前文法](../rust/FRONTEND.md)。
 
 [Rust mainline and OCaml experiments / Rust主线与OCaml实验](adr/0001-rust-kernel.md#rust-mainline-and-ocaml-experiments--rust-主线与-ocaml-实验): OCaml can explore concrete design questions; selected rules enter the shared specification and are reproduced in Rust. Formal OCaml components require explicit interfaces and verified delivery. 实验不暂停Rust主线，不默认增加用户依赖。
 
 | Read / 阅读 | Status and contents / 状态与内容 |
 |---|---|
+| [Implemented source grammar / 已实现源码文法](../rust/FRONTEND.md) | Syntax accepted by the native parser and operations used by the complete programs. / 原生解析器文法与完整程序所用操作。 |
+| [Shared Rust core contract / Rust 共同内核接口](../rust/crates/jpp-core/INTERFACE.md) | Checking, values, execution, effects and ledger APIs, including explicitly unimplemented rules. / 检查、值、执行、效应与账本接口，列明未实现规则。 |
 | [Rust implementation decision / Rust 施工决定](adr/0001-rust-kernel.md) | Current direction and first acceptance milestone. / 当前路线与首包验收。 |
 | [IR and class contract / IR 与类契约](../research/地基/12-IR与类契约-v0.1.md) | Semantic reference and historical Python construction contract; its indefinite syntax deferral is superseded. / 语义参考及历史 Python 施工契约，其中无限期推迟文法的排期已被替代。 |
 | [Archived language specification and EBNF / 历史语言规范与 EBNF](../research/地基/11-语言规范-v1.md) | Earlier standalone surface-language proposal, retained for design history; no delivered parser or standalone compiler for this grammar. / 早期独立源码语言提案；尚未交付解析该文法的 parser 或独立编译器。 |

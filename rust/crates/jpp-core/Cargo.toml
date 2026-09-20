@@ -1,0 +1,21 @@
+[package]
+name = "jpp-core"
+version = "0.1.0"
+edition = "2024"
+license = "MIT"
+description = "J++ core: common program representation, checker, interpreter, effects, ledger"
+
+[dependencies]
+serde = { version = "1", features = ["derive", "rc"] }
+serde_json = "1"
+sha2 = "0.10"
+ureq = { version = "2", features = ["json"], optional = true }
+
+[features]
+default = []
+live = ["ureq"]
+
+# 只在测试里用：拿前端解析 examples/*.jpp，验证检查器不会误杀已经写好的源码。
+# 这是 cargo 允许的 dev 依赖环（jpp-frontend 正式依赖 jpp-core），不进交付产物。
+[dev-dependencies]
+jpp-frontend = { path = "../jpp-frontend" }

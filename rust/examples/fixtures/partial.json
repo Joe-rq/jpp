@@ -1,0 +1,130 @@
+{
+  "description": "Synthetic fixed observations and synthetic calibration for execution tests only; no live model evaluation.",
+  "calibrations": [
+    {
+      "key": "fixture",
+      "hi": 0.75,
+      "lo": 0.25,
+      "n": 1,
+      "status": "上岗"
+    }
+  ],
+  "observations": [
+    {
+      "on": [
+        {
+          "name": "A",
+          "cost": 4,
+          "skills": [
+            "web"
+          ],
+          "flag": true,
+          "revision": 0
+        }
+      ],
+      "op": "test",
+      "text": "Candidate fits?",
+      "calib": "fixture",
+      "answer": {
+        "Noul": 0.99
+      }
+    },
+    {
+      "on": [
+        {
+          "name": "B",
+          "cost": 5,
+          "skills": [
+            "database"
+          ],
+          "flag": true,
+          "revision": 0
+        }
+      ],
+      "op": "test",
+      "text": "Candidate fits?",
+      "calib": "fixture",
+      "answer": {
+        "Noul": 0.99
+      }
+    },
+    {
+      "on": [
+        {
+          "name": "C",
+          "cost": 2,
+          "skills": [
+            "web",
+            "database"
+          ],
+          "flag": null,
+          "revision": 0
+        }
+      ],
+      "op": "test",
+      "text": "Candidate fits?",
+      "calib": "fixture",
+      "answer": {
+        "Noul": 0.5
+      }
+    },
+    {
+      "on": [
+        {
+          "name": "D",
+          "cost": 20,
+          "skills": [
+            "web"
+          ],
+          "flag": null,
+          "revision": 0
+        }
+      ],
+      "op": "test",
+      "text": "Candidate fits?",
+      "calib": "fixture",
+      "answer": {
+        "Noul": 0.5
+      }
+    },
+    {
+      "on": [
+        {
+          "name": "C",
+          "cost": 2,
+          "skills": [
+            "web",
+            "database"
+          ],
+          "flag": true,
+          "revision": 1
+        }
+      ],
+      "op": "test",
+      "text": "Candidate fits?",
+      "calib": "fixture",
+      "answer": {
+        "Noul": 0.99
+      }
+    },
+    {
+      "on": [
+        {
+          "name": "D",
+          "cost": 20,
+          "skills": [
+            "web"
+          ],
+          "flag": false,
+          "revision": 1
+        }
+      ],
+      "op": "test",
+      "text": "Candidate fits?",
+      "calib": "fixture",
+      "answer": {
+        "Noul": 0.01
+      }
+    }
+  ]
+}

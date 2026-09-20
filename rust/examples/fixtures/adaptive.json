@@ -1,0 +1,144 @@
+{
+  "description": "Synthetic fixed observations and synthetic calibration for execution tests only; no live model evaluation.",
+  "calibrations": [
+    {
+      "key": "fixture",
+      "hi": 0.75,
+      "lo": 0.25,
+      "n": 1,
+      "status": "上岗"
+    }
+  ],
+  "observations": [
+    {
+      "on": [
+        {
+          "target": 731
+        }
+      ],
+      "op": "test",
+      "text": "target < 500",
+      "calib": "fixture",
+      "answer": {
+        "Noul": 0.01
+      }
+    },
+    {
+      "on": [
+        {
+          "target": 731
+        }
+      ],
+      "op": "test",
+      "text": "target < 750",
+      "calib": "fixture",
+      "answer": {
+        "Noul": 0.99
+      }
+    },
+    {
+      "on": [
+        {
+          "target": 731
+        }
+      ],
+      "op": "test",
+      "text": "target < 625",
+      "calib": "fixture",
+      "answer": {
+        "Noul": 0.01
+      }
+    },
+    {
+      "on": [
+        {
+          "target": 731
+        }
+      ],
+      "op": "test",
+      "text": "target < 687",
+      "calib": "fixture",
+      "answer": {
+        "Noul": 0.01
+      }
+    },
+    {
+      "on": [
+        {
+          "target": 731
+        }
+      ],
+      "op": "test",
+      "text": "target < 718",
+      "calib": "fixture",
+      "answer": {
+        "Noul": 0.01
+      }
+    },
+    {
+      "on": [
+        {
+          "target": 731
+        }
+      ],
+      "op": "test",
+      "text": "target < 734",
+      "calib": "fixture",
+      "answer": {
+        "Noul": 0.99
+      }
+    },
+    {
+      "on": [
+        {
+          "target": 731
+        }
+      ],
+      "op": "test",
+      "text": "target < 726",
+      "calib": "fixture",
+      "answer": {
+        "Noul": 0.01
+      }
+    },
+    {
+      "on": [
+        {
+          "target": 731
+        }
+      ],
+      "op": "test",
+      "text": "target < 730",
+      "calib": "fixture",
+      "answer": {
+        "Noul": 0.01
+      }
+    },
+    {
+      "on": [
+        {
+          "target": 731
+        }
+      ],
+      "op": "test",
+      "text": "target < 732",
+      "calib": "fixture",
+      "answer": {
+        "Noul": 0.99
+      }
+    },
+    {
+      "on": [
+        {
+          "target": 731
+        }
+      ],
+      "op": "test",
+      "text": "target < 731",
+      "calib": "fixture",
+      "answer": {
+        "Noul": 0.01
+      }
+    }
+  ]
+}
