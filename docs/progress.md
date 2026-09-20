@@ -20,6 +20,18 @@ The initial public commit passed 25 tests locally. Linux CI passed on Python 3.1
 
 ## Work in the research workspace / 研究中的工作
 
+### 2026-09-20: executable discovery lab / 可执行的发现实验台
+
+发布 216 个合成主体、20 种旧实验意图的[发现实验](https://towow-ai.github.io/jpp/demos/towow/population/)，以及可开关转介、组合、联系人和复用的[十人实验台](https://towow-ai.github.io/jpp/demos/towow/lab/)。网页通过浏览器 Python 执行现有 J++ 源码，模型层使用真实录制；完整介绍和动画保留。The discovery lab now covers 216 synthetic participants and 20 historical intents, with a separate component-intervention experiment. Both browser pages execute the repository's J++ Python implementation against exact recorded model responses.
+
+真实运行：4,320 个判断，216 个后端请求，29.823 秒，估算费用 $0.039198，重复运行新增请求 0。第一版语义层级排序命中旧预期名单 33 次，BM25 43 次；在查看开发结果后加入“语义分组 + 词面排序”，得到 56 次。原始失败、改进及全部 20 条结果均保留；不是盲测或完整准确率。Live execution: 4,320 judgments in 216 requests, 29.823 seconds, estimated $0.039198, and zero additional requests on identical rerun. The initial semantic-tier ranking retrieved 33 expected aliases versus BM25's 43; the documented development revision combining semantic groups with lexical ordering retrieved 56. Original results and all queries remain available.
+
+验证：本次全部 422 项测试通过；浏览器实际执行十人对照与百人程序，百人重复执行复用全部 4,320 个判断。构建 wheel，在源码目录外安装后，两项案例均成功运行。复现 `python -m jpp.towow_population`、`python -m jpp.towow_lab`；默认无模型调用。All 422 tests passed; both experiments ran in the browser and from an installed wheel outside the source tree. The repeated population run reused all 4,320 judgments. 下一步需要新增、未参与开发的意图和完整的人工关联标注 / Next: unseen intents and independently reviewed relevance labels. [方法与记录 / Method and records](towow-demo.zh-CN.md).
+
+同池重跑旧 MiniLM 方法：整段向量 32 / 89，分字段向量 44 / 89；J++ 56 / 89 个已知关系被前十候选找回。分字段对照中 J++ 为 7 胜、10 平、3 负；向量查询阶段更快且无 API 费。Same-pool MiniLM reruns retrieved 32 and 44 of 89 known pairs, versus J++'s 56; query/index costs and losses remain visible. [对照说明 / Comparison](towow-discovery-comparison.zh-CN.md).
+
+发布前同步并行更新的语言内核，重新打包与验证，全部 502 项测试通过。修复新增命令探针中的 macOS 专用 `sed -i ''`，使其同样能在 Linux 执行。Synced the concurrent kernel update and rebuilt the browser bundle; all 502 tests passed locally. The command probe now uses portable sed output replacement on macOS and Linux. 已定位用户提到的真实关系实验，新的真实资料调用尚未执行 / The historical real-source relation experiment has been located; a new live run is not yet performed. [下一组案例 / Next case](towow-real-relations-plan.zh-CN.md).
+
 ### 2026-09-20: animated graph with full explanations / 图谱动画与完整说明
 
 `jpp towow` 生成的页面保留完整十人图谱和固定人物位置，通过节点发光与沿线移动的光点讲解四个阶段；图旁和下方保留完整段落介绍。支持暂停、重播、调速、选择阶段和人物依据查看。模型记录与计算方法不变，页面不产生新的调用。The viewer keeps the complete graph and fixed node positions, animating processing nodes and particles along edges through four stages. Full prose remains beside and below the graph, with playback controls and inspectable evidence. It reuses the existing execution record without changing the discovery method or making new model calls. [运行方法 / Run it](towow-demo.zh-CN.md).
@@ -65,4 +77,3 @@ We now publish each completed, verified advance to GitHub with Chinese and Engli
 Two compiler passes (`speculate`, `vectorize`) make judgment fusion independent of loop style; unresolved exits can be returned from annotated programs; ten runnable probes ship with offline and live modes. 494 tests pass on Python 3.12 and 3.13 in this repository. Details, commands and numbers: [2026-09-21 update](updates/2026-09-21-mechanized-fusion-and-probes.md); the previous kernel sync is in the [2026-09-20 update](updates/2026-09-20-kernel-research-sync.md).
 
 两个新编译 pass 让判断融合不再取决于循环写法；带返回注解的程序可以把「拿不准」交给调用者；十条可运行探针带离线与真机两种模式。本仓库在 Python 3.12 与 3.13 上各通过 494 项测试。细节见 [2026-09-21 更新](updates/2026-09-21-mechanized-fusion-and-probes.md)，上一次内核同步见 [2026-09-20 更新](updates/2026-09-20-kernel-research-sync.md)。
-

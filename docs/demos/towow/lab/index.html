@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>J++ · 亲手运行通爻发现实验</title><link rel="stylesheet" href="style.css"></head><body><main>
+<header><a class="brand" href="../">J++ <span>FIRST APPLICATION · TOWOW</span></a><a href="../population/">216 人发现实验 ↗</a><a href="../">看图谱讲解 ↗</a></header>
+<div class="eyebrow">可执行案例 / 01</div><h1>关掉一次组合，<br>哪些可能性会消失？</h1>
+<p class="lead">同样的十个人，同一句“创业很累”。你决定程序能否转介、能否让组合继续参与发现，再亲手运行 J++，看网络中出现了什么、失去了什么。</p>
+<p class="mode">这里会在浏览器中执行仓库里的 J++ 程序。模型回答使用已公开的真实 JEV 记录；每次的分支、组合和缓存结果重新计算。无需密钥，不产生模型费用。</p>
+<div class="workspace">
+<section class="panel setup"><h2>你来改变条件</h2><p class="small">可先直接运行，再关闭一个开关作比较。</p>
+<fieldset id="settings"><legend class="sr">实验条件</legend>
+<label class="switch"><span><strong>沿转介继续找人</strong><small>可以读取奶奶提供的联系人。</small></span><input id="referral" type="checkbox" checked></label>
+<label class="switch"><span><strong>让组合继续发现</strong><small>把三个人的组合交给其他人判断。</small></span><input id="composition" type="checkbox" checked></label>
+<label class="switch"><span><strong>保留联系地址</strong><small>奶奶知道如何找到司机。</small></span><input id="contact" type="checkbox" checked></label>
+<label class="switch"><span><strong>司机确认周六有空</strong><small>在两份已录制的司机资料之间切换。</small></span><input id="available" type="checkbox"></label>
+<label class="switch"><span><strong>复用相同判断</strong><small>本次浏览中的记录可以继续使用。</small></span><input id="reuse" type="checkbox" checked></label>
+</fieldset>
+<button id="run" class="primary">运行 J++</button><button id="fresh" class="secondary">清空本次记录再运行</button>
+<p id="status" role="status" class="status">尚未运行。第一次需要加载运行环境。</p>
+<details><summary>查看当前组合方法</summary><pre id="method"></pre><p class="small">这是组合入口。三个组件的完整实现可以在<a href="https://github.com/Towow-ai/jpp/blob/main/src/jpp/towow.py">源码</a>中查看。</p></details>
+</section>
+<section class="panel graph-panel"><div class="graph-head"><h2 id="graph-title">十个人，等待一次发现</h2><span id="trace-label" class="small"></span></div>
+<svg id="network" viewBox="0 0 650 475" role="group" aria-label="可运行的十人合作候选图谱"></svg>
+<div class="legend"><span><i></i>支持或参与候选</span><span><i class="gold"></i>关系未确定</span><span><i class="dim"></i>本次未提名</span></div>
+<p id="graph-message" class="graph-message">图中的关系将由程序结果生成。点击人物可以查看资料和本次判断。</p>
+<div id="counts" class="counts"></div><div id="delta" class="delta"></div>
+<details id="person-detail"><summary id="person-title">人物资料与判断依据</summary><div id="person-text">运行后点击图中人物。</div></details>
+</section></div>
+<section class="panel comparison"><div class="section-head"><div><div class="eyebrow">同一案例 · 拆开比较</div><h2>到底是哪一步带来了变化？</h2></div><button id="compare">运行五组对照 + 复用实验</button></div>
+<p>五组各自从空记录开始，使用同一份人物资料与模型录制。先只运行首轮发现，再加转介、加组合，然后撤掉联系地址，最后确认司机可用。每一行都实际执行对应方法；请求数同时展示，帮助你看见新增能力的计算代价。</p>
+<div class="table-scroll"><table><thead><tr><th>方法与条件</th><th>支持候选</th><th>后续参与候选</th><th>可进一步讨论</th><th>录制请求读取</th></tr></thead><tbody id="comparison"><tr><td colspan="5">点击上方按钮，在你的浏览器里重新执行五组对照。</td></tr></tbody></table></div>
+<div id="comparison-conclusion"></div><div id="reuse-results"></div>
+</section>
+<article><h2>这一次要验证的，是“发现还能继续参与发现”</h2><p>只做一轮判断时，程序可以找到心理咨询师。沿奶奶的联系人继续计算，原本没有收到消息的司机才会出现。把林、奶奶和司机组合成新材料以后，社群组织者和另外两位创业者才有机会针对这项具体可能表达关联与参与意愿。你可以关闭相应组件，检查这些结果是否真的消失。</p>
+<p>撤掉联系地址是另一个关键检验：模型即使认为奶奶知道人，也不能凭空补出一条可执行路径。司机可用性则影响另一件事——能否进一步讨论尝试。它不应把投资人的未知变成肯定，也不应让最初未改变的判断全部重新调用。这些区别都能在运行结果和导出的记录里检查。</p>
+<h2>J++ 带来的可复用部分</h2><p>首轮发现、转介展开、组合再发现都是同一种组件，它们通过 <code>.then(...)</code> 接在一起，组合以后仍然是一种方法。这个实验台调用同一份源码，开关实际改变组合及输入，而不是由页面写死人物结果。现阶段可以验证的是这套组件怎样改变发现结果、怎样复用判断；它仍是一个经过开发的十人案例，不是未知真实人群上的准确率证明，也不是与所有匹配算法的胜负比较。</p>
+<p>浏览器的 Python 程序读取的是完整匹配的已录制回答，所以这里支持的是明确列出的条件变化。它不会把任意新语料伪装成已经推理过。当前浏览器执行使用顺序调度，显示的毫秒数只计算本地重放；真实 JEV 的并发时间对照在<a href="../">图谱讲解页</a>保留。</p>
+<div class="actions"><button id="download" disabled>导出本次执行与对照 JSON</button><a href="https://github.com/Towow-ai/jpp/blob/main/docs/towow-demo.zh-CN.md">运行方法与实测记录 ↗</a></div><p id="source" class="small"></p>
+</article><footer>十个虚构人物 · 真实 JEV 回答录制 · 当前 J++ 源码执行 · 本地计算，无模型调用<br><a href="https://github.com/Towow-ai/jpp">Towow-ai / jpp</a> · 浏览器 Python 由 <a href="https://pyodide.org/">Pyodide</a> 提供</footer>
+</main><script type="module" src="app.js"></script></body></html>
