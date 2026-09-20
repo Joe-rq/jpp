@@ -34,3 +34,13 @@ def test_sync_excludes_unreviewed_modules_and_preserves_research(tmp_path):
     module.sync(workspace, release)
     assert {p.name for p in target.glob("*.py")} == set(manifest.splitlines())
     assert (source / "semantic_functions.py").exists()
+
+
+def test_published_shell_probe_edits_config_portably():
+    from foundation.jv.probes.p77 import _GOALS
+    from foundation.jv.probes._common import run_sh
+    _, setup, commands, classify = _GOALS[5]
+    result = run_sh(commands[0], setup)
+    assert result["exit"] == 0
+    assert result["files"]["cfg.ini"] == "debug=true\nport=1\n"
+    assert classify(result["files"], result["stdout"]) == 2
