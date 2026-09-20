@@ -22,7 +22,7 @@ _GOALS = [
      lambda f, o: 2 if set(o.split()) == {"x.log", "y.log"} else (1 if "x.log" in o else 0)),
     ("把 words.txt 按字母排序写入 sorted.txt", {"words.txt": "pear\napple\nfig\n"}, ["sort words.txt > sorted.txt", "sort words.txt", "cat words.txt > sorted.txt"],
      lambda f, o: 2 if f.get("sorted.txt") == "apple\nfig\npear\n" else (1 if "sorted.txt" in f or o.startswith("apple") else 0)),
-    ("在 cfg.ini 里把 debug=false 改成 debug=true", {"cfg.ini": "debug=false\nport=1\n"}, ["sed -i '' 's/debug=false/debug=true/' cfg.ini", "grep debug cfg.ini", "sed -i '' 's/port=1/port=2/' cfg.ini"],
+    ("在 cfg.ini 里把 debug=false 改成 debug=true", {"cfg.ini": "debug=false\nport=1\n"}, ["sed 's/debug=false/debug=true/' cfg.ini > cfg.tmp && mv cfg.tmp cfg.ini", "grep debug cfg.ini", "sed 's/port=1/port=2/' cfg.ini > cfg.tmp && mv cfg.tmp cfg.ini"],
      lambda f, o: 2 if "debug=true" in f.get("cfg.ini", "") else (1 if "debug" in o else 0)),
     ("删除空文件 empty.txt，保留 keep.txt", {"empty.txt": "", "keep.txt": "k\n"}, ["rm empty.txt", "rm keep.txt", "ls"],
      lambda f, o: 2 if "empty.txt" not in f and "keep.txt" in f else (1 if "keep.txt" in f and "empty.txt" in f else 0)),

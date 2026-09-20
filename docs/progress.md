@@ -30,6 +30,8 @@ The initial public commit passed 25 tests locally. Linux CI passed on Python 3.1
 
 同池重跑旧 MiniLM 方法：整段向量 32 / 89，分字段向量 44 / 89；J++ 56 / 89 个已知关系被前十候选找回。分字段对照中 J++ 为 7 胜、10 平、3 负；向量查询阶段更快且无 API 费。Same-pool MiniLM reruns retrieved 32 and 44 of 89 known pairs, versus J++'s 56; query/index costs and losses remain visible. [对照说明 / Comparison](towow-discovery-comparison.zh-CN.md).
 
+发布前同步并行更新的语言内核，重新打包与验证，全部 502 项测试通过。修复新增命令探针中的 macOS 专用 `sed -i ''`，使其同样能在 Linux 执行。Synced the concurrent kernel update and rebuilt the browser bundle; all 502 tests passed locally. The command probe now uses portable sed output replacement on macOS and Linux. 已定位用户提到的真实关系实验，新的真实资料调用尚未执行 / The historical real-source relation experiment has been located; a new live run is not yet performed. [下一组案例 / Next case](towow-real-relations-plan.zh-CN.md).
+
 ### 2026-09-20: animated graph with full explanations / 图谱动画与完整说明
 
 `jpp towow` 生成的页面保留完整十人图谱和固定人物位置，通过节点发光与沿线移动的光点讲解四个阶段；图旁和下方保留完整段落介绍。支持暂停、重播、调速、选择阶段和人物依据查看。模型记录与计算方法不变，页面不产生新的调用。The viewer keeps the complete graph and fixed node positions, animating processing nodes and particles along edges through four stages. Full prose remains beside and below the graph, with playback controls and inspectable evidence. It reuses the existing execution record without changing the discovery method or making new model calls. [运行方法 / Run it](towow-demo.zh-CN.md).
@@ -75,4 +77,3 @@ We now publish each completed, verified advance to GitHub with Chinese and Engli
 Two compiler passes (`speculate`, `vectorize`) make judgment fusion independent of loop style; unresolved exits can be returned from annotated programs; ten runnable probes ship with offline and live modes. 494 tests pass on Python 3.12 and 3.13 in this repository. Details, commands and numbers: [2026-09-21 update](updates/2026-09-21-mechanized-fusion-and-probes.md); the previous kernel sync is in the [2026-09-20 update](updates/2026-09-20-kernel-research-sync.md).
 
 两个新编译 pass 让判断融合不再取决于循环写法；带返回注解的程序可以把「拿不准」交给调用者；十条可运行探针带离线与真机两种模式。本仓库在 Python 3.12 与 3.13 上各通过 494 项测试。细节见 [2026-09-21 更新](updates/2026-09-21-mechanized-fusion-and-probes.md)，上一次内核同步见 [2026-09-20 更新](updates/2026-09-20-kernel-research-sync.md)。
-
