@@ -20,6 +20,12 @@ The initial public commit passed 25 tests locally. Linux CI passed on Python 3.1
 
 ## Work in the research workspace / 研究中的工作
 
+### 2026-09-20: animated walkthrough / 动画讲解
+
+`jpp towow` 生成的页面现在用七步动画讲清意图、转介、组合和继续发现，支持暂停、调速、逐步阅读及人物依据查看。模型记录与计算方法不变，页面不产生新的调用。The viewer now explains the recorded discovery in seven animated steps, with playback controls and inspectable evidence. It reuses the existing execution record without changing the discovery method or making new model calls. [运行方法 / Run it](towow-demo.zh-CN.md).
+
+已检查窄屏显示、跳步、自动推进与结束、人物详情及未确定候选；离线案例检查通过，wheel 安装后能生成动画页面。本次验证覆盖录制案例的展示，不是新的模型评估。Narrow-screen layout, navigation, automatic progression and completion, evidence dialogs, and unresolved candidates were checked in the browser. The offline example check passed, and an installed wheel generated the animated page. This verifies the recorded example's presentation, not new model quality. 下一步关注首次观看者能否理解转介与组合 / Next: check whether first-time viewers understand referrals and composition.
+
 ### 2026-09-20: first application example / 首个应用案例
 
 The current main branch adds `jpp towow`: receiver-local judgments, a referral, a candidate combination, and subsequent discovery in ten fictional participants. The shipped recording comes from real `jev-1.13.0` requests; default replay is offline. The three-stage live run took 5.215 seconds, identical-input reuse made zero new calls, and changing one participant reused 16 of 32 judgments. A separate single-run comparison of identical first-stage request bodies measured 7.847 seconds sequentially and 1.042 seconds concurrently. These are demonstration measurements, not accuracy or large-network claims. [Proposal](first-problem-towow.zh-CN.md) · [Run and inspect the example](towow-demo.zh-CN.md).

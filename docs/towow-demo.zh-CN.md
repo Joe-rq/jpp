@@ -17,7 +17,9 @@ jpp towow
 
 默认用仓库附带的真实 JEV 响应录制，重新执行相同的 J++ 程序。无需密钥，无网络请求，也不产生费用。它不是重新做模型推理，也不是按人物名字返回预设匹配；录制客户端只对完全相同的请求返回已保存的模型回答。
 
-打开生成的 `run-data/towow/index.html`，可以切换四个阶段、点击人物查看本地上下文及判断。运行数据在同目录的 `report.json`。
+打开生成的 `run-data/towow/index.html`，会播放约 50 秒的七步动画：意图 → 遇见上下文 → 转介 → 形成组合 → 继续发现 → 条件变化 → 组合方法。每一步只突出当前变化，配简短文字说明；支持暂停、调速、上一步、下一步和跳步。点击人物可查看本地上下文与真实判断，未确定的投资人候选仍保留。系统开启“减少动态效果”时默认不自动播放。运行数据在同目录的 `report.json`。
+
+The self-contained viewer now tells the recorded story in seven animated steps, with playback, pause, speed control, step navigation, and clickable evidence. Reduced-motion preferences are respected. Animation timing is for explanation; measured model timings remain separately labeled. No additional model calls occur in the viewer.
 
 也可以下载仓库中的[完整交互页面](demos/towow/index.html)到本地打开。页面内嵌了本次真实运行的记录，显示的是录制时的耗时；浏览页面本身不会调用模型。
 

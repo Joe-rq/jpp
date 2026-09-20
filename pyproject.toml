@@ -24,7 +24,7 @@ where = ["src"]
 
 [tool.setuptools.package-data]
 "foundation.profile" = ["profiles/*.json"]
-"jpp" = ["data/*.json"]
+"jpp" = ["data/*.json", "data/*.html"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
