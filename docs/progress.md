@@ -2,6 +2,13 @@
 
 Updated: 2026-09-21. This is a dated report, not an automatically updated dashboard.
 
+## 2026-09-21: a second authority text and a plan to finish the language / 第二份依据与把语言做完整的实施计划
+
+Research documents only this round; no runtime in this repository changed. `13-Rust实践反馈设计修订-v0.2.md` is published for the first time — six rules that a day of building in Rust forced onto the design, three of them correctness defects (a method's identity omitted its captured state and reused the wrong result; going over budget discarded a call that had already been paid for; integer overflow behaved differently in debug and release). `14-实施计划-把语言做完整-v1.md` sets out what remains, including what this version deliberately does not do and why. The inventory rounds behind it are reported with their own two defects: the new authority text was missing from the first round's material list, so that round's "conflict" findings are not used, and adversarial review failed all nine audits. The most useful output was 22 places where taste had been recorded as mechanism, several of them ours — the test being whether a rule can say what would turn what red. Applying that test found three seams where the kernel silently flattened a three-valued fact to two, the worst of them laundering a material's provenance in two lines of ordinary source; all three are fixed, and the Python reference turned out not to have the taint hole — the port introduced it. 544 tests pass on Python 3.12 and 3.13 in this repository, unchanged by the sync. The kernel work described is in the research workspace and **is not in this repository's `rust/`**; merging the two lines is a separate item. Details, numbers and what was verified where: [2026-09-21 update](updates/2026-09-21-language-completion-plan.md).
+
+本轮只同步研究文档，本仓库运行代码未变。`13-Rust实践反馈设计修订-v0.2.md` 首次公开——六条由一天 Rust 施工逼出来的局部修订，其中三条是正确性缺陷（方法身份不含捕获状态，复用了错的结果；超预算时把已经付过钱的调用丢掉；整数溢出在 debug 与 release 行为不同）。`14-实施计划-把语言做完整-v1.md` 排出剩下要做的，并写明本版有意不做哪些、为什么。支撑它的两轮盘点连同自身的两处缺陷一起公开：新依据缺席于第一轮的材料清单，故该轮「冲突」类结论不采信；对抗复核把九份审计全部判为不通过。最有价值的产出是 22 处把 taste 记成机制的地方，其中几处是我们自己写的——判据是这条规则能不能说出「什么情况下它会让什么东西变红」。照这条判据又查出三处把三值静默压成两值的缝，最重的一条两行普通源码就能洗白材料的来源可信度；三条都已修，且 Python 参照实现没有那个 taint 洞——是移植时新引入的。本仓库在 Python 3.12 与 3.13 上各通过 544 项测试，同步未改变这个数。文中描述的内核工作在研究工作区，**不在本仓库的 `rust/` 里**，两条线的合并是单独一项。细节、数字与「哪个数在哪里验的」见 [2026-09-21 更新](updates/2026-09-21-language-completion-plan.md)。
+
+
 ## 2026-09-21: co-construct language capabilities and algorithms / 语言能力与算法共同构造
 
 修正[总计划](towow-discovery-master-plan.zh-CN.md)中的推进前提：不要求先用成熟工具实现完整算法再迁移J++。所需的构造能力可能正是语言建设要创造的部分，应与最小算法片段共同设计。已有工具按需复用，缺少完整旧实现时保留构造阻碍与新程序的对照。本轮保存两条原话续记和本地理解记录，只更新设计，不启动实现或模型实验。
