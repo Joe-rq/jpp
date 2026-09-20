@@ -9,7 +9,7 @@ use serde_json::{Value as Json, json};
 
 use crate::ast::*;
 use crate::effects::{CalibStore, Client};
-use crate::ledger::{Entry, Header, Ledger, RENDER_VERSION, Trace, effect_key, judge_key};
+use crate::ledger::{Entry, Header, Ledger, Trace, effect_key, judge_key, RENDER_VERSION};
 use crate::value::*;
 
 pub const HANDLER_VERSION: &str = "h0.1-rs";
@@ -24,18 +24,11 @@ pub struct RtError {
 
 impl RtError {
     pub fn new(rule: Option<&str>, msg: impl Into<String>, span: Span) -> RtError {
-        RtError {
-            rule: rule.map(|s| s.to_string()),
-            message: msg.into(),
-            span,
-        }
+        RtError { rule: rule.map(|s| s.to_string()), message: msg.into(), span }
     }
     pub fn render(&self) -> String {
         match &self.rule {
-            Some(r) => format!(
-                "[{r}] {} @{}..{}",
-                self.message, self.span.start, self.span.end
-            ),
+            Some(r) => format!("[{r}] {} @{}..{}", self.message, self.span.start, self.span.end),
             None => format!("{} @{}..{}", self.message, self.span.start, self.span.end),
         }
     }
@@ -85,24 +78,8 @@ impl ActionRegistry {
     pub fn new() -> ActionRegistry {
         ActionRegistry::default()
     }
-    pub fn register(
-        &mut self,
-        name: &str,
-        cost: f64,
-        reversible: bool,
-        taint_out: TaintOut,
-        f: impl Fn(&[Value]) -> Result<Value, String> + 'static,
-    ) {
-        self.actions.insert(
-            name.to_string(),
-            Rc::new(Action {
-                name: name.to_string(),
-                cost,
-                reversible,
-                taint_out,
-                f: Rc::new(f),
-            }),
-        );
+    pub fn register(&mut self, name: &str, cost: f64, reversible: bool, taint_out: TaintOut, f: impl Fn(&[Value]) -> Result<Value, String> + 'static) {
+        self.actions.insert(name.to_string(), Rc::new(Action { name: name.to_string(), cost, reversible, taint_out, f: Rc::new(f) }));
     }
 }
 
@@ -128,10 +105,7 @@ pub struct Outcome {
 
 impl Outcome {
     pub fn value_json(&self) -> Json {
-        self.value
-            .as_ref()
-            .map(|v| v.to_json())
-            .unwrap_or(Json::Null)
+        self.value.as_ref().map(|v| v.to_json()).unwrap_or(Json::Null)
     }
 }
 
@@ -164,48 +138,9 @@ pub struct Interp<'a> {
 }
 
 pub const BUILTINS: &[&str] = &[
-    "state",
-    "test",
-    "select",
-    "measure",
-    "judge",
-    "cut",
-    "handle",
-    "consume",
-    "gen",
-    "do",
-    "ask",
-    "transform",
-    "mat",
-    "content",
-    "unsure",
-    "pending",
-    "fail",
-    "is_fail",
-    "loop",
-    "stop",
-    "len",
-    "map",
-    "filter",
-    "fold",
-    "range",
-    "append",
-    "concat",
-    "slice",
-    "contains",
-    "sum",
-    "reverse",
-    "keys",
-    "with",
-    "has",
-    "text",
-    "join",
-    "print",
-    "min",
-    "max",
-    "abs",
-    "floor",
-    "exit_kind",
+    "state", "test", "select", "measure", "judge", "cut", "handle", "consume", "gen", "do", "ask", "transform", "mat", "content", "unsure", "pending", "fail", "is_fail", "loop", "stop",
+    "unsure_cause", "escalate", "literalize",
+    "len", "map", "filter", "fold", "range", "append", "concat", "slice", "contains", "sum", "reverse", "keys", "with", "has", "text", "join", "print", "min", "max", "abs", "floor", "exit_kind",
 ];
 
 pub fn root_env() -> Env {
@@ -217,29 +152,9 @@ pub fn root_env() -> Env {
 }
 
 impl<'a> Interp<'a> {
-    pub fn new(
-        client: &'a mut dyn Client,
-        ledger: &'a mut Ledger,
-        calib: &'a CalibStore,
-        actions: &'a ActionRegistry,
-        budget: Budget,
-    ) -> Interp<'a> {
+    pub fn new(client: &'a mut dyn Client, ledger: &'a mut Ledger, calib: &'a CalibStore, actions: &'a ActionRegistry, budget: Budget) -> Interp<'a> {
         let model_id = client.model_id();
-        Interp {
-            client,
-            ledger,
-            calib,
-            actions,
-            budget,
-            trace: Trace::default(),
-            cost: Cost::default(),
-            frames: vec![],
-            loops: vec![],
-            next_exit: 0,
-            depth: 0,
-            run_seq: 0,
-            model_id,
-        }
+        Interp { client, ledger, calib, actions, budget, trace: Trace::default(), cost: Cost::default(), frames: vec![], loops: vec![], next_exit: 0, depth: 0, run_seq: 0, model_id }
     }
 
     pub fn run(mut self, program: &Program) -> Result<Outcome, RtError> {
@@ -253,11 +168,7 @@ impl<'a> Interp<'a> {
         if let Some(w) = self.ledger.header_warning.take() {
             self.trace.warn(w);
         }
-        self.frames.push(Frame {
-            name: "<program>".into(),
-            exits: vec![],
-            returns_exit: true,
-        });
+        self.frames.push(Frame { name: "<program>".into(), exits: vec![], returns_exit: true });
         let env = env_child(&root_env());
         let result = self.eval_block(&program.body, &env);
         match result {
@@ -266,46 +177,21 @@ impl<'a> Interp<'a> {
                 let mut in_value = HashSet::new();
                 collect_exit_ids(&v, &mut in_value);
                 let mut returned = vec![];
-                for e in frame
-                    .exits
-                    .iter()
-                    .filter(|e| e.is_unsure() && !e.consumed.get())
-                {
+                for e in frame.exits.iter().filter(|e| e.is_unsure() && !e.consumed.get()) {
                     if in_value.contains(&e.id) {
                         e.consumed.set(true);
                         *e.consumed_by.borrow_mut() = "returned".into();
                         returned.push(e.label());
                     } else {
-                        return Err(RtError::new(
-                            Some("J-05"),
-                            format!(
-                                "程序结束时有未消费的 {}（题 {}）。修法：用 handle(e, {{…, unsure: …}}) 或 consume(e, \"drop\") 处理，或把它带在返回值里",
-                                e.label(),
-                                &e.q_hash[..8]
-                            ),
-                            e.site,
-                        ));
+                        return Err(RtError::new(Some("J-05"), format!("程序结束时有未消费的 {}（题 {}）。修法：用 handle(e, {{…, unsure: …}}) 或 consume(e, \"drop\") 处理，或把它带在返回值里", e.label(), &e.q_hash[..8]), e.site));
                     }
                 }
                 if !returned.is_empty() {
-                    self.trace
-                        .warn(format!("returned_unsure: {}", returned.join(", ")));
+                    self.trace.warn(format!("returned_unsure: {}", returned.join(", ")));
                 }
-                Ok(Outcome {
-                    value: Some(v),
-                    pending: vec![],
-                    trace: self.trace,
-                    cost: self.cost,
-                    returned_unsure: returned,
-                })
+                Ok(Outcome { value: Some(v), pending: vec![], trace: self.trace, cost: self.cost, returned_unsure: returned })
             }
-            Err(Fault::Halt(p)) => Ok(Outcome {
-                value: None,
-                pending: vec![p],
-                trace: self.trace,
-                cost: self.cost,
-                returned_unsure: vec![],
-            }),
+            Err(Fault::Halt(p)) => Ok(Outcome { value: None, pending: vec![p], trace: self.trace, cost: self.cost, returned_unsure: vec![] }),
             Err(Fault::Error(e)) => Err(e),
         }
     }
@@ -324,11 +210,7 @@ impl<'a> Interp<'a> {
                     let v = self.eval(value, &env)?;
                     env_define(&env, name, v);
                 }
-                Statement::Function {
-                    name,
-                    function,
-                    span,
-                } => {
+                Statement::Function { name, function, span } => {
                     let c = self.closure(function, &env, Some(name.clone()), *span);
                     env_define(&env, name, c);
                 }
@@ -345,13 +227,7 @@ impl<'a> Interp<'a> {
 
     fn closure(&self, f: &Function, env: &Env, name: Option<String>, span: Span) -> Value {
         let hash = hash_of(&["fn", &serde_json::to_string(f).unwrap_or_default()]);
-        Value::Fn(Rc::new(Closure {
-            function: f.clone(),
-            env: env.clone(),
-            name,
-            span,
-            hash,
-        }))
+        Value::Fn(Rc::new(Closure { function: f.clone(), env: env.clone(), name, span, hash }))
     }
 
     fn eval(&mut self, e: &Expr, env: &Env) -> R<Value> {
@@ -362,8 +238,7 @@ impl<'a> Interp<'a> {
             ExprKind::Bool(b) => Ok(Value::Bool(*b)),
             ExprKind::Text(t) => Ok(Value::text(t)),
             ExprKind::Unit => Ok(Value::Unit),
-            ExprKind::Name(n) => env_lookup(env, n)
-                .ok_or_else(|| Fault::Error(RtError::new(None, format!("未定义的名字 {n}"), sp))),
+            ExprKind::Name(n) => env_lookup(env, n).ok_or_else(|| Fault::Error(RtError::new(None, format!("未定义的名字 {n}"), sp))),
             ExprKind::List(items) => {
                 let mut v = Vec::with_capacity(items.len());
                 for it in items {
@@ -383,30 +258,16 @@ impl<'a> Interp<'a> {
             ExprKind::If { condition, yes, no } => match self.eval(condition, env)? {
                 Value::Bool(true) => self.eval_block(yes, env),
                 Value::Bool(false) => self.eval_block(no, env),
-                Value::Reading(_) => err(
-                    Some("J-01"),
-                    "读数不能当条件；先 cut 成出口再 handle",
-                    condition.span,
-                ),
-                other => err(
-                    None,
-                    format!("if 的条件要 Bool，收到 {}", other.type_name()),
-                    condition.span,
-                ),
+                Value::Reading(_) => err(Some("J-01"), "读数不能当条件；先 cut 成出口再 handle", condition.span),
+                other => err(None, format!("if 的条件要 Bool，收到 {}", other.type_name()), condition.span),
             },
             ExprKind::Field { value, field } => {
                 let v = self.eval(value, env)?;
                 match &v {
-                    Value::Record(_) => v.get(field).ok_or_else(|| {
-                        Fault::Error(RtError::new(None, format!("记录没有字段 {field}"), sp))
-                    }),
+                    Value::Record(_) => v.get(field).ok_or_else(|| Fault::Error(RtError::new(None, format!("记录没有字段 {field}"), sp))),
                     Value::Mat(m) => match field.as_str() {
                         "content" => Ok(json_to_value(&m.content)),
-                        "taint" => Ok(Value::text(if m.taint == Taint::Trusted {
-                            "trusted"
-                        } else {
-                            "untrusted"
-                        })),
+                        "taint" => Ok(Value::text(if m.taint == Taint::Trusted { "trusted" } else { "untrusted" })),
                         "hash" => Ok(Value::text(&m.hash)),
                         _ => err(None, format!("Mat 没有字段 {field}"), sp),
                     },
@@ -429,14 +290,8 @@ impl<'a> Interp<'a> {
                         }
                         Ok(l[k as usize].clone())
                     }
-                    (Value::Record(_), Value::Text(k)) => v.get(k).ok_or_else(|| {
-                        Fault::Error(RtError::new(None, format!("记录没有字段 {k}"), sp))
-                    }),
-                    _ => err(
-                        None,
-                        format!("{}[{}] 不可索引", v.type_name(), i.type_name()),
-                        sp,
-                    ),
+                    (Value::Record(_), Value::Text(k)) => v.get(k).ok_or_else(|| Fault::Error(RtError::new(None, format!("记录没有字段 {k}"), sp))),
+                    _ => err(None, format!("{}[{}] 不可索引", v.type_name(), i.type_name()), sp),
                 }
             }
             ExprKind::Unary { op, value } => {
@@ -469,10 +324,7 @@ impl<'a> Interp<'a> {
                 let r = self.eval(right, env)?;
                 self.binop(op, l, r, sp)
             }
-            ExprKind::Call {
-                function,
-                arguments,
-            } => {
+            ExprKind::Call { function, arguments } => {
                 let f = self.eval(function, env)?;
                 let mut args = Vec::with_capacity(arguments.len());
                 for a in arguments {
@@ -485,11 +337,7 @@ impl<'a> Interp<'a> {
 
     fn binop(&mut self, op: &str, l: Value, r: Value, sp: Span) -> R<Value> {
         if matches!(l, Value::Reading(_)) || matches!(r, Value::Reading(_)) {
-            return err(
-                Some("J-01"),
-                format!("读数不能做 {op}：读数不可比、不可算，只能经 cut 离开"),
-                sp,
-            );
+            return err(Some("J-01"), format!("读数不能做 {op}：读数不可比、不可算，只能经 cut 离开"), sp);
         }
         use Value::*;
         Ok(match (op, &l, &r) {
@@ -528,13 +376,7 @@ impl<'a> Interp<'a> {
             (">=", Float(a), Float(b)) => Bool(a >= b),
             ("==", _, _) => Bool(l.equals(&r).unwrap_or(false)),
             ("!=", _, _) => Bool(!l.equals(&r).unwrap_or(false)),
-            _ => {
-                return err(
-                    None,
-                    format!("二元 {op} 不适用于 {} 与 {}", l.type_name(), r.type_name()),
-                    sp,
-                );
-            }
+            _ => return err(None, format!("二元 {op} 不适用于 {} 与 {}", l.type_name(), r.type_name()), sp),
         })
     }
 
@@ -549,72 +391,33 @@ impl<'a> Interp<'a> {
     fn call_closure(&mut self, c: &Rc<Closure>, args: Vec<Value>, sp: Span) -> R<Value> {
         let f = &c.function;
         if args.len() != f.parameters.len() {
-            return err(
-                None,
-                format!(
-                    "{} 需要 {} 个参数，收到 {}",
-                    c.name.as_deref().unwrap_or("函数"),
-                    f.parameters.len(),
-                    args.len()
-                ),
-                sp,
-            );
+            return err(None, format!("{} 需要 {} 个参数，收到 {}", c.name.as_deref().unwrap_or("函数"), f.parameters.len(), args.len()), sp);
         }
         let max_depth = self.budget.depth.unwrap_or(DEFAULT_DEPTH);
         if self.depth >= max_depth {
-            return err(
-                Some("E5"),
-                format!(
-                    "调用深度超过 {max_depth}（递归无界）。修法：用 loop(bound, …) 或提高 budget.depth"
-                ),
-                sp,
-            );
+            return err(Some("J-06"), format!("调用深度超过 {max_depth}（递归无界）。修法：用 loop(bound, …) 或提高 budget.depth"), sp);
         }
         self.depth += 1;
         let env = env_child(&c.env);
         for (p, a) in f.parameters.iter().zip(args) {
             env_define(&env, &p.name, a);
         }
-        let returns_exit = f
-            .result_type
-            .as_ref()
-            .map(|t| t.mentions("Exit"))
-            .unwrap_or(false);
-        self.frames.push(Frame {
-            name: c.name.clone().unwrap_or_else(|| "<fn>".into()),
-            exits: vec![],
-            returns_exit,
-        });
+        let returns_exit = f.result_type.as_ref().map(|t| t.mentions("Exit")).unwrap_or(false);
+        self.frames.push(Frame { name: c.name.clone().unwrap_or_else(|| "<fn>".into()), exits: vec![], returns_exit });
         let result = self.eval_block(&f.body, &env);
         let frame = self.frames.pop().unwrap();
         self.depth -= 1;
         let v = result?;
         let mut in_value = HashSet::new();
         collect_exit_ids(&v, &mut in_value);
-        for e in frame
-            .exits
-            .into_iter()
-            .filter(|e| e.is_unsure() && !e.consumed.get())
-        {
+        for e in frame.exits.into_iter().filter(|e| e.is_unsure() && !e.consumed.get()) {
             if frame.returns_exit && in_value.contains(&e.id) {
                 *e.consumed_by.borrow_mut() = format!("return_type:{}", frame.name);
                 self.frame().exits.push(e);
             } else if frame.returns_exit {
-                return err(
-                    Some("J-05"),
-                    format!("{} 里的 {} 既没消费也没返回", frame.name, e.label()),
-                    e.site,
-                );
+                return err(Some("J-05"), format!("{} 里的 {} 既没消费也没返回", frame.name, e.label()), e.site);
             } else {
-                return err(
-                    Some("J-05"),
-                    format!(
-                        "{} 返回前有未消费的 {}。修法：在函数内 handle/consume，或把返回类型标为含 Exit（如 `-> Exit`、`-> Record<Exit>`）并在调用者消费",
-                        frame.name,
-                        e.label()
-                    ),
-                    e.site,
-                );
+                return err(Some("J-05"), format!("{} 返回前有未消费的 {}。修法：在函数内 handle/consume，或把返回类型标为含 Exit（如 `-> Exit`、`-> Record<Exit>`）并在调用者消费", frame.name, e.label()), e.site);
             }
         }
         Ok(v)
@@ -625,34 +428,19 @@ impl<'a> Interp<'a> {
     fn as_mat(&self, v: &Value, slot: &str, sp: Span) -> R<Mat> {
         match v {
             Value::Mat(m) => Ok((**m).clone()),
-            Value::Reading(_) => err(
-                Some("J-01"),
-                format!("读数不能放进 {slot} 槽：读数只能经 cut 离开，不是材料"),
-                sp,
-            ),
+            Value::Reading(_) => err(Some("J-01"), format!("读数不能放进 {slot} 槽：读数只能经 cut 离开，不是材料"), sp),
             Value::Exit(e) => {
                 let mut d = BTreeSet::new();
                 d.insert(e.q_hash.clone());
-                Ok(Mat::new(
-                    json!({"exit": e.label()}),
-                    "",
-                    vec![format!("exit:{}", e.q_hash)],
-                    e.taint,
-                    d,
-                ))
+                Ok(Mat::new(json!({"exit": e.label()}), "", vec![format!("exit:{}", e.q_hash)], e.taint, d))
             }
-            Value::State(_)
-            | Value::Question(_)
-            | Value::Fn(_)
-            | Value::Builtin(_)
-            | Value::Stop(_) => err(None, format!("{} 不能作材料", v.type_name()), sp),
-            Value::Fail(s) => Ok(Mat::new(
-                json!({"fail": s.as_ref()}),
-                "",
-                vec!["fail".into()],
-                Taint::Trusted,
-                BTreeSet::new(),
-            )),
+            Value::Duty(_) => err(
+                Some("J-05"),
+                format!("未决责任不能直接当材料放进 {slot}：变成材料或 JSON 不消除义务。修法：先 literalize(u, …) 重问，或把 u 包进返回值"),
+                sp,
+            ),
+            Value::State(_) | Value::Question(_) | Value::Fn(_) | Value::Builtin(_) | Value::Stop(_) => err(None, format!("{} 不能作材料", v.type_name()), sp),
+            Value::Fail(s) => Ok(Mat::new(json!({"fail": s.as_ref()}), "", vec!["fail".into()], Taint::Trusted, BTreeSet::new())),
             other => Ok(Mat::literal(other.to_json())),
         }
     }
@@ -672,19 +460,11 @@ impl<'a> Interp<'a> {
 
     fn make_state(&self, args: &[Value], sp: Span) -> R<Value> {
         if args.is_empty() || args.len() > 2 {
-            return err(
-                None,
-                "state(on) 或 state(on, {ctx: […], ref: […], over: […]})",
-                sp,
-            );
+            return err(None, "state(on) 或 state(on, {ctx: […], ref: […], over: […]})", sp);
         }
         let (on, f1) = self.as_mats(&args[0], "on", sp)?;
         if on.is_empty() || on.len() > 2 {
-            return err(
-                Some("J-14"),
-                format!("on 恰一个判断对象（或一对），收到 {}", on.len()),
-                sp,
-            );
+            return err(Some("J-14"), format!("on 恰一个判断对象（或一对），收到 {}", on.len()), sp);
         }
         let mut ctx = vec![];
         let mut r#ref = vec![];
@@ -702,9 +482,7 @@ impl<'a> Interp<'a> {
                 }
             }
         }
-        Ok(Value::State(Rc::new(State::new(
-            on, ctx, r#ref, over, fail,
-        ))))
+        Ok(Value::State(Rc::new(State::new(on, ctx, r#ref, over, fail))))
     }
 
     // ---------- 效应 ----------
@@ -715,10 +493,7 @@ impl<'a> Interp<'a> {
                 cause: "budget".into(),
                 key: String::new(),
                 site: sp,
-                detail: format!(
-                    "预算耗尽：calls {}+{} / {}，cost {:.6}+{:.6} / {:.6}",
-                    self.cost.calls, calls, self.budget.calls, self.cost.usd, usd, self.budget.cost
-                ),
+                detail: format!("预算耗尽：calls {}+{} / {}，cost {:.6}+{:.6} / {:.6}", self.cost.calls, calls, self.budget.calls, self.cost.usd, usd, self.budget.cost),
             }));
         }
         Ok(())
@@ -727,11 +502,7 @@ impl<'a> Interp<'a> {
     fn judge(&mut self, state: &Rc<State>, qs: &[Rc<Question>], sp: Span) -> R<Vec<Value>> {
         for q in qs {
             if state.derived_from.contains(&q.hash) {
-                return err(
-                    Some("J-02"),
-                    format!("禁自指：状态含由题「{}」派生的材料，不能再问同一题", q.text),
-                    sp,
-                );
+                return err(Some("J-02"), format!("禁自指：状态含由题「{}」派生的材料，不能再问同一题", q.text), sp);
             }
         }
         if state.has_fail {
@@ -753,19 +524,7 @@ impl<'a> Interp<'a> {
                 })
                 .collect());
         }
-        let keys: Vec<String> = qs
-            .iter()
-            .map(|q| {
-                judge_key(
-                    &self.model_id,
-                    &state.hash,
-                    &q.hash,
-                    q.op.phys(),
-                    0,
-                    self.run_seq,
-                )
-            })
-            .collect();
+        let keys: Vec<String> = qs.iter().map(|q| judge_key(&self.model_id, &state.hash, &q.hash, q.op.phys(), 0, self.run_seq)).collect();
         // 循环内键重复即停（J-06）
         if let Some(lc) = self.loops.last_mut() {
             for k in &keys {
@@ -780,8 +539,7 @@ impl<'a> Interp<'a> {
             if let Some(Entry::Judge { answer, .. }) = self.ledger.get(k) {
                 answers[i] = Some(answer.clone());
                 self.cost.replayed += 1;
-                self.trace
-                    .push("judge", k, true, 0.0, sp, format!("「{}」", qs[i].text));
+                self.trace.push("judge", k, true, 0.0, sp, format!("「{}」", qs[i].text));
             } else {
                 missing.push(i);
             }
@@ -789,9 +547,7 @@ impl<'a> Interp<'a> {
         if !missing.is_empty() {
             self.charge(1, 0.0, sp)?;
             let ask: Vec<&Question> = missing.iter().map(|i| qs[*i].as_ref()).collect();
-            let res = self.client.judge(state, &ask).map_err(|e| {
-                Fault::Error(RtError::new(None, format!("客户端错误：{}", e.0), sp))
-            })?;
+            let res = self.client.judge(state, &ask).map_err(|e| Fault::Error(RtError::new(None, format!("客户端错误：{}", e.0), sp)))?;
             if res.answers.len() != ask.len() {
                 return err(None, "客户端返回的答案数与题数不符", sp);
             }
@@ -802,21 +558,8 @@ impl<'a> Interp<'a> {
             for (j, i) in missing.iter().enumerate() {
                 let a = res.answers[j].clone();
                 self.validate_answer(&a, &qs[*i], state, sp)?;
-                self.ledger.put(Entry::Judge {
-                    key: keys[*i].clone(),
-                    answer: a.clone(),
-                    tokens: res.tokens,
-                    cost: res.cost,
-                    model_id: self.model_id.clone(),
-                });
-                self.trace.push(
-                    "judge",
-                    &keys[*i],
-                    false,
-                    res.cost,
-                    sp,
-                    format!("「{}」", qs[*i].text),
-                );
+                self.ledger.put(Entry::Judge { key: keys[*i].clone(), answer: a.clone(), tokens: res.tokens, cost: res.cost, model_id: self.model_id.clone() });
+                self.trace.push("judge", &keys[*i], false, res.cost, sp, format!("「{}」", qs[*i].text));
                 answers[*i] = Some(a);
             }
         }
@@ -846,42 +589,14 @@ impl<'a> Interp<'a> {
             (Answer::Noul(p), Op::Test) if (0.0..=1.0).contains(p) => Ok(()),
             (Answer::Choice(v), Op::Select) if v.len() == s.over.len() => Ok(()),
             (Answer::Score(v), Op::Measure) if v.len() == q.scale.len() => Ok(()),
-            _ => err(
-                None,
-                format!(
-                    "答案形状与题不符：{:?} vs {}（over {} / 档位 {}）",
-                    a,
-                    q.op.phys(),
-                    s.over.len(),
-                    q.scale.len()
-                ),
-                sp,
-            ),
+            _ => err(None, format!("答案形状与题不符：{:?} vs {}（over {} / 档位 {}）", a, q.op.phys(), s.over.len(), q.scale.len()), sp),
         }
     }
 
-    fn new_exit(
-        &mut self,
-        kind: ExitKind,
-        op: Op,
-        q_hash: &str,
-        state_hash: &str,
-        taint: Taint,
-        sp: Span,
-    ) -> Value {
+    fn new_exit(&mut self, kind: ExitKind, op: Op, q_hash: &str, state_hash: &str, taint: Taint, sp: Span) -> Value {
         let id = self.next_exit;
         self.next_exit += 1;
-        let e = Rc::new(Exit {
-            id,
-            op,
-            kind,
-            q_hash: q_hash.into(),
-            state_hash: state_hash.into(),
-            taint,
-            site: sp,
-            consumed: std::cell::Cell::new(false),
-            consumed_by: std::cell::RefCell::new(String::new()),
-        });
+        let e = Rc::new(Exit { id, op, kind, q_hash: q_hash.into(), state_hash: state_hash.into(), taint, site: sp, consumed: std::cell::Cell::new(false), consumed_by: std::cell::RefCell::new(String::new()) });
         self.frame().exits.push(e.clone());
         Value::Exit(e)
     }
@@ -909,19 +624,11 @@ impl<'a> Interp<'a> {
                 }
                 Answer::Choice(v) => {
                     let (k, p) = argmax(v);
-                    if p >= rec.hi {
-                        ExitKind::Pick(k)
-                    } else {
-                        ExitKind::Unsure("tie".into())
-                    }
+                    if p >= rec.hi { ExitKind::Pick(k) } else { ExitKind::Unsure("tie".into()) }
                 }
                 Answer::Score(v) => {
                     let (l, p) = argmax(v);
-                    if p >= rec.hi {
-                        ExitKind::At(l)
-                    } else {
-                        ExitKind::Unsure("band".into())
-                    }
+                    if p >= rec.hi { ExitKind::At(l) } else { ExitKind::Unsure("band".into()) }
                 }
             }
         };
@@ -929,41 +636,37 @@ impl<'a> Interp<'a> {
     }
 
     fn handle(&mut self, e: &Rc<Exit>, arms: &Value, sp: Span) -> R<Value> {
-        let Value::Record(_) = arms else {
-            return err(
-                Some("J-05"),
-                "handle 的第二个参数是记录 {act, ignore, pick, at, unsure, otherwise}",
-                sp,
-            );
-        };
+        let Value::Record(_) = arms else { return err(Some("J-05"), "handle 的第二个参数是记录 {act, ignore, pick, at, unsure, otherwise}", sp) };
         let required: &[&str] = match e.op {
             Op::Test => &["act", "ignore", "unsure"],
             Op::Select => &["pick", "unsure"],
             Op::Measure => &["at", "unsure"],
         };
         let has_other = arms.get("otherwise").is_some();
-        let missing: Vec<&str> = required
-            .iter()
-            .copied()
-            .filter(|k| arms.get(k).is_none())
-            .collect();
-        if !missing.is_empty() && !has_other {
+        // 语法覆盖约束：Unsure 必须有显式的 unsure 臂，通配分支不能代替它。
+        // 其余去向可以由 otherwise 兜底。
+        let missing: Vec<&str> = required.iter().copied().filter(|k| arms.get(k).is_none() && (*k == "unsure" || !has_other)).collect();
+        if !missing.is_empty() {
             return err(
                 Some("J-05"),
                 format!(
-                    "handle 不穷尽：{} 题的出口缺分支 {}。修法：补上或给 otherwise",
+                    "handle 不穷尽：{} 题的出口缺分支 {}。修法：补上；注意 unsure 必须自己写一臂，otherwise 兜不住未决责任",
                     e.op.phys(),
                     missing.join(", ")
                 ),
                 sp,
             );
         }
+        if e.is_unsure() {
+            let arm = arms.get("unsure").unwrap();
+            return self.handle_unsure(e, &arm, sp);
+        }
         let (name, arg): (&str, Value) = match &e.kind {
             ExitKind::Act => ("act", Value::Unit),
             ExitKind::Ignore => ("ignore", Value::Unit),
             ExitKind::Pick(k) => ("pick", Value::Int(*k as i64)),
             ExitKind::At(l) => ("at", Value::Int(*l as i64)),
-            ExitKind::Unsure(c) => ("unsure", Value::text(c)),
+            ExitKind::Unsure(_) => unreachable!("上面已经分流"),
         };
         let arm = arms.get(name).or_else(|| arms.get("otherwise")).unwrap();
         e.consumed.set(true);
@@ -978,102 +681,76 @@ impl<'a> Interp<'a> {
         }
     }
 
-    fn do_(&mut self, name: &str, args: &[Value], iter_seq: i64, sp: Span) -> R<Value> {
-        let action = self.actions.actions.get(name).cloned().ok_or_else(|| {
-            Fault::Error(RtError::new(
-                Some("J-11"),
-                format!("动作 {name} 未登记：do 只能触发登记过的动作（register）"),
+    /// unsure 臂收到的是**未决责任本身**（`Value::Duty`），不是原因文本。臂体跑完再核它是不是真的
+    /// 交出去了：escalate 给人、字面化重问、包装进返回值、或显式 drop。什么都不做就是静默丢弃（J-05）。
+    fn handle_unsure(&mut self, e: &Rc<Exit>, arm: &Value, sp: Span) -> R<Value> {
+        let Value::Fn(c) = arm else {
+            return err(
+                Some("J-05"),
+                format!(
+                    "unsure 的臂是个 {}，收不下未决责任。修法：写成 unsure: fn(u) {{ … }}，在体内 escalate(u, …) / literalize(u, …) / consume(u, \"drop\")，或把 u 包进返回值交给调用者",
+                    arm.type_name()
+                ),
                 sp,
-            ))
-        })?;
+            );
+        };
+        if c.function.parameters.is_empty() {
+            return err(Some("J-05"), "unsure 的臂没有参数，接不到未决责任。修法：写成 fn(u) { … }", c.span);
+        }
+        let site = c.span;
+        let result = self.call_closure(c, vec![Value::Duty(e.clone())], sp)?;
+        // escalate / literalize / consume 已经在臂体里销过账
+        if e.consumed.get() {
+            return Ok(result);
+        }
+        let mut carried = HashSet::new();
+        collect_exit_ids(&result, &mut carried);
+        if carried.contains(&e.id) {
+            e.consumed.set(true);
+            *e.consumed_by.borrow_mut() = "handle:unsure(包装返回)".into();
+            return Ok(result);
+        }
+        err(
+            Some("J-05"),
+            format!(
+                "unsure 的臂把未决责任丢了：{} 既没 escalate、没重问、没 drop，也没进返回值。进臂不等于销账。修法：escalate(u, state, 题) 交给人，literalize(u, state, 更字面的题) 重问，consume(u, \"drop\") 显式丢并记账，或把 u 放进返回值",
+                e.label()
+            ),
+            site,
+        )
+    }
+
+    fn do_(&mut self, name: &str, args: &[Value], iter_seq: i64, sp: Span) -> R<Value> {
+        let action = self.actions.actions.get(name).cloned().ok_or_else(|| Fault::Error(RtError::new(Some("J-11"), format!("动作 {name} 未登记：do 只能触发登记过的动作（register）"), sp)))?;
         let args_canon: Vec<String> = args.iter().map(|a| canon(&a.to_json())).collect();
-        let key = effect_key(
-            "do",
-            &[
-                &sp.start.to_string(),
-                name,
-                &args_canon.join("\u{1f}"),
-                &iter_seq.to_string(),
-            ],
-        );
+        let key = effect_key("do", &[&sp.start.to_string(), name, &args_canon.join("\u{1f}"), &iter_seq.to_string()]);
         if let Some(Entry::Effect { output, .. }) = self.ledger.get(&key) {
             self.cost.replayed += 1;
             self.trace.push("do", &key, true, 0.0, sp, name.into());
             return Ok(json_to_effect_value(output));
         }
         self.charge(0, action.cost, sp)?;
-        let taint_in = args.iter().fold(Taint::Trusted, |t, a| {
-            Taint::join(
-                t,
-                match a {
-                    Value::Mat(m) => m.taint,
-                    _ => Taint::Trusted,
-                },
-            )
-        });
+        let taint_in = args.iter().fold(Taint::Trusted, |t, a| Taint::join(t, match a { Value::Mat(m) => m.taint, _ => Taint::Trusted }));
         let taint = match action.taint_out {
             TaintOut::Trusted => Taint::Trusted,
             TaintOut::Untrusted => Taint::Untrusted,
             TaintOut::Inherit => taint_in,
         };
         let out = match (action.f)(args) {
-            Ok(v) => Value::Mat(Rc::new(Mat::new(
-                v.to_json(),
-                &format!("do:{name}"),
-                vec![format!("do:{key}")],
-                taint,
-                BTreeSet::new(),
-            ))),
+            Ok(v) => Value::Mat(Rc::new(Mat::new(v.to_json(), &format!("do:{name}"), vec![format!("do:{key}")], taint, BTreeSet::new()))),
             Err(msg) => Value::Fail(Rc::from(format!("{name}: {msg}").as_str())),
         };
         self.cost.usd += action.cost;
-        self.ledger.put(Entry::Effect {
-            key: key.clone(),
-            kind: "do".into(),
-            output: effect_value_to_json(&out),
-            cost: action.cost,
-        });
-        self.trace
-            .push("do", &key, false, action.cost, sp, name.into());
+        self.ledger.put(Entry::Effect { key: key.clone(), kind: "do".into(), output: effect_value_to_json(&out), cost: action.cost });
+        self.trace.push("do", &key, false, action.cost, sp, name.into());
         Ok(out)
     }
 
-    fn generate(
-        &mut self,
-        prompt: &str,
-        ctx: &[Mat],
-        n: usize,
-        retry_seq: i64,
-        sp: Span,
-    ) -> R<Value> {
+    fn generate(&mut self, prompt: &str, ctx: &[Mat], n: usize, retry_seq: i64, sp: Span) -> R<Value> {
         let ctx_hash: Vec<&str> = ctx.iter().map(|m| m.hash.as_str()).collect();
-        let key = effect_key(
-            "gen",
-            &[
-                prompt,
-                &ctx_hash.join(","),
-                &n.to_string(),
-                &retry_seq.to_string(),
-            ],
-        );
-        let taint = ctx
-            .iter()
-            .fold(Taint::Trusted, |t, m| Taint::join(t, m.taint));
-        let wrap = |outs: &[Json]| {
-            Value::list(
-                outs.iter()
-                    .map(|o| {
-                        Value::Mat(Rc::new(Mat::new(
-                            o.clone(),
-                            &format!("gen:{prompt}"),
-                            vec![format!("gen:{key}")],
-                            taint,
-                            BTreeSet::new(),
-                        )))
-                    })
-                    .collect(),
-            )
-        };
+        let key = effect_key("gen", &[prompt, &ctx_hash.join(","), &n.to_string(), &retry_seq.to_string()]);
+        let taint = ctx.iter().fold(Taint::Trusted, |t, m| Taint::join(t, m.taint));
+        let wrap = |outs: &[Json]| Value::list(outs.iter().map(|o| Value::Mat(Rc::new(Mat::new(o.clone(), &format!("gen:{prompt}"), vec![format!("gen:{key}")], taint, BTreeSet::new())))).collect());
         if let Some(Entry::Effect { output, .. }) = self.ledger.get(&key) {
             let outs: Vec<Json> = output.as_array().cloned().unwrap_or_default();
             self.cost.replayed += 1;
@@ -1082,17 +759,9 @@ impl<'a> Interp<'a> {
         }
         self.charge(1, 0.0, sp)?;
         let ctx_json: Vec<Json> = ctx.iter().map(|m| m.content.clone()).collect();
-        let outs = self
-            .client
-            .generate(prompt, &ctx_json, n, retry_seq as u64)
-            .map_err(|e| Fault::Error(RtError::new(None, format!("gen 失败：{}", e.0), sp)))?;
+        let outs = self.client.generate(prompt, &ctx_json, n, retry_seq as u64).map_err(|e| Fault::Error(RtError::new(None, format!("gen 失败：{}", e.0), sp)))?;
         self.cost.calls += 1;
-        self.ledger.put(Entry::Effect {
-            key: key.clone(),
-            kind: "gen".into(),
-            output: Json::Array(outs.clone()),
-            cost: 0.0,
-        });
+        self.ledger.put(Entry::Effect { key: key.clone(), kind: "gen".into(), output: Json::Array(outs.clone()), cost: 0.0 });
         self.trace.push("gen", &key, false, 0.0, sp, prompt.into());
         Ok(wrap(&outs))
     }
@@ -1104,58 +773,28 @@ impl<'a> Interp<'a> {
         } else {
             let limit = self.budget.escalate.unwrap_or(0);
             if self.cost.asks >= limit {
-                return Err(Fault::Halt(Pending {
-                    cause: "budget.escalate".into(),
-                    key,
-                    site: sp,
-                    detail: format!("ask 次数已到上限 {limit}"),
-                }));
+                return Err(Fault::Halt(Pending { cause: "budget.escalate".into(), key, site: sp, detail: format!("ask 次数已到上限 {limit}") }));
             }
             self.cost.asks += 1;
-            let a = self
-                .client
-                .ask(state, q)
-                .map_err(|e| Fault::Error(RtError::new(None, format!("ask 失败：{}", e.0), sp)))?;
+            let a = self.client.ask(state, q).map_err(|e| Fault::Error(RtError::new(None, format!("ask 失败：{}", e.0), sp)))?;
             if a.is_some() {
-                self.ledger.put(Entry::Ask {
-                    key: key.clone(),
-                    answer: a.clone(),
-                });
+                self.ledger.put(Entry::Ask { key: key.clone(), answer: a.clone() });
             }
             a
         };
         match answer {
             Some(a) => {
-                self.trace
-                    .push("ask", &key, false, 0.0, sp, format!("「{}」已答", q.text));
+                self.trace.push("ask", &key, false, 0.0, sp, format!("「{}」已答", q.text));
                 let kind = match a {
-                    Answer::Noul(p) => {
-                        if p >= 0.5 {
-                            ExitKind::Act
-                        } else {
-                            ExitKind::Ignore
-                        }
-                    }
+                    Answer::Noul(p) => if p >= 0.5 { ExitKind::Act } else { ExitKind::Ignore },
                     Answer::Choice(v) => ExitKind::Pick(argmax(&v).0),
                     Answer::Score(v) => ExitKind::At(argmax(&v).0),
                 };
                 Ok(self.new_exit(kind, q.op, &q.hash, &state.hash, Taint::Trusted, sp))
             }
             None => {
-                self.trace.push(
-                    "ask",
-                    &key,
-                    false,
-                    0.0,
-                    sp,
-                    format!("「{}」未答 → Pending", q.text),
-                );
-                Err(Fault::Halt(Pending {
-                    cause: "ask".into(),
-                    key,
-                    site: sp,
-                    detail: format!("等人回答「{}」", q.text),
-                }))
+                self.trace.push("ask", &key, false, 0.0, sp, format!("「{}」未答 → Pending", q.text));
+                Err(Fault::Halt(Pending { cause: "ask".into(), key, site: sp, detail: format!("等人回答「{}」", q.text) }))
             }
         }
     }
@@ -1167,78 +806,28 @@ impl<'a> Interp<'a> {
         }
         let hashes: Vec<&str> = mats.iter().map(|m| m.hash.as_str()).collect();
         let key = effect_key("transform", &[&f.hash, &hashes.join(",")]);
-        let taint = mats
-            .iter()
-            .fold(Taint::Trusted, |t, m| Taint::join(t, m.taint));
+        let taint = mats.iter().fold(Taint::Trusted, |t, m| Taint::join(t, m.taint));
         if let Some(Entry::Effect { output, .. }) = self.ledger.get(&key) {
             self.cost.replayed += 1;
-            self.trace
-                .push("transform", &key, true, 0.0, sp, String::new());
-            return Ok(Value::Mat(Rc::new(Mat::new(
-                output.clone(),
-                "transform",
-                vec![format!("transform:{key}")],
-                taint,
-                BTreeSet::new(),
-            ))));
+            self.trace.push("transform", &key, true, 0.0, sp, String::new());
+            return Ok(Value::Mat(Rc::new(Mat::new(output.clone(), "transform", vec![format!("transform:{key}")], taint, BTreeSet::new()))));
         }
-        let v = self.call_closure(
-            f,
-            mats.iter()
-                .map(|m| Value::Mat(Rc::new(m.clone())))
-                .collect(),
-            sp,
-        )?;
-        if matches!(
-            v,
-            Value::Reading(_) | Value::Exit(_) | Value::Fn(_) | Value::State(_)
-        ) {
-            return err(
-                Some("J-11"),
-                format!("transform 的输出要能成材料，收到 {}", v.type_name()),
-                sp,
-            );
+        let v = self.call_closure(f, mats.iter().map(|m| Value::Mat(Rc::new(m.clone()))).collect(), sp)?;
+        if matches!(v, Value::Reading(_) | Value::Exit(_) | Value::Fn(_) | Value::State(_)) {
+            return err(Some("J-11"), format!("transform 的输出要能成材料，收到 {}", v.type_name()), sp);
         }
-        let content = match &v {
-            Value::Mat(m) => m.content.clone(),
-            other => other.to_json(),
-        };
-        self.ledger.put(Entry::Effect {
-            key: key.clone(),
-            kind: "transform".into(),
-            output: content.clone(),
-            cost: 0.0,
-        });
-        self.trace
-            .push("transform", &key, false, 0.0, sp, String::new());
-        Ok(Value::Mat(Rc::new(Mat::new(
-            content,
-            "transform",
-            vec![format!("transform:{key}")],
-            taint,
-            BTreeSet::new(),
-        ))))
+        let content = match &v { Value::Mat(m) => m.content.clone(), other => other.to_json() };
+        self.ledger.put(Entry::Effect { key: key.clone(), kind: "transform".into(), output: content.clone(), cost: 0.0 });
+        self.trace.push("transform", &key, false, 0.0, sp, String::new());
+        Ok(Value::Mat(Rc::new(Mat::new(content, "transform", vec![format!("transform:{key}")], taint, BTreeSet::new()))))
     }
 
     fn loop_(&mut self, bound: i64, init: Value, step: &Value, sp: Span) -> R<Value> {
         if bound <= 0 {
-            return err(
-                Some("E5"),
-                format!("loop 的 bound 必须是正整数，收到 {bound}"),
-                sp,
-            );
+            return err(Some("J-06"), format!("loop 的 bound 必须是正整数，收到 {bound}"), sp);
         }
-        let Value::Fn(step) = step else {
-            return err(
-                None,
-                "loop(bound, init, step) 的 step 要是函数 fn(acc, i)",
-                sp,
-            );
-        };
-        self.loops.push(LoopCtx {
-            seen_keys: HashSet::new(),
-            repeated: None,
-        });
+        let Value::Fn(step) = step else { return err(None, "loop(bound, init, step) 的 step 要是函数 fn(acc, i)", sp) };
+        self.loops.push(LoopCtx { seen_keys: HashSet::new(), repeated: None });
         let mut acc = init;
         let mut result = None;
         for i in 0..bound {
@@ -1258,18 +847,13 @@ impl<'a> Interp<'a> {
                 v => acc = v,
             }
             if let Some(k) = self.loops.last().and_then(|l| l.repeated.clone()) {
-                self.trace.warn(format!(
-                    "W-noprogress: 第 {} 轮重复了账本键 {}，循环停止（J-06 键重复即停）",
-                    i + 1,
-                    &k[..8]
-                ));
+                self.trace.warn(format!("W-noprogress: 第 {} 轮重复了账本键 {}，循环停止（J-06 键重复即停）", i + 1, &k[..8]));
                 break;
             }
         }
         self.loops.pop();
         if result.is_none() {
-            self.trace
-                .warn(format!("W-bound: loop 到 bound={bound} 仍未 stop"));
+            self.trace.warn(format!("W-bound: loop 到 bound={bound} 仍未 stop"));
         }
         Ok(result.unwrap_or(acc))
     }
@@ -1278,65 +862,36 @@ impl<'a> Interp<'a> {
 
     fn builtin(&mut self, name: &'static str, args: Vec<Value>, sp: Span) -> R<Value> {
         let n = args.len();
-        let arity = |k: usize| -> R<()> {
-            if n == k {
-                Ok(())
-            } else {
-                err(None, format!("{name} 需要 {k} 个参数，收到 {n}"), sp)
-            }
-        };
+        let arity = |k: usize| -> R<()> { if n == k { Ok(()) } else { err(None, format!("{name} 需要 {k} 个参数，收到 {n}"), sp) } };
         match name {
             "state" => self.make_state(&args, sp),
             "test" | "select" => {
                 arity(2)?;
-                let (Value::Text(t), Value::Text(c)) = (&args[0], &args[1]) else {
-                    return err(
-                        Some("J-03"),
-                        format!("{name}(题面: Text, calib: Text) — calib 是校准记录的键，不是线"),
-                        sp,
-                    );
-                };
+                let (Value::Text(t), Value::Text(c)) = (&args[0], &args[1]) else { return err(Some("J-03"), format!("{name}(题面: Text, calib: Text) — calib 是校准记录的键，不是线"), sp) };
                 let op = if name == "test" { Op::Test } else { Op::Select };
                 Ok(Value::Question(Rc::new(Question::new(op, t, c, vec![]))))
             }
             "measure" => {
                 arity(3)?;
-                let (Value::Text(t), Value::List(scale), Value::Text(c)) =
-                    (&args[0], &args[1], &args[2])
-                else {
-                    return err(None, "measure(题面, [档位…], calib)", sp);
-                };
+                let (Value::Text(t), Value::List(scale), Value::Text(c)) = (&args[0], &args[1], &args[2]) else { return err(None, "measure(题面, [档位…], calib)", sp) };
                 let mut sc = vec![];
                 for s in scale.iter() {
-                    match s {
-                        Value::Text(x) => sc.push(x.to_string()),
-                        _ => return err(None, "档位要是 Text", sp),
-                    }
+                    match s { Value::Text(x) => sc.push(x.to_string()), _ => return err(None, "档位要是 Text", sp) }
                 }
                 if sc.len() < 2 {
                     return err(None, "measure 至少两档", sp);
                 }
-                Ok(Value::Question(Rc::new(Question::new(
-                    Op::Measure,
-                    t,
-                    c,
-                    sc,
-                ))))
+                Ok(Value::Question(Rc::new(Question::new(Op::Measure, t, c, sc))))
             }
             "judge" => {
                 arity(2)?;
-                let Value::State(s) = &args[0] else {
-                    return err(None, "judge(state, question | [questions])", sp);
-                };
+                let Value::State(s) = &args[0] else { return err(None, "judge(state, question | [questions])", sp) };
                 match &args[1] {
                     Value::Question(q) => Ok(self.judge(s, &[q.clone()], sp)?.remove(0)),
                     Value::List(l) => {
                         let mut qs = vec![];
                         for q in l.iter() {
-                            match q {
-                                Value::Question(q) => qs.push(q.clone()),
-                                _ => return err(None, "judge 的题列表里有非题", sp),
-                            }
+                            match q { Value::Question(q) => qs.push(q.clone()), _ => return err(None, "judge 的题列表里有非题", sp) }
                         }
                         Ok(Value::list(self.judge(s, &qs, sp)?))
                     }
@@ -1350,98 +905,69 @@ impl<'a> Interp<'a> {
                 let calib = match args.get(1) {
                     None => None,
                     Some(Value::Text(k)) => Some(k.to_string()),
-                    Some(other) => {
-                        return err(
-                            Some("J-03"),
-                            format!(
-                                "cut 的校准参数必须是校准记录的键（Text），不能是字面量线；收到 {}",
-                                other.type_name()
-                            ),
-                            sp,
-                        );
-                    }
+                    Some(other) => return err(Some("J-03"), format!("cut 的校准参数必须是校准记录的键（Text），不能是字面量线；收到 {}", other.type_name()), sp),
                 };
                 match &args[0] {
                     Value::Reading(r) => self.cut(r, calib.as_deref(), sp),
                     Value::List(l) => {
                         let mut out = vec![];
                         for r in l.iter() {
-                            match r {
-                                Value::Reading(r) => out.push(self.cut(r, calib.as_deref(), sp)?),
-                                _ => return err(None, "cut 的列表里有非读数", sp),
-                            }
+                            match r { Value::Reading(r) => out.push(self.cut(r, calib.as_deref(), sp)?), _ => return err(None, "cut 的列表里有非读数", sp) }
                         }
                         Ok(Value::list(out))
                     }
-                    other => err(
-                        None,
-                        format!("cut 只收读数，收到 {}", other.type_name()),
-                        sp,
-                    ),
+                    other => err(None, format!("cut 只收读数，收到 {}", other.type_name()), sp),
                 }
             }
             "handle" => {
                 arity(2)?;
-                let Value::Exit(e) = &args[0] else {
-                    return err(
-                        None,
-                        format!("handle 的第一个参数要是出口，收到 {}", args[0].type_name()),
-                        sp,
-                    );
-                };
+                let Value::Exit(e) = &args[0] else { return err(None, format!("handle 的第一个参数要是出口，收到 {}", args[0].type_name()), sp) };
                 let e = e.clone();
                 self.handle(&e, &args[1], sp)
             }
             "consume" => {
                 arity(2)?;
-                let Value::Text(how) = &args[1] else {
-                    return err(None, "consume(exit | [exits], \"drop\")", sp);
-                };
+                let Value::Text(how) = &args[1] else { return err(None, "consume(exit | [exits], \"drop\")", sp) };
                 if how.as_ref() != "drop" {
                     return err(None, "consume 目前只支持 \"drop\"；升级用 ask", sp);
                 }
-                let list: Vec<Value> = match &args[0] {
-                    Value::List(l) => l.iter().cloned().collect(),
-                    v => vec![v.clone()],
-                };
+                let list: Vec<Value> = match &args[0] { Value::List(l) => l.iter().cloned().collect(), v => vec![v.clone()] };
                 for v in &list {
                     match v {
-                        Value::Exit(e) => {
+                        Value::Exit(e) | Value::Duty(e) => {
+                            if e.is_unsure() && !e.consumed.get() {
+                                // drop 是合法去向（12 §6「unsure 显式丢弃并记账」），但要留痕
+                                self.trace.warn(format!(
+                                    "W-drop-vs-escalate: 显式丢弃了未决责任 {}（题 {}）；drop 合法且已记账，但只有 escalate 会把它交给人",
+                                    e.label(),
+                                    &e.q_hash[..8.min(e.q_hash.len())]
+                                ));
+                            }
                             e.consumed.set(true);
                             *e.consumed_by.borrow_mut() = "consume:drop".into();
                         }
-                        _ => return err(None, "consume 只收出口", sp),
+                        _ => return err(None, "consume 只收出口或未决责任", sp),
                     }
                 }
                 Ok(Value::Unit)
             }
             "gen" => {
                 arity(4)?;
-                let (Value::Text(p), ctx, Value::Int(k), Value::Int(r)) =
-                    (&args[0], &args[1], &args[2], &args[3])
-                else {
-                    return err(None, "gen(prompt, [ctx], n, retry_seq)", sp);
-                };
+                let (Value::Text(p), ctx, Value::Int(k), Value::Int(r)) = (&args[0], &args[1], &args[2], &args[3]) else { return err(None, "gen(prompt, [ctx], n, retry_seq)", sp) };
                 let (ctx, _) = self.as_mats(ctx, "ctx", sp)?;
                 let p = p.to_string();
                 self.generate(&p, &ctx, *k as usize, *r, sp)
             }
             "do" => {
                 arity(3)?;
-                let (Value::Text(a), Value::List(l), Value::Int(i)) =
-                    (&args[0], &args[1], &args[2])
-                else {
-                    return err(None, "do(action, [args], iter_seq)", sp);
-                };
+                let (Value::Text(a), Value::List(l), Value::Int(i)) = (&args[0], &args[1], &args[2]) else { return err(None, "do(action, [args], iter_seq)", sp) };
                 let a = a.to_string();
                 let l: Vec<Value> = l.iter().cloned().collect();
                 self.do_(&a, &l, *i, sp)
             }
             "ask" => {
                 arity(2)?;
-                let (Value::State(s), Value::Question(q)) = (&args[0], &args[1]) else {
-                    return err(None, "ask(state, question)", sp);
-                };
+                let (Value::State(s), Value::Question(q)) = (&args[0], &args[1]) else { return err(None, "ask(state, question)", sp) };
                 let (s, q) = (s.clone(), q.clone());
                 self.ask(&s, &q, sp)
             }
@@ -1449,9 +975,7 @@ impl<'a> Interp<'a> {
                 if n < 1 {
                     return err(None, "transform(f, mats…)", sp);
                 }
-                let Value::Fn(f) = &args[0] else {
-                    return err(None, "transform 的第一个参数要是函数", sp);
-                };
+                let Value::Fn(f) = &args[0] else { return err(None, "transform 的第一个参数要是函数", sp) };
                 let f = f.clone();
                 self.transform(&f, &args[1..], sp)
             }
@@ -1464,45 +988,62 @@ impl<'a> Interp<'a> {
                 match &args[0] {
                     Value::Mat(m) => Ok(json_to_value(&m.content)),
                     Value::Reading(_) => err(Some("J-01"), "读数没有内容可读；只能经 cut 离开", sp),
-                    other => err(
-                        None,
-                        format!("content 只收材料，收到 {}", other.type_name()),
-                        sp,
-                    ),
+                    other => err(None, format!("content 只收材料，收到 {}", other.type_name()), sp),
                 }
             }
             "unsure" => {
                 arity(1)?;
-                let Value::Text(c) = &args[0] else {
-                    return err(None, "unsure(cause: Text)", sp);
+                match &args[0] {
+                    // 重新包装：责任继续由这个出口带着，交给调用者
+                    Value::Duty(e) => Ok(Value::Exit(e.clone())),
+                    Value::Text(c) => {
+                        let c = c.to_string();
+                        Ok(self.new_exit(ExitKind::Unsure(c), Op::Test, "explicit", "", Taint::Trusted, sp))
+                    }
+                    other => err(None, format!("unsure(未决责任) 重新包装，或 unsure(原因: Text) 新造一个；收到 {}", other.type_name()), sp),
+                }
+            }
+            "unsure_cause" => {
+                arity(1)?;
+                match &args[0] {
+                    Value::Duty(e) | Value::Exit(e) => Ok(Value::text(&e.cause())),
+                    other => err(None, format!("unsure_cause 只收未决责任或出口，收到 {}", other.type_name()), sp),
+                }
+            }
+            // 合法去向之一：把责任交给明确关联的人工请求（效应 ask）
+            "escalate" => {
+                arity(3)?;
+                let (Value::Duty(u), Value::State(s), Value::Question(q)) = (&args[0], &args[1], &args[2]) else {
+                    return err(Some("J-05"), "escalate(未决责任, state, 题)：第一个参数要是 unsure 臂收到的那份责任", sp);
                 };
-                let c = c.to_string();
-                Ok(self.new_exit(
-                    ExitKind::Unsure(c),
-                    Op::Test,
-                    "explicit",
-                    "",
-                    Taint::Trusted,
-                    sp,
-                ))
+                let (u, s, q) = (u.clone(), s.clone(), q.clone());
+                u.consumed.set(true);
+                *u.consumed_by.borrow_mut() = "escalate".into();
+                self.ask(&s, &q, sp)
+            }
+            // 合法去向之一：接走旧责任、按更字面的题重问，产生新的待处理出口（效应 judge）
+            "literalize" => {
+                arity(3)?;
+                let (Value::Duty(u), Value::State(s), Value::Question(q)) = (&args[0], &args[1], &args[2]) else {
+                    return err(Some("J-05"), "literalize(未决责任, state, 更字面的题)：第一个参数要是 unsure 臂收到的那份责任", sp);
+                };
+                let (u, s, q) = (u.clone(), s.clone(), q.clone());
+                u.consumed.set(true);
+                *u.consumed_by.borrow_mut() = "literalize".into();
+                let reading = self.judge(&s, &[q], sp)?.remove(0);
+                match reading {
+                    Value::Reading(r) => self.cut(&r, None, sp),
+                    other => Ok(other),
+                }
             }
             "pending" => {
                 arity(1)?;
-                let Value::Text(c) = &args[0] else {
-                    return err(None, "pending(reason: Text)", sp);
-                };
-                Err(Fault::Halt(Pending {
-                    cause: "explicit".into(),
-                    key: String::new(),
-                    site: sp,
-                    detail: c.to_string(),
-                }))
+                let Value::Text(c) = &args[0] else { return err(None, "pending(reason: Text)", sp) };
+                Err(Fault::Halt(Pending { cause: "explicit".into(), key: String::new(), site: sp, detail: c.to_string() }))
             }
             "fail" => {
                 arity(1)?;
-                let Value::Text(c) = &args[0] else {
-                    return err(None, "fail(reason: Text)", sp);
-                };
+                let Value::Text(c) = &args[0] else { return err(None, "fail(reason: Text)", sp) };
                 Ok(Value::Fail(Rc::from(c.as_ref())))
             }
             "is_fail" => {
@@ -1511,16 +1052,11 @@ impl<'a> Interp<'a> {
             }
             "exit_kind" => {
                 arity(1)?;
-                match &args[0] {
-                    Value::Exit(e) => Ok(Value::text(&e.label())),
-                    _ => err(None, "exit_kind 只收出口", sp),
-                }
+                match &args[0] { Value::Exit(e) => Ok(Value::text(&e.label())), _ => err(None, "exit_kind 只收出口", sp) }
             }
             "loop" => {
                 arity(3)?;
-                let Value::Int(b) = &args[0] else {
-                    return err(Some("E5"), "loop 的 bound 必须是整数字面量或整数值", sp);
-                };
+                let Value::Int(b) = &args[0] else { return err(Some("J-06"), "loop 的 bound 必须是整数字面量或整数值", sp) };
                 let (b, init, step) = (*b, args[1].clone(), args[2].clone());
                 self.loop_(b, init, &step, sp)
             }
@@ -1539,9 +1075,7 @@ impl<'a> Interp<'a> {
             }
             "map" | "filter" => {
                 arity(2)?;
-                let (Value::List(l), f) = (&args[0], &args[1]) else {
-                    return err(None, format!("{name}(list, fn)"), sp);
-                };
+                let (Value::List(l), f) = (&args[0], &args[1]) else { return err(None, format!("{name}(list, fn)"), sp) };
                 let mut out = vec![];
                 for it in l.iter() {
                     let r = self.apply(f.clone(), vec![it.clone()], sp)?;
@@ -1555,9 +1089,7 @@ impl<'a> Interp<'a> {
             }
             "fold" => {
                 arity(3)?;
-                let (Value::List(l), init, f) = (&args[0], &args[1], &args[2]) else {
-                    return err(None, "fold(list, init, fn(acc, x))", sp);
-                };
+                let (Value::List(l), init, f) = (&args[0], &args[1], &args[2]) else { return err(None, "fold(list, init, fn(acc, x))", sp) };
                 let mut acc = init.clone();
                 for it in l.iter() {
                     acc = self.apply(f.clone(), vec![acc, it.clone()], sp)?;
@@ -1566,42 +1098,31 @@ impl<'a> Interp<'a> {
             }
             "range" => {
                 arity(2)?;
-                let (Value::Int(a), Value::Int(b)) = (&args[0], &args[1]) else {
-                    return err(None, "range(a, b)", sp);
-                };
+                let (Value::Int(a), Value::Int(b)) = (&args[0], &args[1]) else { return err(None, "range(a, b)", sp) };
                 Ok(Value::list((*a..*b).map(Value::Int).collect()))
             }
             "append" => {
                 arity(2)?;
-                let Value::List(l) = &args[0] else {
-                    return err(None, "append(list, v)", sp);
-                };
+                let Value::List(l) = &args[0] else { return err(None, "append(list, v)", sp) };
                 let mut v: Vec<Value> = l.iter().cloned().collect();
                 v.push(args[1].clone());
                 Ok(Value::list(v))
             }
             "concat" => {
                 arity(2)?;
-                let (Value::List(a), Value::List(b)) = (&args[0], &args[1]) else {
-                    return err(None, "concat(a, b)", sp);
-                };
+                let (Value::List(a), Value::List(b)) = (&args[0], &args[1]) else { return err(None, "concat(a, b)", sp) };
                 Ok(Value::list(a.iter().chain(b.iter()).cloned().collect()))
             }
             "slice" => {
                 arity(3)?;
-                let (Value::List(l), Value::Int(a), Value::Int(b)) = (&args[0], &args[1], &args[2])
-                else {
-                    return err(None, "slice(list, a, b)", sp);
-                };
+                let (Value::List(l), Value::Int(a), Value::Int(b)) = (&args[0], &args[1], &args[2]) else { return err(None, "slice(list, a, b)", sp) };
                 let a = (*a).clamp(0, l.len() as i64) as usize;
                 let b = (*b).clamp(a as i64, l.len() as i64) as usize;
                 Ok(Value::list(l[a..b].to_vec()))
             }
             "contains" => {
                 arity(2)?;
-                let Value::List(l) = &args[0] else {
-                    return err(None, "contains(list, v)", sp);
-                };
+                let Value::List(l) = &args[0] else { return err(None, "contains(list, v)", sp) };
                 for it in l.iter() {
                     match it.equals(&args[1]) {
                         Some(true) => return Ok(Value::Bool(true)),
@@ -1613,9 +1134,7 @@ impl<'a> Interp<'a> {
             }
             "sum" => {
                 arity(1)?;
-                let Value::List(l) = &args[0] else {
-                    return err(None, "sum(list)", sp);
-                };
+                let Value::List(l) = &args[0] else { return err(None, "sum(list)", sp) };
                 let mut acc = Value::Int(0);
                 for it in l.iter() {
                     acc = self.binop("+", acc, it.clone(), sp)?;
@@ -1624,62 +1143,36 @@ impl<'a> Interp<'a> {
             }
             "min" | "max" => {
                 arity(2)?;
-                let (Value::Int(a), Value::Int(b)) = (&args[0], &args[1]) else {
-                    return err(None, format!("{name}(Int, Int)"), sp);
-                };
-                Ok(Value::Int(if name == "min" {
-                    *a.min(b)
-                } else {
-                    *a.max(b)
-                }))
+                let (Value::Int(a), Value::Int(b)) = (&args[0], &args[1]) else { return err(None, format!("{name}(Int, Int)"), sp) };
+                Ok(Value::Int(if name == "min" { *a.min(b) } else { *a.max(b) }))
             }
             "abs" => {
                 arity(1)?;
-                match &args[0] {
-                    Value::Int(a) => Ok(Value::Int(a.abs())),
-                    Value::Float(a) => Ok(Value::Float(a.abs())),
-                    _ => err(None, "abs(number)", sp),
-                }
+                match &args[0] { Value::Int(a) => Ok(Value::Int(a.abs())), Value::Float(a) => Ok(Value::Float(a.abs())), _ => err(None, "abs(number)", sp) }
             }
             "floor" => {
                 arity(1)?;
-                match &args[0] {
-                    Value::Float(a) => Ok(Value::Int(a.floor() as i64)),
-                    Value::Int(a) => Ok(Value::Int(*a)),
-                    _ => err(None, "floor(number)", sp),
-                }
+                match &args[0] { Value::Float(a) => Ok(Value::Int(a.floor() as i64)), Value::Int(a) => Ok(Value::Int(*a)), _ => err(None, "floor(number)", sp) }
             }
             "reverse" => {
                 arity(1)?;
-                let Value::List(l) = &args[0] else {
-                    return err(None, "reverse(list)", sp);
-                };
+                let Value::List(l) = &args[0] else { return err(None, "reverse(list)", sp) };
                 Ok(Value::list(l.iter().rev().cloned().collect()))
             }
             "keys" => {
                 arity(1)?;
-                let Value::Record(r) = &args[0] else {
-                    return err(None, "keys(record)", sp);
-                };
+                let Value::Record(r) = &args[0] else { return err(None, "keys(record)", sp) };
                 Ok(Value::list(r.iter().map(|(k, _)| Value::text(k)).collect()))
             }
             "has" => {
                 arity(2)?;
-                let (Value::Record(_), Value::Text(k)) = (&args[0], &args[1]) else {
-                    return err(None, "has(record, key)", sp);
-                };
+                let (Value::Record(_), Value::Text(k)) = (&args[0], &args[1]) else { return err(None, "has(record, key)", sp) };
                 Ok(Value::Bool(args[0].get(k).is_some()))
             }
             "with" => {
                 arity(3)?;
-                let (Value::Record(r), Value::Text(k)) = (&args[0], &args[1]) else {
-                    return err(None, "with(record, key, value)", sp);
-                };
-                let mut v: Vec<(String, Value)> = r
-                    .iter()
-                    .filter(|(kk, _)| kk.as_str() != k.as_ref())
-                    .cloned()
-                    .collect();
+                let (Value::Record(r), Value::Text(k)) = (&args[0], &args[1]) else { return err(None, "with(record, key, value)", sp) };
+                let mut v: Vec<(String, Value)> = r.iter().filter(|(kk, _)| kk.as_str() != k.as_ref()).cloned().collect();
                 v.push((k.to_string(), args[2].clone()));
                 Ok(Value::record(v))
             }
@@ -1689,23 +1182,13 @@ impl<'a> Interp<'a> {
                     Value::Text(t) => Ok(Value::text(t)),
                     Value::Reading(_) => err(Some("J-01"), "读数不能转文字", sp),
                     Value::Mat(m) => Ok(Value::text(&m.text())),
-                    other => Ok(Value::text(
-                        &other.to_json().to_string().trim_matches('"').to_string(),
-                    )),
+                    other => Ok(Value::text(&other.to_json().to_string().trim_matches('"').to_string())),
                 }
             }
             "join" => {
                 arity(2)?;
-                let (Value::List(l), Value::Text(sep)) = (&args[0], &args[1]) else {
-                    return err(None, "join([Text], sep)", sp);
-                };
-                let parts: Vec<String> = l
-                    .iter()
-                    .map(|v| match v {
-                        Value::Text(t) => t.to_string(),
-                        o => o.to_json().to_string(),
-                    })
-                    .collect();
+                let (Value::List(l), Value::Text(sep)) = (&args[0], &args[1]) else { return err(None, "join([Text], sep)", sp) };
+                let parts: Vec<String> = l.iter().map(|v| match v { Value::Text(t) => t.to_string(), o => o.to_json().to_string() }).collect();
                 Ok(Value::text(&parts.join(sep)))
             }
             "print" => {
@@ -1733,26 +1216,17 @@ pub fn json_to_value(j: &Json) -> Value {
     match j {
         Json::Null => Value::Unit,
         Json::Bool(b) => Value::Bool(*b),
-        Json::Number(n) => n
-            .as_i64()
-            .map(Value::Int)
-            .unwrap_or_else(|| Value::Float(n.as_f64().unwrap_or(0.0))),
+        Json::Number(n) => n.as_i64().map(Value::Int).unwrap_or_else(|| Value::Float(n.as_f64().unwrap_or(0.0))),
         Json::String(s) => Value::text(s),
         Json::Array(a) => Value::list(a.iter().map(json_to_value).collect()),
-        Json::Object(o) => Value::record(
-            o.iter()
-                .map(|(k, v)| (k.clone(), json_to_value(v)))
-                .collect(),
-        ),
+        Json::Object(o) => Value::record(o.iter().map(|(k, v)| (k.clone(), json_to_value(v))).collect()),
     }
 }
 
 fn effect_value_to_json(v: &Value) -> Json {
     match v {
         Value::Fail(s) => json!({"__fail": s.as_ref()}),
-        Value::Mat(m) => {
-            json!({"__mat": m.content, "taint": m.taint, "addr": m.addr, "origin": m.origin})
-        }
+        Value::Mat(m) => json!({"__mat": m.content, "taint": m.taint, "addr": m.addr, "origin": m.origin}),
         other => other.to_json(),
     }
 }
@@ -1762,27 +1236,19 @@ fn json_to_effect_value(j: &Json) -> Value {
         return Value::Fail(Rc::from(f));
     }
     if let Some(c) = j.get("__mat") {
-        let taint: Taint =
-            serde_json::from_value(j.get("taint").cloned().unwrap_or(json!("Trusted")))
-                .unwrap_or(Taint::Trusted);
+        let taint: Taint = serde_json::from_value(j.get("taint").cloned().unwrap_or(json!("Trusted"))).unwrap_or(Taint::Trusted);
         let addr = j.get("addr").and_then(|a| a.as_str()).unwrap_or("");
-        let origin: Vec<String> =
-            serde_json::from_value(j.get("origin").cloned().unwrap_or(json!([])))
-                .unwrap_or_default();
-        return Value::Mat(Rc::new(Mat::new(
-            c.clone(),
-            addr,
-            origin,
-            taint,
-            BTreeSet::new(),
-        )));
+        let origin: Vec<String> = serde_json::from_value(j.get("origin").cloned().unwrap_or(json!([]))).unwrap_or_default();
+        return Value::Mat(Rc::new(Mat::new(c.clone(), addr, origin, taint, BTreeSet::new())));
     }
     json_to_value(j)
 }
 
+/// 返回值里带着哪些出口 / 未决责任。注意它**不进函数捕获环境**——「把责任装进续接方法返回给
+/// 调用者」这条合法路径因此表达不出来，见 INTERFACE.md 待定项。
 fn collect_exit_ids(v: &Value, out: &mut HashSet<usize>) {
     match v {
-        Value::Exit(e) => {
+        Value::Exit(e) | Value::Duty(e) => {
             out.insert(e.id);
         }
         Value::List(l) => l.iter().for_each(|x| collect_exit_ids(x, out)),

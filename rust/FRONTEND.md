@@ -6,6 +6,7 @@ argument type errors, missing budgets and source syntax errors are tested; this 
 a defined static-check subset, with remaining dynamic rules enforced at runtime.
 
 ```ebnf
+file       = { "import", string, ";" }, program;
 program    = [ "budget", record, ";" ], { statement }, [ expression ];
 statement  = "let", identifier, [ ":", type ], "=", expression, ";"
            | "fn", identifier, function-tail, [ ";" ]
@@ -15,7 +16,8 @@ function-tail = "(", [ parameter, { ",", parameter } ], ")",
                 [ "->", type ], [ "!", "{", [ effect, { ",", effect } ], "}" ], block;
 parameter  = identifier, [ ":", type ];
 type       = identifier, [ "<", type, { ",", type }, ">" ]
-           | "Fn", "(", [ type, { ",", type } ], ")", "->", type;
+           | ("Fn" | "Fn1"), "(", [ type, { ",", type } ], ")",
+             [ "-", "!", "{", [ effect, { ",", effect } ], "}" ], "->", type;
 expression = literal | identifier | list | record | block
            | "fn", function-tail
            | "if", expression, block, "else", (block | expression)
@@ -48,6 +50,23 @@ and annotations. Source programs declare literal limits, for example
 present budget; depth and escalate are optional. An absent budget remains absent
 for the common checker to diagnose. The frontend does not invent a default budget.
 
+`loader::load(path)` resolves leading relative imports, loads each canonical file
+once, and combines dependency declarations before the entry program. Imported
+libraries contain declarations, with no budget, standalone statements or final
+result. Top-level bindings are evaluated once in dependency order. Names are
+shared; conflicting declarations across files and cycles are errors. This first
+module path has no namespaces, selective exports or package registry. `parse(str)`
+remains the single-source parser; the file loader consumes import directives.
+`LoadedProgram::render` maps shared-core spans back to their originating files.
+
+`Fn(A) -> B` still lowers to legacy `Type::Function` with unknown effects.
+`Fn(A) -!{judge}-> B` lowers to `Type::Method`; `-!{}->` explicitly declares a
+pure upper bound. `Fn1` also sets `captures_responsibility`; this is a core contract
+flag, not proof of a complete linear type system. The type row and the function
+definition's trailing `!{...}` are separate. Unannotated higher-order helpers can
+infer effects per call; a concrete definition-level row remains an upper bound
+for every caller. See [the complete usage path](METHODS-AND-LIFECYCLE.md).
+
 Migration behavior: `examples/composition.jpp` passes and returns methods. The
 other source programs implement adaptive inquiry and partial validation/combination/
 continuation using generic operations rather than hidden domain solvers.
@@ -63,7 +82,9 @@ ends a bounded loop early. The search and candidate algorithms live in `.jpp`.
 `mat(value)` creates material; `state(material)` prepares a judgment state.
 `test(text, calibration_key)` creates a question value. `judge(state, question)`
 produces a reading, `cut(reading)` creates an exit, and `handle(exit, branches)`
-consumes that exit with explicit branches. The example functions `observe`,
+handles that exit with explicit branches. An unsure branch must carry or explicitly
+handle its responsibility; merely entering the branch does not discharge it.
+The example functions `observe`,
 `resolved`, and `answer` are written in J++, not extra runtime primitives.
 
 `transform(fn, material)` derives new material with provenance.

@@ -4,7 +4,7 @@ mod run_io;
 mod runner;
 
 use options::{Command, HELP};
-use std::{env, fs, process::ExitCode};
+use std::{env, process::ExitCode};
 
 fn execute(command: Command) -> Result<(), String> {
     let path = match &command {
@@ -16,8 +16,8 @@ fn execute(command: Command) -> Result<(), String> {
         Command::Run(options) => &options.source,
     };
     let filename = path.to_string_lossy();
-    let source = fs::read_to_string(path).map_err(|e| format!("{filename}: {e}"))?;
-    let parsed = jpp_frontend::parse(&source).map_err(|e| e.render(&filename, &source))?;
+    let loaded = jpp_frontend::loader::load(path)?;
+    let parsed = &loaded.program;
     if let Command::Parse { ast, .. } = &command {
         if *ast {
             println!("{parsed:#?}");
@@ -30,7 +30,7 @@ fn execute(command: Command) -> Result<(), String> {
         }
         return Ok(());
     }
-    let program = jpp_frontend::lower(&parsed).map_err(|e| e.render(&filename, &source))?;
+    let program = jpp_frontend::lower(parsed).map_err(|e| loaded.render(&e))?;
     let report = jpp_core::check::check(&program);
     for d in &report.diagnostics {
         let diagnostic = jpp_frontend::Diagnostic::new(
@@ -40,7 +40,7 @@ fn execute(command: Command) -> Result<(), String> {
                 end: d.span.end,
             },
         );
-        eprintln!("{}", diagnostic.render(&filename, &source));
+        eprintln!("{}", loaded.render(&diagnostic));
     }
     if !report.is_ok() {
         return Err(format!(
@@ -53,7 +53,7 @@ fn execute(command: Command) -> Result<(), String> {
             "Checked {filename}: no static errors ({} warnings)",
             report.warnings().len()
         ),
-        Command::Run(options) => run_io::run_checked(&program, &options, &source)?,
+        Command::Run(options) => run_io::run_checked(&program, &options, &loaded)?,
         _ => unreachable!(),
     }
     Ok(())

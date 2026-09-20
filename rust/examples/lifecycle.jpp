@@ -1,0 +1,16 @@
+import "../lib/methods.jpp";
+import "../lib/observations.jpp";
+budget {calls: 2, cost: 0, depth: 256, escalate: 1};
+
+// Paths are relative to the process working directory. The core records each do.
+let input = do("read_json", ["input.json"], 0);
+let proposals = gen("Suggest a plan", [input], 1, 0);
+let candidate = proposals[0];
+let judged = observe_test(candidate, test("Fits the request?", "fixture"));
+if judged.resolved && judged.value {
+    let approval = request_test(candidate, test("Publish this plan?", "human"));
+    if approval.resolved && approval.value {
+        let report = {plan: content(candidate), request: content(input)};
+        content(do("write_json", ["result.json", apply_method(report, fn(x) { x })], 0))
+    } else { {approval: approval} }
+} else { {judgment: judged} }

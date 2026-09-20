@@ -8,9 +8,29 @@ use serde_json::Value;
 
 #[derive(Deserialize)]
 pub struct Fixture {
+    #[serde(default)]
     pub description: String,
+    #[serde(default)]
     pub calibrations: Vec<Calibration>,
+    #[serde(default)]
     pub observations: Vec<Observation>,
+    #[serde(default)]
+    pub generations: Vec<Generation>,
+    #[serde(default)]
+    pub responses: Vec<Response>,
+}
+
+#[derive(Deserialize)]
+pub struct Generation {
+    pub prompt: String,
+    pub retry_seq: u64,
+    pub output: Vec<Value>,
+}
+
+#[derive(Deserialize)]
+pub struct Response {
+    #[serde(flatten)]
+    pub question: Observation,
 }
 
 #[derive(Deserialize)]
@@ -39,6 +59,37 @@ pub struct Observation {
     pub answer: Answer,
 }
 
+impl Observation {
+    fn checked_question(&self) -> Result<Question, String> {
+        let (op, expected, compatible) = match self.op.as_str() {
+            "test" => (Op::Test, "Noul", matches!(&self.answer, Answer::Noul(_))),
+            "select" => (
+                Op::Select,
+                "Choice",
+                matches!(&self.answer, Answer::Choice(_)),
+            ),
+            "measure" => (
+                Op::Measure,
+                "Score",
+                matches!(&self.answer, Answer::Score(_)),
+            ),
+            other => return Err(format!("unknown fixture question kind '{other}'")),
+        };
+        if !compatible {
+            return Err(format!(
+                "fixture {} question {:?} requires a {expected} answer",
+                self.op, self.text
+            ));
+        }
+        Ok(Question::new(
+            op,
+            &self.text,
+            &self.calib,
+            self.scale.clone(),
+        ))
+    }
+}
+
 impl Fixture {
     pub fn build(&self) -> Result<(FixedClient, CalibStore), String> {
         let mut client = FixedClient::new();
@@ -55,15 +106,50 @@ impl Fixture {
                 mats(&o.over),
                 false,
             );
-            let op = match o.op.as_str() {
-                "test" => Op::Test,
-                "select" => Op::Select,
-                "measure" => Op::Measure,
-                other => return Err(format!("unknown fixture question kind '{other}'")),
-            };
-            let question = Question::new(op, &o.text, &o.calib, o.scale.clone());
+            let question = o.checked_question()?;
             client.observe(&state, &question, o.answer.clone());
         }
+        for g in &self.generations {
+            client.fix_gen(&g.prompt, g.retry_seq, g.output.clone());
+        }
+        for r in &self.responses {
+            let o = &r.question;
+            let state = State::new(
+                mats(&o.on),
+                mats(&o.ctx),
+                mats(&o.r#ref),
+                mats(&o.over),
+                false,
+            );
+            let question = o.checked_question()?;
+            client.fix_ask(&state, &question, Some(o.answer.clone()));
+        }
         Ok((client, calibrations))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use serde_json::json;
+
+    #[test]
+    fn all_question_kinds_validate_observation_and_response_variants() {
+        for field in ["observations", "responses"] {
+            for (op, expected) in [("test", "Noul"), ("select", "Choice"), ("measure", "Score")] {
+                for (variant, answer) in [
+                    ("Noul", json!({"Noul":0.9})),
+                    ("Choice", json!({"Choice":[0.9,0.1]})),
+                    ("Score", json!({"Score":[0.9,0.1]})),
+                ] {
+                    let fixture: Fixture = serde_json::from_value(json!({field: [{"on":["x"],"op":op,"text":"q","calib":"c","answer":answer}]})).unwrap();
+                    assert_eq!(
+                        fixture.build().is_ok(),
+                        variant == expected,
+                        "{field}: {op}/{variant}"
+                    );
+                }
+            }
+        }
     }
 }
