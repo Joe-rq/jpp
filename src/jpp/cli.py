@@ -28,7 +28,12 @@ def demo():
 
 
 def main(argv=None):
+    import sys
+    arguments = list(sys.argv[1:] if argv is None else argv)
+    if arguments and arguments[0] == "towow":
+        from .towow import main as towow_main
+        return towow_main(arguments[1:])
     parser = argparse.ArgumentParser(prog="jpp", description="J++ experimental language")
-    parser.add_argument("command", choices=["demo"], nargs="?", default="demo")
-    parser.parse_args(argv)
+    parser.add_argument("command", choices=["demo", "towow"], nargs="?", default="demo")
+    parser.parse_args(arguments)
     print(json.dumps(demo(), ensure_ascii=False, indent=2))
