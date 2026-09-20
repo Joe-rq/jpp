@@ -465,3 +465,163 @@ fn 盖住内置名只是提示() {
         report.render()
     );
 }
+
+/// 实参字面量与参数标注不符（core 本地码 E-type）。
+#[test]
+fn 参数类型不符() {
+    let (annotated, at) = typed_call();
+    let report = check(&annotated);
+    let d = report
+        .find("E-type")
+        .unwrap_or_else(|| panic!("应当报 E-type：\n{}", report.render()));
+    assert_eq!(d.severity, Severity::Error);
+    assert_eq!(d.span, at, "出错位置指着那个实参");
+    assert!(d.message.contains("Int"), "{}", d.message);
+
+    // 参数没有标注就不判——标注是可选的
+    let bare = build(
+        Some(budget(0, 8)),
+        vec![func(
+            "twice",
+            &["x"],
+            body(vec![], bin("*", name("x"), int(2))),
+        )],
+        call("twice", vec![text("不是整数")]),
+    );
+    assert!(
+        check(&bare).is_ok(),
+        "没标注不该判：{}",
+        check(&bare).render()
+    );
+}
+
+/// `fn twice(x: Int) -> Int !{} { x * 2 }` 后面跟 `twice("不是整数")`
+fn typed_call() -> (jpp_core::Program, Span) {
+    use jpp_core::ast::{Function, Parameter, Statement as S};
+    let twice = S::Function {
+        name: "twice".into(),
+        function: Function {
+            parameters: vec![Parameter {
+                name: "x".into(),
+                annotation: Some(Type::Named("Int".into())),
+                span: sp(),
+            }],
+            result_type: Some(Type::Named("Int".into())),
+            effects: Some(vec![]),
+            body: body(vec![], bin("*", name("x"), int(2))),
+        },
+        span: sp(),
+    };
+    let bad = text("不是整数");
+    let at = bad.span;
+    (
+        build(Some(budget(0, 8)), vec![twice], call("twice", vec![bad])),
+        at,
+    )
+}
+
+/// 参数个数不对（core 本地码 E-arity），以及它的反面：参数名盖住具名方法时不许报。
+#[test]
+fn 参数个数与遮蔽() {
+    let program = program(
+        Some(budget(0, 8)),
+        vec![func("helper", &["a", "b"], body(vec![], name("a")))],
+        call("helper", vec![int(1)]),
+    );
+    assert!(
+        check(&program).find("E-arity").is_some(),
+        "{}",
+        check(&program).render()
+    );
+
+    // helper 在 outer 里是参数，接的是另一个方法值；不能拿顶层 helper 的参数表去核它
+    let shadowed = build(
+        Some(budget(0, 8)),
+        vec![
+            func("helper", &["a", "b"], body(vec![], name("a"))),
+            func(
+                "outer",
+                &["helper"],
+                body(vec![], call("helper", vec![int(1)])),
+            ),
+        ],
+        call("outer", vec![name("helper")]),
+    );
+    assert!(
+        check(&shadowed).find("E-arity").is_none(),
+        "参数遮蔽了具名方法，不该按它的参数表核：\n{}",
+        check(&shadowed).render()
+    );
+}
+
+/// 把方法值存起来 / 传给别处不是调用，它的效应不该算到当前函数头上。
+#[test]
+fn 存起方法值不算发生效应() {
+    let program = program(
+        Some(budget(1, 8)),
+        vec![
+            func_eff(
+                "peek",
+                &["m", "q"],
+                &["judge"],
+                body(
+                    vec![],
+                    call(
+                        "cut",
+                        vec![call(
+                            "judge",
+                            vec![call("state", vec![name("m")]), name("q")],
+                        )],
+                    ),
+                ),
+            ),
+            func_eff(
+                "collect",
+                &["hs"],
+                &[],
+                body(vec![], call("append", vec![name("hs"), name("peek")])),
+            ),
+        ],
+        call("collect", vec![list(vec![])]),
+    );
+    let report = check(&program);
+    assert!(
+        report.find("E-effect").is_none(),
+        "只是把方法存进列表，没有调用：\n{}",
+        report.render()
+    );
+
+    // 但传到 map 的方法位上就是会发生
+    let mapped = build(
+        Some(budget(1, 8)),
+        vec![
+            func_eff(
+                "peek",
+                &["m"],
+                &["judge"],
+                body(
+                    vec![],
+                    call(
+                        "cut",
+                        vec![call(
+                            "judge",
+                            vec![call("state", vec![name("m")]), name("m")],
+                        )],
+                    ),
+                ),
+            ),
+            func_eff(
+                "all",
+                &["ms"],
+                &[],
+                body(vec![], call("map", vec![name("ms"), name("peek")])),
+            ),
+        ],
+        call("all", vec![list(vec![])]),
+    );
+    let report = check(&mapped);
+    let d = report
+        .find("E-effect")
+        .unwrap_or_else(|| panic!("map 的方法位上会发生：\n{}", report.render()));
+    assert!(d.message.contains("judge"), "{}", d.message);
+}

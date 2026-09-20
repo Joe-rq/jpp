@@ -214,6 +214,16 @@ fn is_builtin(n: &str) -> bool {
     BUILTINS.contains(&n)
 }
 
+/// 高阶内置里哪一位收方法
+fn method_positions(builtin: &str) -> &'static [usize] {
+    match builtin {
+        "map" | "filter" => &[1],
+        "fold" | "loop" => &[2],
+        "transform" => &[0],
+        _ => &[],
+    }
+}
+
 fn call_name(e: &Expr) -> Option<&str> {
     match &e.kind {
         ExprKind::Call { function, .. } => match &function.kind {
@@ -1107,13 +1117,33 @@ impl Checker {
                 // 被调者是参数、字段或别的表达式：静态判不了
                 _ => unknown = true,
             }
-            // 传给高阶操作的具名方法，其效应也会发生
-            for a in arguments {
+            // 传到高阶操作的方法位上的具名方法，其效应也会发生。只认已知的方法位：
+            // 把方法值存进列表、传给 text 之类不是调用，不该并进来。
+            let mut absorb = |a: &Expr| {
                 if let ExprKind::Name(n) = &a.kind {
                     match self.effect_of_name(n) {
                         Some(Some(s)) => set.extend(s),
                         Some(None) => unknown = true,
                         None => {}
+                    }
+                }
+            };
+            if let ExprKind::Name(callee) = &function.kind {
+                for i in method_positions(callee) {
+                    if let Some(a) = arguments.get(*i) {
+                        absorb(a);
+                    }
+                }
+                // handle 的臂可以是具名方法
+                if callee == "handle" {
+                    if let Some(Expr {
+                        kind: ExprKind::Record(arms),
+                        ..
+                    }) = arguments.get(1)
+                    {
+                        for (_, v) in arms {
+                            absorb(v);
+                        }
                     }
                 }
             }
