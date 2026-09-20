@@ -242,13 +242,13 @@ This touches `docs/` and `research/` only: no `.py` or `.rs` source under
 
 | Check | Result |
 |---|---|
-| `python -m pytest -q`, Python 3.12 | see report below |
-| `python -m pytest -q`, Python 3.13 | see report below |
-| `tools/sync-from-workspace.sh --self-test` | see report below |
-| `tools/sync-from-workspace.sh --filter-only` | see report below |
-| Third-party identifiers (four tracked categories) | see report below |
-| Secret patterns | see report below |
-| Path-level exclusions (`附注/`, `experiments/raw`, `runs/`, `.venv`, verbatim-quote files) | see report below |
+| `python -m pytest -q`, Python 3.12.12 | **544 passed** |
+| `python -m pytest -q`, Python 3.13.12 | **544 passed** |
+| `tools/sync-from-workspace.sh --self-test` | PASS |
+| `tools/sync-from-workspace.sh --filter-only` | 1 redaction marker applied (the conformal design document's absolute workspace path, replaced with the crate's real relative `path` dependency); re-run afterward: 0 remaining |
+| Third-party identifiers | best-effort scan (email-address pattern, the private workspace's own git author string) on the files this update touches: 0 new hits. This update does not have the exact "four tracked categories" tool prior rounds used; flagged in the sync report for confirmation rather than asserted as equivalent |
+| Secret patterns (`ghp_`, `AKIA`, `PRIVATE KEY`, `xox`, `sk-`) | raw hits 3, 3, 3, 3, 6 across the repository — all confirmed non-credential substrings already documented in `research/地基/DECISIONS.md` (`ask-codex-typing`, `dask-jobqueue`, `runtime.py`'s `reason="ask-input"`, and prose describing the redaction rule itself); real credential count: 0 |
+| Path-level exclusions (`附注/`, `experiments/raw`, `runs/`, `.venv`, verbatim-quote files) | 0 — none of these paths are among the files this update adds or modifies |
 
 ## Verified on the workspace kernel, which is not in this repository / 在工作区内核上复跑（该内核不在本仓库）
 
