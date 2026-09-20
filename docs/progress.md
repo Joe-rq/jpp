@@ -15,6 +15,8 @@ installation, experiment or mixed-language runtime has been performed.
 标注；不因实验暂停Rust，不默认增加用户安装依赖。当前只同步约定，下一次实验由
 真实设计问题触发。中英ADR、设计入口和进展一并更新。
 
+[Policy commit / 规范提交](https://github.com/Towow-ai/jpp/commit/35ec2d0)
+
 ## 2026-09-20: Rust and standalone source selected / 选定 Rust 与独立源码
 
 The formal language implementation now moves to one Rust kernel with a `.jpp`
