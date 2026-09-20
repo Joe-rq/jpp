@@ -1,0 +1,653 @@
+{
+  "fixture": "Fixed synthetic observations; local finite-domain checks",
+  "static_plan": {
+    "calls": "bind:construct_and_run_method:continuation:calls",
+    "questions": "bind:construct_and_run_method:continuation:questions",
+    "layers": "bind:construct_and_run_method:continuation:layers",
+    "do_calls": "bind:construct_and_run_method:continuation:do_calls",
+    "gen_calls": "bind:construct_and_run_method:continuation:gen_calls"
+  },
+  "factory_inputs": [
+    1,
+    9
+  ],
+  "cases": [
+    {
+      "domain": [
+        0
+      ],
+      "output": [
+        {
+          "solution": {
+            "expression": "x"
+          },
+          "steps": 1,
+          "reason": "done",
+          "checked": [
+            "x"
+          ]
+        },
+        "x"
+      ],
+      "calls": 0,
+      "actions": 1,
+      "dynamic": [
+        {
+          "call_id": 1,
+          "component": "construct_and_run_method",
+          "structure": {
+            "name": "solve_and_report",
+            "operation": "then",
+            "input": "SynthesisState",
+            "output": "dict",
+            "effects": [
+              "do",
+              "gen",
+              "transform"
+            ],
+            "parameters": {},
+            "warnings": [],
+            "children": [
+              {
+                "name": "construct_verified_expression",
+                "operation": "iterate",
+                "input": "SynthesisState",
+                "output": "Iteration",
+                "effects": [
+                  "do",
+                  "gen",
+                  "transform"
+                ],
+                "parameters": {
+                  "limit": 8
+                },
+                "warnings": [],
+                "children": [
+                  {
+                    "name": "construct_verified_expression.step",
+                    "operation": "then",
+                    "input": "SynthesisState",
+                    "output": "SynthesisState",
+                    "effects": [
+                      "do",
+                      "gen",
+                      "transform"
+                    ],
+                    "parameters": {},
+                    "warnings": [],
+                    "children": [
+                      {
+                        "name": "construct_verified_expression.state_reports",
+                        "operation": "product",
+                        "input": "SynthesisState",
+                        "output": "tuple",
+                        "effects": [
+                          "do",
+                          "gen",
+                          "transform"
+                        ],
+                        "parameters": {},
+                        "warnings": [],
+                        "children": [
+                          {
+                            "name": "identity",
+                            "operation": "identity",
+                            "input": "SynthesisState",
+                            "output": "SynthesisState",
+                            "effects": [],
+                            "parameters": {},
+                            "warnings": [],
+                            "children": []
+                          },
+                          {
+                            "name": "construct_verified_expression.state_candidates → first_candidate_and_exact_check",
+                            "operation": "then",
+                            "input": "SynthesisState",
+                            "output": "list",
+                            "effects": [
+                              "do",
+                              "gen",
+                              "transform"
+                            ],
+                            "parameters": {},
+                            "warnings": [],
+                            "children": [
+                              {
+                                "name": "construct_verified_expression.state_candidates",
+                                "operation": "product",
+                                "input": "SynthesisState",
+                                "output": "tuple",
+                                "effects": [
+                                  "gen",
+                                  "transform"
+                                ],
+                                "parameters": {},
+                                "warnings": [],
+                                "children": [
+                                  {
+                                    "name": "identity",
+                                    "operation": "identity",
+                                    "input": "SynthesisState",
+                                    "output": "SynthesisState",
+                                    "effects": [],
+                                    "parameters": {},
+                                    "warnings": [],
+                                    "children": []
+                                  },
+                                  {
+                                    "name": "generate_candidates",
+                                    "operation": "leaf",
+                                    "input": "SynthesisState",
+                                    "output": "list",
+                                    "effects": [
+                                      "gen",
+                                      "transform"
+                                    ],
+                                    "parameters": {},
+                                    "warnings": [],
+                                    "children": []
+                                  }
+                                ]
+                              },
+                              {
+                                "name": "first_candidate_and_exact_check",
+                                "operation": "leaf",
+                                "input": "tuple",
+                                "output": "list",
+                                "effects": [
+                                  "do"
+                                ],
+                                "parameters": {},
+                                "warnings": [
+                                  "W-fail: 程序含 jv.do 但没有任何 Unsure 处理（handle/consume/case jv.Unsure）；do 失败按 J-12 走 Unsure(fail)，返回前会按 J-05 报错（行 2）"
+                                ],
+                                "children": []
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "name": "absorb_counterexamples",
+                        "operation": "leaf",
+                        "input": "tuple",
+                        "output": "SynthesisState",
+                        "effects": [],
+                        "parameters": {},
+                        "warnings": [],
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "name": "synthesis_done",
+                    "operation": "leaf",
+                    "input": "SynthesisState",
+                    "output": "bool",
+                    "effects": [],
+                    "parameters": {},
+                    "warnings": [],
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "report_solution",
+                "operation": "leaf",
+                "input": "Iteration",
+                "output": "dict",
+                "effects": [],
+                "parameters": {},
+                "warnings": [],
+                "children": []
+              }
+            ]
+          },
+          "trace_range": [
+            4,
+            18
+          ],
+          "result_type": "dict"
+        }
+      ]
+    },
+    {
+      "domain": [
+        -4,
+        -3,
+        -2,
+        -1,
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "output": [
+        {
+          "solution": {
+            "expression": "x if x >= 0 else -x"
+          },
+          "steps": 3,
+          "reason": "done",
+          "checked": [
+            "0",
+            "-x",
+            "x if x >= 0 else -x"
+          ]
+        },
+        "x if x >= 0 else -x"
+      ],
+      "calls": 4,
+      "actions": 3,
+      "dynamic": [
+        {
+          "call_id": 1,
+          "component": "construct_and_run_method",
+          "structure": {
+            "name": "solve_and_report",
+            "operation": "then",
+            "input": "SynthesisState",
+            "output": "dict",
+            "effects": [
+              "do",
+              "gen",
+              "judge",
+              "transform"
+            ],
+            "parameters": {},
+            "warnings": [],
+            "children": [
+              {
+                "name": "construct_verified_expression",
+                "operation": "iterate",
+                "input": "SynthesisState",
+                "output": "Iteration",
+                "effects": [
+                  "do",
+                  "gen",
+                  "judge",
+                  "transform"
+                ],
+                "parameters": {
+                  "limit": 8
+                },
+                "warnings": [],
+                "children": [
+                  {
+                    "name": "construct_verified_expression.step",
+                    "operation": "then",
+                    "input": "SynthesisState",
+                    "output": "SynthesisState",
+                    "effects": [
+                      "do",
+                      "gen",
+                      "judge",
+                      "transform"
+                    ],
+                    "parameters": {},
+                    "warnings": [],
+                    "children": [
+                      {
+                        "name": "construct_verified_expression.state_reports",
+                        "operation": "product",
+                        "input": "SynthesisState",
+                        "output": "tuple",
+                        "effects": [
+                          "do",
+                          "gen",
+                          "judge",
+                          "transform"
+                        ],
+                        "parameters": {},
+                        "warnings": [],
+                        "children": [
+                          {
+                            "name": "identity",
+                            "operation": "identity",
+                            "input": "SynthesisState",
+                            "output": "SynthesisState",
+                            "effects": [],
+                            "parameters": {},
+                            "warnings": [],
+                            "children": []
+                          },
+                          {
+                            "name": "construct_verified_expression.state_candidates → choose_checker_each_round",
+                            "operation": "then",
+                            "input": "SynthesisState",
+                            "output": "list",
+                            "effects": [
+                              "do",
+                              "gen",
+                              "judge",
+                              "transform"
+                            ],
+                            "parameters": {},
+                            "warnings": [],
+                            "children": [
+                              {
+                                "name": "construct_verified_expression.state_candidates",
+                                "operation": "product",
+                                "input": "SynthesisState",
+                                "output": "tuple",
+                                "effects": [
+                                  "gen",
+                                  "transform"
+                                ],
+                                "parameters": {},
+                                "warnings": [],
+                                "children": [
+                                  {
+                                    "name": "identity",
+                                    "operation": "identity",
+                                    "input": "SynthesisState",
+                                    "output": "SynthesisState",
+                                    "effects": [],
+                                    "parameters": {},
+                                    "warnings": [],
+                                    "children": []
+                                  },
+                                  {
+                                    "name": "generate_candidates",
+                                    "operation": "leaf",
+                                    "input": "SynthesisState",
+                                    "output": "list",
+                                    "effects": [
+                                      "gen",
+                                      "transform"
+                                    ],
+                                    "parameters": {},
+                                    "warnings": [],
+                                    "children": []
+                                  }
+                                ]
+                              },
+                              {
+                                "name": "choose_checker_each_round",
+                                "operation": "bind",
+                                "input": "tuple",
+                                "output": "list",
+                                "effects": [
+                                  "do",
+                                  "judge"
+                                ],
+                                "parameters": {
+                                  "factory": "construct_candidate_checker",
+                                  "factory_effects": [],
+                                  "factory_contract": "declared",
+                                  "continuation_effects": [
+                                    "do",
+                                    "judge"
+                                  ]
+                                },
+                                "warnings": [
+                                  "W-dynamic: bind factory and continuation execute at runtime; capability declarations are not purity proofs"
+                                ],
+                                "children": [
+                                  {
+                                    "name": "identity",
+                                    "operation": "identity",
+                                    "input": "tuple",
+                                    "output": "tuple",
+                                    "effects": [],
+                                    "parameters": {},
+                                    "warnings": [],
+                                    "children": []
+                                  },
+                                  {
+                                    "name": "construct_candidate_checker",
+                                    "operation": "leaf",
+                                    "input": "tuple",
+                                    "output": "Component",
+                                    "effects": [],
+                                    "parameters": {},
+                                    "warnings": [],
+                                    "children": []
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "name": "absorb_counterexamples",
+                        "operation": "leaf",
+                        "input": "tuple",
+                        "output": "SynthesisState",
+                        "effects": [],
+                        "parameters": {},
+                        "warnings": [],
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "name": "synthesis_done",
+                    "operation": "leaf",
+                    "input": "SynthesisState",
+                    "output": "bool",
+                    "effects": [],
+                    "parameters": {},
+                    "warnings": [],
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "report_solution",
+                "operation": "leaf",
+                "input": "Iteration",
+                "output": "dict",
+                "effects": [],
+                "parameters": {},
+                "warnings": [],
+                "children": []
+              }
+            ]
+          },
+          "trace_range": [
+            4,
+            53
+          ],
+          "result_type": "dict"
+        },
+        {
+          "call_id": 14,
+          "component": "choose_checker_each_round",
+          "structure": {
+            "name": "rank_and_verify",
+            "operation": "leaf",
+            "input": "tuple",
+            "output": "list",
+            "effects": [
+              "do",
+              "judge"
+            ],
+            "parameters": {},
+            "warnings": [
+              "W-fail: 程序含 jv.do 但没有任何 Unsure 处理（handle/consume/case jv.Unsure）；do 失败按 J-12 走 Unsure(fail)，返回前会按 J-05 报错（行 2）"
+            ],
+            "children": []
+          },
+          "trace_range": [
+            17,
+            20
+          ],
+          "result_type": "list"
+        },
+        {
+          "call_id": 29,
+          "component": "choose_checker_each_round",
+          "structure": {
+            "name": "rank_and_verify",
+            "operation": "leaf",
+            "input": "tuple",
+            "output": "list",
+            "effects": [
+              "do",
+              "judge"
+            ],
+            "parameters": {},
+            "warnings": [
+              "W-fail: 程序含 jv.do 但没有任何 Unsure 处理（handle/consume/case jv.Unsure）；do 失败按 J-12 走 Unsure(fail)，返回前会按 J-05 报错（行 2）"
+            ],
+            "children": []
+          },
+          "trace_range": [
+            32,
+            35
+          ],
+          "result_type": "list"
+        },
+        {
+          "call_id": 44,
+          "component": "choose_checker_each_round",
+          "structure": {
+            "name": "single_exact_check",
+            "operation": "then",
+            "input": "tuple",
+            "output": "list",
+            "effects": [
+              "do"
+            ],
+            "parameters": {},
+            "warnings": [],
+            "children": [
+              {
+                "name": "first_candidate_and_exact_check",
+                "operation": "leaf",
+                "input": "tuple",
+                "output": "list",
+                "effects": [
+                  "do"
+                ],
+                "parameters": {},
+                "warnings": [
+                  "W-fail: 程序含 jv.do 但没有任何 Unsure 处理（handle/consume/case jv.Unsure）；do 失败按 J-12 走 Unsure(fail)，返回前会按 J-05 报错（行 2）"
+                ],
+                "children": []
+              },
+              {
+                "name": "identity",
+                "operation": "identity",
+                "input": "list",
+                "output": "list",
+                "effects": [],
+                "parameters": {},
+                "warnings": [],
+                "children": []
+              }
+            ]
+          },
+          "trace_range": [
+            47,
+            50
+          ],
+          "result_type": "list"
+        }
+      ]
+    }
+  ],
+  "replacement": {
+    "original": {
+      "domain": [
+        -4,
+        -3,
+        -2,
+        -1,
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "output": {
+        "solution": {
+          "expression": "x if x >= 0 else -x"
+        },
+        "steps": 3,
+        "reason": "done",
+        "checked": [
+          "0",
+          "-x",
+          "x if x >= 0 else -x"
+        ]
+      },
+      "calls": 5,
+      "actions": 3,
+      "dynamic": []
+    },
+    "changed": {
+      "domain": [
+        -4,
+        -3,
+        -2,
+        -1,
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "output": {
+        "solution": {
+          "expression": "x if x >= 0 else -x"
+        },
+        "steps": 3,
+        "reason": "done",
+        "checked": [
+          "x",
+          "-x",
+          "x if x >= 0 else -x"
+        ]
+      },
+      "calls": 0,
+      "actions": 3,
+      "dynamic": []
+    },
+    "original_again": {
+      "domain": [
+        -4,
+        -3,
+        -2,
+        -1,
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "output": {
+        "solution": {
+          "expression": "x if x >= 0 else -x"
+        },
+        "steps": 3,
+        "reason": "done",
+        "checked": [
+          "0",
+          "-x",
+          "x if x >= 0 else -x"
+        ]
+      },
+      "calls": 5,
+      "actions": 3,
+      "dynamic": []
+    },
+    "original_plan": {
+      "calls": "8·leaf:rank_and_verify:judge:calls",
+      "questions": "8·leaf:rank_and_verify:judge:questions",
+      "layers": "8·leaf:rank_and_verify:judge:layers",
+      "do_calls": "8",
+      "gen_calls": "8"
+    },
+    "changed_plan": {
+      "calls": "0",
+      "questions": "0",
+      "layers": "0",
+      "do_calls": "8",
+      "gen_calls": "8"
+    }
+  }
+}

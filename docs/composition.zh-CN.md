@@ -6,10 +6,13 @@
 
 ## 运行
 
+完整、当前的安装、编写方法与调试路径见[开发者指南](developer-guide.md)。
+
 安装步骤见仓库 README。安装后执行：
 
 ```sh
 jpp demo
+jpp methods --output method-report.json
 python -m pytest -q
 ```
 
@@ -45,17 +48,18 @@ assert result.value == 10
 |---|---|
 | `a.then(b)` | a 的结果成为 b 的输入；检查相接类型 |
 | `identity(T)` | 返回输入，便于统一构造 |
-| `a.bind(factory, Output, effects=...)` | a 的结果交给 factory，factory 返回下一段组件，并以该结果作为输入执行它 |
+| `a.bind(factory, Output, effects=..., factory_effects=...)` | a 的结果交给 factory，factory 返回下一段组件，并以该结果作为输入执行它；两类能力声明分别约束工厂与后续 |
 | `branch(predicate, yes, no)` | predicate 返回明确 bool，只执行被选中的一支 |
 | `product(a, b, ...)` | 同一输入产生多个结果，按声明顺序执行；不自动推测或重排外部动作 |
 | `iterate(step, done, limit=N)` | step 为 S→S，done 为 S→bool；返回 `Iteration(state, steps, reason)` |
 | `describe()` | 返回组合结构、输入输出、效应声明和静态提示 |
+| `structure()` / `replace_at(path, replacement)` | 读取共同结构 / 重构指定子节点，旧方法保持不变 |
 
 `Iteration.reason="done"` 表示调用者定义的停止条件成立，并不自动意味着业务成功。业务状态中应保留成功、未决、无候选等区别。
 
 动态接续的三种写法不同：返回问题值是构造/交付数据；执行 `observe` 是取得观察；返回一个 `Component` 是交付方法。`bind` 明确选择并执行下一段方法。其 `effects` 参数为动态部分声明允许的能力，静态结构中也会保留这个边界。
 
-`describe` 是组合库可见结构。内核在实际调用中仍负责效果、预算和记录；当前原生内核的静态成本分析未完整展开所有动态组件。动态宿主函数保留运行期检查，不把结构描述冒充全程序静态证明。
+共同计划器读取 then/branch/product/iterate/bind；动态尚未生成的后续保持未知，规划不调用工厂。execute 的 trace 保存本次实际生成结构、调用编号与结果；没有更换运行时。
 
 ## 问题、观察和局部未决
 

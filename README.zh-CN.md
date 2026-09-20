@@ -34,10 +34,13 @@ python3.12 -m venv .venv
 source .venv/bin/activate
 python -m pip install -e '.[dev]'
 jpp demo
+jpp methods --output method-report.json
 python -m pytest -q
 ```
 
 Windows 使用 `.venv\Scripts\activate` 激活环境。
+
+`methods` 运行完整的动态方法构造、嵌套和内部步骤替换，将共同计划、实际生成结构与结果写到指定文件。也可以直接安装 wheel，无须研究源码。[开发者使用与调试指南](docs/developer-guide.md)。
 
 演示完全离线，无须 API Key，不产生模型费用。它做两件事：在 1,000 个候选里，通过最多 10 次二分提问定位目标；通过“生成候选—运行检查—吸收反例”构造一个表达式，并检查全部九个指定输入。模型回答采用合成数据，生成器采用有限枚举，展示的是组合机制如何运行，不能据此推断真实模型准确率。
 
