@@ -26,6 +26,8 @@ The [325-profile real-source comparison](https://towow-ai.github.io/jpp/demos/to
 
 [Discovery roadmap (中文)](docs/towow-discovery-roadmap.zh-CN.md) records candidate-pool bottlenecks, reusable Towow research assets and the next bounded experiment. Its offline diagnostic script requires no model calls.
 
+The [composable discovery application](https://towow-ai.github.io/jpp/demos/towow/teams/) runs different task plans through the same J++ composition and feeds a two-member proposal back in to nominate a third member. Its API accepts replaceable questions, routing and combination functions. Three synthetic live examples, exact replay and the unsuccessful fixed-slot exploration control are documented in the [iteration report](docs/towow-discovery-iteration.zh-CN.md); this is a bounded application component, not a delivered distributed discovery network.
+
 ## Run standalone J++
 
 ```sh

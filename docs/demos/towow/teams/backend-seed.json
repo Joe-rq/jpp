@@ -1,0 +1,121 @@
+{
+  "id": "combination:docker_nomad+sudo_rm",
+  "members": [
+    {
+      "node": {
+        "id": "sudo_rm",
+        "name": "sudo_rm",
+        "role": "云原生架构师",
+        "context": "{\"availability\": \"工作日晚上 8 点后\", \"bio\": \"删过生产环境数据库三次，现在是基础设施代码的狂热信徒。能用 K8s 部署一切，包括我的个人博客。口头禅：「这个可以容器化」。\", \"experience\": \"7年\", \"hackathon_history\": \"组过 12 支队伍，擅长 48 小时内搭出能扛百万 QPS 的架构（虽然从没真的有百万用户）\", \"interests\": [\"homelab\", \"开源贡献\", \"精酿啤酒\", \"机械表\"], \"name\": \"sudo_rm\", \"role\": \"云原生架构师\", \"skills\": [\"Kubernetes\", \"Terraform\", \"Go\", \"分布式系统\", \"成本优化\"]}",
+        "source_ids": [
+          "apps/S1_hackathon/data/agents.json:sudo_rm"
+        ]
+      },
+      "role": "后端实现与性能",
+      "facet_id": "service",
+      "evidence_refs": [
+        "apps/S1_hackathon/data/agents.json:sudo_rm"
+      ],
+      "facet_grade": {
+        "level": null,
+        "label": null,
+        "nearest_level": null,
+        "nearest_label": null,
+        "status": "unsure",
+        "cause": "cold",
+        "provisional": true
+      },
+      "facet_order": 1
+    },
+    {
+      "node": {
+        "id": "docker_nomad",
+        "name": "容器游牧民",
+        "role": "云原生工程师",
+        "context": "{\"availability\": \"工作日晚上\", \"bio\": \"家里没有物理机，所有东西都跑在容器里。K8s集群玩得比Linux服务器还溜。信仰基础设施即代码，YAML写得比情书多。\", \"can_teach\": [\"Docker实战\", \"K8s从入门到放弃\", \"CI/CD流水线设计\"], \"name\": \"容器游牧民\", \"role\": \"云原生工程师\", \"skills\": [\"Kubernetes\", \"容器编排\", \"服务网格\", \"GitOps\"], \"style\": \"云原生布道者、喜欢分享架构图、话痨\", \"want_to_learn\": [\"eBPF编程\", \"边缘计算\", \"WebAssembly运行时\"]}",
+        "source_ids": [
+          "apps/S2_skill_exchange/data/agents.json:docker_nomad"
+        ]
+      },
+      "role": "部署与运行维护",
+      "facet_id": "delivery",
+      "evidence_refs": [
+        "apps/S2_skill_exchange/data/agents.json:docker_nomad"
+      ],
+      "facet_grade": {
+        "level": null,
+        "label": null,
+        "nearest_level": null,
+        "nearest_label": null,
+        "status": "unsure",
+        "cause": "cold",
+        "provisional": true
+      },
+      "facet_order": 2
+    }
+  ],
+  "context": "[后端实现与性能] {\"availability\": \"工作日晚上 8 点后\", \"bio\": \"删过生产环境数据库三次，现在是基础设施代码的狂热信徒。能用 K8s 部署一切，包括我的个人博客。口头禅：「这个可以容器化」。\", \"experience\": \"7年\", \"hackathon_history\": \"组过 12 支队伍，擅长 48 小时内搭出能扛百万 QPS 的架构（虽然从没真的有百万用户）\", \"interests\": [\"homelab\", \"开源贡献\", \"精酿啤酒\", \"机械表\"], \"name\": \"sudo_rm\", \"role\": \"云原生架构师\", \"skills\": [\"Kubernetes\", \"Terraform\", \"Go\", \"分布式系统\", \"成本优化\"]}\n\n[部署与运行维护] {\"availability\": \"工作日晚上\", \"bio\": \"家里没有物理机，所有东西都跑在容器里。K8s集群玩得比Linux服务器还溜。信仰基础设施即代码，YAML写得比情书多。\", \"can_teach\": [\"Docker实战\", \"K8s从入门到放弃\", \"CI/CD流水线设计\"], \"name\": \"容器游牧民\", \"role\": \"云原生工程师\", \"skills\": [\"Kubernetes\", \"容器编排\", \"服务网格\", \"GitOps\"], \"style\": \"云原生布道者、喜欢分享架构图、话痨\", \"want_to_learn\": [\"eBPF编程\", \"边缘计算\", \"WebAssembly运行时\"]}",
+  "trigger_reasons": [
+    {
+      "facet": "service",
+      "node": "sudo_rm",
+      "question": "结合 on 中的意图，ctx 中这份档案是否记载了本人能为高流量后端的服务实现、并发或性能优化提供具体能力？只想学习、只使用网站或泛泛技术兴趣不算。只读原始档案，不推测未记载的经验。",
+      "grade": {
+        "level": null,
+        "label": null,
+        "nearest_level": null,
+        "nearest_label": null,
+        "status": "unsure",
+        "cause": "cold",
+        "provisional": true
+      },
+      "owner_id": null,
+      "reason": "candidate contribution judgment; not a confirmed commitment"
+    },
+    {
+      "facet": "delivery",
+      "node": "docker_nomad",
+      "question": "结合 on 中的意图，ctx 中这份档案是否记载了本人能为服务部署、容器编排或持续运行维护提供具体能力？仅有后端编程兴趣并不足以确认部署能力。只读原始档案，不猜测意愿或可用时间。",
+      "grade": {
+        "level": null,
+        "label": null,
+        "nearest_level": null,
+        "nearest_label": null,
+        "status": "unsure",
+        "cause": "cold",
+        "provisional": true
+      },
+      "owner_id": null,
+      "reason": "candidate contribution judgment; not a confirmed commitment"
+    }
+  ],
+  "intent": {
+    "id": "q13",
+    "query": "帮我部署一个能扛大流量的后端",
+    "context": "先找到可以一起讨论实现与部署的候选，不假定任何人已经承诺。"
+  },
+  "parent_nomination_ids": [],
+  "prior_readings": [],
+  "combination_order": [
+    1,
+    2
+  ],
+  "grade": {
+    "level": null,
+    "label": null,
+    "nearest_level": null,
+    "nearest_label": null,
+    "status": "unsure",
+    "cause": "cold",
+    "provisional": true
+  },
+  "order": 1,
+  "tier": 0,
+  "missing_conditions": [
+    "当前负载与目标吞吐量待说明",
+    "成员意愿和可投入时间待确认",
+    "运行环境、权限及费用待讨论"
+  ],
+  "next_question": "你们愿意先围绕当前服务与目标负载设计一次小规模压测和部署验证吗？需要先补哪些资料？",
+  "provisional": true
+}
