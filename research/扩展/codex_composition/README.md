@@ -2,7 +2,7 @@
 
 这套库把问题、计算组件和求解方法接到同一个 `foundation.jv` 内核上。用户定义组件，用接续、分支、动态接续和迭代构造算法；算法仍是同一种组件，可以继续传递、返回和组合。
 
-本轮新增的语言贯通范围为 `then` 与 `branch`。它们的不可变子节点同时决定实际执行、描述和交给共同 `jv.plan` 的结构。接口映射、等价代码与验收见 [IR贯通验收.md](IR贯通验收.md)。
+当前已贯通 `then / branch / product / iterate / bind`：不可变子节点决定执行、描述与共同计划；动态后续保留本次生成结构。完整程序、实际输出及文件集见 [方法构造方法交付.md](方法构造方法交付.md)。上一包等价用法保留在 [IR贯通验收.md](IR贯通验收.md)。
 
 实现采用 Python 3.12，因为 Claude 的当前内核以 Python 为公开入口。库不包含第二套模型客户端、预算执行器或账本。OCaml / Rust 的独立内核选型保持为后续设计选择。
 
@@ -60,7 +60,7 @@ assert result.value == 10
 | `product(a, b, ...)` | 同一输入产生多个结果，按声明顺序执行；不自动推测或重排外部动作 |
 | `iterate(step, done, limit=N)` | step 为 S→S，done 为 S→bool；返回 `Iteration(state, steps, reason)` |
 | `describe()` | 返回组合结构、输入输出、效应声明和静态提示 |
-| `replace_at((子节点下标, ...), replacement)` | 只沿 then / branch 重构；重新核对接口及能力，旧组件不变 |
+| `replace_at((子节点下标, ...), replacement)` | 沿 then / branch / product / iterate / bind 重构；重新核对接口及能力，旧组件不变 |
 | `structure()` | 产生交给共同计划器的只读 v1 结构；叶保留 callable，本轮不提供序列化 |
 
 `Iteration.reason="done"` 表示调用者定义的停止条件成立，并不自动意味着业务成功。业务状态中应保留成功、未决、无候选等区别。
@@ -71,10 +71,10 @@ factory 自身的契约：
 
 - 普通 Python factory 未给 `factory_effects` 时，能力为未知，整体 `effects` 含 `"*"`。
 - 显式 `factory_effects={"judge"}` 等声明计入整体能力；若 factory 自身是 `Component`，默认采用它的声明。
-- `factory_effects=()` 是作者声明，不是已经证明纯净。库不承诺发现任意 Python 黑盒的隐藏调用。共同计划器把所有 bind 保留为 `opaque`，资源为未知符号，不据空声明删除、改序或当零成本。
+- `factory_effects=()` 是作者声明，不是已经证明纯净。库不承诺发现任意 Python 黑盒的隐藏调用。共同计划器读取 bind 的前段和工厂，后续保留未知符号，不据空声明删除、改序或当零成本。
 - 后续组件仍单独受 `effects` 子集检查；factory 声明不能替后续组件放宽边界。
 
-`then` / `branch` 使用子节点直接执行，不再另存独立执行闭包。`program()` 从同一节点产生 `__jv_structure__`，共同 `jv.plan` 按顺序求和、谓词加分支上界进行分析；执行仍通过原来的 `jv.program`。`bind`、`product`、`iterate` 本轮保留为动态 / 不透明边界。普通宿主叶仍按契约调用，未知不当零成本；结构描述不是全程序静态证明。
+全部公开组合使用子节点直接执行，不另存独立执行闭包。`program()` 从同一节点产生 `__jv_structure__`；共同 `jv.plan` 对 product 求和，对 iterate 取最多 N 步与 N+1 次停止检查，对 bind 保留动态未知。`execute()` 的本次 trace 保存 bind 的生成结构、调用编号、后续事件范围和结果；不会写回共享组件。普通宿主叶仍按契约调用，未知不当零成本。
 
 ## 问题、观察和局部未决
 
