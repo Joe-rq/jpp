@@ -88,3 +88,5 @@ passed; the guide now includes the JSON-export example that author needed.
 [Installed-package evidence](demos/methods/installation.json) ·
 [Method execution](demos/methods/method-report.json) ·
 [Independent author output](demos/methods/independent-output.json)
+
+[Implementation commit / 实现提交](https://github.com/Towow-ai/jpp/commit/fbf2456)
