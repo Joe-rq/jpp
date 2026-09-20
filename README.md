@@ -8,7 +8,7 @@
 
 J++ is an experimental programming-language project exploring semantic judgment as a programmable operation. Questions are values. Methods are values. A composed method can become a building block in another method.
 
-The current implementation is a **Python 3.12 embedded language**, with a runtime and a composition library. It combines JEV-style judgments with ordinary computation, candidate generation, exact checks, and feedback. Independent syntax and a standalone compiler are future work.
+The published implementation is a **Python 3.12 embedded language**, retained as a behavior reference and experiment tool. **New language construction now uses one Rust kernel and standalone `.jpp` source.** The parser, checker, runtime and CLI milestone is starting; Rust execution is not yet claimed as delivered. [Read the decision and acceptance target](docs/adr/0001-rust-kernel.md).
 
 ## Why we are doing this
 
@@ -24,7 +24,7 @@ The first application is the **Towow discovery lab**. Explore [216 participants 
 
 The [325-profile real-source comparison](https://towow-ai.github.io/jpp/demos/towow/real/) evaluates seven retrieval/judgment compositions against 963 historical proxy relation labels. Inspect individual candidates, regressions, exact response recordings and offline reproduction. [Results and evaluation scope (中文)](docs/towow-real-relations-results.zh-CN.md).
 
-## Try it
+## Run the retained Python reference
 
 
 ```sh
