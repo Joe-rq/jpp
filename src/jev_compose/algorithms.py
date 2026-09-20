@@ -1,6 +1,6 @@
 """Algorithm constructors assembled from the same Component/iterate mechanism."""
 from __future__ import annotations
-from .core import Component, CompositionError, iterate
+from .core import Component, CompositionError, identity, product, iterate
 from .observation import Observation, Request, observe
 
 
@@ -17,14 +17,8 @@ def inquire(prepare: Component, update: Component, done: Component, *, limit: in
     if observer.output_type is not Observation or update.input_type is not tuple or update.output_type != state_type:
         raise CompositionError("inquire update must accept (state, observation) and return the state type")
 
-    def advance(state):
-        request = prepare(state)
-        answer = observer(request)
-        return update((state, answer))
-
-    step = Component(f"{name}.step", state_type, state_type, advance,
-                     prepare.effects | observer.effects | update.effects, "inquiry_step",
-                     (prepare, observer, update))
+    step = product(identity(state_type), prepare.then(observer), name=f"{name}.state_answer").then(
+        update, name=f"{name}.step")
     return iterate(step, done, limit=limit, name=name)
 
 
@@ -40,12 +34,7 @@ def feedback(propose: Component, inspect: Component, update: Component, done: Co
             or update.input_type is not tuple or update.output_type != state_type):
         raise CompositionError("feedback requires S→list, (S,list)→list and (S,list)→S")
 
-    def advance(state):
-        candidates = propose(state)
-        reports = inspect((state, candidates))
-        return update((state, reports))
-
-    step = Component(f"{name}.step", state_type, state_type, advance,
-                     propose.effects | inspect.effects | update.effects, "feedback_step",
-                     (propose, inspect, update))
+    reports = product(identity(state_type), propose, name=f"{name}.state_candidates").then(inspect)
+    step = product(identity(state_type), reports, name=f"{name}.state_reports").then(
+        update, name=f"{name}.step")
     return iterate(step, done, limit=limit, name=name)

@@ -57,6 +57,11 @@ class JudgeEffect:
     done: bool = False
     segment: int = 0                # 直线段号（W-impure 禁融合用）
     frame: Any = None               # 登记时所在的 @jv.program 子账帧（嵌套预算用）
+    speculative: bool = False       # 由推测提升 / 循环向量化登记（spec.py），不是程序真站点
+    claimed: bool = False           # 真站点已命中这条推测
+    dropped: bool = False           # 层边界超预算时先丢推测
+    spec_from: str = ""             # 触发推测的站点
+    spec_kind: str = ""             # lift | vectorize
 
     def ready(self) -> bool:
         return all(s.is_ready() for s in self.states)

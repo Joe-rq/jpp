@@ -42,6 +42,23 @@ def opaque_node(name, source_operation, effects=("*",), parameters=None, fn=None
             "source_operation": source_operation, "parameters": parameters or {}, "function": fn}
 
 
+def product_node(name, *children):
+    return {"operation": "product", "name": name, "input": "Any", "output": "Any",
+            "effects": (), "effects_contract": "structural", "children": tuple(children)}
+
+
+def iterate_node(name, step, done, limit):
+    return {"operation": "iterate", "name": name, "input": "Any", "output": "Any",
+            "effects": (), "effects_contract": "structural", "children": (step, done),
+            "parameters": {"limit": limit}}
+
+
+def bind_node(name, prefix, factory, continuation_effects=()):
+    return {"operation": "bind", "name": name, "input": "Any", "output": "Any",
+            "effects": (), "effects_contract": "structural", "children": (prefix, factory),
+            "parameters": {"continuation_effects": tuple(continuation_effects)}}
+
+
 def entry_with(root, name="entry"):
     def wrapper():
         raise AssertionError("__jv_structure__ 路径不得触发执行")
@@ -241,3 +258,92 @@ def test_structure_branch_wrong_children_count_raises_clear_error():
     wrapper.__jv_structure__ = {"version": 1, "root": bad}
     with pytest.raises(jv.JvError, match="branch 节点"):
         jv.plan(wrapper)
+
+
+# ---------------------------------------------------------------- product：非空 children，资源相加
+def test_structure_product_sums_all_children():
+    def a():
+        jv.gen(n=1)
+        jv.gen(n=1)
+
+    def b():
+        jv.gen(n=1)
+
+    def c():
+        jv.gen(n=1)
+
+    root = product_node("root", leaf_node("a", a, ("gen",)), leaf_node("b", b, ("gen",)), leaf_node("c", c, ("gen",)))
+    rep = jv.plan(entry_with(root))
+    assert repr(rep.gen_calls) == "4"
+
+
+def test_structure_product_empty_children_raises_clear_error():
+    root = product_node("root")
+    with pytest.raises(jv.JvError, match="product 节点"):
+        jv.plan(entry_with(root))
+
+
+# ---------------------------------------------------------------- iterate：先查 done，N*step + (N+1)*done
+def test_structure_iterate_cost_is_n_step_plus_n_plus_1_done():
+    def step_fn():
+        jv.gen(n=1)
+
+    def done_fn():
+        jv.gen(n=1)
+
+    root = iterate_node("loop", leaf_node("step", step_fn, ("gen",)), leaf_node("done", done_fn, ("gen",)), limit=3)
+    rep = jv.plan(entry_with(root))
+    assert repr(rep.gen_calls) == "7"          # 3 步 × 1 + 4 次 done 检查 × 1
+
+
+def test_structure_iterate_limit_zero_is_done_only():
+    def step_fn():
+        jv.gen(n=1)
+
+    def done_fn():
+        jv.gen(n=1)
+
+    root = iterate_node("loop0", leaf_node("step", step_fn, ("gen",)), leaf_node("done", done_fn, ("gen",)), limit=0)
+    rep = jv.plan(entry_with(root))
+    assert repr(rep.gen_calls) == "1"          # N=0：只查一次 done，不进 step
+
+
+def test_structure_iterate_negative_limit_raises_clear_error():
+    root = iterate_node("bad", identity_node(), identity_node(), limit=-1)
+    with pytest.raises(jv.JvError, match="非负整数"):
+        jv.plan(entry_with(root))
+
+
+def test_structure_iterate_non_int_limit_raises_clear_error():
+    root = iterate_node("bad", identity_node(), identity_node(), limit="3")
+    with pytest.raises(jv.JvError, match="非负整数"):
+        jv.plan(entry_with(root))
+
+
+def test_structure_iterate_wrong_children_count_raises_clear_error():
+    bad = dict(iterate_node("loop", identity_node(), identity_node(), limit=1))
+    bad["children"] = (identity_node(),)
+    with pytest.raises(jv.JvError, match="iterate 节点"):
+        jv.plan(entry_with(bad))
+
+
+# ---------------------------------------------------------------- bind：静态绝不调用 factory，continuation 未知
+def test_structure_bind_never_calls_factory_and_continuation_is_unknown():
+    def prefix_fn():
+        jv.gen(n=1)
+
+    def factory_fn():
+        raise AssertionError("bind 的 factory 绝不能在计划期被调用")
+
+    root = bind_node("root", leaf_node("prefix", prefix_fn, ("gen",)), leaf_node("factory", factory_fn, ()))
+    rep = jv.plan(entry_with(root))            # factory_fn 若被真的调用，会在这里直接抛出上面的 AssertionError
+    assert not rep.gen_calls.is_numeric        # continuation 未知，污染了原本纯数值的 prefix 估计
+    assert not rep.do_calls.is_numeric
+    assert any(w.startswith("W-dynamic") for w in rep.warnings)
+
+
+def test_structure_bind_wrong_children_count_raises_clear_error():
+    bad = dict(bind_node("b", identity_node(), identity_node()))
+    bad["children"] = (identity_node(),)
+    with pytest.raises(jv.JvError, match="bind 节点"):
+        jv.plan(entry_with(bad))

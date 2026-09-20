@@ -249,11 +249,11 @@ def stats_table(rows: list[dict], title: str = "") -> str:
     return "\n".join(l for l in lines if l is not None)
 
 
-PASSES = ("lift", "fuse", "fission", "lower", "schedule", "plan", "ledger")
+PASSES = ("lift", "fuse", "fission", "lower", "schedule", "plan", "ledger", "speculate", "vectorize")
 
 
 def ablation_table(root: str | None = None) -> str:
-    """七个开关逐个关掉，六条示例合计的调用数/层数/题数变化（§4「不做会坏什么」的实测）。ledger 关掉的效果
+    """九个开关逐个关掉，六条示例合计的调用数/层数/题数变化（§4「不做会坏什么」的实测）。ledger 关掉的效果
     要看第二遍：全开时第二遍调用 0（重放），关 ledger 时第二遍照发。"""
     import tempfile
     base = run_all(passes=None)
@@ -267,7 +267,9 @@ def ablation_table(root: str | None = None) -> str:
     notes = {"lift": "每个 judge 立即刷新：层数 = 判断数", "fuse": "逐题调用：调用数 = 题数",
              "fission": "超窗对象不切：带偏读数（示例里无超窗对象，故无变化）",
              "lower": "select 一律 K-noul、不置换：题数 ↑ 调用不变", "schedule": "层内串行：调用数不变，只慢",
-             "plan": "不核预算：写docstring 第 4 层照发（停层 0）", "ledger": "见第二遍列"}
+             "plan": "不核预算：超预算的层照发（停层 0）", "ledger": "见第二遍列",
+             "speculate": "刷新点不向前推测同帧的 judge：取物 的「到达」「下一步」被 match 隔成两层（4 → 7 层）",
+             "vectorize": "宿主 for 里逐轮 cut 不再合成一层：写docstring 每函数一层（2 → 4 层，第 4 层被预算停）"}
     for p in PASSES:
         rows = run_all(passes={p: False})
         l, q, c, f, s = tot(rows)

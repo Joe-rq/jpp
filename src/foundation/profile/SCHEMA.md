@@ -46,3 +46,11 @@
 | `field_stats` | 已填叶字段数、未测项数 | — | build_from_raw |
 
 程序引用档案的约定：只引 `bound=lower/point` 的常数；引 `upper` 的要留余量；引「未测」的编译期报错。
+
+
+## H2 类假设字段（v0.1 §1.2）
+
+| 字段 | 类型 | 由哪一项测 | 依赖它的 pass / 规则 |
+|---|---|---|---|
+| `fixed_output_types` | bool | 官方文档（D1）；`choice_k` 探测 | 下沉表 |
+| `select_sums_to_one` | bool | 官方文档（D2） | 单候选 select 平凡出口 `Pick(0)`；为 False 时照常发调用 |

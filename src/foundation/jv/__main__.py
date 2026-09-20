@@ -1,9 +1,10 @@
 """jv 命令行：
 
   python -m foundation.jv plan  foundation.jv.examples.six:定位回归      # 计划期估计（J-07 / J-10）
-  python -m foundation.jv stats [--no-fuse --no-lift --no-fission --no-lower --no-schedule --no-plan --no-ledger]
+  python -m foundation.jv stats [--no-fuse --no-lift --no-fission --no-lower --no-schedule --no-plan --no-ledger
+                                  --no-speculate --no-vectorize]
                                  [--root DIR] [--replay]                  # 跑六条示例，出层数/融合率/账本命中/钱
-  python -m foundation.jv ablate [--root DIR]                             # 七个开关逐个关，出消融表
+  python -m foundation.jv ablate [--root DIR]                             # 九个开关逐个关，出消融表
   python -m foundation.jv check foundation.jv.examples.six:定位回归      # 静态检查（J 规则）
 """
 
@@ -14,7 +15,7 @@ import importlib
 import json
 import sys
 
-PASSES = ("lift", "fuse", "fission", "lower", "schedule", "plan", "ledger")
+PASSES = ("lift", "fuse", "fission", "lower", "schedule", "plan", "ledger", "speculate", "vectorize")
 
 
 def _load(spec: str):

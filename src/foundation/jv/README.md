@@ -92,6 +92,7 @@ r2 = rs.agg()             # 同题跨运行合并（band 重跑后用）；形�
 ```
 - `.order()` 只对向量化读数有定义（单状态 `Readings` 上调它是 J-01 错）；按 p 排（measure 按档位再按该档 p）；**是刷新点**（读数未就绪就先发层）；**不消费**读数、不产生出口；失败（`fail`）的读数单独排最后一档。要「中风险按从高到低」：展平后过滤。
 - 材料与出口都不带位置：条目编号用宿主 `enumerate`。
+- **多道题各自排序**（G6 猜 8、9、10）：分别 `jv.judge(states, q1)`、`jv.judge(states, q2)`，再各自 `.order()`——两次调用在同一直线段仍融合成一次调用（10 题 5 调用）。`.order()` 的 δ 取该校准键记录的 `delta`，无记录时取档案 `delta.<phys>`；组内并列的先后由宿主定（展平时按下标）。
 
 ### 2.4 `jv.cut` —— 读数变出口
 
@@ -114,6 +115,9 @@ es = jv.cut([r[0] for r in rs])        # 也接受读数列表
   - `then=jv.escalate` → 对同一状态同题 `jv.ask`（可能抛 `Pending`）；`then=jv.drop` / `None` → 返回 `None`；`then=函数` → 调它；
   - `keep=值` → 直接返回该值（「拿不准就当作 值」）；`regen=True` → 返回 `None`，由程序自己再 `gen`。
 - 读数当出口 `match`（忘了 `cut`）在第一个 case 就抛 J-01，不会静默不命中。
+- **通配 `case _` 不消费 `Unsure`**（元组模式 `match (a, f): … case _:` 同理）：落到通配的 `Unsure` 仍要 `jv.consume` / `jv.handle`，静态检查报 `W-wildcard-unsure`（G6 猜 6）。
+- **被返回类型消费**（J-05 第三条路，规范 §3 原文）：函数的返回注解含 `jv.Unsure`（`-> jv.Exit`、`-> jv.Exit | jv.Unsure`、`-> list[jv.Exit]`、`-> dict[str, jv.Exit]` 等，`typing.get_type_hints` 能解析的都算）时，**返回值里**的 `Unsure` 记 `consumed_by="return_type"` 交给调用者：嵌套程序里它重新登记到调用者帧、在那里仍是未消费的（调用者不处理 → J-05 报调用者的名字）；最外层返回给宿主则账本记 `returned_unsure`。没有注解、或注解不含 `Unsure` 而返回了 `Unsure` → 仍是 J-05，报文提示「加返回注解或在本函数内处理」。不在返回值里的未消费 `Unsure` 无论注解如何都是 J-05。Python 没有返回类型检查，这里用注解把它构造出来：注解是承诺，运行时按承诺核。
+- **丢弃与交人是两条记账**：`jv.consume(exits, unsure=jv.drop)` 是丢弃；要把拿不准的攒起来交人，写 `jv.escalate(载荷, exits=[那些出口])`——出口随之消费、记为 `escalate`（`e.detail["consumed_by"]`），`Escalated.exits` 带着它们。载荷本身是出口（或出口列表）时自动算 `exits`。同一程序里既 `drop` 了 `Unsure` 又调 `jv.escalate` 交人，报 `W-drop-vs-escalate`（本意是交人却写了 drop，交人记录里会缺这些出口）。
 
 ### 2.6 `jv.do`、`jv.Action`、守卫与 taint（猜 15、16、18）
 
@@ -127,6 +131,8 @@ jv.do(发告警, seg, iter_seq=i, guard=e)                         # 不可逆�
 - `Action.taint_out`：动作**输出**的可信级。`"trusted"`（可信执行器：测试框架、可信工具）、`"untrusted"`（沙箱跑不可信代码、网页正文）、`"inherit"`（∨ 参数的 taint）。
 - **可信来自来源登记，不来自程序自报**：`taint_out="trusted"` 要用 `jv.register_action(..., reason="为什么可信")`（S 库登记）。程序模块里直接 `jv.Action(..., taint_out="trusted")` 会报 `W-self-trusted`（静态 + 运行期各一次）——G4 猜 16 把自家页面读取器标 trusted 绕守卫的做法，现在会被指出来。
 - `guard=`：传出口（或出口列表）。放行条件（J-08）：至少一个是**来自 trusted 状态的 `jv.Act`**，或 `jv.ask` 的答案；untrusted 出口再多也不够。传 `Ignore` / `Unsure` / `Pick` / `At` → J-08 错并带修法（Pick/At 是选择或档位，不是命题；再问一道 test 题作守卫）。守卫里的出口一并算消费。
+- **守卫题要写成「放行」为真的肯定命题**（G6 猜 2）：「这封邮件是正常的业务邮件吗」→ `Act` 放行；写成「可疑吗」得到的 `Ignore` 不能放行——`Ignore` 只是「未越 lo 线」，它的否定不是一个被校准的肯定命题（J-08 的合取项 = test 题的 `Act`）。
+- **材料本身 untrusted 时**（外部邮件、网页正文、`gen` 输出）不可逆动作只有两条路（G6 猜 3）：`jv.ask` 的答案作守卫；或先经一个 `register_action(taint_out="trusted", reason=…)` 登记的可信检测器（钓鱼过滤、schema 校验、仓库测试框架）产出 trusted 材料，再对它问守卫题。`register_action(taint_out="inherit" / "untrusted")` 不需要 `reason`（`reason` 是可信来源的证明，只对 trusted 必填；G6 猜 4）。
 - `Action.cost`：每次执行计入当前程序帧的 `Budget.cost`，在层边界核。
 - `do` 失败是值（`Fail`），进账本；依赖它的判断切成 `Unsure("fail")`；`jv.on_fail(期物, 替代)`。
 
@@ -139,6 +145,9 @@ xs = jv.transform(f, m1, m2)                                        # 宿主函�
 - `retry_seq` 与 `iter_seq` 同规则（普通 `for` 里用循环变量；常量会被 `W-seq-const` 提醒）。**`n` 是上限不是恰好**：返回 0..n 条，生成器超时 / 抛异常 → `[]` + `W-gen-fail`（失败是值）。`ctx=[]` 时输出 taint = trusted。
 - 生成器怎么接：`jv.Runtime(generator=fn)` 或 `jv.gen(..., generator=fn)`，签名 `fn(prompt: str, ctx: list[Mat], n: int, retry_seq: int) -> iterable[内容]`，`ctx` 元素是 `Mat`（用 `.content`）；每个返回元素包成一个 `Mat`。
 - **`jv.transform` 返回的列表元素是 `Mat` 不是 str**（G4 报错 4）：`"提交" in 动作[k]` 要写 `"提交" in 动作[k].content`。参数可含材料列表（键按元素哈希；宿主函数收到的是 `list[Mat]`）。宿主函数返回 `list[str]` → 逐个包成 `Mat`；返回 `[]` → `[]`。宿主函数抛异常 → 返回一个 fail 材料（`m.content == {"fail": …}`）+ `W-transform-fail`，进槽的判断切成 `Unsure("fail")`，`jv.on_fail(m, 替代)` 可换。同输入异输出 → `W-impure`，本直线段禁融合。
+- **只读 `.content`、结果不进槽的宿主计算**（判空、检查意见里有没有函数名、计数）**不必经 `transform`**，直接写普通 Python；`transform` 只管要进槽的材料（J-11；G6 猜 13）。
+- **列表型 `transform` 失败时返回空列表**（G6 猜 15）：`jv.FailList`——`isinstance(xs, list)` 为真、`if not xs` 照常用、`.fail` 记原因；加 `W-transform-fail`。「列表型」= 宿主函数带 `-> list` 返回注解（字符串注解也认），或同站点此前成功返回过列表；否则失败返回单个 fail 材料。`jv.on_fail(xs, 替代)` 两种形状都认。
+- **子集 / 重排保留原材料**（G6 猜 14）：`transform` 收 `list[Mat]` 而宿主函数返回其中一些元素的内容（过滤、排序）时，输出是**原 `Mat` 对象**——来源链、taint、`derived_from` 都在；只有内容与任何输入都不同的元素才新建 `Mat`（origin = transform）。
 
 ### 2.8 `jv.ask` → `Pending` → `jv.answer` → 重跑（猜 3、5、6）
 
@@ -190,19 +199,21 @@ for it in jv.loop(bound=8, variant=jv.decreasing(lambda: len(cands))):   # bound
 
 `@jv.program` 内逐语句即时执行。`jv.judge` 只登记（返回惰性 `Readings`），`jv.do` 只登记（返回 `MatFuture`），`jv.gen` / `jv.ask` / `jv.transform` 立即执行（输入含期物时先刷新 `do`）。**刷新点** = `jv.cut`、`jv.fit`、读期物 `.content`、`gen/transform/ask` 的输入含期物、程序返回。一次刷新：先按依赖分波并发解析全部待执行 `do`；再把已登记且输入就绪的 `judge` 排成**一层**：下沉（test→noul；select→choice 两个置换融合进同一次调用，或档案未测档 / 长候选→K-noul；measure→score）、裂变（对象槽超窗按块切，合回 exists/all、K-noul 分块再决、档位计数）、融合（同结构哈希同段合一次调用，≤ 200 题）、层边界核预算、账本（先账本键，再跨程序缓存键，缺的才发）、并发发出。返回体经 `validate_answers` 校验（§4），键不合即报错。
 
-**写法决定层数**（§8-10 要量的东西）：
+**层数由机制决定，不由写法决定**（`spec.py`，pass `speculate` / `vectorize`；§8-10 要量的东西）。刷新点上运行时会向前看：
+
+- **推测提升**（`speculate`）：从触发刷新的语句起，沿直线段向前（含 `if` / `match` 分支体）找后面的 `jv.judge` 站点，在当前帧局部变量的快照上求值它的状态与题（只允许纯表达式：名字、常量、容器与推导式、纯内置函数、`jv.state / lit / transform / gen / test / select / measure / calib`；`do` / `ask` 永不推测），就绪的登记进**本层**；真站点到达时按（状态哈希, 题）命中已推测的效应，不再发、不再多一层（`rt.stats["spec"]["hits"]`）。中间语句改写了后一站点要读的名字、状态含未解析期物、表达式含非纯调用（含用户自己的辅助函数）→ 不推测。**推测只许零成本零副作用**：站点表达式（或它的前置赋值）含 `jv.gen` / `jv.transform` 时，只在该站点相对当前点**无条件直线可达**才提前执行（反正一定会执行，真站点命中效应账本、生成器不重跑）；在分支体 / `match` 体内的含 gen 站点不推测，`stats["spec"]["skipped"]` 记 `gen-in-branch`。被向量化的循环其余轮次算无条件（前提已核无 break / return，守卫按值求）。推错（前一站点 `return` 了、分支没走到）只多花那个状态的一次调用，不需回滚：`W-spec-unused` 记数。
+- **循环向量化**（`vectorize`）：触发点在宿主 `for` 循环体内，且体内无 loop-carried 依赖（后面写的名字不是前置段读的名字）、无 `do` / `ask` / `return` / `break`、可迭代对象可重复遍历时，对其余元素逐个绑定循环变量、在沙盒里重放体内前置语句（守卫 `if …: continue`、赋值、`gen` / `transform`）、把各自的 judge 登记进本层——`for … match jv.cut(jv.judge(…))` 自动变成一层。不满足前提的原因记在 `rt.stats["spec"]["skipped"]`（如 `vectorize-skip:loop-carried：['观']`）。
 
 ```python
-for x in xs:                                            # 每轮一层：融合率 0
+for x in xs:                                            # 现在也是一层（vectorize）；体内有 do / 改写前置段读的名字 → 每轮一层
     match jv.cut(jv.judge(jv.state(on=x), q)[0]): ...
-es = jv.cut(jv.judge([jv.state(on=x) for x in xs], q))  # 一层：全部并发，同状态多题同一次调用
-for x, e in zip(xs, es): match e: ...
+es = jv.cut(jv.judge([jv.state(on=x) for x in xs], q))  # 显式向量化仍是最省的写法（不靠推测）
 ```
-同一状态上的两道题写在同一直线段里（中间没有 `cut` / `match` / `.content`）才融合；`取物` 示例的「到达」与「下一步」被 `match` 隔开，所以两层。
+`取物` 的「到达」与「下一步」隔着 `match` 与一个 `transform`：下一步的状态在到达那一刷就能求出来，所以同层（7 → 4 层）；`写docstring` 的 for 里逐个 `cut` 变一层（4 → 2 层）。沙盒里执行的 `gen` / `transform` 记账，真站点到达时命中账本，生成器不重跑。每次提升报一次 `W-lift`。
 
 `cut` 顺序见 §2.4。J-05 的实现细节：CPython 对类型完全相等的 `isinstance` 走快路径不调 `__instancecheck__`，所以 `Act()` 实际构造隐藏子类 `ActImpl` 的实例；运行时内部一律用不消费的 `_is`。账本键里的题标识不含效应序号：同状态同题同站点 → 同键，同一运行时内第二次运行才真的重放。
 
-### 3.2 七个 pass 的开关（消融）
+### 3.2 九个 pass 的开关（消融）
 
 `jv.Runtime(client, passes={"fuse": False, …})` 或命令行 `--no-fuse`。关掉后按规范 §4「不做会坏什么」退化：
 
@@ -215,6 +226,8 @@ for x, e in zip(xs, es): match e: ...
 | `schedule` | 层内 do / 调用串行；调用数不变 | `test_switch_schedule_off_*` |
 | `plan` | 不做计划期估计、不核层边界预算（超预算照发） | `test_switch_plan_off_*` |
 | `ledger` | 不查不写账本 / 缓存：第二遍照发 | `test_switch_ledger_off_*` |
+| `speculate` | 刷新点不向前推测同帧的 judge：同状态两题隔着 `match` 就两层（取物 4 → 7 层） | `test_switch_speculate_off_*`（`test_jv_lift.py`） |
+| `vectorize` | 宿主 `for` 里逐轮 `cut` 不再合成一层（写docstring 2 → 4 层） | `test_switch_vectorize_off_*` |
 
 `jv plan`（J-07 计划期、J-10 静态上界）：`@jv.program` 进入时自动跑一次，告警进 `rt.stats["warnings"]`；也可 `python -m foundation.jv plan 模块:函数`。层数是**上界**：一条语句里的多个 `cut` 记一层；循环里 cut 循环外登记的向量按登记处倍率算。unsure 上界 Σuᵢ，未标注的键留符号。
 
@@ -252,27 +265,29 @@ for x, e in zip(xs, es): match e: ...
 | 定位回归 | 4 | 1,1,1,1 | 1,1,1,1 | 4 | 4 | 1.0 | 二分：每轮一题一层，天然串行；返回 c-5 |
 | 生成并执行 | 1 | 4 | 4 | 4 | 4 | 1.0 | 4 个状态向量化一层并发 |
 | 生成到全绿 | 4 | 2,2,2,1 | 1,1,1,1 | 7 | 4 | 1.75 | select 两置换同调用；每轮一层 |
-| 取物 | 7 | 1,2,1,2,1,2,1 | 1 | 10 | 7 | 1.43 | 到达题与下一步题**不同层**：同状态但中间隔了 `match` |
+| 取物 | 4 | 3,3,3,3 | 2,2,2,2 | 12 | 8 | 1.5 | 到达题与下一步题同层（推测提升）；最后一步的「下一步」推测了没用到：多 1 次调用（`W-spec-unused`）。关 speculate：7 层 10 题 7 调用 |
 | 工单转部门 | 1 | 6 | 3 | 6 | 3 | 2.0 | 3 状态 × 2 置换，一层 |
-| 写 docstring | 4 | 3,2,2,0 | 1,1,1,0 | 7 | 3 | 2.33 | for 里逐个 `cut` → 每函数一层；规范预算 layers=3 不够，第 4 层被预算停 |
+| 写 docstring | 2 | 3,6 | 1,3 | 9 | 4 | 2.25 | for 里逐个 `cut` 被循环向量化合成一层：3 个函数的 select 同层并发，不再撞 layers=3。关 vectorize：4 层，第 4 层被预算停 |
 | 日志分级（第七条，measure） | 1 | 8 | 4 | 8 | 4 | 2.0 | 4 段 × (measure + test 守卫题) 同状态同层：每段一次调用两题；告警 `Action.cost` 计入钱 |
 | 分配复核（长处 1） | 1 | 12 | 12 | 12 | 12 | 1.0 | 12 段向量化一层；`allocate` 与 `unsure_bound` 不花调用 |
 | 代价比线（长处 2） | 1 | 12 | 12 | 12 | 12 | 1.0 | 同一批读数两套 `cut(cost=)`，不多花一次调用 |
 | 自动合入（长处 3，fit） | 1 | 10 | 5 | 10 | 5 | 2.0 | 每状态两题一次调用，fit 在桥里合成 |
-| 合计（七条） | 22 | | | 46 | 29 | **1.59** | 六条第二遍（`--replay`）：调用 0，账本命中 38 |
+| 合计（十条） | 20 | | | 84 | 60 | **1.4** | 六条第二遍（`--replay`）：调用 0，账本命中 42。ir-impl-6 前：25 层 80 题 58 调用 |
 
-`python -m foundation.jv ablate`（六条规范示例合计；每个 pass 单独关）：
+`python -m foundation.jv ablate`（六条规范示例合计；每个 pass 单独关；ir-impl-6 后）：
 
 | 关掉的 pass | 层数 | 题 | 调用 | 融合率 | 停层 | 说明 |
 |---|---|---|---|---|---|---|
-| （全开） | 21 | 38 | 25 | 1.52 | 1 | 基线 |
-| lift | 21 | 38 | 25 | 1.52 | 1 | 六条示例里没有「同段两次 judge」的写法，关提升无变化（起作用的形态见 `test_switch_lift_off_*`） |
-| fuse | 21 | 36 | 36 | 1.0 | 1 | 逐题调用：调用数 = 题数（E8：成本 +45%） |
-| fission | 21 | 38 | 25 | 1.52 | 1 | 示例里无超窗对象 |
-| lower | 14 | 35 | 18 | 1.94 | 1 | select 一律 K-noul、不置换：置换题消失；K-noul 与前一题同状态融合，层数 21 → 14 |
-| schedule | 21 | 38 | 25 | 1.52 | 1 | 层内串行：调用数不变，只慢 |
-| plan | 21 | 40 | 26 | 1.54 | 0 | 不核预算：写docstring 第 4 层照发 |
-| ledger（第二遍） | | | 全开 0 次（命中 38）；关 ledger 25 次 | | | 重放不付费 vs 每次都发 |
+| （全开） | 16 | 42 | 27 | 1.56 | 0 | 基线（ir-impl-6 前 21 / 38 / 25 / 1.52 / 1） |
+| lift | 21 | 38 | 25 | 1.52 | 1 | 每个 judge 登记即刷新，推测与向量化也随之关闭：回到 ir-impl-6 前 |
+| fuse | 16 | 40 | 40 | 1.0 | 0 | 逐题调用：调用数 = 题数（E8：成本 +45%） |
+| fission | 16 | 42 | 27 | 1.56 | 0 | 示例里无超窗对象 |
+| lower | 11 | 38 | 19 | 2.0 | 0 | select 一律 K-noul、不置换：置换题消失；K-noul 与前一题同状态融合 |
+| schedule | 16 | 42 | 27 | 1.56 | 0 | 层内串行：调用数不变，只慢 |
+| plan | 16 | 42 | 27 | 1.56 | 0 | 不核预算（现在六条都不超预算） |
+| speculate | 19 | 40 | 26 | 1.54 | 0 | 取物 的「到达」「下一步」被 `match` 隔成两层：4 → 7 层；少花 1 次推错的调用 |
+| vectorize | 18 | 40 | 26 | 1.54 | 1 | 写docstring 每函数一层：2 → 4 层，第 4 层被 layers=3 停 |
+| ledger（第二遍） | | | 全开 0 次（命中 42）；关 ledger 27 次 | | | 重放不付费 vs 每次都发 |
 
 `jv plan` 对六条示例的告警：`生成到全绿` W-cost（层上界 7 > layers=6）；`取物` W-cost（40 > 20）；`工单转部门` W-cost（ask 次数 `|工单流|` 含符号）；`写docstring` W-cost（`|fs| + 1` 含符号）；含 select 的四条各两条 W-untested（候选 120–250 档未测；置换同调用串扰未测）。21 条程序（`examples/twentyone.py`）的融合率与 §6.3 拦截率见 `examples/STATS.md`（126 / 126）。
 
@@ -282,7 +297,7 @@ for x, e in zip(xs, es): match e: ...
 |---|---|---|
 | `ir.py` | 710 | 六形式的数据：`Mat`（相等 / 哈希按内容；`in` / 迭代 / 与裸值比较是类型错）、`Q`、`State` / `ResolvedState`（JSON 具名槽渲染、结构哈希、taint=∨、derived_from=∪）、`Reading` / `Readings` / `ReadingsVec`（只有 `.agg()` `.order()`）、`Exit` 族（`consumed` 标记，match/isinstance 命中即消费；收到读数抛 J-01）、`Fail`、`Pending`、`CalibRef`、`FitRef`、`Action` + `register_action` / `ACTIONS`、`Budget` |
 | `effects.py` | 62 | `JudgeEffect`、`DoEffect`、`MatFuture` |
-| `runtime.py` | 1212 | 刷新点与层；七个 pass；嵌套帧 `_Frame`；`cut`；`gen` / `ask` / `answer`；`transform` 记账与纯性核；`loop`；handler 库；`fit` 桥库；`do` 的 `Action.cost` 进预算、W-self-trusted；返回值期物解析；`stats_report()` |
+| `runtime.py` | 1650 | 刷新点与层；九个 pass（含推测提升 / 循环向量化的登记、别名命中、超预算先丢推测）；J-05 被返回类型消费；嵌套帧 `_Frame`；`cut`；`gen` / `ask` / `answer`；`transform` 记账与纯性核；`loop`；handler 库；`fit` 桥库；`do` 的 `Action.cost` 进预算、W-self-trusted；返回值期物解析；`stats_report()` |
 | `checker.py` | 345 | AST 静态检查：J-01/02/03/06/08/11/13/14/16 与 §6.3 六种模式（J-17）；解包追踪；`W-dynamic`；`W-self-trusted` |
 | `plan.py` | 544 | `jv plan`：符号成本签名、层上界、Σuᵢ、六类告警 |
 | `client.py` | 147 | `JevClient`、`FakeClient`、**`validate_answers`**（三种题返回体校验 + 规范化，真机与假客户端共用） |
@@ -297,6 +312,8 @@ for x, e in zip(xs, es): match e: ...
 | `examples/smoke_e_ir.py` | 63 | E-IR-SMOKE 真机冒烟 |
 | `../tests/test_jv_core.py` | 546 | 31 条：J 规则、融合 / 裂变 / 下沉、账本重放、Pending、预算、冷校准 … |
 | `../tests/test_jv_passes.py` | 529 | 41 条：七个开关、裂变、`Sym` / `jv plan`、嵌套程序、D1–D3 |
+| `spec.py` | 530 | 推测提升与循环向量化：程序 AST 的语句索引、纯表达式检查、帧局部快照上的沙盒求值、loop-carried 静态判定 |
+| `../tests/test_jv_lift.py` | 339 | 18 条：推测提升 / 向量化各自的开关消融、不推测的四种情形（名字被改写、依赖 do、loop-carried、体内有 do）、推错记数、超预算先丢推测、六条示例层数、J-05 被返回类型消费五条 |
 | `../tests/test_jv_fresh.py` | 249 | 15 条：G4 五处报错各一条（报文带修法）、Mat 相等性、期物返回、`register_action` / W-self-trusted、`Action.cost` 进预算、`answer` 无 root 重放、守卫失败幂等、escalate 返回值、第七条示例 |
 | `../tests/test_twentyone.py` | 278 | 169 条：21 条跑通 + 126 个 §6.3 变体拦截 |
 | `../core/DEPRECATED.md` | | `beat/pack/arbiter` 标废弃不删；`item/log/table/canon/ledger/eye/registry` 沿用 |
@@ -343,6 +360,16 @@ for x, e in zip(xs, es): match e: ...
 | 35 | §2.6 `ask` 与批量 | `ask` 一次一题；批量 = `escalate(列表)` 返回值或 `consume(unsure=escalate)` | §2.6 加「批量问人」一句 |
 | 36 | J-07 `Budget.layers` | 只数 judge 层；只刷新 do 的那次不算层 | J-07 写明「层 = 一次融合调用的边界」 |
 | 37 | §2.1 `over=[]` | select 题 `over=[]` 在 judge 时报错（I1：模型只在给定集合上分配概率） | §2.1 加一句 |
+| 38 | §2.8 `transform` 失败「返回 fail 材料」 | 列表型（`-> list` 注解或同站点此前返回过列表）失败返回空 `jv.FailList`（形状与成功时相同，`.fail` 记原因）；否则单个 fail 材料 | §2.8 写明「失败值的形状与成功时相同：列表型为空列表」 |
+| 39 | §2.8 `transform` 输出材料的来源 | 宿主函数返回的元素与某个输入材料内容相同时，输出就是那份材料（来源链保留）；否则新建 | §2.8 加「子集 / 重排保留原材料」；这是 I6 来源链在 transform 上的落法 |
+| 40 | §2.2 select 的 `over` 只有一个候选 | 不发调用，`cut` 得 `Pick(0)`（p=1，`detail["trivial"]`），冷校准也如此 | §2.2 加一句：单候选 select 是平凡分布（H2：概率和恒为 1），无读数可校准 |
+| 41 | J-05「被 match 消费」 | 通配 `case _`（含元组模式）不消费 `Unsure`；静态报 `W-wildcard-unsure` | J-05 写明「match 消费 = 命中 `case jv.Unsure()`，通配不算」 |
+| 42 | §5 handler 去向 `escalate` | `jv.escalate(载荷, exits=…)`：出口随之消费并记 `consumed_by=escalate`；同帧内 `drop` 与 `escalate` 并存报 `W-drop-vs-escalate` | §5 写明「丢弃与交人是两条不同的记账，不能用 drop 代交人」 |
+| 43 | J-08 守卫 | 「否定题的 `Ignore`」不放行（`Ignore` 不是被校准的肯定命题）；`register_action(inherit/untrusted)` 无需 `reason` | J-08 加「合取项 = 肯定命题的 Act」；§2.11 加「reason 只对 trusted 必填」 |
+| 44 | §6.1 `生成到全绿` 原文 `case _: return jv.escalate(报告)` | 通配不消费 `Unsure`，该写法现在报 `W-wildcard-unsure`（规范自己的示例踩了 41） | §6.1 该行改 `case jv.Unsure(c): return jv.escalate(报告, exits=[e])` 或 `jv.handle(c, then=jv.escalate)` |
+| 45 | §6.0「同一直线段内的多个 judge 自动同层融合」（偏差 1 原提议改措辞） | Nature：回到规矩的目的（P5 状态收费题免费、P3 批无偏），用机制做对而不是改措辞。现在刷新点向前推测同帧可求值的 judge 站点（含分支体）并把宿主 for 的其余轮次向量化（§3.1；`spec.py`）：取物 7 → 4 层、写docstring 4 → 2 层，示例代码未动 | §6.0 改为「刷新点上运行时向前推测 judge（只推测 judge；do / ask 不推测），同状态的题合成一次调用、互不依赖的判断同层；写法只影响推测能否求值」；§4 pass 1「提升」加两条子 pass `speculate` / `vectorize`；偏差 1、3 的「写法指引」降为「最省的显式写法」 |
+| 46 | §3 J-05「被返回类型消费」（偏差 2 原提议删掉） | Nature：不删，在 Python 里构造出来。现在返回注解含 `Unsure` 的程序可把返回值里的 `Unsure` 交给调用者（重新登记到调用者帧；最外层账本记 `returned_unsure`），无注解仍报 J-05 带修法（§2.5） | J-05 写明「返回类型 = 宿主的返回注解；注解含 Unsure 才算交出去，调用者帧继续核」 |
+| 47 | §4 提升「不跨分支」（红队 06 A1） | 推测的只有 judge：无世界效应、题免费，推错只多花那个状态的调用，不需回滚；A1 删的是跨分支推测 do / gen，这里仍不碰 | §4 pass 1 改为「judge 可跨分支推测；do / gen / ask 不跨分支」，并记推错成本 `W-spec-unused` |
 
 其余按规范：taint 代数（gen=∨ctx、do 按声明、ask=trusted、transform=∨args、state=∨slots、cut 继承）；J-08 守卫要求 trusted 的 Act 或 ask 答案；J-02 运行期查 `derived_from`、静态追名字；缓存键含槽结构哈希、perm_seed 在账本键、模型 id 用档案 `model_version`；账本头不同报 `W-header`。
 
@@ -381,8 +408,8 @@ for x, e in zip(xs, es): match e: ...
 |---|---|---|---|---|---|---|---|
 | `jv.lit(x, addr)` / `jv.mat` | 任意值 | `Mat` | `""` 合法 | trusted | 否 | — | `mat` 在帧内收非标量 → `W-literal-from-host` |
 | `jv.state(on, ctx, ref, over)` | `Mat` / 期物 / 出口 | `State`（惰性；`.resolved()` 后有 `.taint`） | 缺 `on` → `JvError`；select 的 `over=[]` → judge 时 `JvError` | ∨ 各槽 | 否 | — | 裸字符串进槽 → `JvTypeError` |
-| `jv.test` / `jv.select` / `jv.measure` | 题面 + `calib=jv.calib(键)` | `Q` | — | — | 否 | — | `calib` 是字符串 → J-03 |
-| `jv.judge(s, *qs)` / `jv.judge([s…], q)` | 状态(列表) + 题 | `Readings` / `ReadingsVec`（惰性；无算术、无比较、无 bool） | `judge([], q)` → 空向量 | — | 否（登记） | — | 模型调用抛异常 → 读数记 fail → `cut` 得 `Unsure("fail")` |
+| `jv.test` / `jv.select` / `jv.measure` | 题面 + `calib=jv.calib(键)`；`evidence=("on", "ctx", …)` 声明决定性证据槽 | `Q` | `evidence` 槽缺（`on` 为 None，或 `ctx`/`ref`/`over` 为空列表）→ `cut` 得 `Unsure("insufficient")`（J-09，先于信任 p）；`on` 是单个 Mat，存在即算有 | — | 否 | — | `calib` 是字符串 → J-03 |
+| `jv.judge(s, *qs)` / `jv.judge([s…], q)` | 状态(列表) + 题 | `Readings` / `ReadingsVec`（惰性；无算术、无比较、无 bool） | `judge([], q)` → 空向量；select 的 `over` 只 1 个候选 → 不发调用，`cut` 得 `Pick(0)`（`detail["trivial"]`） | — | 否（登记） | — | 模型调用抛异常 → 读数记 fail → `cut` 得 `Unsure("fail")` |
 | `jv.cut(r)` / `jv.cut(rs)` | 读数 / 读数向量 / 列表 | `Exit` / `Exit` 列表（与输入顺序对齐） | `cut([])` → `[]` | 继承状态 taint | **是** | `Unsure` 必须被 match / handle / consume 消费，否则返回时 J-05 | `calib` 传字符串 → J-03；fail 读数 → `Unsure("fail")` |
 | `Readings.order()` | 向量化读数 | `list[list[int]]`（组间高→低，组内并列） | 空向量 → `[]` | — | **是** | 否（不产生出口） | 失败读数排末档；单状态 `Readings` 上调 → J-01 |
 | `Readings.agg()` | 读数 | 同形状读数（跨运行合并） | — | — | **是** | 否 | — |
@@ -390,16 +417,16 @@ for x, e in zip(xs, es): match e: ...
 | `jv.do(action, *args, iter_seq, guard)` | 登记动作 + 材料 | `MatFuture`（`.content` 触发刷新；作返回值解析成 `Mat`） | — | 按 `Action.taint_out`（inherit = ∨ args） | 否（登记；读 `.content` 刷新，**只刷新 do 不算层**） | 守卫里的出口算消费 | 动作抛异常 → Fail 材料（`jv.on_fail` 换）；缺 `iter_seq` → J-13；不可逆无 trusted Act 守卫（含 Pick/At/Ignore/Unsure）→ J-08 |
 | `jv.ask(s, q)` | 状态 + 题 | 出口（trusted，p=1）或抛 `Pending` | — | trusted | 是 | — | 超 `Budget.escalate` → J-07 |
 | `jv.answer(key, kind, k, level)` | Pending 的键 + `act/ignore/pick/at` | 无（写账本） | — | — | 否 | — | kind 不合法 → `JvError`；键不在账本 → `KeyError` |
-| `jv.transform(f, *args)` | 宿主函数 + 材料 / 材料列表 | `Mat` 或 `list[Mat]`（列表逐个包） | `f` 返回 `[]` → `[]` | ∨ args | 输入含期物先刷新 do | — | `f` 抛异常 → fail 材料 + `W-transform-fail`；同输入异输出 → `W-impure` |
+| `jv.transform(f, *args)` | 宿主函数 + 材料 / 材料列表 | `Mat` 或 `list[Mat]`（与某输入内容相同的元素 = 原 `Mat`，其余逐个包） | `f` 返回 `[]` → `[]` | ∨ args | 输入含期物先刷新 do | — | `f` 抛异常：列表型（`-> list` 注解或同站点曾返回列表）→ 空 `jv.FailList` + `W-transform-fail`；否则 fail 材料 + `W-transform-fail`；同输入异输出 → `W-impure` |
 | `jv.loop(bound, variant)` | 上界 + 递减变式 | 迭代器，`it.n` | — | — | 变式里读 `.content` 会刷新 | 无进展 → 已消费的 `Unsure("noprogress")` + `W-noprogress` | 缺 `bound`/`variant` → J-06 |
 | `jv.handle(c, then, keep, regen)` | cause 或出口 | 出口 / `None` / `keep` 值 / then 的返回 | — | — | `band` 重跑一层 | **消费** | `then=jv.escalate` 可抛 `Pending` |
-| `jv.consume(exits, unsure=drop\|escalate)` | 出口列表 | 同长列表（Unsure→`None`，其余原样） | `[]` → `[]` | — | 否 | **消费** | `unsure=jv.escalate` 可抛 `Pending` |
-| `jv.escalate(x, note)` | 任意值 | `Escalated(payload, note)`（普通返回值，透传出程序） | — | — | 否 | 不经 J-05 | 超 `Budget.escalate` → J-07 |
-| `jv.on_fail(expr, alt)` | 期物 / 材料 | `expr` 或 `alt` | — | — | 解析期物 | — | — |
+| `jv.consume(exits, unsure=drop\|escalate)` | 出口列表 | 同长列表（Unsure→`None`，其余原样） | `[]` → `[]` | — | 否 | **消费**（`drop` 记为丢弃，不是交人） | `unsure=jv.escalate` 可抛 `Pending`；同帧后来又 `jv.escalate` → `W-drop-vs-escalate` |
+| `jv.escalate(x, note, exits)` | 任意值；`exits=` 出口列表（载荷是出口时自动） | `Escalated(payload, note, exits)`（普通返回值，透传出程序） | — | — | 否 | `exits` 里的出口随之消费（`consumed_by=escalate`） | 超 `Budget.escalate` → J-07；`exits` 含非出口 → `JvTypeError`；同帧曾 `drop` 过 `Unsure` → `W-drop-vs-escalate` |
+| `jv.on_fail(expr, alt)` | 期物 / 材料 / `FailList` | `expr` 或 `alt` | — | — | 解析期物 | — | — |
 | `jv.Budget(calls, cost, layers, escalate, unsure)` | 五个可选上限 | 值 | 全 `None` = 不限 | — | — | — | 超 calls/cost/layers 在层边界：整层不发、读数记 `Unsure("budget")`；超 escalate 抛 J-07；超 unsure 只 `W-unsure` |
-| `@jv.program(budget, check_static)` | 函数 | 包装函数 | — | — | 返回前刷新 | 返回前核 J-05（本帧） | 静态错 → `JvError`（报文带修法）；`Pending` 原样抛 |
+| `@jv.program(budget, check_static)` | 函数（返回注解含 `Unsure` 时返回值里的 `Unsure` 交给调用者） | 包装函数 | — | — | 返回前刷新；`cut` 处向前推测同帧 judge（§3.1） | 返回前核 J-05（本帧）；注解含 `Unsure` 的返回值：记 `consumed_by=return_type`，调用者帧继续核，最外层记 `returned_unsure` | 静态错 → `JvError`（报文带修法）；`Pending` 原样抛；无注解返回 `Unsure` → J-05 带「加返回注解」修法 |
 | `jv.FakeClient(rule)` | `rule(text, qid, q)` → 答案字典 / `None` | `(answers, tokens, cost)` | — | — | — | — | 返回体键不合 → `JvError`（不静默）；`rule` 抛异常 → 该层读数 fail |
-| `jv.register_action(name, fn, taint_out, reason, …)` | 登记项 | `Action`（registered=True） | — | 由 `taint_out` 决定输出 | — | — | `trusted` 无 `reason` → `JvError` |
+| `jv.register_action(name, fn, taint_out, reason, …)` | 登记项 | `Action`（registered=True） | `reason=""` 对 inherit / untrusted 合法 | 由 `taint_out` 决定输出 | — | — | `trusted` 无 `reason` → `JvError` |
 | `jv.Action(...)` 直接构造 | 同上 | `Action`（未登记） | — | 同上 | — | — | `taint_out="trusted"` → `W-self-trusted` |
 | `jv.Act/Ignore/Pick(k)/At(level)/Unsure(cause)` | — | 出口；`.kind .p .detail .consumed .taint .as_mat()` | — | 由 cut 给 | — | 只有 `Unsure` 必须消费 | `e == jv.Act` → `W-cmp-type` 且恒假；非法 cause → `JvError` |
 | `jv.Mat` | — | 相等 / 哈希按内容 | — | — | — | — | `bool(m)` / `len(m)` / `x in m` → `JvTypeError` |
@@ -415,11 +442,12 @@ for x, e in zip(xs, es): match e: ...
 ```
 cd 地基 && .venv/bin/python -m pytest foundation/tests -q                     # $0，451 条
 .venv/bin/python -m foundation.jv stats [--no-fuse …] [--replay --root DIR]   # 六条 + 第七条：层数 / 融合率 / 账本命中 / 钱
-.venv/bin/python -m foundation.jv ablate                                      # 七个开关消融表（六条）
+.venv/bin/python -m foundation.jv ablate                                      # 九个开关消融表（六条）
 .venv/bin/python -m foundation.jv plan foundation.jv.examples.six:取物        # 计划期估计（J-07 / J-10）
 .venv/bin/python -m foundation.jv check foundation.jv.examples.six:取物       # 静态检查
 .venv/bin/python -m foundation.jv.examples.seven                              # 第七条（measure）
 .venv/bin/python -m foundation.jv.examples.fresh4                             # G4 读者的三条（现在带 W-self-trusted）
 .venv/bin/python -m foundation.jv.examples.fresh5                             # G5 读者的三条
+.venv/bin/python -m foundation.jv.examples.fresh6                             # G6 读者的三条（程序 1 现在带 W-wildcard-unsure / W-drop-vs-escalate）
 SMOKE_TAG=e-ir-smoke-c .venv/bin/python -m foundation.jv.examples.smoke_e_ir  # 真机，≈$0.0001，先预注册
 ```

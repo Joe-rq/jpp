@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
 # 把研究工作区（地基）的内核源码与研究文档同步到本发布仓库。
 # 用法：tools/sync-from-workspace.sh [工作区路径]   默认 ~/个人项目/jev/地基
-# 只复制，不改内容；不含私人对话、密钥、原始模型记录、运行输出、进行中的探针。
+# 只复制，不改内容；不含私人对话、密钥、原始模型记录、运行输出。
 set -euo pipefail
 WS="${1:-$HOME/个人项目/jev/地基}"
 REPO="$(cd "$(dirname "$0")/.." && pwd)"
 RS="rsync -a --exclude __pycache__ --exclude '*.pyc' --exclude .pytest_cache --exclude .DS_Store"
 
 # 1. 内核源码（保持 foundation.jv 兼容名）
-$RS --delete --exclude 'probes/' "$WS/foundation/jv/"       "$REPO/src/foundation/jv/"
+$RS --delete "$WS/foundation/jv/"       "$REPO/src/foundation/jv/"
 $RS          "$WS/foundation/core/"     "$REPO/src/foundation/core/"
 $RS          "$WS/foundation/clients/"  "$REPO/src/foundation/clients/"
 $RS          "$WS/foundation/profile/"  "$REPO/src/foundation/profile/"
@@ -17,7 +17,7 @@ cp "$WS/foundation/__init__.py" "$REPO/src/foundation/__init__.py" 2>/dev/null |
 # 2. 内核测试（只取自足的 jv 测试；core 旧测试依赖工作区试验台，不同步）
 mkdir -p "$REPO/tests/foundation_jv"
 rm -f "$REPO/tests/foundation_jv"/test_*.py
-for f in "$WS"/foundation/tests/test_jv_*.py "$WS"/foundation/tests/test_twentyone.py; do
+for f in "$WS"/foundation/tests/test_jv_*.py "$WS"/foundation/tests/test_twentyone.py "$WS"/foundation/tests/test_probes.py; do
   cp "$f" "$REPO/tests/foundation_jv/"
 done
 touch "$REPO/tests/foundation_jv/__init__.py"

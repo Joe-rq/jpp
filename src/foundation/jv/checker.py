@@ -156,12 +156,16 @@ class _Checker(ast.NodeVisitor):
             p = c.pattern
             if isinstance(p, ast.MatchAs) and p.pattern is None:
                 wildcard = True
-            if isinstance(p, ast.MatchClass) and _is_jv(p.cls):
-                kinds.add(_jv_name(p.cls))
-                if _jv_name(p.cls) == "Unsure":
-                    self.has_unsure_handling = True
+            for sub in ast.walk(p):                       # 元组 / 序列模式里的 jv.Act() 也算（G6 程序 1 的 match (a, f)）
+                if isinstance(sub, ast.MatchClass) and _is_jv(sub.cls):
+                    kinds.add(_jv_name(sub.cls))
+                    if _jv_name(sub.cls) == "Unsure":
+                        self.has_unsure_handling = True
         if kinds and "Unsure" not in kinds and not wildcard:
             self.warn(node, "W-exhaust: match 没有 case jv.Unsure(c) 也没有通配；未消费的 Unsure 在返回前按 J-05 报错")
+        if kinds and "Unsure" not in kinds and wildcard:
+            self.warn(node, "W-wildcard-unsure: 通配 case _ 不消费 Unsure（J-05 只认 case jv.Unsure()）；落到通配的 Unsure 仍要 "
+                            "jv.consume / jv.handle；若本意是交人，用 jv.escalate(载荷, exits=[那些出口])")
         self.generic_visit(node)
 
     # —— 比较（§6.3-2、§6.3-3）
