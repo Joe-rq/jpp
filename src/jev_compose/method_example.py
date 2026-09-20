@@ -76,7 +76,7 @@ def run_case(calculation, domain):
             "actions": run.stats["effect_requests"]["do"], "dynamic": dynamic}
 
 
-def main():
+def main(output=None):
     FACTORY_INPUTS.clear()
     calculation = program()
     plan = jv.plan(calculation.program())
@@ -93,7 +93,7 @@ def main():
     data = {"fixture": "Fixed synthetic observations; local finite-domain checks",
             "static_plan": plan_summary(plan), "factory_inputs": FACTORY_INPUTS,
             "cases": cases, "replacement": replacement}
-    output = Path(__file__).resolve().parents[1] / "out" / "method-construction.json"
+    output = Path(output) if output is not None else Path(__file__).resolve().parents[1] / "out" / "method-construction.json"
     output.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n")
     print(json.dumps({"cases": [{k: c[k] for k in ("domain", "output", "calls", "actions")}
                                 for c in cases],

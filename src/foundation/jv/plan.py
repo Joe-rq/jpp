@@ -322,14 +322,48 @@ def _cost_of_bind(node: Mapping, rt, profile: dict, rep: PlanReport) -> dict[str
         raise JvError(f"jv.plan: bind 节点 {_node_name(node)} 需要恰好 2 个 children（前段/factory），实得 {len(children)}")
     name = _node_name(node)
     prefix = _cost_of_node(children[0], rt, profile, rep)
-    factory = _cost_of_node(children[1], rt, profile, rep)      # factory 自身声明的 effects/contract 沿其子节点（通常是 leaf）既有规则算
-    # factory 的返回值（continuation）只在运行期产生；静态计划绝不调用 factory，所以 continuation 的
-    # 真实结构永远未知。parameters.continuation_effects 即便声明为空元组，也不能当作「已知零」——
-    # 空声明只是作者声明，不是证明（同 leaf 规则）。全字段记未知符号并告警 W-dynamic。
+    factory_node = children[1]
+    # factory 子节点是原 Component 工厂的真实结构（不再包一层 leaf.function），原样递归分析，不隐藏、不执行；
+    # 沿用它自身 operation 的既有规则（多为 leaf：AST 分析 + 声明未见到记未知）。
+    factory = _cost_of_node(factory_node, rt, profile, rep)
+    factory_visible = set(factory_node.get("effects") or ())
+    factory_contract = factory_node.get("effects_contract")
+    declared = (node.get("parameters") or {}).get("factory_effects")   # None=未声明超集；tuple=声明（可含 '*'）
+
+    def full_unknown(reason: str) -> dict[str, Sym]:
+        _struct_warn(rep, f"W-dynamic: 节点 {name}（bind）{reason}，全部资源记未知符号，不当 0 计划")
+        return {k: Sym.var(f"bind:{name}:factory_effects:{k}") for k in _SYM_FIELDS}
+
+    if declared is None:
+        # 未声明 factory_effects：若 factory 自身也未分类（effects_contract=unknown），没有任何依据能界定
+        # 它到底做什么，按通配处理，全部资源未知；若 factory 自身已提供可信声明，信任它，不额外加未知。
+        if factory_contract == "unknown":
+            extra = full_unknown("factory 未分类（effects_contract=unknown）且未声明 parameters.factory_effects")
+        else:
+            extra = _zero_cost()
+    else:
+        declared = tuple(declared)
+        if "*" in declared:
+            extra = full_unknown("parameters.factory_effects 含 '*'（未声明的动态能力）")
+        else:
+            missing = tuple(eff for eff in declared if eff not in factory_visible)
+            extra = _zero_cost()
+            if missing:
+                for eff in missing:
+                    fields = _EFFECT_FIELDS.get(eff)
+                    if fields is None:
+                        continue
+                    for f_ in fields:
+                        extra[f_] = extra[f_] + Sym.var(f"bind:{name}:factory_effects:{eff}:{f_}")
+                _struct_warn(rep, f"W-opaque: 节点 {name}（bind）parameters.factory_effects 声明 {missing} 超出 "
+                                   f"factory 节点自身 effects={tuple(sorted(factory_visible))}，对应资源记未知符号，"
+                                   f"不当 0 计划")
+    # Keep the previously agreed dynamic-continuation boundary as well as the
+    # additional factory declaration: neither can stand in for the other.
     continuation = {k: Sym.var(f"bind:{name}:continuation:{k}") for k in _SYM_FIELDS}
     _struct_warn(rep, f"W-dynamic: 节点 {name}（bind）的 continuation 由 factory 运行期产生，"
                        f"静态计划不调用 factory，资源按未知符号处理，不当 0 计划")
-    return {k: prefix[k] + factory[k] + continuation[k] for k in _SYM_FIELDS}
+    return {k: prefix[k] + factory[k] + extra[k] + continuation[k] for k in _SYM_FIELDS}
 
 
 def _cost_of_opaque(node: Mapping, rep: PlanReport) -> dict[str, Sym]:

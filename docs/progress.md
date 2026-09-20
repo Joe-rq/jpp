@@ -65,4 +65,26 @@ We now publish each completed, verified advance to GitHub with Chinese and Engli
 Two compiler passes (`speculate`, `vectorize`) make judgment fusion independent of loop style; unresolved exits can be returned from annotated programs; ten runnable probes ship with offline and live modes. 494 tests pass on Python 3.12 and 3.13 in this repository. Details, commands and numbers: [2026-09-21 update](updates/2026-09-21-mechanized-fusion-and-probes.md); the previous kernel sync is in the [2026-09-20 update](updates/2026-09-20-kernel-research-sync.md).
 
 两个新编译 pass 让判断融合不再取决于循环写法；带返回注解的程序可以把「拿不准」交给调用者；十条可运行探针带离线与真机两种模式。本仓库在 Python 3.12 与 3.13 上各通过 494 项测试。细节见 [2026-09-21 更新](updates/2026-09-21-mechanized-fusion-and-probes.md)，上一次内核同步见 [2026-09-20 更新](updates/2026-09-20-kernel-research-sync.md)。
+# 2026-09-20 — Install, compose and inspect complete methods / 安装并使用完整方法
 
+The `0.1.0a2` developer package adds `jpp methods --output report.json`, the
+accepted common planner support, and a [developer guide](developer-guide.md).
+The command runs dynamic method construction, nesting and internal replacement
+from an installed wheel; no research paths or snapshot are required.
+
+`0.1.0a2` 将已验收完整/动态组合接入安装包。新增命令输出共同计划、实际生成结构与结果；明确文件清单防止未验收语义函数、提示和原始生成记录混入发布。
+
+Verified in a fresh Python 3.12 environment outside the checkout: installed
+module paths point to site-packages, `jpp demo` and `jpp methods` execute, and the
+wheel excludes unreviewed modules. Focused compatibility and delivery checks:
+41 + 33 passed; the full release suite also passed all 512 tests in the installed
+Python 3.12 environment. An independent author used only the public guide and installed
+package to write [a new flaky-test method](../examples/flaky_method.py), then
+passed and nested the complete method without changing the library. Three inputs
+passed; the guide now includes the JSON-export example that author needed.
+
+干净安装、命令与新作者程序均实际运行。示例使用固定观察或精确计算，不是模型准确率、通用性覆盖或真实增益实验。下一步继续依据实际表达缺口与原计划推进。
+
+[Installed-package evidence](demos/methods/installation.json) ·
+[Method execution](demos/methods/method-report.json) ·
+[Independent author output](demos/methods/independent-output.json)
