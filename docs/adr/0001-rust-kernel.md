@@ -23,8 +23,42 @@ language in a single distributable implementation. Rust is the chosen engineerin
 direction; its own type system does not replace the J++ checker.
 
 已有 Python 程序给出了行为依据。现在把这些规则落实到独立源码、显式程序结构与
-统一执行系统，用户才能直接用 J++ 编程。此次选择 Rust，不再并建 OCaml 或另一套
-内核，也不逐行搬运全部旧代码。
+统一执行系统，用户才能直接用 J++ 编程。Rust承担正式内核；针对具体设计问题可以
+开展OCaml实验，约定见下节。不预先并建第二套完整内核，也不逐行搬运全部旧代码。
+
+## Rust mainline and OCaml experiments / Rust 主线与 OCaml 实验
+
+Rust remains the formal runtime and delivery implementation. OCaml may be used to
+explore a specific grammar or semantic question with small, complete runnable
+programs—for example, whether a continuation receives state or carries a remaining
+program, and how unresolved items propagate through another composition. The tool
+choice itself does not establish that a language design is better.
+
+Rust承担正式运行与交付；OCaml可围绕具体文法、组合、执行或未决处理问题开展实验。
+每次从明确问题出发，用小而完整的程序比较方案。不预先建设第二套完整内核、不重复
+一般性选型，也不暂停不受影响的Rust开发。
+
+Selected rules enter the shared, implementation-independent specification with
+examples, expected behavior and reasons. Rust must reproduce those behaviors;
+essential rules cannot exist only in OCaml code. Rejected alternatives may remain
+as clearly labeled experiment records.
+
+选中的规则进入独立于实现语言的共同规范，附程序、预期行为和选择依据，再由Rust
+复现。未选方案与取舍可以保留，但明确标为实验记录。
+
+An OCaml reference program can be retained after its rule is implemented in Rust.
+If an OCaml part, such as a parser or checker, is worth retaining as a formal
+component, define its responsibility, program/data interface, build and runtime
+path, then verify the complete integration. Experiment dependencies do not
+automatically become user installation requirements.
+
+成熟实验可保留作参考；若某部分值得正式保留为OCaml组件，也可以另行明确职责、
+程序结构或数据接口、构建运行方式，并验证完整路径。不能默认把实验依赖带入用户安装。
+
+Experiments, selected rules and implemented behavior are labeled separately and
+published with the existing bilingual progress practice. This update records the
+policy only: it does not start an OCaml experiment, install a toolchain or claim a
+completed mixed-language system. 实验随真实设计问题安排，本轮只记录规范，不启动安装或实验。
 
 ## Preserve and build / 保留与建设
 

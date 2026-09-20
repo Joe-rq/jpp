@@ -6,6 +6,8 @@
 
 **正式方向已改为 Rust 内核与独立 J++ 源码。** [新的施工决定](adr/0001-rust-kernel.md)替代此前独立文法无限期推迟的安排。先实现解析、检查与解释执行，交付完整源码程序。历史 EBNF 仍是参考；新文法由实际完整程序决定，不原样恢复旧限制。当前 Rust 工作刚开始。
 
+[Rust mainline and OCaml experiments / Rust主线与OCaml实验](adr/0001-rust-kernel.md#rust-mainline-and-ocaml-experiments--rust-主线与-ocaml-实验): OCaml can explore concrete design questions; selected rules enter the shared specification and are reproduced in Rust. Formal OCaml components require explicit interfaces and verified delivery. 实验不暂停Rust主线，不默认增加用户依赖。
+
 | Read / 阅读 | Status and contents / 状态与内容 |
 |---|---|
 | [Rust implementation decision / Rust 施工决定](adr/0001-rust-kernel.md) | Current direction and first acceptance milestone. / 当前路线与首包验收。 |

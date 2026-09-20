@@ -2,6 +2,21 @@
 
 Updated: 2026-09-20. This is a dated report, not an automatically updated dashboard.
 
+## 2026-09-20: focused OCaml experiments alongside Rust / Rust 主线允许具体 OCaml 实验
+
+The [Rust ADR](adr/0001-rust-kernel.md) now permits OCaml experiments around
+specific grammar and semantic questions. Selected rules must enter the shared
+specification and be reproduced in Rust; any retained formal OCaml component
+needs an explicit interface and verified build/run path. Rust implementation
+continues. This is a policy-only change, with links and wording checked; no OCaml
+installation, experiment or mixed-language runtime has been performed.
+
+新增“Rust正式实现＋围绕具体问题开展OCaml实验”规范。实验、已选规则、正式实现分别
+标注；不因实验暂停Rust，不默认增加用户安装依赖。当前只同步约定，下一次实验由
+真实设计问题触发。中英ADR、设计入口和进展一并更新。
+
+[Policy commit / 规范提交](https://github.com/Towow-ai/jpp/commit/35ec2d0)
+
 ## 2026-09-20: Rust and standalone source selected / 选定 Rust 与独立源码
 
 The formal language implementation now moves to one Rust kernel with a `.jpp`
