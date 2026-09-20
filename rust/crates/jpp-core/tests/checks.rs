@@ -31,17 +31,12 @@ fn 读数不能进状态槽() {
         vec![
             bind("q", call("test", vec![text("这个对吗？"), text("k")])),
             bind("m", call("mat", vec![rec(vec![("x", int(1))])])),
-            bind(
-                "r",
-                call("judge", vec![call("state", vec![name("m")]), name("q")]),
-            ),
+            bind("r", call("judge", vec![call("state", vec![name("m")]), name("q")])),
         ],
         call("state", vec![reading]),
     );
     let report = check(&program);
-    let d = report
-        .find("J-01")
-        .unwrap_or_else(|| panic!("应当报 J-01：\n{}", report.render()));
+    let d = report.find("J-01").unwrap_or_else(|| panic!("应当报 J-01：\n{}", report.render()));
     assert_eq!(d.severity, Severity::Error);
     assert_eq!(d.span, at, "出错位置指着那个读数");
     assert!(d.message.contains("修法"), "报文要带修法：{}", d.message);
@@ -56,20 +51,12 @@ fn 读数不能做比较() {
         Some(budget(1, 8)),
         vec![
             bind("q", call("test", vec![text("这个对吗？"), text("k")])),
-            bind(
-                "r",
-                call(
-                    "judge",
-                    vec![call("state", vec![call("mat", vec![int(1)])]), name("q")],
-                ),
-            ),
+            bind("r", call("judge", vec![call("state", vec![call("mat", vec![int(1)])]), name("q")])),
         ],
         bin(">", left, dec(0.5)),
     );
     let report = check(&program);
-    let d = report
-        .find("J-01")
-        .unwrap_or_else(|| panic!("应当报 J-01：\n{}", report.render()));
+    let d = report.find("J-01").unwrap_or_else(|| panic!("应当报 J-01：\n{}", report.render()));
     assert_eq!(d.span, at);
 }
 
@@ -80,9 +67,7 @@ fn 未消费的出口是错() {
     let at = let_span(&binding);
     let program = program(Some(budget(1, 8)), vec![binding], int(0));
     let report = check(&program);
-    let d = report
-        .find("J-05")
-        .unwrap_or_else(|| panic!("应当报 J-05：\n{}", report.render()));
+    let d = report.find("J-05").unwrap_or_else(|| panic!("应当报 J-05：\n{}", report.render()));
     assert_eq!(d.severity, Severity::Error);
     assert_eq!(d.span, at, "出错位置指着那个绑定");
     assert!(d.message.contains("consume"), "报文要给出路：{}", d.message);
@@ -93,31 +78,22 @@ fn 未消费的出口是错() {
 fn 带出出口要标返回类型() {
     let program = program(
         Some(budget(1, 8)),
-        vec![func_ret(
-            "peek",
-            &["m", "q"],
-            Some(&["judge"]),
-            Type::Named("Record".into()),
-            body(
-                vec![bind(
-                    "e",
-                    call(
-                        "cut",
-                        vec![call(
-                            "judge",
-                            vec![call("state", vec![name("m")]), name("q")],
-                        )],
-                    ),
-                )],
-                name("e"),
+        vec![
+            func_ret(
+                "peek",
+                &["m", "q"],
+                Some(&["judge"]),
+                Type::Named("Record".into()),
+                body(
+                    vec![bind("e", call("cut", vec![call("judge", vec![call("state", vec![name("m")]), name("q")])]))],
+                    name("e"),
+                ),
             ),
-        )],
+        ],
         int(0),
     );
     let report = check(&program);
-    let d = report
-        .find("J-05")
-        .unwrap_or_else(|| panic!("应当报 J-05：\n{}", report.render()));
+    let d = report.find("J-05").unwrap_or_else(|| panic!("应当报 J-05：\n{}", report.render()));
     assert!(d.message.contains("Exit"), "{}", d.message);
 
     // 标了 -> Exit 就合法
@@ -134,16 +110,7 @@ fn program_returning_exit() -> jpp_core::Program {
             Some(&["judge"]),
             Type::Named("Exit".into()),
             body(
-                vec![bind(
-                    "e",
-                    call(
-                        "cut",
-                        vec![call(
-                            "judge",
-                            vec![call("state", vec![name("m")]), name("q")],
-                        )],
-                    ),
-                )],
+                vec![bind("e", call("cut", vec![call("judge", vec![call("state", vec![name("m")]), name("q")])]))],
                 name("e"),
             ),
         )],
@@ -160,23 +127,12 @@ fn handle缺unsure臂是错() {
         Some(budget(1, 8)),
         vec![
             bind("q", call("test", vec![text("这个对吗？"), text("k")])),
-            bind(
-                "e",
-                call(
-                    "cut",
-                    vec![call(
-                        "judge",
-                        vec![call("state", vec![call("mat", vec![int(1)])]), name("q")],
-                    )],
-                ),
-            ),
+            bind("e", call("cut", vec![call("judge", vec![call("state", vec![call("mat", vec![int(1)])]), name("q")])])),
         ],
         call("handle", vec![name("e"), arms]),
     );
     let report = check(&program);
-    let d = report
-        .find("J-05")
-        .unwrap_or_else(|| panic!("应当报 J-05：\n{}", report.render()));
+    let d = report.find("J-05").unwrap_or_else(|| panic!("应当报 J-05：\n{}", report.render()));
     assert_eq!(d.span, at);
 }
 
@@ -188,19 +144,10 @@ fn 循环缺bound是错() {
     let program = program(
         Some(budget(1, 8)),
         vec![],
-        call(
-            "loop",
-            vec![
-                zero,
-                int(1),
-                lambda(&["acc", "i"], body(vec![], name("acc"))),
-            ],
-        ),
+        call("loop", vec![zero, int(1), lambda(&["acc", "i"], body(vec![], name("acc")))]),
     );
     let report = check(&program);
-    let d = report
-        .find("E5")
-        .unwrap_or_else(|| panic!("应当报 E5：\n{}", report.render()));
+    let d = report.find("J-06").unwrap_or_else(|| panic!("应当报 E5：\n{}", report.render()));
     assert_eq!(d.severity, Severity::Error);
     assert_eq!(d.span, at);
 
@@ -208,12 +155,9 @@ fn 循环缺bound是错() {
     let two_args = build(
         Some(budget(1, 8)),
         vec![],
-        call(
-            "loop",
-            vec![int(1), lambda(&["acc", "i"], body(vec![], name("acc")))],
-        ),
+        call("loop", vec![int(1), lambda(&["acc", "i"], body(vec![], name("acc")))]),
     );
-    assert!(check(&two_args).find("E5").is_some());
+    assert!(check(&two_args).find("J-06").is_some());
 }
 
 /// E12：预算必填。
@@ -222,9 +166,7 @@ fn 缺预算是错() {
     let program = program(None, vec![], int(1));
     let at = program.span;
     let report = check(&program);
-    let d = report
-        .find("E12")
-        .unwrap_or_else(|| panic!("应当报 E12：\n{}", report.render()));
+    let d = report.find("J-07").unwrap_or_else(|| panic!("应当报 E12：\n{}", report.render()));
     assert_eq!(d.span, at);
     assert!(d.message.contains("budget"), "{}", d.message);
 }
@@ -236,50 +178,25 @@ fn ask没有升级预算是错() {
         Some(budget(1, 8)),
         vec![
             bind("q", call("test", vec![text("这个对吗？"), text("k")])),
-            bind(
-                "e",
-                call(
-                    "ask",
-                    vec![call("state", vec![call("mat", vec![int(1)])]), name("q")],
-                ),
-            ),
+            bind("e", call("ask", vec![call("state", vec![call("mat", vec![int(1)])]), name("q")])),
         ],
         call("consume", vec![name("e"), text("drop")]),
     );
-    assert!(
-        check(&program).find("E10").is_some(),
-        "{}",
-        check(&program).render()
-    );
+    assert!(check(&program).find("J-07").is_some(), "{}", check(&program).render());
 }
 
 /// E7：`for … yield`（map / filter）的体内是纯映射，不能含 loop。
 #[test]
 fn 映射体内不能有循环() {
-    let inner = call(
-        "loop",
-        vec![
-            int(2),
-            name("x"),
-            lambda(&["a", "i"], body(vec![], name("a"))),
-        ],
-    );
+    let inner = call("loop", vec![int(2), name("x"), lambda(&["a", "i"], body(vec![], name("a")))]);
     let at = inner.span;
     let program = program(
         Some(budget(1, 8)),
         vec![],
-        call(
-            "map",
-            vec![
-                list(vec![int(1), int(2)]),
-                lambda(&["x"], body(vec![], inner)),
-            ],
-        ),
+        call("map", vec![list(vec![int(1), int(2)]), lambda(&["x"], body(vec![], inner))]),
     );
     let report = check(&program);
-    let d = report
-        .find("E7")
-        .unwrap_or_else(|| panic!("应当报 E7：\n{}", report.render()));
+    let d = report.find("E7").unwrap_or_else(|| panic!("应当报 E7：\n{}", report.render()));
     assert_eq!(d.span, at);
 }
 
@@ -294,21 +211,11 @@ fn 循环里的常量序号是错() {
             vec![
                 int(3),
                 int(0),
-                lambda(
-                    &["acc", "i"],
-                    body(
-                        vec![],
-                        call("do", vec![text("act"), list(vec![int(1)]), int(0)]),
-                    ),
-                ),
+                lambda(&["acc", "i"], body(vec![], call("do", vec![text("act"), list(vec![int(1)]), int(0)]))),
             ],
         ),
     );
-    assert!(
-        check(&program).find("J-13").is_some(),
-        "{}",
-        check(&program).render()
-    );
+    assert!(check(&program).find("J-13").is_some(), "{}", check(&program).render());
 
     // 序号随轮次变就没问题
     let good = program_with_varying_seq();
@@ -324,13 +231,7 @@ fn program_with_varying_seq() -> jpp_core::Program {
             vec![
                 int(3),
                 int(0),
-                lambda(
-                    &["acc", "i"],
-                    body(
-                        vec![],
-                        call("do", vec![text("act"), list(vec![int(1)]), name("i")]),
-                    ),
-                ),
+                lambda(&["acc", "i"], body(vec![], call("do", vec![text("act"), list(vec![int(1)]), name("i")]))),
             ],
         ),
     )
@@ -341,15 +242,9 @@ fn program_with_varying_seq() -> jpp_core::Program {
 fn 线不可字面() {
     let literal = dec(0.8);
     let at = literal.span;
-    let program = program(
-        Some(budget(1, 8)),
-        vec![],
-        call("test", vec![text("这个对吗？"), literal]),
-    );
+    let program = program(Some(budget(1, 8)), vec![], call("test", vec![text("这个对吗？"), literal]));
     let report = check(&program);
-    let d = report
-        .find("J-03")
-        .unwrap_or_else(|| panic!("应当报 J-03：\n{}", report.render()));
+    let d = report.find("J-03").unwrap_or_else(|| panic!("应当报 J-03：\n{}", report.render()));
     assert_eq!(d.span, at);
 }
 
@@ -361,11 +256,7 @@ fn 状态只判一个对象() {
         vec![],
         call("state", vec![list(vec![int(1), int(2), int(3)])]),
     );
-    assert!(
-        check(&program).find("J-14").is_some(),
-        "{}",
-        check(&program).render()
-    );
+    assert!(check(&program).find("J-14").is_some(), "{}", check(&program).render());
 }
 
 /// 效应标注要盖住实际发生的效应（core 本地码 E-effect）。
@@ -377,41 +268,21 @@ fn 效应标注不能少() {
             "peek",
             &["m", "q"],
             &[],
-            body(
-                vec![],
-                call(
-                    "cut",
-                    vec![call(
-                        "judge",
-                        vec![call("state", vec![name("m")]), name("q")],
-                    )],
-                ),
-            ),
+            body(vec![], call("cut", vec![call("judge", vec![call("state", vec![name("m")]), name("q")])])),
         )],
         int(0),
     );
     let report = check(&program);
-    let d = report
-        .find("E-effect")
-        .unwrap_or_else(|| panic!("应当报 E-effect：\n{}", report.render()));
+    let d = report.find("E-effect").unwrap_or_else(|| panic!("应当报 E-effect：\n{}", report.render()));
     assert!(d.message.contains("judge"), "{}", d.message);
 
     // 被调者是参数（方法值）时静态判不了效应，不报——宁可漏也不误杀
     let higher_order = build(
         Some(budget(1, 8)),
-        vec![func_eff(
-            "apply",
-            &["f", "x"],
-            &[],
-            body(vec![], call_of(name("f"), vec![name("x")])),
-        )],
+        vec![func_eff("apply", &["f", "x"], &[], body(vec![], call_of(name("f"), vec![name("x")])))],
         int(0),
     );
-    assert!(
-        check(&higher_order).find("E-effect").is_none(),
-        "{}",
-        check(&higher_order).render()
-    );
+    assert!(check(&higher_order).find("E-effect").is_none(), "{}", check(&higher_order).render());
 }
 
 /// 未定义的名字（core 本地码 E-name）。递归与互相引用不算未定义。
@@ -421,27 +292,14 @@ fn 名字要有定义() {
     let at = missing.span;
     let program = program(Some(budget(1, 8)), vec![], missing);
     let report = check(&program);
-    let d = report
-        .find("E-name")
-        .unwrap_or_else(|| panic!("应当报 E-name：\n{}", report.render()));
+    let d = report.find("E-name").unwrap_or_else(|| panic!("应当报 E-name：\n{}", report.render()));
     assert_eq!(d.span, at);
 
     // 自递归与后定义的互相引用都是合法的：解释器里同一个块的绑定共享环境节点
     let recursive = build(
         Some(budget(1, 8)),
         vec![
-            func(
-                "down",
-                &["n"],
-                body(
-                    vec![],
-                    if_(
-                        bin("<=", name("n"), int(0)),
-                        int(0),
-                        call("up", vec![bin("-", name("n"), int(1))]),
-                    ),
-                ),
-            ),
+            func("down", &["n"], body(vec![], if_(bin("<=", name("n"), int(0)), int(0), call("up", vec![bin("-", name("n"), int(1))])))),
             func("up", &["n"], body(vec![], call("down", vec![name("n")]))),
         ],
         call("down", vec![int(3)]),
@@ -459,11 +317,7 @@ fn 盖住内置名只是提示() {
     );
     let report = check(&program);
     assert!(report.is_ok(), "盖名不该拦程序：{}", report.render());
-    assert!(
-        report.find("W-shadow").is_some(),
-        "但要提示：{}",
-        report.render()
-    );
+    assert!(report.find("W-shadow").is_some(), "但要提示：{}", report.render());
 }
 
 /// 实参字面量与参数标注不符（core 本地码 E-type）。
@@ -471,9 +325,7 @@ fn 盖住内置名只是提示() {
 fn 参数类型不符() {
     let (annotated, at) = typed_call();
     let report = check(&annotated);
-    let d = report
-        .find("E-type")
-        .unwrap_or_else(|| panic!("应当报 E-type：\n{}", report.render()));
+    let d = report.find("E-type").unwrap_or_else(|| panic!("应当报 E-type：\n{}", report.render()));
     assert_eq!(d.severity, Severity::Error);
     assert_eq!(d.span, at, "出错位置指着那个实参");
     assert!(d.message.contains("Int"), "{}", d.message);
@@ -481,18 +333,10 @@ fn 参数类型不符() {
     // 参数没有标注就不判——标注是可选的
     let bare = build(
         Some(budget(0, 8)),
-        vec![func(
-            "twice",
-            &["x"],
-            body(vec![], bin("*", name("x"), int(2))),
-        )],
+        vec![func("twice", &["x"], body(vec![], bin("*", name("x"), int(2))))],
         call("twice", vec![text("不是整数")]),
     );
-    assert!(
-        check(&bare).is_ok(),
-        "没标注不该判：{}",
-        check(&bare).render()
-    );
+    assert!(check(&bare).is_ok(), "没标注不该判：{}", check(&bare).render());
 }
 
 /// `fn twice(x: Int) -> Int !{} { x * 2 }` 后面跟 `twice("不是整数")`
@@ -501,11 +345,7 @@ fn typed_call() -> (jpp_core::Program, Span) {
     let twice = S::Function {
         name: "twice".into(),
         function: Function {
-            parameters: vec![Parameter {
-                name: "x".into(),
-                annotation: Some(Type::Named("Int".into())),
-                span: sp(),
-            }],
+            parameters: vec![Parameter { name: "x".into(), annotation: Some(Type::Named("Int".into())), span: sp() }],
             result_type: Some(Type::Named("Int".into())),
             effects: Some(vec![]),
             body: body(vec![], bin("*", name("x"), int(2))),
@@ -514,10 +354,7 @@ fn typed_call() -> (jpp_core::Program, Span) {
     };
     let bad = text("不是整数");
     let at = bad.span;
-    (
-        build(Some(budget(0, 8)), vec![twice], call("twice", vec![bad])),
-        at,
-    )
+    (build(Some(budget(0, 8)), vec![twice], call("twice", vec![bad])), at)
 }
 
 /// 参数个数不对（core 本地码 E-arity），以及它的反面：参数名盖住具名方法时不许报。
@@ -528,30 +365,18 @@ fn 参数个数与遮蔽() {
         vec![func("helper", &["a", "b"], body(vec![], name("a")))],
         call("helper", vec![int(1)]),
     );
-    assert!(
-        check(&program).find("E-arity").is_some(),
-        "{}",
-        check(&program).render()
-    );
+    assert!(check(&program).find("E-arity").is_some(), "{}", check(&program).render());
 
     // helper 在 outer 里是参数，接的是另一个方法值；不能拿顶层 helper 的参数表去核它
     let shadowed = build(
         Some(budget(0, 8)),
         vec![
             func("helper", &["a", "b"], body(vec![], name("a"))),
-            func(
-                "outer",
-                &["helper"],
-                body(vec![], call("helper", vec![int(1)])),
-            ),
+            func("outer", &["helper"], body(vec![], call("helper", vec![int(1)]))),
         ],
         call("outer", vec![name("helper")]),
     );
-    assert!(
-        check(&shadowed).find("E-arity").is_none(),
-        "参数遮蔽了具名方法，不该按它的参数表核：\n{}",
-        check(&shadowed).render()
-    );
+    assert!(check(&shadowed).find("E-arity").is_none(), "参数遮蔽了具名方法，不该按它的参数表核：\n{}", check(&shadowed).render());
 }
 
 /// 把方法值存起来 / 传给别处不是调用，它的效应不该算到当前函数头上。
@@ -564,32 +389,14 @@ fn 存起方法值不算发生效应() {
                 "peek",
                 &["m", "q"],
                 &["judge"],
-                body(
-                    vec![],
-                    call(
-                        "cut",
-                        vec![call(
-                            "judge",
-                            vec![call("state", vec![name("m")]), name("q")],
-                        )],
-                    ),
-                ),
+                body(vec![], call("cut", vec![call("judge", vec![call("state", vec![name("m")]), name("q")])])),
             ),
-            func_eff(
-                "collect",
-                &["hs"],
-                &[],
-                body(vec![], call("append", vec![name("hs"), name("peek")])),
-            ),
+            func_eff("collect", &["hs"], &[], body(vec![], call("append", vec![name("hs"), name("peek")]))),
         ],
         call("collect", vec![list(vec![])]),
     );
     let report = check(&program);
-    assert!(
-        report.find("E-effect").is_none(),
-        "只是把方法存进列表，没有调用：\n{}",
-        report.render()
-    );
+    assert!(report.find("E-effect").is_none(), "只是把方法存进列表，没有调用：\n{}", report.render());
 
     // 但传到 map 的方法位上就是会发生
     let mapped = build(
@@ -599,29 +406,13 @@ fn 存起方法值不算发生效应() {
                 "peek",
                 &["m"],
                 &["judge"],
-                body(
-                    vec![],
-                    call(
-                        "cut",
-                        vec![call(
-                            "judge",
-                            vec![call("state", vec![name("m")]), name("m")],
-                        )],
-                    ),
-                ),
+                body(vec![], call("cut", vec![call("judge", vec![call("state", vec![name("m")]), name("m")])])),
             ),
-            func_eff(
-                "all",
-                &["ms"],
-                &[],
-                body(vec![], call("map", vec![name("ms"), name("peek")])),
-            ),
+            func_eff("all", &["ms"], &[], body(vec![], call("map", vec![name("ms"), name("peek")]))),
         ],
         call("all", vec![list(vec![])]),
     );
     let report = check(&mapped);
-    let d = report
-        .find("E-effect")
-        .unwrap_or_else(|| panic!("map 的方法位上会发生：\n{}", report.render()));
+    let d = report.find("E-effect").unwrap_or_else(|| panic!("map 的方法位上会发生：\n{}", report.render()));
     assert!(d.message.contains("judge"), "{}", d.message);
 }

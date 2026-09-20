@@ -10,24 +10,8 @@ use crate::value::{Answer, hash_of};
 
 pub const RENDER_VERSION: &str = "r1";
 
-pub fn judge_key(
-    model_id: &str,
-    state_hash: &str,
-    q_hash: &str,
-    phys: &str,
-    perm_seed: u64,
-    run_seq: u64,
-) -> String {
-    hash_of(&[
-        "judge",
-        model_id,
-        state_hash,
-        q_hash,
-        phys,
-        RENDER_VERSION,
-        &perm_seed.to_string(),
-        &run_seq.to_string(),
-    ])
+pub fn judge_key(model_id: &str, state_hash: &str, q_hash: &str, phys: &str, perm_seed: u64, run_seq: u64) -> String {
+    hash_of(&["judge", model_id, state_hash, q_hash, phys, RENDER_VERSION, &perm_seed.to_string(), &run_seq.to_string()])
 }
 
 pub fn effect_key(kind: &str, parts: &[&str]) -> String {
@@ -38,23 +22,9 @@ pub fn effect_key(kind: &str, parts: &[&str]) -> String {
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub enum Entry {
-    Judge {
-        key: String,
-        answer: Answer,
-        tokens: u64,
-        cost: f64,
-        model_id: String,
-    },
-    Effect {
-        key: String,
-        kind: String,
-        output: Json,
-        cost: f64,
-    },
-    Ask {
-        key: String,
-        answer: Option<Answer>,
-    },
+    Judge { key: String, answer: Answer, tokens: u64, cost: f64, model_id: String },
+    Effect { key: String, kind: String, output: Json, cost: f64 },
+    Ask { key: String, answer: Option<Answer> },
 }
 
 impl Entry {
@@ -88,25 +58,15 @@ impl Ledger {
         Ledger::default()
     }
     pub fn rebuild_index(&mut self) {
-        self.index = self
-            .entries
-            .iter()
-            .enumerate()
-            .map(|(i, e)| (e.key().to_string(), i))
-            .collect();
+        self.index = self.entries.iter().enumerate().map(|(i, e)| (e.key().to_string(), i)).collect();
     }
     /// 账本头（J-18）：不同即报 W-header，不承诺重放一致。
     pub fn set_header(&mut self, h: Header) {
         if let Some(old) = &self.header {
-            if old.model_id != h.model_id
-                || old.render_version != h.render_version
-                || old.handler_version != h.handler_version
-                || old.budget_calls != h.budget_calls
-                || old.budget_cost != h.budget_cost
+            if old.model_id != h.model_id || old.render_version != h.render_version || old.handler_version != h.handler_version
+                || old.budget_calls != h.budget_calls || old.budget_cost != h.budget_cost
             {
-                self.header_warning = Some(format!(
-                    "W-header: 账本头不同，不承诺重放一致：旧 {old:?} 新 {h:?}"
-                ));
+                self.header_warning = Some(format!("W-header: 账本头不同，不承诺重放一致：旧 {old:?} 新 {h:?}"));
             }
         }
         self.header = Some(h);
@@ -148,47 +108,19 @@ pub struct Trace {
 }
 
 impl Trace {
-    pub fn push(
-        &mut self,
-        kind: &str,
-        key: &str,
-        replayed: bool,
-        cost: f64,
-        site: Span,
-        note: String,
-    ) {
-        self.events.push(TraceEvent {
-            kind: kind.into(),
-            key: key.into(),
-            replayed,
-            cost,
-            site,
-            note,
-        });
+    pub fn push(&mut self, kind: &str, key: &str, replayed: bool, cost: f64, site: Span, note: String) {
+        self.events.push(TraceEvent { kind: kind.into(), key: key.into(), replayed, cost, site, note });
     }
     pub fn warn(&mut self, w: String) {
         self.warnings.push(w);
     }
     pub fn count(&self, kind: &str, replayed: bool) -> usize {
-        self.events
-            .iter()
-            .filter(|e| e.kind == kind && e.replayed == replayed)
-            .count()
+        self.events.iter().filter(|e| e.kind == kind && e.replayed == replayed).count()
     }
     pub fn render(&self) -> String {
         let mut s = String::new();
         for (i, e) in self.events.iter().enumerate() {
-            s.push_str(&format!(
-                "{:>3} {:<9} {} {:<8} ${:.6} @{}..{} {}\n",
-                i,
-                e.kind,
-                &e.key[..12.min(e.key.len())],
-                if e.replayed { "replay" } else { "live" },
-                e.cost,
-                e.site.start,
-                e.site.end,
-                e.note
-            ));
+            s.push_str(&format!("{:>3} {:<9} {} {:<8} ${:.6} @{}..{} {}\n", i, e.kind, &e.key[..12.min(e.key.len())], if e.replayed { "replay" } else { "live" }, e.cost, e.site.start, e.site.end, e.note));
         }
         for w in &self.warnings {
             s.push_str(&format!("    ! {w}\n"));
