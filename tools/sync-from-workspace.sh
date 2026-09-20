@@ -25,7 +25,7 @@ touch "$REPO/tests/foundation_jv/__init__.py"
 sed -i '' 's|os.path.dirname(__file__), "..", "jv", "README.md"|os.path.dirname(__file__), "..", "..", "src", "foundation", "jv", "README.md"|' "$REPO/tests/foundation_jv/test_jv_contract.py"
 
 # 2b. 组合库（Codex 在工作区维护，随内核一起同步，避免发布副本与内核脱节）
-$RS --exclude 'cli.py' "$WS/扩展/codex_composition/jev_compose/" "$REPO/src/jev_compose/"
+python3 "$REPO/tools/sync-composition.py" "$WS"
 
 # 3. 研究文档（整理副本；依据文本修改权在 Nature）
 R="$REPO/research"
@@ -43,7 +43,7 @@ for f in EXPERIMENTS.md 前提结论.md E9f-设计.md; do
   [ -f "$WS/foundation/experiments/$f" ] && cp "$WS/foundation/experiments/$f" "$R/地基/foundation/experiments/$f"
 done
 cp "$WS/foundation/profile/SCHEMA.md" "$R/地基/foundation/profile-SCHEMA.md" 2>/dev/null || true
-for f in "$WS"/扩展/codex_composition/*.md; do cp "$f" "$R/扩展/codex_composition/"; done
+for f in README.md RESULTS.md; do cp "$WS/扩展/codex_composition/$f" "$R/扩展/codex_composition/"; done
 
 echo "synced from $WS at $(date +%F)"
 ( cd "$WS/foundation" && cat jv/*.py | shasum -a 256 | cut -c1-12 | sed 's/^/jv 全包指纹 /' )

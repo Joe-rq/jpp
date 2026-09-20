@@ -30,10 +30,16 @@ def demo():
 def main(argv=None):
     import sys
     arguments = list(sys.argv[1:] if argv is None else argv)
+    if arguments and arguments[0] == "methods":
+        from jev_compose.method_example import main as methods_main
+        parser = argparse.ArgumentParser(prog="jpp methods", description="Run complete dynamic methods and save plan/trace/results")
+        parser.add_argument("--output", default="jpp-methods.json")
+        options = parser.parse_args(arguments[1:])
+        return methods_main(output=options.output)
     if arguments and arguments[0] == "towow":
         from .towow import main as towow_main
         return towow_main(arguments[1:])
     parser = argparse.ArgumentParser(prog="jpp", description="J++ experimental language")
-    parser.add_argument("command", choices=["demo", "towow"], nargs="?", default="demo")
+    parser.add_argument("command", choices=["demo", "methods", "towow"], nargs="?", default="demo")
     parser.parse_args(arguments)
     print(json.dumps(demo(), ensure_ascii=False, indent=2))

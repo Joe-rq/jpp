@@ -1,0 +1,742 @@
+{
+  "imports": {
+    "jev_compose": "/private/tmp/jpp-installed-env/lib/python3.12/site-packages/jev_compose/__init__.py",
+    "foundation": "/private/tmp/jpp-installed-env/lib/python3.12/site-packages/foundation/__init__.py"
+  },
+  "description": {
+    "name": "product",
+    "operation": "product",
+    "input": "Batch",
+    "output": "tuple",
+    "effects": [],
+    "parameters": {},
+    "warnings": [],
+    "children": [
+      {
+        "name": "product → summarize",
+        "operation": "then",
+        "input": "Batch",
+        "output": "dict",
+        "effects": [],
+        "parameters": {},
+        "warnings": [],
+        "children": [
+          {
+            "name": "product",
+            "operation": "product",
+            "input": "Batch",
+            "output": "tuple",
+            "effects": [],
+            "parameters": {},
+            "warnings": [],
+            "children": [
+              {
+                "name": "flaky_cases",
+                "operation": "leaf",
+                "input": "Batch",
+                "output": "list",
+                "effects": [],
+                "parameters": {},
+                "warnings": [],
+                "children": []
+              },
+              {
+                "name": "case_count",
+                "operation": "leaf",
+                "input": "Batch",
+                "output": "int",
+                "effects": [],
+                "parameters": {},
+                "warnings": [],
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "summarize",
+            "operation": "leaf",
+            "input": "tuple",
+            "output": "dict",
+            "effects": [],
+            "parameters": {},
+            "warnings": [],
+            "children": []
+          }
+        ]
+      },
+      {
+        "name": "bind → release_decision",
+        "operation": "then",
+        "input": "Batch",
+        "output": "str",
+        "effects": [],
+        "parameters": {},
+        "warnings": [],
+        "children": [
+          {
+            "name": "bind",
+            "operation": "bind",
+            "input": "Batch",
+            "output": "dict",
+            "effects": [],
+            "parameters": {
+              "factory": "select_report",
+              "factory_effects": [],
+              "factory_contract": "declared",
+              "continuation_effects": []
+            },
+            "warnings": [
+              "W-dynamic: bind factory and continuation execute at runtime; capability declarations are not purity proofs"
+            ],
+            "children": [
+              {
+                "name": "identity",
+                "operation": "identity",
+                "input": "Batch",
+                "output": "Batch",
+                "effects": [],
+                "parameters": {},
+                "warnings": [],
+                "children": []
+              },
+              {
+                "name": "select_report",
+                "operation": "leaf",
+                "input": "Batch",
+                "output": "Component",
+                "effects": [],
+                "parameters": {},
+                "warnings": [],
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "release_decision",
+            "operation": "leaf",
+            "input": "dict",
+            "output": "str",
+            "effects": [],
+            "parameters": {},
+            "warnings": [],
+            "children": []
+          }
+        ]
+      }
+    ]
+  },
+  "plan": "PlanReport(program='product', budget=Budget(calls=None, cost=None, layers=None, escalate=None, unsure=None), rows=[], calls=bind:bind:continuation:calls, questions=bind:bind:continuation:questions, layers=bind:bind:continuation:layers, gen_calls=bind:bind:continuation:gen_calls, gen_latency=bind:bind:continuation:gen_latency, do_calls=bind:bind:continuation:do_calls, do_cost=bind:bind:continuation:do_cost, asks=bind:bind:continuation:asks, unsure_bound=bind:bind:continuation:unsure_bound, cost_formula='(bind:bind:continuation:calls) × (271 + s) × 4.2e-08 + (bind:bind:continuation:questions) × 38 × 4.2e-08', warnings=['W-dynamic: 节点 bind（bind）的 continuation 由 factory 运行期产生，静态计划不调用 factory，资源按未知符号处理，不当 0 计划'], structure=mappingproxy({'operation': 'product', 'name': 'product', 'input': 'Batch', 'output': 'tuple', 'effects': (), 'effects_contract': 'structural', 'children': (mappingproxy({'operation': 'then', 'name': 'product → summarize', 'input': 'Batch', 'output': 'dict', 'effects': (), 'effects_contract': 'structural', 'children': (mappingproxy({'operation': 'product', 'name': 'product', 'input': 'Batch', 'output': 'tuple', 'effects': (), 'effects_contract': 'structural', 'children': (mappingproxy({'operation': 'leaf', 'name': 'flaky_cases', 'input': 'Batch', 'output': 'list', 'effects': (), 'effects_contract': 'declared', 'children': (), 'parameters': mappingproxy({}), 'function': <function flaky_cases at 0x10a37e660>}), mappingproxy({'operation': 'leaf', 'name': 'case_count', 'input': 'Batch', 'output': 'int', 'effects': (), 'effects_contract': 'declared', 'children': (), 'parameters': mappingproxy({}), 'function': <function case_count at 0x10a37e5c0>})), 'parameters': mappingproxy({})}), mappingproxy({'operation': 'leaf', 'name': 'summarize', 'input': 'tuple', 'output': 'dict', 'effects': (), 'effects_contract': 'declared', 'children': (), 'parameters': mappingproxy({}), 'function': <function summarize at 0x10a37e700>})), 'parameters': mappingproxy({})}), mappingproxy({'operation': 'then', 'name': 'bind → release_decision', 'input': 'Batch', 'output': 'str', 'effects': (), 'effects_contract': 'structural', 'children': (mappingproxy({'operation': 'bind', 'name': 'bind', 'input': 'Batch', 'output': 'dict', 'effects': (), 'effects_contract': 'structural', 'children': (mappingproxy({'operation': 'identity', 'name': 'identity', 'input': 'Batch', 'output': 'Batch', 'effects': (), 'effects_contract': 'structural', 'children': (), 'parameters': mappingproxy({})}), mappingproxy({'operation': 'leaf', 'name': 'select_report', 'input': 'Batch', 'output': 'Component', 'effects': (), 'effects_contract': 'declared', 'children': (), 'parameters': mappingproxy({}), 'function': <function select_report at 0x10a37e840>})), 'parameters': mappingproxy({'factory': 'select_report', 'factory_effects': (), 'factory_contract': 'declared', 'continuation_effects': ()})}), mappingproxy({'operation': 'leaf', 'name': 'release_decision', 'input': 'dict', 'output': 'str', 'effects': (), 'effects_contract': 'declared', 'children': (), 'parameters': mappingproxy({}), 'function': <function release_decision at 0x10a37e8e0>})), 'parameters': mappingproxy({})})), 'parameters': mappingproxy({})}))",
+  "runs": {
+    "mixed": {
+      "input": {
+        "runs": [
+          {
+            "case": "login",
+            "outcome": "pass"
+          },
+          {
+            "case": "login",
+            "outcome": "fail"
+          },
+          {
+            "case": "checkout",
+            "outcome": "pass"
+          },
+          {
+            "case": "checkout",
+            "outcome": "pass"
+          },
+          {
+            "case": "search",
+            "outcome": "fail"
+          },
+          {
+            "case": "search",
+            "outcome": "fail"
+          }
+        ]
+      },
+      "value": [
+        {
+          "flaky_cases": [
+            "login"
+          ],
+          "total_cases": 3,
+          "flaky_count": 1,
+          "consistent_count": 2
+        },
+        "review inconsistent cases"
+      ],
+      "stats": {
+        "program": "product",
+        "layers": 0,
+        "questions_per_layer": [],
+        "calls_per_layer": [],
+        "questions": 0,
+        "calls": 0,
+        "fusion_rate": null,
+        "ledger_hits": 0,
+        "cache_hits": 0,
+        "stopped_layers": 0,
+        "fission": 0,
+        "tokens": 0,
+        "cost": 0.0,
+        "unsure": 0,
+        "exits": 0,
+        "spec": {
+          "lift": 0,
+          "vectorize": 0,
+          "hits": 0,
+          "unused": 0,
+          "dropped": 0,
+          "aborted": 0
+        },
+        "returned_unsure": 0,
+        "warnings": [
+          "W-dynamic"
+        ],
+        "effect_requests": {
+          "gen": 0,
+          "do": 0,
+          "ask": 0,
+          "transform": 0
+        }
+      },
+      "trace": [
+        {
+          "component": "product",
+          "operation": "product",
+          "call_id": 0
+        },
+        {
+          "component": "product → summarize",
+          "operation": "then",
+          "call_id": 1
+        },
+        {
+          "component": "product",
+          "operation": "product",
+          "call_id": 2
+        },
+        {
+          "component": "flaky_cases",
+          "operation": "leaf",
+          "call_id": 3
+        },
+        {
+          "component": "case_count",
+          "operation": "leaf",
+          "call_id": 4
+        },
+        {
+          "component": "summarize",
+          "operation": "leaf",
+          "call_id": 5
+        },
+        {
+          "component": "bind → release_decision",
+          "operation": "then",
+          "call_id": 6
+        },
+        {
+          "component": "bind",
+          "operation": "bind",
+          "call_id": 7,
+          "generated_description": {
+            "name": "product → summarize",
+            "operation": "then",
+            "input": "Batch",
+            "output": "dict",
+            "effects": [],
+            "parameters": {},
+            "warnings": [],
+            "children": [
+              {
+                "name": "product",
+                "operation": "product",
+                "input": "Batch",
+                "output": "tuple",
+                "effects": [],
+                "parameters": {},
+                "warnings": [],
+                "children": [
+                  {
+                    "name": "flaky_cases",
+                    "operation": "leaf",
+                    "input": "Batch",
+                    "output": "list",
+                    "effects": [],
+                    "parameters": {},
+                    "warnings": [],
+                    "children": []
+                  },
+                  {
+                    "name": "case_count",
+                    "operation": "leaf",
+                    "input": "Batch",
+                    "output": "int",
+                    "effects": [],
+                    "parameters": {},
+                    "warnings": [],
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "summarize",
+                "operation": "leaf",
+                "input": "tuple",
+                "output": "dict",
+                "effects": [],
+                "parameters": {},
+                "warnings": [],
+                "children": []
+              }
+            ]
+          },
+          "continuation_trace_start": 10,
+          "continuation_trace_end": 15,
+          "result": {
+            "flaky_cases": [
+              "login"
+            ],
+            "total_cases": 3,
+            "flaky_count": 1,
+            "consistent_count": 2
+          }
+        },
+        {
+          "component": "identity",
+          "operation": "identity",
+          "call_id": 8
+        },
+        {
+          "component": "select_report",
+          "operation": "leaf",
+          "call_id": 9
+        },
+        {
+          "component": "product → summarize",
+          "operation": "then",
+          "call_id": 10
+        },
+        {
+          "component": "product",
+          "operation": "product",
+          "call_id": 11
+        },
+        {
+          "component": "flaky_cases",
+          "operation": "leaf",
+          "call_id": 12
+        },
+        {
+          "component": "case_count",
+          "operation": "leaf",
+          "call_id": 13
+        },
+        {
+          "component": "summarize",
+          "operation": "leaf",
+          "call_id": 14
+        },
+        {
+          "component": "release_decision",
+          "operation": "leaf",
+          "call_id": 15
+        }
+      ]
+    },
+    "all_consistent": {
+      "input": {
+        "runs": [
+          {
+            "case": "login",
+            "outcome": "pass"
+          },
+          {
+            "case": "login",
+            "outcome": "pass"
+          }
+        ]
+      },
+      "value": [
+        {
+          "flaky_cases": [],
+          "total_cases": 1,
+          "flaky_count": 0,
+          "consistent_count": 1
+        },
+        "no inconsistency observed"
+      ],
+      "stats": {
+        "program": "product",
+        "layers": 0,
+        "questions_per_layer": [],
+        "calls_per_layer": [],
+        "questions": 0,
+        "calls": 0,
+        "fusion_rate": null,
+        "ledger_hits": 0,
+        "cache_hits": 0,
+        "stopped_layers": 0,
+        "fission": 0,
+        "tokens": 0,
+        "cost": 0.0,
+        "unsure": 0,
+        "exits": 0,
+        "spec": {
+          "lift": 0,
+          "vectorize": 0,
+          "hits": 0,
+          "unused": 0,
+          "dropped": 0,
+          "aborted": 0
+        },
+        "returned_unsure": 0,
+        "warnings": [
+          "W-dynamic"
+        ],
+        "effect_requests": {
+          "gen": 0,
+          "do": 0,
+          "ask": 0,
+          "transform": 0
+        }
+      },
+      "trace": [
+        {
+          "component": "product",
+          "operation": "product",
+          "call_id": 0
+        },
+        {
+          "component": "product → summarize",
+          "operation": "then",
+          "call_id": 1
+        },
+        {
+          "component": "product",
+          "operation": "product",
+          "call_id": 2
+        },
+        {
+          "component": "flaky_cases",
+          "operation": "leaf",
+          "call_id": 3
+        },
+        {
+          "component": "case_count",
+          "operation": "leaf",
+          "call_id": 4
+        },
+        {
+          "component": "summarize",
+          "operation": "leaf",
+          "call_id": 5
+        },
+        {
+          "component": "bind → release_decision",
+          "operation": "then",
+          "call_id": 6
+        },
+        {
+          "component": "bind",
+          "operation": "bind",
+          "call_id": 7,
+          "generated_description": {
+            "name": "product → summarize",
+            "operation": "then",
+            "input": "Batch",
+            "output": "dict",
+            "effects": [],
+            "parameters": {},
+            "warnings": [],
+            "children": [
+              {
+                "name": "product",
+                "operation": "product",
+                "input": "Batch",
+                "output": "tuple",
+                "effects": [],
+                "parameters": {},
+                "warnings": [],
+                "children": [
+                  {
+                    "name": "flaky_cases",
+                    "operation": "leaf",
+                    "input": "Batch",
+                    "output": "list",
+                    "effects": [],
+                    "parameters": {},
+                    "warnings": [],
+                    "children": []
+                  },
+                  {
+                    "name": "case_count",
+                    "operation": "leaf",
+                    "input": "Batch",
+                    "output": "int",
+                    "effects": [],
+                    "parameters": {},
+                    "warnings": [],
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "summarize",
+                "operation": "leaf",
+                "input": "tuple",
+                "output": "dict",
+                "effects": [],
+                "parameters": {},
+                "warnings": [],
+                "children": []
+              }
+            ]
+          },
+          "continuation_trace_start": 10,
+          "continuation_trace_end": 15,
+          "result": {
+            "flaky_cases": [],
+            "total_cases": 1,
+            "flaky_count": 0,
+            "consistent_count": 1
+          }
+        },
+        {
+          "component": "identity",
+          "operation": "identity",
+          "call_id": 8
+        },
+        {
+          "component": "select_report",
+          "operation": "leaf",
+          "call_id": 9
+        },
+        {
+          "component": "product → summarize",
+          "operation": "then",
+          "call_id": 10
+        },
+        {
+          "component": "product",
+          "operation": "product",
+          "call_id": 11
+        },
+        {
+          "component": "flaky_cases",
+          "operation": "leaf",
+          "call_id": 12
+        },
+        {
+          "component": "case_count",
+          "operation": "leaf",
+          "call_id": 13
+        },
+        {
+          "component": "summarize",
+          "operation": "leaf",
+          "call_id": 14
+        },
+        {
+          "component": "release_decision",
+          "operation": "leaf",
+          "call_id": 15
+        }
+      ]
+    },
+    "empty": {
+      "input": {
+        "runs": []
+      },
+      "value": [
+        {
+          "flaky_cases": [],
+          "total_cases": 0,
+          "flaky_count": 0,
+          "consistent_count": 0
+        },
+        "no inconsistency observed"
+      ],
+      "stats": {
+        "program": "product",
+        "layers": 0,
+        "questions_per_layer": [],
+        "calls_per_layer": [],
+        "questions": 0,
+        "calls": 0,
+        "fusion_rate": null,
+        "ledger_hits": 0,
+        "cache_hits": 0,
+        "stopped_layers": 0,
+        "fission": 0,
+        "tokens": 0,
+        "cost": 0.0,
+        "unsure": 0,
+        "exits": 0,
+        "spec": {
+          "lift": 0,
+          "vectorize": 0,
+          "hits": 0,
+          "unused": 0,
+          "dropped": 0,
+          "aborted": 0
+        },
+        "returned_unsure": 0,
+        "warnings": [
+          "W-dynamic"
+        ],
+        "effect_requests": {
+          "gen": 0,
+          "do": 0,
+          "ask": 0,
+          "transform": 0
+        }
+      },
+      "trace": [
+        {
+          "component": "product",
+          "operation": "product",
+          "call_id": 0
+        },
+        {
+          "component": "product → summarize",
+          "operation": "then",
+          "call_id": 1
+        },
+        {
+          "component": "product",
+          "operation": "product",
+          "call_id": 2
+        },
+        {
+          "component": "flaky_cases",
+          "operation": "leaf",
+          "call_id": 3
+        },
+        {
+          "component": "case_count",
+          "operation": "leaf",
+          "call_id": 4
+        },
+        {
+          "component": "summarize",
+          "operation": "leaf",
+          "call_id": 5
+        },
+        {
+          "component": "bind → release_decision",
+          "operation": "then",
+          "call_id": 6
+        },
+        {
+          "component": "bind",
+          "operation": "bind",
+          "call_id": 7,
+          "generated_description": {
+            "name": "product → summarize",
+            "operation": "then",
+            "input": "Batch",
+            "output": "dict",
+            "effects": [],
+            "parameters": {},
+            "warnings": [],
+            "children": [
+              {
+                "name": "product",
+                "operation": "product",
+                "input": "Batch",
+                "output": "tuple",
+                "effects": [],
+                "parameters": {},
+                "warnings": [],
+                "children": [
+                  {
+                    "name": "flaky_cases",
+                    "operation": "leaf",
+                    "input": "Batch",
+                    "output": "list",
+                    "effects": [],
+                    "parameters": {},
+                    "warnings": [],
+                    "children": []
+                  },
+                  {
+                    "name": "case_count",
+                    "operation": "leaf",
+                    "input": "Batch",
+                    "output": "int",
+                    "effects": [],
+                    "parameters": {},
+                    "warnings": [],
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "summarize",
+                "operation": "leaf",
+                "input": "tuple",
+                "output": "dict",
+                "effects": [],
+                "parameters": {},
+                "warnings": [],
+                "children": []
+              }
+            ]
+          },
+          "continuation_trace_start": 10,
+          "continuation_trace_end": 15,
+          "result": {
+            "flaky_cases": [],
+            "total_cases": 0,
+            "flaky_count": 0,
+            "consistent_count": 0
+          }
+        },
+        {
+          "component": "identity",
+          "operation": "identity",
+          "call_id": 8
+        },
+        {
+          "component": "select_report",
+          "operation": "leaf",
+          "call_id": 9
+        },
+        {
+          "component": "product → summarize",
+          "operation": "then",
+          "call_id": 10
+        },
+        {
+          "component": "product",
+          "operation": "product",
+          "call_id": 11
+        },
+        {
+          "component": "flaky_cases",
+          "operation": "leaf",
+          "call_id": 12
+        },
+        {
+          "component": "case_count",
+          "operation": "leaf",
+          "call_id": 13
+        },
+        {
+          "component": "summarize",
+          "operation": "leaf",
+          "call_id": 14
+        },
+        {
+          "component": "release_decision",
+          "operation": "leaf",
+          "call_id": 15
+        }
+      ]
+    }
+  }
+}

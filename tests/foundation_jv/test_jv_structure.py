@@ -53,10 +53,11 @@ def iterate_node(name, step, done, limit):
             "parameters": {"limit": limit}}
 
 
-def bind_node(name, prefix, factory, continuation_effects=()):
+def bind_node(name, prefix, factory, continuation_effects=(), factory_effects=None):
     return {"operation": "bind", "name": name, "input": "Any", "output": "Any",
             "effects": (), "effects_contract": "structural", "children": (prefix, factory),
-            "parameters": {"continuation_effects": tuple(continuation_effects)}}
+            "parameters": {"continuation_effects": tuple(continuation_effects),
+                           "factory_effects": None if factory_effects is None else tuple(factory_effects)}}
 
 
 def entry_with(root, name="entry"):
@@ -327,19 +328,80 @@ def test_structure_iterate_wrong_children_count_raises_clear_error():
         jv.plan(entry_with(bad))
 
 
-# ---------------------------------------------------------------- bind：静态绝不调用 factory，continuation 未知
-def test_structure_bind_never_calls_factory_and_continuation_is_unknown():
+# ---------------------------------------------------------------- bind：静态绝不调用 factory
+# factory 子节点保留原 Component 工厂的真实结构（不再包一层 leaf.function）；bind.parameters.factory_effects
+# 是作者对 factory 总能力的声明超集：None=未声明，tuple=声明（可含 '*'）。语义对齐组合库
+# 扩展/codex_composition/tests/test_bind_contract.py 的契约测试。
+def test_structure_bind_unclassified_factory_without_declaration_is_fully_unknown():
     def prefix_fn():
         jv.gen(n=1)
 
     def factory_fn():
         raise AssertionError("bind 的 factory 绝不能在计划期被调用")
 
-    root = bind_node("root", leaf_node("prefix", prefix_fn, ("gen",)), leaf_node("factory", factory_fn, ()))
+    # factory 未分类（effects_contract=unknown）且 bind 没声明 factory_effects：无法界定它做什么，按通配未知。
+    root = bind_node("root", leaf_node("prefix", prefix_fn, ("gen",)),
+                      leaf_node("factory", factory_fn, (), contract="unknown"))
     rep = jv.plan(entry_with(root))            # factory_fn 若被真的调用，会在这里直接抛出上面的 AssertionError
-    assert not rep.gen_calls.is_numeric        # continuation 未知，污染了原本纯数值的 prefix 估计
+    assert not rep.gen_calls.is_numeric        # 未知污染了原本纯数值的 prefix 估计
     assert not rep.do_calls.is_numeric
     assert any(w.startswith("W-dynamic") for w in rep.warnings)
+
+
+def test_structure_bind_never_calls_factory_and_continuation_is_unknown():
+    def prefix_fn():
+        jv.gen(n=1)
+    def factory_fn():
+        raise AssertionError("Factory must never run during planning")
+    root = bind_node("root", leaf_node("prefix", prefix_fn, ("gen",)), leaf_node("factory", factory_fn, ()))
+    rep = jv.plan(entry_with(root))
+    assert not rep.gen_calls.is_numeric
+    assert not rep.do_calls.is_numeric
+    assert any(w.startswith("W-dynamic") for w in rep.warnings)
+
+
+def test_structure_bind_preserves_visible_factory_cost_and_unknown_continuation():
+    def prefix_fn():
+        jv.gen(n=1)
+
+    def factory_fn():
+        jv.gen(n=1)
+
+    # 已知工厂成本保留，尚未生成的后续仍为未知。
+    root = bind_node("root", leaf_node("prefix", prefix_fn, ("gen",)), leaf_node("factory", factory_fn, ("gen",)))
+    rep = jv.plan(entry_with(root))
+    assert "+ 2" in repr(rep.gen_calls) and "continuation" in repr(rep.gen_calls)
+    assert "factory_effects" not in repr(rep.gen_calls)
+
+
+def test_structure_bind_factory_effects_superset_beyond_visible_is_unknown():
+    def prefix_fn():
+        pass
+
+    def factory_fn():
+        jv.gen(n=1)                              # AST 只看得到 gen；judge 是作者额外声明的能力
+
+    root = bind_node("root", leaf_node("prefix", prefix_fn, ()),
+                      leaf_node("factory", factory_fn, ("gen",)), factory_effects=("gen", "judge"))
+    rep = jv.plan(entry_with(root))
+    assert "+ 1" in repr(rep.gen_calls) and "continuation" in repr(rep.gen_calls)
+    assert "factory_effects:judge" in repr(rep.calls)
+    assert not rep.calls.is_numeric              # judge 声明超出 factory 节点自身 effects，记未知
+    assert any(w.startswith("W-opaque") and "超出" in w for w in rep.warnings)
+
+
+def test_structure_bind_factory_effects_star_is_fully_unknown():
+    def prefix_fn():
+        pass
+
+    def factory_fn():
+        pass
+
+    root = bind_node("root", leaf_node("prefix", prefix_fn, ()),
+                      leaf_node("factory", factory_fn, ()), factory_effects=("*",))
+    rep = jv.plan(entry_with(root))
+    assert not rep.calls.is_numeric
+    assert any(w.startswith("W-dynamic") and "'*'" in w for w in rep.warnings)
 
 
 def test_structure_bind_wrong_children_count_raises_clear_error():

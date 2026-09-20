@@ -32,10 +32,15 @@ python3.12 -m venv .venv
 source .venv/bin/activate
 python -m pip install -e '.[dev]'
 jpp demo
+jpp methods --output method-report.json
 python -m pytest -q
 ```
 
 Windows: activate with `.venv\Scripts\activate` instead.
+
+The `methods` command runs complete dynamically constructed methods and saves
+their plan, generated structures and execution results. You can also install the
+built wheel without a source checkout. [Write your own methods and inspect a run](docs/developer-guide.md).
 
 The demo runs offline with no API key or API charges. It identifies a target among 1,000 candidates using at most 10 adaptive binary questions, then constructs an expression using counterexamples and checks all nine declared inputs. The answers are synthetic and the generator is finite enumeration: this demonstrates the execution and composition mechanisms, not real-model accuracy or a new search algorithm.
 
