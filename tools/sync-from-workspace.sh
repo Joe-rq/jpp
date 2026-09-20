@@ -45,5 +45,14 @@ done
 cp "$WS/foundation/profile/SCHEMA.md" "$R/地基/foundation/profile-SCHEMA.md" 2>/dev/null || true
 for f in README.md RESULTS.md; do cp "$WS/扩展/codex_composition/$f" "$R/扩展/codex_composition/"; done
 
+# 3b. 公开前脱敏复核。DECISIONS.md 有条目在公开副本里做过人工脱敏——某些授权的范围是
+#     「可送模型 API」，不等于「可发公开仓库」。上面的 rsync 会把工作区原文原样盖回来，
+#     所以每次同步后都要人工复核这一段再 commit。已脱敏的段落在公开副本里带
+#     〔公开副本脱敏：…〕标记；标记消失就说明被盖掉了，按上一版重做。不在此处列敏感词，
+#     因为这个文件本身是公开的。
+if ! grep -q '公开副本脱敏' "$R/地基/DECISIONS.md"; then
+  echo "提醒：research/地基/DECISIONS.md 的人工脱敏标记不见了，可能已被工作区原文覆盖；commit 前请对照上一版重做脱敏" >&2
+fi
+
 echo "synced from $WS at $(date +%F)"
 ( cd "$WS/foundation" && cat jv/*.py | shasum -a 256 | cut -c1-12 | sed 's/^/jv 全包指纹 /' )
