@@ -20,6 +20,12 @@ The initial public commit passed 25 tests locally. Linux CI passed on Python 3.1
 
 ## Work in the research workspace / 研究中的工作
 
+### 2026-09-20: real-source relation recovery / 真实来源关系恢复
+
+[325 人关系对照](https://towow-ai.github.io/jpp/demos/towow/real/)将七种组合放在同一批资料与 963 条旧标签上比较。固定每人前十，本地融合命中 675 条；J++ 相对排序命中 697 条，新增 52、丢失 30，净增 22。原始等级排序的持平与退步也完整保留。J++ relative ordering recovered 697/963 historical proxy relations at ten candidates per person versus RRF's 675; 52 added and 30 lost. All seven variants, including regressions, remain visible.
+
+独立配对判断 6,500 次，内容去重后 5,353 个请求，175.796 秒，新增估算 $0.153491。全部真实来源实验共估算 $1.447708。有向前十仅改善 3 次，24 条跨来源种子关联仍未找到；这不是准确率、盲测或未来合作预测。[方法、结果及复现 / Method, results and reproduction](towow-real-relations-results.zh-CN.md)。
+
 ### 2026-09-20: executable discovery lab / 可执行的发现实验台
 
 发布 216 个合成主体、20 种旧实验意图的[发现实验](https://towow-ai.github.io/jpp/demos/towow/population/)，以及可开关转介、组合、联系人和复用的[十人实验台](https://towow-ai.github.io/jpp/demos/towow/lab/)。网页通过浏览器 Python 执行现有 J++ 源码，模型层使用真实录制；完整介绍和动画保留。The discovery lab now covers 216 synthetic participants and 20 historical intents, with a separate component-intervention experiment. Both browser pages execute the repository's J++ Python implementation against exact recorded model responses.

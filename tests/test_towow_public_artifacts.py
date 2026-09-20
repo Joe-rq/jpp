@@ -4,6 +4,8 @@ import json
 from pathlib import Path
 from zipfile import ZipFile
 
+from jpp.towow_real import evaluate
+
 ROOT = Path(__file__).resolve().parents[1]
 
 
@@ -42,3 +44,22 @@ def test_browser_bundle_matches_repository_sources():
             current = (ROOT/'src'/name).read_bytes()
             assert bundle.read(name) == current
             assert sha256(current).hexdigest() == digest
+
+
+def test_real_source_public_results_recompute_from_rankings():
+    base = ROOT/'docs/demos/towow/real'
+    data = json.loads((base/'data.json').read_text())
+    results = json.loads((base/'results.json').read_text())
+    assert results['data_sha256'] == sha256((base/'data.json').read_bytes()).hexdigest()
+    ids = {p['id'] for p in data['people']}
+    assert len(ids) == 325
+    assert len(data['known_relations']) == 963
+    assert all(r['a'] in ids and r['b'] in ids for r in data['known_relations'])
+    for method in results['methods']:
+        assert set(method['rankings']) == ids
+        for source, targets in method['rankings'].items():
+            assert source not in targets
+            assert len(set(targets)) == len(targets)
+            assert set(targets) <= ids
+            assert len(targets) >= 20
+        assert evaluate(data, {'m': method['rankings']})['m'] == method['metrics']
