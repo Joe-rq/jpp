@@ -24,6 +24,8 @@ The first application is the **Towow discovery lab**. Explore [216 participants 
 
 The [325-profile real-source comparison](https://towow-ai.github.io/jpp/demos/towow/real/) evaluates seven retrieval/judgment compositions against 963 historical proxy relation labels. Inspect individual candidates, regressions, exact response recordings and offline reproduction. [Results and evaluation scope (中文)](docs/towow-real-relations-results.zh-CN.md).
 
+[Discovery roadmap (中文)](docs/towow-discovery-roadmap.zh-CN.md) records candidate-pool bottlenecks, reusable Towow research assets and the next bounded experiment. Its offline diagnostic script requires no model calls.
+
 ## Run the retained Python reference
 
 

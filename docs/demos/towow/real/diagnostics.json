@@ -1,0 +1,172 @@
+{
+  "scope": "Offline development diagnosis; no training, new model calls, or final-ranking claims for candidate probes.",
+  "profiles": 325,
+  "distinct_profile_texts": 271,
+  "candidate_coverage_ceiling": {
+    "10": {
+      "covered_edges": 675,
+      "total_edges": 963,
+      "curated_cross_source_covered": 0,
+      "curated_cross_source_total": 24,
+      "directed_candidate_slots": 3250,
+      "by_type": {
+        "github_same_org": 120,
+        "same_team_complementary": 12,
+        "same_team_equivalent": 21,
+        "coauthor_same_field": 522
+      }
+    },
+    "20": {
+      "covered_edges": 830,
+      "total_edges": 963,
+      "curated_cross_source_covered": 0,
+      "curated_cross_source_total": 24,
+      "directed_candidate_slots": 6500,
+      "by_type": {
+        "github_same_org": 198,
+        "same_team_complementary": 12,
+        "same_team_equivalent": 21,
+        "coauthor_same_field": 599
+      }
+    },
+    "40": {
+      "covered_edges": 913,
+      "total_edges": 963,
+      "curated_cross_source_covered": 0,
+      "curated_cross_source_total": 24,
+      "directed_candidate_slots": 13000,
+      "by_type": {
+        "github_same_org": 281,
+        "same_team_complementary": 12,
+        "same_team_equivalent": 21,
+        "coauthor_same_field": 599
+      }
+    },
+    "80": {
+      "covered_edges": 947,
+      "total_edges": 963,
+      "curated_cross_source_covered": 8,
+      "curated_cross_source_total": 24,
+      "directed_candidate_slots": 26000,
+      "by_type": {
+        "github_same_org": 307,
+        "same_team_complementary": 12,
+        "same_team_equivalent": 21,
+        "coauthor_same_field": 599,
+        "cross_source_same_field": 5,
+        "cross_source_complementary": 2,
+        "cross_source_functional": 1
+      }
+    },
+    "160": {
+      "covered_edges": 956,
+      "total_edges": 963,
+      "curated_cross_source_covered": 17,
+      "curated_cross_source_total": 24,
+      "directed_candidate_slots": 52000,
+      "by_type": {
+        "github_same_org": 307,
+        "same_team_complementary": 12,
+        "same_team_equivalent": 21,
+        "coauthor_same_field": 599,
+        "cross_source_same_field": 6,
+        "cross_source_complementary": 5,
+        "cross_source_functional": 6
+      }
+    },
+    "324": {
+      "covered_edges": 963,
+      "total_edges": 963,
+      "curated_cross_source_covered": 24,
+      "curated_cross_source_total": 24,
+      "directed_candidate_slots": 105300,
+      "by_type": {
+        "github_same_org": 307,
+        "same_team_complementary": 12,
+        "same_team_equivalent": 21,
+        "coauthor_same_field": 599,
+        "cross_source_same_field": 8,
+        "cross_source_complementary": 8,
+        "cross_source_functional": 8
+      }
+    }
+  },
+  "miss_decomposition": {
+    "known_edges": 963,
+    "found_at_10": 697,
+    "outside_both_top20_pools": 133,
+    "inside_pool_but_not_found_at_10": 133
+  },
+  "curated_cross_source_best_endpoint_ranks": [
+    47,
+    48,
+    52,
+    55,
+    56,
+    59,
+    65,
+    78,
+    89,
+    97,
+    105,
+    109,
+    112,
+    112,
+    119,
+    133,
+    154,
+    180,
+    181,
+    195,
+    205,
+    212,
+    216,
+    264
+  ],
+  "same_budget_source_diversity_probes": [
+    {
+      "candidate_limit": 20,
+      "different_source_slots": 4,
+      "covered_edges": 797,
+      "total_edges": 963,
+      "curated_cross_source_covered": 7,
+      "curated_cross_source_total": 24,
+      "directed_candidate_slots": 6500,
+      "by_type": {
+        "github_same_org": 165,
+        "same_team_complementary": 12,
+        "same_team_equivalent": 21,
+        "coauthor_same_field": 592,
+        "cross_source_same_field": 4,
+        "cross_source_complementary": 2,
+        "cross_source_functional": 1
+      },
+      "added_vs_rrf20": 7,
+      "lost_vs_rrf20": 40
+    },
+    {
+      "candidate_limit": 20,
+      "different_source_slots": 8,
+      "covered_edges": 734,
+      "total_edges": 963,
+      "curated_cross_source_covered": 10,
+      "curated_cross_source_total": 24,
+      "directed_candidate_slots": 6500,
+      "by_type": {
+        "github_same_org": 137,
+        "same_team_complementary": 12,
+        "same_team_equivalent": 21,
+        "coauthor_same_field": 554,
+        "cross_source_same_field": 6,
+        "cross_source_complementary": 2,
+        "cross_source_functional": 2
+      },
+      "added_vs_rrf20": 10,
+      "lost_vs_rrf20": 106
+    }
+  ],
+  "api_calls": 0,
+  "api_cost_usd": 0,
+  "data_sha256": "51375d3b6ef88c96145f5d9c953ae6eae0633743f89b90bab19be61d1646cdac",
+  "results_sha256": "db63392aa303b3786c2e793acdf393cdf5d2a9c3479a353dd3bb5b3c07214493"
+}
