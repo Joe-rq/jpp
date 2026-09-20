@@ -2,6 +2,14 @@
 
 Updated: 2026-09-20. This is a dated report, not an automatically updated dashboard.
 
+## 2026-09-20: language design and grammar entry / 语言设计与文法入口
+
+The [design page](design.md) now links directly to the already published current IR/class contract and historical language specification, including its lexical rules and full EBNF. The READMEs and research index expose these links; the historical specification has a bilingual archive notice. Current source remains Python builder code: the old grammar has no delivered standalone parser/compiler, and the current contract defers independent surface syntax without a delivery date; this does not replace the intent to develop an independent language after validating examples and algorithms. The guide distinguishes six IR forms, typed exits, composition and runtime behavior from design requirements.
+
+[设计页](design.md)现在直接链接已经公开的现行 IR/类契约和历史语言规范，包含词法与完整 EBNF；中英文首页和研究索引都提供入口，历史规范顶部增加双语存档说明。当前源码仍使用 Python 构建器，旧文法没有已交付的独立解析器/编译器，现行契约未排独立表面文法的交付日期；这不替代先跑通实例和算法、后发展独立语言的意图。说明区分六形式 IR、类型出口、组合与执行机制和设计要求。
+
+Validation: checked the added relative links and referenced API names against the current source; no runtime code changed and no live model calls were made. The archive notice is also retained in the workspace source so the existing documentation sync preserves it. / 验证：检查新增相对链接和当前源码中的 API 名称；没有修改运行时代码或调用真实模型。工作区原件同步保留同一存档说明，现有同步流程不会覆盖该说明。
+
 ## Available now / 现在可以使用
 
 The public `0.1.0a1` snapshot contains a Python embedded implementation, judgment runtime, composition library and installed `jpp demo` command. [Download the alpha](https://github.com/Towow-ai/jpp/releases/tag/v0.1.0-alpha.1).
