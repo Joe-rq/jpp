@@ -1,0 +1,402 @@
+{
+  "prepared": "2026-09-20",
+  "note": "Drafts only; no posts sent. Recheck progress before posting.",
+  "posts": [
+    {
+      "id": "zh-CN-T01",
+      "language": "zh-CN",
+      "kind": "thread",
+      "order": 1,
+      "title": "首发线程",
+      "text": "1/10 我们开始做一门语言，叫 J++。\n\n起点是一个直觉：如果问题和求解方法都能保存、传递、组合，组合之后又能继续组合，人们能构造出什么？",
+      "status": "draft"
+    },
+    {
+      "id": "zh-CN-T02",
+      "language": "zh-CN",
+      "kind": "thread",
+      "order": 2,
+      "title": "首发线程",
+      "text": "2/10 我们被算法组织信息的力量吸引：可靠的二元回答，配合合适的提问方式，十次就能区分 1,000 个候选。\n\n我们想探索，语义判断与这些算法结合，会产生什么。",
+      "status": "draft"
+    },
+    {
+      "id": "zh-CN-T03",
+      "language": "zh-CN",
+      "kind": "thread",
+      "order": 3,
+      "title": "首发线程",
+      "text": "3/10 JEV 让我们想到：判断可以成为一个可调用的操作。围绕它，程序还能选择材料、构造下一道问题、运行精确检查。\n\n这些组织方式，也应该能够复用。",
+      "status": "draft"
+    },
+    {
+      "id": "zh-CN-T04",
+      "language": "zh-CN",
+      "kind": "thread",
+      "order": 4,
+      "title": "首发线程",
+      "text": "4/10 我们最看重一条要求：一组组件组合之后，对外仍然是一个组件。\n\n一种方法可以接收另一种方法，也可以返回新的方法。内部越来越复杂，使用方式仍然清楚。",
+      "status": "draft"
+    },
+    {
+      "id": "zh-CN-T05",
+      "language": "zh-CN",
+      "kind": "thread",
+      "order": 5,
+      "title": "首发线程",
+      "text": "5/10 这也需要表达不确定性：哪里还没判断清楚，哪些计算已经可以继续？\n\n我们希望保留那一小块未决，让精确计算、搜索与新的证据共同推进程序。",
+      "status": "draft"
+    },
+    {
+      "id": "zh-CN-T06",
+      "language": "zh-CN",
+      "kind": "thread",
+      "order": 6,
+      "title": "首发线程",
+      "text": "6/10 现在交付的是 Python 嵌入式语言、运行内核和组合库。\n\n先用可运行的程序发现真正需要的规则，再逐步发展独立语法。我们还不知道它最终会长成什么样。",
+      "status": "draft"
+    },
+    {
+      "id": "zh-CN-T07",
+      "language": "zh-CN",
+      "kind": "thread",
+      "order": 7,
+      "title": "首发线程",
+      "text": "7/10 首个离线演示：从 1,000 个候选中用十次提问找到目标。\n\n回答使用合成数据，无须 API Key。它展示提问策略怎样驱动程序，也让每个人都能跑起来。",
+      "status": "draft"
+    },
+    {
+      "id": "zh-CN-T08",
+      "language": "zh-CN",
+      "kind": "thread",
+      "order": 8,
+      "title": "首发线程",
+      "text": "8/10 另一个演示不断生成表达式、运行检查、吸收反例。三轮后得到绝对值表达式，并执行全部九个指定输入。\n\n生成器是有限枚举；检查与反馈真的在运行。",
+      "status": "draft"
+    },
+    {
+      "id": "zh-CN-T09",
+      "language": "zh-CN",
+      "kind": "thread",
+      "order": 9,
+      "title": "首发线程",
+      "text": "9/10 我们希望它以后用于代码构造、调查与约束规划，也希望别人带来我们没想到的应用。\n\n现在最想看到的是：你用已有基本单元，构造出一种新的方法。",
+      "status": "draft"
+    },
+    {
+      "id": "zh-CN-T10",
+      "language": "zh-CN",
+      "kind": "thread",
+      "order": 10,
+      "title": "首发线程",
+      "text": "10/10 J++ 已开源，MIT 许可证。仓库里有安装说明、离线演示、设计动机和路线图。\n\n欢迎运行它，组合它，把难以表达的地方告诉我们。\nhttps://github.com/Towow-ai/jpp",
+      "status": "draft"
+    },
+    {
+      "id": "zh-CN-D01",
+      "language": "zh-CN",
+      "kind": "standalone",
+      "order": 1,
+      "title": "十次提问",
+      "text": "J++ 的离线例子把 1,000 个候选缩小到一个，用了十次合成的是非回答。\n\n二分算法很经典。这里想让人动手改变的是：选哪一问的策略，如何作为组件被替换和复用。",
+      "status": "draft"
+    },
+    {
+      "id": "zh-CN-D02",
+      "language": "zh-CN",
+      "kind": "standalone",
+      "order": 2,
+      "title": "反例反馈",
+      "text": "一个小循环：生成候选 → 运行检查 → 把失败输入送回生成器。\n\nJ++ 的表达式例子三轮后找到结果。我们想让整段循环也成为一个可以传递的方法。",
+      "status": "draft"
+    },
+    {
+      "id": "zh-CN-D03",
+      "language": "zh-CN",
+      "kind": "standalone",
+      "order": 3,
+      "title": "从 Python 开始",
+      "text": "J++ 当前用 Python 实现。这样我们能先运行真实的组合，看到接口哪里难用。\n\n独立语法的设计，应该有具体程序告诉我们：它究竟需要让什么更容易表达。",
+      "status": "draft"
+    },
+    {
+      "id": "zh-CN-D04",
+      "language": "zh-CN",
+      "kind": "standalone",
+      "order": 4,
+      "title": "问题作为值",
+      "text": "我们希望问题像数据一样可以保存、传递和构造。\n\n程序不仅接收答案，还能决定下一道问题是什么。J++ 现在已经有问题的序列化和恢复接口。",
+      "status": "draft"
+    },
+    {
+      "id": "zh-CN-D05",
+      "language": "zh-CN",
+      "kind": "standalone",
+      "order": 5,
+      "title": "局部不确定",
+      "text": "假设三项观察是：是、是、未知。问“至少两项成立”，已有答案就够了。问“至少三项成立”，仍然未决。\n\nJ++ 的计数上下界保留这个区别；结论以已接受的观察为前提。",
+      "status": "draft"
+    },
+    {
+      "id": "zh-CN-D06",
+      "language": "zh-CN",
+      "kind": "standalone",
+      "order": 6,
+      "title": "当前任务",
+      "text": "J++ 的下一步：把问题、材料和结果接口讲得更清楚，让新读者少猜一步；再让更多算法接进同一套组件。\n\n我们想从这些具体使用里，找到语言还缺的东西。",
+      "status": "draft"
+    },
+    {
+      "id": "zh-CN-D07",
+      "language": "zh-CN",
+      "kind": "standalone",
+      "order": 7,
+      "title": "组合的组合",
+      "text": "我最在意的是：一组组合做好以后，它还能不能继续组合？\n\nJ++ 用同一种组件接口表示小操作和复合方法。我们希望复杂度增长时，复用方法仍然简单。",
+      "status": "draft"
+    },
+    {
+      "id": "zh-CN-D08",
+      "language": "zh-CN",
+      "kind": "standalone",
+      "order": 8,
+      "title": "第三种方法",
+      "text": "J++ 仓库里还有一个独立编写的预算分配方法。它把判断结果接到精确分配算法上，再封装进更大的组件。\n\n我们正在寻找更多这样的例子，检验接口能复用多远。",
+      "status": "draft"
+    },
+    {
+      "id": "zh-CN-D09",
+      "language": "zh-CN",
+      "kind": "standalone",
+      "order": 9,
+      "title": "怎样判断价值",
+      "text": "我希望这样判断 J++ 有没有价值：\n\n别人能复用我的方法吗？替换策略要改多少代码？写新算法需要修改内核吗？\n\n欢迎用具体程序来回答这些问题。",
+      "status": "draft"
+    },
+    {
+      "id": "zh-CN-D10",
+      "language": "zh-CN",
+      "kind": "standalone",
+      "order": 10,
+      "title": "首版验证",
+      "text": "J++ 首版的 25 项机制测试通过，Linux 上 Python 3.12、3.13 两组 CI 也通过。\n\n现在可以下载并离线运行。真实模型质量会用另外的实验评估。\nhttps://github.com/Towow-ai/jpp",
+      "status": "draft"
+    },
+    {
+      "id": "zh-CN-D11",
+      "language": "zh-CN",
+      "kind": "standalone",
+      "order": 11,
+      "title": "后端演进",
+      "text": "JEV 是 J++ 的起点。我们希望方法的组合结构可以随着判断后端一起发展。\n\n换一个模型后，哪些规则仍成立、哪些需要重测，是接下来要明确的问题。",
+      "status": "draft"
+    },
+    {
+      "id": "zh-CN-D12",
+      "language": "zh-CN",
+      "kind": "standalone",
+      "order": 12,
+      "title": "贡献邀请",
+      "text": "想参与 J++，可以先写一个现有示例没有的方法，然后把它接入另一段方法。\n\n把难用的地方、重复代码和可运行的例子一起带来。我们会从这些地方继续设计语言。\nhttps://github.com/Towow-ai/jpp",
+      "status": "draft"
+    },
+    {
+      "id": "en-T01",
+      "language": "en",
+      "kind": "thread",
+      "order": 1,
+      "title": "Launch thread",
+      "text": "1/10 We are building J++, an experimental programming language.\n\nThe starting intuition: what could people build if questions and solving methods were values they could pass around, compose, and compose again?",
+      "status": "draft"
+    },
+    {
+      "id": "en-T02",
+      "language": "en",
+      "kind": "thread",
+      "order": 2,
+      "title": "Launch thread",
+      "text": "2/10 Algorithms show how much organization matters: ten reliable binary answers can distinguish 1,000 candidates.\n\nWe want to explore what happens when semantic judgment works alongside these algorithmic structures.",
+      "status": "draft"
+    },
+    {
+      "id": "en-T03",
+      "language": "en",
+      "kind": "thread",
+      "order": 3,
+      "title": "Launch thread",
+      "text": "3/10 JEV prompted us to treat judgment as a callable operation. Around it, a program can select material, construct the next question, and run exact checks.\n\nThose organizational choices should be reusable too.",
+      "status": "draft"
+    },
+    {
+      "id": "en-T04",
+      "language": "en",
+      "kind": "thread",
+      "order": 4,
+      "title": "Launch thread",
+      "text": "4/10 One design requirement matters especially: a composition should still be a component.\n\nA method can accept another method or return a new one. Its internals can grow while the calling interface stays understandable.",
+      "status": "draft"
+    },
+    {
+      "id": "en-T05",
+      "language": "en",
+      "kind": "thread",
+      "order": 5,
+      "title": "Launch thread",
+      "text": "5/10 Uncertainty needs a place in the program: which part is unresolved, and what can already be computed?\n\nWe want exact computation, search and new evidence to keep working around explicit unresolved observations.",
+      "status": "draft"
+    },
+    {
+      "id": "en-T06",
+      "language": "en",
+      "kind": "thread",
+      "order": 6,
+      "title": "Launch thread",
+      "text": "6/10 Today J++ is a Python embedded language, a runtime and a composition library.\n\nWe are using executable programs to discover the rules we need. Independent syntax can follow. We do not yet know the language's final form.",
+      "status": "draft"
+    },
+    {
+      "id": "en-T07",
+      "language": "en",
+      "kind": "thread",
+      "order": 7,
+      "title": "Launch thread",
+      "text": "7/10 The first offline demo finds a target among 1,000 candidates in ten questions.\n\nAnswers are synthetic; no API key is needed. It makes the inquiry mechanism runnable without treating the demo as a model-accuracy result.",
+      "status": "draft"
+    },
+    {
+      "id": "en-T08",
+      "language": "en",
+      "kind": "thread",
+      "order": 8,
+      "title": "Launch thread",
+      "text": "8/10 Another demo generates expressions, executes checks and feeds counterexamples back. After three trials it finds an absolute-value expression and checks all nine declared inputs.\n\nGeneration is finite enumeration; the checks and feedback actually run.",
+      "status": "draft"
+    },
+    {
+      "id": "en-T09",
+      "language": "en",
+      "kind": "thread",
+      "order": 9,
+      "title": "Launch thread",
+      "text": "9/10 We hope to explore code construction, investigation and constrained planning. We also hope other people find uses we did not anticipate.\n\nWhat we most want to see now: a new method built from the existing primitives.",
+      "status": "draft"
+    },
+    {
+      "id": "en-T10",
+      "language": "en",
+      "kind": "thread",
+      "order": 10,
+      "title": "Launch thread",
+      "text": "10/10 J++ is open source under MIT. The repository includes setup instructions, offline demos, design motivation and a roadmap.\n\nTry it. Compose a method. Show us what is difficult to express.\nhttps://github.com/Towow-ai/jpp",
+      "status": "draft"
+    },
+    {
+      "id": "en-D01",
+      "language": "en",
+      "kind": "standalone",
+      "order": 1,
+      "title": "十次提问",
+      "text": "J++'s offline example narrows 1,000 candidates to one using ten synthetic binary answers.\n\nBinary search is familiar. Try changing the component that chooses the next question: how much of the surrounding method can stay the same?",
+      "status": "draft"
+    },
+    {
+      "id": "en-D02",
+      "language": "en",
+      "kind": "standalone",
+      "order": 2,
+      "title": "反例反馈",
+      "text": "A small loop: generate candidates, execute checks, return a failing input to the generator.\n\nJ++'s expression example finds its result in three trials. We want the whole loop to be a method another program can receive and reuse.",
+      "status": "draft"
+    },
+    {
+      "id": "en-D03",
+      "language": "en",
+      "kind": "standalone",
+      "order": 3,
+      "title": "从 Python 开始",
+      "text": "J++ currently uses Python. That lets us run compositions and see where the interfaces become awkward.\n\nWe want concrete programs to tell us what an independent syntax should make easier to express.",
+      "status": "draft"
+    },
+    {
+      "id": "en-D04",
+      "language": "en",
+      "kind": "standalone",
+      "order": 4,
+      "title": "问题作为值",
+      "text": "We want questions to be values that can be saved, passed and constructed.\n\nA program can decide what to ask next. J++ already includes question serialization and restoration as a small step toward that design.",
+      "status": "draft"
+    },
+    {
+      "id": "en-D05",
+      "language": "en",
+      "kind": "standalone",
+      "order": 5,
+      "title": "局部不确定",
+      "text": "Three observations: true, true, unresolved. \"At least two?\" is decided; \"at least three?\" remains open.\n\nJ++'s count bounds preserve this distinction. The conclusion is conditional on the accepted observations.",
+      "status": "draft"
+    },
+    {
+      "id": "en-D06",
+      "language": "en",
+      "kind": "standalone",
+      "order": 6,
+      "title": "当前任务",
+      "text": "Next for J++: clearer question, material and result interfaces, then more algorithms built from the same components.\n\nWe want concrete use to reveal what the language is missing.",
+      "status": "draft"
+    },
+    {
+      "id": "en-D07",
+      "language": "en",
+      "kind": "standalone",
+      "order": 7,
+      "title": "组合的组合",
+      "text": "The question I keep returning to: after we build a composition, can we compose it again?\n\nJ++ uses one component interface for small operations and compound methods. Reuse should remain understandable as internal complexity grows.",
+      "status": "draft"
+    },
+    {
+      "id": "en-D08",
+      "language": "en",
+      "kind": "standalone",
+      "order": 8,
+      "title": "第三种方法",
+      "text": "J++ includes a separately authored allocation method. It connects review outcomes to exact allocation, then packages the result inside a larger component.\n\nWe are looking for more examples that test how far the interfaces can be reused.",
+      "status": "draft"
+    },
+    {
+      "id": "en-D09",
+      "language": "en",
+      "kind": "standalone",
+      "order": 9,
+      "title": "怎样判断价值",
+      "text": "How should we judge J++?\n\nCan someone reuse a method they did not write? How much code changes when a strategy changes? Does a new algorithm require kernel changes?\n\nConcrete programs are the evidence we want.",
+      "status": "draft"
+    },
+    {
+      "id": "en-D10",
+      "language": "en",
+      "kind": "standalone",
+      "order": 10,
+      "title": "首版验证",
+      "text": "The first J++ alpha passed 25 mechanism tests, with Linux CI passing on Python 3.12 and 3.13.\n\nYou can install it and run offline. Real-model quality needs separate experiments.\nhttps://github.com/Towow-ai/jpp",
+      "status": "draft"
+    },
+    {
+      "id": "en-D11",
+      "language": "en",
+      "kind": "standalone",
+      "order": 11,
+      "title": "后端演进",
+      "text": "JEV is the starting point for J++. We want method composition to evolve with judgment backends.\n\nWhich rules survive a model change, and which need new measurements? Backend portability is a design question we still need to test.",
+      "status": "draft"
+    },
+    {
+      "id": "en-D12",
+      "language": "en",
+      "kind": "standalone",
+      "order": 12,
+      "title": "贡献邀请",
+      "text": "Want to help shape J++? Build a method the examples do not contain, then use it inside another method.\n\nBring the runnable example, awkward interfaces and repeated glue code. That is useful language-design feedback.\nhttps://github.com/Towow-ai/jpp",
+      "status": "draft"
+    }
+  ]
+}

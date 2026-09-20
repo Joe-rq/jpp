@@ -4,13 +4,22 @@
 
 **Compose questions. Compose methods. Compose the compositions.**
 
-[简体中文](README.zh-CN.md) · [Design](docs/design.md) · [Roadmap](ROADMAP.md) · [Contributing](CONTRIBUTING.md)
+[简体中文](README.zh-CN.md) · [Why J++](docs/why-jpp.md) · [Progress](docs/progress.md) · [Design](docs/design.md) · [Contributing](CONTRIBUTING.md)
 
 J++ is an experimental programming-language project exploring semantic judgment as a programmable operation. Questions are values. Methods are values. A composed method can become a building block in another method.
 
 The current implementation is a **Python 3.12 embedded language**, with a runtime and a composition library. It combines JEV-style judgments with ordinary computation, candidate generation, exact checks, and feedback. Independent syntax and a standalone compiler are future work.
 
+## Why we are doing this
+
+We are drawn to a familiar power of algorithms: a few simple operations, organized well, can accomplish something surprisingly complex. JEV led us to ask what happens when semantic judgment joins those operations, alongside exact computation, search and feedback.
+
+Our intuition is that questions and solving methods should be reusable values. A program should be able to construct its next question, accept a method as an argument, and return a method that another program can use. The resulting composition should remain a building block.
+
+We do not yet know every application this will enable. We want others to construct methods we did not anticipate. Working components and executable examples let experience shape the language. [Read the project origin and design motivation](docs/why-jpp.md).
+
 ## Try it
+
 
 ```sh
 git clone https://github.com/towow-ai/jpp.git
@@ -62,6 +71,8 @@ The same interface supports methods that ask questions, choose subsequent method
 This is an early alpha. APIs may change. Real-model quality requires separate evaluation; the default demo never contacts JEV. See [current scope and backend notes](docs/status.md).
 
 ## Help shape the language
+
+Current research is clarifying question/material/result interfaces, improving examples for new readers, and exploring more algorithm constructions. Live-backend evaluation and independent syntax are subsequent milestones. [Dated progress report](docs/progress.md) · [Roadmap](ROADMAP.md).
 
 The most useful contribution is a new method built from existing components, together with an example that runs. Tell us where composition becomes awkward, what you had to duplicate, and which primitive would eliminate that duplication. [Start here](CONTRIBUTING.md).
 
