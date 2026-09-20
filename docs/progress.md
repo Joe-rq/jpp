@@ -17,6 +17,8 @@ This documentation-only update does not change the existing runnable examples.
 Rust construction is starting; subsequent updates will include actual build and
 source-program execution evidence.
 
+[Decision commit / 路线提交](https://github.com/Towow-ai/jpp/commit/e04265e)
+
 ## 2026-09-20: language design and grammar entry / 语言设计与文法入口
 
 The [design page](design.md) now links directly to the already published current IR/class contract and historical language specification, including its lexical rules and full EBNF. The READMEs and research index expose these links; the historical specification has a bilingual archive notice. Current source remains Python builder code: the old grammar has no delivered standalone parser/compiler, and the current contract defers independent surface syntax without a delivery date; this does not replace the intent to develop an independent language after validating examples and algorithms. The guide distinguishes six IR forms, typed exits, composition and runtime behavior from design requirements.
