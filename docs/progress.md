@@ -107,3 +107,8 @@ Linux CI exposed a BSD-only `sed -i ''` in an existing shell probe. The candidat
 now uses portable output-and-rename syntax; the goal and truth assertions remain
 unchanged. A direct file-content regression passes. The final wheel includes
 [this portability fix / 可移植修复](https://github.com/Towow-ai/jpp/commit/567c742).
+
+The concurrent browser-demo update is preserved. Its existing source-bundle
+builder was rerun so browser code and the installed package use the same reviewed
+sources; the artifact-consistency checks pass.
+并发浏览器演示已保留，沿原脚本重建源码包，避免网页继续加载旧计划器。
