@@ -20,13 +20,13 @@ The initial public commit passed 25 tests locally. Linux CI passed on Python 3.1
 
 ## Work in the research workspace / 研究中的工作
 
-### 2026-09-20: animated walkthrough / 动画讲解
+### 2026-09-20: animated graph with full explanations / 图谱动画与完整说明
 
-`jpp towow` 生成的页面现在用七步动画讲清意图、转介、组合和继续发现，支持暂停、调速、逐步阅读及人物依据查看。模型记录与计算方法不变，页面不产生新的调用。The viewer now explains the recorded discovery in seven animated steps, with playback controls and inspectable evidence. It reuses the existing execution record without changing the discovery method or making new model calls. [运行方法 / Run it](towow-demo.zh-CN.md).
+`jpp towow` 生成的页面保留完整十人图谱和固定人物位置，通过节点发光与沿线移动的光点讲解四个阶段；图旁和下方保留完整段落介绍。支持暂停、重播、调速、选择阶段和人物依据查看。模型记录与计算方法不变，页面不产生新的调用。The viewer keeps the complete graph and fixed node positions, animating processing nodes and particles along edges through four stages. Full prose remains beside and below the graph, with playback controls and inspectable evidence. It reuses the existing execution record without changing the discovery method or making new model calls. [运行方法 / Run it](towow-demo.zh-CN.md).
 
-已检查窄屏显示、跳步、自动推进与结束、人物详情及未确定候选；离线案例检查通过，wheel 安装后能生成动画页面。本次验证覆盖录制案例的展示，不是新的模型评估。Narrow-screen layout, navigation, automatic progression and completion, evidence dialogs, and unresolved candidates were checked in the browser. The offline example check passed, and an installed wheel generated the animated page. This verifies the recorded example's presentation, not new model quality. 下一步关注首次观看者能否理解转介与组合 / Next: check whether first-time viewers understand referrals and composition.
+已检查窄屏图谱、阶段切换、暂停时光点冻结、恢复后推进、人物资料与未确定候选；离线案例检查通过，wheel 在源码之外安装后能生成完整页面。本次验证覆盖录制案例的展示，不是新的模型评估。The graph layout, stage selection, frozen particles while paused, resumed progression, person evidence, and unresolved candidates were checked in the browser. The offline example check passed, and a wheel installed outside the source tree generated the complete page. This verifies the recorded example's presentation, not new model quality. 下一步关注首次观看者能否结合图谱与文字理解转介和组合 / Next: check whether first-time viewers understand referrals and composition using the graph and prose together.
 
-[实现提交 / Implementation commit](https://github.com/Towow-ai/jpp/commit/fddea9bb55e69993dff47c93915c038bb3d9a599).
+[实现与检查 / Implementation and checks](https://github.com/Towow-ai/jpp/pull/2).
 
 ### 2026-09-20: first application example / 首个应用案例
 

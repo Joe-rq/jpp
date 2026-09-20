@@ -17,9 +17,9 @@ jpp towow
 
 默认用仓库附带的真实 JEV 响应录制，重新执行相同的 J++ 程序。无需密钥，无网络请求，也不产生费用。它不是重新做模型推理，也不是按人物名字返回预设匹配；录制客户端只对完全相同的请求返回已保存的模型回答。
 
-打开生成的 `run-data/towow/index.html`，会播放约 50 秒的七步动画：意图 → 遇见上下文 → 转介 → 形成组合 → 继续发现 → 条件变化 → 组合方法。每一步只突出当前变化，配简短文字说明；支持暂停、调速、上一步、下一步和跳步。点击人物可查看本地上下文与真实判断，未确定的投资人候选仍保留。系统开启“减少动态效果”时默认不自动播放。运行数据在同目录的 `report.json`。
+打开生成的 `run-data/towow/index.html`，完整的十人图谱始终保留，人物位置固定。约 42 秒的动画让正在处理的节点发光，让光点沿连线移动，依次讲解意图遇见上下文、转介与三方构型、构型继续发现、局部变化与复用。图旁保留逐阶段的完整段落说明，下方用连贯文字介绍计算方法。支持暂停、调速、重播和直接选择阶段静态查看；点击人物会暂停动画并展示本地上下文与真实判断。系统开启“减少动态效果”时默认静态展示。运行数据在同目录的 `report.json`。
 
-The self-contained viewer now tells the recorded story in seven animated steps, with playback, pause, speed control, step navigation, and clickable evidence. Reduced-motion preferences are respected. Animation timing is for explanation; measured model timings remain separately labeled. No additional model calls occur in the viewer.
+The self-contained viewer preserves the complete graph and fixed node positions. Processing nodes glow and particles travel along edges through four recorded stages. Full prose explanations remain beside and below the graph. Playback, pause, speed control, stage selection, and clickable evidence are available; reduced-motion preferences are respected. Animation is paced for explanation, with the concurrent first stage explicitly labeled. Measured model timings remain separate, and the viewer makes no additional model calls.
 
 也可以下载仓库中的[完整交互页面](demos/towow/index.html)到本地打开。页面内嵌了本次真实运行的记录，显示的是录制时的耗时；浏览页面本身不会调用模型。
 
@@ -55,7 +55,7 @@ METHOD = (
 
 候选材料由实际提名产生，保留成员、服务材料和可用性。后续判断分别问“内容是否相关”和“接收方是否愿意尝试或讨论”。已经得到的可用性与这些结果，由普通代码做三值逻辑组合。候选未就绪时，也能先被其他主体发现。
 
-未知没有变成否定。相关性未确定的对象保留在输出中；页面用灰色关系线区分，后续条件也不会因此自动成立。所有模型提名仍标记 `provisional`：本案例使用现有运行时的冷校准处理方式，没有为这些新问题伪造校准集。
+未知没有变成否定。相关性未确定的对象保留在输出中；页面用金色虚线区分，后续条件也不会因此自动成立。所有模型提名仍标记 `provisional`：本案例使用现有运行时的冷校准处理方式，没有为这些新问题伪造校准集。
 
 ## 一次真实运行的结果
 
