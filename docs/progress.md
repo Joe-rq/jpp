@@ -187,9 +187,9 @@ Two compiler passes (`speculate`, `vectorize`) make judgment fusion independent 
 
 ### 2026-09-21: a falsified scenario, a calibration reading, and the Rust kernel starting / 一个被证伪的场景、一次校准读数、Rust 内核开工
 
-No new runtime capability this round. E9f-2b′ **failed**: predicting which paragraphs an author will ask to change is not decidable in one literal hop (n = 1,564 paragraphs, AUC 0.541 against a bet of 0.70; a length-and-digits heuristic scored higher at ~~0.638~~ **[0.643 — see the correction entry below]**, and a `haiku` judge sat on the random line too). E-CAL's final run passed none of its falsification criteria and about half its bets: Chinese `noul` readings are usable as probabilities (ECE 0.057), ~~`choice` showed no first-position bias (permutation consistency 1.000)~~ **[withdrawn 2026-09-21 — measurement artefact; see the correction entry below]**, `score` hit the adjacent band 0.964 — while `noul` AUC (0.748), `choice` argmax (0.757) and `score` MAE (0.553) all came in under their bets, and the 300 items turned out to be built from about 45 independent paragraphs, so effective n is 17–26 rather than 100. The formal kernel moves to Rust ([ADR 0001](adr/0001-rust-kernel.md)); its core is still being built in the research workspace and **no Rust source is published yet**. 535 tests pass on Python 3.12 and 3.13 in this repository. Details and every number: [2026-09-21 update](updates/2026-09-21-two-experiments-and-rust-start.md).
+No new runtime capability this round. E9f-2b′ **failed**: predicting which paragraphs an author will ask to change is not decidable in one literal hop (n = 1,564 paragraphs, AUC 0.541 against a bet of 0.70; a length-and-digits heuristic scored higher at ~~0.638~~ **[0.643 — see the correction entry below]**, and a `haiku` judge sat on the random line too). E-CAL's final run passed none of its falsification criteria and about half its bets: Chinese `noul` readings are usable as probabilities (ECE 0.057), ~~`choice` showed no first-position bias (permutation consistency 1.000)~~ **[withdrawn 2026-09-21 — measurement artefact; see the correction entry below]**, `score` hit the adjacent band 0.964 — while `noul` AUC (0.748), `choice` argmax (0.757) and `score` MAE (0.553) all came in under their bets, and the 300 items turned out to be built from about 45 independent paragraphs, so effective n is 17–26 rather than 100. The formal kernel moves to Rust ([ADR 0001](adr/0001-rust-kernel.md)); its core is still being built in the research workspace and ~~**no Rust source is published yet**~~ **[overtaken the same day — a Rust workspace landed under `rust/` on the front-end line; see the Status block in that update]**. 535 tests pass on Python 3.12 and 3.13 in this repository. Details and every number: [2026-09-21 update](updates/2026-09-21-two-experiments-and-rust-start.md).
 
-本轮没有新的运行能力。E9f-2b′ **失败**：段级预测「作者会要求改这一段吗」在一跳字面下不可判（n = 1,564 段，AUC 0.541，赌的是 0.70；长度加数字的启发式基线反而更高，~~0.638~~**〔更正为 0.643，见下方更正条目〕**；haiku 裁判同样在随机线上）。E-CAL 正式版三条证伪判据一条都没触发、赌值对了一半：中文 `noul` 读数可以当概率用（ECE 0.057），~~`choice` 无首位偏置（置换一致 1.000）~~**〔2026-09-21 作废：测量假象，见下方更正条目〕**，`score` 相邻档 0.964；但 `noul` AUC 0.748、`choice` argmax 0.757、`score` MAE 0.553 全部低于赌值，且 300 条题面只由约 45 个独立段落重组而成，有效 n 在 17–26 之间而不是 100。正式内核转 Rust（[ADR 0001](adr/0001-rust-kernel.md)），core 仍在研究工作区建设中，**Rust 源码尚未公开同步**。本仓库在 Python 3.12 与 3.13 上各通过 535 项测试。细节与全部数字见 [2026-09-21 更新](updates/2026-09-21-two-experiments-and-rust-start.md)。
+本轮没有新的运行能力。E9f-2b′ **失败**：段级预测「作者会要求改这一段吗」在一跳字面下不可判（n = 1,564 段，AUC 0.541，赌的是 0.70；长度加数字的启发式基线反而更高，~~0.638~~**〔更正为 0.643，见下方更正条目〕**；haiku 裁判同样在随机线上）。E-CAL 正式版三条证伪判据一条都没触发、赌值对了一半：中文 `noul` 读数可以当概率用（ECE 0.057），~~`choice` 无首位偏置（置换一致 1.000）~~**〔2026-09-21 作废：测量假象，见下方更正条目〕**，`score` 相邻档 0.964；但 `noul` AUC 0.748、`choice` argmax 0.757、`score` MAE 0.553 全部低于赌值，且 300 条题面只由约 45 个独立段落重组而成，有效 n 在 17–26 之间而不是 100。正式内核转 Rust（[ADR 0001](adr/0001-rust-kernel.md)），core 仍在研究工作区建设中，~~**Rust 源码尚未公开同步**~~**〔当日即被事实追上：前端那条线已把 Rust 工作区推到 `rust/` 下，见该更新的「现状」块〕**。本仓库在 Python 3.12 与 3.13 上各通过 535 项测试。细节与全部数字见 [2026-09-21 更新](updates/2026-09-21-two-experiments-and-rust-start.md)。
 
 ### 2026-09-21: correcting a published result / 更正一条已发布的结论
 
@@ -208,8 +208,8 @@ the random arm **indistinguishable** from Jev rather than better, and the `haiku
 price a range of $1.3–$12.9. **Both falsification verdicts stand**; E9f-2b′ is
 still a FAIL. The wrong sentences are kept in place and marked, not deleted:
 [2026-09-21 update](updates/2026-09-21-two-experiments-and-rust-start.md) carries
-a Correction block in each section, and the three research documents were
-re-synced. Documentation only — `src/` unchanged; 544 tests pass on Python 3.12
+a Correction block in each section, and four research documents were re-synced,
+including the pre-registrations for the two follow-up experiments. Documentation only — `src/` unchanged; 544 tests pass on Python 3.12
 and 3.13.
 
 上一条里两句 `choice` 结论作废。E-CAL 的 97 条 `select` 只有 8 条真的发出 `choice`
@@ -221,7 +221,7 @@ $0.0027 → **$0.045**、调用 1,633 次（实验脚本的 `reset_stats()` 望�
 支，两条预算上限都没破）、C_S ≈ 5.5 s 作废、随机臂与 Jev **不可分辨**而非更好、haiku
 价格改为区间 $1.3–$12.9。**两个证伪结论都不变**，E9f-2b′ 仍是 FAIL。错的句子留在原处
 标明，不删：[2026-09-21 更新](updates/2026-09-21-two-experiments-and-rust-start.md)
-每节加了更正块，三个研究文件一并重新同步。本次只改文档，`src/` 未动；Python 3.12 与
+每节加了更正块，四个研究文件一并重新同步（含两个后续实验的预注册）。本次只改文档，`src/` 未动；Python 3.12 与
 3.13 各通过 544 项测试。
 
 # 2026-09-20 — Install, compose and inspect complete methods / 安装并使用完整方法

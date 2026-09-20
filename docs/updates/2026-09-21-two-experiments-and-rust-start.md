@@ -22,13 +22,15 @@ pre-registrations stay in the research workspace, and the write-ups are synced t
 > now known to be wrong, with a **Correction** block at the end of each section
 > giving the mechanism and the replacement numbers. A published record is
 > corrected in the open, not edited silently — the same rule that put the FAIL in
-> §1's title. Nothing in §3 changed.
+> §1's title. §3's claims were true when written and have since been overtaken by
+> events; a dated **Status** block at its end says what is in the repository now.
 >
 > **2026-09-21 更正（发布之后）。** 本文有两组结论作废：§2 关于 `choice` 的两句
 > （置换一致、无首位偏置）是测量假象；§1 的花费、时延与随机臂数字来自一条坏掉的
 > 统计路径和一个随机种子。**原文一律留在原处**，错处就地标出，每节末尾附「更正」块，
 > 写清机制与替换后的数字。公开记录里的错要改在明处，不做静默修改——这与 §1 标题
-> 直接写 FAIL 是同一条纪律。§3 未变。
+> 直接写 FAIL 是同一条纪律。§3 的说法在写下时为真、此后被事实追上，节末加了一个带
+> 日期的「现状」块说明仓库里现在有什么。
 
 ## 1. E9f-2b′ falsified: predicting an author's change requests is not decidable in one literal hop / E9f-2b′ 证伪：预测作者的修改要求，在一跳字面下不可判
 
@@ -441,7 +443,7 @@ the Rust mainline continues. The Python kernel under
 behavioural reference, and experiment, calibration and annotation scripts stay in
 Python, but no new kernel capability goes into it.
 
-**Nothing Rust is in this repository yet, on purpose.** The core crate is under
+**Nothing Rust is in this repository yet, on purpose.** † The core crate is under
 construction in the research workspace and does not build cleanly, so publishing
 it now would publish something broken. This repository currently holds the ADR
 and nothing else from that line. The next update on this track will come with an
@@ -461,12 +463,48 @@ agents may only append proposals.
 **中文摘要。** 正式内核改为 Rust：用户写 `.jpp` 源码，经解析、类型/效应检查，由 Rust
 运行系统执行，不再写宿主语言的构建器代码；决定与第一个验收里程碑见 ADR 0001。Python
 内核冻结——继续修 bug、继续作行为对照，实验与标注脚本继续用 Python，但不再新增内核
-能力。**Rust 代码这次故意不同步**：core crate 还在工作区建设中、尚未 build 通过，现在
+能力。**Rust 代码这次故意不同步** †：core crate 还在工作区建设中、尚未 build 通过，现在
 推上来只会是坏的；本仓库这条线目前只有 ADR。下一次这条线的更新要么带着真实构建和一个
 端到端跑通的 `.jpp` 程序，要么就不发。依据文本这边只加了提议：`12-IR与类契约-v0.1.md`
 末尾附注说明 Rust 决定替代 §6 的施工安排而六种效应形式、类型纪律、检查规则、pass 与
 账本语义不变，`00-宪法.md` 登记表加一行——两条都标着「待 Nature 认」，因为依据文本只能
 由他修改，代理只能附注提议。
+
+### † Status on 2026-09-21, later the same day / † 当日稍晚的现状
+
+The two statements marked † above were accurate when this page was written and
+have since been overtaken. **The repository now contains a Rust workspace under
+`rust/`**: `rust/crates/jpp-core/`, `rust/crates/jpp-frontend/` and
+`rust/crates/jpp-cli/` — 28 `.rs` files — plus six `.jpp` examples under
+`rust/examples/`, a `Cargo.toml`/`Cargo.lock` workspace, and `README.md`,
+`FRONTEND.md` and `COMPARISON.md`. It arrived on the front-end line
+(`d39b036` "run standalone J++ source on Rust", `b471f4b` "distinguish stored
+methods from invoked effects", merged as `0e76955`, PR #12), so the milestone §3
+set — a real build with a `.jpp` program executing end to end — was met by that
+line rather than by this one.
+
+**The kernel side has not been merged and the two copies have diverged.** The
+research workspace's `jpp-core` carries a second package that the published copy
+does not: `Value::Duty`, which makes J-05 hold strictly, and `Type::Method`
+carrying an effect row. Neither symbol appears in the published
+`rust/crates/jpp-core/src/value.rs`. Reconciling the two lines goes through
+`COORDINATION.md`, not through a commit whose subject is correcting experiment
+numbers, so **this correction does not touch `rust/`** and takes no position on
+which copy is authoritative — that is the coordinator's call, and it will be
+published on its own.
+
+**当日稍晚的现状。** 上面两处标 † 的说法在写下本页时为真，此后被事实追上。**本仓库
+现在有 Rust 工作区，在 `rust/` 下**：`rust/crates/jpp-core/`、
+`rust/crates/jpp-frontend/`、`rust/crates/jpp-cli/`（共 28 个 `.rs`），加
+`rust/examples/` 下六个 `.jpp` 示例、`Cargo.toml`/`Cargo.lock` 工作区，以及
+`README.md`、`FRONTEND.md`、`COMPARISON.md`。它由前端那条线推来
+（`d39b036`「独立源码检查与执行贯通」、`b471f4b`「区分保存方法与执行效应」，
+合并于 `0e76955`，PR #12）——§3 立下的里程碑「带着真实构建和一个端到端跑通的 `.jpp`
+程序」由那条线兑现，不是这条线。**内核那一侧尚未合入，两份副本已经分叉**：研究工作区
+的 `jpp-core` 多出第二包——`Value::Duty`（使 J-05 严格成立）与带效应行的
+`Type::Method`，这两个符号在已发布的 `rust/crates/jpp-core/src/value.rs` 里一个都没有。
+两条线怎么合要走 `COORDINATION.md`，不该塞进一个「更正实验数字」的 commit，所以**本次
+更正不碰 `rust/`**，也不对「哪一份为准」下结论——那是总控要裁的，将另行发布。
 
 ## Where the evidence is / 证据在哪
 
@@ -488,11 +526,18 @@ Raw model records, run ledgers and the private working notes are not published.
 the research workspace first; the three documents carrying them —
 `前提结论.md`, `09-研究方法与假设账本.md` and `DECISIONS.md` — were re-synced to
 `research/地基/` in the same commit as this file, so the research copy and this
-page state the same thing. Nothing under `src/` changed.
+page state the same thing. `EXPERIMENTS.md` was re-synced too, bringing the
+pre-registrations for **E-LABCONF** (annotator confidence as a free difficulty
+predictor) and **E9f-2c** (asking the 2b′ question again with the author's earlier
+requests as a `ref` anchor) — both written before their runs, and E9f-2c not yet
+approved to run. Nothing under `src/` changed.
 
 **更正同步（2026-09-21）。** §1、§2 的更正先写在研究工作区，携带它们的三个文件
 （`前提结论.md`、`09-研究方法与假设账本.md`、`DECISIONS.md`）与本文在同一个 commit
-里同步到 `research/地基/`，使研究副本与本页说法一致。`src/` 下未改动。
+里同步到 `research/地基/`，使研究副本与本页说法一致。`EXPERIMENTS.md` 一并同步，带上
+**E-LABCONF**（标注者置信作为免费难度预测器）与 **E9f-2c**（把 2b′ 那道题重新问成对人
+的预测，作者历史要求作 `ref` 锚）两份预注册——都写在开跑之前，E9f-2c 尚未获批开跑。
+`src/` 下未改动。
 
 ## Verification in this repository / 本仓库验证
 
