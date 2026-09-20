@@ -2,8 +2,8 @@
 
 This alpha contains a fixed snapshot of the project's runtime and composition sources. The public distribution adds packaging and an offline CLI. The main research workspace can continue evolving independently.
 
-- Included: question values, components, algorithm constructors, runtime source, synthetic mechanism tests.
-- Not included: private research conversations, credentials, raw model experiment records, model weights, hosted service or an independent compiler.
+- Included: question values, components, algorithm constructors, runtime source (`src/foundation/jv`, kernel v0.1), synthetic mechanism tests (`tests/`, `tests/foundation_jv/`), and a curated copy of the research workspace documents in `research/` (design trail, ledger, experiment pre-registrations and results).
+- Not included: private research conversations, credentials, raw model call records and run outputs, model weights, hosted service or an independent compiler. `research/` is synced by `tools/sync-from-workspace.sh`, which enforces these exclusions.
 - Demonstrated: offline execution and finite-domain checking. Verification results are recorded in `verification.md` after running the distribution.
 - Still being developed: independent syntax, richer static analysis, calibrated real-model examples and portability across providers.
 
