@@ -2,6 +2,12 @@
 
 Updated: 2026-09-21. This is a dated report, not an automatically updated dashboard.
 
+## 2026-09-21: discovery goal, evidence and parallel implementation plan / 发现目标、验收与并行实施总计划
+
+新增[通用发现能力总计划](towow-discovery-master-plan.zh-CN.md)，重新对齐通爻原始问题：接收方依局部上下文提出关系，中间问题与组合参与后续发现。分开J++语言、通爻协议、发现程序与展示的交付；整理已有真实语料、强基线、行为/质量/费用/动态验收及P0～P5依赖。核查并索引先前讨论记录，明确尚非完整逐字归档。当前成果是规划，没有新的模型运行或发现效果结论。
+
+The plan enables parallel work against the published Rust snapshot, with source-owned discovery logic and a minimal input/observation/capability contract. It reuses prior research assets without treating incomplete Gold, synthetic examples or historical proxy edges as completed discovery evaluation. Numerical targets remain proposals to freeze before formal evaluation; corpus splitting and the receiver-local loop are still unimplemented.
+
 ## 2026-09-21: align all project entry points / 同步项目各入口的交付状态
 
 The source package was already merged in [PR #12](https://github.com/Towow-ai/jpp/pull/12).
