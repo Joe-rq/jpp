@@ -17,24 +17,10 @@
 //! **所以现在断言的是反过来的**：两张都还在、线不被放宽、而且**与认证顺序无关**。
 //! 缺口回来了这三条都会红。
 
-use jpp_core::effects::{CalibStore, LiteralMode, Sample};
-use serde_json::Value as Json;
+use jpp_core::effects::CalibStore;
 
 fn 装样本(store: &mut CalibStore, key: &str) {
-    let j: Json = serde_json::from_str(include_str!("ecal_fixture.json")).unwrap();
-    for r in j["noul"].as_array().unwrap() {
-        store
-            .absorb(key, Sample {
-                p: Some(r[0].as_f64().unwrap()),
-                label: Some(r[1].as_i64().unwrap() as u8),
-                perms: 0,
-                mode_share: None,
-                mode: LiteralMode::default(),
-                phys: "noul".into(),
-                cluster: Some(r[2].as_str().unwrap().to_string()),
-            })
-            .unwrap();
-    }
+    conformal_probe::装进(store, key, "noul");
 }
 
 /// 两个都认得住的 α：严的那个给更高的线，松的那个给更低的线。

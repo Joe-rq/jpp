@@ -14,28 +14,13 @@
 
 use conformal_probe::*;
 use jpp_core::effects::{CalibStore, LiteralMode, Sample};
-use serde_json::Value as Json;
 
 fn 装样本(store: &mut CalibStore, key: &str) {
-    let j: Json = serde_json::from_str(include_str!("ecal_fixture.json")).unwrap();
-    for r in j["noul"].as_array().unwrap() {
-        store
-            .absorb(key, Sample {
-                p: Some(r[0].as_f64().unwrap()),
-                label: Some(r[1].as_i64().unwrap() as u8),
-                perms: 0,
-                mode_share: None,
-                mode: LiteralMode::default(),
-                phys: "noul".into(),
-                cluster: Some(r[2].as_str().unwrap().to_string()),
-            })
-            .unwrap();
-    }
+    conformal_probe::装进(store, key, "noul");
 }
 
 fn 取(t: &str) -> Vec<(f64, bool)> {
-    let j: Json = serde_json::from_str(include_str!("ecal_fixture.json")).unwrap();
-    j[t].as_array().unwrap().iter().map(|r| (r[0].as_f64().unwrap(), r[1].as_i64().unwrap() == 1)).collect()
+    conformal_probe::ecal2(t)
 }
 
 #[test]

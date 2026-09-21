@@ -2,15 +2,9 @@
 //! 数据是已经花过钱的，这里再用一次，边际成本为零（与 `e_alloc.rs` 同一条理由）。
 
 use conformal_probe::*;
-use serde_json::Value as Json;
 
 fn 取(t: &str) -> Vec<(f64, bool, String)> {
-    let j: Json = serde_json::from_str(include_str!("ecal_fixture.json")).unwrap();
-    j[t].as_array()
-        .unwrap()
-        .iter()
-        .map(|r| (r[0].as_f64().unwrap(), r[1].as_i64().unwrap() == 1, r[2].as_str().unwrap().to_string()))
-        .collect()
+    conformal_probe::ecal(t)
 }
 fn 扁(v: &[(f64, bool, String)]) -> Vec<(f64, bool)> {
     v.iter().map(|(p, l, _)| (*p, *l)).collect()

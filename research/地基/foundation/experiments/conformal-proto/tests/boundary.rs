@@ -10,11 +10,9 @@
 
 use conformal_probe::*;
 use jpp_core::effects::{CalibStore, LiteralMode, Provenance, Sample};
-use serde_json::Value as Json;
 
 fn 取(t: &str) -> Vec<(f64, bool)> {
-    let j: Json = serde_json::from_str(include_str!("ecal_fixture.json")).unwrap();
-    j[t].as_array().unwrap().iter().map(|r| (r[0].as_f64().unwrap(), r[1].as_i64().unwrap() == 1)).collect()
+    conformal_probe::ecal2(t)
 }
 fn 样本(p: f64, l: bool) -> Sample {
     Sample { p: Some(p), label: Some(if l { 1 } else { 0 }), perms: 0, mode_share: None, mode: LiteralMode::default(), phys: "noul".into(), cluster: None }

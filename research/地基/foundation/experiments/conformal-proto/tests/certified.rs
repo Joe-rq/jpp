@@ -1,9 +1,7 @@
 //! 认证**成功**的那一侧：线是「最宽的、仍被认证住的那条」，与「上界最紧的那一格」**不是同一格**。
 use conformal_probe::*;
-use serde_json::Value as Json;
 fn 取(t: &str) -> Vec<(f64, bool)> {
-    let j: Json = serde_json::from_str(include_str!("ecal_fixture.json")).unwrap();
-    j[t].as_array().unwrap().iter().map(|r| (r[0].as_f64().unwrap(), r[1].as_i64().unwrap() == 1)).collect()
+    conformal_probe::ecal2(t)
 }
 #[test]
 fn 认证成功时线取最宽而不是上界最紧() {

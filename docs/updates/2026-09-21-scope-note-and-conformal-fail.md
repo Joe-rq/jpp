@@ -47,21 +47,6 @@ experiment's pre-registration, unqualified. That measurement is the reason this
 update places the scope note at every site listed in §"Where the evidence is"
 below, rather than in one place and a promise to remember.
 
-**The same two hours also produced the sharpest illustration of why this kind
-of gap is hard to catch.** While this update was being prepared, the
-`conformal-proto` prototype in §5 below broke its own build twice — a required
-field added to one kernel type, then a certificate's storage restructured —
-and both breaks were fixed within roughly two hours of landing, because
-`cargo test` refused to run until they were. The choice-permutation count this
-same project corrected three times over (`docs/updates/2026-09-21-second-correction-and-kernel-progress.md`)
-took most of a day to settle, because nothing forced a second look: the wrong
-number compiled, ran, and printed cleanly every time. **A loud failure gets
-fixed as fast as someone is willing to look at the error; a silent one only
-gets fixed when someone decides, unprompted, to look again.** The calibration
-set's selection bias is the same shape at a larger scale — the numbers it
-produced always computed, always looked like numbers, and nothing about
-running them again would ever have surfaced the scope they needed.
-
 ## 2. The bias direction is now measured, not merely hypothesized — for two of three question types / 偏倚方向已经测出来，不再只是假设——三种题型里的两种
 
 This did not require a single new model call: the selection variable
@@ -256,14 +241,7 @@ dependency connecting the two is one-directional and invisible: nothing on
 the kernel side knows this crate depends on the shape of its types, so
 nothing there has any way to warn it.** The same shape of gap as a
 documentation citation that does not travel with the number it qualifies
-(§1 above), one layer down, in code instead of prose. The two breaks are also
-a useful contrast with each other:
-**a loud failure got fixed twice within two hours, because a compiler refused
-to build until it was; a silent one — the choice-permutation count in
-`docs/updates/2026-09-21-second-correction-and-kernel-progress.md` — took four
-attempts to state correctly, because nothing forced anyone to look again.**
-Being wrong is not the interesting part of either story; what differed is
-whether anything existed to insist on being checked.
+(§1 above), one layer down, in code instead of prose.
 
 ## Where the evidence is / 证据在哪
 
@@ -273,9 +251,9 @@ whether anything existed to insist on being checked.
 | `research/地基/foundation/experiments/EXPERIMENTS.md` | the same two scope notes placed at each citation site inside this file, plus the new `E-NOUL-HI` pre-registration (§3 above) |
 | `research/地基/09-研究方法与假设账本.md` | ledger entries for this round, synced in full — including entries on other topics from the same working session, per this project's audit-log discipline: a ledger that is curated before publication is a ledger nothing can be audited against |
 | `research/地基/DECISIONS.md` | the decision trail for this round, synced in full, same reasoning — including a public-boundary ruling (`jpp-sync-3`) that caught a client-document classification and Nature's verbatim authorization quote about to be published in this same file, and replaced them at the source with the project's `<!-- 公开替换：… -->` mechanism before this sync copied it |
-| `research/地基/12-IR与类契约-v0.1.md` | synced in full, same reasoning as 09/DECISIONS: a half-stale specification is worse than a stale one, because a reader treats it as current. This round's increments include the "exits do not enter the ledger" correction, the `cut`/taint-drop step, J-15's widened carriers, the three permutation rulings, three corrected rows in §10's comparison table (including C7: "满足（形式）" → "未实现"), and a same-day correction to the `cut`/taint-drop step itself: `Exit.taint` is never read where the original text said it was checked (J-08 reads `self.guards`, populated only at `ExprKind::If`), which exposes a real gap — an irreversible `do` inside a handler arm is unguarded |
+| `research/地基/12-IR与类契约-v0.1.md` | synced in full, same reasoning as 09/DECISIONS: a half-stale specification is worse than a stale one, because a reader treats it as current. This round's increments include the "exits do not enter the ledger" correction, the `cut`/taint-drop step, J-15's widened carriers, the three permutation rulings, three corrected rows in §10's comparison table (including C7: "满足（形式）" → "未实现"), a same-day correction to the `cut`/taint-drop step itself (`Exit.taint` is never read where the original text said it was checked — J-08 reads `self.guards`, populated only at `ExprKind::If`), and the gap that correction exposed — an irreversible `do` inside a handler arm going unguarded — now closed, with a new principle recorded alongside it: a test suite can cover only the one code shape its author thought to write, and pass cleanly while missing an entire other one |
 | `research/地基/设计/保形弃权域-设计-2026-09-21.md` | the conformal design in full (§4 above); the scope note from §1 was added to its own text (§0 and §5) before this sync, so the design document does not need this update page to be read alongside it |
-| `research/地基/foundation/experiments/conformal-proto/` | the prototype crate in full (§5 above): `src/lib.rs`, `tests/{boundary,certified,ecal,gate}.rs`, its fixture, the two `analyze*.py` scripts behind §4's numbers, plus two further analysis scripts and a pre-registration (`analyze3_noul_hi.py`, `analyze4_限定留存率.py`, `analyze5_第二个值.py`, `预注册-第二个值.md`) documenting the retention-rate measurement in §1 and the bias-direction measurement in §2 — included for completeness, not because they are all concluded work |
+| `research/地基/foundation/experiments/conformal-proto/` | the prototype crate in full (§5 above): `src/lib.rs` (now a thin re-export of `jpp_core::conformal::*` plus this crate's own E-CAL fixture loader — it no longer carries its own copy of `certify`/`binomial_upper`/etc., after those were found to have silently diverged from the kernel's own versions and were consolidated to a single reference), `tests/{boundary,certified,ecal,gate,overwrite}.rs`, its fixture, `交付-与内核的对照.md` (the item-by-item comparison behind that consolidation), the two `analyze*.py` scripts behind §4's numbers, plus two further analysis scripts and a pre-registration (`analyze3_noul_hi.py`, `analyze4_限定留存率.py`, `analyze5_第二个值.py`, `预注册-第二个值.md`) documenting the retention-rate measurement in §1 and the bias-direction measurement in §2 — included for completeness, not because they are all concluded work |
 | `docs/updates/2026-09-21-two-experiments-and-rust-start.md` | pointer added at each site citing the four numbers, to this page |
 | `docs/progress.md` | scope note added next to the same four numbers, plus a forward pointer on the entry that still said "the real measurement is 7 items" — that figure was corrected twice more the same day to 8; the pointer sends readers to the correction rather than rewriting the dated entry |
 
@@ -283,14 +261,19 @@ Raw model records, run ledgers, agent audit output, and private working notes
 are not published. `foundation/experiments/raw/` is not published.
 
 **Baseline.** This update was prepared against `origin/main` at `ec1720a`
-(re-fetched immediately before this page was sent for the final time), and
-against the research workspace at commit `2e271d3`. The workspace kept moving
-throughout — visibly, three times after this branch's first commit, twice in
-ways that changed what this page needed to say (§5's test results, and a
-correction to a claim inside the `12` increments this same page cites) — so
-this is the commit each research file was re-copied from immediately before
-this sentence was written, not "current" as of some earlier point in
-preparing this update.
+(re-fetched immediately before this page was sent for the final time), against
+the research workspace at commit `d20cde7`, and against
+`rust-jpp/crates/jpp-core` specifically at `5bc78a0` (the kernel commit
+`cargo test` in §5 ran against — the workspace commit above is later, but
+touched only `12`/`DECISIONS.md` prose after that kernel commit, not the
+kernel itself). The workspace kept moving throughout preparing this page —
+visibly several times after this branch's first commit, more than once in
+ways that changed what this page needed to say (§5's test results and the
+contrast this update no longer draws, and a correction to a claim inside the
+`12` increments this same page cites) — so these are the commits each
+research file and test result were taken from immediately before this
+sentence was written, not "current" as of some earlier point in preparing
+this update.
 
 ## Verification in this repository / 本仓库验证
 
@@ -311,7 +294,7 @@ This touches `docs/` and `research/` only: no `.py` or `.rs` source under
 
 | Check | Result |
 |---|---|
-| `cargo test` inside `foundation/experiments/conformal-proto/`, against the workspace's `rust-jpp/crates/jpp-core` at the commit named in §5 | **11 passed, 0 failed** (`tests/gate.rs` and `tests/overwrite.rs` rewritten from gap-demonstration to regression-guard tests, explained in §5); independently re-run against the same commit before this update was sent for review |
+| `cargo test` inside `foundation/experiments/conformal-proto/`, against `rust-jpp/crates/jpp-core` at `5bc78a0` | **11 passed, 0 failed** (`tests/gate.rs` and `tests/overwrite.rs` rewritten from gap-demonstration to regression-guard tests, explained in §5); independently re-run twice — once right after the certs-map fix landed, once after `src/lib.rs` was reduced to a re-export of the kernel's own conformal module — with the same result both times |
 | `analyze5_第二个值.py`, re-run | reproduces the §2 numbers: noul +0.527, choice +0.418, score −0.062; lower bounds 0.301→0.392 / 0.243→0.302 / 0.509→0.490 |
 
 ## Next design question / 下一个设计问题
@@ -352,17 +335,6 @@ noul ECE 0.057、noul AUC 0.748、choice 置换一致恒真项这三条限定的
 守住 100%。** 丢失代价最大的两处，是 0.057 已经变成另一个实验预注册里「我赌的结果」的
 前提、且不带任何限定。这次把限定放进下面「证据在哪」列出的每一处，而不是放一处、指望
 自己记得，理由就是这个实测。
-
-**同一段时间里还撞出一个最锋利的对照，照见这类限定为什么难抓。** 准备这篇更新稿的这两
-小时里，第五节的 `conformal-proto` 原型两次编译不过——先是内核给一个类型加了必填字
-段，后是证书的存法被重构——两次都在落地后约两小时内修好，因为 `cargo test` 不让它跑
-过去。而同一个项目里那个改了三次才定案的置换一致计数
-（`docs/updates/2026-09-21-second-correction-and-kernel-progress.md`）用了小半天才
-定下来，因为**没有任何东西逼着谁回头再看一眼**：错的数照样能算出来、照样能跑、每次
-都干干净净地打印出来。**响亮的失败，只要有人愿意看错误信息就能马上修；静默的失败，只
-有人自己决定「我要再看一眼」时才会被修。** 校准集的选择偏倚是同一个形状放大到更大的
-尺度上——它产出的数字一直能算出来、一直长得像数字，把它们再跑一遍，本身永远不会把
-这条缺的范围翻出来。
 
 ### 二、偏倚方向已经测出来，不再只是假设——三种题型里的两种
 
@@ -496,11 +468,7 @@ running 11 tests across src/lib.rs, tests/{boundary,certified,ecal,gate,overwrit
 **准确的原因不只是「一个机制变了」，是这条 `path` 依赖单向且不可见**：内核那边没有
 任何东西知道这个 crate 依赖它某个类型的字段形状，所以内核那边也没有任何办法提醒
 它。这与「一条文档限定不会自动跟着引用它的数字走」（第一节）是同一个形状的缺口，只是
-换到了代码这一层。**这两次
-中断本身也值得对照着看**：**响亮地坏掉的，我们两小时修两次——因为编译器不让它跑，逼
-着立刻修；静默地错掉的**——`docs/updates/2026-09-21-second-correction-and-kernel-progress.md`
-里那个改了三次才对的置换一致计数——**四次才数对一个数，因为没有任何东西逼着任何人再
-看一眼。** 两个故事里「一开始就错」都不是重点，区别在于有没有什么东西坚持要求被检查。
+换到了代码这一层。
 
 （后续小节——证据在哪、本仓库验证、工作区内核上复跑、下一个设计问题——见上方英文
 版，数字与结论完全一致，不再重复。）
