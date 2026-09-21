@@ -273,7 +273,7 @@ whether anything existed to insist on being checked.
 | `research/地基/foundation/experiments/EXPERIMENTS.md` | the same two scope notes placed at each citation site inside this file, plus the new `E-NOUL-HI` pre-registration (§3 above) |
 | `research/地基/09-研究方法与假设账本.md` | ledger entries for this round, synced in full — including entries on other topics from the same working session, per this project's audit-log discipline: a ledger that is curated before publication is a ledger nothing can be audited against |
 | `research/地基/DECISIONS.md` | the decision trail for this round, synced in full, same reasoning — including a public-boundary ruling (`jpp-sync-3`) that caught a client-document classification and Nature's verbatim authorization quote about to be published in this same file, and replaced them at the source with the project's `<!-- 公开替换：… -->` mechanism before this sync copied it |
-| `research/地基/12-IR与类契约-v0.1.md` | synced in full, same reasoning as 09/DECISIONS: a half-stale specification is worse than a stale one, because a reader treats it as current. This round's increments include the "exits do not enter the ledger" correction, the `cut`/taint-drop step, J-15's widened carriers, the three permutation rulings, and three corrected rows in §10's comparison table (including C7: "满足（形式）" → "未实现") |
+| `research/地基/12-IR与类契约-v0.1.md` | synced in full, same reasoning as 09/DECISIONS: a half-stale specification is worse than a stale one, because a reader treats it as current. This round's increments include the "exits do not enter the ledger" correction, the `cut`/taint-drop step, J-15's widened carriers, the three permutation rulings, three corrected rows in §10's comparison table (including C7: "满足（形式）" → "未实现"), and a same-day correction to the `cut`/taint-drop step itself: `Exit.taint` is never read where the original text said it was checked (J-08 reads `self.guards`, populated only at `ExprKind::If`), which exposes a real gap — an irreversible `do` inside a handler arm is unguarded |
 | `research/地基/设计/保形弃权域-设计-2026-09-21.md` | the conformal design in full (§4 above); the scope note from §1 was added to its own text (§0 and §5) before this sync, so the design document does not need this update page to be read alongside it |
 | `research/地基/foundation/experiments/conformal-proto/` | the prototype crate in full (§5 above): `src/lib.rs`, `tests/{boundary,certified,ecal,gate}.rs`, its fixture, the two `analyze*.py` scripts behind §4's numbers, plus two further analysis scripts and a pre-registration (`analyze3_noul_hi.py`, `analyze4_限定留存率.py`, `analyze5_第二个值.py`, `预注册-第二个值.md`) documenting the retention-rate measurement in §1 and the bias-direction measurement in §2 — included for completeness, not because they are all concluded work |
 | `docs/updates/2026-09-21-two-experiments-and-rust-start.md` | pointer added at each site citing the four numbers, to this page |
@@ -283,10 +283,14 @@ Raw model records, run ledgers, agent audit output, and private working notes
 are not published. `foundation/experiments/raw/` is not published.
 
 **Baseline.** This update was prepared against `origin/main` at `ec1720a`
-(re-fetched immediately before this page was written), and against the research
-workspace at commit `fcb563c` — the workspace kept moving while this page was
-drafted; this is the commit checked out immediately before the final copy of
-every research file in this update, not "current" at some earlier point.
+(re-fetched immediately before this page was sent for the final time), and
+against the research workspace at commit `2e271d3`. The workspace kept moving
+throughout — visibly, three times after this branch's first commit, twice in
+ways that changed what this page needed to say (§5's test results, and a
+correction to a claim inside the `12` increments this same page cites) — so
+this is the commit each research file was re-copied from immediately before
+this sentence was written, not "current" as of some earlier point in
+preparing this update.
 
 ## Verification in this repository / 本仓库验证
 
