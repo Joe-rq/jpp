@@ -266,9 +266,10 @@ readings: it **cannot**, for any of the three question types (tightest bounds
 0.319 / 0.269 / 0.251, so any ≤20% target is infeasible), with the same scope
 above applying to those three bounds too. A prototype crate
 (`foundation/experiments/conformal-proto/`) ships alongside it — not part of
-`rust/`, not built by this repository's own tests — currently 9 passed, 1
-failed on purpose (a test that demonstrated a gap since closed by the
-certificate gate it argues for). The pre-registered plan to close the scope
+`rust/`, not built by this repository's own tests — currently 11 passed, 0
+failed (two tests that once demonstrated gaps since closed by the
+certificate gate and the certificate-addressing fix it argues for, rewritten
+as regression guards). The pre-registered plan to close the scope
 by labelling 22 more `noul` items is **withdrawn**: those 22 items do not
 exist in the material; a real path (`E-NOUL-HI`) is pre-registered in their
 place. Documentation only — `src/` unchanged. Full account:
@@ -285,10 +286,43 @@ noul 的错误率要读成**至少 0.392，不是 0.301**——而同一个免�
 **不能**，三种题型都不能（最紧上界 0.319 / 0.269 / 0.251，任何 ≤20% 目标都无解），
 上面同一条范围同样适用于这三个上界。配套的原型 crate
 （`foundation/experiments/conformal-proto/`）不属于 `rust/`，也不在本仓库自己的测试
-范围内——当前 9 通过、1 条故意失败（它当初测的缺口已被它自己主张的证书门堵上）。原定
+范围内——当前 11 通过、0 失败（两条当初测缺口的测试，缺口分别被证书门和证书寻址修
+法堵上后，已改写成回归保护）。原定
 靠再标 22 条 `noul` 来拆掉范围的计划**已撤回**：那 22 条在材料里不存在；换成预注册
 `E-NOUL-HI` 里的真路径。本次只改文档，`src/` 未动。完整内容见
 [2026-09-21 更新](updates/2026-09-21-scope-note-and-conformal-fail.md)。
+
+### 2026-09-21: a second reader, a silent divergence, and a sync tool that now covers what it publishes / 第二个读者、一处静默分叉、一个学会覆盖自己发布内容的同步工具
+
+Three small follow-ups to the entry above. `conformal-proto` carried its own
+copy of eight items also defined in `jpp_core::conformal`, and the copy had
+already silently diverged from the kernel (a parameter renamed `delta` →
+`conf_delta` in the kernel — a deliberate distinction between the conformal
+bound's confidence level and the calibration archive's hysteresis bandwidth —
+never propagated to the copy, and never able to, since a rename in one file
+cannot break compilation in an unrelated one). Fixed by deleting the eight
+copies and re-exporting the kernel's module instead: **11 passed, 0 failed**,
+verified item-by-item byte-identical first. `设计/G3b-零上下文读者第三次-迟到副本.md`
+is added — a second, independent zero-context reader given the identical
+exercise as the already-published `G3`, held back only because it finished
+later; publishing only the faster of two readings is an unchosen selection
+rule with the same shape as this round's calibration-set finding. And
+`tools/sync-from-workspace.sh` now mirrors `conformal-proto/` itself, instead
+of that directory needing a hand copy every round. Documentation and tooling
+only — `src/` unchanged. Full account:
+[2026-09-21 update](updates/2026-09-21-scope-note-and-conformal-fail.md) §6.
+
+对上一条的三处小追加。`conformal-proto` 曾自带八项与 `jpp_core::conformal` 同名的
+拷贝，而这份拷贝已经静默分叉（内核把一个参数从 `delta` 改名为 `conf_delta`——这是
+一条刻意的区分：保形阈值的置信水平与档案的迟滞带宽是两个不同的保证——但这条判断从
+未传到拷贝上，而且永远不会传过去，因为一个文件里的改名不会让另一个无关文件编译不
+过）。修法是删掉八份拷贝，改成引用内核的模块：**11 通过、0 失败**，改之前先逐项核
+对确认逐字节相同。`设计/G3b-零上下文读者第三次-迟到副本.md` 本轮加入——一次给了
+和已发布的 `G3` 完全相同题目的第二个独立零上下文读者，只是交得晚，此前一直没发。只
+发两次阅读里跑得快的那一份，是一条没人选过的选择规则，和这一轮校准集那条发现是同一
+个形状。`tools/sync-from-workspace.sh` 现在自己会镜像 `conformal-proto/`，不用每轮
+手动复制。本次只改文档与同步工具，`src/` 未动。完整内容见
+[2026-09-21 更新](updates/2026-09-21-scope-note-and-conformal-fail.md) 第六节。
 
 # 2026-09-20 — Install, compose and inspect complete methods / 安装并使用完整方法
 
