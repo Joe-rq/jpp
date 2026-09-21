@@ -221,19 +221,21 @@ layer down, in code instead of prose.
 | `research/地基/foundation/experiments/前提结论.md` | §E-CAL 正式版: the selection-bias scope note (§1 above) and the bias-direction measurement (§2 above), in full |
 | `research/地基/foundation/experiments/EXPERIMENTS.md` | the same two scope notes placed at each citation site inside this file, plus the new `E-NOUL-HI` pre-registration (§3 above) |
 | `research/地基/09-研究方法与假设账本.md` | ledger entries for this round, synced in full — including entries on other topics from the same working session, per this project's audit-log discipline: a ledger that is curated before publication is a ledger nothing can be audited against |
-| `research/地基/DECISIONS.md` | the decision trail for this round, synced in full, same reasoning |
+| `research/地基/DECISIONS.md` | the decision trail for this round, synced in full, same reasoning — including a public-boundary ruling (`jpp-sync-3`) that caught a client-document classification and Nature's verbatim authorization quote about to be published in this same file, and replaced them at the source with the project's `<!-- 公开替换：… -->` mechanism before this sync copied it |
+| `research/地基/12-IR与类契约-v0.1.md` | synced in full, same reasoning as 09/DECISIONS: a half-stale specification is worse than a stale one, because a reader treats it as current. This round's increments include the "exits do not enter the ledger" correction, the `cut`/taint-drop step, J-15's widened carriers, the three permutation rulings, and three corrected rows in §10's comparison table (including C7: "满足（形式）" → "未实现") |
 | `research/地基/设计/保形弃权域-设计-2026-09-21.md` | the conformal design in full (§4 above); the scope note from §1 was added to its own text (§0 and §5) before this sync, so the design document does not need this update page to be read alongside it |
 | `research/地基/foundation/experiments/conformal-proto/` | the prototype crate in full (§5 above): `src/lib.rs`, `tests/{boundary,certified,ecal,gate}.rs`, its fixture, the two `analyze*.py` scripts behind §4's numbers, plus two further analysis scripts and a pre-registration (`analyze3_noul_hi.py`, `analyze4_限定留存率.py`, `analyze5_第二个值.py`, `预注册-第二个值.md`) documenting the retention-rate measurement in §1 and the bias-direction measurement in §2 — included for completeness, not because they are all concluded work |
 | `docs/updates/2026-09-21-two-experiments-and-rust-start.md` | pointer added at each site citing the four numbers, to this page |
-| `docs/progress.md` | scope note added next to the same four numbers |
+| `docs/progress.md` | scope note added next to the same four numbers, plus a forward pointer on the entry that still said "the real measurement is 7 items" — that figure was corrected twice more the same day to 8; the pointer sends readers to the correction rather than rewriting the dated entry |
 
 Raw model records, run ledgers, agent audit output, and private working notes
 are not published. `foundation/experiments/raw/` is not published.
 
 **Baseline.** This update was prepared against `origin/main` at `ec1720a`
 (re-fetched immediately before this page was written), and against the research
-workspace at commit `5157d89` — re-checked immediately before writing this
-section, because the workspace kept moving while this page was drafted.
+workspace at commit `fcb563c` — the workspace kept moving while this page was
+drafted; this is the commit checked out immediately before the final copy of
+every research file in this update, not "current" at some earlier point.
 
 ## Verification in this repository / 本仓库验证
 
@@ -247,7 +249,7 @@ This touches `docs/` and `research/` only: no `.py` or `.rs` source under
 | `tools/sync-from-workspace.sh --self-test` | PASS |
 | `tools/sync-from-workspace.sh --filter-only` | 1 redaction marker applied (the conformal design document's absolute workspace path, replaced with the crate's real relative `path` dependency); re-run afterward: 0 remaining |
 | Third-party identifiers | best-effort scan (email-address pattern, the private workspace's own git author string) on the files this update touches: 0 new hits. This update does not have the exact "four tracked categories" tool prior rounds used; flagged in the sync report for confirmation rather than asserted as equivalent |
-| Secret patterns (`ghp_`, `AKIA`, `PRIVATE KEY`, `xox`, `sk-`) | raw hits 3, 3, 3, 3, 6 across the repository — all confirmed non-credential substrings already documented in `research/地基/DECISIONS.md` (`ask-codex-typing`, `dask-jobqueue`, `runtime.py`'s `reason="ask-input"`, and prose describing the redaction rule itself); real credential count: 0 |
+| Secret patterns (`ghp_`, `AKIA`, `PRIVATE KEY`, `xox`, `sk-`) | raw hits 4, 4, 4, 4, 7 across the repository (one point higher per category than the last such report, because a scan report that names these patterns hits itself once it is published — the same self-referential-count effect `research/地基/DECISIONS.md` already documents and rules should not be chased down); every non-report hit is a previously confirmed non-credential substring (`ask-codex-typing`, `dask-jobqueue`, `runtime.py`'s `reason="ask-input"`, `EXPERIMENTS.md`'s sentence describing the redaction rule); real credential count: 0 |
 | Path-level exclusions (`附注/`, `experiments/raw`, `runs/`, `.venv`, verbatim-quote files) | 0 — none of these paths are among the files this update adds or modifies |
 
 ## Verified on the workspace kernel, which is not in this repository / 在工作区内核上复跑（该内核不在本仓库）

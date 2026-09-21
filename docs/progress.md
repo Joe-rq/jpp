@@ -217,7 +217,9 @@ Two `choice` results published in the entry above are withdrawn. Of the 97
 had long candidates and were lowered by the compiler to per-candidate `noul`,
 whose `mode_share` is hard-coded to 1.0 — which is exactly the permutation
 consistency test, so 67 of 74 items were vacuously consistent. The real
-measurement is 7 items, and "no first-position bias" is void because per-candidate
+measurement is 7 items **[this figure was itself wrong, corrected twice more the
+same day — the real measurement is 8, not 7 and not 0; see
+`docs/updates/2026-09-21-second-correction-and-kernel-progress.md` §1]**, and "no first-position bias" is void because per-candidate
 `noul` has no position at all; on the 8 items that really ran `choice` the first
 candidate was chosen 3 times against a ground-truth rate of 1, pointing toward
 bias rather than away from it. The same round corrects E9f-2b′'s accounting:
@@ -233,7 +235,9 @@ and 3.13.
 
 上一条里两句 `choice` 结论作废。E-CAL 的 97 条 `select` 只有 8 条真的发出 `choice`
 物理题，其余因候选过长被编译器下沉成逐候选 noul，而 K-noul 的 `mode_share` 被写死为
-1.0——「置换一致」的判据恰好就是它，所以 74 条里 67 条是恒真项，真测量只有 7 条；
+1.0——「置换一致」的判据恰好就是它，所以 74 条里 67 条是恒真项，真测量只有 7 条
+**〔这个数本身也是错的，同一天又更正了两次，最终值是 8，不是 7 也不是 0，见
+`docs/updates/2026-09-21-second-correction-and-kernel-progress.md` §1〕**；
 「无首位偏置」直接无效，因为逐候选 noul 根本没有位置，在真跑了 choice 的 8 条上首位
 被选 3 次、真值首位 1 次，方向反而朝着有偏置。同一轮还更正 E9f-2b′ 的账：花费
 $0.0027 → **$0.045**、调用 1,633 次（实验脚本的 `reset_stats()` 望远镜求和，不是超
