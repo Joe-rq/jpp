@@ -47,6 +47,21 @@ experiment's pre-registration, unqualified. That measurement is the reason this
 update places the scope note at every site listed in §"Where the evidence is"
 below, rather than in one place and a promise to remember.
 
+**The same two hours also produced the sharpest illustration of why this kind
+of gap is hard to catch.** While this update was being prepared, the
+`conformal-proto` prototype in §5 below broke its own build twice — a required
+field added to one kernel type, then a certificate's storage restructured —
+and both breaks were fixed within roughly two hours of landing, because
+`cargo test` refused to run until they were. The choice-permutation count this
+same project corrected three times over (`docs/updates/2026-09-21-second-correction-and-kernel-progress.md`)
+took most of a day to settle, because nothing forced a second look: the wrong
+number compiled, ran, and printed cleanly every time. **A loud failure gets
+fixed as fast as someone is willing to look at the error; a silent one only
+gets fixed when someone decides, unprompted, to look again.** The calibration
+set's selection bias is the same shape at a larger scale — the numbers it
+produced always computed, always looked like numbers, and nothing about
+running them again would ever have surfaced the scope they needed.
+
 ## 2. The bias direction is now measured, not merely hypothesized — for two of three question types / 偏倚方向已经测出来，不再只是假设——三种题型里的两种
 
 This did not require a single new model call: the selection variable
@@ -180,39 +195,75 @@ is nothing to point that dependency at inside this repository, so `cargo test`
 inside `conformal-proto/` cannot be run here; every number below was verified in
 the private workspace, not in this repository's own CI.
 
-**Current, honest state: 9 passed, 0 failed, 1 test that fails on purpose.**
+**Current, honest state: 11 passed, 0 failed.**
 
 ```
-running 10 tests across src/lib.rs, tests/{boundary,certified,ecal,gate}.rs
-9 passed
-1 FAILED — tests/gate.rs :: 证书门站在待真值到上岗这一步
+running 11 tests across src/lib.rs, tests/{boundary,certified,ecal,gate,overwrite}.rs
+11 passed
 ```
 
-**The failing test is the most publishable line in this section, and it is
-failing for the right reason.** `tests/gate.rs` was written to *demonstrate a
-gap*: it asserted that `store.put("e_cal.noul", 0.78, 0.22, 73, "上岗")` — a
-hand-written threshold with no certificate behind it — succeeds and promotes
-the record to "in service", because at the time nothing in the kernel stopped
-it. That gap has since been closed elsewhere in the workspace kernel by the
-certificate gate described in §4: `put` now refuses a promotion that has no
-certificate behind it. The test still asserts the old, now-wrong expectation,
-so it fails — correctly. **A red test has two possible meanings that look
-identical in the output: "a gap still exists" and "a gap this test was built to
-show has been closed, and the test was not updated to match."** This one is the
-second kind, and it is being published in that state deliberately, because the
-alternative — quietly fixing the assertion before publishing — would erase the
-one piece of evidence that the fix actually landed.
+**Both `gate.rs` and `overwrite.rs` were originally written to *demonstrate a
+gap*, and both gaps have since been closed in the kernel — so both tests were
+rewritten to assert the opposite of what they used to, and both are green
+for that reason, not because nothing was found.** A test that once failed on
+purpose and now passes on purpose looks, in a bare "all green" report,
+identical to a test that never demonstrated anything. The difference is worth
+stating once, in full, rather than leaving it to a reader who happens to open
+the two files.
 
-**A second, smaller version of the same lesson: the crate itself needed a
-one-line fix to compile at all.** The design document's own text reports
-"10 passed" — true at the specific `jpp-core` commit it names (`b3747a0`).
-Since then, `jpp-core` made a `cluster` field on `Sample` required (the
-clustering discipline §4's design argues for), and three call sites in the
-prototype's own test files needed that field added before `cargo test` would
-even compile. **Changing a mechanism does not automatically propagate to
-the trees that depend on it** — the same shape of gap as a documentation
-citation that does not travel with the number it qualifies (§1 above), one
-layer down, in code instead of prose.
+**`gate.rs`'s gap**: a calibration record could be hand-promoted to "in
+service" — `store.put("e_cal.noul", 0.78, 0.22, 73, "上岗")` — with no
+certificate behind the threshold at all, because `put` checked nothing but
+`n > 0`. Closed by adding a certificate gate to `put` itself: a record that
+already carries labelled evidence must go through `commission`, not a
+hand-written line. The gate is deliberately not a wall — **tightening a
+threshold never needs a certificate** (a narrower band releases less, which
+only ever moves toward the conservative side), **only loosening one does**.
+The test now asserts three things instead of one: a hand-written promotion is
+refused, a tightened line is always accepted, and a loosened line is refused
+without a certificate.
+
+**`overwrite.rs`'s gap is the more interesting one, because it was in this
+design's own proposal, not somewhere else in the kernel.** The design said a
+certificate's fields should be "recorded into the calibration record" — but
+recorded into a **field** is not the same as recorded into a **keyed** slot.
+With a single `cert: Option<Cert>` field, committing the same key twice
+silently overwrote the first certificate with the second: measured before the
+fix, committing at α=0.60 produced a line of 0.195, and re-committing the
+same key at the looser α=0.80 replaced it with a line of **0.000** — full,
+unconditional release — leaving a record that looks, field for field,
+identical to one that had only ever been certified once. The original,
+tighter certificate was gone with no trace that it had ever existed. **Fixed
+not by adding a check, but by removing the possibility**: certificates are
+now keyed by address — `(α, δ, cluster-unit)` — so two different
+certifications are two different slots and coexist rather than overwrite, and
+the record always uses whichever certificate has the smallest α (the
+strictest one available). Re-verified on the same fixture after the fix:
+committing at α=0.60 then α=0.80 keeps the line at **0.195**, both
+certificates remain in the record, and committing in the reverse order
+produces the identical result — the line no longer depends on which
+certificate happened to be requested last.
+
+**A second, smaller version of the same lesson, twice over in about two
+hours.** The design document's own text reports "10 passed" — true at the
+specific `jpp-core` commit it names (`b3747a0`). Since then, `jpp-core` made a
+`cluster` field on `Sample` required (the clustering discipline §4's design
+argues for) and then, separately, restructured a certificate from a single
+field into the keyed map described just above — and each change broke this
+prototype's compilation until its call sites were updated to match. **The
+precise reason is not just that a mechanism changed — it's that the `path`
+dependency connecting the two is one-directional and invisible: nothing on
+the kernel side knows this crate depends on the shape of its types, so
+nothing there has any way to warn it.** The same shape of gap as a
+documentation citation that does not travel with the number it qualifies
+(§1 above), one layer down, in code instead of prose. The two breaks are also
+a useful contrast with each other:
+**a loud failure got fixed twice within two hours, because a compiler refused
+to build until it was; a silent one — the choice-permutation count in
+`docs/updates/2026-09-21-second-correction-and-kernel-progress.md` — took four
+attempts to state correctly, because nothing forced anyone to look again.**
+Being wrong is not the interesting part of either story; what differed is
+whether anything existed to insist on being checked.
 
 ## Where the evidence is / 证据在哪
 
@@ -256,7 +307,7 @@ This touches `docs/` and `research/` only: no `.py` or `.rs` source under
 
 | Check | Result |
 |---|---|
-| `cargo test` inside `foundation/experiments/conformal-proto/`, against the workspace's `rust-jpp/crates/jpp-core` at the commit named in §5 | **9 passed, 0 failed, 1 failed on purpose** (`tests/gate.rs`, explained in §5) |
+| `cargo test` inside `foundation/experiments/conformal-proto/`, against the workspace's `rust-jpp/crates/jpp-core` at the commit named in §5 | **11 passed, 0 failed** (`tests/gate.rs` and `tests/overwrite.rs` rewritten from gap-demonstration to regression-guard tests, explained in §5); independently re-run against the same commit before this update was sent for review |
 | `analyze5_第二个值.py`, re-run | reproduces the §2 numbers: noul +0.527, choice +0.418, score −0.062; lower bounds 0.301→0.392 / 0.243→0.302 / 0.509→0.490 |
 
 ## Next design question / 下一个设计问题
@@ -297,6 +348,17 @@ noul ECE 0.057、noul AUC 0.748、choice 置换一致恒真项这三条限定的
 守住 100%。** 丢失代价最大的两处，是 0.057 已经变成另一个实验预注册里「我赌的结果」的
 前提、且不带任何限定。这次把限定放进下面「证据在哪」列出的每一处，而不是放一处、指望
 自己记得，理由就是这个实测。
+
+**同一段时间里还撞出一个最锋利的对照，照见这类限定为什么难抓。** 准备这篇更新稿的这两
+小时里，第五节的 `conformal-proto` 原型两次编译不过——先是内核给一个类型加了必填字
+段，后是证书的存法被重构——两次都在落地后约两小时内修好，因为 `cargo test` 不让它跑
+过去。而同一个项目里那个改了三次才定案的置换一致计数
+（`docs/updates/2026-09-21-second-correction-and-kernel-progress.md`）用了小半天才
+定下来，因为**没有任何东西逼着谁回头再看一眼**：错的数照样能算出来、照样能跑、每次
+都干干净净地打印出来。**响亮的失败，只要有人愿意看错误信息就能马上修；静默的失败，只
+有人自己决定「我要再看一眼」时才会被修。** 校准集的选择偏倚是同一个形状放大到更大的
+尺度上——它产出的数字一直能算出来、一直长得像数字，把它们再跑一遍，本身永远不会把
+这条缺的范围翻出来。
 
 ### 二、偏倚方向已经测出来，不再只是假设——三种题型里的两种
 
@@ -392,30 +454,49 @@ E-CAL 真机读数，不发新调用。
 有东西可以把这条依赖指过去，所以 `cargo test` 在 `conformal-proto/` 目录下**在本仓库
 跑不起来**；下面每个数字都是在研究工作区里验证的，不是本仓库自己的 CI。
 
-**当前的真实状态：9 通过、0 失败、1 条故意失败。**
+**当前的真实状态：11 通过、0 失败。**
 
 ```
-running 10 tests across src/lib.rs, tests/{boundary,certified,ecal,gate}.rs
-9 passed
-1 FAILED — tests/gate.rs :: 证书门站在待真值到上岗这一步
+running 11 tests across src/lib.rs, tests/{boundary,certified,ecal,gate,overwrite}.rs
+11 passed
 ```
 
-**这条红是本节最值得公开的一条，而且它红得对。** `tests/gate.rs` 当初写出来是为了
-**展示一个缺口**：它断言 `store.put("e_cal.noul", 0.78, 0.22, 73, "上岗")`——一条没
-有证书背书的手写阈值——会成功，并把记录推上「上岗」，因为写这条测试的时候，内核里没
-有任何东西拦得住它。这个缺口后来被工作区内核里第四节说的那道证书门堵上了：`put` 现在
-拒绝没有证书背书的上岗。测试本身还断言着旧的、现在已经错误的预期，所以它变红——这是
-对的。**一条变红的测试有两种可能，而它们在输出上长得一模一样：「缺口还在」，与
-「测试当初要展示的缺口已经被堵上，只是测试没有跟着改」。** 这一条是第二种，而且是故意
-带着这个状态发布出来的——如果先把断言悄悄改对再发布，就抹掉了「修法真的落地了」这唯一
-的证据。
+**`gate.rs` 与 `overwrite.rs` 当初都写来展示一个缺口，而两个缺口现在都已被内核堵
+上——所以两条测试都被改写成断言相反的结论，现在全绿，绿是因为缺口没了，不是因为从来
+没查出过什么。** 一条曾经故意红、现在故意绿的测试，在一份「全绿」的报告里和一条从没
+展示过任何东西的测试长得一模一样。这个区别值得完整说一遍，不该留给恰好去翻两个文件的
+读者自己发现。
 
-**同一件事的一个更小版本：这个 crate 本身需要一处一行修法才能编译。** 设计文自己写的
-「10 passed」，在它点名的那个 `jpp-core` 提交（`b3747a0`）上是真的。此后 `jpp-core`
-把 `Sample` 的 `cluster` 字段改成了必填（正是第四节设计自己主张的分簇纪律），原型的三
-处测试字面量因此需要补上这个字段才能编译。**改一个机制，不会自动传播到依赖它的树**
-——这与「一条文档限定不会自动跟着引用它的数字走」（第一节）是同一个形状的缺口，只是
-换到了代码这一层。
+**`gate.rs` 的缺口**：一条校准记录可以被手写推上「上岗」——
+`store.put("e_cal.noul", 0.78, 0.22, 73, "上岗")`——背后没有任何证书，因为 `put`
+只核 `n > 0`。堵法是给 `put` 本身加一道证书门：记录上已经带标注证据时，手写的线不算
+数，必须走 `commission`。这道门刻意不是一堵墙——**收紧阈值永远不需要凭据**（带更窄
+= 放行更少，只会往保守那边走），**只有放宽才要**。测试现在断言三件事而不是一件：手写
+上岗必须被拒、收紧永远放行、放宽没有凭据必须被拒。
+
+**`overwrite.rs` 的缺口更值得讲，因为它出在这份设计自己的提案里，不是内核别处。**
+设计原文说证书要「记进记录」，但「记进**字段**」和「记进**键**」是两件事。证书曾经是
+记录上的单一字段 `cert: Option<Cert>`，于是同一个键认两次，后者会静默覆盖前者——修
+前实测：α=0.60 认出线 0.195，同一个键再用更松的 α=0.80 一认，线变成 **0.000**（从
+「过线才放行」直接变成「全放行」），而覆盖后的记录逐字段看起来和只认证过一次一模一
+样，原来那张更严的证书**连存在过的痕迹都没留下**。**堵法不是加一道检查，是让这个可
+能性不存在**：证书现在按地址存放——`(α, δ, 簇单位)`——两次不同的认证是两个不同的
+槽位，并存而不是互相覆盖，取用时永远取 α 最小（最严）的那张。修后在同一份夹具上复
+核：先认 α=0.60 再认 α=0.80，线仍是 **0.195**，两张证书都还在；反过来先松后严，结果
+逐字节相同——线不再取决于「最后认的是哪张」。
+
+**同一个教训的一个更小版本，而且两小时内撞了两次。** 设计文自己写的「10 passed」，
+在它点名的那个 `jpp-core` 提交（`b3747a0`）上是真的。此后 `jpp-core` 先把 `Sample`
+的 `cluster` 字段改成必填（正是第四节设计自己主张的分簇纪律），接着又把证书从单一字
+段改成上面那种按键存放的结构——每一次改动都让这个原型编译不过，直到调用点跟着改。
+**准确的原因不只是「一个机制变了」，是这条 `path` 依赖单向且不可见**：内核那边没有
+任何东西知道这个 crate 依赖它某个类型的字段形状，所以内核那边也没有任何办法提醒
+它。这与「一条文档限定不会自动跟着引用它的数字走」（第一节）是同一个形状的缺口，只是
+换到了代码这一层。**这两次
+中断本身也值得对照着看**：**响亮地坏掉的，我们两小时修两次——因为编译器不让它跑，逼
+着立刻修；静默地错掉的**——`docs/updates/2026-09-21-second-correction-and-kernel-progress.md`
+里那个改了三次才对的置换一致计数——**四次才数对一个数，因为没有任何东西逼着任何人再
+看一眼。** 两个故事里「一开始就错」都不是重点，区别在于有没有什么东西坚持要求被检查。
 
 （后续小节——证据在哪、本仓库验证、工作区内核上复跑、下一个设计问题——见上方英文
 版，数字与结论完全一致，不再重复。）
