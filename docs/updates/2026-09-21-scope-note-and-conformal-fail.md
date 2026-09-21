@@ -1,9 +1,14 @@
 # 2026-09-21 update: a scope the published numbers were missing, and why it surfaced only now / 已发布数字缺一个适用范围，以及它为什么现在才被发现
 
-Dated update following the practice in `progress.md`. This round adds a scope
-limitation to four already-published numbers, reports a new conformal-design
-result, and syncs a new pre-registration. **No `.py` or `.rs` source in this
-repository changed.**
+Dated update following the practice in `progress.md`. §1–§5 add a scope
+limitation to four already-published numbers, report a new conformal-design
+result, and sync a new pre-registration; these merged as
+[PR #23](https://github.com/Towow-ai/jpp/pull/23). §6, added in a small
+follow-up round, publishes a second independent zero-context reader that had
+been sitting unpublished, syncs a fix to a silent divergence inside the
+conformal prototype, and updates the sync tooling so that prototype no longer
+needs a hand copy each round. **No `.py` or `.rs` source in this repository
+changed.**
 
 ## 1. The calibration set is not a random sample, and four published numbers need a scope they did not have / 校准集不是随机样本，四个已发布数字缺一个此前没写的适用范围
 
@@ -243,6 +248,97 @@ nothing there has any way to warn it.** The same shape of gap as a
 documentation citation that does not travel with the number it qualifies
 (§1 above), one layer down, in code instead of prose.
 
+**A third version of the same lesson turned out to be sitting in this crate
+the whole time, and it is the one worth reading closely, because it is silent
+rather than loud.** `conformal-proto/src/lib.rs` used to carry its own copies
+of eight items that also exist in `jpp_core::conformal` — `certify`,
+`binomial_upper`, `n_needed_zero_error`, `Certificate`, `DriftReport`, `drift`,
+`cluster_subsample` — because the prototype was written before the kernel had
+a conformal module of its own, and nothing ever removed the duplication once
+the kernel caught up. The two copies had already diverged, and the compiler
+had no way to notice: the kernel's `binomial_upper` takes `conf_delta`, the
+prototype's took `delta`. **That rename was not tidying — it was a
+judgment**: a conformal bound's `δ` is a confidence level (how sure the bound
+is allowed to be), while the calibration archive's `δ` is a hysteresis
+bandwidth (how much a reading can drift before it counts as having moved) —
+two different guarantees that must not share a name. That judgment was made
+in the kernel and never propagated to the copy, and it never would have,
+because renaming a parameter in one file has no effect on an unrelated file
+that happens to define a function with the same signature. The two structural
+breaks above were loud — a compiler error, fixed within about two hours each
+time, both times. **This one had been sitting in the same file, past however
+many readings of it, for the whole of this round, because nothing forces
+anyone to reread code that already compiles.**
+
+The fix, verified item by item in `交付-与内核的对照.md` before being applied
+(the kernel's `conf_delta` normalized back to `delta`, then compared
+byte-for-byte, "identical" written down as a result too, not just
+differences): all eight items were identical once the naming was accounted
+for, except that the kernel's `Certificate` and `DriftReport` also derive
+`serde` traits, correctly, because they now have to be stored in a
+calibration record and the prototype's never did. No item favored the
+prototype's version. `src/lib.rs` is now `pub use jpp_core::conformal::*`
+plus the prototype's own E-CAL fixture loader, and the eight duplicated
+definitions are gone. **The dependency this crate has on the kernel used to
+live only as a comment — a promise to keep two copies in sync that nothing
+checked.** It is now load-bearing: with a real re-export instead of a copy, a
+rename in the kernel will break this crate's compile too, the same way a
+required-field addition already did twice above. The drift that used to
+happen for free now costs a compile error, which is the direction this
+project has been trying to move every silent failure in.
+
+## 6. A second independent reader, published for the reason this whole update is about / 第二个独立读者，发布的理由和这篇更新稿的其余部分是同一件事
+
+`设计/G3b-零上下文读者第三次-迟到副本.md` is added this round. Every other file
+under `设计/` was already public; this was the one held back, and not for any
+content reason — it arrived late.
+
+**It is not a copy of the already-published `G3-零上下文读者第三次.md`. It is a
+second, independent reader given the identical exercise**: read only
+`11-语言规范-v1.md` (v1.1), no other file, no internet, then write what you
+understand the language to be, three programs against the same three
+prompts, and where the specification left you guessing. Both submissions are
+71 lines. Both open with the same disclosure sentence. Both write the same
+first program — find pairs of papers that cite the same dataset but reach
+opposite conclusions — as task (a). One reader finished first and was
+published in an earlier round; the other finished later and, until now,
+was not.
+
+**This is the same shape of question this entire update has been about,
+appearing in a place with no numbers in it at all.** Nobody chose to publish
+only the reader who happened to arrive first — arrival order was never
+written down anywhere as a selection rule — but "publish what's on hand,
+publish the rest whenever it turns up" is a rule all the same, and it produced
+exactly the effect a chosen rule would have: one perspective became the
+record, and the second one sat unread. A single-reader read of a specification
+looks complete because it is a full document; the only way to see what it
+missed is to hold a second one next to it, the same way the only way to see
+the calibration set's bias was to ask what "has ground truth" was quietly
+standing in for.
+
+**The two readers' §3 sections — where each records what they had to
+guess — are the part most worth reading side by side**, for two opposite
+reasons. First, agreement that confirms a finding is real rather than one
+reader's noise: both independently flag the exact same gap — the
+specification's `Outlet` type is defined as four cases that do not include
+`Chosen` (the outcome of a `select`/`cmp`/`decide` question), yet the
+specification's own worked examples feed exactly that outcome into a `Map`
+and its own checklist marks the result correct — an inconsistency inside the
+specification itself, reached twice, independently, without either reader
+having seen the other's work.
+Second, a catch that only shows up once: the second reader separately counts
+a mismatched keyword total (the spec's prose says 22, the actual list running
+to 39) that the first reader's read did not surface. Even the correction the
+second reader makes to their own first draft is instructive — an initial
+claim that the grammar has no way to process a whole collection at all is
+narrowed, on a second look, to the more precise gap actually there: a way to
+process a collection exists, but nothing in the grammar lets that processing
+carry a per-element "escalate on uncertain" clause. **A zero-context reader
+experiment's entire value is in where independent readers land the same way
+on a page, and where they land differently on it** — publishing only the
+faster of two readings of the same document quietly halves that value
+without anyone deciding to.
+
 ## Where the evidence is / 证据在哪
 
 | Document | Contents |
@@ -256,24 +352,26 @@ documentation citation that does not travel with the number it qualifies
 | `research/地基/foundation/experiments/conformal-proto/` | the prototype crate in full (§5 above): `src/lib.rs` (now a thin re-export of `jpp_core::conformal::*` plus this crate's own E-CAL fixture loader — it no longer carries its own copy of `certify`/`binomial_upper`/etc., after those were found to have silently diverged from the kernel's own versions and were consolidated to a single reference), `tests/{boundary,certified,ecal,gate,overwrite}.rs`, its fixture, `交付-与内核的对照.md` (the item-by-item comparison behind that consolidation), the two `analyze*.py` scripts behind §4's numbers, plus two further analysis scripts and a pre-registration (`analyze3_noul_hi.py`, `analyze4_限定留存率.py`, `analyze5_第二个值.py`, `预注册-第二个值.md`) documenting the retention-rate measurement in §1 and the bias-direction measurement in §2 — included for completeness, not because they are all concluded work |
 | `docs/updates/2026-09-21-two-experiments-and-rust-start.md` | pointer added at each site citing the four numbers, to this page |
 | `docs/progress.md` | scope note added next to the same four numbers, plus a forward pointer on the entry that still said "the real measurement is 7 items" — that figure was corrected twice more the same day to 8; the pointer sends readers to the correction rather than rewriting the dated entry |
+| `research/地基/设计/G3b-零上下文读者第三次-迟到副本.md` | new this round (§6 above): the second independent zero-context reader's submission, the last file under `设计/` still unpublished |
+| `tools/sync-from-workspace.sh` | now also mirrors `foundation/experiments/conformal-proto/` (excluding `target/` and `Cargo.lock`) on every sync, instead of that directory being copied by hand each round; `--self-test` unaffected and still passes |
 
 Raw model records, run ledgers, agent audit output, and private working notes
 are not published. `foundation/experiments/raw/` is not published.
 
-**Baseline.** This update was prepared against `origin/main` at `ec1720a`
-(re-fetched immediately before this page was sent for the final time), against
-the research workspace at commit `d20cde7`, and against
-`rust-jpp/crates/jpp-core` specifically at `5bc78a0` (the kernel commit
-`cargo test` in §5 ran against — the workspace commit above is later, but
-touched only `12`/`DECISIONS.md` prose after that kernel commit, not the
-kernel itself). The workspace kept moving throughout preparing this page —
-visibly several times after this branch's first commit, more than once in
-ways that changed what this page needed to say (§5's test results and the
-contrast this update no longer draws, and a correction to a claim inside the
-`12` increments this same page cites) — so these are the commits each
-research file and test result were taken from immediately before this
-sentence was written, not "current" as of some earlier point in preparing
-this update.
+**Baseline.** §1–§5 above and the `path` fix in §5 were built on top of, and
+merged as, [PR #23](https://github.com/Towow-ai/jpp/pull/23)
+(`a2ea038`). §6 (the G3b reader, the `conformal-proto` dedup, and the
+`tools/sync-from-workspace.sh` change) is a separate, later round, prepared
+against `origin/main` at `a2ea038` (re-fetched immediately before this page
+was sent for the final time), against the research workspace at commit
+`fc92663`, and against `rust-jpp/crates/jpp-core` specifically at `b36ff2d`
+(re-run there after the workspace moved once more late in preparing this
+round — the certificate-address fix and the dedup do not depend on that later
+kernel commit, and `cargo test` was re-verified against it directly rather
+than assumed unaffected). The workspace kept moving throughout both rounds;
+these are the commits each research file and test result were taken from
+immediately before this sentence was written, not "current" as of some
+earlier point.
 
 ## Verification in this repository / 本仓库验证
 
@@ -294,7 +392,7 @@ This touches `docs/` and `research/` only: no `.py` or `.rs` source under
 
 | Check | Result |
 |---|---|
-| `cargo test` inside `foundation/experiments/conformal-proto/`, against `rust-jpp/crates/jpp-core` at `5bc78a0` | **11 passed, 0 failed** (`tests/gate.rs` and `tests/overwrite.rs` rewritten from gap-demonstration to regression-guard tests, explained in §5); independently re-run twice — once right after the certs-map fix landed, once after `src/lib.rs` was reduced to a re-export of the kernel's own conformal module — with the same result both times |
+| `cargo test` inside `foundation/experiments/conformal-proto/`, against `rust-jpp/crates/jpp-core` | **11 passed, 0 failed**, independently re-run four times across this update's two rounds — after the certs-map fix, after `src/lib.rs` was reduced to a re-export of the kernel's own conformal module, and twice more as the kernel moved on to unrelated work (`5bc78a0`, then `b36ff2d`) — same result every time (`tests/gate.rs` and `tests/overwrite.rs` rewritten from gap-demonstration to regression-guard tests, explained in §5) |
 | `analyze5_第二个值.py`, re-run | reproduces the §2 numbers: noul +0.527, choice +0.418, score −0.062; lower bounds 0.301→0.392 / 0.243→0.302 / 0.509→0.490 |
 
 ## Next design question / 下一个设计问题
@@ -469,6 +567,63 @@ running 11 tests across src/lib.rs, tests/{boundary,certified,ecal,gate,overwrit
 任何东西知道这个 crate 依赖它某个类型的字段形状，所以内核那边也没有任何办法提醒
 它。这与「一条文档限定不会自动跟着引用它的数字走」（第一节）是同一个形状的缺口，只是
 换到了代码这一层。
+
+**同一个教训的第三个版本，其实一直就躺在这个 crate 自己里面，而且它更值得细看，因为
+它是静默的，不是响亮的。** `conformal-proto/src/lib.rs` 曾经自带八项与
+`jpp_core::conformal` 同名的拷贝——`certify`、`binomial_upper`、
+`n_needed_zero_error`、`Certificate`、`DriftReport`、`drift`、
+`cluster_subsample`——因为这份原型写在内核有自己的保形模块之前，内核后来跟上了，
+但没有人把重复的那份删掉。**两份拷贝已经分叉，而编译器完全看不出来**：内核的
+`binomial_upper` 参数叫 `conf_delta`，原型的叫 `delta`。**那次改名不是整理，是一条
+判断**：保形阈值的 `δ` 是**置信水平**（这条上界允许有多大把握成立），档案里的 `δ`
+是**迟滞带宽**（读数抖动多少还不算变）——**两个完全不同的保证，不许共用一个名
+字**。这条判断在内核里做了，却从没传到原型的拷贝上，而且**永远不会传过去**：在一个
+文件里把参数改名，不会影响另一个恰好定义了同名函数的无关文件。上面那两次结构性中断
+是响亮的——各自都是一次编译错误，各自都在约两小时内修好。**这一处不一样，它在同一
+个文件里，经过这一轮不知道多少次阅读，一直躺在那儿没被发现，因为没有任何东西逼着谁
+去重读一段已经编译通过的代码。**
+
+修法先在 `交付-与内核的对照.md` 里逐项核过才动手（把内核的 `conf_delta` 归一化回
+`delta` 再逐字节比对，「一样」也照实写进去，不是只写差异）：八项在参数名对齐之后逐
+字节相同，唯一的差别是内核给 `Certificate` 与 `DriftReport` 多加了 `serde` 派
+生——这一处内核对，因为它们现在要进校准记录，必须可序列化，原型从来不需要。**没有
+一项是原型更对的。** `src/lib.rs` 现在只剩 `pub use jpp_core::conformal::*` 加原
+型自己的 E-CAL 夹具装载器，八份拷贝全部删掉。**这个 crate 对内核的依赖，原先只活在
+一句注释里——一个没有任何东西核验过的「记得保持同步」的承诺。** 现在它是承重件了：
+换成真引用之后，内核改名也会让这个 crate 编译不过，和上面那两次必填字段的改动一
+样。这条此前免费发生的漂移，现在要付一次编译错误的代价——这正是这个项目一直想把每
+一种静默失效推向的方向。
+
+### 六、第二个独立读者，发布的理由和这篇更新稿的其余部分是同一件事
+
+`设计/G3b-零上下文读者第三次-迟到副本.md` 本轮加入。`设计/` 下其余文件早已公开；只
+留下这一份，不是因为内容有问题——是它迟到了。
+
+**它不是已发布的 `G3-零上下文读者第三次.md` 的副本，是一次给了同一道题的第二个独立
+读者**：只读 `11-语言规范-v1.md`（v1.1），不看仓库里任何别的文件，不联网，写下自己
+理解的这门语言是什么、按同样三道任务写三个程序、以及规范哪里逼着你自己猜。两份都是
+71 行，开头都是同一句声明，第一个程序都写的是「找出互相引用同一数据集但结论相反的
+论文对」。一个读者先交，已经在上一轮发布；另一个读者交得晚，直到现在没有。
+
+**这正是这篇更新稿全文都在讲的那件事，只是这次出现在一个完全不带数字的地方。** 没
+有人刻意只发先到的那个读者——「按到达顺序」从来没有被写成一条选择规则——但「手上有
+什么就发什么，剩下的等它自己出现再发」本身就是一条规则，而它产生的效果和一条被选中
+的规则一模一样：一个视角变成了记录，另一个就晾在那儿没人读。**单独一份读者作业读起
+来是完整的，因为它是一整份文档；唯一能看出它漏了什么的办法，是拿第二份摆在旁边**——
+和校准集的偏倚只能靠去问「有真值」在悄悄替换什么才看得出来，是同一个道理。
+
+**两位读者的第三节——各自记下自己猜了哪里——最值得放在一起读，理由恰好相反的两
+个。** 第一个理由：**独立达成的一致，能证明一个发现是真的，不是某个读者自己的噪
+声**——两人各自都指出同一个缺口：规范把 `Outlet` 定义死成四种，没有把 `Chosen`
+（`select`/`cmp`/`decide` 的出口）算进去，而规范自己的示例却把这种出口直接塞进
+`Map`，规范自己的核对表还标着「✓」——**这是规范自身的自相矛盾，两人在完全没看过对
+方作业的情况下各自独立撞见了两次**。第二个理由：**只出现一次的发现同样值钱**——第
+二个读者另外数出关键字数量对不上（正文写 22 个，实际列出 39 个），第一个读者没有查
+这一项。**连第二个读者自己订正自己第一版的那处也值得看**：初稿写「文法完全没法处理
+一整个集合」，第二遍读收窄成更准确的那个缺口——集合处理是有的，缺的是没办法给这种
+处理挂一条逐元素「不确定就升级」的子句。**零上下文读者实验的全部价值，就在独立读者
+在同一页上读到一样的地方，也在他们读到不一样的地方**——只发两次阅读里跑得快的那一
+份，会在没人决定的情况下悄悄把这份价值砍掉一半。
 
 （后续小节——证据在哪、本仓库验证、工作区内核上复跑、下一个设计问题——见上方英文
 版，数字与结论完全一致，不再重复。）
