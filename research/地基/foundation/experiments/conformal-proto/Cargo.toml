@@ -1,0 +1,12 @@
+[package]
+name = "conformal-probe"
+version = "0.1.0"
+edition = "2021"
+
+# **只读引用 jpp-core**：本 crate 不在它的 workspace 里，不改它一个字节。
+# 引它是为了证明「证书落在哪儿」——落在 CalibStore 的记录上，不是新造一个库。
+[dependencies]
+jpp-core = { path = "../../../rust-jpp/crates/jpp-core" }
+serde_json = "1"
+
+[workspace]
