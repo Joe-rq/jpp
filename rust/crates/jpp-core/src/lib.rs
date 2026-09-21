@@ -12,13 +12,15 @@
 
 pub mod ast;
 pub mod check;
+pub mod conformal;
 pub mod effects;
 pub mod interp;
 pub mod ledger;
+pub mod strength;
 pub mod value;
 
 pub use ast::{Block, Budget, Expr, ExprKind, Function, Parameter, Program, Span, Statement, Type};
-pub use check::{Diagnostic, Report, Severity, check};
+pub use check::{Diagnostic, Report, Severity, check, check_with_profile};
 pub use effects::{CalibRecord, CalibStore, Client, EffectError, FixedClient, JevClient, NoCallClient, obs_key};
 pub use interp::{ActionRegistry, Cost, Interp, Outcome, RtError, TaintOut};
 pub use ledger::{Entry, Header, Ledger, Trace, TraceEvent};
@@ -68,12 +70,34 @@ pub fn run(
     actions: &ActionRegistry,
     ledger: &mut Ledger,
 ) -> Result<Outcome, Error> {
-    let report = check(program);
+    // **档案走到检查器**（`12` §1.2）。传 `check(program)` 会让降级规则永远够不着真实运行
+    // ——那样管道就只在测试里通，而**一个只在测试里通的管道是构造，不是功能**。
+    let report = check_with_profile(program, &calib.profile);
     if !report.is_ok() {
         return Err(Error::Check(report));
     }
     let budget = program.budget.clone().expect("检查器保证预算存在（E12）");
     Interp::new(client, ledger, calib, actions, budget).run(program).map_err(Error::Runtime)
+}
+
+/// 带 `fit` 注册表的入口（`12` §6.0 的 fit 桥要用它）。
+/// `run` 是它 fit 表为空的特例——绝大多数程序不用 fit。
+pub fn run_with_fits(
+    program: &Program,
+    client: &mut dyn Client,
+    calib: &CalibStore,
+    actions: &ActionRegistry,
+    fits: &effects::FitRegistry,
+    ledger: &mut Ledger,
+) -> Result<Outcome, Error> {
+    // **档案走到检查器**（`12` §1.2）。传 `check(program)` 会让降级规则永远够不着真实运行
+    // ——那样管道就只在测试里通，而**一个只在测试里通的管道是构造，不是功能**。
+    let report = check_with_profile(program, &calib.profile);
+    if !report.is_ok() {
+        return Err(Error::Check(report));
+    }
+    let budget = program.budget.clone().unwrap_or(Budget { calls: 0, cost: 0.0, depth: None, escalate: None });
+    interp::Interp::with_fits(client, ledger, calib, actions, fits, budget).run(program).map_err(Error::Runtime)
 }
 
 /// 跳过静态检查直接执行——只给检查器本身的对照测试用；正常路径请用 [`run`]。

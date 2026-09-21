@@ -19,3 +19,5 @@ live = ["ureq"]
 # 这是 cargo 允许的 dev 依赖环（jpp-frontend 正式依赖 jpp-core），不进交付产物。
 [dev-dependencies]
 jpp-frontend = { path = "../jpp-frontend" }
+# 对照基准 tests/oracle/oracle.json 是 Python 内核跑出来的，测试要读它
+serde_json = "1"

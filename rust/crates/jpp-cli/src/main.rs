@@ -31,7 +31,20 @@ fn execute(command: Command) -> Result<(), String> {
         return Ok(());
     }
     let program = jpp_frontend::lower(parsed).map_err(|e| loaded.render(&e))?;
-    let report = jpp_core::check::check(&program);
+    // 越界接线：类假设降级（`12` §1）要靠档案才走得到。没有 `--profile` 时
+    // `Profile::default()` 的 `hash` 是 `None`，`check_with_profile` 会退回「没档案」那一路
+    // ——**行为与以前逐字节相同**。
+    let 档案 = match &command {
+        options::Command::Run(r) => r.profile.as_ref(),
+        _ => None,
+    };
+    let report = match 档案 {
+        Some(p) => {
+            let prof = jpp_core::effects::Profile::load(p).map_err(|e| format!("{}: {e}", p.display()))?;
+            jpp_core::check::check_with_profile(&program, &prof)
+        }
+        None => jpp_core::check::check(&program),
+    };
     for d in &report.diagnostics {
         let diagnostic = jpp_frontend::Diagnostic::new(
             format!("{}: {}", d.rule, d.message),

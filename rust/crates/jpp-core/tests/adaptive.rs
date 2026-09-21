@@ -183,7 +183,13 @@ fn 二分选问十题定位目标() {
     assert_eq!(outcome.cost.calls, 10, "十问就是十次调用，正好用完 budget.calls");
     assert_eq!(client.log.len(), 10, "十次固定观察全部命中");
     assert_eq!(outcome.trace.count("judge", false), 10);
-    assert!(outcome.trace.warnings.is_empty(), "不该有 W-bound / W-header / returned_unsure：{:?}", outcome.trace.warnings);
+    // **断的是它真正要断的那三条，不是「一条告警都没有」。**
+    // 原来写的是 `warnings.is_empty()`，于是任何一条新告警都会把它打红——
+    // 而这里的线是手填的 `n=120`、没有证书，`W-uncertified` 本来就该响。
+    // **一个「不许有任何告警」的断言，会逼着后来的人去掐掉正确的告警。**
+    for w in &outcome.trace.warnings {
+        assert!(w.starts_with("W-uncertified"), "不该有 W-bound / W-header / returned_unsure：{:?}", outcome.trace.warnings);
+    }
 }
 
 #[test]
@@ -202,7 +208,9 @@ fn 同程序重放零调用() {
     assert_eq!(again.cost.calls, 0, "重放零调用");
     assert_eq!(again.cost.replayed, 10, "十次判断全部命中账本");
     assert_eq!(again.trace.count("judge", true), 10);
-    assert!(again.trace.warnings.is_empty(), "账本头一致，不该有 W-header：{:?}", again.trace.warnings);
+    for w in &again.trace.warnings {
+        assert!(w.starts_with("W-uncertified"), "账本头一致，不该有 W-header：{:?}", again.trace.warnings);
+    }
 }
 
 /// 错的效应标注要拦得住，位置指着那个方法的定义。
