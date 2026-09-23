@@ -2,6 +2,12 @@
 
 Updated: 2026-09-23. This is a dated report, not an automatically updated dashboard.
 
+## 2026-09-23: concrete implementation handoff / 下一段具体施工交接
+
+Prepare the next implementation package: shared native source constructions, two programs whose results compose again, followed by real JEV CLI integration and a consolidated release. Identify existing code and observable acceptance behavior; retire stale waiting instructions in the local handoff. This prepares work without launching an executor or changing runtime behavior. [Implementation task](implementation-handoff-2026-09-23.zh-CN.md).
+
+明确下一段施工：共同原生源码构造、两份组合结果能再次组合的程序，随后真实 JEV CLI 接线与整版交付。列出现有代码及行为验收，并在本地入口更新历史等待状态。本轮准备任务，尚未启动执行或修改运行代码。[具体实施任务](implementation-handoff-2026-09-23.zh-CN.md)。
+
 ## 2026-09-23: overall design and delivery map / 总设计与交付地图
 
 Connect the original five-step implementation plan to the current language layers, verified example behavior, remaining construction work and publication status. Distinguish semantic collection capabilities from similarly named list/reading operations, and propose completion packages without replacing the current contracts. This is documentation only: existing verification records and selected source were inspected; no new runtime change or model experiment was performed. [Read the map](design-and-delivery-map.zh-CN.md).
