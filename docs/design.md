@@ -2,6 +2,8 @@
 
 ## Read the language specifications / 阅读语言规范
 
+Start with the [overall design and delivery map / 总设计与交付地图](design-and-delivery-map.zh-CN.md) for the architecture, original five-step plan, current research/publication status and proposed completion packages (2026-09-23). 查看各层职责、已有实际效果及下一段交付；该地图不替代下列规范。
+
 **Standalone J++ source now executes through one Rust kernel.** The [native package](../rust/README.md) includes parsing, shared checking, interpretation and CLI commands. Read the [implemented grammar](../rust/FRONTEND.md), [source/direct-core equivalence](../rust/COMPARISON.md) and [implementation decision](adr/0001-rust-kernel.md).
 
 **独立 J++ 源码已能通过 Rust 内核运行。** [原生包](../rust/README.md)提供解析、共同检查和解释执行；组合方法、自适应选问及部分结果继续求解都写成可运行源码。历史 EBNF 仍是设计参考，实际支持的源码形式见[当前文法](../rust/FRONTEND.md)。

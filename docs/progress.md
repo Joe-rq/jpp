@@ -2,6 +2,12 @@
 
 Updated: 2026-09-23. This is a dated report, not an automatically updated dashboard.
 
+## 2026-09-23: overall design and delivery map / 总设计与交付地图
+
+Connect the original five-step implementation plan to the current language layers, verified example behavior, remaining construction work and publication status. Distinguish semantic collection capabilities from similarly named list/reading operations, and propose completion packages without replacing the current contracts. This is documentation only: existing verification records and selected source were inspected; no new runtime change or model experiment was performed. [Read the map](design-and-delivery-map.zh-CN.md).
+
+将原五步实施计划、语言各层、已有程序效果、剩余建设及公开状态连成一张图。澄清语义集合能力与同名列表/读数操作的区别，整理后续交付包，继续沿用现行契约。本轮只更新文档，读取已有验证记录并核对部分源码，没有改运行代码或进行新模型实验。[总设计与交付地图](design-and-delivery-map.zh-CN.md)。
+
 ## 2026-09-23: complex composition and a verified foundation / 复杂组合定位与地基现状核对
 
 Clarify the target: a small set of underlying constructs should generate many complex algorithms, and composed results should compose again. Consolidate the external research as reference material. Re-run the local research Rust workspace at `520fef2`: 315 tests passed, zero failed, three ignored; direct examples reproduce nested methods, adaptive questions, partial continuation and zero-call replay. These are research-workspace results, not a new public runtime release or a live-model benchmark. The first complete language body remains unfinished. [Modules, effects, work distribution and remaining scope](updates/2026-09-23-composable-foundation-status.md).
