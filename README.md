@@ -4,7 +4,7 @@
 
 **Compose questions. Compose methods. Compose the compositions.**
 
-[简体中文](README.zh-CN.md) · [Why J++](docs/why-jpp.md) · [Progress](docs/progress.md) · [Language design & grammar](docs/design.md) · [Contributing](CONTRIBUTING.md)
+[简体中文](README.zh-CN.md) · [Why J++](docs/why-jpp.md) · [Ecosystem reassessment](docs/updates/2026-09-23-ecosystem-reassessment.md) · [Progress](docs/progress.md) · [Language design & grammar](docs/design.md) · [Contributing](CONTRIBUTING.md)
 
 J++ is an experimental programming-language project exploring semantic judgment as a programmable operation. Questions are values. Methods are values. A composed method can become a building block in another method.
 

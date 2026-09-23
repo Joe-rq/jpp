@@ -4,7 +4,7 @@
 
 **组合问题，组合方法，再组合这些组合。**
 
-[English](README.md) · [为什么做 J++](docs/why-jpp.zh-CN.md) · [当前进度](docs/progress.md) · [语言设计与文法](docs/design.md) · [参与贡献](CONTRIBUTING.md)
+[English](README.md) · [为什么做 J++](docs/why-jpp.zh-CN.md) · [生态复盘](docs/updates/2026-09-23-ecosystem-reassessment.md) · [当前进度](docs/progress.md) · [语言设计与文法](docs/design.md) · [参与贡献](CONTRIBUTING.md)
 
 J++ 是一门正在开发的实验性编程语言。我们想让语义判断成为可以编程的基本操作：问题可以保存、传递和组合；求解方法也可以保存、传递和组合；复杂方法封装以后，仍然可以成为下一个方法的基本单元。
 

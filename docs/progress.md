@@ -2,6 +2,49 @@
 
 Updated: 2026-09-23. This is a dated report, not an automatically updated dashboard.
 
+## 2026-09-23: review and integrate the open PRs / 审查并整合待合入 PR
+
+#17's community examples, #25's Rust synchronization and #20's design-revision record
+are merged. #25 received public-test portability repairs, a rebuilt browser bundle and
+two reproduced numerical fixes; #20 keeps an enabled exact overflow-span regression.
+Rust and Python 3.12/3.13 CI pass. #26 reconciles the current design map and implementation
+handoff with that public baseline; local links in its changed documents were checked.
+See the [review record](updates/2026-09-23-pr-integration.md).
+
+#17 社区示例、#25 Rust 同步、#20 设计记录已合入。修复公开测试路径、浏览器源码包
+及两处数值边界错误，补上整数溢出准确位置回归；Rust 和 Python 双版本 CI 通过。
+#26 将总设计图与下一段实施任务对齐这一公开基线。统计选线的一般保证、真机 CLI
+和后续研究增量仍分别列为未完成工作，不混成已交付能力。
+
+## 2026-09-23: correct stable documentation drift / 校正稳定文档漂移
+
+Check stable documents against code and available execution evidence. Correct source-example and `ask` coverage descriptions in the research tree, distinguish old backlog snapshots from current work, and record the bounded OCaml paper exploration. Retain unfinished experiments and the research/public-runtime boundary. No runtime changed. [Correction details](updates/2026-09-23-documentation-drift.md).
+
+对照代码与已有执行证据，修正研究区示例数量和 `ask` 覆盖表述，标清旧待办快照，补记 OCaml 纸面探索的阶段边界。未验证实验与研究/公开版本区别保留，不修改运行代码。[校正明细](updates/2026-09-23-documentation-drift.md)。
+
+## 2026-09-23: concrete implementation handoff / 下一段具体施工交接
+
+Prepare the next implementation package: shared native source constructions, two programs whose results compose again, followed by real JEV CLI integration and a consolidated release. Identify existing code and observable acceptance behavior; retire stale waiting instructions in the local handoff. This prepares work without launching an executor or changing runtime behavior. [Implementation task](implementation-handoff-2026-09-23.zh-CN.md).
+
+明确下一段施工：共同原生源码构造、两份组合结果能再次组合的程序，随后真实 JEV CLI 接线与整版交付。列出现有代码及行为验收，并在本地入口更新历史等待状态。本轮准备任务，尚未启动执行或修改运行代码。[具体实施任务](implementation-handoff-2026-09-23.zh-CN.md)。
+
+## 2026-09-23: overall design and delivery map / 总设计与交付地图
+
+Connect the original five-step implementation plan to the current language layers, verified example behavior, remaining construction work and publication status. Distinguish semantic collection capabilities from similarly named list/reading operations, and propose completion packages without replacing the current contracts. This is documentation only: existing verification records and selected source were inspected; no new runtime change or model experiment was performed. [Read the map](design-and-delivery-map.zh-CN.md).
+
+将原五步实施计划、语言各层、已有程序效果、剩余建设及公开状态连成一张图。澄清语义集合能力与同名列表/读数操作的区别，整理后续交付包，继续沿用现行契约。本轮只更新文档，读取已有验证记录并核对部分源码，没有改运行代码或进行新模型实验。[总设计与交付地图](design-and-delivery-map.zh-CN.md)。
+
+## 2026-09-23: complex composition and a verified foundation / 复杂组合定位与地基现状核对
+
+Clarify the target: a small set of underlying constructs should generate many complex algorithms, and composed results should compose again. Consolidate the external research as reference material. Re-run the local research Rust workspace at `520fef2`: 315 tests passed, zero failed, three ignored; direct examples reproduce nested methods, adaptive questions, partial continuation and zero-call replay. These are research-workspace results, not a new public runtime release or a live-model benchmark. The first complete language body remains unfinished. [Modules, effects, work distribution and remaining scope](updates/2026-09-23-composable-foundation-status.md).
+
+明确目标：少量底层构造支撑多种复杂算法，组合结果继续组合；外部调查整理为参考依据。本地研究 Rust `520fef2` 复跑315项通过、0失败、3忽略，直接复现方法再组合、自适应选问、部分结果续接和零调用重放。这是研究工作区验证，不是新公开运行版本或模型基准；第一版完整主体仍未完成。[模块、效果、工作分布与剩余范围](updates/2026-09-23-composable-foundation-status.md)。
+
+## 2026-09-23: source-based ecosystem reassessment / 根据公开源码重新核对生态需求
+
+Fresh public-source collection and static reviews revise earlier ecosystem claims: typed question composition, adaptive algorithms, caching, budgets and several fallback policies already have implementations. Developer requests, implemented responses and inferred needs are separated; public issue counts are not treated as independent demand votes. Compatible local endpoints differ in capability and confidence semantics. The next proposed comparisons test complex composition, evidence coverage, budgets, cache costs and real effects. No downloaded project or model benchmark was executed, and no runtime changed in this publication. [Evidence and implications](updates/2026-09-23-ecosystem-reassessment.md).
+
+重新采集公开源码并深读，订正此前判断：类型化题集、自适应算法、缓存、预算和多种失败处理已有实现。明确请求、已有应对与推断需求分开记录，不将 issue 数量当独立需求票数；本地兼容接口也不能抹平能力及置信度含义的差异。后续对照围绕复杂组合、输入覆盖、预算、缓存代价和真实动作。本轮未执行第三方项目或模型基准，公开同步未改运行代码。[证据与建设影响](updates/2026-09-23-ecosystem-reassessment.md)。
 ## 2026-09-23: reconcile the design-revision PR / 整理设计修订 PR
 
 PR #20 now preserves the current `12`/`13` authority documents while retaining its dated

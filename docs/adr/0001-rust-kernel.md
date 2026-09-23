@@ -60,6 +60,15 @@ published with the existing bilingual progress practice. This update records the
 policy only: it does not start an OCaml experiment, install a toolchain or claim a
 completed mixed-language system. 实验随真实设计问题安排，本轮只记录规范，不启动安装或实验。
 
+The 2026-09-21 phase note analyzed three type-system questions on paper. It did not
+compile an OCaml program and produced no adoption decision to change the formal host
+or add an OCaml component; it left two host-independent suggestions. This is not a
+measured benefit or failure result, and does not preclude a future experiment.
+
+2026-09-21 的阶段记录只对三个类型系统问题作了纸面分析，没有编译 OCaml 程序，
+也没有形成改换正式宿主或引入 OCaml 正式组件的采用结论；记录留下两条与宿主无关的
+建议。这不构成收益或失败的实测结论，也不否定未来实验。
+
 ## Preserve and build / 保留与建设
 
 The published Python packages and demonstrations remain available as behavior
