@@ -1603,12 +1603,15 @@ impl<'a> Interp<'a> {
     }
 
     /// 记一组题的缺席或超时（B32）：标记给 `cut`，账本记事件（重放据此复现），trace 留痕。
-    fn 记缺席(&mut self, items: &[(Rc<Question>, Rc<Reading>, String)], cause: &str, site: Span, detail: String) {
+    /// `attempts`（PR #30 评审 4082390412）：这一组题这一轮实际向后端发出的尝试次数——
+    /// 只是记进账本供审计参考，不是新的重放分支（v1 账本没有专门的 Absent 变体，
+    /// 借 `Entry::Effect` 的 `output` JSON 带这个字段，缺省读不到即 0，旧账本行为不变）。
+    fn 记缺席(&mut self, items: &[(Rc<Question>, Rc<Reading>, String)], cause: &str, site: Span, detail: String, attempts: u64) {
         for (_, _, k) in items {
             self.absent_marks.insert(k.clone(), cause.to_string());
             let mk = format!("absent:{k}");
             if self.ledger.get(&mk).is_none() {
-                self.ledger.put(Entry::Effect { key: mk.clone(), kind: "absent".into(), output: serde_json::json!({"cause": cause, "detail": detail}), cost: 0.0 });
+                self.ledger.put(Entry::Effect { key: mk.clone(), kind: "absent".into(), output: serde_json::json!({"cause": cause, "detail": detail, "attempts": attempts}), cost: 0.0 });
             }
             self.trace.push("absent", &mk, false, 0.0, site, format!("{cause}：{detail}"));
         }
@@ -1616,11 +1619,11 @@ impl<'a> Interp<'a> {
     }
 
     /// 缺席策略的 `then`（B32）：escalate → 程序挂起待续跑；conservative → 出口 Unsure(absent) 继续；fail → 运行期错误。
-    fn 缺席处置(&mut self, items: &[(Rc<Question>, Rc<Reading>, String)], pol: &crate::ast::AbsentPolicy, site: Span, detail: String) -> R<()> {
+    fn 缺席处置(&mut self, items: &[(Rc<Question>, Rc<Reading>, String)], pol: &crate::ast::AbsentPolicy, site: Span, detail: String, attempts: u64) -> R<()> {
         match pol.then.as_str() {
             "fail" => err(None, format!("判断器缺席（absent.then=fail）：{detail}"), site),
             "conservative" => {
-                self.记缺席(items, "absent", site, detail);
+                self.记缺席(items, "absent", site, detail, attempts);
                 Ok(())
             }
             _ => {
@@ -1713,21 +1716,25 @@ impl<'a> Interp<'a> {
             // **时延预算已用完**（B32）：之后的判断站点转 `Unsure(latency)`，不静默继续，也不再发
             if let Some(lim) = self.budget.latency_p95 {
                 if self.latency_spent > lim {
-                    self.记缺席(&items, "latency", site, format!("时延预算 {lim}s 已用完（已用 {:.2}s）", self.latency_spent));
+                    self.记缺席(&items, "latency", site, format!("时延预算 {lim}s 已用完（已用 {:.2}s）", self.latency_spent), 0);
                     continue;
                 }
             }
             // **熔断**（B32）：连续缺席到上限后不再发
             if let Some(pol) = self.budget.absent.clone() {
                 if self.consecutive_absent >= pol.breaker {
-                    self.缺席处置(&items, &pol, site, format!("熔断：连续缺席 {} 次", self.consecutive_absent))?;
+                    self.缺席处置(&items, &pol, site, format!("熔断：连续缺席 {} 次", self.consecutive_absent), 0)?;
                     continue;
                 }
             }
             self.charge(1, 0.0, site)?;
             let ask: Vec<&Question> = items.iter().map(|(q, _, _)| q.as_ref()).collect();
             let 起 = std::time::Instant::now();
+            // **每次发出都计费**（PR #30 评审 4082390412）：首发已在上面核过预算，这里记一次；
+            // 重试前各核一次预算，每次发出（无论成败）都计入 cost.calls，不让重试绕开预算检查。
             let mut 结果 = self.client.judge(&state, &ask);
+            self.cost.calls += 1;
+            let mut 尝试 = 1u64;
             // **重试与退避**（B32）：只有声明了 absent 策略才重试；没声明沿用旧行为（客户端错误即运行期错误）
             if let Some(pol) = self.budget.absent.clone() {
                 let mut 等 = pol.backoff;
@@ -1738,23 +1745,31 @@ impl<'a> Interp<'a> {
                     }
                     等 *= 2.0;
                     次 += 1;
+                    self.charge(1, 0.0, site)?;
                     结果 = self.client.judge(&state, &ask);
+                    self.cost.calls += 1;
+                    尝试 += 1;
                 }
+                // **失败路径也计时延**（PR #30 评审 4082390412）：退避睡眠与各次失败请求都占时延预算，
+                // 不再因为下面提前 continue 而漏计。
+                let 用时 = 起.elapsed().as_secs_f64();
+                self.latency_spent += 用时;
                 if let Err(e) = &结果 {
                     self.consecutive_absent += 1;
-                    self.缺席处置(&items, &pol, site, format!("判断器不可用（重试 {次} 次）：{}", e.0))?;
+                    self.缺席处置(&items, &pol, site, format!("判断器不可用（重试 {次} 次）：{}", e.0), 尝试)?;
                     continue;
                 }
                 self.consecutive_absent = 0;
+            } else {
+                let 用时 = 起.elapsed().as_secs_f64();
+                self.latency_spent += 用时;
             }
-            let 用时 = 起.elapsed().as_secs_f64();
-            self.latency_spent += 用时;
             let res = 结果.map_err(|e| Fault::Error(RtError::new(None, format!("客户端错误：{}", e.0), site)))?;
             if res.answers.len() != ask.len() {
                 return err(None, "客户端返回的答案数与题数不符", site);
             }
             // 13 §5：后端已经返回 = 调用已经发生、钱已经花了。先把事实记下来，再决定要不要继续。
-            self.cost.calls += 1;
+            // （调用次数已在发出时逐次计过，含失败的重试）
             self.cost.tokens += res.tokens;
             self.cost.usd += res.cost;
             layer_calls += 1;
@@ -1797,7 +1812,7 @@ impl<'a> Interp<'a> {
             // **超时站点**（B32）：这一次调用把累计时延推过预算，本组题转 `Unsure(latency)`（答案已记账，但不采信）
             if let Some(lim) = self.budget.latency_p95 {
                 if self.latency_spent > lim {
-                    self.记缺席(&items, "latency", site, format!("本次调用后累计时延 {:.2}s 超过预算 {lim}s", self.latency_spent));
+                    self.记缺席(&items, "latency", site, format!("本次调用后累计时延 {:.2}s 超过预算 {lim}s", self.latency_spent), 0);
                 }
             }
             // 事实记完了再核预算：实际费用高于调用前的估计时，停的是**下一步**，不是这一步
@@ -2022,6 +2037,8 @@ impl<'a> Interp<'a> {
         // **代价线**（B29 前端补齐 `cut(…, {cost: [fp, fn]})`）：线只取按这个代价矩阵认证过的证书，
         // 先题级、后题式级；找不到就是冷——**不从别的证书或夹具线借**。
         let 代价缺线 = cost.is_some();
+        // 所选代价证书所在记录是「停岗」（PR #30 评审 4082390428）：与题级停岗同一路由（drift）
+        let mut 代价停岗 = false;
         let (线, 线源, 夹具) = match cost {
             None => (线, 线源, 夹具),
             Some((fp, fn_)) => {
@@ -2031,11 +2048,33 @@ impl<'a> Interp<'a> {
                         .min_by(|a, b| a.alpha.partial_cmp(&b.alpha).unwrap_or(std::cmp::Ordering::Equal))
                         .cloned()
                 };
-                let 题式 = r.form_hash.as_ref().map(|h| self.calib.get(&crate::effects::CalibStore::form_key(h)));
-                let 找到 = 同代价(&rec).map(|c| (c, rec.lo, "题级")).or_else(|| 题式.as_ref().and_then(|f| 同代价(f).map(|c| (c, f.lo, "题式级"))));
-                match 找到 {
-                    Some((c, lo, 层)) if rec.status != "停岗" => (Some((c.hi, lo.min(c.hi))), format!("{层}·证书:α={:.2}·代价(fp={fp},fn={fn_})", c.alpha), false),
-                    _ => (None, String::new(), false),
+                // 题式级记录查到就入账（PR #30 评审 4082390437）：只凭账本重放时据此补回同一张证书
+                let 题式 = r.form_hash.as_ref().map(|h| crate::effects::CalibStore::form_key(h)).map(|fk| {
+                    self.note_calib(&fk);
+                    self.calib.get(&fk)
+                });
+                // 候选：题级在前、题式级在后；每张证书带上**它所在记录自己的状态**（评审 4082390428）
+                let mut 候选: Vec<(crate::effects::Cert, f64, &str, String)> = vec![];
+                if let Some(c) = 同代价(&rec) {
+                    候选.push((c, rec.lo, "题级", rec.status.clone()));
+                }
+                if let Some(f) = 题式.as_ref() {
+                    if let Some(c) = 同代价(f) {
+                        候选.push((c, f.lo, "题式级", f.status.clone()));
+                    }
+                }
+                let 可用 = 候选.iter().find(|(_, _, _, st)| st == "上岗" || st == "停岗候选");
+                match 可用 {
+                    // 依据：B25（停岗只看所选记录）；B29（线只取按这个代价认证的证书）
+                    Some((c, lo, 层, _)) if rec.status != "停岗" => (
+                        Some((c.hi, lo.min(c.hi))),
+                        format!("{层}·证书:α={:.2}·代价(fp={fp},fn={fn_})", c.alpha),
+                        false,
+                    ),
+                    _ => {
+                        代价停岗 = 候选.iter().any(|(_, _, _, st)| st == "停岗");
+                        (None, String::new(), false)
+                    }
                 }
             }
         };
@@ -2044,11 +2083,14 @@ impl<'a> Interp<'a> {
         } else if let Some(c) = self.absent_marks.get(&r.ledger_key) {
             // B32：判断器缺席或超时，出口按 J-05 四条去向路由，不加新去向
             (ExitKind::Unsure(c.clone()), None)
-        } else if rec.status == "停岗" {
+        } else if rec.status == "停岗" || 代价停岗 {
             // `drift` **不是**未测：停岗是「测过、而且测出漂了」。两者取值相反，别顺手合并。
             //
             // **停岗在这里提前返回，模式级回退够不着它。** 停岗是人下的判断（这条线不能再用了），
             // 回退到一个类级先验把它放行，是彻头彻尾的假放行。
+            //
+            // `代价停岗`（PR #30 评审 4082390428）：代价分支选中的那张证书所在记录自己「停岗」，
+            // 与题级停岗同一路由——不看题级 `rec.status`，看**所选记录**自己的状态。
             (ExitKind::Unsure("drift".into()), None)
         } else if 线.is_none() {
             // **题级没上岗、模式级也没上岗** → 还是冷。回退没有把所有冷键都放行。

@@ -58,6 +58,7 @@ fn 保守策略出口转未决并可重放() {
     let v = o.value_json();
     assert!(v.as_array().unwrap().iter().all(|x| x.as_str().unwrap().contains("absent")), "{v}");
     assert_eq!(calls, 6, "三次调用各重试一次");
+    assert_eq!(o.cost.calls, 6, "逐次计费（PR #30 评审 4082390412）：3 站点 ×（首发 + 重试 1）");
     // 只凭账本重放：不再发，出口一致
     let program = lower(&parse(&src).expect("解析")).expect("lower");
     let mut calib = CalibStore::new();
@@ -68,11 +69,32 @@ fn 保守策略出口转未决并可重放() {
     assert_eq!(*c.calls.borrow(), 0, "缺席事件已记账，重放不发");
 }
 
+/// PR #30 评审 4082390412：缺席事件的账本记录（v1 下是 `Entry::Effect{kind:"absent",…}`）
+/// 带上这一组题实际发出的尝试次数，供审计参考（旧账本没有这个字段，读不到即 0，行为不变）。
+#[test]
+fn 缺席入账记尝试次数() {
+    let src = 源(r#"{calls: 20, cost: 0, depth: 16, absent: {retry: 1, backoff: 0, then: "conservative", breaker: 5}}"#);
+    let mut l = Ledger::new();
+    let (o, _) = 跑(&src, 100, 0, &mut l);
+    o.expect("conservative 下程序继续");
+    let attempts: Vec<u64> = l
+        .entries
+        .iter()
+        .filter_map(|e| match e {
+            jpp_core::ledger::Entry::Effect { kind, output, .. } if kind == "absent" => output.get("attempts").and_then(|v| v.as_u64()),
+            _ => None,
+        })
+        .collect();
+    assert_eq!(attempts, vec![2, 2, 2], "每个站点首发 + 1 次重试，记 2 次尝试");
+}
+
 #[test]
 fn 重试成功就照常出口() {
     let src = 源(r#"{calls: 20, cost: 0, depth: 16, absent: {retry: 2, backoff: 0, then: "conservative", breaker: 5}}"#);
     let (o, _) = 跑(&src, 1, 0, &mut Ledger::new());
-    assert_eq!(o.expect("跑完").value_json(), serde_json::json!(["act", "act", "act"]));
+    let o = o.expect("跑完");
+    assert_eq!(o.value_json(), serde_json::json!(["act", "act", "act"]));
+    assert_eq!(o.cost.calls, 4, "第 1 站点失败 1 次后成功（2），其余各 1");
 }
 
 #[test]
@@ -81,6 +103,7 @@ fn 升级策略挂起待续跑() {
     let (o, _) = 跑(&src, 100, 0, &mut Ledger::new());
     let o = o.expect("挂起不是错误");
     assert_eq!(o.pending.first().map(|p| p.cause.as_str()), Some("absent"), "默认 then = escalate");
+    assert_eq!(o.cost.calls, 1, "失败的那一次也计");
 }
 
 #[test]
@@ -94,8 +117,55 @@ fn 失败策略是运行期错误() {
 fn 连续缺席熔断后不再发() {
     let src = 源(r#"{calls: 20, cost: 0, depth: 16, absent: {retry: 0, backoff: 0, then: "conservative", breaker: 2}}"#);
     let (o, calls) = 跑(&src, 100, 0, &mut Ledger::new());
-    o.expect("跑完");
+    let o = o.expect("跑完");
     assert_eq!(calls, 2, "第三个站点熔断，不再发");
+    assert_eq!(o.cost.calls, 2, "熔断不发、不计费");
+}
+
+fn 单站点(budget: &str) -> String {
+    format!(r#"
+budget {budget};
+let e = cut(judge(state(mat("甲")), test("行吗", "k")));
+let k = exit_kind(e);
+consume(e, "drop");
+k
+"#)
+}
+
+/// PR #30 评审 4082390412：`calls: 1, retry: 5` 且始终失败 → 第 2 次尝试前预算停机，后端只收到 1 次
+#[test]
+fn retry_charges_each_attempt() {
+    let src = 单站点(r#"{calls: 1, cost: 0, depth: 16, absent: {retry: 5, backoff: 0.01, then: "conservative"}}"#);
+    let (o, calls) = 跑(&src, 100, 0, &mut Ledger::new());
+    let o = o.expect("预算停机是挂起");
+    assert_eq!(o.pending.first().map(|p| p.cause.as_str()), Some("budget"));
+    assert_eq!(calls, 1, "后端恰好收到 1 次");
+    assert_eq!(o.cost.calls, 1);
+}
+
+/// 前两次失败、第三次成功 → 该站点计 3 次
+#[test]
+fn retry_success_counts_all_attempts() {
+    let src = 单站点(r#"{calls: 10, cost: 0, depth: 16, absent: {retry: 2, backoff: 0, then: "conservative"}}"#);
+    let (o, calls) = 跑(&src, 2, 0, &mut Ledger::new());
+    let o = o.expect("跑完");
+    assert_eq!(o.value_json(), serde_json::json!("act"));
+    assert_eq!(calls, 3);
+    assert_eq!(o.cost.calls, 3);
+}
+
+/// 全失败也计时延（PR #30 评审 4082390412）：退避 0.01 + 0.02 = 0.03s 进时延预算，
+/// 于是下一个站点转 Unsure(latency)
+#[test]
+fn terminal_failure_counts_latency() {
+    // 第 1 站点 3 次全失败（首发 + 重试 2），之后成功；预算 0.025s 被第 1 站点的退避用完
+    let src = 源(r#"{calls: 20, cost: 0, depth: 16, latency_p95: 0.025, absent: {retry: 2, backoff: 0.01, then: "conservative", breaker: 5}}"#);
+    let (o, calls) = 跑(&src, 3, 0, &mut Ledger::new());
+    let v = o.expect("跑完").value_json();
+    let a = v.as_array().unwrap();
+    assert!(a[0].as_str().unwrap().contains("absent"), "{v}");
+    assert!(a[1].as_str().unwrap().contains("latency"), "失败路径的退避计入时延：{v}");
+    assert_eq!(calls, 3, "时延用完后不再发");
 }
 
 #[test]
