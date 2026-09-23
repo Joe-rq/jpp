@@ -420,6 +420,57 @@ fn walk_block(b: &Block, f: &mut impl FnMut(&Expr)) {
     }
 }
 
+/// 收集所有 `let 名 = 值` 绑定（含嵌套块与函数体）。同名的后写覆盖先写——
+/// 不分作用域，最多把两处同名当成一处多算倍数，往保守那边偏。
+fn 收let绑定(b: &Block, out: &mut std::collections::HashMap<String, Expr>) {
+    let mut 子块: Vec<&Block> = vec![];
+    for s in &b.statements {
+        match s {
+            Statement::Let { name, value, .. } => {
+                out.insert(name.clone(), value.clone());
+                收子块(value, &mut 子块);
+            }
+            Statement::Function { function, .. } => 子块.push(&function.body),
+            Statement::Expression(e) => 收子块(e, &mut 子块),
+        }
+    }
+    if let Some(r) = &b.result {
+        收子块(r, &mut 子块);
+    }
+    for x in 子块 {
+        收let绑定(x, out);
+    }
+}
+
+/// 表达式里**最外一层**的子块（更深的由 `收let绑定` 递归时再收）。
+fn 收子块<'a>(e: &'a Expr, out: &mut Vec<&'a Block>) {
+    match &e.kind {
+        ExprKind::Block(b) => out.push(b),
+        ExprKind::Function(f) => out.push(&f.body),
+        ExprKind::If { condition, yes, no } => {
+            收子块(condition, out);
+            out.push(yes);
+            out.push(no);
+        }
+        ExprKind::List(items) => items.iter().for_each(|x| 收子块(x, out)),
+        ExprKind::Record(fields) => fields.iter().for_each(|(_, x)| 收子块(x, out)),
+        ExprKind::Call { function, arguments } => {
+            收子块(function, out);
+            arguments.iter().for_each(|x| 收子块(x, out));
+        }
+        ExprKind::Field { value, .. } | ExprKind::Unary { value, .. } => 收子块(value, out),
+        ExprKind::Index { value, index } => {
+            收子块(value, out);
+            收子块(index, out);
+        }
+        ExprKind::Binary { left, right, .. } => {
+            收子块(left, out);
+            收子块(right, out);
+        }
+        _ => {}
+    }
+}
+
 // ---------------------------------------------------------------- 预算（E12 / E10）
 
 impl Checker {
@@ -486,10 +537,59 @@ impl Checker {
                 重复跨度.push((function.body.span.start, function.body.span.end));
             }
         }
+        // **一个构造站点在运行期可能成为多道读数**（Codex 评审 PR #27）：
+        // `let q = test(…)` 之后 `judge(s1, q)`、`judge(s2, q)` 是两条读数，
+        // `judge([s1, s2, s3], q)` 是三条。按构造站点各计一次会低估，把一个真实的 2u 报成 u。
+        // 这里只做静态数得出的那部分：let 绑定的题被几处 judge/sieve 引用、状态参数是字面列表
+        // （或绑定到字面列表 / `state(…)`）时的长度。长度静态看不见的，按「不是上界」如实说出来。
+        let mut 绑定: std::collections::HashMap<String, Expr> = Default::default();
+        收let绑定(&p.body, &mut 绑定);
+        let 状态倍数 = |e: &Expr| -> Option<usize> {
+            let e = match &e.kind {
+                ExprKind::Name(n) => 绑定.get(n).unwrap_or(e),
+                _ => e,
+            };
+            match &e.kind {
+                ExprKind::List(items) => Some(items.len()),
+                _ if call_name(e) == Some("state") => Some(1),
+                _ => None,
+            }
+        };
+        let 是构造 = |e: &Expr| matches!(call_name(e), Some("test") | Some("select") | Some("measure"));
+        // 站点（按 span 起点）→ 运行期读数的静态倍数；`None` = 有一处用法倍数看不见
+        let mut 倍数: std::collections::HashMap<usize, Option<usize>> = Default::default();
+        let mut 加 = |起: usize, m: Option<usize>| {
+            let e = 倍数.entry(起).or_insert(Some(0));
+            *e = match (*e, m) { (Some(a), Some(b)) => Some(a + b), _ => None };
+        };
+        walk_block(&p.body, &mut |e| {
+            if !matches!(call_name(e), Some("judge") | Some("sieve")) {
+                return;
+            }
+            let args = call_args(e);
+            let (Some(对象), Some(题)) = (args.first(), args.get(1)) else { return };
+            let m = 状态倍数(对象);
+            let 题们: Vec<&Expr> = match &题.kind {
+                ExprKind::List(items) => items.iter().collect(),
+                _ => vec![题],
+            };
+            for q in 题们 {
+                if 是构造(q) {
+                    加(q.span.start, m);
+                } else if let ExprKind::Name(n) = &q.kind {
+                    if let Some(v) = 绑定.get(n) {
+                        if 是构造(v) {
+                            加(v.span.start, m);
+                        }
+                    }
+                }
+            }
+        });
         let mut 和 = 0.0f64;
         let mut 站点数 = 0usize;
         let mut 未知 = 0usize;
         let mut 循环内 = 0usize;
+        let mut 倍数未知 = 0usize;
         let mut 首站点: Option<crate::ast::Span> = None;
         walk_block(&p.body, &mut |e| {
             let 键位 = match call_name(e) {
@@ -506,28 +606,34 @@ impl Checker {
                 循环内 += 1;
             }
             let u = match arguments.get(键位).map(|a| &a.kind) {
-                Some(ExprKind::Text(k)) => {
-                    let rec = store.get(k);
-                    // **与 `unsure_bound` 同口径**（`strength.rs:155`）：只认「上岗」记录的值
-                    match if rec.status == "上岗" { rec.unsure_rate } else { None } {
-                        Some(u) => u,
-                        None => { 未知 += 1; 1.0 }
-                    }
-                }
+                Some(ExprKind::Text(k)) => match store.usable_unsure_rate(&store.get(k)) {
+                    // **与 `unsure_bound` 同口径**（`strength.rs`）：同一个 `CalibStore::usable_unsure_rate`
+                    Some(u) => u,
+                    None => { 未知 += 1; 1.0 }
+                },
                 // 键不是字面量：静态看不见，按 1 计
                 _ => { 未知 += 1; 1.0 }
             };
-            和 += u;
+            // 没有被 judge/sieve 直接用到的站点（例如传进函数）按 1 计，与之前同口径
+            let m = match 倍数.get(&e.span.start) {
+                None | Some(Some(0)) => 1,
+                Some(Some(m)) => *m,
+                Some(None) => { 倍数未知 += 1; 1 }
+            };
+            和 += u * m as f64;
         });
         if 站点数 == 0 || 和 <= limit {
             return;
         }
         let span = 首站点.unwrap_or(p.span);
-        let 循环话 = if 循环内 > 0 {
+        let mut 循环话 = if 循环内 > 0 {
             format!("；**其中 {循环内} 个站点在循环或函数体里，所以这个和不是上界**（那样一个站点在运行期是多道题，静态数不出几道；函数体算进来是因为静态判不了它被调用几次），真实的 unsure 负担只会更高")
         } else {
             String::new()
         };
+        if 倍数未知 > 0 {
+            循环话.push_str(&format!("；**另有 {倍数未知} 个站点被 judge/sieve 问向静态数不出长度的对象列表，这个和也不是上界**"));
+        }
         self.out.push(Diagnostic::warning(
             "J-10",
             format!(

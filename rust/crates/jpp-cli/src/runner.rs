@@ -59,6 +59,11 @@ pub fn execute(
     });
     let outcome = jpp_core::run(program, client, calibrations, &actions, ledger)?;
     evidence_out.extend(outcome.evidence.iter().cloned());
+    // J-10 的静态告警只有带校准记录的那次检查报得出来（在 `jpp_core::run` 里），
+    // CLI 执行前那次检查没有记录、报不出它；这里打到 stderr，`--output` 时终端也看得见。
+    for w in outcome.trace.warnings.iter().filter(|w| w.starts_with("J-10")) {
+        eprintln!("warning: {w}");
+    }
     Ok(json!({
         "mode": "fixed observations; no model API requests",
         "status": if outcome.pending.is_empty() { "returned" } else { "pending" },

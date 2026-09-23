@@ -152,7 +152,8 @@ pub fn unsure_bound(calib: &CalibStore, readings: &[Rc<Reading>]) -> UnsureBound
     let mut unknown = 0usize;
     for r in readings {
         let rec = calib.get(&r.calib);
-        match if rec.status == "上岗" { rec.unsure_rate } else { None } {
+        // 与 J-10 静态那一半共用 `usable_unsure_rate`：上岗、且认证时的 δ 与现在一致
+        match calib.usable_unsure_rate(&rec) {
             Some(u) => us.push(u),
             None => {
                 unknown += 1;

@@ -94,6 +94,10 @@ pub fn run_checked(
         }
         None => match options.backend {
             Backend::Fixed => (Box::new(FixedClient::new()), CalibStore::new(), None),
+            // 重放不发调用，客户端换成 `ReplayClient`：这里不初始化真实后端，
+            // 否则没开 `live` feature 或没有 `~/.typesafe-key` 时，纯离线的重放也会失败
+            // （Codex 评审 PR #28）。`--resume` 会发新调用，照常初始化。
+            Backend::Live if options.replay.is_some() => (Box::new(FixedClient::new()), CalibStore::new(), None),
             Backend::Live => {
                 let model = options.model.as_deref().unwrap_or(DEFAULT_LIVE_MODEL);
                 (live_client(model)?, CalibStore::new(), None)

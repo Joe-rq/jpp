@@ -677,7 +677,8 @@ pub struct Cert {
 pub struct Selection {
     /// 目前只有一个取值：`split`（拆分样本）
     pub method: String,
-    /// 分半用的种子（`splitmix64(seed ^ 下标)` 的最低位定归属）
+    /// 分半用的种子：样本按 `(p, 真值)` 排成规范序后，`splitmix64(seed ^ 规范序下标)` 的最低位定归属
+    /// （与行序无关；2026-09-23 前用的是插入下标）
     pub seed: u64,
     /// 选线半的条数
     pub n_select: usize,
@@ -717,25 +718,41 @@ fn 反查题型(phys: &str) -> Option<Op> {
 
 /// **标注集上实测的 unsure 率**：在刚认证下来的这条线上，有多大比例的标注样本会落进 unsure。
 ///
-/// **判据逐字抄 `cut` 的出口路由**（`interp.rs`，noul 分支）：
-/// `p >= hi + δ` → `Act`，`p <= lo - δ` → `Ignore`，**其余是 `Unsure("band")`**。
+/// **判据逐字抄 `cut` 的出口路由**（`interp.rs`），按题型分开：
+/// - noul：`p >= hi + δ` → `Act`，`p <= lo - δ` → `Ignore`，**其余是 `Unsure("band")`**；
+/// - choice：置换没测（`mode_share` 为空）→ `Unsure(untested)`，测了不一致（< 1）→ `Unsure(tie)`，
+///   一致且 `p >= hi` → `Pick`，其余 `Unsure(band)`；**没有 δ，也没有低侧出口**；
+/// - score：`p >= hi` → `At`，其余 `Unsure(band)`。
 /// **这一条是它有意义的全部理由**——测的必须是消费方真的会碰上的那个事件，
-/// 而不是一个长得像它的量。
+/// 而不是一个长得像它的量。（Codex 评审 PR #27：原先对 choice / score 也套 noul 的判据。）
 ///
-/// **算不出就不写**（`delta` 为 `None`，即题型认不得）：**`None` 的既有含义是「未知，按 1 计最保守」**，
-/// 而写一个不知道在哪条 δ 上测的数进去，比空着更糟。
+/// **算不出就不写**（题型认不得，或 noul 没有 δ）：**`None` 的既有含义是「未知，按 1 计最保守」**，
+/// 而写一个不知道在哪条判据上测的数进去，比空着更糟。
 /// **哪条路走得到那个分支**：内核自己写的样本 `phys` 一律来自 `Op::phys()`，**走不到**；
 /// 走得到的只有**手写的 `--calib` JSON**（`absorb` 收任何 `phys` 字符串）。不是死代码。
 ///
-/// **δ 的时效**：这个数测在认证那一刻在册的 δ 上。档案换了，δ 可能就变了——
-/// 而**档案换了账本头的 `profile_hash` 就对不上、`W-header` 会响**，
-/// 所以这件事有既有的载体报，不需要在这里再加一个字段。
-fn 经验unsure率(按条: &[(f64, bool)], hi: f64, lo: f64, delta: Option<f64>) -> Option<f64> {
-    let d = delta?;
+/// **δ 的时效**：noul 的率测在认证那一刻的 δ 上。档案换了、δ 变了，这个率就不再成立；
+/// 所以认证时把 δ 记进 `unsure_rate_delta`，由 [`CalibStore::usable_unsure_rate`] 核对。
+/// （原先这里说「账本头的 `profile_hash` 会让 `W-header` 响」——新账本没有旧头，那条载体接不住。）
+fn 经验unsure率(按条: &[(f64, bool)], 众数: &[Option<f64>], op: Option<Op>, hi: f64, lo: f64, delta: Option<f64>) -> Option<f64> {
     if 按条.is_empty() {
         return None;
     }
-    let u = 按条.iter().filter(|(p, _)| !(*p >= hi + d) && !(*p <= lo - d)).count();
+    let u = match op? {
+        Op::Test => {
+            let d = delta?;
+            按条.iter().filter(|(p, _)| !(*p >= hi + d) && !(*p <= lo - d)).count()
+        }
+        Op::Select => 按条
+            .iter()
+            .enumerate()
+            .filter(|(i, (p, _))| match 众数.get(*i).copied().flatten() {
+                Some(ms) if ms >= 1.0 => *p < hi,
+                _ => true,
+            })
+            .count(),
+        Op::Measure => 按条.iter().filter(|(p, _)| *p < hi).count(),
+    };
     Some((u as f64 / 按条.len() as f64 * 10000.0).round() / 10000.0)
 }
 
@@ -762,6 +779,12 @@ pub struct CalibRecord {
     /// 于是走真实路径的记录这个字段恒为 `None`，**J-10 的界在真实路径上恒等于 `n`**。
     #[serde(default)]
     pub unsure_rate: Option<f64>,
+    /// **`unsure_rate` 是在哪条 δ 上测的**（只有 noul 记录的率依赖 δ）。
+    /// 装载时换了档案、δ 变了，这个率就不再描述 `cut` 实际的出口；
+    /// [`CalibStore::usable_unsure_rate`] 见到对不上就当未知（按 1 计）。
+    /// `None` = 手填的率或旧记录，照旧采信；为空时不序列化，旧记录哈希不变。
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub unsure_rate_delta: Option<f64>,
     /// 保形集 id（J-16：fit 的训练集 ≠ 保形集）
     #[serde(default)]
     pub set_id: String,
@@ -1269,7 +1292,7 @@ impl CalibStore {
         let truth = self.records.get(key).and_then(|r| r.truth.clone());
         let lower = self.records.get(key).and_then(|r| r.lower.clone());
         let old_scope = self.records.get(key).and_then(|r| r.scope.clone());
-        self.records.insert(key.to_string(), CalibRecord { key: key.into(), hi, lo, n, status: status.into(), delta: None, unsure_rate: None, set_id: String::new(), label_set_id: lsid, label_locator: lloc, label_fp: lfp, label_source: lsrc, samples, certs, truth, lower, scope: old_scope });
+        self.records.insert(key.to_string(), CalibRecord { key: key.into(), hi, lo, n, status: status.into(), delta: None, unsure_rate: None, unsure_rate_delta: None, set_id: String::new(), label_set_id: lsid, label_locator: lloc, label_fp: lfp, label_source: lsrc, samples, certs, truth, lower, scope: old_scope });
         Ok(())
     }
 
@@ -1291,7 +1314,7 @@ impl CalibStore {
         }
         let rec = self.records.entry(key.to_string()).or_insert_with(|| CalibRecord {
             key: key.into(), hi: 0.65, lo: 0.35, n: 0, status: "冷".into(),
-            delta: None, unsure_rate: None, set_id: String::new(), label_set_id: String::new(), label_locator: String::new(), label_fp: String::new(), label_source: LabelSource::default(), samples: vec![], certs: Default::default(), truth: None, lower: None, scope: None,
+            delta: None, unsure_rate: None, unsure_rate_delta: None, set_id: String::new(), label_set_id: String::new(), label_locator: String::new(), label_fp: String::new(), label_source: LabelSource::default(), samples: vec![], certs: Default::default(), truth: None, lower: None, scope: None,
         });
         let 有标注 = s.label.is_some();
         rec.samples.push(s);
@@ -1378,7 +1401,11 @@ impl CalibStore {
         // **给 `unsure_rate` 算出料用的两样**，趁 `rec` / `带标注` 还活着先取下来。
         // δ 的口径必须与 `cut` 里那一处**同源**（`delta_for`：记录自带的优先，否则档案的），
         // 否则「认证时测的 unsure 率」与「运行期真的会 unsure 的率」测的不是同一件事。
-        let delta认证时: Option<f64> = 反查题型(&带标注[0].phys)
+        let 题型认证时 = 反查题型(&带标注[0].phys);
+        let 众数认证时: Vec<Option<f64>> = 带标注.iter().map(|s| s.mode_share).collect();
+        // 只有 noul 的率依赖 δ；choice / score 的出口不看 δ，不绑
+        let 绑delta = |d: Option<f64>| if 题型认证时 == Some(Op::Test) { d } else { None };
+        let delta认证时: Option<f64> = 题型认证时
             .map(|op| rec.delta.unwrap_or(match op {
                 Op::Test => self.profile.delta.0,
                 Op::Select => self.profile.delta.1,
@@ -1433,7 +1460,8 @@ impl CalibStore {
             r.hi = 选中.hi;
             r.lo = 0.0;
             r.status = "上岗".into();
-            r.unsure_rate = 经验unsure率(&按条, r.hi, r.lo, delta认证时);
+            r.unsure_rate = 经验unsure率(&按条, &众数认证时, 题型认证时, r.hi, r.lo, delta认证时);
+            r.unsure_rate_delta = 绑delta(delta认证时);
             return Ok(cert);
         }
         let (cert_result, resample) = if cluster_unit == "条" {
@@ -1491,7 +1519,8 @@ impl CalibStore {
                 // `12`:814 那一栏写的是「✓ 估计 | **实测**」）。在这之前这个字段**只有消费方没有生产者**：
                 // 走完 `absorb` → `commission` 的真实路径拿到的仍是 `None`，
                 // `unsure_bound` 按 1 计，**界退化成 `union_bound == n`——一条真的、但什么也没说的界。**
-                r.unsure_rate = 经验unsure率(&按条, r.hi, r.lo, delta认证时);
+                r.unsure_rate = 经验unsure率(&按条, &众数认证时, 题型认证时, r.hi, r.lo, delta认证时);
+                r.unsure_rate_delta = 绑delta(delta认证时);
                 Ok(cert)
             }
         }
@@ -1590,7 +1619,8 @@ impl CalibStore {
         r.lo = lo;
         r.lower = Some(lower);
         r.status = "上岗".into();
-        r.unsure_rate = 经验unsure率(&按条, hi, lo, Some(delta));
+        r.unsure_rate = 经验unsure率(&按条, &[], Some(Op::Test), hi, lo, Some(delta));
+        r.unsure_rate_delta = Some(delta);
         Ok(upper)
     }
 
@@ -1598,7 +1628,7 @@ impl CalibStore {
     ///
     /// [`commission_two_sided`] 在同一批数据上既选线对又算二项上界；上界只对**固定**的线成立，
     /// 对「在同批数据上最大化已决条数后选出的线」不成立——候选越多，真实错误率越可能超 α。
-    /// 这里把带标注的样本按 `splitmix64(seed ^ 下标)` 的最低位分成两半：
+    /// 这里把带标注的样本排成规范序（按 `(p, 真值)`），再按 `splitmix64(seed ^ 下标)` 的最低位分成两半：
     /// **选线半**上照原规则选出一对 `(h, l)`；**认证半**上对这一对只检验一次，两侧各一个二项上界。
     ///
     /// 认证半里任一侧的已决条数小于零错误所需条数（`n_needed_zero_error`）时，
@@ -1624,7 +1654,12 @@ impl CalibStore {
         let label_fp = 标注集指纹(&带标注);
         let lsrc = rec.label_source.clone();
         let (mut 选线半, mut 认证半): (Vec<(f64, bool)>, Vec<(f64, bool)>) = (vec![], vec![]);
-        for (i, x) in 按条.iter().enumerate() {
+        // **分半不许随行序变**（Codex 评审 PR #28）：同一批 `(p, 真值)` 换个行序，
+        // 按插入下标分半会分出不同的两半、可能改变认证结论，而 `label_fp` 对行序不敏感，
+        // 证书地址与审计元数据却分不出这两次。先排成规范序（与指纹同一口径），再按下标分。
+        let mut 规范序 = 按条.clone();
+        规范序.sort_by(|a, b| a.0.total_cmp(&b.0).then(a.1.cmp(&b.1)));
+        for (i, x) in 规范序.iter().enumerate() {
             if splitmix64(seed ^ i as u64) & 1 == 0 { 选线半.push(*x) } else { 认证半.push(*x) }
         }
         let n_needed = crate::conformal::n_needed_zero_error(alpha, conf_delta);
@@ -1669,7 +1704,8 @@ impl CalibStore {
         r.lo = lo;
         r.lower = Some(lower);
         r.status = "上岗".into();
-        r.unsure_rate = 经验unsure率(&按条, hi, lo, Some(delta));
+        r.unsure_rate = 经验unsure率(&按条, &[], Some(Op::Test), hi, lo, Some(delta));
+        r.unsure_rate_delta = Some(delta);
         Ok(upper)
     }
 
@@ -1697,6 +1733,8 @@ impl CalibStore {
         }
         let r = self.records.get_mut(key).ok_or_else(|| format!("没有校准记录 {key}"))?;
         r.unsure_rate = Some(rate);
+        // 手填的率不知道测在哪条 δ 上：不绑 δ，照旧采信（宿主为它负责，I4）
+        r.unsure_rate_delta = None;
         Ok(())
     }
     /// **从一个目录装载校准记录**（每键一个 JSON，与 Python `CalibStore(path)` 同格式）。
@@ -1736,7 +1774,7 @@ impl CalibStore {
             // **算得出来的不许填**——这条规则我今晚用了三次，唯独在这里没用。
             let 映射: Vec<String> = match serde_json::to_value(CalibRecord {
                 key: String::new(), hi: 0.0, lo: 0.0, n: 0, status: "冷".into(),
-                delta: None, unsure_rate: None, set_id: String::new(),
+                delta: None, unsure_rate: None, unsure_rate_delta: None, set_id: String::new(),
                 label_set_id: String::new(), label_locator: String::new(), label_fp: String::new(),
                 label_source: LabelSource::default(), samples: vec![], certs: Default::default(), truth: None, lower: None, scope: None,
             }) {
@@ -1744,7 +1782,7 @@ impl CalibStore {
                 _ => return Err("内部错误：CalibRecord 序列化不出对象".into()),
             };
             // `truth` 为空时不序列化（老记录哈希不变），所以上面那张表里没有它，这里补上
-            let 映射: Vec<String> = 映射.into_iter().chain(["truth".to_string(), "lower".to_string(), "scope".to_string()]).collect();
+            let 映射: Vec<String> = 映射.into_iter().chain(["truth".to_string(), "lower".to_string(), "scope".to_string(), "unsure_rate_delta".to_string()]).collect();
             for k in obj.keys() {
                 if !映射.iter().any(|m| m == k) && !知道但不映射.contains(&k.as_str()) {
                     return Err(format!("{} 有内核不认得的字段 {k:?}：装载不猜，也不无声吞掉", path.display()));
@@ -1842,7 +1880,7 @@ impl CalibStore {
         self.records
             .get(key)
             .cloned()
-            .unwrap_or(CalibRecord { key: key.into(), hi: 0.65, lo: 0.35, n: 0, status: "冷".into(), delta: None, unsure_rate: None, set_id: String::new(), label_set_id: String::new(), label_locator: String::new(), label_fp: String::new(), label_source: LabelSource::default(), samples: vec![], certs: Default::default(), truth: None, lower: None, scope: None })
+            .unwrap_or(CalibRecord { key: key.into(), hi: 0.65, lo: 0.35, n: 0, status: "冷".into(), delta: None, unsure_rate: None, unsure_rate_delta: None, set_id: String::new(), label_set_id: String::new(), label_locator: String::new(), label_fp: String::new(), label_source: LabelSource::default(), samples: vec![], certs: Default::default(), truth: None, lower: None, scope: None })
     }
     /// 这种题式的 δ：记录自带的优先，否则用档案的
     pub fn delta_for(&self, rec: &CalibRecord, op: Op) -> f64 {
@@ -1851,6 +1889,18 @@ impl CalibStore {
             Op::Select => self.profile.delta.1,
             Op::Measure => self.profile.delta.2,
         })
+    }
+    /// **J-10 可用的 unsure 率**：只认上岗记录；认证时绑了 δ 的，要与现在 `cut` 用的 δ 一致，
+    /// 否则当未知（按 1 计）。`unsure_bound`（运行期）与 J-10 的静态那一半共用这一处，口径不会分叉。
+    pub fn usable_unsure_rate(&self, rec: &CalibRecord) -> Option<f64> {
+        if rec.status != "上岗" {
+            return None;
+        }
+        let u = rec.unsure_rate?;
+        match rec.unsure_rate_delta {
+            Some(d) if (d - self.delta_for(rec, Op::Test)).abs() > 1e-12 => None,
+            _ => Some(u),
+        }
     }
     /// 判断用的线：上岗记录用自己的，其余一律用档案的保守线（与 Python `_uncertainty` 同口径）
     pub fn lines_for(&self, rec: &CalibRecord) -> (f64, f64) {

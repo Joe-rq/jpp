@@ -177,6 +177,24 @@ pub fn import_labels(store: &mut CalibStore, rows: &[LabelRow], opt: &ImportOpti
                 chosen.push((r, r.label == Json::Bool(true)));
             }
         }
+        // **门要看整条记录，不只看这一批。** `--calib` 装进来的旧记录里可能已经躺着
+        // 被上一次导入挡在「待核」的模型标注（样本在门之前就折进去了）；这一批只有人工行时
+        // `model_only_items == 0`，门会被绕过，而认证用的是记录里的**全部**样本。
+        // 所以把旧的真值账（来源计数、抽检）并进来一起判，并写回合并后的账，
+        // 下一次导入也看得见。没有真值账的旧记录（手写 JSON）查不出来源，不在此列。
+        if let Some(prev) = store.records.get(&key).and_then(|r| r.truth.clone()) {
+            for (src, n) in &prev.sources {
+                if !is_human(src) {
+                    model_only_items += *n as usize;
+                }
+                *sources.entry(src.clone()).or_default() += n;
+            }
+            if let Some(ps) = &prev.spot_check {
+                sc_n += ps.n;
+                sc_agree += ps.agree;
+                sc_batches.extend(ps.batches.iter().cloned());
+            }
+        }
         let abstain_rate = if rs.is_empty() { 0.0 } else { ambiguous as f64 / rs.len() as f64 };
         if abstain_rate > opt.abstain_warn {
             warnings.push(format!(
