@@ -199,12 +199,14 @@ supply; both are shown as templates, marked below.
   (question logic, probabilistic information/decision theory, philosophy of method, and
   query learning/algebra) produced a five-part definition of a question (subject,
   predicate, partition, request, presupposition) now reflected in `form`/`fill`, and
-  informed the B2/B19/B24 rulings above; the review's full registry proposals remain
-  pending Nature's review and are not yet all in the authority texts.
+  informed the B2/B19/B24 rulings above. Under the owner's 2026-09-23 delegation, the
+  technical rulings (B1–B32, including 26 new registry rows) were written into the research
+  authority texts the same day, with the owner keeping a veto; code for several of them
+  (B25, B28–B32) is not yet implemented.
   问题理论调研带来的改动：四线调研（问题逻辑、概率信息决策论、方法论哲学、查询学习与
   查询代数）给出题的五件套定义（主体、谓词、划分、请求、前提），现体现在 `form`/`fill`
-  的结构里，并为上述 B2/B19/B24 裁定提供依据；调研给出的完整登记表提议仍待 Nature 审阅，
-  尚未全部写入依据文本。
+  的结构里，并为上述 B2/B19/B24 裁定提供依据；按项目负责人 2026-09-23 的授权，技术裁定（B1–B32，含新增 26 行登记）
+  当天写入研究区依据文本，负责人保留否决权；其中 B25、B28–B32 的代码尚未实现。
 
 ## Unfinished and known issues / 未完成与已知问题
 
