@@ -2,6 +2,12 @@
 
 Updated: 2026-09-23. This is a dated report, not an automatically updated dashboard.
 
+## 2026-09-23: correct stable documentation drift / 校正稳定文档漂移
+
+Check stable documents against code and available execution evidence. Correct source-example and `ask` coverage descriptions in the research tree, distinguish old backlog snapshots from current work, and record the bounded OCaml paper exploration. Retain unfinished experiments and the research/public-runtime boundary. No runtime changed. [Correction details](updates/2026-09-23-documentation-drift.md).
+
+对照代码与已有执行证据，修正研究区示例数量和 `ask` 覆盖表述，标清旧待办快照，补记 OCaml 纸面探索的阶段边界。未验证实验与研究/公开版本区别保留，不修改运行代码。[校正明细](updates/2026-09-23-documentation-drift.md)。
+
 ## 2026-09-23: concrete implementation handoff / 下一段具体施工交接
 
 Prepare the next implementation package: shared native source constructions, two programs whose results compose again, followed by real JEV CLI integration and a consolidated release. Identify existing code and observable acceptance behavior; retire stale waiting instructions in the local handoff. This prepares work without launching an executor or changing runtime behavior. [Implementation task](implementation-handoff-2026-09-23.zh-CN.md).
