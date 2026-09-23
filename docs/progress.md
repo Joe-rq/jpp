@@ -1,6 +1,12 @@
 # J++ progress / 项目进度
 
-Updated: 2026-09-21. This is a dated report, not an automatically updated dashboard.
+Updated: 2026-09-23. This is a dated report, not an automatically updated dashboard.
+
+## 2026-09-23: source-based ecosystem reassessment / 根据公开源码重新核对生态需求
+
+Fresh public-source collection and static reviews revise earlier ecosystem claims: typed question composition, adaptive algorithms, caching, budgets and several fallback policies already have implementations. Developer requests, implemented responses and inferred needs are separated; public issue counts are not treated as independent demand votes. Compatible local endpoints differ in capability and confidence semantics. The next proposed comparisons test complex composition, evidence coverage, budgets, cache costs and real effects. No downloaded project or model benchmark was executed, and no runtime changed in this publication. [Evidence and implications](updates/2026-09-23-ecosystem-reassessment.md).
+
+重新采集公开源码并深读，订正此前判断：类型化题集、自适应算法、缓存、预算和多种失败处理已有实现。明确请求、已有应对与推断需求分开记录，不将 issue 数量当独立需求票数；本地兼容接口也不能抹平能力及置信度含义的差异。后续对照围绕复杂组合、输入覆盖、预算、缓存代价和真实动作。本轮未执行第三方项目或模型基准，公开同步未改运行代码。[证据与建设影响](updates/2026-09-23-ecosystem-reassessment.md)。
 
 ## 2026-09-21: a second authority text and a plan to finish the language / 第二份依据与把语言做完整的实施计划
 

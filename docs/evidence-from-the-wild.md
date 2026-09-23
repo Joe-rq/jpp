@@ -1,4 +1,6 @@
-# What we learned by reading everyone else's Jev code
+# Historical 2026-09-22 review: reading public Jev code
+
+**Superseded research interpretation.** Read the [2026-09-23 reassessment](updates/2026-09-23-ecosystem-reassessment.md) for current conclusions. The text below preserves the earlier review; its ecosystem-wide claims are not current findings. Production use of the 57 samples was not verified, judgment caching has multiple implementations, games do not share one termination/fallback contract, and the historical 14-versus-1 call observation has not been reproduced against the current optimizer. Existing typed composition and algorithm libraries also weaken the original necessity argument. Author-reported experimental results are not independently verified production outcomes.
 
 [中文](evidence-from-the-wild.zh-CN.md) · [Why J++](why-jpp.md) · [Status](status.md)
 
