@@ -2,6 +2,12 @@
 
 Updated: 2026-09-23. This is a dated report, not an automatically updated dashboard.
 
+## 2026-09-23: complex composition and a verified foundation / 复杂组合定位与地基现状核对
+
+Clarify the target: a small set of underlying constructs should generate many complex algorithms, and composed results should compose again. Consolidate the external research as reference material. Re-run the local research Rust workspace at `520fef2`: 315 tests passed, zero failed, three ignored; direct examples reproduce nested methods, adaptive questions, partial continuation and zero-call replay. These are research-workspace results, not a new public runtime release or a live-model benchmark. The first complete language body remains unfinished. [Modules, effects, work distribution and remaining scope](updates/2026-09-23-composable-foundation-status.md).
+
+明确目标：少量底层构造支撑多种复杂算法，组合结果继续组合；外部调查整理为参考依据。本地研究 Rust `520fef2` 复跑315项通过、0失败、3忽略，直接复现方法再组合、自适应选问、部分结果续接和零调用重放。这是研究工作区验证，不是新公开运行版本或模型基准；第一版完整主体仍未完成。[模块、效果、工作分布与剩余范围](updates/2026-09-23-composable-foundation-status.md)。
+
 ## 2026-09-23: source-based ecosystem reassessment / 根据公开源码重新核对生态需求
 
 Fresh public-source collection and static reviews revise earlier ecosystem claims: typed question composition, adaptive algorithms, caching, budgets and several fallback policies already have implementations. Developer requests, implemented responses and inferred needs are separated; public issue counts are not treated as independent demand votes. Compatible local endpoints differ in capability and confidence semantics. The next proposed comparisons test complex composition, evidence coverage, budgets, cache costs and real effects. No downloaded project or model benchmark was executed, and no runtime changed in this publication. [Evidence and implications](updates/2026-09-23-ecosystem-reassessment.md).

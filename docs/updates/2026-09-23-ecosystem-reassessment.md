@@ -1,5 +1,7 @@
 # 2026-09-23: reassessing the public JEV ecosystem / 重新盘点公开 JEV 生态
 
+The language target and the use of this research are clarified in the [subsequent foundation report](2026-09-23-composable-foundation-status.md): complex composition and compositions that remain components. / 本文研究的使用方式与语言定位，见后续[地基进度说明](2026-09-23-composable-foundation-status.md)：少量底层构造支撑复杂组合，组合结果继续成为构件。
+
 This update records research, not a runtime release. A new, separate local archive collects pinned public GitHub source snapshots, published npm/PyPI package text, Hugging Face code/model cards, official documentation and public issue/PR evidence. Downloaded projects were not installed or executed; weights were not downloaded. Search limits, transport failures, source-size exclusions and partial recoveries are recorded rather than treated as complete coverage of the internet. Third-party source snapshots and raw discussions remain outside this publication repository.
 
 本轮是研究进展，不是运行时发布。在独立本地目录重新采集公开 GitHub 固定提交源码、npm/PyPI 发行包文本、Hugging Face 代码与模型卡、官方文档和公开 issue/PR。未安装或执行第三方项目，未下载权重。搜索上限、网络失败、体积排除与部分恢复分别记账，不将采集量称为全网覆盖；本仓库不收录整批第三方源码和原始讨论。
