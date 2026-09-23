@@ -66,7 +66,7 @@ flowchart TB
 |---|---|---|---|
 | 1. 源码到运行 | **已跨过首版门槛** | `.jpp` 经解析、检查，由 Rust 实际执行；不依赖 Python 解释器 | 随后续能力补齐文法、诊断和安装说明 |
 | 2. 方法与结果组合 | **主要路径已跑通，完整性仍需补齐** | 方法可传递和返回；问题可动态产生；部分结果可使用并续接 | 实际程序暴露的类型、效应和问题接口缺口 |
-| 3. 外部能力与生命周期 | **真实后端已接通，闭环仍在扩面** | 预算、账本、重放、宿主适配已有实现；`--backend live` 接通真机，`calib-import` 真值通道已跑通并可认证、重放 | 把真值通道扩到更多题式、把已认证线接入常规运行路径、补齐回应与反馈的其余使用路径 |
+| 3. 外部能力与生命周期 | **真实后端已接通，闭环仍在扩面** | 预算、账本、重放、宿主适配已有实现；`--backend live` 已在研究区真机运行（有账本与费用记录），`calib-import` 真值通道在测试中跑通并可认证、重放 | 把真值通道扩到更多题式、把已认证线接入常规运行路径、补齐回应与反馈的其余使用路径 |
 | 4. 可复用程序与基础优化 | **核心构造已交付，复用广度待扩** | 三路筛选（`sieve`）、配对（`pair`）、计数区间与前 k（`tally` / `first_k`）、迭代终止线（`iterate`）已实现，六个构造共享同一组合封闭性契约 | 跨算法复用范例、更多题式的校准认证、由程序驱动的优化补缺 |
 | 5. 整版交付 | **已有早期公开版，当前整版未完成** | 别人能取得原生源码快照与文法 | 研究功能整合、同版本文档、完整例子与可安装发行 |
 
@@ -76,7 +76,7 @@ flowchart TB
 
 ### 已跑通的行为
 
-9 月 23 日最新验证记录见 [PR #28](https://github.com/Towow-ai/jpp/pull/28)：`cargo test --workspace` 341 项测试通过、0 失败、3 忽略。除此前的四个源码程序外，新增三路筛选、配对、计数区间/前 k、迭代终止线与组合封闭性契约的源码示例；真实 JEV 后端（`--backend live`）与真值通道（`calib-import`）均已跑通并可重放。本次总图读取这些记录及对应代码，没有再把同一套测试重复跑一遍。详情见[当日进度说明](updates/2026-09-23-constructs-and-calibration.md)（此前的四程序记录见[早前说明](updates/2026-09-23-composable-foundation-status.md)）。
+9 月 23 日最新验证记录见 [PR #28](https://github.com/Towow-ai/jpp/pull/28)：`cargo test --workspace` 341 项测试通过、0 失败、3 忽略。除此前的四个源码程序外，新增三路筛选、配对、计数区间/前 k、迭代终止线与组合封闭性契约的源码示例；真值通道（`calib-import`）在测试中端到端跑通并可重放。真实 JEV 后端（`--backend live`）已在研究区真机运行，有账本与费用记录；公开快照里的 `--backend live` 命令是模板，本仓库的测试与 CI 没有连接真实服务，测到的是客户端接线与重放。本次总图读取这些记录及对应代码，没有再把同一套测试重复跑一遍。详情见[当日进度说明](updates/2026-09-23-constructs-and-calibration.md)（此前的四程序记录见[早前说明](updates/2026-09-23-composable-foundation-status.md)）。
 
 这些程序展示了三种基础能力：
 
@@ -108,7 +108,7 @@ flowchart TB
 |---|---|---|
 | 材料按判断分为接受、忽略、未决 | 判断/桥 + 可复用集合方法 | `sieve` 已实现三路语义筛选：直接吃题，同状态多题合并为一次调用，产物可再筛选；跨算法复用范例还少 |
 | 两组材料计算关系、构造组合 | 枚举/召回 + 关系问题 + 配对方法 | `pair` 已实现：两组材料或调用者给的候选对 → 关系记录，枚举方式由调用者定，组合可作为新材料再配对；三元及以上关系尚无对应构造 |
-| 集合上的存在、全称、计数区间、排序 | 集合聚合库 | `tally` 给出计数精确区间、`first_k` 按输入顺序选前 k 且遇未决即不宣称；`agg` 已被 `repeat`（仅均值/中位数、禁众数）取代；全称量化与通用排序仍缺 |
+| 集合上的存在、全称、计数区间、排序 | 集合聚合库 | `tally` 给出计数精确区间、`first_k` 按输入顺序选前 k 且遇未决即不宣称；本快照中 `agg` 仍在、可用（choice 按众数聚合）；研究区已按 B28 新增 `repeat`（仅均值/中位数、禁众数），`agg` 在那里降为带弃用告警的别名，这一改动尚未同步到本快照；全称量化与通用排序仍缺 |
 | 反馈、分治、搜索、选择策略 | 普通控制流 + 高阶方法 + 库骨架 | 已有个别程序；尚未形成跨算法可复用的一组完整方法 |
 
 下一步补的是这些能力在现行结构中的对应物，保留已经有用的普通列表操作和读数聚合。仅在具体程序确实无法表达时调整内核。
@@ -131,7 +131,7 @@ flowchart TB
 
 ## 7. 研究、公开代码与协作位置
 
-合并审查更新：主分支 `af7bae7` 已包含 [PR #25](https://github.com/Towow-ai/jpp/pull/25) 的 Rust 同步和审查修复，以及 [PR #20](https://github.com/Towow-ai/jpp/pull/20) 的源码位置回归，组合后 Rust 套件为 305 项通过、3 项忽略。此后 [PR #28](https://github.com/Towow-ai/jpp/pull/28)（叠在已合并的 #27 之上，尚未合并）搬入构造施工、真实后端与题式级校准：`cargo test --workspace` 341 项通过、0 失败、3 忽略；CLI 新增 `--backend live` 接通真机，不再只是固定观察。已知放行缺陷（推测执行越过用户函数分支；不可信内容经拼接/join/Fail 后失去 taint 标记）已在研究区修复，待下次同步进入公开仓库；B25、B28–B32 等规则在研究区已有实现记录，本快照尚未包含对应改动，具体以研究区记录为准。本文本身只更新文档；最新合并和检查状态以对应 PR 为准。
+合并审查更新：主分支 `af7bae7` 已包含 [PR #25](https://github.com/Towow-ai/jpp/pull/25) 的 Rust 同步和审查修复，以及 [PR #20](https://github.com/Towow-ai/jpp/pull/20) 的源码位置回归，组合后 Rust 套件为 305 项通过、3 项忽略。此后 [PR #28](https://github.com/Towow-ai/jpp/pull/28)（叠在已合并的 #27 之上，尚未合并）搬入构造施工、真实后端与题式级校准：`cargo test --workspace` 341 项通过、0 失败、3 忽略；CLI 新增 `--backend live` 真实后端选项（研究区已真机运行，本仓库测试与 CI 未连接真实服务），不再只有固定观察。已知放行缺陷（推测执行越过用户函数分支；不可信内容经拼接/join/Fail 后失去 taint 标记）已在研究区修复，待下次同步进入公开仓库；B25、B28–B32 等规则在研究区已有实现记录，本快照尚未包含对应改动，具体以研究区记录为准。本文本身只更新文档；最新合并和检查状态以对应 PR 为准。
 
 沿用职责：Claude Code 承担主要 Rust 内核、适配与运行时实现；前端、源码库、使用路径与公开同步按已认领的工作包衔接；总控维护当前地图，在完整交付点检查效果和少数跨层决定。本轮没有向在途会话追加消息，也没有据历史记录判断某个 Agent 此刻仍在运行。
 
@@ -141,7 +141,7 @@ J++ now has independent `.jpp` source and a working Rust interpreter. Its object
 
 The original five-step plan is retained. Source execution has crossed its initial delivery milestone; major method-composition paths work. Current construction spans external integration and lifecycle support (step 3), reusable source libraries and targeted optimization (step 4), and consolidation into a usable release (step 5). This is not a completed general-purpose language body.
 
-September 23 records now include [PR #28](https://github.com/Towow-ai/jpp/pull/28): `cargo test --workspace` shows 341 passing tests, 0 failed, 3 ignored, plus source examples for three-way filtering (`sieve`), pairing (`pair`), count intervals and first-k (`tally` / `first_k`), a shrink-termination iterate line, and a composition-closure contract shared by all of them, alongside the earlier composition, adaptive-question and partial-continuation examples. `jpp run --backend live` now reaches the real JEV backend, and `jpp calib-import` closes a template-level truth-to-calibration channel with split-sample certification. The default run still uses fixed observations; live runs need an explicit flag and a paid feature build, and most question templates remain uncertified (`cold` / `pending`). Two fail-open defects found by the design ledger are fixed in the research tree and pending this repository's next sync; several rulings (B25, B28-B32) have implementation records in the research tree but are not yet ported here.
+September 23 records now include [PR #28](https://github.com/Towow-ai/jpp/pull/28): `cargo test --workspace` shows 341 passing tests, 0 failed, 3 ignored, plus source examples for three-way filtering (`sieve`), pairing (`pair`), count intervals and first-k (`tally` / `first_k`), a shrink-termination iterate line, and a composition-closure contract shared by all of them, alongside the earlier composition, adaptive-question and partial-continuation examples. `jpp run --backend live` adds a real JEV backend option: it has been run against the live service in the research tree (with ledger and cost records), while the command in this snapshot is a template and neither these tests nor CI contact the real service. `jpp calib-import` closes a template-level truth-to-calibration channel with split-sample certification. The default run still uses fixed observations; live runs need an explicit flag and a paid feature build, and most question templates remain uncertified (`cold` / `pending`). Two fail-open defects found by the design ledger are fixed in the research tree and pending this repository's next sync; several rulings (B25, B28-B32) have implementation records in the research tree but are not yet ported here.
 
 The next proposed packages consolidate delivered work, co-develop reusable constructs with structurally different algorithms, connect the real backend through the user-facing path, and deliver a complete application and installation flow. Early collection-operator requirements map into the current core/library split; existing boolean filtering and reading aggregation should not be declared incorrect merely because earlier documents used similar names. Research informs construction rather than imposing a new audit-first roadmap.
 
