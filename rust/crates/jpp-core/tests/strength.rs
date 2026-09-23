@@ -101,20 +101,20 @@ fn 跑一次() -> (Vec<usize>, Vec<String>, Vec<(String, f64)>) {
     // allocate 现在返回记录：`picked` 是榜，`算不出` 是排不了序的那些（对程序可见）
     let Value::Record(rep) = get("复核") else { panic!("复核该是记录") };
     let Value::List(picked) = rep.iter().find(|(k, _)| k == "picked").expect("有 picked").1.clone() else { panic!("picked 该是下标表") };
-    let picked: Vec<usize> = picked.iter().map(|v| if let Value::Int(i) = v { *i as usize } else { panic!("下标该是整数") }).collect();
+    let picked: Vec<usize> = picked.iter().map(|v| if let Value::Int(i, _) = v { *i as usize } else { panic!("下标该是整数") }).collect();
     let Value::List(kinds) = get("出口") else { panic!("出口该是列表") };
-    let kinds: Vec<String> = kinds.iter().map(|v| if let Value::Text(t) = v { t.to_string() } else { panic!("出口种类该是文本") }).collect();
+    let kinds: Vec<String> = kinds.iter().map(|v| if let Value::Text(t, _) = v { t.to_string() } else { panic!("出口种类该是文本") }).collect();
     let Value::Record(b) = get("上界") else { panic!("上界该是记录") };
     let bound: Vec<(String, f64)> = b
         .iter()
         .map(|(k, v)| {
             (k.clone(), match v {
-                Value::Float(f) => *f,
-                Value::Int(i) => *i as f64,
+                Value::Float(f, _) => *f,
+                Value::Int(i, _) => *i as f64,
                 // **`independent_any` 故意不是数**：它只作参考值，J++ 那侧也不许拿它比大小。
                 // Rust 侧的 `仅供参考` 类型闸以前只拦得住 Rust 调用者，
                 // 而这门语言唯一的用户拿到的是裸浮点——现在两侧同一条纪律。
-                Value::Text(t) if k == "independent_any" => {
+                Value::Text(t, _) if k == "independent_any" => {
                     assert!(t.contains("仅供参考"), "取出来时那句话要跟着：{t}");
                     f64::NAN
                 }

@@ -843,6 +843,15 @@ pub struct CalibRecord {
     /// 认证集范围（B24 补充）。`None` = 老记录或非真值通道记录；序列化时不出现
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub scope: Option<CalibScope>,
+    /// **夹具记录**（B29）：由宿主 `put` 写入的测试记录。`false` 时不序列化，老记录哈希不变。
+    /// 夹具线给出的出口带 `W-fixture-line`，不得作为放行不可逆 `do` 的可信合取项。
+    /// 认证程序（`commission*`）上岗时清掉这一位。
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub fixture: bool,
+    /// **重跑分歧检验**（B28 / B9）：该键上重跑的错误是否被检验为独立（`Some(true)` = 通过）。
+    /// 只有通过时，重复读数与 `band → 重跑` 才能当降错手段；`None` = 没测过，按持久错误对待。
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub rerun_independent: Option<bool>,
 }
 
 /// 真值通道对一个校准键的结论（B19 / B13）。
@@ -926,6 +935,11 @@ impl Cert {
 }
 
 impl CalibRecord {
+    /// **这条线是不是夹具线**（B29）：`put` 写的测试记录，或者根本没有一张证书撑着。
+    /// 没有证书 = 不是认证程序从带真值样本产出的，按 J-03（同约束宿主）不算凭据。
+    pub fn fixture_line(&self) -> bool {
+        self.fixture || self.选中的证书().is_none()
+    }
     /// **选中的那张证书：α 最小的一张。**
     ///
     /// α 越小 = 风险目标越严 = 线越高 = 放行越少 = **越保守**。取最小的那张，
@@ -1039,6 +1053,9 @@ pub struct Profile {
     /// **`None` = 本次运行没有加载档案**，线与 δ 是代码兜底值——这个痕迹必须留下，
     /// 否则「用了兜底值」和「档案恰好等于兜底值」在账本上分不开。
     pub hash: Option<String>,
+    /// **每次判断调用的 p95 时延（秒）**（`concurrency.latency_s.p95`），B32 静态时延估计用。
+    /// `None` = 档案没给或没加载档案：估计不了，检查报 `W-untested`。
+    pub latency_p95: Option<f64>,
 }
 
 impl Default for Profile {
@@ -1047,7 +1064,7 @@ impl Default for Profile {
     /// 兜底值本身合法（测试与不接档案的调用方要用），**不合法的是 `load` 悄悄回退到它**。
     /// 取值与 Python 内核同名兜底一致（`runtime.py` 的 `delta_for` / `safety_lines` 的 except 分支）。
     fn default() -> Profile {
-        Profile { safety: (1.0, 0.0), delta: (0.05, 0.15, 0.15), text_window: 1000, json_ctx_window: 1800, behavior_hash: None, hash: None, arithmetic_capable: Tri::未测 }
+        Profile { safety: (1.0, 0.0), delta: (0.05, 0.15, 0.15), text_window: 1000, json_ctx_window: 1800, behavior_hash: None, hash: None, arithmetic_capable: Tri::未测, latency_p95: None }
     }
 }
 
@@ -1096,7 +1113,7 @@ impl Profile {
             .and_then(|m| m.as_object())
             .and_then(|m| m.keys().filter_map(|k| k.trim_start_matches('~').parse::<usize>().ok()).max())
             .ok_or("档案缺 window.json_slots.claim_bearing_ctx.flip_frac_by_ctx_tokens")?;
-        Ok(Profile { safety: (hi, lo), delta: (dn, dc, ds), text_window, json_ctx_window, behavior_hash: Some(behavior_hash(j)), hash: Some(profile_hash(j)), arithmetic_capable: Tri::from_json(j, "arithmetic_capable") })
+        Ok(Profile { safety: (hi, lo), delta: (dn, dc, ds), text_window, json_ctx_window, behavior_hash: Some(behavior_hash(j)), hash: Some(profile_hash(j)), arithmetic_capable: Tri::from_json(j, "arithmetic_capable"), latency_p95: j.get("concurrency").and_then(|c| c.get("latency_s")).and_then(|l| l.get("p95")).and_then(|x| x.as_f64()) })
     }
 }
 
@@ -1208,8 +1225,8 @@ impl Refusal {
     }
 }
 
-/// 四个合法状态（与 Python `calib.py:13` 同）
-pub const STATUSES: [&str; 4] = ["冷", "上岗", "停岗", "待真值"];
+/// 合法状态：Python `calib.py:13` 的四个，加 B25 的「停岗候选」（自动标记、待人确认）
+pub const STATUSES: [&str; 5] = ["冷", "上岗", "停岗", "待真值", "停岗候选"];
 
 #[derive(Clone, Debug, Default)]
 pub struct CalibStore {
@@ -1221,11 +1238,11 @@ impl CalibStore {
     pub fn new() -> CalibStore {
         CalibStore::default()
     }
-    /// 只由校准过程写；程序里不可调用（J-03 的运行期面）。
-    ///
-    /// **宿主能在这里写线，这是设计意图**——`12`:64 I4 写着「线只从校准记录来（标注集、
-    /// 保形、代价），**程序里**不可写线」，拦的是程序，不是校准过程。**但正因如此，
-    /// 来源必须能分辨**：否则「线来自校准」这句话在审计上是空的。见 `Provenance`。
+    /// **只写夹具记录**（B29，2026-09-23 改写）：J-03 同时约束程序与宿主。
+    /// 校准记录只能由认证程序（`commission*`、真值通道）从带真值样本产出；
+    /// 宿主经这里写的一律是 `fixture: true` 的测试记录，凭它得到的出口带 `W-fixture-line`，
+    /// 不算放行不可逆 `do` 的可信合取项。原注释「宿主能在这里写线，这是设计意图」
+    /// 把 J-03 解释为只拦程序，已由 `12` J-03 B29 条取代。
     pub fn put(&mut self, key: &str, hi: f64, lo: f64, n: u64, status: &str) -> Result<(), String> {
         if !STATUSES.contains(&status) {
             return Err(format!("status 只能是 {STATUSES:?}，收到 {status:?}"));
@@ -1292,7 +1309,8 @@ impl CalibStore {
         let truth = self.records.get(key).and_then(|r| r.truth.clone());
         let lower = self.records.get(key).and_then(|r| r.lower.clone());
         let old_scope = self.records.get(key).and_then(|r| r.scope.clone());
-        self.records.insert(key.to_string(), CalibRecord { key: key.into(), hi, lo, n, status: status.into(), delta: None, unsure_rate: None, unsure_rate_delta: None, set_id: String::new(), label_set_id: lsid, label_locator: lloc, label_fp: lfp, label_source: lsrc, samples, certs, truth, lower, scope: old_scope });
+        let old_rerun = self.records.get(key).and_then(|r| r.rerun_independent);
+        self.records.insert(key.to_string(), CalibRecord { key: key.into(), hi, lo, n, status: status.into(), delta: None, unsure_rate: None, unsure_rate_delta: None, set_id: String::new(), label_set_id: lsid, label_locator: lloc, label_fp: lfp, label_source: lsrc, samples, certs, truth, lower, scope: old_scope, fixture: true, rerun_independent: old_rerun });
         Ok(())
     }
 
@@ -1314,7 +1332,7 @@ impl CalibStore {
         }
         let rec = self.records.entry(key.to_string()).or_insert_with(|| CalibRecord {
             key: key.into(), hi: 0.65, lo: 0.35, n: 0, status: "冷".into(),
-            delta: None, unsure_rate: None, unsure_rate_delta: None, set_id: String::new(), label_set_id: String::new(), label_locator: String::new(), label_fp: String::new(), label_source: LabelSource::default(), samples: vec![], certs: Default::default(), truth: None, lower: None, scope: None,
+            delta: None, unsure_rate: None, unsure_rate_delta: None, set_id: String::new(), label_set_id: String::new(), label_locator: String::new(), label_fp: String::new(), label_source: LabelSource::default(), samples: vec![], certs: Default::default(), truth: None, lower: None, scope: None, fixture: false, rerun_independent: None,
         });
         let 有标注 = s.label.is_some();
         rec.samples.push(s);
@@ -1329,9 +1347,6 @@ impl CalibStore {
     }
     /// **上岗的正门**：拿这条键积累来的标注样本跑保形认证，**认过才上岗，线由证书定**。
     ///
-    /// Experimental host policy: selection and pointwise bounds reuse samples.
-    /// A returned `Cert` is not yet a general finite-sample risk guarantee.
-    ///
     /// `cluster_unit` **必须由调用方声明**，不许从数据推断。推断出来的默认会造出一张
     /// 写着「按条核过」的证书，**而真相是没人说过簇是什么**——那正是「给没有类型的东西
     /// 补来源」那个形状。声明「对象段」而样本没有簇 id 是**错，不是降级**。
@@ -1344,10 +1359,6 @@ impl CalibStore {
     }
 
     /// **代价矩阵定线、证书定能不能上岗**（那条裁定的两半合起来）。
-    ///
-    /// The two declared dataset IDs are checked, but this implementation still
-    /// computes selection and validation from the same stored samples. Distinct
-    /// IDs alone do not establish independent holdout validation.
     ///
     /// `certify` 自己会去找一条最宽的、仍被认证住的线；**给了代价矩阵就不找了**——
     /// 线由 `cost_line` 在标注集上按 `fp·#误放行 + fn·#漏放行` 最小定出来，
@@ -1460,6 +1471,7 @@ impl CalibStore {
             r.hi = 选中.hi;
             r.lo = 0.0;
             r.status = "上岗".into();
+            r.fixture = false;
             r.unsure_rate = 经验unsure率(&按条, &众数认证时, 题型认证时, r.hi, r.lo, delta认证时);
             r.unsure_rate_delta = 绑delta(delta认证时);
             return Ok(cert);
@@ -1515,6 +1527,7 @@ impl CalibStore {
                 // 缺省 lo=0.35），那样带就翻了，而 `put` 的 `lo ≤ hi` 也会被自己人违反。
                 r.lo = 0.0;
                 r.status = "上岗".into();
+            r.fixture = false;
                 // **J-10 的 uᵢ 在这里被测出来**（`12`:591「有标注集时用**经验**联合 unsure 率」；
                 // `12`:814 那一栏写的是「✓ 估计 | **实测**」）。在这之前这个字段**只有消费方没有生产者**：
                 // 走完 `absorb` → `commission` 的真实路径拿到的仍是 `None`，
@@ -1619,6 +1632,7 @@ impl CalibStore {
         r.lo = lo;
         r.lower = Some(lower);
         r.status = "上岗".into();
+            r.fixture = false;
         r.unsure_rate = 经验unsure率(&按条, &[], Some(Op::Test), hi, lo, Some(delta));
         r.unsure_rate_delta = Some(delta);
         Ok(upper)
@@ -1704,6 +1718,7 @@ impl CalibStore {
         r.lo = lo;
         r.lower = Some(lower);
         r.status = "上岗".into();
+            r.fixture = false;
         r.unsure_rate = 经验unsure率(&按条, &[], Some(Op::Test), hi, lo, Some(delta));
         r.unsure_rate_delta = Some(delta);
         Ok(upper)
@@ -1776,13 +1791,13 @@ impl CalibStore {
                 key: String::new(), hi: 0.0, lo: 0.0, n: 0, status: "冷".into(),
                 delta: None, unsure_rate: None, unsure_rate_delta: None, set_id: String::new(),
                 label_set_id: String::new(), label_locator: String::new(), label_fp: String::new(),
-                label_source: LabelSource::default(), samples: vec![], certs: Default::default(), truth: None, lower: None, scope: None,
+                label_source: LabelSource::default(), samples: vec![], certs: Default::default(), truth: None, lower: None, scope: None, fixture: false, rerun_independent: None,
             }) {
                 Ok(Json::Object(m)) => m.keys().cloned().collect(),
                 _ => return Err("内部错误：CalibRecord 序列化不出对象".into()),
             };
             // `truth` 为空时不序列化（老记录哈希不变），所以上面那张表里没有它，这里补上
-            let 映射: Vec<String> = 映射.into_iter().chain(["truth".to_string(), "lower".to_string(), "scope".to_string(), "unsure_rate_delta".to_string()]).collect();
+            let 映射: Vec<String> = 映射.into_iter().chain(["truth".to_string(), "lower".to_string(), "scope".to_string(), "fixture".to_string(), "rerun_independent".to_string(), "unsure_rate_delta".to_string()]).collect();
             for k in obj.keys() {
                 if !映射.iter().any(|m| m == k) && !知道但不映射.contains(&k.as_str()) {
                     return Err(format!("{} 有内核不认得的字段 {k:?}：装载不猜，也不无声吞掉", path.display()));
@@ -1880,7 +1895,7 @@ impl CalibStore {
         self.records
             .get(key)
             .cloned()
-            .unwrap_or(CalibRecord { key: key.into(), hi: 0.65, lo: 0.35, n: 0, status: "冷".into(), delta: None, unsure_rate: None, unsure_rate_delta: None, set_id: String::new(), label_set_id: String::new(), label_locator: String::new(), label_fp: String::new(), label_source: LabelSource::default(), samples: vec![], certs: Default::default(), truth: None, lower: None, scope: None })
+            .unwrap_or(CalibRecord { key: key.into(), hi: 0.65, lo: 0.35, n: 0, status: "冷".into(), delta: None, unsure_rate: None, unsure_rate_delta: None, set_id: String::new(), label_set_id: String::new(), label_locator: String::new(), label_fp: String::new(), label_source: LabelSource::default(), samples: vec![], certs: Default::default(), truth: None, lower: None, scope: None, fixture: false, rerun_independent: None })
     }
     /// 这种题式的 δ：记录自带的优先，否则用档案的
     pub fn delta_for(&self, rec: &CalibRecord, op: Op) -> f64 {

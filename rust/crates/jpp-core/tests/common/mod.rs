@@ -108,7 +108,7 @@ pub fn func_ret(n: &str, params: &[&str], effects: Option<&[&str]>, ret: Type, b
 }
 
 pub fn budget(calls: u64, depth: u32) -> Budget {
-    Budget { calls, cost: 0.0, depth: Some(depth), escalate: None, unsure: None }
+    Budget { calls, cost: 0.0, depth: Some(depth), escalate: None, unsure: None, absent: None, latency_p95: None }
 }
 
 pub fn program(b: Option<Budget>, statements: Vec<Statement>, result: Expr) -> Program {
@@ -138,4 +138,19 @@ pub fn assert_clean(p: &Program) {
         "静态检查本不该有话说，却报了：\n{}",
         report.render()
     );
+}
+
+/// **测试用的认证线**（B29 之后）：`put` 只写夹具记录，夹具线的出口不算放行不可逆 `do`
+/// 的可信合取项。测 J-08 放行路径的测试需要一条「有证书」的线，这里附一张**明写为测试合成**
+/// 的证书并清掉夹具位。它只存在于测试建造器里，语言与 CLI 没有这条路。
+pub fn certified(calib: &mut jpp_core::effects::CalibStore, key: &str, hi: f64, lo: f64, n: u64) {
+    calib.put(key, hi, lo, n, "上岗").unwrap();
+    let cert = jpp_core::effects::Cert {
+        alpha: 0.10, conf_delta: 0.10, hi, n_accepted: n as usize, n_errors: 0, ucb: 0.05,
+        cluster_unit: "测试合成证书".into(), resample: None, cost: None, bounded_side: "单侧".into(),
+        label_fp: String::new(), selection: None, label_source: jpp_core::effects::LabelSource::全体,
+    };
+    let r = calib.records.get_mut(key).unwrap();
+    r.certs.insert(cert.addr(), cert);
+    r.fixture = false;
 }

@@ -37,7 +37,7 @@ pub fn execute(
         if replay_only {
             return Err("replay has no completed record for read_json".into());
         }
-        let [jpp_core::value::Value::Text(path)] = args else {
+        let [jpp_core::value::Value::Text(path, _)] = args else {
             return Err("read_json expects one file path".into());
         };
         let bytes = std::fs::read(path.as_ref()).map_err(|e| format!("{path}: {e}"))?;
@@ -50,7 +50,7 @@ pub fn execute(
         if replay_only {
             return Err("replay has no completed record for write_json".into());
         }
-        let [jpp_core::value::Value::Text(path), value] = args else {
+        let [jpp_core::value::Value::Text(path, _), value] = args else {
             return Err("write_json expects a file path and a value".into());
         };
         let bytes = serde_json::to_vec_pretty(&value.to_json()).map_err(|e| e.to_string())?;
@@ -64,7 +64,7 @@ pub fn execute(
     for w in outcome.trace.warnings.iter().filter(|w| w.starts_with("J-10")) {
         eprintln!("warning: {w}");
     }
-    Ok(json!({
+    let mut report = json!({
         "mode": "fixed observations; no model API requests",
         "status": if outcome.pending.is_empty() { "returned" } else { "pending" },
         "value": outcome.value_json(),
@@ -74,7 +74,12 @@ pub fn execute(
                  "tokens": outcome.cost.tokens, "usd": outcome.cost.usd, "asks": outcome.cost.asks},
         "trace": outcome.trace,
         "local_checks": *checks.borrow(),
-    }))
+    });
+    // 停岗候选（B25）只在有时出现，默认输出逐字节不变
+    if !outcome.suspend_candidates.is_empty() {
+        report["suspend_candidates"] = json!(outcome.suspend_candidates);
+    }
+    Ok(report)
 }
 
 fn validate_numbers(value: &Value) -> Result<(), String> {

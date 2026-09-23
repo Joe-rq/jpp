@@ -181,6 +181,18 @@ pub fn run_checked(
         for (k, sm) in &evidence {
             出.absorb(k, sm.clone()).map_err(|e| format!("折证据进 {k} 失败：{e}"))?;
         }
+        // **停岗候选**（B25）：本趟漂移信号自动标出的键写成「停岗候选」，正式停岗由人确认
+        // （`jpp calib-confirm <目录> <键> --suspend | --keep`）。只动上岗记录。
+        if let Ok(report) = &result {
+            for k in report["suspend_candidates"].as_array().into_iter().flatten().filter_map(|v| v.as_str()) {
+                if let Some(r) = 出.records.get_mut(k) {
+                    if r.status == "上岗" {
+                        r.status = "停岗候选".into();
+                        eprintln!("停岗候选：{}（漂移信号超线；用 jpp calib-confirm 确认停岗或保留）", k.replace('\u{1f}', ":"));
+                    }
+                }
+            }
+        }
         出.save(dir).map_err(|e| format!("{}: {e}", dir.display()))?;
         eprintln!("校准记录已写回 {}（{} 条记录，本趟折进 {} 条观察）", dir.display(), 出.records.len(), evidence.len());
     }

@@ -51,6 +51,8 @@ fn nested_method_composition_matches_direct_core_construction() {
             depth: Some(256),
             escalate: None,
             unsure: None,
+            absent: None,
+            latency_p95: None,
         }),
         span: s,
         body: Block::new(

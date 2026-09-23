@@ -119,7 +119,7 @@ pub fn run_with_fits(
     if !report.is_ok() {
         return Err(Error::Check(report));
     }
-    let budget = program.budget.clone().unwrap_or(Budget { calls: 0, cost: 0.0, depth: None, escalate: None, unsure: None });
+    let budget = program.budget.clone().unwrap_or(Budget { calls: 0, cost: 0.0, depth: None, escalate: None, unsure: None, absent: None, latency_p95: None });
     let out = interp::Interp::with_fits(client, ledger, calib, actions, fits, budget).run(program).map_err(Error::Runtime)?;
     Ok(带出静态告警(out, &report))
 }
@@ -132,6 +132,6 @@ pub fn run_unchecked(
     actions: &ActionRegistry,
     ledger: &mut Ledger,
 ) -> Result<Outcome, RtError> {
-    let budget = program.budget.clone().unwrap_or(Budget { calls: 0, cost: 0.0, depth: None, escalate: None, unsure: None });
+    let budget = program.budget.clone().unwrap_or(Budget { calls: 0, cost: 0.0, depth: None, escalate: None, unsure: None, absent: None, latency_p95: None });
     Interp::new(client, ledger, calib, actions, budget).run(program)
 }

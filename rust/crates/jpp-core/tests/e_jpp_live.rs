@@ -37,7 +37,7 @@ let 挑 = handle(cut(judge(state(mat("选一个最合适的说法"), {over: [稿
 fn 动作表() -> ActionRegistry {
     let mut a = ActionRegistry::new();
     a.register("取内部", 0.0, true, TaintOut::Trusted,
-        |_| Ok(Value::Text("本季度门店客流同比上升 12%，其中周末占比 58%。".into())));
+        |_| Ok(Value::Text("本季度门店客流同比上升 12%，其中周末占比 58%。".into(), jpp_core::value::Taint::Trusted)));
     a
 }
 

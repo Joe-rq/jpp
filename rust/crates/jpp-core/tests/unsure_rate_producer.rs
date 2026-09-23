@@ -111,7 +111,7 @@ handle(cut(judge(state(mat("材料")), test("行吗", "k"))), {
 "#).expect("解析")).expect("lower");
         let mut l = Ledger::new();
         let out = run(&program, &mut 定值桩(p), &c, &ActionRegistry::new(), &mut l).expect("跑得完");
-        let 走出来的 = match &out.value { Some(jpp_core::value::Value::Text(t)) => t.to_string(), v => panic!("{v:?}") };
+        let 走出来的 = match &out.value { Some(jpp_core::value::Value::Text(t, _)) => t.to_string(), v => panic!("{v:?}") };
         assert_eq!(
             走出来的 == "un", 按判据算的是unsure,
             "p={p} hi={hi} lo={lo} δ={d}：cut 走的是 {走出来的}，而 unsure_rate 的判据说 unsure={按判据算的是unsure}"
@@ -132,8 +132,8 @@ unsure_bound(judge(state(mat("材料")), test("行吗", "k")))
     let out = run(&program, &mut 桩(RefCell::new(0)), &c, &ActionRegistry::new(), &mut l).expect("跑得完");
     let Some(jpp_core::value::Value::Record(r)) = &out.value else { panic!("unsure_bound 返回记录：{:?}", out.value) };
     let 取 = |名: &str| r.iter().find(|(k, _)| k == 名).map(|(_, v)| v.clone()).unwrap_or_else(|| panic!("没有这一栏：{名}"));
-    let 取整 = |名: &str| match 取(名) { jpp_core::value::Value::Int(i) => i, v => panic!("{名} 不是整数：{v:?}") };
-    let 取浮 = |名: &str| match 取(名) { jpp_core::value::Value::Float(f) => f, v => panic!("{名} 不是浮点：{v:?}") };
+    let 取整 = |名: &str| match 取(名) { jpp_core::value::Value::Int(i, _) => i, v => panic!("{名} 不是整数：{v:?}") };
+    let 取浮 = |名: &str| match 取(名) { jpp_core::value::Value::Float(f, _) => f, v => panic!("{名} 不是浮点：{v:?}") };
     println!("n={} union_bound={} n_unknown={}", 取整("n"), 取浮("union_bound"), 取整("n_unknown"));
     assert_eq!(取整("n"), 1);
     assert_eq!(

@@ -117,6 +117,8 @@ fn 跑_多态(src: &str, ps: &[f64]) -> jpp_core::Outcome {
     let program = lower(&parse(src).expect("解析")).expect("lower");
     let mut calib = CalibStore::new();
     calib.put("k", 0.65, 0.35, 100, "上岗").unwrap();
+    // B28：重复合并的结果用含 n 的独立键
+    calib.put("k\u{1f}repeat(n=3)", 0.65, 0.35, 100, "上岗").unwrap();
     let mut client = 多态客户端 { ps: ps.to_vec(), 下一个: RefCell::new(0) };
     let mut ledger = Ledger::new();
     run(&program, &mut client, &calib, &ActionRegistry::new(), &mut ledger)
@@ -244,24 +246,55 @@ let 档位 = order(judge(状态们, test("行吗", "k")));
     assert_eq!(档[2], serde_json::json!([1]), "失败的读数排最后一档：{档:?}");
 }
 
-/// **`agg` 拦住的是什么**：同一道题跨多次运行的读数，作者拿 `fold` 求平均也能算出个数——
-/// 但那个数**不是读数**，它是个裸 f64，再也进不了 `cut`、也不带校准键。
-/// `.agg()` 合并之后**仍然是读数**（`12`:134「同题跨运行的均值/众数」），所以还能 `cut`。
+/// **`repeat`（原 `agg`，B28）拦住的是什么**：同一道题跨多次运行的读数，作者拿 `fold` 求平均也能算出个数——
+/// 但那个数**不是读数**，进不了 `cut`、也不带校准键。`repeat` 合并之后**仍然是读数**，所以还能 `cut`；
+/// B28 起只许均值 / 中位数、禁众数，合并结果过桥用含 n 的独立校准键，未通过重跑分歧检验时告警。
 #[test]
-fn agg合并跨运行的读数且结果仍是读数() {
+fn repeat合并跨运行的读数且结果仍是读数() {
+    let src = |f: &str| format!(r#"
+budget {{calls: 6, cost: 1, depth: 8}};
+let m = mat("同一段");
+let q = test("行吗", "k");
+let 三次 = [judge(state(m), q), judge(state(m), q), judge(state(m), q)];
+let 合并 = {f};
+let e = cut(合并);
+consume(e, "drop");
+{{出口: exit_kind(e)}}
+"#);
+    // 三次读数 0.80 / 0.90 / 0.70，均值 0.80 > hi 0.65 → act（键 k·repeat(n=3) 有记录）
+    let out = 跑_多态(&src("repeat(三次)"), &[0.80, 0.90, 0.70]);
+    assert_eq!(out.value_json()["出口"], serde_json::json!("act"), "{:?}", out.value_json());
+    assert!(out.trace.warnings.iter().any(|w| w.starts_with("W-repeat-persistent")), "{:?}", out.trace.warnings);
+    // 中位数
+    let out = 跑_多态(&src(r#"repeat(三次, "median")"#), &[0.80, 0.90, 0.70]);
+    assert_eq!(out.value_json()["出口"], serde_json::json!("act"));
+    // 旧名照常可用，给弃用提示
+    let out = 跑_多态(&src("agg(三次)"), &[0.80, 0.90, 0.70]);
+    assert!(out.trace.warnings.iter().any(|w| w.starts_with("W-deprecated")), "{:?}", out.trace.warnings);
+    // 众数禁止
+    let program = lower(&parse(&src(r#"repeat(三次, "mode")"#)).expect("解析")).expect("lower");
+    let mut calib = CalibStore::new();
+    calib.put("k", 0.65, 0.35, 100, "上岗").unwrap();
+    let mut client = 多态客户端 { ps: vec![0.8, 0.9, 0.7], 下一个: RefCell::new(0) };
+    let mut ledger = Ledger::new();
+    let e = run(&program, &mut client, &calib, &ActionRegistry::new(), &mut ledger).expect_err("众数禁止");
+    assert!(e.render().contains("众数"), "{}", e.render());
+}
+
+/// 合并结果**不借原键的线**：没有 `键·repeat(n)` 的记录就是冷（B28）。
+#[test]
+fn repeat结果不借原键的线() {
     let src = r#"
 budget {calls: 6, cost: 1, depth: 8};
 let m = mat("同一段");
 let q = test("行吗", "k");
-let 三次 = [judge(state(m), q), judge(state(m), q), judge(state(m), q)];
-let 合并 = agg(三次);
-let e = cut(合并);
+let e = cut(repeat([judge(state(m), q), judge(state(m), q)]));
+let c = exit_kind(e);
 consume(e, "drop");
-{出口: exit_kind(e)}
+c
 "#;
-    // 三次读数 0.80 / 0.90 / 0.70，均值 0.80 > hi 0.65 → act
-    let out = 跑_多态(src, &[0.80, 0.90, 0.70]);
-    assert_eq!(out.value_json()["出口"], serde_json::json!("act"), "合并后仍是读数，还能 cut：{:?}", out.value_json());
+    let out = 跑_多态(src, &[0.80, 0.90]);
+    assert!(out.value_json().as_str().unwrap_or("").contains("cold"), "n=2 没有记录：{:?}", out.value_json());
 }
 
 /// 判断向量上**只有这两种操作**（`12`:134「其余运算不存在（J-01）」）。

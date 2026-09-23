@@ -505,7 +505,7 @@ fn 四个效应键的成分与依据对得上() {
         let program = lower(&parse(src).expect("解析")).expect("lower");
         let calib = CalibStore::new();
         let mut actions = ActionRegistry::new();
-        actions.register("记一笔", 0.0, true, jpp_core::TaintOut::Trusted, |_| Ok(jpp_core::value::Value::Int(1)));
+        actions.register("记一笔", 0.0, true, jpp_core::TaintOut::Trusted, |_| Ok(jpp_core::value::Value::Int(1, jpp_core::value::Taint::Trusted)));
         let mut client = 定值客户端 { p: 0.9, calls: RefCell::new(0) };
         let mut ledger = Ledger::new();
         let out = run(&program, &mut client, &calib, &actions, &mut ledger).unwrap_or_else(|e| panic!("跑完：{}", e.render()));
