@@ -21,7 +21,7 @@ const LITERAL: &str = "字面前提成立吗？";
 const CALIB: &str = "k";
 
 fn spend(escalate: u64) -> Budget {
-    Budget { calls: 4, cost: 0.0, depth: Some(32), escalate: Some(escalate) }
+    Budget { calls: 4, cost: 0.0, depth: Some(32), escalate: Some(escalate), unsure: None }
 }
 
 fn calibrations() -> CalibStore {

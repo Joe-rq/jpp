@@ -136,3 +136,84 @@ handle(cut(judge(state(mat("材料")), test("行吗", "k"))), {
     let w2 = 跑(&没漂);
     assert!(!w2.iter().any(|x| x.starts_with("W-drift")), "没漂不该响：{w2:?}");
 }
+
+/// **`cut` 不是唯一的消费方——而告警只在它那里发。**
+///
+/// `12`:649 写的是「漂移监控**必备**」，管的是**这条线还成不成立**，
+/// 不是「谁在用它」。而实测全集（`interp.rs` 里读 `self.calib` 的位置）有三处在 `cut` 之外：
+/// `allocate`（2401）、`unsure_bound`（2422）、`delta_for`（1020，`order`/`uncertainty` 用）。
+///
+/// **`unsure_bound` 最重**：它读的是 `rec.unsure_rate`，而且**只认「上岗」的记录**
+/// （`strength.rs:155`）——它给出的是 **J-10 的联合上界**，一条语言自己承诺的保证。
+/// 读数分布移开之后那个 `unsure_rate` 不再成立，**程序拿到一个静默失效的上界，
+/// 且没有任何告警**。**失败开放**，且正落在「长处」那一侧的两个构件上。
+///
+/// 这一条的期望值来自依据文本（`12`:649 + J-10 的上界承诺），**不是从实现抄的**。
+#[test]
+fn 不经cut的消费方也要报漂移() {
+    use std::cell::RefCell;
+    use jpp_core::effects::{Client, EffectError, GenResult, JudgeResult};
+    use jpp_core::interp::ActionRegistry;
+    use jpp_core::ledger::Ledger;
+    use jpp_core::value::{Answer, Question, State};
+    use jpp_core::run;
+    struct 桩(RefCell<u64>);
+    impl Client for 桩 {
+        fn model_id(&self) -> String { "m".into() }
+        fn judge(&mut self, _s: &State, qs: &[&Question]) -> Result<JudgeResult, EffectError> {
+            *self.0.borrow_mut() += 1;
+            Ok(JudgeResult { answers: qs.iter().map(|_| Answer::Noul(0.9)).collect(), tokens: 0, cost: 0.0, mode_share: vec![], perms: vec![] })
+        }
+        fn generate(&mut self, _p: &str, _c: &[serde_json::Value], _n: usize, _r: u64) -> Result<GenResult, EffectError> { Err(EffectError("x".into())) }
+        fn ask(&mut self, _s: &State, _q: &Question) -> Result<Option<Answer>, EffectError> { Err(EffectError("x".into())) }
+        fn calls(&self) -> u64 { *self.0.borrow() }
+    }
+    let 跑 = |src: &str, c: &CalibStore| {
+        let program = jpp_frontend::lower(&jpp_frontend::parse(src).expect("解析")).expect("lower");
+        let mut l = Ledger::new();
+        run(&program, &mut 桩(RefCell::new(0)), c, &ActionRegistry::new(), &mut l).expect("跑得完").trace.warnings.clone()
+    };
+
+    // 与 `cut那一步会因漂移告警` 用**同一个**已漂的 store：唯一的变量是程序里用哪个消费方。
+    let mut 漂 = CalibStore::new();
+    观察(&mut 漂, "k", &(0..60).map(|i| if i % 7 == 0 { 0.9 } else { 0.05 + i as f64 * 0.008 }).collect::<Vec<_>>(), Some(1));
+    漂.commission("k", 0.60, 0.10, "条").expect("认得动");
+    漂.set_unsure_rate("k", 0.2).expect("设得上");
+    观察(&mut 漂, "k", &(0..60).map(|i| 0.60 + i as f64 * 0.006).collect::<Vec<_>>(), None);
+    assert!(漂.drift_of("k").expect("算得出").可停岗(), "前提：这批数据够得上依据");
+
+    let w = 跑(r#"
+budget {calls: 4, cost: 1};
+unsure_bound(judge(state(mat("材料")), test("行吗", "k")))
+"#, &漂);
+    assert!(
+        w.iter().any(|x| x.starts_with("W-drift")),
+        "**只调 unsure_bound、不调 cut 的程序也在用这条线**（读 unsure_rate 给 J-10 的上界），\
+         漂了必须报：{w:?}"
+    );
+    assert_eq!(
+        w.iter().filter(|x| x.starts_with("W-drift")).count(), 1,
+        "每个键每次运行只报一次：{w:?}"
+    );
+
+    // **`allocate` 同样**：它读 `lines_for`（`strength.rs:76`），用的就是这条线。
+    let w2 = 跑(r#"
+budget {calls: 4, cost: 1};
+allocate(judge(state(mat("材料")), test("行吗", "k")), 1)
+"#, &漂);
+    assert!(w2.iter().any(|x| x.starts_with("W-drift")), "allocate 也在用线，漂了必须报：{w2:?}");
+
+    // **反面**：没漂就不许响。**一条天天响的告警等于没有告警**——
+    // 这一条拦的是「把告警接成恒真」这种修法。
+    let mut 没漂 = CalibStore::new();
+    let ps: Vec<f64> = (0..60).map(|i| if i % 7 == 0 { 0.9 } else { 0.05 + i as f64 * 0.008 }).collect();
+    观察(&mut 没漂, "k", &ps, Some(1));
+    没漂.commission("k", 0.60, 0.10, "条").expect("认得动");
+    没漂.set_unsure_rate("k", 0.2).expect("设得上");
+    观察(&mut 没漂, "k", &ps, None);
+    let w3 = 跑(r#"
+budget {calls: 4, cost: 1};
+unsure_bound(judge(state(mat("材料")), test("行吗", "k")))
+"#, &没漂);
+    assert!(!w3.iter().any(|x| x.starts_with("W-drift")), "没漂不该响：{w3:?}");
+}

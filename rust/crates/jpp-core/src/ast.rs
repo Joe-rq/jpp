@@ -36,6 +36,13 @@ pub struct Budget {
     /// `ask` 次数上限，None 取 0
     #[serde(default)]
     pub escalate: Option<u64>,
+    /// **J-10 的 unsure 预算**（`12`:591「超 `budget.unsure` 即**报**」）。
+    /// `None` = 不设限，**不是 0**——设成 0 是「一条 unsure 都不许有」，是个很强的断言。
+    ///
+    /// **它是这四格里唯一只「报」不「停」的**：`calls`/`cost`/`escalate` 超了都 `Halt`，
+    /// **这条不停**。**那是条文写的（「即报」），不是实现偷懒**——别顺手「修正」成 Halt。
+    #[serde(default)]
+    pub unsure: Option<f64>,
 }
 
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]

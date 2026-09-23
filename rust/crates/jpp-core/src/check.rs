@@ -91,9 +91,31 @@ pub fn check_with_profile(program: &Program, profile: &crate::effects::Profile) 
     check_with(program, Some(profile))
 }
 
+/// 静态检查一个程序，**带上整本校准记录**。
+///
+/// **为什么不是只多传一份档案**：J-10 的静态那一半（`12`:814 那张表：
+/// 「J-10 unsure 上界 | **✓ 估计** | 实测」，**✓ 在静态那一栏**）要的是
+/// **各题各自的 `unsure_rate`**，而那住在 `CalibRecord` 里，档案里没有。
+/// **在这之前，条文点名的那个静态估计没有任何路径能拿到它要的数**——
+/// 与 §1 那根「档案到不了检查器」的管道是同一种缺结构。
+pub fn check_with_calib(program: &Program, calib: &crate::effects::CalibStore) -> Report {
+    // 判据仍是 `hash.is_none()`（与 `check_with_profile` 同一条）：兜底不是一份档案。
+    let profile = if calib.profile.hash.is_none() { None } else { Some(&calib.profile) };
+    check_with2(program, profile, Some(calib))
+}
+
 fn check_with(program: &Program, profile: Option<&crate::effects::Profile>) -> Report {
+    check_with2(program, profile, None)
+}
+
+fn check_with2(
+    program: &Program,
+    profile: Option<&crate::effects::Profile>,
+    calib: Option<&crate::effects::CalibStore>,
+) -> Report {
     let mut c = Checker { profile_h5: profile.map(|p| p.arithmetic_capable), ..Checker::default() };
     c.budget(program);
+    c.j10(program, calib);
     c.names_and_readings(program);
     c.syntax(program);
     c.effects(program);
@@ -408,6 +430,97 @@ impl Checker {
                 ));
             }
         }
+    }
+
+    /// **J-10 的静态那一半**（`12`:591「unsure 预算：……无标注集时用联合界 Σuᵢ 作上界；
+    /// **超 `budget.unsure` 即报**」；`12`:814 的 ✓ 在**静态**那一栏）。
+    ///
+    /// **它在任何模型调用发生之前跑**——这是它与运行期那一半的全部区别。
+    /// 运行期的 `unsure_bound` 报的时候钱已经花了。
+    ///
+    /// **只报不停**（`Diagnostic::warn`）：条文写的是「即报」。`calls`/`cost`/`escalate`
+    /// 超了都 `Halt`，**这一格不**——别顺手「修正」成一致。
+    ///
+    /// **Σuᵢ 是上界这件事有两个前提，缺一个就在诊断里说出来**：
+    /// 1. **键要是字面量**。`test(题面, calib)` 的 `calib` 是表达式，算出来才知道；
+    ///    **静态看不见的按 1 计**（与 `unsure_bound` 对未知键的处置同口径，最保守）。
+    /// 2. **站点不在循环里**。循环里的一个站点在运行期会成为多道题，
+    ///    **而静态数不出几道**——所以有循环内站点时，这个和**不再是上界**，诊断里明写。
+    fn j10(&mut self, p: &Program, calib: Option<&crate::effects::CalibStore>) {
+        let (Some(b), Some(store)) = (&p.budget, calib) else { return };
+        let Some(limit) = b.unsure else { return };
+        // **「这个站点会不会跑不止一遍」的跨度表。** 两类都要收，**而第二类是补上的**：
+        //
+        // 1. **循环容器**（`loop`/`map`/`filter`/`fold`）：体内的站点显然会重复。
+        // 2. **函数体**：`fn q() { test("x", "k") }` 定义在顶层、**在 `map` 里被调用**——
+        //    它的跨度不落在任何循环里，**于是只收第一类时 `循环内` 读到 0，
+        //    诊断就会说「这个和是上界」，而它不是。** 这正是我刚写下那条免责句要避免的事
+        //    **从另一道门进来**：一个声称自己是上界的诊断，比没有这条诊断更糟。
+        //    **静态判不了调用图，就把整类算进去**（函数体里的站点一律按「可能不止一遍」计），
+        //    **往拒绝那边倒**。
+        let mut 重复跨度: Vec<(usize, usize)> = vec![];
+        walk_block(&p.body, &mut |e| {
+            if matches!(call_name(e), Some("loop") | Some("map") | Some("filter") | Some("fold")) {
+                重复跨度.push((e.span.start, e.span.end));
+            }
+        });
+        for st in &p.body.statements {
+            if let Statement::Function { function, .. } = st {
+                重复跨度.push((function.body.span.start, function.body.span.end));
+            }
+        }
+        let mut 和 = 0.0f64;
+        let mut 站点数 = 0usize;
+        let mut 未知 = 0usize;
+        let mut 循环内 = 0usize;
+        let mut 首站点: Option<crate::ast::Span> = None;
+        walk_block(&p.body, &mut |e| {
+            let 键位 = match call_name(e) {
+                Some("test") | Some("select") => 1,
+                Some("measure") => 2,
+                _ => return,
+            };
+            let ExprKind::Call { arguments, .. } = &e.kind else { return };
+            站点数 += 1;
+            if 首站点.is_none() {
+                首站点 = Some(e.span);
+            }
+            if 重复跨度.iter().any(|(a, z)| e.span.start >= *a && e.span.end <= *z) {
+                循环内 += 1;
+            }
+            let u = match arguments.get(键位).map(|a| &a.kind) {
+                Some(ExprKind::Text(k)) => {
+                    let rec = store.get(k);
+                    // **与 `unsure_bound` 同口径**（`strength.rs:155`）：只认「上岗」记录的值
+                    match if rec.status == "上岗" { rec.unsure_rate } else { None } {
+                        Some(u) => u,
+                        None => { 未知 += 1; 1.0 }
+                    }
+                }
+                // 键不是字面量：静态看不见，按 1 计
+                _ => { 未知 += 1; 1.0 }
+            };
+            和 += u;
+        });
+        if 站点数 == 0 || 和 <= limit {
+            return;
+        }
+        let span = 首站点.unwrap_or(p.span);
+        let 循环话 = if 循环内 > 0 {
+            format!("；**其中 {循环内} 个站点在循环或函数体里，所以这个和不是上界**（那样一个站点在运行期是多道题，静态数不出几道；函数体算进来是因为静态判不了它被调用几次），真实的 unsure 负担只会更高")
+        } else {
+            String::new()
+        };
+        self.out.push(Diagnostic::warning(
+            "J-10",
+            format!(
+                "unsure 预算可能不够：{站点数} 个判断站点的联合界 Σuᵢ = {和:.4} > budget.unsure = {limit:.4}（其中 {未知} 个站点没有可用的 unsure_rate，按 1 计最保守）{循环话}。\
+                 **这条在任何模型调用之前就报**——运行期那一半报的时候钱已经花了。\
+                 修法【作者可改】：调高 budget.unsure，或减少判断站点；\
+                 【需接线人】给那些键写上岗记录（`commission` 会在认证时算出 unsure_rate）",
+            ),
+            span,
+        ));
     }
 }
 

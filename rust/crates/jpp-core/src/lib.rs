@@ -20,7 +20,7 @@ pub mod strength;
 pub mod value;
 
 pub use ast::{Block, Budget, Expr, ExprKind, Function, Parameter, Program, Span, Statement, Type};
-pub use check::{Diagnostic, Report, Severity, check, check_with_profile};
+pub use check::{Diagnostic, Report, Severity, check, check_with_calib, check_with_profile};
 pub use effects::{CalibRecord, CalibStore, Client, EffectError, FixedClient, JevClient, NoCallClient, obs_key};
 pub use interp::{ActionRegistry, Cost, Interp, Outcome, RtError, TaintOut};
 pub use ledger::{Entry, Header, Ledger, Trace, TraceEvent};
@@ -72,7 +72,10 @@ pub fn run(
 ) -> Result<Outcome, Error> {
     // **档案走到检查器**（`12` §1.2）。传 `check(program)` 会让降级规则永远够不着真实运行
     // ——那样管道就只在测试里通，而**一个只在测试里通的管道是构造，不是功能**。
-    let report = check_with_profile(program, &calib.profile);
+    // **整本记录走到检查器**，不只是档案：J-10 的静态那一半要各题的 `unsure_rate`，
+    // 而那住在 `CalibRecord` 里。**与 §1.2 那根「档案到不了检查器」的管道是同一种缺结构**，
+    // 只是这次缺的是记录不是档案。
+    let report = check_with_calib(program, calib);
     if !report.is_ok() {
         return Err(Error::Check(report));
     }
@@ -92,11 +95,11 @@ pub fn run_with_fits(
 ) -> Result<Outcome, Error> {
     // **档案走到检查器**（`12` §1.2）。传 `check(program)` 会让降级规则永远够不着真实运行
     // ——那样管道就只在测试里通，而**一个只在测试里通的管道是构造，不是功能**。
-    let report = check_with_profile(program, &calib.profile);
+    let report = check_with_calib(program, calib);
     if !report.is_ok() {
         return Err(Error::Check(report));
     }
-    let budget = program.budget.clone().unwrap_or(Budget { calls: 0, cost: 0.0, depth: None, escalate: None });
+    let budget = program.budget.clone().unwrap_or(Budget { calls: 0, cost: 0.0, depth: None, escalate: None, unsure: None });
     interp::Interp::with_fits(client, ledger, calib, actions, fits, budget).run(program).map_err(Error::Runtime)
 }
 
@@ -108,6 +111,6 @@ pub fn run_unchecked(
     actions: &ActionRegistry,
     ledger: &mut Ledger,
 ) -> Result<Outcome, RtError> {
-    let budget = program.budget.clone().unwrap_or(Budget { calls: 0, cost: 0.0, depth: None, escalate: None });
+    let budget = program.budget.clone().unwrap_or(Budget { calls: 0, cost: 0.0, depth: None, escalate: None, unsure: None });
     Interp::new(client, ledger, calib, actions, budget).run(program)
 }

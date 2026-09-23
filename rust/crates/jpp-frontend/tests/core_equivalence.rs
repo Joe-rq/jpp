@@ -50,6 +50,7 @@ fn nested_method_composition_matches_direct_core_construction() {
             cost: 0.0,
             depth: Some(256),
             escalate: None,
+            unsure: None,
         }),
         span: s,
         body: Block::new(

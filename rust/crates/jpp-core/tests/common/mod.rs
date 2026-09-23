@@ -108,7 +108,7 @@ pub fn func_ret(n: &str, params: &[&str], effects: Option<&[&str]>, ret: Type, b
 }
 
 pub fn budget(calls: u64, depth: u32) -> Budget {
-    Budget { calls, cost: 0.0, depth: Some(depth), escalate: None }
+    Budget { calls, cost: 0.0, depth: Some(depth), escalate: None, unsure: None }
 }
 
 pub fn program(b: Option<Budget>, statements: Vec<Statement>, result: Expr) -> Program {

@@ -59,6 +59,11 @@ fn budget(expr: &a::Expr) -> Result<c::Budget, Diagnostic> {
         cost: cost.ok_or_else(|| Diagnostic::new("budget requires 'cost'", expr.span))?,
         depth,
         escalate,
+        // **机械补位，不是接线**：核心的 `Budget` 多了一格 `unsure`（J-10），
+        // 而上面那张 `match` 的 `_ =>` 分支仍然拒 `unknown budget field 'unsure'`——
+        // **`.jpp` 里写 `budget {unsure: 0.5}` 今天仍是解析错**。
+        // 接线归前端/CLI（Codex），已进合并请求。核心那侧的机器是齐的。
+        unsure: None,
     })
 }
 

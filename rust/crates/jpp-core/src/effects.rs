@@ -679,6 +679,42 @@ fn null当空表<'de, D: serde::Deserializer<'de>>(d: D) -> Result<Vec<Sample>, 
     Ok(Option::<Vec<Sample>>::deserialize(d)?.unwrap_or_default())
 }
 
+/// **`phys` 反查题型**。`Op::phys()`（`value.rs:133`）是 1:1 的，所以反查是全的；
+/// **但 `absorb` 收任何 `phys` 字符串，认不得的不猜**——返回 `None`，
+/// 由调用方决定那意味着什么（这里意味着 `unsure_rate` 测不出来，于是不写）。
+fn 反查题型(phys: &str) -> Option<Op> {
+    match phys {
+        "noul" => Some(Op::Test),
+        "choice" => Some(Op::Select),
+        "score" => Some(Op::Measure),
+        _ => None,
+    }
+}
+
+/// **标注集上实测的 unsure 率**：在刚认证下来的这条线上，有多大比例的标注样本会落进 unsure。
+///
+/// **判据逐字抄 `cut` 的出口路由**（`interp.rs`，noul 分支）：
+/// `p >= hi + δ` → `Act`，`p <= lo - δ` → `Ignore`，**其余是 `Unsure("band")`**。
+/// **这一条是它有意义的全部理由**——测的必须是消费方真的会碰上的那个事件，
+/// 而不是一个长得像它的量。
+///
+/// **算不出就不写**（`delta` 为 `None`，即题型认不得）：**`None` 的既有含义是「未知，按 1 计最保守」**，
+/// 而写一个不知道在哪条 δ 上测的数进去，比空着更糟。
+/// **哪条路走得到那个分支**：内核自己写的样本 `phys` 一律来自 `Op::phys()`，**走不到**；
+/// 走得到的只有**手写的 `--calib` JSON**（`absorb` 收任何 `phys` 字符串）。不是死代码。
+///
+/// **δ 的时效**：这个数测在认证那一刻在册的 δ 上。档案换了，δ 可能就变了——
+/// 而**档案换了账本头的 `profile_hash` 就对不上、`W-header` 会响**，
+/// 所以这件事有既有的载体报，不需要在这里再加一个字段。
+fn 经验unsure率(按条: &[(f64, bool)], hi: f64, lo: f64, delta: Option<f64>) -> Option<f64> {
+    let d = delta?;
+    if 按条.is_empty() {
+        return None;
+    }
+    let u = 按条.iter().filter(|(p, _)| !(*p >= hi + d) && !(*p <= lo - d)).count();
+    Some((u as f64 / 按条.len() as f64 * 10000.0).round() / 10000.0)
+}
+
 fn 单侧声明() -> String {
     "证书只界定 p ≥ hi 一侧的假放行；p ≤ lo 一侧没有界，且 lo = 0 使该出口实际不可达".to_string()
 }
@@ -694,7 +730,12 @@ pub struct CalibRecord {
     /// 覆盖档案 δ；None = 用档案里这种题式的 δ
     #[serde(default)]
     pub delta: Option<f64>,
-    /// 标注集上实测的 unsure 率（J-10 的联合上界用）；None = 未知，按 1 计最保守
+    /// 标注集上实测的 unsure 率（J-10 的联合上界用）；None = 未知，按 1 计最保守。
+    ///
+    /// **生产者是 `commission`**（见 [`经验unsure率`]）：认证成功时在刚定下来的线上
+    /// 按 `cut` 的出口判据逐条数一遍。**在 2026-09-21 之前它没有生产者**——
+    /// 只有 `set_unsure_rate`（Rust API）与 `--calib` 装载器（读 JSON 里已经填好的数），
+    /// 于是走真实路径的记录这个字段恒为 `None`，**J-10 的界在真实路径上恒等于 `n`**。
     #[serde(default)]
     pub unsure_rate: Option<f64>,
     /// 保形集 id（J-16：fit 的训练集 ≠ 保形集）
@@ -1243,6 +1284,15 @@ impl CalibStore {
         if 带标注.is_empty() {
             return Err(bad("没有带标注的样本：线只从标注记录来"));
         }
+        // **给 `unsure_rate` 算出料用的两样**，趁 `rec` / `带标注` 还活着先取下来。
+        // δ 的口径必须与 `cut` 里那一处**同源**（`delta_for`：记录自带的优先，否则档案的），
+        // 否则「认证时测的 unsure 率」与「运行期真的会 unsure 的率」测的不是同一件事。
+        let delta认证时: Option<f64> = 反查题型(&带标注[0].phys)
+            .map(|op| rec.delta.unwrap_or(match op {
+                Op::Test => self.profile.delta.0,
+                Op::Select => self.profile.delta.1,
+                Op::Measure => self.profile.delta.2,
+            }));
         // **指纹算的是「用到的那些 `(p, label)` 对的规范形」，不是源文件字节。**
         // 源文件会被重新导出、重新排序——按字节算会在数据没变时乱跳，
         // **而乱跳的检查会教会人绕过它**。
@@ -1292,6 +1342,7 @@ impl CalibStore {
             r.hi = 选中.hi;
             r.lo = 0.0;
             r.status = "上岗".into();
+            r.unsure_rate = 经验unsure率(&按条, r.hi, r.lo, delta认证时);
             return Ok(cert);
         }
         let (cert_result, resample) = if cluster_unit == "条" {
@@ -1345,6 +1396,11 @@ impl CalibStore {
                 // 缺省 lo=0.35），那样带就翻了，而 `put` 的 `lo ≤ hi` 也会被自己人违反。
                 r.lo = 0.0;
                 r.status = "上岗".into();
+                // **J-10 的 uᵢ 在这里被测出来**（`12`:591「有标注集时用**经验**联合 unsure 率」；
+                // `12`:814 那一栏写的是「✓ 估计 | **实测**」）。在这之前这个字段**只有消费方没有生产者**：
+                // 走完 `absorb` → `commission` 的真实路径拿到的仍是 `None`，
+                // `unsure_bound` 按 1 计，**界退化成 `union_bound == n`——一条真的、但什么也没说的界。**
+                r.unsure_rate = 经验unsure率(&按条, r.hi, r.lo, delta认证时);
                 Ok(cert)
             }
         }
