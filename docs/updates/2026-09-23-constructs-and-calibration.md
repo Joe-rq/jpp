@@ -14,18 +14,29 @@ personal information.
 `进展/` 与 `实测/` 下的原始数据、人工抽检逐条内容不同步；本文只汇总其结论，不含个人信息、
 不含逐条标注内容。
 
+Every command below runs from `rust/` (this crate's root). The fixed-observation commands
+were run against this sync and exit 0. The `--backend live` command needs a real
+`~/.typesafe-key` and spends money, and the `calib-import` command needs a labels file you
+supply; both are shown as templates, marked below.
+
+以下命令都在 `rust/`（本 crate 根目录）下执行。带固定观察的命令已针对本次同步实际跑过、
+退出码 0；`--backend live` 需要真实的 `~/.typesafe-key` 且会花钱，`calib-import` 需要你
+自己给的标注文件，这两条是模板，已在下方标出。
+
 ## What got built / 做成了什么
 
 - **Real JEV backend (`--backend live`).** `jpp run` can now talk to the real JEV service
   through `JevClient`; credentials are read only from `~/.typesafe-key`, never logged or
   written to a report. Replay reconstructs the client-independent `model_id` from the
-  ledger header, so a live-backed run replays with zero new calls.
+  ledger header, so a live-backed run replays with zero new calls. Template — spends money,
+  not run as part of this sync:
   ```sh
   cargo build -p jpp-cli --features live --release
   ./target/release/jpp run examples/sieve.jpp --backend live --calib calib --ledger-out ledger.json
   ```
   真实 JEV 后端：`jpp run --backend live` 接通真机，凭据只从 `~/.typesafe-key` 读，不进日志
-  或报告；重放从账本头读回 `model_id`，真机跑一次后可零调用重放。
+  或报告；重放从账本头读回 `model_id`，真机跑一次后可零调用重放。模板命令——会花钱，本次
+  同步没有执行。
 
 - **Questions as first-class values (`form`/`fill`, readable question fields).** A question
   now decomposes into a template (`form`) and its filling (`fill`), with readable fields a
@@ -72,12 +83,17 @@ personal information.
 - **Calibration intake (`calib-import`, the truth channel).** A CLI entry point that folds
   labelled readings (human / computed / model-labelled) into calibration records and
   certifies them; model-only labels are certified only when a same-template human spot
-  check reaches the gate.
+  check reaches the gate. Template — `labels.jsonl` is a file you supply, one JSON object
+  per line, e.g. `{"form": {"op": "test", "template": "..."}, "item": "n1", "p": 0.99,
+  "label": true, "source": "computed"}` (verified against a synthetic 200-row file during
+  this sync: `--calib-out` produced a certified record with `status: "上岗"`):
   ```sh
-  ./target/release/jpp calib-import labels.jsonl --calib-out calib --spot-check-min 0.9
+  cargo run -p jpp-cli -- calib-import labels.jsonl --calib-out calib --spot-check-min 0.9
   ```
   校准进料 `calib-import`（真值通道）：把带真值的读数（人工/构造/模型标注）折进校准记录
-  并认证；只有模型标注时，需要同题式人工抽检达到门槛才能上岗。
+  并认证；只有模型标注时，需要同题式人工抽检达到门槛才能上岗。模板命令——`labels.jsonl`
+  由你自己提供，每行一个 JSON 对象；本次同步用一份 200 行的合成标注文件验证过，
+  `--calib-out` 确实产出了 `status: "上岗"` 的认证记录。
 
 - **Form-level line fallback.** A calibration lookup falls back from the literal question key
   to its template key, then to a mode-level key, with the fallback path recorded on the exit.
@@ -218,11 +234,22 @@ personal information.
   众数投票）、宿主侧 J-03 约束、校准键元组、待真值走 `ask` 而不是新开第五去向、判断力
   缺席与时延预算两条缝。已写入依据文本（`12`），尚未实现。
 
-- The composition-closure contract's binomial-based certificates remain experimental scans,
-  not distribution-free risk guarantees — a limitation already disclosed in `conformal.rs`'s
-  doc comments and kept from the prior public review.
-  组合封闭性契约里用到的二项认证仍是实验性阈值扫描，不是无分布风险保证——这条边界已经
-  写在 `conformal.rs` 的文档注释里，沿用了此前公开侧审查加的说明。
+- **Split-sample holdout certification (B24) is wired only on the `calib-import` path.**
+  `calib-import` calls `truth::import_labels` → `commission_two_sided`, which does select on
+  one half and certify on the other. The older entry points `certify`, `commission` and
+  `commission_costed` (used directly by Rust callers, not through the CLI) still select a
+  threshold and certify it on the same samples — the "no selection correction, no
+  independent holdout" caveat already disclosed in `conformal.rs`'s and `effects.rs`'s doc
+  comments, and in [the prior PR-integration review](2026-09-23-pr-integration.md), still
+  applies to those. The composition-closure contract (B17) itself is a return shape, not a
+  certificate; it carries no statistical claim.
+  拆分样本留出认证（B24）目前只接在 `calib-import` 这条路径上：它经
+  `truth::import_labels` → `commission_two_sided`，真的做到选线半选线、认证半认证。更早
+  的入口 `certify`、`commission`、`commission_costed`（供 Rust 调用方直接用，不经 CLI）
+  仍然在同一批样本上选线又认证——「无选择校正、无独立留出集」这条边界（`conformal.rs`
+  与 `effects.rs` 的文档注释、以及[此前的 PR 整合审查](2026-09-23-pr-integration.md)已
+  写明）对它们依然成立。组合封闭性契约（B17）本身只是一个返回形状，不是证书，不带统计
+  意义上的保证。
 
 ## Verification / 验证
 
