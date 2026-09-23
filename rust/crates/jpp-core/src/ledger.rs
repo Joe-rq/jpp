@@ -27,9 +27,24 @@ pub fn effect_key(kind: &str, parts: &[&str]) -> String {
     hash_of(&v)
 }
 
+fn is_zero(n: &u64) -> bool {
+    *n == 0
+}
+
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub enum Entry {
-    Judge { key: String, answer: Answer, tokens: u64, cost: f64, model_id: String },
+    Judge {
+        key: String,
+        answer: Answer,
+        tokens: u64,
+        cost: f64,
+        model_id: String,
+        /// 这条答案来自本次运行的第几次模型调用（融合后多道题同属一次调用）。
+        /// 契约值的 `spent` 按它数调用、按调用计费，重放时从账本读出同一个数（B17）。
+        /// 0 = 老账本没有这个字段。
+        #[serde(default, skip_serializing_if = "is_zero")]
+        call: u64,
+    },
     Effect { key: String, kind: String, output: Json, cost: f64 },
     Ask { key: String, answer: Option<Answer> },
 }
@@ -75,6 +90,13 @@ pub struct Ledger {
     #[serde(skip)]
     index: HashMap<String, usize>,
     pub header_warning: Option<String>,
+    /// **这次运行 `cut` 实际查到的校准记录**（键 → 记录全文 + 哈希）。
+    ///
+    /// 出口 = f(读数, 线)：读数进了 `entries`，线以前只在头上留一个整库哈希。
+    /// 只凭账本重放时（不给 `--calib` / `--fixtures`），CLI 用这里补回当时的线，
+    /// **出口因此逐字节一致**。老账本没有这一栏，行为不变；空时不序列化。
+    #[serde(default, skip_serializing_if = "std::collections::BTreeMap::is_empty")]
+    pub calib_used: std::collections::BTreeMap<String, Json>,
 }
 
 impl Ledger {

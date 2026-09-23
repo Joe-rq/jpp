@@ -1,0 +1,314 @@
+{
+ "description": "Synthetic fixed observations for pair-team.jpp (construction check only; not model evaluation). Calibration records are hand-written to exercise routing, not calibration.",
+ "calibrations": [
+  {
+   "key": "fit-pair",
+   "hi": 0.75,
+   "lo": 0.25,
+   "n": 1,
+   "status": "上岗"
+  },
+  {
+   "key": "fit-group",
+   "hi": 0.75,
+   "lo": 0.25,
+   "n": 1,
+   "status": "上岗"
+  }
+ ],
+ "observations": [
+  {
+   "on": [
+    {
+     "a": "做一个带登录的网页后台",
+     "b": {
+      "name": "王工",
+      "skills": [
+       "web",
+       "后端"
+      ]
+     }
+    }
+   ],
+   "op": "test",
+   "text": "成员 b 的技能能完成需求 a 吗？",
+   "calib": "fit-pair",
+   "answer": {
+    "Noul": 0.95
+   }
+  },
+  {
+   "on": [
+    {
+     "a": "做一个带登录的网页后台",
+     "b": {
+      "name": "李工",
+      "skills": [
+       "数据库",
+       "后端"
+      ]
+     }
+    }
+   ],
+   "op": "test",
+   "text": "成员 b 的技能能完成需求 a 吗？",
+   "calib": "fit-pair",
+   "answer": {
+    "Noul": 0.5
+   }
+  },
+  {
+   "on": [
+    {
+     "a": "做一个带登录的网页后台",
+     "b": {
+      "name": "赵老师",
+      "skills": [
+       "写作"
+      ]
+     }
+    }
+   ],
+   "op": "test",
+   "text": "成员 b 的技能能完成需求 a 吗？",
+   "calib": "fit-pair",
+   "answer": {
+    "Noul": 0.02
+   }
+  },
+  {
+   "on": [
+    {
+     "a": "搭建订单数据库",
+     "b": {
+      "name": "王工",
+      "skills": [
+       "web",
+       "后端"
+      ]
+     }
+    }
+   ],
+   "op": "test",
+   "text": "成员 b 的技能能完成需求 a 吗？",
+   "calib": "fit-pair",
+   "answer": {
+    "Noul": 0.2
+   }
+  },
+  {
+   "on": [
+    {
+     "a": "搭建订单数据库",
+     "b": {
+      "name": "李工",
+      "skills": [
+       "数据库",
+       "后端"
+      ]
+     }
+    }
+   ],
+   "op": "test",
+   "text": "成员 b 的技能能完成需求 a 吗？",
+   "calib": "fit-pair",
+   "answer": {
+    "Noul": 0.95
+   }
+  },
+  {
+   "on": [
+    {
+     "a": "搭建订单数据库",
+     "b": {
+      "name": "赵老师",
+      "skills": [
+       "写作"
+      ]
+     }
+    }
+   ],
+   "op": "test",
+   "text": "成员 b 的技能能完成需求 a 吗？",
+   "calib": "fit-pair",
+   "answer": {
+    "Noul": 0.02
+   }
+  },
+  {
+   "on": [
+    {
+     "a": "写一篇产品发布稿",
+     "b": {
+      "name": "王工",
+      "skills": [
+       "web",
+       "后端"
+      ]
+     }
+    }
+   ],
+   "op": "test",
+   "text": "成员 b 的技能能完成需求 a 吗？",
+   "calib": "fit-pair",
+   "answer": {
+    "Noul": 0.03
+   }
+  },
+  {
+   "on": [
+    {
+     "a": "写一篇产品发布稿",
+     "b": {
+      "name": "李工",
+      "skills": [
+       "数据库",
+       "后端"
+      ]
+     }
+    }
+   ],
+   "op": "test",
+   "text": "成员 b 的技能能完成需求 a 吗？",
+   "calib": "fit-pair",
+   "answer": {
+    "Noul": 0.03
+   }
+  },
+  {
+   "on": [
+    {
+     "a": "写一篇产品发布稿",
+     "b": {
+      "name": "赵老师",
+      "skills": [
+       "写作"
+      ]
+     }
+    }
+   ],
+   "op": "test",
+   "text": "成员 b 的技能能完成需求 a 吗？",
+   "calib": "fit-pair",
+   "answer": {
+    "Noul": 0.97
+   }
+  },
+  {
+   "on": [
+    {
+     "a": "给安卓应用做界面",
+     "b": {
+      "name": "王工",
+      "skills": [
+       "web",
+       "后端"
+      ]
+     }
+    }
+   ],
+   "op": "test",
+   "text": "成员 b 的技能能完成需求 a 吗？",
+   "calib": "fit-pair",
+   "answer": {
+    "Noul": 0.5
+   }
+  },
+  {
+   "on": [
+    {
+     "a": "给安卓应用做界面",
+     "b": {
+      "name": "李工",
+      "skills": [
+       "数据库",
+       "后端"
+      ]
+     }
+    }
+   ],
+   "op": "test",
+   "text": "成员 b 的技能能完成需求 a 吗？",
+   "calib": "fit-pair",
+   "answer": {
+    "Noul": 0.02
+   }
+  },
+  {
+   "on": [
+    {
+     "a": "给安卓应用做界面",
+     "b": {
+      "name": "赵老师",
+      "skills": [
+       "写作"
+      ]
+     }
+    }
+   ],
+   "op": "test",
+   "text": "成员 b 的技能能完成需求 a 吗？",
+   "calib": "fit-pair",
+   "answer": {
+    "Noul": 0.02
+   }
+  },
+  {
+   "on": [
+    {
+     "a": {
+      "a": "做一个带登录的网页后台",
+      "b": {
+       "name": "王工",
+       "skills": [
+        "web",
+        "后端"
+       ]
+      }
+     },
+     "b": {
+      "name": "李工",
+      "skills": [
+       "数据库",
+       "后端"
+      ]
+     }
+    }
+   ],
+   "op": "test",
+   "text": "已有组合 a（需求 a.a 与承接成员 a.b）加入新成员 b 后，这个组合整体能更好地完成该需求吗？",
+   "calib": "fit-group",
+   "answer": {
+    "Noul": 0.9
+   }
+  },
+  {
+   "on": [
+    {
+     "a": {
+      "a": "做一个带登录的网页后台",
+      "b": {
+       "name": "王工",
+       "skills": [
+        "web",
+        "后端"
+       ]
+      }
+     },
+     "b": {
+      "name": "钱设计",
+      "skills": [
+       "UI 设计"
+      ]
+     }
+    }
+   ],
+   "op": "test",
+   "text": "已有组合 a（需求 a.a 与承接成员 a.b）加入新成员 b 后，这个组合整体能更好地完成该需求吗？",
+   "calib": "fit-group",
+   "answer": {
+    "Noul": 0.1
+   }
+  }
+ ]
+}

@@ -1,0 +1,5 @@
+// 契约值带着未决清单，绑定之后再没被用到 = 静默丢弃未决（B17 不变量 2，13 §3）：检查阶段报 J-05。
+budget {calls: 4, cost: 0.01, depth: 256};
+let notes = ["这款耳机售价三百九十九元。", "价格还没公布。"];
+let r = sieve(notes, test("这段话给出了具体价格吗？", "price"));
+len(notes)

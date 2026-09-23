@@ -1,0 +1,116 @@
+{
+ "description": "Synthetic fixed observations for question-forms.jpp (construction check only; not model evaluation). 杭州 is set to 0.5 on purpose to show an unsure exit.（去掉 calibrations：线由 --calib 的真值通道记录给出，用来演示题式级回退）",
+ "calibrations": [],
+ "observations": [
+  {
+   "on": [
+    "我上个月去了成都出差，顺便见了老朋友。"
+   ],
+   "op": "test",
+   "text": "这段话是否提到了成都？",
+   "calib": "form-mention",
+   "answer": {
+    "Noul": 0.99
+   }
+  },
+  {
+   "on": [
+    "我上个月去了成都出差，顺便见了老朋友。"
+   ],
+   "op": "test",
+   "text": "这段话是否提到了北京？",
+   "calib": "form-mention",
+   "answer": {
+    "Noul": 0.02
+   }
+  },
+  {
+   "on": [
+    "我上个月去了成都出差，顺便见了老朋友。"
+   ],
+   "op": "test",
+   "text": "这段话是否提到了上海？",
+   "calib": "form-mention",
+   "answer": {
+    "Noul": 0.02
+   }
+  },
+  {
+   "on": [
+    "我上个月去了成都出差，顺便见了老朋友。"
+   ],
+   "op": "test",
+   "text": "这段话是否提到了杭州？",
+   "calib": "form-mention",
+   "answer": {
+    "Noul": 0.5
+   }
+  },
+  {
+   "on": [
+    "我上个月去了成都出差，顺便见了老朋友。"
+   ],
+   "op": "test",
+   "text": "这段话是否提到了西安？",
+   "calib": "form-mention",
+   "answer": {
+    "Noul": 0.03
+   }
+  },
+  {
+   "on": [
+    "购物清单：牛奶、面包、鸡蛋、苹果、酱油"
+   ],
+   "op": "test",
+   "text": "清单里是否有面包？",
+   "calib": "form-listed",
+   "answer": {
+    "Noul": 0.99
+   }
+  },
+  {
+   "on": [
+    "购物清单：牛奶、面包、鸡蛋、苹果、酱油"
+   ],
+   "op": "test",
+   "text": "清单里是否有酱油？",
+   "calib": "form-listed",
+   "answer": {
+    "Noul": 0.98
+   }
+  },
+  {
+   "on": [
+    "购物清单：牛奶、面包、鸡蛋、苹果、酱油"
+   ],
+   "op": "test",
+   "text": "清单里是否有咖啡？",
+   "calib": "form-listed",
+   "answer": {
+    "Noul": 0.02
+   }
+  },
+  {
+   "on": [
+    "购物清单：牛奶、面包、鸡蛋、苹果、酱油"
+   ],
+   "op": "test",
+   "text": "清单里是否有牛奶？",
+   "calib": "form-listed",
+   "answer": {
+    "Noul": 0.99
+   }
+  },
+  {
+   "on": [
+    "购物清单：牛奶、面包、鸡蛋、苹果、酱油"
+   ],
+   "op": "test",
+   "text": "清单里是否有盐？",
+   "calib": "form-listed",
+   "answer": {
+    "Noul": 0.03
+   }
+  }
+ ]
+}

@@ -59,6 +59,9 @@ fn unresolved_items(s: Record) { filter(s.items, fn(item) { !resolved(item.obser
 fn advance(s: Record, strategy) -> Record !{judge, do} {
     let changed = map(s.items, fn(item) !{judge} {
         if !resolved(item.observation) && strategy(item) {
+            // The old observation is superseded by a new one on revised material: its unsure exit
+            // goes to an explicit, recorded destination instead of silently disappearing (13 §3).
+            consume(item.observation.exit, "drop");
             let c = item.candidate;
             let revised = {name: c.name, cost: c.cost, skills: c.skills, flag: c.name == "C", revision: 1};
             let m = transform(fn(old) { revised }, item.material);
@@ -74,11 +77,15 @@ fn advance(s: Record, strategy) -> Record !{judge, do} {
 }
 
 // One reusable partial-result constructor captures a method and algorithm state.
+// It returns the language's composition contract (B17): the same shape as sieve / pair / tally,
+// with each unresolved item carrying its exit, evidence as ledger keys, and the continuation in resume.
 fn packet(current, project, remaining, next) -> Record {
-    {value: project(current), pending: remaining(current), evidence: current.evidence,
-     continuation: if len(remaining(current)) == 0 { unit } else {
-         fn(strategy) { packet(next(current, strategy), project, remaining, next) }
-     }}
+    outcome({value: project(current),
+             pending: map(remaining(current), fn(item) { {element: item.candidate, exit: item.observation.exit} }),
+             evidence: map(current.evidence, fn(o) { key_of(o.exit) }),
+             resume: if len(remaining(current)) == 0 { {} } else {
+                 fn(strategy) { packet(next(current, strategy), project, remaining, next) }
+             }})
 }
 fn promising(item) -> Bool { item.candidate.cost <= 2 }
 fn everything(item) -> Bool { true }
@@ -91,10 +98,10 @@ let initial = packet(validate([
     {name: "D", cost: 20, skills: ["web"], flag: unit, revision: 0}
 ]), plans, unresolved_items, advance);
 let used = if enough(initial.value) { initial.value.cheapest } else { unit };
-let improved = initial.continuation(promising);
-let completed = improved.continuation(everything);
+let improved = initial.resume.next(promising);
+let completed = improved.resume.next(everything);
 fn snapshot(p) -> Record {
-    {best: p.value.cheapest, pending: map(p.pending, fn(item) { item.candidate.name }),
+    {best: p.value.cheapest, pending: map(p.pending, fn(entry) { entry.element.name }),
      evidence: p.evidence}
 }
 {used_before_complete: used, initial: snapshot(initial), improved: snapshot(improved),

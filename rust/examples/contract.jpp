@@ -1,0 +1,56 @@
+// 组合封闭性契约（B17，施工件 i）：sieve → pair → sieve → 调用者构造的部分结果 → 续接 → tally，
+// 每一步的产物是同一种值 {kind, value, pending, evidence, resume, spent, detail, purpose}，
+// 可以不经拆包直接交给下一个构造；未决随包转移，证据只存账本键。
+import "../lib/outcome.jpp";
+budget {calls: 40, cost: 0.05, depth: 256};
+
+let people = [
+    {name: "王工", skills: ["web", "后端"]},
+    {name: "李工", skills: ["数据库", "后端"]},
+    {name: "赵老师", skills: ["写作"]},
+    {name: "钱设计", skills: ["UI 设计"]}
+];
+let needs = ["做一个带登录的网页后台", "搭建订单数据库"];
+let tech = test("这个人的技能里有软件开发方面的技能吗？", "c-tech");
+let fits = test("成员 b 的技能能完成需求 a 吗？", "c-fit");
+let strict = test("只看成员 b 列出的技能，他能独立完成需求 a 的主要工作吗？", "c-fit");
+let grows = test("已有组合 a（需求 a.a 与承接成员 a.b）加入新成员 b 后，这个组合整体能更好地完成该需求吗？", "c-grow");
+
+// 1. 过滤：一组人 → 契约值
+let engineers = sieve(people, tech);
+// 2. 配对：契约值直接当输入（取它的产出；它的未决随包带进配对的契约）
+let relations = pair(needs, engineers);
+// 3. 过滤关系：又一个契约值（带着第 1 步的未决）
+let matched = sieve(relations, fits);
+// 4. 调用者自己构造契约值：已接受的关系是产出；拿不准的关系留在未决清单；续接方法换一道更严的题补判
+fn is_relation(p) { has(p.element.source, "left") }
+let shortlist = outcome({
+    value: accepted(matched),
+    pending: matched.pending,
+    evidence: key_of(matched),
+    resume: fn(q) { sieve(map(filter(undecided(matched), is_relation), fn(p) { p.element }), q) },
+    purpose: "已接受的需求—成员关系；拿不准的关系可用更严的题续判"
+});
+// 5. 封闭性：调用者构造的契约值与内置构造同一类型，直接交给 pair 做第二轮组合
+let second = sieve(pair(shortlist, [{name: "孙测试", skills: ["测试"]}]), grows);
+// 6. 续接：换一道更严的题补判拿不准的关系
+let recheck = shortlist.resume.next(strict);
+// 7. 聚合续判的结果
+let summary = tally(recheck);
+
+let stages = [engineers, relations, matched, shortlist, second, recheck, summary];
+fn shape(o) { {kind: o.kind, fields: keys(o), pending: len(o.pending), evidence: len(o.evidence), calls: o.spent.calls} }
+fn relation(e) { {need: e.source.left, person: e.source.right.item.name} }
+
+{stages: map(stages, shape),
+ same_type: fold(stages, true, fn(ok, o) { ok && keys(o) == keys(engineers) }),
+ engineers: map(accepted(engineers), fn(e) { e.item.name }),
+ matched: map(accepted(matched), relation),
+ unsure_in_matched: map(undecided(matched), fn(p) { {cause: p.cause, relation: is_relation(p)} }),
+ second_round: {checked: "第二轮问的是「已接受的关系 + 新成员」作为一个整体能否更好地完成需求；没有从两两关系推定",
+                act: map(accepted(second), fn(e) { e.source.left.source.right.item.name }),
+                ignore: map(ignored(second), fn(e) { e.source.left.source.right.item.name })},
+ recheck: {asked: recheck.detail.question.text, act: len(accepted(recheck)), ignore: len(ignored(recheck)),
+           count: summary.value.count, exists: summary.value.exists},
+ // 未决清单随返回值交给调用者（J-05 / 13 §3）：second 带着 shortlist 与第 1、3 步的未决
+ pending: [second.pending, summary.pending]}

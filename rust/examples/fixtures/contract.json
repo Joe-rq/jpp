@@ -1,0 +1,250 @@
+{
+ "description": "Synthetic fixed observations for contract.jpp (construction check only; not model evaluation). Calibration records are hand-written to exercise routing, not calibration. 钱设计 × tech and 后台 × 李工 × fits are set to 0.5 on purpose to show unsure items travelling in the contract.",
+ "calibrations": [
+  {
+   "key": "c-tech",
+   "hi": 0.75,
+   "lo": 0.25,
+   "n": 1,
+   "status": "上岗"
+  },
+  {
+   "key": "c-fit",
+   "hi": 0.75,
+   "lo": 0.25,
+   "n": 1,
+   "status": "上岗"
+  },
+  {
+   "key": "c-grow",
+   "hi": 0.75,
+   "lo": 0.25,
+   "n": 1,
+   "status": "上岗"
+  }
+ ],
+ "observations": [
+  {
+   "on": [
+    {
+     "name": "王工",
+     "skills": [
+      "web",
+      "后端"
+     ]
+    }
+   ],
+   "op": "test",
+   "text": "这个人的技能里有软件开发方面的技能吗？",
+   "calib": "c-tech",
+   "answer": {
+    "Noul": 0.95
+   }
+  },
+  {
+   "on": [
+    {
+     "name": "李工",
+     "skills": [
+      "数据库",
+      "后端"
+     ]
+    }
+   ],
+   "op": "test",
+   "text": "这个人的技能里有软件开发方面的技能吗？",
+   "calib": "c-tech",
+   "answer": {
+    "Noul": 0.93
+   }
+  },
+  {
+   "on": [
+    {
+     "name": "赵老师",
+     "skills": [
+      "写作"
+     ]
+    }
+   ],
+   "op": "test",
+   "text": "这个人的技能里有软件开发方面的技能吗？",
+   "calib": "c-tech",
+   "answer": {
+    "Noul": 0.03
+   }
+  },
+  {
+   "on": [
+    {
+     "name": "钱设计",
+     "skills": [
+      "UI 设计"
+     ]
+    }
+   ],
+   "op": "test",
+   "text": "这个人的技能里有软件开发方面的技能吗？",
+   "calib": "c-tech",
+   "answer": {
+    "Noul": 0.5
+   }
+  },
+  {
+   "on": [
+    {
+     "a": "做一个带登录的网页后台",
+     "b": {
+      "name": "王工",
+      "skills": [
+       "web",
+       "后端"
+      ]
+     }
+    }
+   ],
+   "op": "test",
+   "text": "成员 b 的技能能完成需求 a 吗？",
+   "calib": "c-fit",
+   "answer": {
+    "Noul": 0.95
+   }
+  },
+  {
+   "on": [
+    {
+     "a": "做一个带登录的网页后台",
+     "b": {
+      "name": "李工",
+      "skills": [
+       "数据库",
+       "后端"
+      ]
+     }
+    }
+   ],
+   "op": "test",
+   "text": "成员 b 的技能能完成需求 a 吗？",
+   "calib": "c-fit",
+   "answer": {
+    "Noul": 0.5
+   }
+  },
+  {
+   "on": [
+    {
+     "a": "搭建订单数据库",
+     "b": {
+      "name": "王工",
+      "skills": [
+       "web",
+       "后端"
+      ]
+     }
+    }
+   ],
+   "op": "test",
+   "text": "成员 b 的技能能完成需求 a 吗？",
+   "calib": "c-fit",
+   "answer": {
+    "Noul": 0.1
+   }
+  },
+  {
+   "on": [
+    {
+     "a": "搭建订单数据库",
+     "b": {
+      "name": "李工",
+      "skills": [
+       "数据库",
+       "后端"
+      ]
+     }
+    }
+   ],
+   "op": "test",
+   "text": "成员 b 的技能能完成需求 a 吗？",
+   "calib": "c-fit",
+   "answer": {
+    "Noul": 0.92
+   }
+  },
+  {
+   "on": [
+    {
+     "a": "做一个带登录的网页后台",
+     "b": {
+      "name": "李工",
+      "skills": [
+       "数据库",
+       "后端"
+      ]
+     }
+    }
+   ],
+   "op": "test",
+   "text": "只看成员 b 列出的技能，他能独立完成需求 a 的主要工作吗？",
+   "calib": "c-fit",
+   "answer": {
+    "Noul": 0.2
+   }
+  },
+  {
+   "on": [
+    {
+     "a": {
+      "a": "做一个带登录的网页后台",
+      "b": {
+       "name": "王工",
+       "skills": [
+        "web",
+        "后端"
+       ]
+      }
+     },
+     "b": {
+      "name": "孙测试",
+      "skills": [
+       "测试"
+      ]
+     }
+    }
+   ],
+   "op": "test",
+   "text": "已有组合 a（需求 a.a 与承接成员 a.b）加入新成员 b 后，这个组合整体能更好地完成该需求吗？",
+   "calib": "c-grow",
+   "answer": {
+    "Noul": 0.9
+   }
+  },
+  {
+   "on": [
+    {
+     "a": {
+      "a": "搭建订单数据库",
+      "b": {
+       "name": "李工",
+       "skills": [
+        "数据库",
+        "后端"
+       ]
+      }
+     },
+     "b": {
+      "name": "孙测试",
+      "skills": [
+       "测试"
+      ]
+     }
+    }
+   ],
+   "op": "test",
+   "text": "已有组合 a（需求 a.a 与承接成员 a.b）加入新成员 b 后，这个组合整体能更好地完成该需求吗？",
+   "calib": "c-grow",
+   "answer": {
+    "Noul": 0.1
+   }
+  }
+ ]
+}

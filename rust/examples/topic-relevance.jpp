@@ -1,0 +1,35 @@
+// 第一个语义题式真机演示：题式「这段话的内容是否与「{concept}」这个话题相关？」。
+// 线来自真值通道：Sonnet 标注 388 条 + Nature 人工抽检 25 条（一致 25/25），
+// 拆分样本两侧认证（B24）。本程序不含任何线；运行时经题式键查到那条线（W-form-line）。
+import "../lib/outcome.jpp";
+budget {calls: 30, cost: 0.05, depth: 256};
+
+let topic = form("test", "这段话的内容是否与「{concept}」这个话题相关？", {calib: "form-topic"});
+let notes = [
+    "早高峰的地铁挤得像沙丁鱼罐头，她每天六点半就得出门才能准时打卡。",
+    "他把每月工资的三成定投到指数基金，坚持了整整五年。",
+    "奶奶在阳台上种了几盆番茄和辣椒，今年结得特别多。",
+    "新来的实习生第一次做汇报，手心全是汗，讲完才松了口气。",
+    "周末她骑共享单车去江边，一路吹风，心情好了很多。",
+    "这家店的咖啡豆是自己烘的，手冲一杯要等十分钟。",
+    "孩子第一次独自坐公交去上学，爸爸悄悄跟在后面好几站。",
+    "他把旧手机、旧电池都送到了社区的回收点，没有随手扔掉。",
+    "年底要考核了，组里每个人都在担心自己的绩效评级。",
+    "她翻出一张二十年前的全家福，照片上的人一个个都年轻得认不出来。",
+    "暴雨把路冲坏了，外卖小哥推着电动车在水里走了半个小时。",
+    "医生说他的血糖偏高，让他少吃甜食、多走路。"
+];
+
+let concepts = [{concept: "城市通勤"}, {concept: "理财"}, {concept: "职业焦虑"}];
+let results = sieve(notes, topic, concepts);
+
+fn indexes(xs) { map(xs, fn(e) { e.index }) }
+fn summary(r) {
+    let t = tally(r);
+    {asked: r.detail.question.text, act: indexes(accepted(r)), ignore: indexes(ignored(r)),
+     unsure: map(undecided(r), fn(p) { {index: p.element.index, cause: p.cause} }),
+     count: t.value.count, exists: t.value.exists, pending: t.pending}
+}
+
+// 未决随返回值交给调用者（J-05）：每个 tally 契约值带着它并入的未决
+{streams: map(results, summary)}

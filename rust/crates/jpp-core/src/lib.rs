@@ -17,6 +17,7 @@ pub mod effects;
 pub mod interp;
 pub mod ledger;
 pub mod strength;
+pub mod truth;
 pub mod value;
 
 pub use ast::{Block, Budget, Expr, ExprKind, Function, Parameter, Program, Span, Statement, Type};

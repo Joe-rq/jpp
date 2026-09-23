@@ -126,12 +126,27 @@ fn check_with2(
 
 // ---------------------------------------------------------------- 抽象值类别
 
-/// 只区分「读数 / 出口 / 其它」——J-01 与 J-05 的静态面要的就这三档。
+/// 区分「读数 / 出口 / 题 / 题式 / 其它」——J-01 与 J-05 的静态面要前两档；
+/// 题与题式两档让字段名在 check 阶段就能核（施工件 b：题是一等值，字段写错不该等到运行期）。
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum Kind {
     Reading,
     Exit,
+    Question,
+    Form,
+    /// 组合封闭性契约值（B17）：sieve / pair / tally / first_k / iterate / outcome 的结果
+    Outcome,
     Other,
+}
+
+/// 标注里的类型名 → 类别（只认题与题式；其余交给别的检查）
+fn kind_of_annotation(t: &Type) -> Kind {
+    match t {
+        Type::Named(n) if n == "Question" => Kind::Question,
+        Type::Named(n) if n == "Form" => Kind::Form,
+        Type::Named(n) if n == "Outcome" => Kind::Outcome,
+        _ => Kind::Other,
+    }
 }
 
 struct Scope {
@@ -313,7 +328,7 @@ fn is_builtin(n: &str) -> bool {
 /// 这个内置调用会发生哪种效应
 fn builtin_effect(n: &str) -> Option<&'static str> {
     match n {
-        "judge" | "literalize" => Some("judge"),
+        "judge" | "literalize" | "sieve" => Some("judge"),
         "ask" | "escalate" => Some("ask"),
         "gen" => Some("gen"),
         "do" => Some("do"),
@@ -326,6 +341,8 @@ fn method_positions(builtin: &str) -> &'static [usize] {
     match builtin {
         "map" | "filter" => &[1],
         "fold" | "loop" => &[2],
+        "iterate" => &[2, 3],
+        "pair" => &[2],
         "transform" => &[0],
         _ => &[],
     }
@@ -460,7 +477,7 @@ impl Checker {
         //    **往拒绝那边倒**。
         let mut 重复跨度: Vec<(usize, usize)> = vec![];
         walk_block(&p.body, &mut |e| {
-            if matches!(call_name(e), Some("loop") | Some("map") | Some("filter") | Some("fold")) {
+            if matches!(call_name(e), Some("loop") | Some("iterate") | Some("map") | Some("filter") | Some("fold") | Some("pair")) {
                 重复跨度.push((e.span.start, e.span.end));
             }
         });
@@ -584,7 +601,7 @@ impl Checker {
     fn scan_function(&mut self, f: &Function, scopes: &mut Vec<Scope>, fn_depth: usize) {
         let mut scope = Scope::new();
         for p in &f.parameters {
-            scope.declared.insert(p.name.clone(), Kind::Other);
+            scope.declared.insert(p.name.clone(), p.annotation.as_ref().map(kind_of_annotation).unwrap_or(Kind::Other));
             scope.defined.insert(p.name.clone());
             if let Some(t) = &p.annotation {
                 scope.annotations.insert(p.name.clone(), t.clone());
@@ -732,8 +749,24 @@ impl Checker {
                 Kind::Other
             }
             ExprKind::Field { value, field } => {
-                if self.scan_expr(value, scopes, fn_depth) == Kind::Reading {
-                    self.reading_err(value.span, format!("读数没有字段 {field} 可读"));
+                match self.scan_expr(value, scopes, fn_depth) {
+                    Kind::Reading => self.reading_err(value.span, format!("读数没有字段 {field} 可读")),
+                    Kind::Question if !crate::interp::QUESTION_FIELDS.contains(&field.as_str()) => self.out.push(Diagnostic::error(
+                        "E-field",
+                        format!("题没有字段 {field}。修法：改成题的可读字段之一：{}", crate::interp::QUESTION_FIELDS.join("、")),
+                        e.span,
+                    )),
+                    Kind::Form if !crate::interp::FORM_FIELDS.contains(&field.as_str()) => self.out.push(Diagnostic::error(
+                        "E-field",
+                        format!("题式没有字段 {field}。修法：改成题式的可读字段之一：{}", crate::interp::FORM_FIELDS.join("、")),
+                        e.span,
+                    )),
+                    Kind::Outcome if !crate::interp::OUTCOME_FIELDS.contains(&field.as_str()) => self.out.push(Diagnostic::error(
+                        "E-field",
+                        format!("契约值没有字段 {field}。修法：改成契约的字段之一：{}（sieve 的 ignore 与题在 detail 里；未观察项是 pending 里 cause=budget 的项）", crate::interp::OUTCOME_FIELDS.join("、")),
+                        e.span,
+                    )),
+                    _ => {}
                 }
                 Kind::Other
             }
@@ -798,6 +831,11 @@ impl Checker {
                         match n.as_str() {
                             "judge" => Kind::Reading,
                             "cut" | "unsure" | "ask" => Kind::Exit,
+                            "test" | "select" | "measure" | "fill" => Kind::Question,
+                            "form" => Kind::Form,
+                            "pair" | "tally" | "first_k" | "iterate" | "outcome" => Kind::Outcome,
+                            // 单道题返回一个契约值；题列表、题式 + 填法返回契约值的列表
+                            "sieve" if arguments.len() == 2 && !matches!(arguments[1].kind, ExprKind::List(_)) => Kind::Outcome,
                             _ => Kind::Other,
                         }
                     }
@@ -931,7 +969,16 @@ impl Checker {
                 }
                 // 函数定义是新的词法环境：迭代上下文不穿过它
                 Statement::Function { function, .. } => self.syntax_function(function),
-                Statement::Expression(e) => self.syntax_expr(e, ctx, &varying),
+                Statement::Expression(e) => {
+                    self.syntax_expr(e, ctx, &varying);
+                    if matches!(call_name(e), Some("sieve") | Some("pair") | Some("tally") | Some("first_k") | Some("outcome")) {
+                        self.out.push(Diagnostic::error(
+                            "J-05",
+                            format!("{} 的结果（契约值）在语句位置被丢掉：它的未决清单随包转移，丢掉就是静默丢弃未决（13 §3）。修法：绑定并返回它、交给下一个构造，或 consume(…, \"drop\")", call_name(e).unwrap_or("")),
+                            e.span,
+                        ));
+                    }
+                }
             }
         }
         if let Some(r) = &b.result {
@@ -952,7 +999,7 @@ impl Checker {
             // 高阶内置：函数参数的体带上迭代上下文
             let (fn_idx, yields) = match name.as_str() {
                 "map" | "filter" => (Some(1usize), true),
-                "fold" | "loop" => (Some(2usize), false),
+                "fold" | "loop" | "iterate" => (Some(2usize), false),
                 _ => (None, false),
             };
             for (i, a) in args.iter().enumerate() {
@@ -1029,6 +1076,25 @@ impl Checker {
                     ));
                 }
             }
+            // E5 / J-06：iterate 同样是有界循环，bound 必带
+            "iterate" => {
+                if args.len() != 4 {
+                    self.out.push(Diagnostic::error(
+                        "J-06",
+                        format!("iterate 要写成 iterate(bound, 初值, fn(acc, i), measure)：measure 是 fn(acc) -> Int 或 \"tokens\"，这里给了 {} 个参数", args.len()),
+                        span,
+                    ));
+                } else if let ExprKind::Integer(n) = &args[0].kind {
+                    if *n <= 0 {
+                        self.out.push(Diagnostic::error("J-06", format!("iterate 的 bound 是 {n}：bound 必须是正整数"), args[0].span));
+                    }
+                } else {
+                    self.out.push(Diagnostic::warning("W-bound", "iterate 的 bound 不是字面量：静态估不出上界，只有运行期能核。修法：写成整数字面量", args[0].span));
+                }
+                if ctx.in_yield {
+                    self.out.push(Diagnostic::error("E7", "map / filter（for…yield）的体内不能含 iterate：它是纯映射。修法：整段改用 iterate 或 fold", span));
+                }
+            }
             "stop" if ctx.in_yield => self.out.push(Diagnostic::error(
                 "E7",
                 "map / filter（for…yield）的体内不能 stop：stop 是 loop 的控制。修法：整段改用 loop 或 fold",
@@ -1041,6 +1107,20 @@ impl Checker {
             "cut" => self.calib_literal(name, args, 1),
             "test" | "select" => self.calib_literal(name, args, 1),
             "measure" => self.calib_literal(name, args, 2),
+            // J-03 在题式上：calib 写在选项记录里，同样不能是数字字面量
+            "form" => {
+                if let Some(ExprKind::Record(fields)) = args.get(2).map(|a| &a.kind) {
+                    if let Some((_, c)) = fields.iter().find(|(k, _)| k == "calib") {
+                        if matches!(c.kind, ExprKind::Decimal(_) | ExprKind::Integer(_) | ExprKind::Bool(_)) {
+                            self.out.push(Diagnostic::error(
+                                "J-03",
+                                "form 的 calib 是数字字面量：线不可字面，这一位只收校准记录的键（Text）。修法：form(…, {calib: \"校准键\"})",
+                                c.span,
+                            ));
+                        }
+                    }
+                }
+            }
             // J-14：on 恰一个判断对象（关系用一对）
             "state" => {
                 if let Some(ExprKind::List(items)) = args.first().map(|a| &a.kind) {
@@ -1137,7 +1217,8 @@ impl Checker {
 
     /// 出口绑定之后在本块里再没被提到 = 静默丢弃
     fn exit_binding(&mut self, value: &Expr, name: &str, span: Span, block: &Block) {
-        if !matches!(call_name(value), Some("cut") | Some("unsure") | Some("ask")) {
+        let is_outcome = matches!(call_name(value), Some("sieve") | Some("pair") | Some("tally") | Some("first_k") | Some("outcome"));
+        if !matches!(call_name(value), Some("cut") | Some("unsure") | Some("ask")) && !is_outcome {
             return;
         }
         let mut used = false;
@@ -1159,7 +1240,13 @@ impl Checker {
         if let Some(r) = &block.result {
             walk_expr(r, &mut note);
         }
-        if !used {
+        if !used && is_outcome {
+            self.out.push(Diagnostic::error(
+                "J-05",
+                format!("契约值 {name} 绑定之后再没被提到：它的未决清单（pending）随包转移给了你，丢掉它就是静默丢弃未决（13 §3）。修法：返回它、交给下一个构造，或 consume({name}, \"drop\") 显式丢并记账"),
+                span,
+            ));
+        } else if !used {
             self.out.push(Diagnostic::error(
                 "J-05",
                 format!("出口 {name} 绑定之后再没被提到：未消费的 unsure 就是静默丢弃。修法：handle({name}, {{…, unsure: …}})，或 consume({name}, \"drop\") 显式丢并记账"),

@@ -1,0 +1,69 @@
+{
+ "description": "Synthetic fixed observations for tally*.jpp (construction check only; not model evaluation). Calibration records are hand-written to exercise routing, not calibration. Items 0 and 4 are set to 0.5 on purpose to show unsure elements.",
+ "calibrations": [
+  {
+   "key": "price",
+   "hi": 0.75,
+   "lo": 0.25,
+   "n": 1,
+   "status": "上岗"
+  }
+ ],
+ "observations": [
+  {
+   "on": [
+    "这款耳机售价三百九十九元。"
+   ],
+   "op": "test",
+   "text": "这段话给出了具体价格或折扣吗？",
+   "calib": "price",
+   "answer": {
+    "Noul": 0.5
+   }
+  },
+  {
+   "on": [
+    "新店开业，全场八折。"
+   ],
+   "op": "test",
+   "text": "这段话给出了具体价格或折扣吗？",
+   "calib": "price",
+   "answer": {
+    "Noul": 0.95
+   }
+  },
+  {
+   "on": [
+    "今天天气晴朗，适合出门。"
+   ],
+   "op": "test",
+   "text": "这段话给出了具体价格或折扣吗？",
+   "calib": "price",
+   "answer": {
+    "Noul": 0.03
+   }
+  },
+  {
+   "on": [
+    "会员价比原价便宜了五十元。"
+   ],
+   "op": "test",
+   "text": "这段话给出了具体价格或折扣吗？",
+   "calib": "price",
+   "answer": {
+    "Noul": 0.96
+   }
+  },
+  {
+   "on": [
+    "价格还没公布，据说下个月发布。"
+   ],
+   "op": "test",
+   "text": "这段话给出了具体价格或折扣吗？",
+   "calib": "price",
+   "answer": {
+    "Noul": 0.5
+   }
+  }
+ ]
+}

@@ -661,6 +661,30 @@ pub struct Cert {
     /// 互相替代不了。**
     #[serde(default)]
     pub label_fp: String,
+    /// **线是怎么选出来的、在哪批数据上认证的**（B24 的多重比较要求）。
+    ///
+    /// `None` = 旧证书：选线与认证用的是同一批数据（二项上界只对固定线成立，
+    /// 对「在同批数据上最大化后选出的线」不成立）。`Some` = 拆分样本：
+    /// 选线只用选线半，认证在认证半上对选出的那一对只检验一次。
+    /// **它进地址**（有值时）：同批选线与拆分认证是两个不同的测量。
+    /// 为空时不序列化，旧记录与旧证书的哈希不变。
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub selection: Option<Selection>,
+}
+
+/// 选线与认证的方式（B24）。
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct Selection {
+    /// 目前只有一个取值：`split`（拆分样本）
+    pub method: String,
+    /// 分半用的种子（`splitmix64(seed ^ 下标)` 的最低位定归属）
+    pub seed: u64,
+    /// 选线半的条数
+    pub n_select: usize,
+    /// 认证半的条数
+    pub n_certify: usize,
+    /// 选线半上满足条件的候选线对数（只作记录，认证不依赖它）
+    pub candidates: usize,
 }
 
 /// 标注集指纹：`(p, label)` 对的**规范形**，排序后取 `canon` 再 sha256 前 16 位。
@@ -784,6 +808,66 @@ pub struct CalibRecord {
     /// **带标注的那些才是 `n` 的来源**；无标注的只是观察。
     #[serde(default, deserialize_with = "null当空表")]
     pub samples: Vec<Sample>,
+    /// **真值通道的账**（B19，`calib-import` 写）：标注来源计数、弃权、人工抽检与上岗门的结论。
+    /// `None` = 这条记录不是经真值通道来的；**序列化时不出现**，老记录的哈希不变。
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub truth: Option<TruthSummary>,
+    /// **下侧证书**（真值通道写，镜像认证）：`certs` 只界定 `p ≥ hi` 一侧的假放行，
+    /// 且把 `lo` 置 0（Ignore 不可达）。这张证书在同一批标注上界定 `p ≤ lo` 一侧的
+    /// **漏放行**（真值为真却给 Ignore），过了才把 `lo` 抬起来。`None` = 没做过，老行为。
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub lower: Option<Cert>,
+    /// 认证集范围（B24 补充）。`None` = 老记录或非真值通道记录；序列化时不出现
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub scope: Option<CalibScope>,
+}
+
+/// 真值通道对一个校准键的结论（B19 / B13）。
+///
+/// **`gate` 是算出来的**：模型标注只有在同键有人工抽检、且一致率不低于门槛时，
+/// 才能单独撑起上岗；否则记录停在「待真值」，`gate` 写明「待核」及原因。
+/// 门槛是导入时的参数（画像或命令行给），**不写死在规则里**。
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct TruthSummary {
+    /// 按来源计的带真值条数（`human` / `computed` / `model:<名>`）
+    pub sources: std::collections::BTreeMap<String, u64>,
+    /// 标注者标了「模棱两可」的条数：**不进线**
+    pub ambiguous: u64,
+    /// `ambiguous / 全部标注行`。高 = 题面外延可能未定（B13）
+    pub abstain_rate: f64,
+    /// 人工抽检：同一条材料既有人工标注又有模型标注时的一致率
+    #[serde(default)]
+    pub spot_check: Option<SpotCheck>,
+    /// 本次导入用的抽检门槛
+    pub spot_check_min: f64,
+    /// `上岗` / `待核：<原因>` / `认证不过：<原因>`
+    pub gate: String,
+    /// 导入批次（标注文件名等），进 `label_set_id`
+    pub batch: String,
+}
+
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct SpotCheck {
+    pub batches: Vec<String>,
+    pub n: u64,
+    pub agree: u64,
+    pub rate: f64,
+    /// 一致率的单侧置信下界（B19 修正按它判门槛）；老记录没有
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub lower: Option<f64>,
+    /// 下界的置信水平
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub conf: Option<f64>,
+}
+
+/// 认证集的范围（B24 补充，本版只写来源；风格指纹与范围外告警待做）。
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct CalibScope {
+    /// 进线的标注批次
+    pub batches: Vec<String>,
+    /// 按来源计的带真值条数
+    pub sources: std::collections::BTreeMap<String, u64>,
+    pub note: String,
 }
 
 impl Cert {
@@ -803,8 +887,12 @@ impl Cert {
         // **`cluster_unit` 与 `label_source.addr()` 里都有自由文本**
         // （后者含 `判据: String`，现值「两个模型都同意」）。**文本里若含 `\u{1f}` 就撞地址。**
         // 所以自由文本那两段先哈成定长，**分隔符就再也不可能出现在段内**。
+        let sel = match &self.selection {
+            Some(x) => format!("\u{1f}sel({},{},{},{})", x.method, x.seed, x.n_select, x.n_certify),
+            None => String::new(),
+        };
         format!(
-            "α={:?}\u{1f}δ={:?}\u{1f}{}{c}\u{1f}{}\u{1f}fp={}",
+            "α={:?}\u{1f}δ={:?}\u{1f}{}{c}\u{1f}{}\u{1f}fp={}{sel}",
             self.alpha,
             self.conf_delta,
             hash16(&json!(self.cluster_unit)),
@@ -1178,7 +1266,10 @@ impl CalibStore {
         let lsrc = self.records.get(key).map(|r| r.label_source.clone()).unwrap_or_default();
         let lloc = self.records.get(key).map(|r| r.label_locator.clone()).unwrap_or_default();
         let lfp = self.records.get(key).map(|r| r.label_fp.clone()).unwrap_or_default();
-        self.records.insert(key.to_string(), CalibRecord { key: key.into(), hi, lo, n, status: status.into(), delta: None, unsure_rate: None, set_id: String::new(), label_set_id: lsid, label_locator: lloc, label_fp: lfp, label_source: lsrc, samples, certs });
+        let truth = self.records.get(key).and_then(|r| r.truth.clone());
+        let lower = self.records.get(key).and_then(|r| r.lower.clone());
+        let old_scope = self.records.get(key).and_then(|r| r.scope.clone());
+        self.records.insert(key.to_string(), CalibRecord { key: key.into(), hi, lo, n, status: status.into(), delta: None, unsure_rate: None, set_id: String::new(), label_set_id: lsid, label_locator: lloc, label_fp: lfp, label_source: lsrc, samples, certs, truth, lower, scope: old_scope });
         Ok(())
     }
 
@@ -1200,7 +1291,7 @@ impl CalibStore {
         }
         let rec = self.records.entry(key.to_string()).or_insert_with(|| CalibRecord {
             key: key.into(), hi: 0.65, lo: 0.35, n: 0, status: "冷".into(),
-            delta: None, unsure_rate: None, set_id: String::new(), label_set_id: String::new(), label_locator: String::new(), label_fp: String::new(), label_source: LabelSource::default(), samples: vec![], certs: Default::default(),
+            delta: None, unsure_rate: None, set_id: String::new(), label_set_id: String::new(), label_locator: String::new(), label_fp: String::new(), label_source: LabelSource::default(), samples: vec![], certs: Default::default(), truth: None, lower: None, scope: None,
         });
         let 有标注 = s.label.is_some();
         rec.samples.push(s);
@@ -1335,7 +1426,7 @@ impl CalibStore {
                     n_needed: crate::conformal::n_needed_zero_error(alpha, conf_delta),
                 }));
             }
-            let cert = Cert { alpha, conf_delta, hi: cl.line, n_accepted: cl.n_accepted, n_errors: cl.n_false_accept, ucb, cluster_unit: cluster_unit.into(), resample: None, cost, bounded_side: 单侧声明(), label_source: rec_lsrc.clone(), label_fp: label_fp.clone() };
+            let cert = Cert { alpha, conf_delta, hi: cl.line, n_accepted: cl.n_accepted, n_errors: cl.n_false_accept, ucb, cluster_unit: cluster_unit.into(), resample: None, cost, bounded_side: 单侧声明(), label_source: rec_lsrc.clone(), label_fp: label_fp.clone(), selection: None };
             let r = self.records.get_mut(key).expect("刚读过");
             r.certs.insert(cert.addr(), cert.clone());
             let 选中 = r.选中的证书().cloned().expect("刚插进去");
@@ -1379,7 +1470,7 @@ impl CalibStore {
         match cert_result {
             Certificate::Refused { .. } => Err(Refusal::认证不过(cert_result)),
             Certificate::Line { hi, n_accepted, n_errors, ucb } => {
-                let cert = Cert { alpha, conf_delta, hi, n_accepted, n_errors, ucb, cluster_unit: cluster_unit.into(), resample, cost, bounded_side: 单侧声明(), label_source: rec_lsrc.clone(), label_fp: label_fp.clone() };
+                let cert = Cert { alpha, conf_delta, hi, n_accepted, n_errors, ucb, cluster_unit: cluster_unit.into(), resample, cost, bounded_side: 单侧声明(), label_source: rec_lsrc.clone(), label_fp: label_fp.clone(), selection: None };
                 let r = self.records.get_mut(key).expect("刚读过");
                 // 同一个地址是**更新那一格**；不同地址是**新增一格**
                 r.certs.insert(cert.addr(), cert.clone());
@@ -1414,6 +1505,174 @@ impl CalibStore {
     ///
     /// **一侧为空返回 `None`，不是「漂移为 0」**——与 `binomial_upper` 的 `n == 0 → 1.0`
     /// 同一条：**算不出来不是一个值**。
+    /// **两侧联合认证**（真值通道用）。`commission` 只界定 `p ≥ hi` 一侧，并取**最宽**的线、
+    /// 把 `lo` 置 0：Ignore 不可达，而且最宽的上侧线把错误预算用在边界上，给下侧留不出位置。
+    ///
+    /// 这里在同一批标注上联合选 `(lo, hi)`：按 `cut` 的实际判区（`p ≥ hi + δ` 给 Act、
+    /// `p ≤ lo − δ` 给 Ignore）计，要求
+    /// - Act 区的假放行（真值为假）二项上界 ≤ α，
+    /// - Ignore 区的漏放行（真值为真）二项上界 ≤ α，
+    /// - `lo ≤ hi`，两区都非空；
+    ///
+    /// 在满足者中取**已决条数最多**的一对。上侧证书进 `certs`（`resample` 注明选线规则），
+    /// 下侧证书进 `lower`。只做「按条」。认不出就 `Refusal`，记录不动。
+    pub fn commission_two_sided(&mut self, key: &str, alpha: f64, conf_delta: f64) -> Result<Cert, Refusal> {
+        let bad = |why: &str| Refusal::跑不成(why.to_string());
+        if !(alpha > 0.0 && alpha < 1.0) || !(conf_delta > 0.0 && conf_delta < 1.0) {
+            return Err(bad("alpha 与 conf_delta 必须在开区间 (0, 1)"));
+        }
+        let rec = self.records.get(key).ok_or_else(|| bad("没有这条记录"))?;
+        if rec.status == "停岗" {
+            return Err(bad("停岗的键不经由认证复岗"));
+        }
+        let 带标注: Vec<&Sample> = rec.samples.iter().filter(|s| s.label.is_some() && s.p.is_some()).collect();
+        if 带标注.is_empty() {
+            return Err(bad("没有带标注的样本：线只从标注记录来"));
+        }
+        if 带标注.iter().any(|s| s.phys != "noul") {
+            return Err(bad("两侧认证只对 test 题有定义"));
+        }
+        let delta = rec.delta.unwrap_or(self.profile.delta.0);
+        let 按条: Vec<(f64, bool)> = 带标注.iter().map(|s| (s.p.expect("已滤"), s.label == Some(1))).collect();
+        let label_fp = 标注集指纹(&带标注);
+        let lsrc = rec.label_source.clone();
+        // 候选判区边界：每个读数本身与相邻读数的中点
+        let mut ps: Vec<f64> = 按条.iter().map(|x| x.0).collect();
+        ps.sort_by(|a, b| a.partial_cmp(b).unwrap());
+        ps.dedup();
+        let mut cands: Vec<f64> = ps.clone();
+        for w in ps.windows(2) {
+            cands.push((w[0] + w[1]) / 2.0);
+        }
+        cands.sort_by(|a, b| a.partial_cmp(b).unwrap());
+        cands.dedup();
+        // 上侧：判区 p ≥ h
+        let up: Vec<(f64, usize, usize, f64)> = cands.iter().filter_map(|&h| {
+            let acc: Vec<&(f64, bool)> = 按条.iter().filter(|x| x.0 >= h).collect();
+            if acc.is_empty() || h < delta { return None; }
+            let k = acc.iter().filter(|x| !x.1).count();
+            let u = crate::conformal::binomial_upper(k, acc.len(), conf_delta);
+            (u <= alpha).then_some((h, acc.len(), k, u))
+        }).collect();
+        // 下侧：判区 p ≤ l
+        let down: Vec<(f64, usize, usize, f64)> = cands.iter().filter_map(|&l| {
+            let acc: Vec<&(f64, bool)> = 按条.iter().filter(|x| x.0 <= l).collect();
+            if acc.is_empty() || l > 1.0 - delta { return None; }
+            let k = acc.iter().filter(|x| x.1).count();
+            let u = crate::conformal::binomial_upper(k, acc.len(), conf_delta);
+            (u <= alpha).then_some((l, acc.len(), k, u))
+        }).collect();
+        let mut best: Option<((f64, usize, usize, f64), (f64, usize, usize, f64))> = None;
+        for a in &up {
+            for d in &down {
+                // lo = l + δ ≤ hi = h − δ
+                if d.0 + delta > a.0 - delta {
+                    continue;
+                }
+                if best.as_ref().map(|(ba, bd)| a.1 + d.1 > ba.1 + bd.1).unwrap_or(true) {
+                    best = Some((*a, *d));
+                }
+            }
+        }
+        let Some(((h, na, ka, ua), (l, nd, kd, ud))) = best else {
+            let n_needed = crate::conformal::n_needed_zero_error(alpha, conf_delta);
+            return Err(Refusal::认证不过(Certificate::Refused { best_ucb: 1.0, best_hi: 1.0, best_n_accepted: 0, n_needed }));
+        };
+        let (hi, lo) = ((h - delta).clamp(0.0, 1.0), (l + delta).clamp(0.0, 1.0));
+        let 规则 = "两侧联合选线：两区各自二项上界 ≤ α，取已决条数最多者（真值通道）".to_string();
+        let upper = Cert { alpha, conf_delta, hi, n_accepted: na, n_errors: ka, ucb: ua, cluster_unit: "条".into(), resample: Some((0, 规则.clone())), cost: None,
+            bounded_side: "上侧：界定 p ≥ hi + δ 一侧的假放行".into(), label_source: lsrc.clone(), label_fp: label_fp.clone(), selection: None };
+        let lower = Cert { alpha, conf_delta, hi: lo, n_accepted: nd, n_errors: kd, ucb: ud, cluster_unit: "条".into(), resample: Some((0, 规则)), cost: None,
+            bounded_side: "下侧：界定 p ≤ lo − δ 一侧的漏放行；hi 字段此处存的是 lo".into(), label_source: lsrc, label_fp, selection: None };
+        let r = self.records.get_mut(key).expect("刚读过");
+        r.certs.insert(upper.addr(), upper.clone());
+        r.hi = hi;
+        r.lo = lo;
+        r.lower = Some(lower);
+        r.status = "上岗".into();
+        r.unsure_rate = 经验unsure率(&按条, hi, lo, Some(delta));
+        Ok(upper)
+    }
+
+    /// **两侧联合认证，拆分样本版**（B24 的多重比较要求）。
+    ///
+    /// [`commission_two_sided`] 在同一批数据上既选线对又算二项上界；上界只对**固定**的线成立，
+    /// 对「在同批数据上最大化已决条数后选出的线」不成立——候选越多，真实错误率越可能超 α。
+    /// 这里把带标注的样本按 `splitmix64(seed ^ 下标)` 的最低位分成两半：
+    /// **选线半**上照原规则选出一对 `(h, l)`；**认证半**上对这一对只检验一次，两侧各一个二项上界。
+    ///
+    /// 认证半里任一侧的已决条数小于零错误所需条数（`n_needed_zero_error`）时，
+    /// 如实停在待核（`跑不成`，原因以「待核」开头），不降低门槛。
+    pub fn commission_two_sided_split(&mut self, key: &str, alpha: f64, conf_delta: f64, seed: u64) -> Result<Cert, Refusal> {
+        let bad = |why: &str| Refusal::跑不成(why.to_string());
+        if !(alpha > 0.0 && alpha < 1.0) || !(conf_delta > 0.0 && conf_delta < 1.0) {
+            return Err(bad("alpha 与 conf_delta 必须在开区间 (0, 1)"));
+        }
+        let rec = self.records.get(key).ok_or_else(|| bad("没有这条记录"))?;
+        if rec.status == "停岗" {
+            return Err(bad("停岗的键不经由认证复岗"));
+        }
+        let 带标注: Vec<&Sample> = rec.samples.iter().filter(|s| s.label.is_some() && s.p.is_some()).collect();
+        if 带标注.is_empty() {
+            return Err(bad("没有带标注的样本：线只从标注记录来"));
+        }
+        if 带标注.iter().any(|s| s.phys != "noul") {
+            return Err(bad("两侧认证只对 test 题有定义"));
+        }
+        let delta = rec.delta.unwrap_or(self.profile.delta.0);
+        let 按条: Vec<(f64, bool)> = 带标注.iter().map(|s| (s.p.expect("已滤"), s.label == Some(1))).collect();
+        let label_fp = 标注集指纹(&带标注);
+        let lsrc = rec.label_source.clone();
+        let (mut 选线半, mut 认证半): (Vec<(f64, bool)>, Vec<(f64, bool)>) = (vec![], vec![]);
+        for (i, x) in 按条.iter().enumerate() {
+            if splitmix64(seed ^ i as u64) & 1 == 0 { 选线半.push(*x) } else { 认证半.push(*x) }
+        }
+        let n_needed = crate::conformal::n_needed_zero_error(alpha, conf_delta);
+        let (正, 负) = (选线半.iter().filter(|x| x.1).count(), 选线半.iter().filter(|x| !x.1).count());
+        if 正.min(负) < n_needed {
+            return Err(bad(&format!(
+                "待核：选线半样本不足（正例 {正}、负例 {负}，零错误也需每侧 ≥ {n_needed}；选线半 {} 条、认证半 {} 条）",
+                选线半.len(), 认证半.len()
+            )));
+        }
+        let (best, candidates) = 选两侧线对(&选线半, delta, alpha, conf_delta);
+        let Some((h, l)) = best else {
+            let n_needed = crate::conformal::n_needed_zero_error(alpha, conf_delta);
+            return Err(Refusal::认证不过(Certificate::Refused { best_ucb: 1.0, best_hi: 1.0, best_n_accepted: 0, n_needed }));
+        };
+        // 认证半：对选出的这一对只检验一次
+        let up: Vec<&(f64, bool)> = 认证半.iter().filter(|x| x.0 >= h).collect();
+        let down: Vec<&(f64, bool)> = 认证半.iter().filter(|x| x.0 <= l).collect();
+        if up.len() < n_needed || down.len() < n_needed {
+            return Err(bad(&format!(
+                "待核：认证半样本不足（上侧已决 {}、下侧已决 {}，零错误也需每侧 ≥ {}；选线半 {} 条、认证半 {} 条）",
+                up.len(), down.len(), n_needed, 选线半.len(), 认证半.len()
+            )));
+        }
+        let ka = up.iter().filter(|x| !x.1).count();
+        let kd = down.iter().filter(|x| x.1).count();
+        let ua = crate::conformal::binomial_upper(ka, up.len(), conf_delta);
+        let ud = crate::conformal::binomial_upper(kd, down.len(), conf_delta);
+        if ua > alpha || ud > alpha {
+            return Err(Refusal::认证不过(Certificate::Refused { best_ucb: ua.max(ud), best_hi: h, best_n_accepted: up.len() + down.len(), n_needed }));
+        }
+        let sel = Selection { method: "split".into(), seed, n_select: 选线半.len(), n_certify: 认证半.len(), candidates };
+        let (hi, lo) = ((h - delta).clamp(0.0, 1.0), (l + delta).clamp(0.0, 1.0));
+        let 规则 = "两侧联合选线（拆分样本）：选线半上取两区上界各 ≤ α 且已决最多的一对，认证半上对该对各检验一次".to_string();
+        let upper = Cert { alpha, conf_delta, hi, n_accepted: up.len(), n_errors: ka, ucb: ua, cluster_unit: "条".into(), resample: Some((0, 规则.clone())), cost: None,
+            bounded_side: "上侧：界定 p ≥ hi + δ 一侧的假放行".into(), label_source: lsrc.clone(), label_fp: label_fp.clone(), selection: Some(sel.clone()) };
+        let lower = Cert { alpha, conf_delta, hi: lo, n_accepted: down.len(), n_errors: kd, ucb: ud, cluster_unit: "条".into(), resample: Some((0, 规则)), cost: None,
+            bounded_side: "下侧：界定 p ≤ lo − δ 一侧的漏放行；hi 字段此处存的是 lo".into(), label_source: lsrc, label_fp, selection: Some(sel) };
+        let r = self.records.get_mut(key).expect("刚读过");
+        r.certs.insert(upper.addr(), upper.clone());
+        r.hi = hi;
+        r.lo = lo;
+        r.lower = Some(lower);
+        r.status = "上岗".into();
+        r.unsure_rate = 经验unsure率(&按条, hi, lo, Some(delta));
+        Ok(upper)
+    }
+
     pub fn drift_of(&self, key: &str) -> Option<crate::conformal::DriftReport> {
         let rec = self.records.get(key)?;
         let (参照, 近期): (Vec<f64>, Vec<f64>) = (
@@ -1479,11 +1738,13 @@ impl CalibStore {
                 key: String::new(), hi: 0.0, lo: 0.0, n: 0, status: "冷".into(),
                 delta: None, unsure_rate: None, set_id: String::new(),
                 label_set_id: String::new(), label_locator: String::new(), label_fp: String::new(),
-                label_source: LabelSource::default(), samples: vec![], certs: Default::default(),
+                label_source: LabelSource::default(), samples: vec![], certs: Default::default(), truth: None, lower: None, scope: None,
             }) {
                 Ok(Json::Object(m)) => m.keys().cloned().collect(),
                 _ => return Err("内部错误：CalibRecord 序列化不出对象".into()),
             };
+            // `truth` 为空时不序列化（老记录哈希不变），所以上面那张表里没有它，这里补上
+            let 映射: Vec<String> = 映射.into_iter().chain(["truth".to_string(), "lower".to_string(), "scope".to_string()]).collect();
             for k in obj.keys() {
                 if !映射.iter().any(|m| m == k) && !知道但不映射.contains(&k.as_str()) {
                     return Err(format!("{} 有内核不认得的字段 {k:?}：装载不猜，也不无声吞掉", path.display()));
@@ -1556,6 +1817,11 @@ impl CalibStore {
     /// 判据，`delta_for` 也早就按 `op.phys()` 分。所以模式键是 `(phys, literal_mode)`。
     ///
     /// 落在 `\u{1f}` 开头的保留命名空间里，**与任何题级键名都撞不上**。
+    /// **题式级键**（B2 待裁，本版只作回退层）：同一题式的所有填法共用一条线。
+    /// 查找顺序是 题键 → 题式键 → 模式键；用到题式键时出口留痕，不冒充题级线。
+    pub fn form_key(form_hash: &str) -> String {
+        format!("\u{1f}form\u{1f}{form_hash}")
+    }
     pub fn mode_key(phys: &str, mode: LiteralMode) -> String {
         format!("\u{1f}mode\u{1f}{phys}{}", mode.suffix())
     }
@@ -1576,7 +1842,7 @@ impl CalibStore {
         self.records
             .get(key)
             .cloned()
-            .unwrap_or(CalibRecord { key: key.into(), hi: 0.65, lo: 0.35, n: 0, status: "冷".into(), delta: None, unsure_rate: None, set_id: String::new(), label_set_id: String::new(), label_locator: String::new(), label_fp: String::new(), label_source: LabelSource::default(), samples: vec![], certs: Default::default() })
+            .unwrap_or(CalibRecord { key: key.into(), hi: 0.65, lo: 0.35, n: 0, status: "冷".into(), delta: None, unsure_rate: None, set_id: String::new(), label_set_id: String::new(), label_locator: String::new(), label_fp: String::new(), label_source: LabelSource::default(), samples: vec![], certs: Default::default(), truth: None, lower: None, scope: None })
     }
     /// 这种题式的 δ：记录自带的优先，否则用档案的
     pub fn delta_for(&self, rec: &CalibRecord, op: Op) -> f64 {
@@ -1590,4 +1856,53 @@ impl CalibStore {
     pub fn lines_for(&self, rec: &CalibRecord) -> (f64, f64) {
         if rec.status == "上岗" { (rec.hi, rec.lo) } else { self.profile.safety }
     }
+}
+
+
+/// 在给定样本上选两侧线对（`commission_two_sided` 与拆分版共用的选线规则）。
+/// 返回 `((h, l), 满足条件的候选对数)`；`h`、`l` 是判区边界（未扣 δ）。
+fn 选两侧线对(按条: &[(f64, bool)], delta: f64, alpha: f64, conf_delta: f64) -> (Option<(f64, f64)>, usize) {
+    let mut ps: Vec<f64> = 按条.iter().map(|x| x.0).collect();
+    ps.sort_by(|a, b| a.partial_cmp(b).unwrap());
+    ps.dedup();
+    let mut cands: Vec<f64> = ps.clone();
+    for w in ps.windows(2) {
+        cands.push((w[0] + w[1]) / 2.0);
+    }
+    cands.sort_by(|a, b| a.partial_cmp(b).unwrap());
+    cands.dedup();
+    let up: Vec<(f64, usize)> = cands.iter().filter_map(|&h| {
+        let acc: Vec<&(f64, bool)> = 按条.iter().filter(|x| x.0 >= h).collect();
+        if acc.is_empty() || h < delta { return None; }
+        let k = acc.iter().filter(|x| !x.1).count();
+        (crate::conformal::binomial_upper(k, acc.len(), conf_delta) <= alpha).then_some((h, acc.len()))
+    }).collect();
+    let down: Vec<(f64, usize)> = cands.iter().filter_map(|&l| {
+        let acc: Vec<&(f64, bool)> = 按条.iter().filter(|x| x.0 <= l).collect();
+        if acc.is_empty() || l > 1.0 - delta { return None; }
+        let k = acc.iter().filter(|x| x.1).count();
+        (crate::conformal::binomial_upper(k, acc.len(), conf_delta) <= alpha).then_some((l, acc.len()))
+    }).collect();
+    let mut best: Option<(f64, f64, usize)> = None;
+    let mut n = 0;
+    for a in &up {
+        for d in &down {
+            if d.0 + delta > a.0 - delta {
+                continue;
+            }
+            n += 1;
+            if best.map(|b| a.1 + d.1 > b.2).unwrap_or(true) {
+                best = Some((a.0, d.0, a.1 + d.1));
+            }
+        }
+    }
+    (best.map(|b| (b.0, b.1)), n)
+}
+
+/// 确定性分半用的混合函数（splitmix64）。
+fn splitmix64(x: u64) -> u64 {
+    let mut z = x.wrapping_add(0x9E37_79B9_7F4A_7C15);
+    z = (z ^ (z >> 30)).wrapping_mul(0xBF58_476D_1CE4_E5B9);
+    z = (z ^ (z >> 27)).wrapping_mul(0x94D0_49BB_1331_11EB);
+    z ^ (z >> 31)
 }

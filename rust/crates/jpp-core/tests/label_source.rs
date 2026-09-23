@@ -138,7 +138,7 @@ fn 证书地址不被精度或分隔符撞掉() {
     let 造 = |alpha: f64, cu: &str, 判据: &str| Cert {
         alpha, conf_delta: 0.10, hi: 0.8, n_accepted: 10, n_errors: 0, ucb: 0.05,
         cluster_unit: cu.into(), resample: None, cost: None,
-        bounded_side: String::new(), label_fp: "abcd".into(),
+        bounded_side: String::new(), label_fp: "abcd".into(), selection: None,
         label_source: LabelSource::选择子集 { 判据: 判据.into(), 与对错相关: Some(0.5) },
     };
     // 第五位小数不同 → **地址必须不同**

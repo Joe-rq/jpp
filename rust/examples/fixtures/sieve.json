@@ -1,0 +1,398 @@
+{
+ "description": "Synthetic fixed observations for sieve*.jpp (construction check only; not model evaluation). Note 2 × 北京 is set to 0.5 on purpose to show an unsure element; calibration records here are hand-written to exercise routing, not calibration.",
+ "calibrations": [
+  {
+   "key": "form-mention",
+   "hi": 0.75,
+   "lo": 0.25,
+   "n": 1,
+   "status": "上岗"
+  },
+  {
+   "key": "trip",
+   "hi": 0.75,
+   "lo": 0.25,
+   "n": 1,
+   "status": "上岗"
+  },
+  {
+   "key": "review",
+   "hi": 0.75,
+   "lo": 0.25,
+   "n": 1,
+   "status": "上岗"
+  }
+ ],
+ "observations": [
+  {
+   "on": [
+    "我上个月去了成都出差，顺便见了老朋友。"
+   ],
+   "op": "test",
+   "text": "这段话是否提到了成都？",
+   "calib": "form-mention",
+   "answer": {
+    "Noul": 0.99
+   }
+  },
+  {
+   "on": [
+    "我上个月去了成都出差，顺便见了老朋友。"
+   ],
+   "op": "test",
+   "text": "这段话是否提到了北京？",
+   "calib": "form-mention",
+   "answer": {
+    "Noul": 0.02
+   }
+  },
+  {
+   "on": [
+    "我上个月去了成都出差，顺便见了老朋友。"
+   ],
+   "op": "test",
+   "text": "这段话是否提到了杭州？",
+   "calib": "form-mention",
+   "answer": {
+    "Noul": 0.02
+   }
+  },
+  {
+   "on": [
+    "她的老家在北京，每年春节都回去。"
+   ],
+   "op": "test",
+   "text": "这段话是否提到了成都？",
+   "calib": "form-mention",
+   "answer": {
+    "Noul": 0.02
+   }
+  },
+  {
+   "on": [
+    "她的老家在北京，每年春节都回去。"
+   ],
+   "op": "test",
+   "text": "这段话是否提到了北京？",
+   "calib": "form-mention",
+   "answer": {
+    "Noul": 0.99
+   }
+  },
+  {
+   "on": [
+    "她的老家在北京，每年春节都回去。"
+   ],
+   "op": "test",
+   "text": "这段话是否提到了杭州？",
+   "calib": "form-mention",
+   "answer": {
+    "Noul": 0.02
+   }
+  },
+  {
+   "on": [
+    "这家公司的总部设在杭州。"
+   ],
+   "op": "test",
+   "text": "这段话是否提到了成都？",
+   "calib": "form-mention",
+   "answer": {
+    "Noul": 0.02
+   }
+  },
+  {
+   "on": [
+    "这家公司的总部设在杭州。"
+   ],
+   "op": "test",
+   "text": "这段话是否提到了北京？",
+   "calib": "form-mention",
+   "answer": {
+    "Noul": 0.5
+   }
+  },
+  {
+   "on": [
+    "这家公司的总部设在杭州。"
+   ],
+   "op": "test",
+   "text": "这段话是否提到了杭州？",
+   "calib": "form-mention",
+   "answer": {
+    "Noul": 0.99
+   }
+  },
+  {
+   "on": [
+    "我们计划明年夏天去成都和北京旅游。"
+   ],
+   "op": "test",
+   "text": "这段话是否提到了成都？",
+   "calib": "form-mention",
+   "answer": {
+    "Noul": 0.99
+   }
+  },
+  {
+   "on": [
+    "我们计划明年夏天去成都和北京旅游。"
+   ],
+   "op": "test",
+   "text": "这段话是否提到了北京？",
+   "calib": "form-mention",
+   "answer": {
+    "Noul": 0.99
+   }
+  },
+  {
+   "on": [
+    "我们计划明年夏天去成都和北京旅游。"
+   ],
+   "op": "test",
+   "text": "这段话是否提到了杭州？",
+   "calib": "form-mention",
+   "answer": {
+    "Noul": 0.02
+   }
+  },
+  {
+   "on": [
+    "他在西安读的大学。"
+   ],
+   "op": "test",
+   "text": "这段话是否提到了成都？",
+   "calib": "form-mention",
+   "answer": {
+    "Noul": 0.02
+   }
+  },
+  {
+   "on": [
+    "他在西安读的大学。"
+   ],
+   "op": "test",
+   "text": "这段话是否提到了北京？",
+   "calib": "form-mention",
+   "answer": {
+    "Noul": 0.02
+   }
+  },
+  {
+   "on": [
+    "他在西安读的大学。"
+   ],
+   "op": "test",
+   "text": "这段话是否提到了杭州？",
+   "calib": "form-mention",
+   "answer": {
+    "Noul": 0.02
+   }
+  },
+  {
+   "on": [
+    "周末在家看书，哪儿也没去。"
+   ],
+   "op": "test",
+   "text": "这段话是否提到了成都？",
+   "calib": "form-mention",
+   "answer": {
+    "Noul": 0.02
+   }
+  },
+  {
+   "on": [
+    "周末在家看书，哪儿也没去。"
+   ],
+   "op": "test",
+   "text": "这段话是否提到了北京？",
+   "calib": "form-mention",
+   "answer": {
+    "Noul": 0.02
+   }
+  },
+  {
+   "on": [
+    "周末在家看书，哪儿也没去。"
+   ],
+   "op": "test",
+   "text": "这段话是否提到了杭州？",
+   "calib": "form-mention",
+   "answer": {
+    "Noul": 0.02
+   }
+  },
+  {
+   "on": [
+    "杭州的西湖很美，北京的秋天也不错。"
+   ],
+   "op": "test",
+   "text": "这段话是否提到了成都？",
+   "calib": "form-mention",
+   "answer": {
+    "Noul": 0.02
+   }
+  },
+  {
+   "on": [
+    "杭州的西湖很美，北京的秋天也不错。"
+   ],
+   "op": "test",
+   "text": "这段话是否提到了北京？",
+   "calib": "form-mention",
+   "answer": {
+    "Noul": 0.99
+   }
+  },
+  {
+   "on": [
+    "杭州的西湖很美，北京的秋天也不错。"
+   ],
+   "op": "test",
+   "text": "这段话是否提到了杭州？",
+   "calib": "form-mention",
+   "answer": {
+    "Noul": 0.99
+   }
+  },
+  {
+   "on": [
+    "这份报告需要周五之前提交。"
+   ],
+   "op": "test",
+   "text": "这段话是否提到了成都？",
+   "calib": "form-mention",
+   "answer": {
+    "Noul": 0.02
+   }
+  },
+  {
+   "on": [
+    "这份报告需要周五之前提交。"
+   ],
+   "op": "test",
+   "text": "这段话是否提到了北京？",
+   "calib": "form-mention",
+   "answer": {
+    "Noul": 0.02
+   }
+  },
+  {
+   "on": [
+    "这份报告需要周五之前提交。"
+   ],
+   "op": "test",
+   "text": "这段话是否提到了杭州？",
+   "calib": "form-mention",
+   "answer": {
+    "Noul": 0.02
+   }
+  },
+  {
+   "on": [
+    "他从成都调到了杭州分公司。"
+   ],
+   "op": "test",
+   "text": "这段话是否提到了成都？",
+   "calib": "form-mention",
+   "answer": {
+    "Noul": 0.99
+   }
+  },
+  {
+   "on": [
+    "他从成都调到了杭州分公司。"
+   ],
+   "op": "test",
+   "text": "这段话是否提到了北京？",
+   "calib": "form-mention",
+   "answer": {
+    "Noul": 0.02
+   }
+  },
+  {
+   "on": [
+    "他从成都调到了杭州分公司。"
+   ],
+   "op": "test",
+   "text": "这段话是否提到了杭州？",
+   "calib": "form-mention",
+   "answer": {
+    "Noul": 0.99
+   }
+  },
+  {
+   "on": [
+    "我上个月去了成都出差，顺便见了老朋友。"
+   ],
+   "op": "test",
+   "text": "这段话说的是工作出行吗？",
+   "calib": "trip",
+   "answer": {
+    "Noul": 0.97
+   }
+  },
+  {
+   "on": [
+    "他从成都调到了杭州分公司。"
+   ],
+   "op": "test",
+   "text": "这段话说的是工作出行吗？",
+   "calib": "trip",
+   "answer": {
+    "Noul": 0.97
+   }
+  },
+  {
+   "on": [
+    "我们计划明年夏天去成都和北京旅游。"
+   ],
+   "op": "test",
+   "text": "这段话说的是工作出行吗？",
+   "calib": "trip",
+   "answer": {
+    "Noul": 0.03
+   }
+  },
+  {
+   "on": [
+    {
+     "kind": "review",
+     "about": "login()",
+     "opinion": "这段代码把用户输入直接拼进 SQL 语句，存在 SQL 注入风险，应改用参数化查询。"
+    }
+   ],
+   "op": "test",
+   "text": "这条评审意见是否指出了安全问题？",
+   "calib": "review",
+   "answer": {
+    "Noul": 0.98
+   }
+  },
+  {
+   "on": [
+    {
+     "kind": "review",
+     "about": "login()",
+     "opinion": "函数命名清楚，但缺少注释和错误处理。"
+    }
+   ],
+   "op": "test",
+   "text": "这条评审意见是否指出了安全问题？",
+   "calib": "review",
+   "answer": {
+    "Noul": 0.04
+   }
+  }
+ ],
+ "generations": [
+  {
+   "prompt": "请评审这段代码，指出问题。",
+   "retry_seq": 0,
+   "output": [
+    "这段代码把用户输入直接拼进 SQL 语句，存在 SQL 注入风险，应改用参数化查询。",
+    "函数命名清楚，但缺少注释和错误处理。"
+   ]
+  }
+ ]
+}

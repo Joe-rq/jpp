@@ -1,3 +1,4 @@
+mod calib_import;
 mod fixture;
 mod options;
 mod run_io;
@@ -12,6 +13,7 @@ fn execute(command: Command) -> Result<(), String> {
             println!("{HELP}");
             return Ok(());
         }
+        Command::CalibImport(a) => return calib_import::run(a),
         Command::Parse { source, .. } | Command::Check { source } => source,
         Command::Run(options) => &options.source,
     };

@@ -1,0 +1,14 @@
+// 契约值（B17 组合封闭性契约）的读法。每个构造（sieve / pair / tally / first_k / iterate / outcome）
+// 返回同一形状：{kind, value, pending, evidence, resume, spent, detail, purpose}。
+// 这些函数只是按字段取值，不改变任何责任：未决仍在 o.pending 里，要整体返回或交给下一个构造。
+
+// sieve 的接受流（产出）
+fn accepted(o) { o.value }
+// sieve 的忽略流（已决信息，在 detail 里）
+fn ignored(o) { o.detail.ignore }
+// 未决清单里真正判过、但拿不准的项
+fn undecided(o) { filter(o.pending, fn(p) { p.cause != "budget" }) }
+// 未决清单里因预算停止而没有观察到的项：Unsure(budget)
+fn unobserved(o) { filter(o.pending, fn(p) { p.cause == "budget" }) }
+// 停在半路的原因（没有则为 unit）
+fn stopped(o) { if has(o.resume, "detail") { o.resume.detail } else { unit } }

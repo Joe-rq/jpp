@@ -1,0 +1,34 @@
+// 题是一等值：由题式按填法生成题，题的字段可读、可作为数据流动（施工件 b，B1）。
+budget {calls: 12, cost: 0.01, depth: 256};
+
+let mention = form("test", "这段话是否提到了{city}？", {calib: "form-mention", presupposition: "这段话是中文叙述"});
+let listed = form("test", "清单里是否有{item}？", {calib: "form-listed"});
+
+fn describe(q: Question) -> Record {
+    {text: q.text, op: q.op, subject: q.subject, predicate: q.predicate, partition: q.partition,
+     request: q.request, presupposition: q.presupposition, template: q.template, fill: q.fill,
+     from_form: q.form != unit}
+}
+
+// 未决不丢：原因写出来，责任随返回值交给调用者（J-05）
+fn verdict(m: Mat, q: Question) !{judge} {
+    handle(cut(judge(state(m), q)), {
+        act: fn() { {answer: "是"} },
+        ignore: fn() { {answer: "否"} },
+        unsure: fn(u) { {answer: "未决", cause: unsure_cause(u), pending: u} }
+    })
+}
+
+let trip = mat("我上个月去了成都出差，顺便见了老朋友。");
+let cart = mat("购物清单：牛奶、面包、鸡蛋、苹果、酱油");
+
+let cities = ["成都", "北京", "上海", "杭州", "西安"];
+let items = ["面包", "酱油", "咖啡", "牛奶", "盐"];
+let city_questions = map(cities, fn(c) { fill(mention, {city: c}) });
+let item_questions = map(items, fn(i) { fill(listed, {item: i}) });
+
+{forms: [{template: mention.template, slots: mention.slots, partition: mention.partition, hash: mention.hash},
+         {template: listed.template, slots: listed.slots, partition: listed.partition, hash: listed.hash}],
+ first: describe(city_questions[0]),
+ trip: map(city_questions, fn(q) !{judge} { {asked: q.text, answer: verdict(trip, q)} }),
+ cart: map(item_questions, fn(q) !{judge} { {asked: q.text, answer: verdict(cart, q)} })}

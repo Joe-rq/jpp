@@ -1,0 +1,17 @@
+// 件 n：评审意见渲染为材料，再由判断器按题读（B18）。
+// 生成器（固定观察下是夹具里的一段评审）写出意见 → review_material 包成材料 → 三路过滤。
+import "../lib/outcome.jpp";
+import "../lib/materials.jpp";
+budget {calls: 6, cost: 0.01, depth: 256};
+
+let code = mat("def login(user, pw):\n    query = \"SELECT * FROM users WHERE name='\" + user + \"'\"\n    return db.execute(query)");
+let opinions = gen("请评审这段代码，指出问题。", [code], 2, 0);
+let reviews = map(opinions, fn(o) { review_material(o, "login()") });
+
+let security = test("这条评审意见是否指出了安全问题？", "review");
+let r = sieve(reviews, security);
+
+{taints: map(reviews, fn(m) { m.taint }),
+ security_flagged: map(accepted(r), fn(e) { e.index }),
+ not_flagged: map(ignored(r), fn(e) { e.index }),
+ unsure: r.pending}
