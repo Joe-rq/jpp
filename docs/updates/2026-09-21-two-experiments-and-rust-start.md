@@ -32,6 +32,27 @@ pre-registrations stay in the research workspace, and the write-ups are synced t
 > 直接写 FAIL 是同一条纪律。§3 的说法在写下时为真、此后被事实追上，节末加了一个带
 > 日期的「现状」块说明仓库里现在有什么。
 
+> **Second correction, 2026-09-21, later the same day.** The correction to §2
+> above replaced "permutation consistency 1.000 (74/74)" with "the real
+> measurement is 7 items (7/7 consistent; 8/8 counting items without ground
+> truth)". **That replacement number is itself wrong.** A direct count of
+> `foundation/experiments/raw/e_cal/readings.jsonl` shows all **97** `choice`-type
+> readings carry `mode_share = 1.0`, including every one of the **8** items that
+> took the native `choice` path with two genuinely independent permutations each
+> (`ans.phys == "choice"`, `perms: 2`) — not one of the 97 ever recorded
+> disagreement. The corrected count is **0**, not 7; see **Second correction to
+> §2** at the end of that section. Found while checking `Pick` in the Rust kernel
+> against the raw readings, not by re-reading this write-up.
+>
+> **二次更正（同日稍晚）。** 上面对 §2 的更正把「置换一致 1.000（74/74）」换成了
+> 「真测量只有 7 条（7/7 一致；含无真值条目 8/8）」。**这个替换后的数字本身也是
+> 错的。** 直接数一遍 `foundation/experiments/raw/e_cal/readings.jsonl`：全部
+> **97** 条 `choice` 类型读数的 `mode_share` 都是 1.0，包括全部 **8** 条真走了
+> 原生 `choice` 路径、各自独立置换两次的条目（`ans.phys == "choice"`、
+> `perms: 2`）——97 条里没有一条记录过分歧。更正后的数字是 **0**，不是 7；见该节
+> 末尾「§2 二次更正」。是在给 Rust 内核的 `Pick` 做检查、核对原始读数时发现的，
+> 不是重读本文发现的。
+
 ## 1. E9f-2b′ falsified: predicting an author's change requests is not decidable in one literal hop / E9f-2b′ 证伪：预测作者的修改要求，在一跳字面下不可判
 
 **Result: FAIL. The pre-registered falsification criterion fired and this scenario
@@ -259,6 +280,17 @@ but neither was confident are reported separately as a check arm
 | `score` | adjacent-band hit | 0.85 | **0.964** | PASS |
 | `score` | expected-band MAE | 0.5 | 0.553 | marginal FAIL |
 
+> **Scope added 2026-09-21.** The "all" column above is the both-models-agree
+> calibration set, not a random sample of the material (202/202 agreement
+> where ground truth exists, 77/95 where it does not) — every number in this
+> table is optimistically biased by an amount now measured for two of the
+> three question types. See
+> [`docs/updates/2026-09-21-scope-note-and-conformal-fail.md`](2026-09-21-scope-note-and-conformal-fail.md).
+> **范围补注（2026-09-21）**：上表「全体」栏是「两模型都同意」的校准集，不是材料的
+> 随机样本（有真值处一致率 202/202，无真值处 77/95）——表中每个数字都同向乐观有偏，
+> 偏多少现在对三种题型里的两种已经测出来了，见
+> [`docs/updates/2026-09-21-scope-note-and-conformal-fail.md`](2026-09-21-scope-note-and-conformal-fail.md)。
+
 **The `noul` reliability curve is monotone and close to the diagonal** (n = 73):
 0.15 → 0.00, 0.25 → 0.00, 0.55 → 0.54, 0.66 → 0.59, 0.74 → 0.74, 0.83 → 1.00. The
 falsification criterion — "ECE > 0.10 means the reading is ordinal only" — does
@@ -307,7 +339,9 @@ these keys have no entry in `calib.json` yet, and by J-03 a threshold may only
 come from a calibration record. Producing those records is what this run was for;
 they are stamped `label_source: 模型双标+人抽检`.
 
-**Why discrimination came in low, and what would make it right.**
+**Why discrimination came in low, and what would make it right.** *(The AUC/argmax/MAE
+numbers below carry the same 2026-09-21 scope note as the table above — see
+[`docs/updates/2026-09-21-scope-note-and-conformal-fail.md`](2026-09-21-scope-note-and-conformal-fail.md).)*
 
 1. `noul` AUC 0.748 rather than 0.85: the bet extrapolated from E9f code
    correctness, where truth is objective and literally visible. Here truth is
@@ -336,7 +370,10 @@ diffed line by line against v1 to confirm that everything removed came from
 evidence blocks. Without that assertion, those 28 items would have gone to Jev
 with stems that no longer matched their labels.
 
-**中文摘要。** ~~三条证伪判据一条都没触发~~ **（2026-09-21 更正：两条经检验未触发，
+**中文摘要。**〔**范围补注，2026-09-21**：下面「全体」栏是「两模型都同意」的校准集，
+不是随机样本，见
+[`docs/updates/2026-09-21-scope-note-and-conformal-fail.md`](2026-09-21-scope-note-and-conformal-fail.md)。〕
+~~三条证伪判据一条都没触发~~ **（2026-09-21 更正：两条经检验未触发，
 第三条「置换一致 < 0.75」没能被检验，见本节末「更正」）**，赌值只对了一半。真值是模型双标（Fable 与
 Opus 一致且至少一方高置信），所以「全体」栏只含有真值的条目：noul 73 / choice 74 /
 score 55；两模型一致但都非高置信的另列核对臂（21 / 20 / 36）。286 次调用、$0.0096。
@@ -375,13 +412,15 @@ both paths under one row.
 **Consequence 1 — permutation consistency was a tautology.** On the K-noul path
 the aggregation branch hard-codes `mode_share` to 1.0, and the permutation test
 is exactly `mode_share ≥ 1.0`. **67 of the 74 ground-truth items took that path**,
-so those 67 were guaranteed to "agree" before any model was called. The real
+so those 67 were guaranteed to "agree" before any model was called. ~~The real
 measurement is **7 items (7/7 consistent; 8/8 counting items without ground
-truth)**. A bet of 0.85 has no power at n = 7, and the pre-registered
+truth)**. A bet of 0.85 has no power at n = 7~~ ‡, and the pre-registered
 falsification criterion for this metric — "permutation consistency < 0.75 means
 first-position bias must be handled by a compiler pass that permutes and takes
-the majority" — did not fire on those 7 but was never evaluated at the scale it
-was written for.
+the majority" — ~~did not fire on those 7~~ ‡ was never given a single data point
+capable of making it fire, on the real path or the degenerate one, and was never
+evaluated at the scale it was written for. ‡ *(Both figures struck above are
+themselves wrong — see **Second correction to §2** below.)*
 
 **Consequence 2 — the first-position finding is void, not merely weak.**
 Per-candidate `noul` has no notion of position, so the 67 lowered items carry no
@@ -396,8 +435,12 @@ set.
 
 **What survives.** The `noul` results (ECE 0.057, monotone reliability curve),
 the `score` results (adjacent band 0.964) and every discrimination number
-(`noul` AUC 0.748, `choice` argmax 0.757, `score` MAE 0.553) are untouched, as is
-the effective-n finding (17–26, not 100). The scope sentence "the bias is a
+(`noul` AUC 0.748, `choice` argmax 0.757, `score` MAE 0.553) are untouched by
+*this* correction, as is the effective-n finding (17–26, not 100) — but see the
+scope note added 2026-09-21:
+[`docs/updates/2026-09-21-scope-note-and-conformal-fail.md`](2026-09-21-scope-note-and-conformal-fail.md),
+"untouched" describes this correction only, not the calibration set's
+selection bias. The scope sentence "the bias is a
 property of the key, not of the question type" still stands on its own terms;
 this run did not test it. The proposal that the permute-and-vote pass should be
 switched **per key** also stands, but its justification changes: the basis is now
@@ -415,20 +458,99 @@ key spanning two physical forms makes the meaning of its threshold ambiguous.
 K_max = 4」档，被编译器下沉成**逐候选 noul**（每候选一道 noul，取 argmax），而汇总表
 把两条路的数字并在一行里报。后果一：K-noul 的 `mode_share` 被聚合分支写死为 1.0，而
 「置换一致」的判据就是 `mode_share ≥ 1.0`——**74 条有真值条目里 67 条走这条路**，在调
-模型之前就注定「一致」。真测量只有 **7 条（7/7；含无真值条目 8/8）**，赌值 0.85 在
-n = 7 上没有检验力；预注册里「置换一致 < 0.75 → 首位偏置必须由编译器置换取众数」这条
-证伪判据在那 7 条上没触发，但从未在它被写成的规模上得到检验。后果二：**首位偏置那条
+模型之前就注定「一致」。~~真测量只有 7 条（7/7；含无真值条目 8/8），赌值 0.85 在
+n = 7 上没有检验力~~‡；预注册里「置换一致 < 0.75 → 首位偏置必须由编译器置换取众数」这条
+证伪判据~~在那 7 条上没触发~~‡，从未拿到过任何一个真能让它触发的数据点——不论走的是
+真路径还是退化路径，也从未在它被写成的规模上得到检验。‡ **（以上两处「7」本身也是
+错的，见本节末「§2 二次更正」。）** 后果二：**首位偏置那条
 直接无效**——逐候选 noul 根本没有「位置」，那 67 条不含位置信息，8.1 % 与 12.2 % 是把
 两条不可比的路混在一起算的；在唯一真跑了 choice 的 8 条上，**首位被选 3/8，真值首位
 1/8，方向反而朝着有偏置**。n = 8 只能说「本次不支持无偏置」，不能反向断言；要真判中文
 长候选 select 的偏置，得先补 `k_limit` 的 120–250 档，或在题集里强制 `phys="choice"`。
 **没受影响的**：noul（ECE 0.057、曲线单调）、score（相邻 0.964）、全部判别力数字
 （noul AUC 0.748、choice argmax 0.757、score MAE 0.553）与「有效 n 17–26 而非 100」。
+**「没受影响」说的只是这次更正，不是校准集的选择偏倚**——范围补注见 2026-09-21
+[`docs/updates/2026-09-21-scope-note-and-conformal-fail.md`](2026-09-21-scope-note-and-conformal-fail.md)。
 「偏置是键的性质不是题型的性质」这句本身仍成立，只是本次没有检验它；「置换取众数按键
 开关」的提议也仍成立，但依据改为「该键实测的置换一致率，没有这个数就保守开」。这件事
 本身是一个发现：同一个 `select` 在同一批材料上走了两种物理形式，而汇总指标把两条路的
 数字混着报。已记两条内核缺口：K-noul 的 `mode_share` 恒 1.0 让一切置换类指标变成恒真
 项；同一校准键横跨两种物理形式会让线的含义不同。
+
+### Second correction to §2 (2026-09-21, later the same day): the corrected count of 7 was itself wrong / §2 二次更正：更正后的「7」本身也是错的
+
+Found while checking `Pick` in the Rust kernel against the raw readings, not by
+re-reading this write-up.
+
+**What the first correction got right and what it got wrong.** It correctly
+identified that the K-noul path's `mode_share` is hard-coded to `1.0`
+(`foundation/jv/runtime.py:1080`) and is therefore a tautology, and it correctly
+separated that from the native `choice` path, whose `mode_share` is genuinely
+computed as `Counter(picks).most_common(1)[0][1] / len(picks)`
+(`runtime.py:1069-1070`) over `perms = 2` independently ordered runs — a value
+that could have come out at 0.5 had the two permutations disagreed. What it got
+wrong is the count: it reported this genuine computation as "7 items (7/7
+consistent; 8/8 counting items without ground truth)".
+
+**A direct count of `foundation/experiments/raw/e_cal/readings.jsonl` shows
+something stronger.** All **97** `choice`-type readings in the file — not just
+the 74 that have ground truth — carry `mode_share = 1.0`. That includes every
+one of the **8** items whose `ans.phys` is `choice` (the native path, each with
+`perms: 2`). Zero of the 97, real or tautological, ever recorded a value below
+1.0. The pre-registered falsification criterion for this metric — "permutation
+consistency < 0.75" — was therefore never given a single data point capable of
+making it fire, on the real path or the degenerate one. A count of "7 real
+measurements, 7/7 consistent" describes a test that came in just short of its
+bet; a count of "0" describes a test this dataset was never able to run at all.
+The corrected report should say the latter, not the former: **the third
+falsification criterion was pre-registered and never once evaluated on any item
+in this experiment**, and the 0.85 bet against it was uncontested by data rather
+than narrowly missed by it.
+
+**The correction that made this mistake was itself a correction about exactly
+this failure mode.** The paragraph it corrected exists to say "a hard-coded 1.0
+is not a measurement" — and it then reported eight genuinely-computed 1.0 values
+as if counting them settled the question, without checking that those eight also
+sit at the one value the criterion can never distinguish from "untested". The
+eight readings were printed in the same recheck's own output; nobody had to
+re-run anything to catch this, only to read the printout past the ground-truth
+filter.
+
+**What survives.** Every other number in §2 — the `noul` and `score` results,
+the discrimination figures, the effective-*n* finding — is untouched by *this*
+correction (see the 2026-09-21 scope note on the calibration set's selection
+bias:
+[`docs/updates/2026-09-21-scope-note-and-conformal-fail.md`](2026-09-21-scope-note-and-conformal-fail.md)).
+The scope
+statement "the bias is a property of the key, not of the question type" still
+stands and this run still does not test it.
+
+**中文摘要。** 在给 Rust 内核的 `Pick` 做检查、核对原始读数时发现，不是重读本文
+发现的。**第一次更正对的地方与错的地方**：它正确指出 K-noul 路径的 `mode_share`
+是硬编码的 1.0（`foundation/jv/runtime.py:1080`），因此是恒真项；也正确把它与原生
+`choice` 路径区分开——原生路径的 `mode_share` 是真算出来的，
+`Counter(picks).most_common(1)[0][1] / len(picks)`（`runtime.py:1069-1070`），
+基于 `perms = 2` 次独立排序的真跑，若两次置换不一致，这个值本可以是 0.5。它错的
+地方是数目：把这个真计算的结果报成了「7 条（7/7 一致；含无真值条目 8/8）」。
+**直接数一遍 `foundation/experiments/raw/e_cal/readings.jsonl` 得到更强的结论**：
+文件里全部 **97** 条 `choice` 类型读数——不只是有真值的 74 条——`mode_share` 都是
+1.0，包括全部 **8** 条 `ans.phys` 为 `choice`（原生路径，每条 `perms: 2`）的
+条目。97 条里，真跑的也好、恒真的也好，没有一条记录过低于 1.0 的值。预注册的第
+三条证伪判据「置换一致 < 0.75」因此从未拿到过任何一个能让它触发的数据点——不论
+走的是真路径还是退化路径。「7 条真测量，7/7 一致」描述的是一次差一点没过判据的
+检验；「0」描述的是一次这批数据从未能真正跑起来的检验。更正应该写后者，不是
+前者：**第三条证伪判据预注册了，但在本实验里没有在任何一条条目上被真正评估过**，
+赌值 0.85 不是「小幅未达标」，而是从未遇到过对手数据。**犯这次错的更正，本身就是
+在讲同一种失效方式的更正**——它更正的那段话存在的意义正是「硬编码的 1.0 不是
+测量」，而它接着把 8 个真算出来的 1.0 值当成数出来就算数了，没有再检查这 8 个值
+同样落在「和未测无法区分」的唯一那个值上。这 8 条读数当时就打印在同一次核查的
+输出里，不需要重跑任何东西才能抓到这一点，只需要把打印结果看过真值过滤那一步
+之后再往下看一眼。**没受影响的部分**：§2 其余全部数字——`noul` 与 `score` 的结果、
+判别力数字、有效 n 的发现——就本次更正而言都不受影响；**校准集本身的选择偏倚是另一条
+限定**，见 2026-09-21 范围补注
+[`docs/updates/2026-09-21-scope-note-and-conformal-fail.md`](2026-09-21-scope-note-and-conformal-fail.md)。
+「偏置是键的性质、不是题型的性质」这句
+适用范围的话仍然成立，本次仍然没有检验它。
 
 ## 3. The formal kernel moves to Rust; no Rust source is public yet / 正式内核转 Rust；Rust 源码尚未公开
 
@@ -538,6 +660,18 @@ approved to run. Nothing under `src/` changed.
 **E-LABCONF**（标注者置信作为免费难度预测器）与 **E9f-2c**（把 2b′ 那道题重新问成对人
 的预测，作者历史要求作 `ref` 锚）两份预注册——都写在开跑之前，E9f-2c 尚未获批开跑。
 `src/` 下未改动。
+
+**二次更正再同步（2026-09-21，同日稍晚）。** §2「二次更正」小节写在本页与
+`前提结论.md`（同一处「E-CAL 正式版」一节），随本轮内核进展一并同步；细节与
+更完整的内核进展见
+[`docs/updates/2026-09-21-second-correction-and-kernel-progress.md`](2026-09-21-second-correction-and-kernel-progress.md)。
+`src/` 下仍未改动。
+
+**Second correction re-sync (2026-09-21, later the same day).** The §2 "Second
+correction" subsection is written here and in `前提结论.md` (same "E-CAL 正式版"
+section) and synced alongside this round's kernel progress; see
+[`docs/updates/2026-09-21-second-correction-and-kernel-progress.md`](2026-09-21-second-correction-and-kernel-progress.md)
+for the fuller picture. Nothing under `src/` changed.
 
 ## Verification in this repository / 本仓库验证
 

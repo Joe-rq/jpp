@@ -19,7 +19,11 @@ fn write_json<T: Serialize>(path: &Path, value: &T) -> Result<(), String> {
     fs::write(path, bytes).map_err(|e| format!("{}: {e}", path.display()))
 }
 
-pub fn run_checked(program: &Program, options: &RunOptions, source: &str) -> Result<(), String> {
+pub fn run_checked(
+    program: &Program,
+    options: &RunOptions,
+    loaded: &jpp_frontend::loader::LoadedProgram,
+) -> Result<(), String> {
     let (mut client, calibrations, description) = match &options.fixtures {
         Some(path) => {
             let fixture: Fixture = read_json(path)?;
@@ -30,15 +34,15 @@ pub fn run_checked(program: &Program, options: &RunOptions, source: &str) -> Res
         }
         None => (FixedClient::new(), CalibStore::new(), None),
     };
-    let mut ledger = match &options.replay {
+    let mut ledger = match options.replay.as_ref().or(options.resume.as_ref()) {
         Some(path) => read_json::<Ledger>(path)?,
         None => Ledger::new(),
     };
     ledger.rebuild_index();
     let result = if options.replay.is_some() {
-        runner::execute(program, &mut NoCallClient, &calibrations, &mut ledger)
+        runner::execute(program, &mut NoCallClient, &calibrations, &mut ledger, true)
     } else {
-        runner::execute(program, &mut client, &calibrations, &mut ledger)
+        runner::execute(program, &mut client, &calibrations, &mut ledger, false)
     };
     // Preserve any completed effects even when execution ends in a runtime error.
     if let Some(path) = &options.ledger_out {
@@ -52,14 +56,13 @@ pub fn run_checked(program: &Program, options: &RunOptions, source: &str) -> Res
                     .diagnostics
                     .iter()
                     .map(|d| {
-                        jpp_frontend::Diagnostic::new(
+                        loaded.render(&jpp_frontend::Diagnostic::new(
                             format!("{}: {}", d.rule, d.message),
                             jpp_frontend::ast::Span {
                                 start: d.span.start,
                                 end: d.span.end,
                             },
-                        )
-                        .render(&options.source.to_string_lossy(), source)
+                        ))
                     })
                     .collect::<Vec<_>>()
                     .join("\n");
@@ -75,14 +78,15 @@ pub fn run_checked(program: &Program, options: &RunOptions, source: &str) -> Res
                 end: e.span.end,
             },
         );
-        diagnostic.render(&options.source.to_string_lossy(), source)
+        loaded.render(&diagnostic)
     })?;
     report["fixture_description"] = serde_json::json!(description);
     report["replay"] = serde_json::json!(options.replay.is_some());
+    report["resumed"] = serde_json::json!(options.resume.is_some());
     if let Some(path) = &options.output {
         write_json(path, &report)?;
         println!(
-            "{}: {} (new judgment calls: {}); report: {}",
+            "{}: {} (new model calls: {}); report: {}",
             options.source.display(),
             report["status"].as_str().unwrap_or("unknown"),
             report["cost"]["calls"],

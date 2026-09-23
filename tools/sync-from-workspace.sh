@@ -118,6 +118,12 @@ done
 for f in EXPERIMENTS.md 前提结论.md E9f-设计.md; do
   [ -f "$WS/foundation/experiments/$f" ] && cp "$WS/foundation/experiments/$f" "$R/地基/foundation/experiments/$f"
 done
+# conformal-proto/：独立原型 crate（不进 rust-jpp 的 workspace），全量同步；
+# 排除 target/（构建产物）与 Cargo.lock（该 crate 是库不是二进制，不锁版本，见其 .gitignore）。
+if [ -d "$WS/foundation/experiments/conformal-proto" ]; then
+  $RS --delete --exclude target --exclude Cargo.lock \
+    "$WS/foundation/experiments/conformal-proto/" "$R/地基/foundation/experiments/conformal-proto/"
+fi
 cp "$WS/foundation/profile/SCHEMA.md" "$R/地基/foundation/profile-SCHEMA.md" 2>/dev/null || true
 for f in README.md RESULTS.md; do cp "$WS/扩展/codex_composition/$f" "$R/扩展/codex_composition/"; done
 

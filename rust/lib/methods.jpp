@@ -1,0 +1,11 @@
+// Higher-order helpers infer their effects at each call site.
+fn compose_methods(first, second) {
+    fn(value) { second(first(value)) }
+}
+
+fn apply_method(value, method) { method(value) }
+
+// A pure, explicitly typed method contract.
+fn map_ints(values: List<Int>, method: Fn(Int) -!{}-> Int) -> List<Int> !{} {
+    map(values, method)
+}

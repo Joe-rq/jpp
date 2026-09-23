@@ -81,4 +81,8 @@ fn nested_method_composition_matches_direct_core_construction() {
     let result = execute(&lowered);
     assert_eq!(result, execute(&direct));
     assert_eq!(result, r#"{"expected":43,"result":43}"#);
+    let typed_source = include_str!("../../../examples/composition.jpp")
+        .replace("Fn(Int) -> Int", "Fn(Int) -!{}-> Int");
+    let typed = jpp_frontend::lower(&jpp_frontend::parse(&typed_source).unwrap()).unwrap();
+    assert_eq!(execute(&typed), execute(&direct));
 }

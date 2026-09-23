@@ -32,11 +32,7 @@ fn candidate(name: &str, cost: i64, skills: &[&str]) -> Json {
 
 fn seed_test(client: &mut FixedClient, on: Json, p: f64) {
     let state = State::new(vec![Mat::literal(on)], vec![], vec![], vec![], false);
-    client.observe(
-        &state,
-        &Question::new(Op::Test, ASK, ACCEPT, vec![]),
-        Answer::Noul(p),
-    );
+    client.observe(&state, &Question::new(Op::Test, ASK, ACCEPT, vec![]), Answer::Noul(p));
 }
 
 fn fixed_client() -> FixedClient {
@@ -53,28 +49,15 @@ fn fixed_client() -> FixedClient {
         0.97,
     );
     // 第三轮：D 换成分档题 + 另一套校准。同一份材料、换一道题，仍是新的观察身份
-    let state = State::new(
-        vec![Mat::literal(candidate("D", 20, &["web"]))],
-        vec![],
-        vec![],
-        vec![],
-        false,
-    );
-    let question = Question::new(
-        Op::Measure,
-        GRADE,
-        CONF,
-        LEVELS.iter().map(|s| s.to_string()).collect(),
-    );
+    let state = State::new(vec![Mat::literal(candidate("D", 20, &["web"]))], vec![], vec![], vec![], false);
+    let question = Question::new(Op::Measure, GRADE, CONF, LEVELS.iter().map(|s| s.to_string()).collect());
     client.observe(&state, &question, Answer::Score(vec![0.85, 0.10, 0.05]));
     client
 }
 
 fn calibrations() -> CalibStore {
     let mut calib = CalibStore::new();
-    calib
-        .put(ACCEPT, 0.8, 0.2, 150, "上岗")
-        .expect("校准记录合法");
+    calib.put(ACCEPT, 0.8, 0.2, 150, "上岗").expect("校准记录合法");
     calib.put(CONF, 0.7, 0.3, 90, "上岗").expect("校准记录合法");
     calib
 }
@@ -505,11 +488,16 @@ fn partial_program() -> Program {
                                                         ),
                                                         (
                                                             "unsure",
+                                                            // 未决责任要带着走，不能只写一句 pending 就算完
                                                             lambda(
-                                                                &["cause"],
+                                                                &["u"],
                                                                 body(
                                                                     vec![],
-                                                                    rec(vec![("cand", name("c")), ("status", text("pending"))]),
+                                                                    rec(vec![
+                                                                        ("cand", name("c")),
+                                                                        ("status", text("pending")),
+                                                                        ("待办", name("u")),
+                                                                    ]),
                                                                 ),
                                                             ),
                                                         ),
@@ -573,14 +561,8 @@ fn 部分候选先交付再续解() {
     let log = Rc::new(RefCell::new(Vec::new()));
     let mut client = fixed_client();
     let mut ledger = Ledger::new();
-    let outcome = run(
-        &program,
-        &mut client,
-        &calibrations(),
-        &actions(log.clone()),
-        &mut ledger,
-    )
-    .unwrap_or_else(|e| panic!("程序应当跑完：{}", e.render()));
+    let outcome = run(&program, &mut client, &calibrations(), &actions(log.clone()), &mut ledger)
+        .unwrap_or_else(|e| panic!("程序应当跑完：{}", e.render()));
 
     assert_eq!(
         outcome.value_json(),
@@ -591,30 +573,15 @@ fn 部分候选先交付再续解() {
             "done": true
         })
     );
-    assert!(
-        outcome.pending.is_empty(),
-        "程序没有被挂起：未决是算法的返回值，不是程序级出口"
-    );
+    assert!(outcome.pending.is_empty(), "程序没有被挂起：未决是算法的返回值，不是程序级出口");
     assert_eq!(client.log.len(), 6, "六次固定观察");
     assert_eq!(outcome.cost.calls, 6);
     assert_eq!(outcome.trace.count("judge", false), 6);
-    assert_eq!(
-        log.borrow().len(),
-        3,
-        "三次本地检查：A、B 各一次，C 补材料后一次"
-    );
+    assert_eq!(log.borrow().len(), 3, "三次本地检查：A、B 各一次，C 补材料后一次");
     assert_eq!(outcome.trace.count("do", false), 3);
-    assert_eq!(
-        outcome.trace.count("transform", false),
-        1,
-        "只给 C 补了材料"
-    );
+    assert_eq!(outcome.trace.count("transform", false), 1, "只给 C 补了材料");
     assert_eq!(outcome.cost.replayed, 0, "第一次跑没有旧账本可重放");
-    assert!(
-        outcome.trace.warnings.is_empty(),
-        "不该有 W-bound / W-header：{:?}",
-        outcome.trace.warnings
-    );
+    assert!(outcome.trace.warnings.is_empty(), "不该有 W-bound / W-header：{:?}", outcome.trace.warnings);
 
     // 旧检查不重做：三条 do 记录的键互不相同，A、B 的那两条在后两轮没有再出现
     let keys: Vec<&str> = ledger
@@ -626,16 +593,8 @@ fn 部分候选先交付再续解() {
         })
         .collect();
     assert_eq!(keys.len(), 3);
-    assert_eq!(
-        keys.iter().collect::<std::collections::HashSet<_>>().len(),
-        3,
-        "三条检查是三个不同的账本键"
-    );
-    let names: Vec<String> = log
-        .borrow()
-        .iter()
-        .map(|v| v["name"].as_str().unwrap_or("?").to_string())
-        .collect();
+    assert_eq!(keys.iter().collect::<std::collections::HashSet<_>>().len(), 3, "三条检查是三个不同的账本键");
+    let names: Vec<String> = log.borrow().iter().map(|v| v["name"].as_str().unwrap_or("?").to_string()).collect();
     assert_eq!(names, vec!["A", "B", "C"]);
 }
 
@@ -645,39 +604,46 @@ fn 部分候选程序重放零调用() {
     let log = Rc::new(RefCell::new(Vec::new()));
     let mut client = fixed_client();
     let mut ledger = Ledger::new();
-    let first = run(
-        &program,
-        &mut client,
-        &calibrations(),
-        &actions(log.clone()),
-        &mut ledger,
-    )
-    .expect("首跑");
+    let first = run(&program, &mut client, &calibrations(), &actions(log.clone()), &mut ledger).expect("首跑");
 
     let replay_log = Rc::new(RefCell::new(Vec::new()));
     let mut replay = NoCallClient;
-    let again = run(
-        &program,
-        &mut replay,
-        &calibrations(),
-        &actions(replay_log.clone()),
-        &mut ledger,
-    )
-    .unwrap_or_else(|e| panic!("重放不该发调用：{}", e.render()));
+    let again = run(&program, &mut replay, &calibrations(), &actions(replay_log.clone()), &mut ledger)
+        .unwrap_or_else(|e| panic!("重放不该发调用：{}", e.render()));
 
     assert_eq!(again.value_json(), first.value_json());
     assert_eq!(again.cost.calls, 0, "重放零调用");
-    assert_eq!(
-        again.cost.replayed, 10,
-        "6 次判断 + 3 次动作 + 1 次变换全部命中账本"
-    );
-    assert!(
-        replay_log.borrow().is_empty(),
-        "重放不重新执行动作，只取账本里的输出"
-    );
-    assert!(
-        again.trace.warnings.is_empty(),
-        "{:?}",
-        again.trace.warnings
-    );
+    assert_eq!(again.cost.replayed, 10, "6 次判断 + 3 次动作 + 1 次变换全部命中账本");
+    assert!(replay_log.borrow().is_empty(), "重放不重新执行动作，只取账本里的输出");
+    assert!(again.trace.warnings.is_empty(), "{:?}", again.trace.warnings);
+}
+
+/// 错的效应标注要拦得住：两条策略方法都是经 `packet` 里的方法值间接被调用的。
+#[test]
+fn 错的效应标注拦得住() {
+    let program = partial_program();
+    let cases: [(&str, &[&str]); 5] = [
+        ("supplement", &["judge", "do"]),
+        ("grade", &["judge"]),
+        ("first_round", &["judge", "do"]),
+        ("record_all", &["do"]),
+        ("screen", &["judge"]),
+    ];
+    for (name, real) in cases {
+        let (bad, at) = with_effects(&program, name, &[]);
+        let report = jpp_core::check(&bad);
+        let d = report
+            .diagnostics
+            .iter()
+            .find(|d| d.rule == "E-effect" && d.message.starts_with(name))
+            .unwrap_or_else(|| panic!("{name} 标成 !{{}} 应当报 E-effect：\n{}", report.render()));
+        assert_eq!(d.span, at, "位置要指着 {name} 的定义");
+        for effect in real {
+            assert!(d.message.contains(effect), "{name} 应当报出少了 {effect}：{}", d.message);
+        }
+
+        let (good, _) = with_effects(&program, name, real);
+        let report = jpp_core::check(&good);
+        assert!(report.is_ok(), "{name} 标对了不该被报：{}", report.render());
+    }
 }

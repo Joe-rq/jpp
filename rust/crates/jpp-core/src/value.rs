@@ -32,10 +32,7 @@ pub fn canon(j: &Json) -> String {
         Json::Object(m) => {
             let mut keys: Vec<_> = m.keys().collect();
             keys.sort();
-            let inner: Vec<String> = keys
-                .iter()
-                .map(|k| format!("{}:{}", serde_json::to_string(k).unwrap(), canon(&m[*k])))
-                .collect();
+            let inner: Vec<String> = keys.iter().map(|k| format!("{}:{}", serde_json::to_string(k).unwrap(), canon(&m[*k]))).collect();
             format!("{{{}}}", inner.join(","))
         }
         Json::Array(a) => format!("[{}]", a.iter().map(canon).collect::<Vec<_>>().join(",")),
@@ -51,11 +48,7 @@ pub enum Taint {
 
 impl Taint {
     pub fn join(a: Taint, b: Taint) -> Taint {
-        if a == Taint::Untrusted || b == Taint::Untrusted {
-            Taint::Untrusted
-        } else {
-            Taint::Trusted
-        }
+        if a == Taint::Untrusted || b == Taint::Untrusted { Taint::Untrusted } else { Taint::Trusted }
     }
 }
 
@@ -74,32 +67,12 @@ pub struct Mat {
 }
 
 impl Mat {
-    pub fn new(
-        content: Json,
-        addr: &str,
-        origin: Vec<String>,
-        taint: Taint,
-        derived_from: BTreeSet<String>,
-    ) -> Mat {
+    pub fn new(content: Json, addr: &str, origin: Vec<String>, taint: Taint, derived_from: BTreeSet<String>) -> Mat {
         let hash = hash_of(&["mat", &canon(&content), addr]);
-        Mat {
-            content,
-            addr: addr.to_string(),
-            modality: "text".into(),
-            origin,
-            taint,
-            derived_from,
-            hash,
-        }
+        Mat { content, addr: addr.to_string(), modality: "text".into(), origin, taint, derived_from, hash }
     }
     pub fn literal(content: Json) -> Mat {
-        Mat::new(
-            content,
-            "",
-            vec!["literal".into()],
-            Taint::Trusted,
-            BTreeSet::new(),
-        )
+        Mat::new(content, "", vec!["literal".into()], Taint::Trusted, BTreeSet::new())
     }
     pub fn text(&self) -> String {
         match &self.content {
@@ -140,13 +113,7 @@ pub struct Question {
 impl Question {
     pub fn new(op: Op, text: &str, calib: &str, scale: Vec<String>) -> Question {
         let hash = hash_of(&["q", op.phys(), text, &scale.join("\u{1e}")]);
-        Question {
-            op,
-            text: text.to_string(),
-            calib: calib.to_string(),
-            scale,
-            hash,
-        }
+        Question { op, text: text.to_string(), calib: calib.to_string(), scale, hash }
     }
 }
 
@@ -165,13 +132,7 @@ pub struct State {
 }
 
 impl State {
-    pub fn new(
-        on: Vec<Mat>,
-        ctx: Vec<Mat>,
-        r#ref: Vec<Mat>,
-        over: Vec<Mat>,
-        has_fail: bool,
-    ) -> State {
+    pub fn new(on: Vec<Mat>, ctx: Vec<Mat>, r#ref: Vec<Mat>, over: Vec<Mat>, has_fail: bool) -> State {
         let all = on.iter().chain(&ctx).chain(&r#ref).chain(&over);
         let mut taint = Taint::Trusted;
         let mut derived = BTreeSet::new();
@@ -179,16 +140,7 @@ impl State {
             taint = Taint::join(taint, m.taint);
             derived.extend(m.derived_from.iter().cloned());
         }
-        let mut s = State {
-            on,
-            ctx,
-            r#ref,
-            over,
-            taint,
-            derived_from: derived,
-            hash: String::new(),
-            has_fail,
-        };
+        let mut s = State { on, ctx, r#ref, over, taint, derived_from: derived, hash: String::new(), has_fail };
         s.hash = hash_of(&["state", &canon(&s.to_json())]);
         s
     }
@@ -196,14 +148,7 @@ impl State {
     pub fn to_json(&self) -> Json {
         let m = |v: &Vec<Mat>| Json::Array(v.iter().map(|x| x.content.clone()).collect());
         let mut o = serde_json::Map::new();
-        o.insert(
-            "on".into(),
-            if self.on.len() == 1 {
-                self.on[0].content.clone()
-            } else {
-                m(&self.on)
-            },
-        );
+        o.insert("on".into(), if self.on.len() == 1 { self.on[0].content.clone() } else { m(&self.on) });
         if !self.ctx.is_empty() {
             o.insert("ctx".into(), m(&self.ctx));
         }
@@ -269,6 +214,13 @@ impl Exit {
     pub fn is_unsure(&self) -> bool {
         matches!(self.kind, ExitKind::Unsure(_))
     }
+    /// 未决的原因（`band` / `cold` / `tie` / `fail:…`）。读取不转移责任。
+    pub fn cause(&self) -> String {
+        match &self.kind {
+            ExitKind::Unsure(c) => c.clone(),
+            other => format!("{other:?}"),
+        }
+    }
     pub fn label(&self) -> String {
         match &self.kind {
             ExitKind::Act => "act".into(),
@@ -297,16 +249,10 @@ pub struct EnvNode {
 pub type Env = Rc<EnvNode>;
 
 pub fn env_root() -> Env {
-    Rc::new(EnvNode {
-        vars: RefCell::new(vec![]),
-        parent: None,
-    })
+    Rc::new(EnvNode { vars: RefCell::new(vec![]), parent: None })
 }
 pub fn env_child(parent: &Env) -> Env {
-    Rc::new(EnvNode {
-        vars: RefCell::new(vec![]),
-        parent: Some(parent.clone()),
-    })
+    Rc::new(EnvNode { vars: RefCell::new(vec![]), parent: Some(parent.clone()) })
 }
 pub fn env_lookup(env: &Env, name: &str) -> Option<Value> {
     let mut cur = Some(env.clone());
@@ -358,6 +304,9 @@ pub enum Value {
     Question(Rc<Question>),
     Reading(Rc<Reading>),
     Exit(Rc<Exit>),
+    /// 未决责任 `U(q)`：`handle` 的 unsure 臂收到的就是它。不可伪造（只能由 handle 交付）、
+    /// 不能默默变成材料或 JSON 就算销账。与出口共享同一个 `Rc<Exit>`，销账记录是同一份。
+    Duty(Rc<Exit>),
     /// `do` 的失败值（J-12）
     Fail(Rc<str>),
     /// `stop(v)`：有界循环的显式停止
@@ -390,6 +339,7 @@ impl Value {
             Value::Question(_) => "Question",
             Value::Reading(_) => "Reading",
             Value::Exit(_) => "Exit",
+            Value::Duty(_) => "Unsure",
             Value::Fail(_) => "Fail",
             Value::Stop(_) => "Stop",
         }
@@ -416,23 +366,14 @@ impl Value {
                 }
                 Json::Object(m)
             }
-            Value::Fn(c) => {
-                json!({"fn": c.name, "params": c.function.parameters.iter().map(|p| p.name.clone()).collect::<Vec<_>>(), "env": env_names(&c.env), "hash": c.hash})
-            }
+            Value::Fn(c) => json!({"fn": c.name, "params": c.function.parameters.iter().map(|p| p.name.clone()).collect::<Vec<_>>(), "env": env_names(&c.env), "hash": c.hash}),
             Value::Builtin(n) => json!({"builtin": n}),
-            Value::Mat(m) => {
-                json!({"mat": m.hash, "content": m.content, "taint": m.taint, "origin": m.origin})
-            }
+            Value::Mat(m) => json!({"mat": m.hash, "content": m.content, "taint": m.taint, "origin": m.origin}),
             Value::State(s) => json!({"state": s.hash, "slots": s.to_json(), "taint": s.taint}),
-            Value::Question(q) => {
-                json!({"question": q.hash, "op": q.op.phys(), "text": q.text, "calib": q.calib})
-            }
-            Value::Reading(r) => {
-                json!({"reading": r.ledger_key, "q": r.q_hash, "state": r.state_hash, "op": r.op.phys()})
-            }
-            Value::Exit(e) => {
-                json!({"exit": e.label(), "id": e.id, "consumed": e.consumed.get(), "q": e.q_hash})
-            }
+            Value::Question(q) => json!({"question": q.hash, "op": q.op.phys(), "text": q.text, "calib": q.calib}),
+            Value::Reading(r) => json!({"reading": r.ledger_key, "q": r.q_hash, "state": r.state_hash, "op": r.op.phys()}),
+            Value::Exit(e) => json!({"exit": e.label(), "id": e.id, "consumed": e.consumed.get(), "q": e.q_hash}),
+            Value::Duty(e) => json!({"unsure": e.cause(), "duty": e.id, "q": e.q_hash}),
             Value::Fail(s) => json!({"fail": s.as_ref()}),
             Value::Stop(v) => json!({"stop": v.to_json()}),
         }
@@ -444,28 +385,19 @@ impl Value {
             (Value::Unit, Value::Unit) => true,
             (Value::Int(a), Value::Int(b)) => a == b,
             (Value::Float(a), Value::Float(b)) => a == b,
-            (Value::Int(a), Value::Float(b)) | (Value::Float(b), Value::Int(a)) => {
-                (*a as f64) == *b
-            }
+            (Value::Int(a), Value::Float(b)) | (Value::Float(b), Value::Int(a)) => (*a as f64) == *b,
             (Value::Bool(a), Value::Bool(b)) => a == b,
             (Value::Text(a), Value::Text(b)) => a == b,
-            (Value::List(a), Value::List(b)) => {
-                a.len() == b.len()
-                    && a.iter()
-                        .zip(b.iter())
-                        .all(|(x, y)| x.equals(y) == Some(true))
-            }
+            (Value::List(a), Value::List(b)) => a.len() == b.len() && a.iter().zip(b.iter()).all(|(x, y)| x.equals(y) == Some(true)),
             (Value::Record(a), Value::Record(b)) => {
-                a.len() == b.len()
-                    && a.iter().all(|(k, v)| {
-                        b.iter()
-                            .any(|(k2, v2)| k == k2 && v.equals(v2) == Some(true))
-                    })
+                a.len() == b.len() && a.iter().all(|(k, v)| b.iter().any(|(k2, v2)| k == k2 && v.equals(v2) == Some(true)))
             }
             (Value::Mat(a), Value::Mat(b)) => a.hash == b.hash,
             (Value::State(a), Value::State(b)) => a.hash == b.hash,
             (Value::Question(a), Value::Question(b)) => a.hash == b.hash,
             (Value::Exit(a), Value::Exit(b)) => a.kind == b.kind,
+            // 责任按身份比：同一道题的两个未决是两份责任
+            (Value::Duty(a), Value::Duty(b)) => a.id == b.id,
             (Value::Fn(a), Value::Fn(b)) => a.hash == b.hash,
             (Value::Builtin(a), Value::Builtin(b)) => a == b,
             (Value::Fail(a), Value::Fail(b)) => a == b,

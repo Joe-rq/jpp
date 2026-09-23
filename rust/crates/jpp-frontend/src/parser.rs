@@ -5,10 +5,12 @@ use crate::{
 };
 
 pub fn parse(source: &str) -> Result<Program, Diagnostic> {
-    let mut parser = Parser {
-        tokens: lexer::lex(source)?,
-        cursor: 0,
-    };
+    parse_tokens(lexer::lex(source)?)
+}
+
+pub(crate) fn parse_tokens(tokens: Vec<Token>) -> Result<Program, Diagnostic> {
+    let start = tokens.first().map_or(0, |t| t.span.start);
+    let mut parser = Parser { tokens, cursor: 0 };
     let budget = if parser.eat("budget") {
         let budget = parser.expr(0)?;
         parser.expect(";")?;
@@ -16,7 +18,7 @@ pub fn parse(source: &str) -> Result<Program, Diagnostic> {
     } else {
         None
     };
-    let body = parser.body(false, 0)?;
+    let body = parser.body(false, start)?;
     Ok(Program { budget, body })
 }
 
@@ -73,7 +75,7 @@ impl Parser {
     }
     fn ty(&mut self) -> Result<Type, Diagnostic> {
         let name = self.name()?;
-        if name == "Fn" && self.eat("(") {
+        if (name == "Fn" || name == "Fn1") && self.eat("(") {
             let mut inputs = Vec::new();
             if !self.eat(")") {
                 loop {
@@ -84,8 +86,24 @@ impl Parser {
                     self.expect(",")?;
                 }
             }
+            let effects = if self.eat("-") {
+                self.expect("!")?;
+                Some(self.effect_row()?)
+            } else {
+                None
+            };
             self.expect("->")?;
-            return Ok(Type::Function(inputs, Box::new(self.ty()?)));
+            let result = Box::new(self.ty()?);
+            return Ok(if effects.is_some() || name == "Fn1" {
+                Type::Method {
+                    parameters: inputs,
+                    result,
+                    effects,
+                    captures_responsibility: name == "Fn1",
+                }
+            } else {
+                Type::Function(inputs, result)
+            });
         }
         if self.eat("<") {
             let mut args = Vec::new();
@@ -105,6 +123,23 @@ impl Parser {
         let start = self.token().span.start;
         self.expect("{")?;
         self.body(true, start)
+    }
+    fn effect_row(&mut self) -> Result<Vec<String>, Diagnostic> {
+        self.expect("{")?;
+        let mut effects = Vec::new();
+        if !self.eat("}") {
+            loop {
+                effects.push(self.name()?);
+                if self.eat("}") {
+                    break;
+                }
+                self.expect(",")?;
+                if self.eat("}") {
+                    break;
+                }
+            }
+        }
+        Ok(effects)
     }
     fn body(&mut self, braced: bool, start: usize) -> Result<Block, Diagnostic> {
         let mut statements = Vec::new();
@@ -194,18 +229,7 @@ impl Parser {
             None
         };
         let effects = if self.eat("!") {
-            self.expect("{")?;
-            let mut effects = Vec::new();
-            if !self.eat("}") {
-                loop {
-                    effects.push(self.name()?);
-                    if self.eat("}") {
-                        break;
-                    }
-                    self.expect(",")?;
-                }
-            }
-            Some(effects)
+            Some(self.effect_row()?)
         } else {
             None
         };

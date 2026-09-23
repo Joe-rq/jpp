@@ -36,29 +36,17 @@ fn steps() -> Vec<(i64, i64, i64, bool)> {
 fn fixed_client() -> FixedClient {
     let mut client = FixedClient::new();
     for (lo, hi, mid, yes) in steps() {
-        let state = State::new(
-            vec![Mat::literal(json!({"lo": lo, "hi": hi}))],
-            vec![],
-            vec![],
-            vec![],
-            false,
-        );
+        let state = State::new(vec![Mat::literal(json!({"lo": lo, "hi": hi}))], vec![], vec![], vec![], false);
         let question = Question::new(Op::Test, &format!("{PREFIX}{mid}"), CALIB, vec![]);
         // 线在 0.1 / 0.9；0.99 过上线是 act，0.01 过下线是 ignore
-        client.observe(
-            &state,
-            &question,
-            Answer::Noul(if yes { 0.99 } else { 0.01 }),
-        );
+        client.observe(&state, &question, Answer::Noul(if yes { 0.99 } else { 0.01 }));
     }
     client
 }
 
 fn calibrations() -> CalibStore {
     let mut calib = CalibStore::new();
-    calib
-        .put(CALIB, 0.9, 0.1, 120, "上岗")
-        .expect("校准记录合法");
+    calib.put(CALIB, 0.9, 0.1, 120, "上岗").expect("校准记录合法");
     calib
 }
 
@@ -98,13 +86,7 @@ fn adaptive_program() -> Program {
                         &["bound"],
                         body(
                             vec![],
-                            call(
-                                "test",
-                                vec![
-                                    bin("+", text(PREFIX), call("text", vec![name("bound")])),
-                                    name("calib"),
-                                ],
-                            ),
+                            call("test", vec![bin("+", text(PREFIX), call("text", vec![name("bound")])), name("calib")]),
                         ),
                     ),
                 ),
@@ -117,67 +99,21 @@ fn adaptive_program() -> Program {
                 body(
                     vec![
                         bind("mid", bin("/", bin("+", name("lo"), name("hi")), int(2))),
-                        bind(
-                            "st",
-                            call(
-                                "state",
-                                vec![call(
-                                    "mat",
-                                    vec![rec(vec![("lo", name("lo")), ("hi", name("hi"))])],
-                                )],
-                            ),
-                        ),
-                        bind(
-                            "e",
-                            call(
-                                "cut",
-                                vec![call(
-                                    "judge",
-                                    vec![name("st"), call_of(name("make_q"), vec![name("mid")])],
-                                )],
-                            ),
-                        ),
+                        bind("st", call("state", vec![call("mat", vec![rec(vec![("lo", name("lo")), ("hi", name("hi"))])])])),
+                        bind("e", call("cut", vec![call("judge", vec![name("st"), call_of(name("make_q"), vec![name("mid")])])])),
                     ],
                     call(
                         "handle",
                         vec![
                             name("e"),
                             rec(vec![
-                                (
-                                    "act",
-                                    lambda(
-                                        &[],
-                                        body(
-                                            vec![],
-                                            rec(vec![("lo", name("lo")), ("hi", name("mid"))]),
-                                        ),
-                                    ),
-                                ),
-                                (
-                                    "ignore",
-                                    lambda(
-                                        &[],
-                                        body(
-                                            vec![],
-                                            rec(vec![
-                                                ("lo", bin("+", name("mid"), int(1))),
-                                                ("hi", name("hi")),
-                                            ]),
-                                        ),
-                                    ),
-                                ),
+                                ("act", lambda(&[], body(vec![], rec(vec![("lo", name("lo")), ("hi", name("mid"))])))),
+                                ("ignore", lambda(&[], body(vec![], rec(vec![("lo", bin("+", name("mid"), int(1))), ("hi", name("hi"))])))),
                                 (
                                     "unsure",
                                     lambda(
                                         &["cause"],
-                                        body(
-                                            vec![],
-                                            rec(vec![
-                                                ("lo", name("lo")),
-                                                ("hi", name("hi")),
-                                                ("stuck", name("cause")),
-                                            ]),
-                                        ),
+                                        body(vec![], rec(vec![("lo", name("lo")), ("hi", name("hi")), ("stuck", name("cause"))])),
                                     ),
                                 ),
                             ]),
@@ -200,35 +136,18 @@ fn adaptive_program() -> Program {
                                 &["s", "i"],
                                 body(
                                     vec![
-                                        bind(
-                                            "n",
-                                            call(
-                                                "probe",
-                                                vec![
-                                                    field(name("s"), "lo"),
-                                                    field(name("s"), "hi"),
-                                                    name("make_q"),
-                                                ],
-                                            ),
-                                        ),
+                                        bind("n", call("probe", vec![field(name("s"), "lo"), field(name("s"), "hi"), name("make_q")])),
                                         bind(
                                             "next",
                                             rec(vec![
                                                 ("lo", field(name("n"), "lo")),
                                                 ("hi", field(name("n"), "hi")),
-                                                (
-                                                    "asked",
-                                                    bin("+", field(name("s"), "asked"), int(1)),
-                                                ),
+                                                ("asked", bin("+", field(name("s"), "asked"), int(1))),
                                             ]),
                                         ),
                                     ],
                                     if_(
-                                        bin(
-                                            "==",
-                                            field(name("next"), "lo"),
-                                            field(name("next"), "hi"),
-                                        ),
+                                        bin("==", field(name("next"), "lo"), field(name("next"), "hi")),
                                         call("stop", vec![name("next")]),
                                         name("next"),
                                     ),
@@ -241,19 +160,10 @@ fn adaptive_program() -> Program {
             bind("below", call("bisect_asker", vec![text(CALIB)])),
             bind(
                 "found",
-                call(
-                    "search",
-                    vec![
-                        rec(vec![("lo", int(LOW)), ("hi", int(HIGH)), ("asked", int(0))]),
-                        name("below"),
-                    ],
-                ),
+                call("search", vec![rec(vec![("lo", int(LOW)), ("hi", int(HIGH)), ("asked", int(0))]), name("below")]),
             ),
         ],
-        rec(vec![
-            ("target", field(name("found"), "lo")),
-            ("asked", field(name("found"), "asked")),
-        ]),
+        rec(vec![("target", field(name("found"), "lo")), ("asked", field(name("found"), "asked"))]),
     )
 }
 
@@ -265,28 +175,15 @@ fn 二分选问十题定位目标() {
 
     let mut client = fixed_client();
     let mut ledger = Ledger::new();
-    let outcome = run(
-        &program,
-        &mut client,
-        &calibrations(),
-        &ActionRegistry::new(),
-        &mut ledger,
-    )
-    .unwrap_or_else(|e| panic!("程序应当跑完：{}", e.render()));
+    let outcome = run(&program, &mut client, &calibrations(), &ActionRegistry::new(), &mut ledger)
+        .unwrap_or_else(|e| panic!("程序应当跑完：{}", e.render()));
 
     assert_eq!(outcome.value_json(), json!({"target": TARGET, "asked": 10}));
     assert!(outcome.pending.is_empty(), "没有未决出口");
-    assert_eq!(
-        outcome.cost.calls, 10,
-        "十问就是十次调用，正好用完 budget.calls"
-    );
+    assert_eq!(outcome.cost.calls, 10, "十问就是十次调用，正好用完 budget.calls");
     assert_eq!(client.log.len(), 10, "十次固定观察全部命中");
     assert_eq!(outcome.trace.count("judge", false), 10);
-    assert!(
-        outcome.trace.warnings.is_empty(),
-        "不该有 W-bound / W-header / returned_unsure：{:?}",
-        outcome.trace.warnings
-    );
+    assert!(outcome.trace.warnings.is_empty(), "不该有 W-bound / W-header / returned_unsure：{:?}", outcome.trace.warnings);
 }
 
 #[test]
@@ -294,33 +191,39 @@ fn 同程序重放零调用() {
     let program = adaptive_program();
     let mut client = fixed_client();
     let mut ledger = Ledger::new();
-    let first = run(
-        &program,
-        &mut client,
-        &calibrations(),
-        &ActionRegistry::new(),
-        &mut ledger,
-    )
-    .expect("首跑");
+    let first = run(&program, &mut client, &calibrations(), &ActionRegistry::new(), &mut ledger).expect("首跑");
 
     // 同一本账本 + 拒绝一切调用的客户端：命中即重放，发一次请求就是错
     let mut replay = NoCallClient;
-    let again = run(
-        &program,
-        &mut replay,
-        &calibrations(),
-        &ActionRegistry::new(),
-        &mut ledger,
-    )
-    .unwrap_or_else(|e| panic!("重放不该发调用：{}", e.render()));
+    let again = run(&program, &mut replay, &calibrations(), &ActionRegistry::new(), &mut ledger)
+        .unwrap_or_else(|e| panic!("重放不该发调用：{}", e.render()));
 
     assert_eq!(again.value_json(), first.value_json());
     assert_eq!(again.cost.calls, 0, "重放零调用");
     assert_eq!(again.cost.replayed, 10, "十次判断全部命中账本");
     assert_eq!(again.trace.count("judge", true), 10);
-    assert!(
-        again.trace.warnings.is_empty(),
-        "账本头一致，不该有 W-header：{:?}",
-        again.trace.warnings
-    );
+    assert!(again.trace.warnings.is_empty(), "账本头一致，不该有 W-header：{:?}", again.trace.warnings);
+}
+
+/// 错的效应标注要拦得住，位置指着那个方法的定义。
+///
+/// `probe` 的 `make_q` 是参数（题的构造方法从外面传进来），`search` 更是只在 loop 的回调里
+/// 间接调 `probe`——首包这两处都因为「被调者解析不了」整条跳过检查，现在核得住。
+#[test]
+fn 错的效应标注拦得住() {
+    let program = adaptive_program();
+    for (name, real) in [("probe", &["judge"][..]), ("search", &["judge"][..])] {
+        let (bad, at) = with_effects(&program, name, &[]);
+        let report = jpp_core::check(&bad);
+        let d = report
+            .diagnostics
+            .iter()
+            .find(|d| d.rule == "E-effect" && d.message.starts_with(name))
+            .unwrap_or_else(|| panic!("{name} 标成 !{{}} 应当报 E-effect：\n{}", report.render()));
+        assert_eq!(d.span, at);
+        assert!(d.message.contains("judge"), "{}", d.message);
+
+        let (good, _) = with_effects(&program, name, real);
+        assert!(jpp_core::check(&good).is_ok(), "标对了不该被报：{}", jpp_core::check(&good).render());
+    }
 }

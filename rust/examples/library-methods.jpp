@@ -1,0 +1,10 @@
+import "../lib/methods.jpp";
+budget {calls: 0, cost: 0, depth: 256};
+
+fn increment(x: Int) -> Int !{} { x + 1 }
+fn twice(x: Int) -> Int !{} { x * 2 }
+fn package() -> Fn(Int) -!{}-> Int !{} {
+    compose_methods(increment, twice)
+}
+let methods = {go: package()};
+{results: map_ints([1, 2, 20], methods.go), direct: apply_method(20, methods.go)}

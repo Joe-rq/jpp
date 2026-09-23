@@ -2,6 +2,13 @@
 
 Updated: 2026-09-21. This is a dated report, not an automatically updated dashboard.
 
+## 2026-09-21: a second authority text and a plan to finish the language / 第二份依据与把语言做完整的实施计划
+
+Research documents only this round; no runtime in this repository changed. `13-Rust实践反馈设计修订-v0.2.md` is published for the first time — six rules that a day of building in Rust forced onto the design, three of them correctness defects (a method's identity omitted its captured state and reused the wrong result; going over budget discarded a call that had already been paid for; integer overflow behaved differently in debug and release). `14-实施计划-把语言做完整-v1.md` sets out what remains, including what this version deliberately does not do and why. The inventory rounds behind it are reported with their own two defects: the new authority text was missing from the first round's material list, so that round's "conflict" findings are not used, and adversarial review failed all nine audits. The most useful output was 22 places where taste had been recorded as mechanism, several of them ours — the test being whether a rule can say what would turn what red. Applying that test found three seams where the kernel silently flattened a three-valued fact to two, the worst of them laundering a material's provenance in two lines of ordinary source; all three are fixed, and the Python reference turned out not to have the taint hole — the port introduced it. 544 tests pass on Python 3.12 and 3.13 in this repository, unchanged by the sync. The kernel work described is in the research workspace and **is not in this repository's `rust/`**; merging the two lines is a separate item. Details, numbers and what was verified where: [2026-09-21 update](updates/2026-09-21-language-completion-plan.md).
+
+本轮只同步研究文档，本仓库运行代码未变。`13-Rust实践反馈设计修订-v0.2.md` 首次公开——六条由一天 Rust 施工逼出来的局部修订，其中三条是正确性缺陷（方法身份不含捕获状态，复用了错的结果；超预算时把已经付过钱的调用丢掉；整数溢出在 debug 与 release 行为不同）。`14-实施计划-把语言做完整-v1.md` 排出剩下要做的，并写明本版有意不做哪些、为什么。支撑它的两轮盘点连同自身的两处缺陷一起公开：新依据缺席于第一轮的材料清单，故该轮「冲突」类结论不采信；对抗复核把九份审计全部判为不通过。最有价值的产出是 22 处把 taste 记成机制的地方，其中几处是我们自己写的——判据是这条规则能不能说出「什么情况下它会让什么东西变红」。照这条判据又查出三处把三值静默压成两值的缝，最重的一条两行普通源码就能洗白材料的来源可信度；三条都已修，且 Python 参照实现没有那个 taint 洞——是移植时新引入的。本仓库在 Python 3.12 与 3.13 上各通过 544 项测试，同步未改变这个数。文中描述的内核工作在研究工作区，**不在本仓库的 `rust/` 里**，两条线的合并是单独一项。细节、数字与「哪个数在哪里验的」见 [2026-09-21 更新](updates/2026-09-21-language-completion-plan.md)。
+
+
 ## 2026-09-21: co-construct language capabilities and algorithms / 语言能力与算法共同构造
 
 修正[总计划](towow-discovery-master-plan.zh-CN.md)中的推进前提：不要求先用成熟工具实现完整算法再迁移J++。所需的构造能力可能正是语言建设要创造的部分，应与最小算法片段共同设计。已有工具按需复用，缺少完整旧实现时保留构造阻碍与新程序的对照。本轮保存两条原话续记和本地理解记录，只更新设计，不启动实现或模型实验。
@@ -199,9 +206,9 @@ Two compiler passes (`speculate`, `vectorize`) make judgment fusion independent 
 
 ### 2026-09-21: a falsified scenario, a calibration reading, and the Rust kernel starting / 一个被证伪的场景、一次校准读数、Rust 内核开工
 
-No new runtime capability this round. E9f-2b′ **failed**: predicting which paragraphs an author will ask to change is not decidable in one literal hop (n = 1,564 paragraphs, AUC 0.541 against a bet of 0.70; a length-and-digits heuristic scored higher at ~~0.638~~ **[0.643 — see the correction entry below]**, and a `haiku` judge sat on the random line too). E-CAL's final run passed none of its falsification criteria and about half its bets: Chinese `noul` readings are usable as probabilities (ECE 0.057), ~~`choice` showed no first-position bias (permutation consistency 1.000)~~ **[withdrawn 2026-09-21 — measurement artefact; see the correction entry below]**, `score` hit the adjacent band 0.964 — while `noul` AUC (0.748), `choice` argmax (0.757) and `score` MAE (0.553) all came in under their bets, and the 300 items turned out to be built from about 45 independent paragraphs, so effective n is 17–26 rather than 100. The formal kernel moves to Rust ([ADR 0001](adr/0001-rust-kernel.md)); its core is still being built in the research workspace and ~~**no Rust source is published yet**~~ **[overtaken the same day — a Rust workspace landed under `rust/` on the front-end line; see the Status block in that update]**. 535 tests pass on Python 3.12 and 3.13 in this repository. Details and every number: [2026-09-21 update](updates/2026-09-21-two-experiments-and-rust-start.md).
+No new runtime capability this round. E9f-2b′ **failed**: predicting which paragraphs an author will ask to change is not decidable in one literal hop (n = 1,564 paragraphs, AUC 0.541 against a bet of 0.70; a length-and-digits heuristic scored higher at ~~0.638~~ **[0.643 — see the correction entry below]**, and a `haiku` judge sat on the random line too). E-CAL's final run passed none of its falsification criteria and about half its bets: Chinese `noul` readings are usable as probabilities (ECE 0.057), ~~`choice` showed no first-position bias (permutation consistency 1.000)~~ **[withdrawn 2026-09-21 — measurement artefact; see the correction entry below]**, `score` hit the adjacent band 0.964 — while `noul` AUC (0.748), `choice` argmax (0.757) and `score` MAE (0.553) all came in under their bets, and the 300 items turned out to be built from about 45 independent paragraphs, so effective n is 17–26 rather than 100. **[Scope added 2026-09-21: the calibration set behind every number in this paragraph is the both-models-agree subset, not a random sample, and is optimistically biased by an amount now measured for two of the three question types — see the entry below.]** The formal kernel moves to Rust ([ADR 0001](adr/0001-rust-kernel.md)); its core is still being built in the research workspace and ~~**no Rust source is published yet**~~ **[overtaken the same day — a Rust workspace landed under `rust/` on the front-end line; see the Status block in that update]**. 535 tests pass on Python 3.12 and 3.13 in this repository. Details and every number: [2026-09-21 update](updates/2026-09-21-two-experiments-and-rust-start.md).
 
-本轮没有新的运行能力。E9f-2b′ **失败**：段级预测「作者会要求改这一段吗」在一跳字面下不可判（n = 1,564 段，AUC 0.541，赌的是 0.70；长度加数字的启发式基线反而更高，~~0.638~~**〔更正为 0.643，见下方更正条目〕**；haiku 裁判同样在随机线上）。E-CAL 正式版三条证伪判据一条都没触发、赌值对了一半：中文 `noul` 读数可以当概率用（ECE 0.057），~~`choice` 无首位偏置（置换一致 1.000）~~**〔2026-09-21 作废：测量假象，见下方更正条目〕**，`score` 相邻档 0.964；但 `noul` AUC 0.748、`choice` argmax 0.757、`score` MAE 0.553 全部低于赌值，且 300 条题面只由约 45 个独立段落重组而成，有效 n 在 17–26 之间而不是 100。正式内核转 Rust（[ADR 0001](adr/0001-rust-kernel.md)），core 仍在研究工作区建设中，~~**Rust 源码尚未公开同步**~~**〔当日即被事实追上：前端那条线已把 Rust 工作区推到 `rust/` 下，见该更新的「现状」块〕**。本仓库在 Python 3.12 与 3.13 上各通过 535 项测试。细节与全部数字见 [2026-09-21 更新](updates/2026-09-21-two-experiments-and-rust-start.md)。
+本轮没有新的运行能力。E9f-2b′ **失败**：段级预测「作者会要求改这一段吗」在一跳字面下不可判（n = 1,564 段，AUC 0.541，赌的是 0.70；长度加数字的启发式基线反而更高，~~0.638~~**〔更正为 0.643，见下方更正条目〕**；haiku 裁判同样在随机线上）。E-CAL 正式版三条证伪判据一条都没触发、赌值对了一半：中文 `noul` 读数可以当概率用（ECE 0.057），~~`choice` 无首位偏置（置换一致 1.000）~~**〔2026-09-21 作废：测量假象，见下方更正条目〕**，`score` 相邻档 0.964；但 `noul` AUC 0.748、`choice` argmax 0.757、`score` MAE 0.553 全部低于赌值，且 300 条题面只由约 45 个独立段落重组而成，有效 n 在 17–26 之间而不是 100。**〔范围补注，2026-09-21：本段每个数字背后的校准集都是「两模型都同意」的子集，不是随机样本，同向乐观有偏，偏多少对三种题型里的两种已经测出来——见下方条目。〕**正式内核转 Rust（[ADR 0001](adr/0001-rust-kernel.md)），core 仍在研究工作区建设中，~~**Rust 源码尚未公开同步**~~**〔当日即被事实追上：前端那条线已把 Rust 工作区推到 `rust/` 下，见该更新的「现状」块〕**。本仓库在 Python 3.12 与 3.13 上各通过 535 项测试。细节与全部数字见 [2026-09-21 更新](updates/2026-09-21-two-experiments-and-rust-start.md)。
 
 ### 2026-09-21: correcting a published result / 更正一条已发布的结论
 
@@ -210,7 +217,9 @@ Two `choice` results published in the entry above are withdrawn. Of the 97
 had long candidates and were lowered by the compiler to per-candidate `noul`,
 whose `mode_share` is hard-coded to 1.0 — which is exactly the permutation
 consistency test, so 67 of 74 items were vacuously consistent. The real
-measurement is 7 items, and "no first-position bias" is void because per-candidate
+measurement is 7 items **[this figure was itself wrong, corrected twice more the
+same day — the real measurement is 8, not 7 and not 0; see
+`docs/updates/2026-09-21-second-correction-and-kernel-progress.md` §1]**, and "no first-position bias" is void because per-candidate
 `noul` has no position at all; on the 8 items that really ran `choice` the first
 candidate was chosen 3 times against a ground-truth rate of 1, pointing toward
 bias rather than away from it. The same round corrects E9f-2b′'s accounting:
@@ -226,7 +235,9 @@ and 3.13.
 
 上一条里两句 `choice` 结论作废。E-CAL 的 97 条 `select` 只有 8 条真的发出 `choice`
 物理题，其余因候选过长被编译器下沉成逐候选 noul，而 K-noul 的 `mode_share` 被写死为
-1.0——「置换一致」的判据恰好就是它，所以 74 条里 67 条是恒真项，真测量只有 7 条；
+1.0——「置换一致」的判据恰好就是它，所以 74 条里 67 条是恒真项，真测量只有 7 条
+**〔这个数本身也是错的，同一天又更正了两次，最终值是 8，不是 7 也不是 0，见
+`docs/updates/2026-09-21-second-correction-and-kernel-progress.md` §1〕**；
 「无首位偏置」直接无效，因为逐候选 noul 根本没有位置，在真跑了 choice 的 8 条上首位
 被选 3 次、真值首位 1 次，方向反而朝着有偏置。同一轮还更正 E9f-2b′ 的账：花费
 $0.0027 → **$0.045**、调用 1,633 次（实验脚本的 `reset_stats()` 望远镜求和，不是超
@@ -235,6 +246,83 @@ $0.0027 → **$0.045**、调用 1,633 次（实验脚本的 `reset_stats()` 望�
 标明，不删：[2026-09-21 更新](updates/2026-09-21-two-experiments-and-rust-start.md)
 每节加了更正块，四个研究文件一并重新同步（含两个后续实验的预注册）。本次只改文档，`src/` 未动；Python 3.12 与
 3.13 各通过 544 项测试。
+
+### 2026-09-21: a scope for four published numbers, a conformal design result, and a withdrawn labelling plan / 四个已发布数字的适用范围、一个保形设计结论、一条被撤回的标注计划
+
+The `noul` ECE 0.057, `noul` AUC 0.748, `choice` argmax 0.757 and `score`
+adjacent-band 0.964 numbers above need a scope they did not have: E-CAL's
+ground truth is dual-model labelling, and the 202 items that carry it agree
+100.0% of the time between the two labelling models, against 81.1% among the
+95 that do not — the calibration set is, by construction, the subset the
+models agree on, not a random sample, and every number computed on it is
+optimistically biased. **This does not withdraw the numbers**; it scopes them.
+The bias direction is now measured, not just hypothesized, for two of the
+three question types — `noul`'s error rate reads as **at least 0.392, not
+0.301** — while the same free predictor **reverses on `score`**, exactly the
+type with the least labelling coverage. A new design,
+`设计/保形弃权域-设计-2026-09-21.md`, asks whether conformal risk control can
+turn these thresholds into finite-sample guarantees on the 297 already-paid-for
+readings: it **cannot**, for any of the three question types (tightest bounds
+0.319 / 0.269 / 0.251, so any ≤20% target is infeasible), with the same scope
+above applying to those three bounds too. A prototype crate
+(`foundation/experiments/conformal-proto/`) ships alongside it — not part of
+`rust/`, not built by this repository's own tests — currently 11 passed, 0
+failed (two tests that once demonstrated gaps since closed by the
+certificate gate and the certificate-addressing fix it argues for, rewritten
+as regression guards). The pre-registered plan to close the scope
+by labelling 22 more `noul` items is **withdrawn**: those 22 items do not
+exist in the material; a real path (`E-NOUL-HI`) is pre-registered in their
+place. Documentation only — `src/` unchanged. Full account:
+[2026-09-21 update](updates/2026-09-21-scope-note-and-conformal-fail.md).
+
+上面 noul ECE 0.057、noul AUC 0.748、choice argmax 0.757、score 相邻档 0.964
+这四个数需要一个此前没写的适用范围：E-CAL 的真值是模型双标，有真值的 202 条里两个标
+注模型一致率 100.0%，没有真值的 95 条里只有 81.1%——校准集在定义上就是「两模型都同
+意」的子集，不是随机样本，算在它上面的每个数都同向乐观有偏。**这不是把那些数作
+废**，是给它们加范围。偏倚方向现在对三种题型里的两种已经测出来，不再只是假设——
+noul 的错误率要读成**至少 0.392，不是 0.301**——而同一个免费预测器在 **score 上反
+向**，恰恰是标注覆盖最低的那一型。新设计 `设计/保形弃权域-设计-2026-09-21.md` 问：
+保形风险控制能不能把这些阈值变成带有限样本保证的数字，用的是已付费的 297 条读数：
+**不能**，三种题型都不能（最紧上界 0.319 / 0.269 / 0.251，任何 ≤20% 目标都无解），
+上面同一条范围同样适用于这三个上界。配套的原型 crate
+（`foundation/experiments/conformal-proto/`）不属于 `rust/`，也不在本仓库自己的测试
+范围内——当前 11 通过、0 失败（两条当初测缺口的测试，缺口分别被证书门和证书寻址修
+法堵上后，已改写成回归保护）。原定
+靠再标 22 条 `noul` 来拆掉范围的计划**已撤回**：那 22 条在材料里不存在；换成预注册
+`E-NOUL-HI` 里的真路径。本次只改文档，`src/` 未动。完整内容见
+[2026-09-21 更新](updates/2026-09-21-scope-note-and-conformal-fail.md)。
+
+### 2026-09-21: a second reader, a silent divergence, and a sync tool that now covers what it publishes / 第二个读者、一处静默分叉、一个学会覆盖自己发布内容的同步工具
+
+Three small follow-ups to the entry above. `conformal-proto` carried its own
+copy of eight items also defined in `jpp_core::conformal`, and the copy had
+already silently diverged from the kernel (a parameter renamed `delta` →
+`conf_delta` in the kernel — a deliberate distinction between the conformal
+bound's confidence level and the calibration archive's hysteresis bandwidth —
+never propagated to the copy, and never able to, since a rename in one file
+cannot break compilation in an unrelated one). Fixed by deleting the eight
+copies and re-exporting the kernel's module instead: **11 passed, 0 failed**,
+verified item-by-item byte-identical first. `设计/G3b-零上下文读者第三次-迟到副本.md`
+is added — a second, independent zero-context reader given the identical
+exercise as the already-published `G3`, held back only because it finished
+later; publishing only the faster of two readings is an unchosen selection
+rule with the same shape as this round's calibration-set finding. And
+`tools/sync-from-workspace.sh` now mirrors `conformal-proto/` itself, instead
+of that directory needing a hand copy every round. Documentation and tooling
+only — `src/` unchanged. Full account:
+[2026-09-21 update](updates/2026-09-21-scope-note-and-conformal-fail.md) §6.
+
+对上一条的三处小追加。`conformal-proto` 曾自带八项与 `jpp_core::conformal` 同名的
+拷贝，而这份拷贝已经静默分叉（内核把一个参数从 `delta` 改名为 `conf_delta`——这是
+一条刻意的区分：保形阈值的置信水平与档案的迟滞带宽是两个不同的保证——但这条判断从
+未传到拷贝上，而且永远不会传过去，因为一个文件里的改名不会让另一个无关文件编译不
+过）。修法是删掉八份拷贝，改成引用内核的模块：**11 通过、0 失败**，改之前先逐项核
+对确认逐字节相同。`设计/G3b-零上下文读者第三次-迟到副本.md` 本轮加入——一次给了
+和已发布的 `G3` 完全相同题目的第二个独立零上下文读者，只是交得晚，此前一直没发。只
+发两次阅读里跑得快的那一份，是一条没人选过的选择规则，和这一轮校准集那条发现是同一
+个形状。`tools/sync-from-workspace.sh` 现在自己会镜像 `conformal-proto/`，不用每轮
+手动复制。本次只改文档与同步工具，`src/` 未动。完整内容见
+[2026-09-21 更新](updates/2026-09-21-scope-note-and-conformal-fail.md) 第六节。
 
 # 2026-09-20 — Install, compose and inspect complete methods / 安装并使用完整方法
 

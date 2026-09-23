@@ -102,4 +102,10 @@ pub enum Type {
     Named(String),
     Applied(String, Vec<Type>),
     Function(Vec<Type>, Box<Type>),
+    Method {
+        parameters: Vec<Type>,
+        result: Box<Type>,
+        effects: Option<Vec<String>>,
+        captures_responsibility: bool,
+    },
 }

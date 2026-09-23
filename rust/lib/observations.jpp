@@ -1,0 +1,17 @@
+// The unresolved branch returns its responsibility to the caller.
+fn observe_test(material: Mat, question: Question) -> Record !{judge} {
+    let exit = cut(judge(state(material), question));
+    handle(exit, {
+        act: fn() { {resolved: true, value: true} },
+        ignore: fn() { {resolved: true, value: false} },
+        unsure: fn(responsibility) { {resolved: false, value: unit, responsibility: responsibility} }
+    })
+}
+
+fn request_test(material: Mat, question: Question) -> Record !{ask} {
+    handle(ask(state(material), question), {
+        act: fn() { {resolved: true, value: true} },
+        ignore: fn() { {resolved: true, value: false} },
+        unsure: fn(responsibility) { {resolved: false, value: unit, responsibility: responsibility} }
+    })
+}
