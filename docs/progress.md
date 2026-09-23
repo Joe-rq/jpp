@@ -2,6 +2,44 @@
 
 Updated: 2026-09-23. This is a dated report, not an automatically updated dashboard.
 
+## 2026-09-23: constructs, live backend and template-level calibration / 构造施工、真实后端与题式级校准
+
+Synced from the research tree through commit `42988c5`. Built: the real JEV backend
+(`--backend live`), questions as first-class values (`form`/`fill`), a three-way sieve that
+takes questions directly plus review-opinion material, pairing (`pair`), set aggregation
+(`tally`/`first_k`), bounded iteration with a shrink line (`iterate`), calibration intake
+(`calib-import`, the truth channel) with form-level line fallback and split-sample two-sided
+certification (B24), and the composition-closure contract (B17) shared by every set-level
+construct. Found: the live backend returns correct readings but every exit is
+`unsure(cold)` without a calibration record; literal question templates read bimodally and
+need only a global line; semantic templates need real calibration, misclassifications
+persist across reruns, and re-asking does not help; human spot-checking showed the
+disagreement was an undefined question scope, not labelling noise — splitting the template
+resolved it, and the topic-relevance template reached 30/30 spot-check agreement and is
+certified. Designed in response: the question template, not the literal question, is the
+calibration primary key (B2); split-sample certification with the gate read off a one-sided
+95% confidence lower bound, not the raw agreement rate (B19/B24); the composition-closure
+contract; and several changes carried from a four-line question-theory literature review.
+Unfinished: of 415 design-ledger items, 89 are built; two classes of fail-open defects
+(`speculate` executing `do` on a branch that should not run; untrusted content becoming
+"trusted" through concatenation/join/failure paths) are ruled to need fixes but are not
+fixed yet; B28–B32 are decided but not yet implemented. `cargo test --workspace --offline`:
+341 passed, 0 failed, 3 ignored. Full account: [constructs and calibration](updates/2026-09-23-constructs-and-calibration.md).
+
+同步来源是研究树，截至提交 `42988c5`。做成了：真实 JEV 后端（`--backend live`）、题成为
+一等值（`form`/`fill`）、三路过滤直接吃题并把评审意见渲染成材料、配对 `pair`、聚合
+`tally`/`first_k`、带收缩终止线的迭代 `iterate`、校准进料 `calib-import`（真值通道，带
+题式级线回退与拆分样本两侧认证 B24）、以及所有集合级构造共用的组合封闭性契约（B17）。
+发现了：真机读数本身正确，但没有校准记录时出口全是 `unsure(cold)`；字面题式读数两极，
+一条全局线就够；语义题式需要真正的校准，错判在重跑间持续存在，重复提问无效；人工抽检
+揭示分歧来自题面外延未定，不是标注噪声——拆题后话题相关题式抽检 30/30 一致并转正上岗。
+针对问题设计了：题式而非字面题作校准主键（B2）；拆分样本认证，上岗门槛看抽检一致率的
+单侧 95% 置信下界而不是原始一致率（B19/B24）；组合封闭性契约；以及四线问题理论调研带来
+的多处改动。未完成：设计总账 415 条中已造出 89 条；两类放行方向缺陷（`speculate` 在不该
+执行的分支上执行 `do`；不可信内容经拼接/join/失败路径变「可信」后越过不可逆 `do` 关卡）
+已裁定要修但尚未修好；B28–B32 已定未造。`cargo test --workspace --offline`：341 通过、
+0 失败、3 忽略。完整说明见[构造施工与校准](updates/2026-09-23-constructs-and-calibration.md)。
+
 ## 2026-09-23: sync research-tree runtime increments / 同步研究树运行时增量
 
 Port the research tree's later Rust increments that the public tree lacked: the static half of J-10 (`budget.unsure` in the AST and a pre-call warning that sums each judge site's `unsure_rate`), a real producer for `CalibRecord.unsure_rate` when `commission` certifies a line, and drift warnings on `allocate`/`unsure_bound` as well as `cut`. The public review fixes (log-space binomial upper bound, the all-reject threshold, portable test paths and fixtures, honest certificate disclosures) are kept, not overwritten. `.jpp` source still cannot write `budget.unsure`; the frontend lowers it as absent. `cargo test --workspace`: 318 passed, 0 failed, 3 ignored.
