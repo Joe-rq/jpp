@@ -1,6 +1,7 @@
 use std::path::PathBuf;
 
-pub const HELP: &str = "J++ native source tools\nUsage:\n  jpp parse <file.jpp> [--ast]\n  jpp check <file.jpp>\n  jpp run <file.jpp> [--fixtures <file.json>] [--output <report.json>]\n          [--ledger-out <ledger.json>] [--replay <ledger.json> | --resume <ledger.json>]\n\nLeading relative imports load source libraries. Run uses fixed generation/judgment/response records; no model API requests are made. Registered actions: record_check, read_json(path), write_json(path,value). File paths use the working directory. Resume may perform unrecorded actions; replay rejects them.";
+pub const HELP: &str = "J++ native source tools\nUsage:\n  jpp parse <file.jpp> [--ast]\n  jpp check <file.jpp>\n  jpp run <file.jpp> [--fixtures <file.json>] [--output <report.json>]\n          [--ledger-out <ledger.json>] [--replay <ledger.json> | --resume <ledger.json>]
+          [--profile <profile.json>] [--calib <calib-dir>] [--calib-out <calib-dir>]\n\nLeading relative imports load source libraries. Run uses fixed generation/judgment/response records; no model API requests are made. Registered actions: record_check, read_json(path), write_json(path,value). --profile loads a model profile (lines, deltas, windows, class-assumption fields); without it the kernel falls back to code defaults and says so. --calib loads calibration records from a directory of per-key JSON files. --calib-out folds this run's readings into those records and writes them back, which is the only way the calibration loop closes: J-03 forbids a program from writing a line itself. File paths use the working directory. Resume may perform unrecorded actions; replay rejects them.";
 
 #[derive(Debug, PartialEq)]
 pub enum Command {
@@ -18,6 +19,9 @@ pub struct RunOptions {
     pub ledger_out: Option<PathBuf>,
     pub replay: Option<PathBuf>,
     pub resume: Option<PathBuf>,
+    pub profile: Option<PathBuf>,
+    pub calib: Option<PathBuf>,
+    pub calib_out: Option<PathBuf>,
 }
 
 pub fn parse(args: &[String]) -> Result<Command, String> {
@@ -61,6 +65,9 @@ pub fn parse(args: &[String]) -> Result<Command, String> {
         ledger_out: None,
         replay: None,
         resume: None,
+        profile: None,
+        calib: None,
+        calib_out: None,
     };
     let mut i = 2;
     while i < args.len() {
@@ -70,6 +77,9 @@ pub fn parse(args: &[String]) -> Result<Command, String> {
             "--ledger-out" => &mut options.ledger_out,
             "--replay" => &mut options.replay,
             "--resume" => &mut options.resume,
+            "--profile" => &mut options.profile,
+            "--calib" => &mut options.calib,
+            "--calib-out" => &mut options.calib_out,
             other => return Err(format!("unknown run option '{other}'")),
         };
         if target.is_some() {

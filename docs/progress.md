@@ -1,6 +1,25 @@
 # J++ progress / 项目进度
 
-Updated: 2026-09-21. This is a dated report, not an automatically updated dashboard.
+Updated: 2026-09-23. This is a dated report, not an automatically updated dashboard.
+
+## 2026-09-23: review the native kernel sync / 审查原生内核同步
+
+PR #25 brings the later Rust checker/runtime and calibration host APIs into the public
+tree. Review fixed test paths that depended on the private research layout, supplied
+minimal legacy-schema fixtures, rebuilt the browser source bundle, and fixed two numeric
+boundary defects: large-sample binomial underflow and a reject-all threshold that could
+accidentally accept score 1. Each numeric failure was reproduced before its fix.
+The review checkout passed 304 Rust tests (3 ignored) and 544 Python tests on Python 3.12
+before integrating the separately reviewed community examples from #17. GitHub CI checks
+the combined branch. Private-data probes and synthetic tests do not establish live model
+accuracy. Selected-threshold risk certification remains experimental; see the precise
+limitations in [Rust status](../rust/README-status.md).
+
+本次将后续 Rust 实现同步到公开仓库，修正测试对私有目录的依赖，补齐旧记录格式夹具，
+更新浏览器源码包，并修复大样本二项上界下溢、全拒绝阈值误放行满分样本两处边界错误。
+两处数值问题均先复现失败再修复。隔离副本通过 304 项 Rust 测试（3 项忽略）和
+Python 3.12 的 544 项测试；随后纳入已单独验证的 #17 社区示例，组合结果由 CI 复查。
+当前统计选线仍属实验实现，不能把单一合成分布测试称为一般风险保证。
 
 ## 2026-09-21: a second authority text and a plan to finish the language / 第二份依据与把语言做完整的实施计划
 
