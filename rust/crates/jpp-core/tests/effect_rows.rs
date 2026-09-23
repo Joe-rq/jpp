@@ -401,7 +401,7 @@ fn apply(m, f) -> Record !{{judge}} {{ f(m) }}
 /// core 不同步；`tests/effect_rows_typed.rs` 是它的源码级对照，等前端那一版进了再一起跑。
 #[test]
 fn 实参必须在参数类型的效应行之内() {
-    use jpp_core::ast::{Block, Budget, Expr, ExprKind, Function, MethodType, Parameter, Program, Span, Statement, Type};
+    use jpp_core::ast::{Block, Budget, Expr, Function, MethodType, Parameter, Program, Span, Statement, Type};
 
     let sp = Span::new(0, 1);
     let at = Span::new(40, 44); // 实参 peek 的位置
@@ -457,4 +457,53 @@ fn 实参必须在参数类型的效应行之内() {
     let wide = Type::Method(MethodType::omega(vec![record()], record(), &["judge"]));
     let report = check(&program("peek", wide, &["judge"]));
     assert!(report.find("E-effect").is_none(), "参数类型与 apply 的标注都放宽后不该报：\n{}", report.render());
+}
+
+// ---------------------------------------------------------------- 效应名本身要认得
+
+/// 效应名今天完全不校验：`EFFECT_NAMES`（`check.rs`）定义了却全树零引用，
+/// 而前端的词法用的是 Unicode `is_alphabetic()`，于是 `!{ε}` 会被**当成一个叫 ε 的具体效应**
+/// 解析成功，再报一条「少了 judge」——**比不写标注还糟**，作者拿到的是指向错误方向的诊断。
+///
+/// 要的行为：认不得的名字得到一条**说清楚是名字不认识**的诊断，带 Span，并列出认得的四个。
+#[test]
+fn 认不得的效应名要当场说清楚() {
+    let judging = r#"
+fn peek(m) -> Record !{judge} {
+    handle(cut(judge(state(m), test("行吗", "k"))), {act: fn() { {ok: true} }, ignore: fn() { {ok: false} },
+                                                    unsure: fn(u) { consume(u, "drop"); {ok: unit} }})
+}
+"#;
+    let 查 = |标注: &str| {
+        let src = format!("budget {{calls: 1, cost: 0, depth: 8}};{judging}
+fn 包一层(m) -> Record !{{{标注}}} {{ peek(m) }}
+{{a: 1}}");
+        check_source("效应名", &src)
+    };
+
+    // 1. 希腊字母 ε：作者想写效应变量，语言还没有这个东西——要说「不认识这个名字」
+    let report = 查("ε");
+    let d = report
+        .find("E-effect-name")
+        .unwrap_or_else(|| panic!("`!{{ε}}` 该报「认不得的效应名」，实际诊断：\n{}", report.render()));
+    assert!(d.message.contains('ε'), "报文要点出是哪个名字：{}", d.message);
+    assert!(d.message.contains("judge") && d.message.contains("ask"), "报文要列出认得的名字：{}", d.message);
+    assert!(
+        report.find("E-effect").is_none(),
+        "名字都不认识，就别再拿它做差集报「少了 judge」——那是指向错误方向的诊断：\n{}",
+        report.render()
+    );
+
+    // 2. 拼错的名字混在认得的里面
+    let report = 查("judge, 拼错的名字");
+    let d = report.find("E-effect-name").unwrap_or_else(|| panic!("拼错的名字该被认出来：\n{}", report.render()));
+    assert!(d.message.contains("拼错的名字"), "{}", d.message);
+
+    // 3. 大小写变体：效应名是小写的四个，`Judge` 不是其中之一
+    let report = 查("Judge");
+    assert!(report.find("E-effect-name").is_some(), "`Judge` 不是认得的名字：\n{}", report.render());
+
+    // 4. 正向对照：四个都认得，不该报这条
+    let report = 查("judge, gen, do, ask");
+    assert!(report.find("E-effect-name").is_none(), "四个都是认得的名字：\n{}", report.render());
 }

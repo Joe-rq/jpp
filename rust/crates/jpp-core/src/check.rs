@@ -68,13 +68,36 @@ impl Report {
     }
 }
 
-/// 静态检查一个程序。`errors()` 非空即不应运行。
+/// 静态检查一个程序，**不带档案**。
+///
+/// **「不带档案」不是「档案说假设都成立」**：每条依赖类假设的规则会照 J-15 取保守项
+/// 并另报一条 `W-untested`，而档案明说过的那些**不报**——两者因此在报告上分得开。
+/// 与「兜底档案的 `hash` 必须是 `None`」是同一条。
 pub fn check(program: &Program) -> Report {
-    let mut c = Checker::default();
+    check_with(program, None)
+}
+
+/// 静态检查一个程序，**带上模型档案**（`12` §1.2 类假设绑档案字段、§1.3 降级）。
+///
+/// **这是 §1 缺的那根管道。** 在它之前 `check` 只收一个 `&Program`，
+/// **就算降级逻辑写好了，档案字段也没有路径能到达检查器**——没填是缺料，
+/// **没有管道是缺结构**。
+pub fn check_with_profile(program: &Program, profile: &crate::effects::Profile) -> Report {
+    // **判据是 `hash.is_none()`，不是「传没传参数」**：`Profile::default()` 是兜底，
+    // 不是一份档案。按参数判，每个默认库都会被读成「有档案这么说过」。
+    if profile.hash.is_none() {
+        return check_with(program, None);
+    }
+    check_with(program, Some(profile))
+}
+
+fn check_with(program: &Program, profile: Option<&crate::effects::Profile>) -> Report {
+    let mut c = Checker { profile_h5: profile.map(|p| p.arithmetic_capable), ..Checker::default() };
     c.budget(program);
     c.names_and_readings(program);
     c.syntax(program);
     c.effects(program);
+    c.fail_at_boundary(program);
     c.out.sort_by_key(|d| (d.span.start, d.span.end));
     Report { diagnostics: c.out }
 }
@@ -189,6 +212,76 @@ struct Checker {
     by_name: HashMap<String, Vec<usize>>,
     /// 判定为读数的表达式节点（按地址标记，不依赖 Span 唯一）
     readings: HashSet<*const Expr>,
+    /// `!{…}` 里有认不得的名字的函数：它们的标注不参与差集核对
+    bad_effect_decl: HashSet<usize>,
+    /// H5 的档案字段（`12` §1.2）。**`None` = 本次没有加载档案**，与
+    /// `Some(Tri::未测)`（有档案、这项没测）**不是一回事**。
+    profile_h5: Option<crate::effects::Tri>,
+}
+
+/// 结果里**裸着出现**的名字：被任何调用吃进去的不算（`content(x)` / `is_fail(x)` / `len(x)` …）。
+/// 那些调用各自会处理 Fail，或者当场报错；这条只找「原样交出去」的。
+fn collect_bare_names(e: &Expr, out: &mut HashSet<String>) {
+    match &e.kind {
+        ExprKind::Name(n) => {
+            out.insert(n.clone());
+        }
+        ExprKind::List(items) => items.iter().for_each(|x| collect_bare_names(x, out)),
+        ExprKind::Record(fs) => fs.iter().for_each(|(_, x)| collect_bare_names(x, out)),
+        ExprKind::Block(b) => {
+            if let Some(r) = &b.result {
+                collect_bare_names(r, out);
+            }
+        }
+        ExprKind::If { yes, no, .. } => {
+            for b in [yes, no] {
+                if let Some(r) = &b.result {
+                    collect_bare_names(r, out);
+                }
+            }
+        }
+        // 调用、取字段、下标、算术都会「用」这个值，Fail 在那里各有各的处置，不是原样交出去
+        _ => {}
+    }
+}
+
+/// 不在 `EFFECT_NAMES` 里的名字
+fn unknown_effects(names: &[String]) -> Vec<String> {
+    let mut out: Vec<String> = names.iter().filter(|n| !EFFECT_NAMES.contains(&n.as_str())).cloned().collect();
+    out.sort();
+    out.dedup();
+    out
+}
+
+fn unknown_effect_diag(what: &str, unknown: &[String], span: Span) -> Diagnostic {
+    Diagnostic::error(
+        "E-effect-name",
+        format!(
+            "{what}里有认不得的效应名：{}。效应形式只有 {} 这四种（`transform` 是记账变换不是效应形式，不写进标注）。修法：改成这四个之一；想表达「效应随传进来的方法而定」不用写名字——缺省标注就是推断，调用点会实例化",
+            unknown.join(", "),
+            EFFECT_NAMES.join(" / ")
+        ),
+        span,
+    )
+}
+
+/// 类型里所有方法效应行
+fn collect_method_rows(t: &Type, out: &mut Vec<Vec<String>>) {
+    match t {
+        Type::Method(m) => {
+            if let Some(e) = &m.effects {
+                out.push(e.clone());
+            }
+            m.params.iter().for_each(|p| collect_method_rows(p, out));
+            collect_method_rows(&m.ret, out);
+        }
+        Type::Function(ps, r) => {
+            ps.iter().for_each(|p| collect_method_rows(p, out));
+            collect_method_rows(r, out);
+        }
+        Type::Applied(_, args) => args.iter().for_each(|a| collect_method_rows(a, out)),
+        Type::Named(_) => {}
+    }
 }
 
 fn is_builtin(n: &str) -> bool {
@@ -546,11 +639,15 @@ impl Checker {
             ExprKind::Binary { op, left, right } => {
                 let a = self.scan_expr(left, scopes, fn_depth);
                 let b = self.scan_expr(right, scopes, fn_depth);
+                // **只有算术那一面归 H5 管。** 比较是 I3（跨题读数不成恒等式）的事，
+                // `12`:328 J-01 的依赖假设栏写的是「H5（为假时**「算术在宿主」**降 warn，桥不变）」
+                // ——降的是算术，不是比较。听起来像同一类，要保证的东西不同。
+                let 算术 = matches!(op.as_str(), "+" | "-" | "*" | "/" | "%");
                 if a == Kind::Reading {
-                    self.reading_err(left.span, format!("读数不能做 {op}：读数不可比、不可算"));
+                    self.reading_err_h5(left.span, format!("读数不能做 {op}：读数不可比、不可算"), 算术);
                 }
                 if b == Kind::Reading {
-                    self.reading_err(right.span, format!("读数不能做 {op}：读数不可比、不可算"));
+                    self.reading_err_h5(right.span, format!("读数不能做 {op}：读数不可比、不可算"), 算术);
                 }
                 Kind::Other
             }
@@ -630,7 +727,7 @@ impl Checker {
                     self.reading_err(args[0].span, format!("读数不能进 {name}：读数没有可读的值"));
                 }
             }
-            "handle" | "consume" | "exit_kind" => {
+            "handle" | "consume" | "exit_kind" | "untested" => {
                 if args.first().map(|a| inside(self, a)).unwrap_or(false) {
                     self.reading_err(
                         args[0].span,
@@ -644,6 +741,39 @@ impl Checker {
                 }
             }
             _ => {}
+        }
+    }
+
+    /// J-01 的算术面：按 H5 的档案字段决定 error 还是 warn（`12` §1.3）。
+    fn reading_err_h5(&mut self, span: Span, msg: impl Into<String>, 归h5管: bool) {
+        if !归h5管 {
+            return self.reading_err(span, msg);
+        }
+        match self.profile_h5 {
+            // 档案明说模型会算术 → H5 不成立 → 降 warn，**并说出是哪个字段让它降的**
+            Some(crate::effects::Tri::真) => {
+                self.out.push(Diagnostic::warning(
+                    "J-01",
+                    format!("{}。档案 arithmetic_capable: true → H5 不成立，按 12 §1.3 降 warn（fit 仍是唯一跨题合成，I3 不变）", msg.into()),
+                    span,
+                ));
+            }
+            // 档案明说不会 → H5 成立 → 照常是错，**不报未测**
+            Some(crate::effects::Tri::假) => self.reading_err(span, msg),
+            // 档案说「未测」，或**根本没有档案** → 取该假设为真（保守项），另报 W-untested（J-15）
+            other => {
+                self.reading_err(span, msg);
+                let 载体 = if other.is_some() {
+                    "档案里 arithmetic_capable 未测"
+                } else {
+                    "本次没有加载档案，arithmetic_capable 无任何测量支持"
+                };
+                self.out.push(Diagnostic::warning(
+                    "W-untested",
+                    format!("{载体}：按 J-15 取 H5 成立（保守项），J-01 的算术面仍是错。修法：跑 foundation/profile 的 literal_probe 把这个字段测出来"),
+                    span,
+                ));
+            }
         }
     }
 
@@ -673,19 +803,26 @@ impl Checker {
     }
 
     fn syntax_block(&mut self, b: &Block, ctx: Ctx, iter_params: &[String]) {
+        // **`iter_params` 的含义是「这一轮里会变的名字」，不是「循环的形参」。**
+        // 块里 `let x = f(i)` 之后，`x` 也是每轮会变的——不把它算进来，
+        // 下面的 `seq_const` 会把它当成常量而误报。
+        let mut varying: Vec<String> = iter_params.to_vec();
         for s in &b.statements {
             match s {
                 Statement::Let { value, name, span, .. } => {
-                    self.syntax_expr(value, ctx, iter_params);
+                    self.syntax_expr(value, ctx, &varying);
                     self.exit_binding(value, name, *span, b);
+                    if ctx.in_iteration && varying.iter().any(|p| mentions(value, p)) {
+                        varying.push(name.clone());
+                    }
                 }
                 // 函数定义是新的词法环境：迭代上下文不穿过它
                 Statement::Function { function, .. } => self.syntax_function(function),
-                Statement::Expression(e) => self.syntax_expr(e, ctx, iter_params),
+                Statement::Expression(e) => self.syntax_expr(e, ctx, &varying),
             }
         }
         if let Some(r) = &b.result {
-            self.syntax_expr(r, ctx, iter_params);
+            self.syntax_expr(r, ctx, &varying);
         }
     }
 
@@ -852,7 +989,18 @@ impl Checker {
 
     fn seq_const(&mut self, name: &str, args: &[Expr], idx: usize, field: &str, span: Span, iter_params: &[String]) {
         let Some(a) = args.get(idx) else { return };
-        if !matches!(a.kind, ExprKind::Integer(_)) {
+        // **认的是「这一轮会不会变」，不是「写没写成字面量」。**
+        //
+        // 原来只认 `ExprKind::Integer`，于是 `let s = 0;` 放在循环外再传进去
+        // **四种写法都撞不出告警**——而那个键每轮一模一样，后果与写字面量 `0` 完全相同。
+        // **「常量」是一个语义性质，不是一个语法形状。**
+        let 每轮不变 = match &a.kind {
+            ExprKind::Integer(_) => true,
+            // 名字：不在「这一轮会变的名字」里，就是循环不变量
+            ExprKind::Name(n) => !iter_params.contains(n),
+            _ => false,
+        };
+        if !每轮不变 {
             return;
         }
         // 其它参数随轮次变时键不会碰撞，降为提示（与 Python 检查器同口径）
@@ -925,6 +1073,70 @@ impl Checker {
                 "J-05",
                 format!("函数把出口 {n} 直接带出，返回类型却没提 Exit：调用者不知道自己要消费它。修法：标注 -> Exit（或含 Exit 的类型），或在函数里 handle / consume 掉"),
                 result.span,
+            ));
+        }
+    }
+}
+
+// ---------------------------------------------------------------- J-12 的静态面
+
+impl Checker {
+    /// `12`:263 J-12：「程序边界不含 `⊎ Fail` 时**必须 `on_fail` 处理**」（栏位：静态）。
+    ///
+    /// 拦的是：一个 `Fail` **无声地成为程序的结果**。调用者拿到 `{"fail": "…"}` 这样一个记录，
+    /// 而没有任何地方说过这是失败——**它长得像数据**。与 J-05「未决必须被消费」是同一条纪律的
+    /// 两面：未决会被拦，失败不会。
+    ///
+    /// 判得住的只有确定的那一档（宁可漏报不误报）：绑定直接来自 `do` / `gen` / `fail`，
+    /// 且这个名字**从没被 `is_fail` 查过**，却出现在程序的返回值里。
+    fn fail_at_boundary(&mut self, p: &Program) {
+        // 哪些绑定直接来自会产生 Fail 的效应
+        let mut from_fail: HashMap<String, Span> = HashMap::new();
+        for st in &p.body.statements {
+            let Statement::Let { name, value, span, .. } = st else { continue };
+            if matches!(call_name(value), Some("do") | Some("gen") | Some("fail")) {
+                from_fail.insert(name.clone(), *span);
+            }
+        }
+        if from_fail.is_empty() {
+            return;
+        }
+        // 被 is_fail 查过的名字：作者处理过了
+        let mut checked: HashSet<String> = HashSet::new();
+        walk_block(&p.body, &mut |e| {
+            let ExprKind::Call { function, arguments } = &e.kind else { return };
+            if call_name(e) != Some("is_fail") {
+                let _ = function;
+                return;
+            }
+            if let Some(Expr { kind: ExprKind::Name(n), .. }) = arguments.first() {
+                checked.insert(n.clone());
+            }
+        });
+        // 出现在程序返回值里、**且是裸着出现**的名字。
+        //
+        // 「裸着」是关键：`content(input)` 不算——`content` 收到 Fail 会当场报错，
+        // 失败在那里就暴露了，不会长得像数据。这条检查只拦**把 Fail 原样交出去**：
+        // 那时调用者拿到的是 `{fail: …}` 一个记录，没有任何地方说过它是失败。
+        //
+        // 实测这一条拦下过 `examples/lifecycle.jpp` 的 `content(input)`——那是误报，
+        // 所以才有这个区分。误伤会处理失败的程序，和放过无声失败一样是错。
+        let Some(result) = &p.body.result else { return };
+        let mut in_result: HashSet<String> = HashSet::new();
+        collect_bare_names(result, &mut in_result);
+
+        let mut bad: Vec<(String, Span)> = from_fail
+            .into_iter()
+            .filter(|(n, _)| in_result.contains(n) && !checked.contains(n))
+            .collect();
+        bad.sort_by_key(|(_, sp)| sp.start);
+        for (name, span) in bad {
+            self.out.push(Diagnostic::error(
+                "J-12",
+                format!(
+                    "{name} 可能是 Fail，却直接成了程序的结果：失败会长得像普通记录（`{{fail: …}}`），调用者看不出这是失败。修法：用 `is_fail({name})` 查一下再决定怎么办，或在程序里处理掉它"
+                ),
+                span,
             ));
         }
     }
@@ -1043,9 +1255,70 @@ impl Checker {
                 break;
             }
         }
+        self.effect_names(p);
         let inst = self.instantiate_all(p);
         self.declared_vs_row(&inst);
         self.param_contracts(p);
+    }
+
+    /// 效应名本身要认得。`!{…}` 与类型位上的效应行只认 `EFFECT_NAMES` 里那四个。
+    ///
+    /// 不校验的后果不是「少报一条」，是**报错方向反了**：前端的词法按 Unicode 取标识符，
+    /// 所以 `!{ε}` 会被当成一个叫 ε 的具体效应解析成功，再报一条「少了 judge」——
+    /// 作者以为是自己漏标了效应，其实是语言还没有效应变量这个东西。
+    fn effect_names(&mut self, p: &Program) {
+        let mut bad: Vec<(usize, Vec<String>)> = vec![];
+        for (i, f) in self.functions.iter().enumerate() {
+            if let Some(d) = &f.declared {
+                let u = unknown_effects(d);
+                if !u.is_empty() {
+                    bad.push((i, u));
+                }
+            }
+        }
+        for (i, u) in bad {
+            let (name, span) = (self.functions[i].name.clone(), self.functions[i].span);
+            self.out.push(unknown_effect_diag(&format!("{name} 的 !{{…}} 标注"), &u, span));
+            // 名字都不认识，这条标注就没法拿来做差集——别再报「少了 judge」那种指向错误方向的诊断
+            self.bad_effect_decl.insert(i);
+        }
+        // 类型位上的效应行（`Fn(A) -!{…}-> B`）同样校验
+        let mut found: Vec<(String, Vec<String>, Span)> = vec![];
+        let mut note = |what: String, t: &Type, span: Span| {
+            let mut rows = vec![];
+            collect_method_rows(t, &mut rows);
+            for r in rows {
+                let u = unknown_effects(&r);
+                if !u.is_empty() {
+                    found.push((what.clone(), u, span));
+                }
+            }
+        };
+        for f in &self.functions {
+            for param in &f.params {
+                if let Some(t) = &param.annotation {
+                    note(format!("参数 {} 的类型", param.name), t, param.span);
+                }
+            }
+        }
+        // let 绑定上的类型标注同样校验
+        fn lets(b: &Block, out: &mut Vec<(String, Type, Span)>) {
+            for st in &b.statements {
+                match st {
+                    Statement::Let { name, annotation: Some(t), span, .. } => out.push((format!("绑定 {name} 的类型"), t.clone(), *span)),
+                    Statement::Function { function, .. } => lets(&function.body, out),
+                    _ => {}
+                }
+            }
+        }
+        let mut annotated: Vec<(String, Type, Span)> = vec![];
+        lets(&p.body, &mut annotated);
+        for (what, t, span) in &annotated {
+            note(what.clone(), t, *span);
+        }
+        for (what, u, span) in found {
+            self.out.push(unknown_effect_diag(&what, &u, span));
+        }
     }
 
     /// 参数**类型位**上的效应行是契约：`f: Fn(A) -!{judge}-> B` 说的是「这个位置只收效应不超过
@@ -1162,6 +1435,9 @@ impl Checker {
     fn declared_vs_row(&mut self, inst: &[Instantiated]) {
         for i in 0..self.functions.len() {
             let Some(declared) = self.functions[i].declared.clone() else { continue };
+            if self.bad_effect_decl.contains(&i) {
+                continue;
+            }
             let declared: BTreeSet<String> = declared.into_iter().collect();
             let row = self.functions[i].row.clone();
             let name = self.functions[i].name.clone();

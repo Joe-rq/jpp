@@ -127,9 +127,19 @@ fn partial_program() -> Program {
                             rec(vec![
                                 ("act", lambda(&[], body(vec![], rec(vec![("status", text("accepted"))])))),
                                 ("ignore", lambda(&[], body(vec![], rec(vec![("status", text("rejected"))])))),
+                                // 13 §3 + 总控 2026-09-21 裁定：下游的 `screen` 只取 `.status`、把这条记录的其余
+                                // 字段丢了，所以「把责任放进 cause 字段」在这个程序里**不是真的转交**——
+                                // 最后一份承接信息会在下一步消失。改成**显式丢弃并记账**（`13` §3 明写
+                                // 「允许显式丢弃」），让程序说出它本来就在做的事。原来的写法是无声消失。
                                 (
                                     "unsure",
-                                    lambda(&["cause"], body(vec![], rec(vec![("status", text("pending")), ("cause", name("cause"))]))),
+                                    lambda(
+                                        &["u"],
+                                        body(
+                                            vec![discard(call("consume", vec![name("u"), text("drop")]))],
+                                            rec(vec![("status", text("pending"))]),
+                                        ),
+                                    ),
                                 ),
                             ]),
                         ],
@@ -581,7 +591,14 @@ fn 部分候选先交付再续解() {
     assert_eq!(outcome.trace.count("do", false), 3);
     assert_eq!(outcome.trace.count("transform", false), 1, "只给 C 补了材料");
     assert_eq!(outcome.cost.replayed, 0, "第一次跑没有旧账本可重放");
-    assert!(outcome.trace.warnings.is_empty(), "不该有 W-bound / W-header：{:?}", outcome.trace.warnings);
+    // `W-drop-vs-escalate` 是**常规记账**（显式丢弃已记账），不是「可能有问题」。它和
+    // `W-bound` / `W-header` 挤在同一个列表里，所以这里不能再断言整个列表为空——
+    // 断言落在「有没有那两条真正的体检项」上。把常规记账从 warnings 分出去的提议见
+    // COORDINATION.md，等谁下次动 Trace 时一起做。
+    // `W-uncertified` 与 `W-drop-vs-escalate` 同族：常规记账，不是体检项。
+    // 这里的线是手填的（n=150 / n=90）、没有保形证书，**它本来就该响**。
+    let 体检 = |ws: &[String]| ws.iter().filter(|w| !w.starts_with("W-drop-vs-escalate") && !w.starts_with("W-uncertified")).cloned().collect::<Vec<_>>();
+    assert!(体检(&outcome.trace.warnings).is_empty(), "不该有 W-bound / W-header：{:?}", outcome.trace.warnings);
 
     // 旧检查不重做：三条 do 记录的键互不相同，A、B 的那两条在后两轮没有再出现
     let keys: Vec<&str> = ledger
@@ -615,7 +632,10 @@ fn 部分候选程序重放零调用() {
     assert_eq!(again.cost.calls, 0, "重放零调用");
     assert_eq!(again.cost.replayed, 10, "6 次判断 + 3 次动作 + 1 次变换全部命中账本");
     assert!(replay_log.borrow().is_empty(), "重放不重新执行动作，只取账本里的输出");
-    assert!(again.trace.warnings.is_empty(), "{:?}", again.trace.warnings);
+    // `W-uncertified` 与 `W-drop-vs-escalate` 同族：常规记账，不是体检项。
+    // 这里的线是手填的（n=150 / n=90）、没有保形证书，**它本来就该响**。
+    let 体检 = |ws: &[String]| ws.iter().filter(|w| !w.starts_with("W-drop-vs-escalate") && !w.starts_with("W-uncertified")).cloned().collect::<Vec<_>>();
+    assert!(体检(&again.trace.warnings).is_empty(), "{:?}", again.trace.warnings);
 }
 
 /// 错的效应标注要拦得住：两条策略方法都是经 `packet` 里的方法值间接被调用的。
