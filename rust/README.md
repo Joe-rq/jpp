@@ -1,12 +1,11 @@
 # J++ Rust source implementation
 
 Method effect types, relative source imports, fixed generation/responses and JSON
-file actions are now connected to the same core. The complete pending → resume →
-replay example reuses completed work without rewriting its output on replay.
-See [the runnable guide](METHODS-AND-LIFECYCLE.md) / [中文说明](METHODS-AND-LIFECYCLE.zh-CN.md).
+file actions are connected to the same core. See [the runnable guide](METHODS-AND-LIFECYCLE.md)
+/ [中文说明](METHODS-AND-LIFECYCLE.zh-CN.md) for pending → resume → replay.
 
-方法类型、跨文件源码复用与固定后端的暂停／恢复已经贯通。本包基于已提交第四包内核；
-后续在途核心能力不包含在这份快照中。真实模型 CLI 与更广算法库继续按原分工推进。
+本包已在已提交第四包内核上验证方法契约、跨文件源码库和固定后端恢复；后续 core
+在途修改由原归口继续，不属于本次验证快照。
 
 Source parsing, lowering, shared checking and execution are connected. All three
 source examples, source-position errors, budget stopping and ledger replay have

@@ -14,6 +14,10 @@ pub fn execute(
     calibrations: &CalibStore,
     ledger: &mut Ledger,
     replay_only: bool,
+    // 越界接线：把这一趟的证据带出去，供 `--calib-out` 折进记录。
+    // **J-03 决定了程序永远写不了线**，所以「跑程序 → 积累证据 → 认证 → 用上」这条环
+    // **只能靠宿主/CLI 闭合**——而这是出料那一半。
+    evidence_out: &mut Vec<(String, jpp_core::effects::Sample)>,
 ) -> Result<Value, jpp_core::Error> {
     let checks = Rc::new(RefCell::new(Vec::new()));
     let log = checks.clone();
@@ -54,6 +58,7 @@ pub fn execute(
         Ok(value.clone())
     });
     let outcome = jpp_core::run(program, client, calibrations, &actions, ledger)?;
+    evidence_out.extend(outcome.evidence.iter().cloned());
     Ok(json!({
         "mode": "fixed observations; no model API requests",
         "status": if outcome.pending.is_empty() { "returned" } else { "pending" },

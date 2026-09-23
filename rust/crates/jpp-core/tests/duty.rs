@@ -139,7 +139,11 @@ fn 包进返回值是合法去向() {
     let value = outcome.value_json();
     assert_eq!(value["下一步"], json!("补材料"));
     assert_eq!(value["待办"]["unsure"], json!("材料不够"), "责任带着原因一起交出去");
-    assert!(outcome.trace.warnings.is_empty(), "{:?}", outcome.trace.warnings);
+    // 13 §3：包进返回值是**转交**不是了结，责任一路挂到程序结束；带到最外层要留账。
+    // 断言落在结构化字段上——`Outcome.returned_unsure` 是契约，trace 里那条是给人看的文本，
+    // 措辞早晚会改，拿字符串当契约会让测试在无关改动上碎。
+    assert_eq!(outcome.returned_unsure.len(), 1, "带到最外层的未决要记在 returned_unsure 里：{:?}", outcome.returned_unsure);
+    assert!(outcome.returned_unsure[0].contains("unsure"), "记的就是这份责任：{:?}", outcome.returned_unsure);
 }
 
 /// 合法去向二：escalate 交给人。

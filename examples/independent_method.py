@@ -13,6 +13,9 @@ from pathlib import Path
 
 PACKAGE_ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(PACKAGE_ROOT))
+# Only present in the independent-use package layout, where the example runs
+# against a frozen kernel snapshot; harmless no-op in a source checkout.
+# See research/扩展/codex_composition/INDEPENDENT_USE.md.
 sys.path.insert(0, str(PACKAGE_ROOT / "_kernel_snapshot"))
 
 from foundation import jv

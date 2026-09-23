@@ -18,3 +18,14 @@
 - `Action.taint_out="untrusted"` 的沙箱动作（导入、基准、sh）输出进 `on` 槽，状态随之 untrusted；这些探针没有不可逆动作，J-08 不触发。
 - 探针的合成模板数据上，启发式基线在 p13/p42/p49/p81 是 1.0（预注册 H4 已赌）；这是探针设计的性质，不是 Jev 的。
 | 8 | **`jv.handle(cause字符串)` 在向量化出口上取错对象**：`for e in exits: match e: case jv.Unsure(c): p = jv.handle(c)`，「取最近 match 命中的那个」在 24 个 cold 出口上 6/24 返回 None（其余返回的临时出口也未必是本条的）。改为 `jv.handle(e)` 传出口本身 + 直接读 `e.detail["provisional"]` 后正确 | run1 第一遍 p17/p22 各 6/24、5/24 行 p=0.0（`summary_before_p45fix.json`） | 向量化循环里按 cause 字符串 handle 不可靠；README §2.5 的「取最近 match 命中的那个」在循环里语义含糊 | README §2.5 写明「循环里请传出口本身」；或 `handle(cause)` 在有多个候选时直接报错而不是猜 |
+
+## E-CAL 正式版落地收尾新增（2026-09-20，只记不修）
+
+| # | 缺口 | 最小复现 | 影响 | 提议（对应条款） |
+|---|---|---|---|---|
+| 9 | **`CalibRecord` 没有放校准证据的结构化字段**：`12 §2.3` 的记录结构写了 `n / coverage / δ / status / drift_stat`，实现里却没有 `ece`、可靠性桶、`label_source`，写校准记录时只能把这三样塞进自由字符串 `source`（本次三条记录的 `source` 都是几百字的串） | `CalibStore.put(key, ece=…)` → `TypeError: unexpected keyword 'ece'` | 校准证据不可机读：漂移监控、`ece_by_source` 档案回填、「这条线凭什么」都得解析字符串 | `CalibRecord` 加 `ece: float \| None`、`buckets: list \| None`、`label_source: str`、`coverage: float \| None`；`12 §2.3` 的记录结构同步写全 |
+| 10 | **校准记录的作用域是账本目录，不是键**：`Runtime.__init__` 取 `CalibStore(root/"calib")`，所以「线只从校准记录来」在实现上是「从**这个 run 目录**的记录来」。同一个 `e_cal.noul` 键，换一个 root 的程序照样冷启动、出口全 `Unsure(cold)` | 写好记录后 `jv.Runtime(root="runs/jv/别处")` 再判同题 → `cause="cold"` | 校准记录不能跨程序复用，与「能做域 = 有校准记录的 (题, 域) 对」的说法冲突；实验之间互相看不见对方的线 | 全局校准库（如 `foundation/calib/` 或 `JV_CALIB_DIR`）+ run 目录只放本次新增的记录；或 `Runtime(calib=...)` 在 README 里明写「跨 run 复用要自己传 store」 |
+| 11 | **`select` 下沉成 K-noul 后，「置换一致率」变成恒真项**：`runtime.py` 的 K-noul 聚合分支把 `mode_share` 写死 1.0（该路径根本没有置换），而下游普遍用 `mode_share ≥ 1.0` 当「正逆置换一致」。E-CAL 正式版 97 条 select 里 89 条走这条路，于是报出「置换一致 1.000（74/74）」，真测量只有 8 条 | `readings.jsonl` 里 `knoul=True` 的条目全部 `mode_share=1.0`、无 `perms` 字段 | 指标分不出「没置换」与「置换一致」，会把「无首位偏置」这类结论建在恒真项上（本次已发生，见 `e_cal_曲线.md` §0） | K-noul 路径不要填 `mode_share`（或填 `None`），并统一用 `perms >= 2` 作为「真跑了置换」的判据；README 的指标口径同步 |
+| 12 | **同一个校准键横跨两种物理形式，线的含义不同**：`cut` 按 `q.calib.key` 取记录，但 `12 §2.2` 的 `calib_key` 本来含 `phys`。K-noul 路径的 `p` 是各候选 noul 的最大值、**不归一**（实测各候选和 1.02–2.24，系统性欠自信），真 choice 的 `p` 是归一概率；两者共用 `e_cal.choice` 的同一条 hi 线。δ 也因此分叉（K-noul 取 `delta_for("noul")=0.04`，真 choice 取 0.0781） | 同键同线下，K-noul 桶曲线在对角线上方（差 +0.14…+0.30），真 choice 的桶两极分化 | 线在一种形式上定得合适，在另一种上就偏；候选长度一变（`k_limit` 档一变）线的含义悄悄换了 | 记录键按实际物理形式分（`e_cal.choice@choice` / `e_cal.choice@knoul`），或 `CalibRecord` 按 `phys` 存多组线；短期至少在 `source` 里标明本线由哪种形式扫出（本次已标） |
+
+- 不是缺口但要记：`handle(band)` 的重跑路径（`_rerun`，`run_seq+1`）在账本重放里必然未命中——验证脚本用「一调用就抛错」的客户端时会看到 `W-call-fail`，首判出口不受影响，但真跑时每条 band unsure 要多一次调用。校准记录里的 `unsure_rate` 是**首判口径**。

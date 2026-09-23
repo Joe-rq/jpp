@@ -31,6 +31,36 @@ Clarify the target: a small set of underlying constructs should generate many co
 Fresh public-source collection and static reviews revise earlier ecosystem claims: typed question composition, adaptive algorithms, caching, budgets and several fallback policies already have implementations. Developer requests, implemented responses and inferred needs are separated; public issue counts are not treated as independent demand votes. Compatible local endpoints differ in capability and confidence semantics. The next proposed comparisons test complex composition, evidence coverage, budgets, cache costs and real effects. No downloaded project or model benchmark was executed, and no runtime changed in this publication. [Evidence and implications](updates/2026-09-23-ecosystem-reassessment.md).
 
 重新采集公开源码并深读，订正此前判断：类型化题集、自适应算法、缓存、预算和多种失败处理已有实现。明确请求、已有应对与推断需求分开记录，不将 issue 数量当独立需求票数；本地兼容接口也不能抹平能力及置信度含义的差异。后续对照围绕复杂组合、输入覆盖、预算、缓存代价和真实动作。本轮未执行第三方项目或模型基准，公开同步未改运行代码。[证据与建设影响](updates/2026-09-23-ecosystem-reassessment.md)。
+## 2026-09-23: reconcile the design-revision PR / 整理设计修订 PR
+
+PR #20 now preserves the current `12`/`13` authority documents while retaining its dated
+design report. The three defects are already fixed by #25 and covered in `v13_rules.rs`;
+obsolete ignored reproducers are replaced by an enabled overflow regression that checks
+the runtime error variant and exact source span. A checker rejection cannot pass this
+test. Current status text now reflects the merged implementation.
+
+保留现行规范和原始设计报告，移除已被后续回归覆盖的三条过期忽略测试；补验整数溢出
+确实返回运行错误并指向准确源码位置，不会因其他静态错误而误判通过。当前状态说明同步
+到已合入的 Rust 实现，历史数字保留并标明日期。
+
+## 2026-09-23: review the native kernel sync / 审查原生内核同步
+
+PR #25 brings the later Rust checker/runtime and calibration host APIs into the public
+tree. Review fixed test paths that depended on the private research layout, supplied
+minimal legacy-schema fixtures, rebuilt the browser source bundle, and fixed two numeric
+boundary defects: large-sample binomial underflow and a reject-all threshold that could
+accidentally accept score 1. Each numeric failure was reproduced before its fix.
+The review checkout passed 304 Rust tests (3 ignored) and 544 Python tests on Python 3.12
+before integrating the separately reviewed community examples from #17. GitHub CI checks
+the combined branch. Private-data probes and synthetic tests do not establish live model
+accuracy. Selected-threshold risk certification remains experimental; see the precise
+limitations in [Rust status](../rust/README-status.md).
+
+本次将后续 Rust 实现同步到公开仓库，修正测试对私有目录的依赖，补齐旧记录格式夹具，
+更新浏览器源码包，并修复大样本二项上界下溢、全拒绝阈值误放行满分样本两处边界错误。
+两处数值问题均先复现失败再修复。隔离副本通过 304 项 Rust 测试（3 项忽略）和
+Python 3.12 的 544 项测试；随后纳入已单独验证的 #17 社区示例，组合结果由 CI 复查。
+当前统计选线仍属实验实现，不能把单一合成分布测试称为一般风险保证。
 
 ## 2026-09-21: a second authority text and a plan to finish the language / 第二份依据与把语言做完整的实施计划
 
