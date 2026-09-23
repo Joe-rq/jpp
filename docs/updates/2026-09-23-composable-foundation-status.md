@@ -2,6 +2,10 @@
 
 2026-09-23. Documentation and research-workspace verification only; this update does not sync a newer Rust runtime into this repository.
 
+> Merge-time update / 合并时补记：PR #25 has separately merged the Rust synchronization
+> and review fixes. The research measurements below remain dated research-tree evidence,
+> not the public test count. See [current scope](../status.md) for the public implementation.
+
 ## Position / 定位
 
 J++ aims to provide a small set of underlying constructs from which many complex algorithms can be built. A composition should remain a component that participates in a larger composition. The goal includes programs that have not already been anticipated as library functions. Existing ecosystem algorithms are material for discovering common structure and testing this generative capacity.

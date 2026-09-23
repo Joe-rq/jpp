@@ -2,6 +2,20 @@
 
 Updated: 2026-09-23. This is a dated report, not an automatically updated dashboard.
 
+## 2026-09-23: review and integrate the open PRs / 审查并整合待合入 PR
+
+#17's community examples, #25's Rust synchronization and #20's design-revision record
+are merged. #25 received public-test portability repairs, a rebuilt browser bundle and
+two reproduced numerical fixes; #20 keeps an enabled exact overflow-span regression.
+Rust and Python 3.12/3.13 CI pass. #26 reconciles the current design map and implementation
+handoff with that public baseline; local links in its changed documents were checked.
+See the [review record](updates/2026-09-23-pr-integration.md).
+
+#17 社区示例、#25 Rust 同步、#20 设计记录已合入。修复公开测试路径、浏览器源码包
+及两处数值边界错误，补上整数溢出准确位置回归；Rust 和 Python 双版本 CI 通过。
+#26 将总设计图与下一段实施任务对齐这一公开基线。统计选线的一般保证、真机 CLI
+和后续研究增量仍分别列为未完成工作，不混成已交付能力。
+
 ## 2026-09-23: correct stable documentation drift / 校正稳定文档漂移
 
 Check stable documents against code and available execution evidence. Correct source-example and `ask` coverage descriptions in the research tree, distinguish old backlog snapshots from current work, and record the bounded OCaml paper exploration. Retain unfinished experiments and the research/public-runtime boundary. No runtime changed. [Correction details](updates/2026-09-23-documentation-drift.md).

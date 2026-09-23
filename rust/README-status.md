@@ -24,7 +24,8 @@ jpp run   <file.jpp> --fixtures <f.json> [--output <r.json>] [--ledger-out <l.js
 | ledger (replay / resume) | 158 | replay verified: identical keys across three live runs |
 | conformal / calibration | — | experimental host implementation; **no general selected-threshold risk guarantee** |
 
-The review checkout reports 304 passing Rust tests and 3 explicitly ignored tests/snippets.
+PR #25's review checkout reports 304 passing Rust tests and 3 explicitly ignored tests/snippets.
+PR #20 adds one enabled overflow source-span regression, bringing the combined suite to 305.
 Live model calls were not run. Some historical research-data probes return early when
 private records are absent; this count does not establish new experiment results.
 Source-line and builtin counts above are the original inventory, not a generated census.

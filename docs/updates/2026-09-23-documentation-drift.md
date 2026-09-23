@@ -1,5 +1,9 @@
 # Documentation drift correction / 文档状态校正
 
+> 合并时补记 / Merge-time note: PR #25 has now merged with portability and numerical
+> fixes. The open-PR statements below describe the earlier documentation inspection.
+> 下文 315 项仍是研究树记录；公开实现的当前范围见 [状态页](../status.md)。
+
 2026-09-23。本轮按当前代码与已有执行证据校正稳定文档，不修改运行代码或重新裁定语言设计。由三个 GPT-5.6 Luna 分别核查研究 Rust 文档、公开入口和稳定规划，汇总后复核。没有把进行中的实验或未验证实现批量标成完成。
 
 ## 具体修正

@@ -41,7 +41,7 @@ flowchart TB
 | 执行系统 | 根据依赖运行，批量判断，记录成本与结果，恢复计算 | 惰性判断、同状态融合、部分提前登记与重放已有；完整规划、调度和跨程序缓存尚未交付 |
 | 能力适配与反馈 | 同一程序使用真实判断、生成、工具与回应，并接收可用反馈 | Rust 宿主有真实 JEV client；当前 CLI 判断路径仍使用固定观察，真值到校准的使用链未闭合 |
 | 方法库 | 用少量构造写出很多算法；算法可以接收和返回方法 | 有组合示例和小型源码库；语义集合构造与通用算法骨架仍明显不足 |
-| 交付与工具 | 安装、编写、调试、复用、分享形成一条完整路径 | 公开原生快照已存在；研究版的新能力还在待合并更新中 |
+| 交付与工具 | 安装、编写、调试、复用、分享形成一条完整路径 | #25 的 Rust 更新已合入公开仓库；研究区更晚的增量仍需逐项核对 |
 
 ### 最小构造不是把所有东西叫成“一个单元”
 
@@ -131,7 +131,7 @@ flowchart TB
 
 ## 7. 研究、公开代码与协作位置
 
-本轮实时核对 GitHub：主分支为 `6cd44077`；[PR #25](https://github.com/Towow-ai/jpp/pull/25) 的 Rust 同步仍未合并；[PR #26](https://github.com/Towow-ai/jpp/pull/26) 的近期研究与进度说明也未合并。PR #25 描述的是较早的 302 测试快照，本地研究树已有后续提交和 315 测试记录，不能直接视为完全同步。本文随文档分支提交，不代表主分支运行代码升级。
+合并审查更新：主分支 `af7bae7` 已包含 [PR #25](https://github.com/Towow-ai/jpp/pull/25) 的 Rust 同步和审查修复，以及 [PR #20](https://github.com/Towow-ai/jpp/pull/20) 的源码位置回归。组合后 Rust 套件为 305 项通过、3 项忽略。本地研究树曾报告 315 项，仍有较晚增量，两个数字不代表完全同步。尤其本轮公开修复了统计上界下溢、全拒绝阈值和公开测试路径，下次同步应保留这些修复，不能整树覆盖。本文本身只更新文档；最新合并和检查状态以对应 PR 为准。
 
 沿用职责：Claude Code 承担主要 Rust 内核、适配与运行时实现；前端、源码库、使用路径与公开同步按已认领的工作包衔接；总控维护当前地图，在完整交付点检查效果和少数跨层决定。本轮没有向在途会话追加消息，也没有据历史记录判断某个 Agent 此刻仍在运行。
 
@@ -145,4 +145,4 @@ Existing September 23 research-workspace records at `520fef2` show 315 passing t
 
 The next proposed packages consolidate delivered work, co-develop reusable constructs with structurally different algorithms, connect the real backend through the user-facing path, and deliver a complete application and installation flow. Early collection-operator requirements map into the current core/library split; existing boolean filtering and reading aggregation should not be declared incorrect merely because earlier documents used similar names. Research informs construction rather than imposing a new audit-first roadmap.
 
-At inspection, GitHub main was `6cd44077`; runtime PR #25 and documentation PR #26 were open. The newer local research tree is not automatically an installed public release. This map updates documentation only and does not change language semantics or runtime behavior.
+At merge review, GitHub main `af7bae7` includes runtime PR #25 and its review fixes plus #20's exact overflow-span regression (305 Rust tests passing, 3 ignored). The research tree's 315-test snapshot is still a separate baseline. Preserve the public numerical and test-portability fixes during future synchronization. This map changes documentation only; current merge state is recorded on the linked PRs.
