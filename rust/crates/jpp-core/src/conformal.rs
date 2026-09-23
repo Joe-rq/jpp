@@ -21,16 +21,20 @@ pub fn binomial_upper(k: usize, n: usize, conf_delta: f64) -> f64 {
     if n == 0 || k >= n {
         return 1.0;
     }
+    let log_choose = (1..=k)
+        .map(|i| ((n - i + 1) as f64 / i as f64).ln())
+        .sum::<f64>();
     let (mut lo, mut hi) = (k as f64 / n as f64, 1.0);
     for _ in 0..200 {
         let mid = (lo + hi) / 2.0;
         // P(Bin(n, mid) ≤ k)
-        let mut cdf = 0.0;
-        let mut term = (1.0 - mid).powi(n as i32);
-        for i in 0..=k {
-            if i > 0 {
-                term *= (n - i + 1) as f64 / i as f64 * mid / (1.0 - mid);
-            }
+        // mid >= k/n: the largest relevant mass is at k. Starting from 0
+        // can underflow even when the CDF is large (e.g. n=1000, k=900).
+        let mut term = (log_choose + k as f64 * mid.ln()
+            + (n - k) as f64 * (-mid).ln_1p()).exp();
+        let mut cdf = term;
+        for i in (1..=k).rev() {
+            term *= i as f64 / (n - i + 1) as f64 * (1.0 - mid) / mid;
             cdf += term;
         }
         if cdf > conf_delta { lo = mid } else { hi = mid }
@@ -44,7 +48,8 @@ pub fn n_needed_zero_error(alpha: f64, conf_delta: f64) -> usize {
     (conf_delta.ln() / (1.0 - alpha).ln()).ceil() as usize
 }
 
-/// 一次认证的结果。**拒绝是一等出口**，不是错误。
+/// 一次实验性阈值扫描的结果。**拒绝是一等出口**，不是错误。
+/// `ucb` 是逐阈值二项上界；同批选线尚无选择校正，不能解释为整体风险保证。
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub enum Certificate {
     /// 认证成功：`hi` 之上放行，风险上界 `ucb ≤ α`。
@@ -72,6 +77,11 @@ impl Certificate {
 /// 保形风险控制（RCPS 形状）：**从最宽的线往紧里走，取第一个上界 ≤ α 的线**。
 ///
 /// `samples`：`(读数 p, 这条读数蕴含的判断对不对)`。损失 = 放行区里的假放行。
+///
+/// Experimental scan: thresholds are selected on the same samples used for
+/// pointwise Clopper–Pearson bounds. No selection correction or independent
+/// validation set is implemented. `Certificate` is the existing API name,
+/// not a distribution-free guarantee for the selected threshold.
 ///
 /// **空放行区不算解。** 这一条是纪律不是实现细节：`t = 1.0` 上「放行 0 条、
 /// 假放行 0 条」在算术上满足任何 α，但它说的是「全弃权」——把全弃权报成
@@ -255,7 +265,9 @@ pub fn cost_line(samples: &[(f64, bool)], fp: f64, fn_: f64) -> Result<CostLine,
         }
     }
     let n = pts.len();
-    let line = best_t.clamp(0.0, 1.0);
+    // Keep the reject-all sentinel. Clamping it to 1 accepts scores equal to 1
+    // and makes the returned acceptance counts disagree with the optimized cost.
+    let line = best_t;
     let acc: Vec<&(f64, bool)> = pts.iter().filter(|(p, _)| *p >= line).collect();
     let 误放行 = acc.iter().filter(|(_, l)| !*l).count();
     Ok(CostLine {
@@ -274,6 +286,7 @@ pub fn cost_line(samples: &[(f64, bool)], fp: f64, fn_: f64) -> Result<CostLine,
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct CostLine {
+    /// Inclusive threshold; a value above 1 represents rejecting all scores.
     pub line: f64,
     pub cost: f64,
     pub n: usize,

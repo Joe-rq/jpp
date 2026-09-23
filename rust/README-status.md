@@ -1,4 +1,4 @@
-# J++ native kernel (Rust) — status, 2026-09-21
+# J++ native kernel (Rust) — reviewed status, 2026-09-23
 
 `.jpp` source → lex → parse → lower → check → interpret. The Python tree under
 `src/foundation/jv/` is the frozen reference implementation, kept as a behavioural oracle. It is
@@ -20,18 +20,29 @@ jpp run   <file.jpp> --fixtures <f.json> [--output <r.json>] [--ledger-out <l.js
 | lexer + parser + lower + loader | 977 | complete for the current surface |
 | static checker | 1851 | 17 of 18 typing rules; `J-17` not implemented |
 | interpreter | 3111 | 53 builtins |
-| effects (judge / gen / do / ask / cut / state) | 1512 | five of six exercised by examples; `ask` has none |
+| effects (judge / gen / do / ask / cut / state) | 1512 | `lifecycle.jpp` exercises escalation to human response with fixtures |
 | ledger (replay / resume) | 158 | replay verified: identical keys across three live runs |
-| conformal / calibration | 288 | code complete, coverage verified; **no language surface** |
+| conformal / calibration | — | experimental host implementation; **no general selected-threshold risk guarantee** |
 
-302 tests green. Five example programs, 180 lines, using 21 of the 53 builtins.
+The review checkout reports 304 passing Rust tests and 3 explicitly ignored tests/snippets.
+Live model calls were not run. Some historical research-data probes return early when
+private records are absent; this count does not establish new experiment results.
+Source-line and builtin counts above are the original inventory, not a generated census.
 
 ## The calibration loop
 
-It closes as of `585b551`: readings written by `--calib-out` are read back by `--calib`, and a
+The observation persistence round trip works: readings written by `--calib-out` are read back by `--calib`, and a
 second pass accumulates onto them. Seven builtins were then probed with and without a line in
 service — six behave differently, and for two of them (`cut`, `line_source`) the program does
 not complete at all when no line exists.
+
+This is not the complete labeled-data → commissioning workflow. `certify` scans
+thresholds on the same samples used for pointwise binomial bounds; selection correction
+or independent validation remains unimplemented. The costed path checks distinct dataset
+IDs but still reads the same stored samples. A `Cert` is an experimental host-policy
+record, not proof of general risk control. The synthetic Monte Carlo test covers one
+distribution only. PR review fixed large-sample binomial underflow and preserved the
+reject-all threshold so scores equal to 1 are not accidentally accepted.
 
 ## Known gaps, stated plainly
 
@@ -43,7 +54,7 @@ not complete at all when no line exists.
   writing a line — but it means those capabilities arrive through host plumbing, not the
   language.
 - **`J-17` has zero implementation** anywhere in the tree.
-- **`ask` has no example program.**
+- **Human response is fixture-driven in the CLI.** See `examples/lifecycle.jpp`; a live interaction channel remains separate work.
 - 46 of the 53 builtins have not been probed against calibration state; they are believed
   line-independent, which is a judgement rather than a measurement.
 

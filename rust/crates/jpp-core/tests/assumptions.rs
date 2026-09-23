@@ -30,7 +30,7 @@ r < 1
 fn 档(field: Tri) -> Profile {
     // **不另存一份档案 JSON**：一份写着 `arithmetic_capable: true` 的文件摆在真实测量旁边,
     // 迟早被人读成一次测量。改成读真档案、在内存里注入这一个字段。
-    let 真档 = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../../foundation/profile/profiles/jev-1.13.0.json");
+    let 真档 = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../../src/foundation/profile/profiles/jev-1.13.0.json");
     let text = std::fs::read_to_string(&真档).expect("真档案要在");
     let mut j: serde_json::Value = serde_json::from_str(&text).expect("合法 JSON");
     match field {
@@ -106,7 +106,7 @@ fn 字段未测与没档案也分得开() {
 /// 管道本身：`Profile` 真的带上了这一维，且真档案里**今天没有这个字段**。
 #[test]
 fn 真档案里今天没有这个字段() {
-    let 真档 = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../../foundation/profile/profiles/jev-1.13.0.json");
+    let 真档 = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../../src/foundation/profile/profiles/jev-1.13.0.json");
     let j: serde_json::Value = serde_json::from_str(&std::fs::read_to_string(&真档).unwrap()).unwrap();
     assert!(j.get("arithmetic_capable").is_none(), "**H5 的档案字段今天不存在**——这是 §1.2 八条里缺的那几条之一");
     // 所以真档案读出来就是「未测」，而不是内核替它编一个值

@@ -23,7 +23,7 @@ use jpp_core::ledger::judge_key;
 /// **`profile_hash` 两边必须同值**（它进账本头，`12` §J-18 的重放判定建在它上面）。
 #[test]
 fn profile_hash与python逐字节相同() {
-    let p = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../../foundation/profile/profiles/jev-1.13.0.json");
+    let p = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../../src/foundation/profile/profiles/jev-1.13.0.json");
     let j: serde_json::Value = serde_json::from_str(&std::fs::read_to_string(p).expect("真档案在")).expect("合法 JSON");
     assert_eq!(profile_hash(&j), "ea01589429412ed0",
                "**它与 Python 的 H(profile) 必须同值**——两边算不出同一个数，跨内核的重放判定就废了");

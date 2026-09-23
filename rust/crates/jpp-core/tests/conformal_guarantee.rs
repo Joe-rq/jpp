@@ -8,10 +8,22 @@
 //! **所以改用定义与保证当来源**：
 //! - `binomial_upper`：**按定义反查**——它返回的 `p*` 要满足 `P(X ≤ k | n, p*) = δ`。
 //!   这里用**另一种写法**算那个 CDF（阶乘直算，不是生产代码的递推），**算的是定义不是实现**。
-//! - `certify`：**蒙特卡洛覆盖率**——保形唯一要保证的就是覆盖率，
-//!   **而覆盖率验起来不需要第二份代码，只需要生成数据数一数。**
+//! - `certify`：一个合成分布下的蒙特卡洛回归，不能证明一般覆盖率。
+//!   当前扫描复用选线样本，未实现选择校正或独立验证集。
 
 use jpp_core::conformal::{binomial_upper, certify, cluster_subsample, drift, n_needed_zero_error, Certificate};
+
+#[test]
+fn binomial_upper_large_samples_do_not_underflow() {
+    // For k=n-1, P(X<=k)=1-p^n, so the upper endpoint has a closed form.
+    // Starting a recurrence at P(X=0) underflows before reaching these terms.
+    for n in [1000usize, 10000] {
+        let expected = (1.0_f64 - 0.05).powf(1.0 / n as f64);
+        assert!((binomial_upper(n - 1, n, 0.05) - expected).abs() < 1e-10);
+    }
+    let upper = binomial_upper(900, 1000, 0.05);
+    assert!(upper > 0.91 && upper < 0.92, "unexpected upper bound: {upper}");
+}
 
 /// 可复现的线性同余，**不引第三方**
 struct Rng(u64);
@@ -70,18 +82,18 @@ fn n_needed有闭式手算对得上() {
     assert_eq!(n_needed_zero_error(0.5, 0.5), 1);
 }
 
-/// **`certify` 的蒙特卡洛覆盖率——保形唯一要保证的东西。**
+/// `certify` 在单一合成分布上的回归检查，不是一般风险保证。
 ///
 /// **造数**：读数 `p ~ U(0,1)`，标签 `Bernoulli(p)`（**完美校准**，
 /// 于是放行区 `[t,1]` 上的**真实**错误率有闭式 `(1−t)/2`）。
-/// **判据**：`certify` 报的 `ucb` 是那个真实错误率的 δ-置信上界，
-/// **所以在重复里「真实错误率 > ucb」的比例应当 ≤ δ（加蒙特卡洛噪声）。**
+/// 记录选线后「真实错误率 > 逐阈值 ucb」的比例。条件于成功选线的比例
+/// 也不同于固定阈值的无条件覆盖率；本测试不能证明 δ 级保证。
 ///
 /// **重复次数 300、δ=0.10、n=60、α=0.45**，判据放到 **2δ**——
 /// **因为 300 次重复本身有 ±1.7% 的噪声，而我要区分的是「略超」与「结构性超」。**
 /// **这个判据是我定的，分岔时先怀疑它。**
 #[test]
-fn certify的覆盖率保证站得住() {
+fn certify在指定合成分布上的回归() {
     let (重复, delta, n, alpha) = (300usize, 0.10f64, 60usize, 0.45f64);
     let (mut 认证次数, mut 违反次数) = (0usize, 0usize);
     let mut rng = Rng(12345);

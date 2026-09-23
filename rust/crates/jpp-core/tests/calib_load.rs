@@ -13,14 +13,14 @@
 
 use jpp_core::effects::{CalibStore, LabelSource, LiteralMode, Sample};
 
-fn 真records() -> std::path::PathBuf {
-    std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../../foundation/runs/jv/e-cal/calib")
+fn 记录夹具() -> std::path::PathBuf {
+    std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/calib_legacy")
 }
 
-/// **内核第一次读得到那三条记录。**
+/// 旧记录格式的可携带回归：保留字段形状，不依赖未发布的研究运行目录。
 #[test]
-fn 读得进e_cal那三条真记录() {
-    let store = CalibStore::load(&真records()).expect("三条真记录该读得进来");
+fn 读得进e_cal旧格式记录夹具() {
+    let store = CalibStore::load(&记录夹具()).expect("仓库内三条旧格式夹具该读得进来");
     for (键, n) in [("e_cal.noul", 73u64), ("e_cal.choice", 74), ("e_cal.score", 55)] {
         let r = store.get(键);
         assert_eq!(r.status, "上岗", "{键}");

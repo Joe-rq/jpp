@@ -1174,6 +1174,9 @@ impl CalibStore {
     }
     /// **上岗的正门**：拿这条键积累来的标注样本跑保形认证，**认过才上岗，线由证书定**。
     ///
+    /// Experimental host policy: selection and pointwise bounds reuse samples.
+    /// A returned `Cert` is not yet a general finite-sample risk guarantee.
+    ///
     /// `cluster_unit` **必须由调用方声明**，不许从数据推断。推断出来的默认会造出一张
     /// 写着「按条核过」的证书，**而真相是没人说过簇是什么**——那正是「给没有类型的东西
     /// 补来源」那个形状。声明「对象段」而样本没有簇 id 是**错，不是降级**。
@@ -1186,6 +1189,10 @@ impl CalibStore {
     }
 
     /// **代价矩阵定线、证书定能不能上岗**（那条裁定的两半合起来）。
+    ///
+    /// The two declared dataset IDs are checked, but this implementation still
+    /// computes selection and validation from the same stored samples. Distinct
+    /// IDs alone do not establish independent holdout validation.
     ///
     /// `certify` 自己会去找一条最宽的、仍被认证住的线；**给了代价矩阵就不找了**——
     /// 线由 `cost_line` 在标注集上按 `fp·#误放行 + fn·#漏放行` 最小定出来，

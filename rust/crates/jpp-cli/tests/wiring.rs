@@ -27,7 +27,7 @@ fn 跑(args: &[&str]) -> (String, String) {
 fn 同一个程序两份档案两种严重度() {
     let d = 临时("g3");
     fs::write(d.join("p.jpp"), "budget {calls: 2, cost: 0};\nlet r = judge(state(mat(\"材料\")), test(\"行吗\", \"k\"));\nr + 1\n").unwrap();
-    let 真档 = fs::read_to_string(根().join("../foundation/profile/profiles/jev-1.13.0.json")).unwrap();
+    let 真档 = fs::read_to_string(根().join("../src/foundation/profile/profiles/jev-1.13.0.json")).unwrap();
     let mut j: serde_json::Value = serde_json::from_str(&真档).unwrap();
     for (名, 值) in [("成立", false), ("不成立", true)] {
         j["arithmetic_capable"] = serde_json::json!(值);

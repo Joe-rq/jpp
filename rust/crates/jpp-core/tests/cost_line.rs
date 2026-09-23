@@ -70,9 +70,23 @@ fn 空放行集合的假放行率是未定义() {
     let s = vec![(0.1, false), (0.2, false)];
     // fp 极重 → 线推到 1.0 之上，一条也不放行
     let c = cost_line(&s, 1000.0, 1.0).expect("算得出");
-    if c.n_accepted == 0 {
-        assert_eq!(c.false_accept_rate, None, "**空放行区不报 0**：那会让「全弃权」读成「零假放行」");
-    }
+    assert_eq!(c.n_accepted, 0);
+    assert_eq!(c.false_accept_rate, None, "空放行区不报 0");
+}
+
+#[test]
+fn reject_all_keeps_score_one_rejected() {
+    let samples = [(1.0, false), (0.5, true)];
+    let c = cost_line(&samples, 1000.0, 1.0).unwrap();
+    assert!(c.line > 1.0, "reject-all must not become an inclusive threshold of 1");
+    assert_eq!(c.n_accepted, 0);
+    assert_eq!(c.n_false_accept, 0);
+    assert_eq!(c.false_accept_rate, None);
+    let actual_cost = samples.iter().map(|(p, correct)| {
+        if *p >= c.line && !correct { 1000.0 }
+        else if *p < c.line && *correct { 1.0 } else { 0.0 }
+    }).sum::<f64>();
+    assert_eq!(c.cost, actual_cost);
 }
 
 /// **代价线同样要有证书才能上岗**——两条规则合起来仍然走得通。

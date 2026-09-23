@@ -47,7 +47,7 @@ fn 校准() -> CalibStore {
     // 预注册修订里那条赌要用它，跑完要按线的两个读法各算一遍。
     c.put("live.noul", 0.66, 0.56, 73, "上岗").unwrap();
     c.put("live.choice", 0.35, 0.35, 74, "上岗").unwrap();
-    let 真档 = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../../foundation/profile/profiles/jev-1.13.0.json");
+    let 真档 = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../../src/foundation/profile/profiles/jev-1.13.0.json");
     c.profile = Profile::load(&真档).expect("真档案读得动");
     c
 }

@@ -19,7 +19,7 @@ fn oracle() -> Json {
 }
 
 fn 档案路径() -> PathBuf {
-    PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../../foundation/profile/profiles/jev-1.13.0.json")
+    PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../../src/foundation/profile/profiles/jev-1.13.0.json")
 }
 
 /// 同一份档案 JSON，Rust 与 Python 算出**同一组线与 δ**。
