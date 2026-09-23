@@ -2,6 +2,18 @@
 
 Updated: 2026-09-23. This is a dated report, not an automatically updated dashboard.
 
+## 2026-09-23: reconcile the design-revision PR / 整理设计修订 PR
+
+PR #20 now preserves the current `12`/`13` authority documents while retaining its dated
+design report. The three defects are already fixed by #25 and covered in `v13_rules.rs`;
+obsolete ignored reproducers are replaced by an enabled overflow regression that checks
+the runtime error variant and exact source span. A checker rejection cannot pass this
+test. Current status text now reflects the merged implementation.
+
+保留现行规范和原始设计报告，移除已被后续回归覆盖的三条过期忽略测试；补验整数溢出
+确实返回运行错误并指向准确源码位置，不会因其他静态错误而误判通过。当前状态说明同步
+到已合入的 Rust 实现，历史数字保留并标明日期。
+
 ## 2026-09-23: review the native kernel sync / 审查原生内核同步
 
 PR #25 brings the later Rust checker/runtime and calibration host APIs into the public
