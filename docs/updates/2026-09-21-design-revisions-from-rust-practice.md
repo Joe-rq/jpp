@@ -1,5 +1,13 @@
 # 2026-09-21 update: six design revisions fed back from the Rust implementation / 实践反馈回设计的六条修订
 
+> **2026-09-23 merge-time note / 合并时订正：** The body below preserves the original
+> September 21 snapshot. PR #25 has since published the runtime fixes and regression
+> tests in `v13_rules.rs`; the old three ignored reproducers are superseded.
+> `known_defects.rs` now checks the exact runtime error and source span, and runs by
+> default. Run `cargo test -p jpp-core --test v13_rules --test known_defects` for the
+> current checks. 下文 41 / 69 项、尚未合入及三条失败均为历史状态，不是当前状态。
+> 当前实现范围见 [status](../status.md)。
+
 Dated update following the practice in `progress.md`. This one is a **specification increment plus three reproduced defects**, not an implementation announcement. Every number in "Verification in this repository" was re-run on the committed files in this repository on the date above. The rules below are decided; the implementation status column says, rule by rule, what the kernel actually does today.
 
 ## What changed for a user / 用户可见的变化
