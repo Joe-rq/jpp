@@ -21,7 +21,7 @@ Updated 2026-09-24, after PRs [#27](https://github.com/Towow-ai/jpp/pull/27), [#
 
 ## Honest evidence on the project's three acceptance criteria
 
-Expressiveness (lines/effort saved versus hand-written code) has partial evidence at 2x-5x on isolated comparisons, short of the 9x-20x literature reference band. A corrected two-tier measurement method exists and a first multi-implementation measurement has been run under it in the research workspace, but the resulting ratio is not published in this update; public readings include the 2x-5x probe comparisons above and a 1.2x-1.5x reading on short trial programs (see the dashboard update linked above). Depth (how many chained judgment layers a program can sustain) now has a curve of 22/12/4 decided outcomes across one/two/three chained layers. Backend interchangeability ("swap the judge, program doesn't change") has been exercised for 1 of 8 tracked capability assumptions. The live backend's share of decided outcomes on a set of new-question test runs is 0.255 (14 of 55).
+Expressiveness (lines/effort saved versus hand-written code) has partial evidence at 2x-5x on isolated comparisons, short of the 9x-20x literature reference band. A corrected two-tier measurement method exists and a first multi-implementation measurement has been run under it in the research workspace, but the resulting ratio is not published in this update; public readings include the 2x-5x probe comparisons above and a 1.2x-1.5x reading on two programs written during the review (see the dashboard update linked above). Depth (how many chained judgment layers a program can sustain) has a hop distribution from fixed observations: 22, 12 and 4 judgments at hops one, two and three; the per-hop undecided rate and the live depth curve are not measured yet. Backend interchangeability ("swap the judge, program doesn't change") has been exercised for 1 of 8 tracked capability assumptions. The live backend's share of decided outcomes on a set of new-question test runs is 0.255 (14 of 55, counting earlier runs that were all cold).
 
 ## Backends / 后端
 
@@ -37,6 +37,6 @@ Do not reuse fixture calibration records for real decisions -- they exist only t
 
 另有一批工作只写进了设计裁定，任何分支都还没有造：一种能把正式认证门槛压到约 60 条标注（不放松安全边界）的固定序检验方法、一个序贯变体，以及一处「已认证线扩展适用范围」规格缺口的修法，都已离线用现有数据验证过，但还没有实现进校准代码。
 
-项目三条验收标准的如实数字：表达量在孤立对照上是 2–5 倍，还没到 9–20 倍的文献参考带；按新方法做的第一次多实现测量已经在研究工作区跑过，读数本篇不公布，可以公开的是上面这 2–5 倍的探针读数与一组短试写程序 1.2–1.5 倍的读数。深度证据现在是一条一/二/三层各 22/12/4 个已决出口的曲线。换后端可用性目前只验证了追踪的八类能力假设中的一类。真机后端上，一批新题测试运行的已决出口占比是 0.255（14/55）。
+项目三条验收标准的如实数字：表达量在孤立对照上是 2–5 倍，还没到 9–20 倍的文献参考带；按新方法做的第一次多实现测量已经在研究工作区跑过，读数本篇不公布，可以公开的是上面这 2–5 倍的探针读数与评估时试写的两个程序 1.2–1.5 倍的读数。深度证据是固定观察下的跳数分布：一、二、三跳的判断数为 22、12、4；逐跳未决率与真机深度曲线还没测。换后端可用性目前只验证了追踪的八类能力假设中的一类。真机后端上，一批新题测试运行的已决出口占比是 0.255（14/55，含此前全冷的运行）。
 
 公开仓库不包含凭据、私人对话或模型权重。`jpp run` 默认用固定 JSON 观察做零成本机制测试；`--backend live` 接真实 JEV 服务，需要能力画像，新题没有校准记录时会明确返回未决而不是瞎猜阈值。夹具校准记录只用于机制测试，不得用于真实决策。
