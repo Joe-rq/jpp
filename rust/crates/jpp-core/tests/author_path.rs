@@ -3,6 +3,7 @@
 //! 共同形状：**内核手里有答案，只是没说出口。**
 //! 「说不准」与「说不出」是两回事——这几条全是后者，**而后者是免费可修的**。
 
+mod common;
 use std::cell::RefCell;
 
 use jpp_core::effects::{CalibStore, Client, EffectError, FixedClient, GenResult, JudgeResult};
@@ -32,7 +33,7 @@ fn 固定观察未命中要给出状态与题() {
 }
 
 /// **四：修法要标明谁能执行。**
-/// `W-uncertified` 的「走 `commission`」、`W-untested` 的「开置换」——
+/// `W-fixture-line` 的「走 `commission`」、`W-untested` 的「开置换」——
 /// **读者是 `.jpp` 作者，执行者是 Rust 接线人。**
 /// 而同一个前缀下 `W-untested(cold)` 的「给这个键写上岗记录」作者做得到——
 /// **一条可执行、一条不可执行，长得一模一样。**
@@ -69,7 +70,7 @@ handle(cut(judge(state(mat("材料")), test("行吗", "k"))), {
     let mut 手填 = CalibStore::new();
     手填.put("k", 0.8, 0.2, 1, "上岗").unwrap();
     let w2 = 跑(&手填);
-    let unc = w2.iter().find(|x| x.starts_with("W-uncertified")).expect("有这条");
+    let unc = w2.iter().find(|x| x.starts_with("W-fixture-line")).expect("有这条");
     assert!(unc.contains("【需接线人】"), "**`commission` 是 Rust API，作者调不到**：{unc}");
     assert!(unc.contains("调不到") || unc.contains("接线人"), "{unc}");
 }
@@ -96,7 +97,7 @@ fn j08没触发的两个原因各自独立成立() {
     }
     let 跑 = |可逆: bool| {
         let mut a = ActionRegistry::new();
-        a.register("动作", 0.0, 可逆, TaintOut::Trusted, |_| Ok(Value::Text("做了".into())));
+        a.register("动作", 0.0, 可逆, TaintOut::Trusted, |_| Ok(Value::Text("做了".into(), jpp_core::value::Taint::Trusted)));
         let program = lower(&parse(r#"
 budget {calls: 4, cost: 1, depth: 8};
 let 料 = gen("写一句", [], 1, 0);
@@ -106,7 +107,7 @@ handle(cut(judge(state(料[0]), test("该做吗", "k"))), {
     unsure: fn(u) { consume(u, "drop"); "没做" }})
 "#).expect("解析")).expect("lower");
         let mut calib = CalibStore::new();
-        calib.put("k", 0.8, 0.2, 50, "上岗").unwrap();
+        common::certified(&mut calib, "k", 0.8, 0.2, 50);
         let mut l = Ledger::new();
         run(&program, &mut 桩, &calib, &a, &mut l).map(|o| o.value_json()).map_err(|e| e.render())
     };
@@ -130,8 +131,8 @@ fn 作者查得到哪些动作不可逆() {
         fn calls(&self) -> u64 { 0 }
     }
     let mut a = ActionRegistry::new();
-    a.register("读一下", 0.0, true, TaintOut::Untrusted, |_| Ok(Value::Text("x".into())));
-    a.register("发出去", 0.0, false, TaintOut::Trusted, |_| Ok(Value::Text("x".into())));
+    a.register("读一下", 0.0, true, TaintOut::Untrusted, |_| Ok(Value::Text("x".into(), jpp_core::value::Taint::Trusted)));
+    a.register("发出去", 0.0, false, TaintOut::Trusted, |_| Ok(Value::Text("x".into(), jpp_core::value::Taint::Trusted)));
     let program = lower(&parse("budget {calls:0,cost:0}; do(\"打错的名字\", [], 0)").expect("解析")).expect("lower");
     let mut l = Ledger::new();
     let e = run(&program, &mut 桩, &CalibStore::new(), &a, &mut l).expect_err("未登记该报错").render();

@@ -1,0 +1,13 @@
+{
+ "description": "Synthetic fixed observations for unsure-causes.jpp (construction check only; not model evaluation). The calibration record is hand-written to exercise routing, not calibration.",
+ "calibrations": [{"key": "cand", "hi": 0.75, "lo": 0.25, "n": 1, "status": "上岗"}],
+ "observations": [
+  {"on": ["甲：只写 Python 数据脚本"], "op": "test", "text": "这个候选是否会写 Rust？", "calib": "cand", "answer": {"Noul": 0.05}},
+  {"on": ["乙：只做界面设计"], "op": "test", "text": "这个候选是否会写 Rust？", "calib": "cand", "answer": {"Noul": 0.03}},
+  {"on": ["丙：写过 Rust 解释器"], "op": "test", "text": "这个候选是否会写 Rust？", "calib": "cand", "answer": {"Noul": 0.97}},
+  {"on": ["丁：只做测试"], "op": "test", "text": "这个候选是否会写 Rust？", "calib": "cand", "answer": {"Noul": 0.1}},
+  {"on": ["戊：维护过 Rust 网络库"], "op": "test", "text": "这个候选是否会写 Rust？", "calib": "cand", "answer": {"Noul": 0.95}},
+  {"on": ["己：写 Go 后端"], "op": "test", "text": "这个候选是否会写 Rust？", "calib": "cand", "answer": {"Noul": 0.2}}
+ ],
+ "generations": [{"prompt": "写两份会写 Rust 的候选人简介", "retry_seq": 0, "output": ["戊：维护过 Rust 网络库", "己：写 Go 后端"]}]
+}

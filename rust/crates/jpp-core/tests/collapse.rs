@@ -8,6 +8,7 @@
 //! **`Act` 与 `Ignore` 是对称的两个判定**——写 `if 不安全(x) { 拦下 }` 时，
 //! **`Ignore` 才是放行的那个答案**。**语言不知道哪一侧对这个程序才是安全的那一侧。**
 
+mod common;
 use jpp_core::effects::{CalibStore, LiteralMode, Sample};
 
 fn 装(c: &mut CalibStore, key: &str) {
@@ -98,8 +99,8 @@ fn 出口的taint对jpp可见() {
     }
     let 跑 = |动作: &str| {
         let mut a = ActionRegistry::new();
-        a.register("取外部", 0.0, true, TaintOut::Untrusted, |_| Ok(Value::Text("脏".into())));
-        a.register("取内部", 0.0, true, TaintOut::Trusted, |_| Ok(Value::Text("净".into())));
+        a.register("取外部", 0.0, true, TaintOut::Untrusted, |_| Ok(Value::Text("脏".into(), jpp_core::value::Taint::Trusted)));
+        a.register("取内部", 0.0, true, TaintOut::Trusted, |_| Ok(Value::Text("净".into(), jpp_core::value::Taint::Trusted)));
         let src = format!(r#"
 budget {{calls: 4, cost: 1, depth: 8}};
 let m = do("{动作}", [], 0);
@@ -149,12 +150,12 @@ fn 读taint不能替代可信判断() {
     }
     let 跑 = |src: &str| {
         let mut a = ActionRegistry::new();
-        a.register("取外部", 0.0, true, TaintOut::Untrusted, |_| Ok(Value::Text("脏".into())));
-        a.register("取内部", 0.0, true, TaintOut::Trusted, |_| Ok(Value::Text("净".into())));
-        a.register("发出去", 0.0, false, TaintOut::Trusted, |_| Ok(Value::Text("发了".into())));
+        a.register("取外部", 0.0, true, TaintOut::Untrusted, |_| Ok(Value::Text("脏".into(), jpp_core::value::Taint::Trusted)));
+        a.register("取内部", 0.0, true, TaintOut::Trusted, |_| Ok(Value::Text("净".into(), jpp_core::value::Taint::Trusted)));
+        a.register("发出去", 0.0, false, TaintOut::Trusted, |_| Ok(Value::Text("发了".into(), jpp_core::value::Taint::Trusted)));
         let program = jpp_frontend::lower(&jpp_frontend::parse(src).expect("解析")).expect("lower");
         let mut calib = CalibStore::new();
-        calib.put("k", 0.7, 0.3, 50, "上岗").unwrap();
+        common::certified(&mut calib, "k", 0.7, 0.3, 50);
         let mut l = Ledger::new();
         run(&program, &mut 桩, &calib, &a, &mut l).map(|o| o.value_json().to_string()).map_err(|e| e.render())
     };

@@ -1,3 +1,4 @@
+mod calib_confirm;
 mod calib_import;
 mod fixture;
 mod options;
@@ -14,6 +15,7 @@ fn execute(command: Command) -> Result<(), String> {
             return Ok(());
         }
         Command::CalibImport(a) => return calib_import::run(a),
+        Command::CalibConfirm { dir, key, suspend } => return calib_confirm::run(dir, key, *suspend),
         Command::Parse { source, .. } | Command::Check { source } => source,
         Command::Run(options) => &options.source,
     };

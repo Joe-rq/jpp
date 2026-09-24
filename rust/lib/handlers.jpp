@@ -1,0 +1,9 @@
+// 未决原因的去向示例（B3）。rejected_all = 候选全被否决 → 换材料或换前提；
+// no_candidate = 没有候选 → 调生成器补候选。它们与 tie / insufficient 去向不同。
+// 这些是库函数，不是内置路由：调用者按 unsure_cause(u) 选用，也可以换成自己的。
+
+// 候选全被否决：换一批材料（或换一道放宽了前提的题）重新找第一个
+fn retry_with(materials, q) { first_k(sieve(materials, q), 1) }
+
+// 没有候选：让生成器补 n 个候选，再找第一个
+fn generate_then_find(prompt, n, q) { first_k(sieve(gen(prompt, [], n, 0), q), 1) }

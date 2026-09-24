@@ -2332,3 +2332,50 @@ transform 1 / stop 1 / loop 1`（+1 个低频）。
 **而「两边都空」是「我的探针没跑起来」，不是「行为相同」。**
 我差一点把它们记成「同」。**修好探针后，两个都是「异」。**
 **「两个空值相等」是今晚那条恒真断言的又一张脸。**
+
+## 规则批（2026-09-23，B 栏裁定落代码）
+
+### B29 夹具线与代价参数
+
+- `CalibStore::put` 只写夹具记录（`CalibRecord.fixture = true`，为 `false` 时不序列化）。认证程序（`commission*`、`calib-import`）上岗时清掉这一位。
+- 夹具线 = `fixture` 位为真，或记录没有一张证书（`CalibRecord::fixture_line()`）。凭夹具线得到的出口 `Exit.fixture_line` 为真；强出口时报 `W-fixture-line`（取代原 `W-uncertified`）。
+- J-08：夹具线出口不算放行不可逆 `do` 的可信合取项（`Exit::guard_trusted()`）。
+- `cut(r, {cost: [fp, fn]})`、`cut(r, key, {cost: [fp, fn]})`：只取该记录（先题级、后题式级）上按这个代价矩阵认证的证书的线；没有 → `Unsure(cold)`，J-15 载体 `cost_line`。线仍只来自记录。
+- 测试若要走 J-08 放行路径，用 `tests/common::certified` 附一张明写为「测试合成证书」的证书；语言与 CLI 没有这条路。
+
+### B25 停岗候选
+
+- 记录状态加「停岗候选」（`STATUSES` 五个）。候选线照常用于路由，出口 `Exit.suspend_candidate` 为真，强出口报 `W-suspend-candidate`，J-08 不算可信合取项。
+- 自动标记：`cut` 等消费方调用漂移检查（`报漂移`）；`drift_of(key).可停岗()` 成立时，本趟起该键即为候选（`W-drift` 写明），`Outcome.suspend_candidates` 列出。内核不改记录。
+- CLI：`jpp run … --calib-out <目录>` 把候选键（原上岗）写成「停岗候选」；`jpp calib-confirm <目录> <键> --suspend | --keep` 由人确认，只处理候选状态。
+
+### B28 重复读数合并 `repeat`
+
+- `repeat(读数列表[, "mean" | "median"])`（原 `agg`，旧名一个版本内可用并报 `W-deprecated`）：同题同状态重复读数逐分量取均值或中位数，choice 与 score 也按概率向量逐分量合并；`"mode"`（众数、投票）报错。
+- 合并结果仍是读数，校准键为 `原键·repeat(n=…)`，不借题式或模式线，没有该键的认证记录就是冷；账本写一条 `Effect{kind:"repeat"}` 记 n 与方式，trace 记 `repeat` 事件。
+- `CalibRecord.rerun_independent`（可选）：重跑分歧检验是否通过。未通过或未测时，`repeat` 报 `W-repeat-persistent`（重复只压抖动，不降错，B9）。库里目前没有 `band → 重跑` 处理器；以后加时以这一位为启用条件。
+
+### B32 判断力缺席与时延
+
+- `budget {absent: {retry, backoff, then, breaker}, latency_p95: 秒, unsure: …}`：前端接上三格（`unsure` 以前写不出）。`absent` 缺省 `retry 2, backoff 1, then "escalate", breaker 3`。
+- 判断器调用失败：按 `retry` 次重试，等待 `backoff` 秒起每次翻倍；用尽后：`escalate` → 程序挂起（Pending cause=absent，恢复后 `--resume`）；`conservative` → 该组题出口 `Unsure(absent)`，程序继续；`fail` → 运行期错误。连续缺席达 `breaker` 次后熔断，不再发出。**未声明 `absent` 时沿用旧行为**（客户端错误即运行期错误）。
+- `latency_p95`：本趟判断调用累计耗时上限。某次调用后超出 → 本组题 `Unsure(latency)`；之后的站点不再发，直接 `Unsure(latency)`。
+- 缺席与超时事件记账（`Effect{kind:"absent"}`，键 `absent:<题键>`），只凭账本重放时照记的原因给出，不再发。
+- 检查：`budget.latency_p95` 与档案 `concurrency.latency_s.p95` 比，一层的 p95 已超 → `E-latency`；无循环时「站点数 × p95」超 → `E-latency`；有循环里的站点只能给下界 → `W-latency`；无档案 → `W-untested`。
+
+### B3 未决原因 `rejected_all` 与 `no_candidate`
+
+- `first_k`：没有候选（输入为空）→ `Unsure(no_candidate)`；有候选、全部观察完、一个都没接受 → `Unsure(rejected_all)`；接受了一些但不足 k 个 → `Ignore`（确定不足）。
+- `select` 的 `over` 为空：不发调用，出口 `Unsure(no_candidate)`，报 `W-no-candidate`。
+- 去向示例在 `lib/handlers.jpp`：`retry_with(材料, 题)`（全被否决 → 换材料或换前提）、`generate_then_find(提示, n, 题)`（没有候选 → 调生成器）。演示：`examples/unsure-causes.jpp`（夹具 `fixtures/unsure-causes.json`）。
+
+## B33 值级 taint（2026-09-23）
+
+宿主标量 `Value::Int / Float / Bool / Text` 各带一位 `Taint`（`Value::Int(i, t)` 等；构造可信值用 `Value::int / float / bool / text`）。容器不带位，`Value::taint()` 递归取 ∨；`Value::tainted(t)` 把 `t` ∨ 进所有标量叶子。
+
+- **读出规则**：`content(m)`、`m.content`、`text(m)` 从 untrusted 材料读出的值，所有叶子标 untrusted；不可信 `do` 的 `Fail` 带动作输出位，`fail(reason)` 带理由文字的位。
+- **宿主内传播**：一元、二元运算与内置输出 = ∨ 输入，在 `binop` 与 `apply` 的内置分派处统一计算。例外表 `不做数据流合取的内置`：效应边界与自带规则的内置（按 §2.11 表赋值），以及只搬运元素的 `map / filter / fold / loop / append / concat / slice / reverse / with`（元素保留自身的位）；列表 `+` 同理。不在表上的内置一律 ∨。取字段、下标返回叶子自身的位；用户函数返回值自带位。**控制流不传播**。
+- **进材料**：`mat(v)` 等计算值进槽时 taint = `v.taint()`；成分不可信时 origin 记 `computed`（可信时仍记 `literal`，材料哈希不含 origin）。旧的旁路表 `unwrapped_untrusted` / `untrusted_texts` 与四个辅助函数已删除。
+- `do` 的 `taint_in` 取 `taint_of`（即 `Value::taint()`），裸值经 `inherit` 动作不再洗白。
+- J-08 报错：守卫出口所在状态含成分不可信的计算值材料时，追加「该材料由计算值构成，成分含不可信内容」（按当前各帧产生过的出口近似判定）。
+- 账本格式不变；宿主值不进账本。回归：`crates/jpp-core/tests/value_taint.rs`（探针 A–E2 与控制流、取字段、inherit、J-08 诊断）。

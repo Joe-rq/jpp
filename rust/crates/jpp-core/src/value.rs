@@ -436,9 +436,18 @@ pub struct Exit {
     /// 这个出口来自哪一条账本记录（`cut` 时写入；其余出口为空）。
     /// 组合封闭性契约的证据只存这个键，不存读数或材料的副本（B17 不变量 3）。
     pub ledger_key: RefCell<String>,
+    /// **这个出口过的是夹具线**（B29）：线来自宿主 `put` 的测试记录或没有证书的记录。
+    /// 夹具线的出口不算放行不可逆 `do` 的可信合取项。
+    pub fixture_line: Cell<bool>,
+    /// **这条线是停岗候选**（B25）：出口照常路由，不算放行不可逆 `do` 的可信合取项。
+    pub suspend_candidate: Cell<bool>,
 }
 
 impl Exit {
+    /// J-08 的可信合取项：状态可信、且不是凭夹具线得到的（B29）。
+    pub fn guard_trusted(&self) -> bool {
+        self.taint == Taint::Trusted && !self.fixture_line.get() && !self.suspend_candidate.get()
+    }
     pub fn is_unsure(&self) -> bool {
         matches!(self.kind, ExitKind::Unsure(_))
     }
@@ -557,10 +566,13 @@ pub struct Closure {
 #[derive(Clone, Debug)]
 pub enum Value {
     Unit,
-    Int(i64),
-    Float(f64),
-    Bool(bool),
-    Text(Rc<str>),
+    /// 宿主标量各带一位 taint（B33，`12` §2.11「宿主内传播」）：含义与材料相同，
+    /// trusted = 有人为其内容担保。语法字面量求值即 trusted；从 untrusted 材料读出的叶子
+    /// 为 untrusted；内置与运算符的输出取 ∨ 输入；容器不带位，由 `taint_of` 递归取 ∨。
+    Int(i64, Taint),
+    Float(f64, Taint),
+    Bool(bool, Taint),
+    Text(Rc<str>, Taint),
     List(Rc<Vec<Value>>),
     Record(Rc<Vec<(String, Value)>>),
     Fn(Rc<Closure>),
@@ -575,15 +587,57 @@ pub enum Value {
     /// 未决责任 `U(q)`：`handle` 的 unsure 臂收到的就是它。不可伪造（只能由 handle 交付）、
     /// 不能默默变成材料或 JSON 就算销账。与出口共享同一个 `Rc<Exit>`，销账记录是同一份。
     Duty(Rc<Exit>),
-    /// `do` 的失败值（J-12）
-    Fail(Rc<str>),
+    /// `do` 的失败值（J-12）。**失败信息也是外部世界的输出**：它的 taint 取产生它的动作的
+    /// 输出 taint（`fail()` 由程序自己写，trusted）。此前没有这一位，装进材料时一律 trusted，
+    /// 不可信动作的失败值因此能放行不可逆 do（K-182 / K-203，2026-09-23 修）。
+    Fail(Rc<str>, Taint),
     /// `stop(v)`：有界循环的显式停止
     Stop(Rc<Value>),
 }
 
 impl Value {
+    /// 可信文本（程序自己造的）
     pub fn text(s: &str) -> Value {
-        Value::Text(Rc::from(s))
+        Value::Text(Rc::from(s), Taint::Trusted)
+    }
+    pub fn int(i: i64) -> Value {
+        Value::Int(i, Taint::Trusted)
+    }
+    pub fn float(f: f64) -> Value {
+        Value::Float(f, Taint::Trusted)
+    }
+    pub fn bool(b: bool) -> Value {
+        Value::Bool(b, Taint::Trusted)
+    }
+    /// 这个值携带的 taint：标量取自身位，容器递归取 ∨，材料 / 出口 / 失败值取其位；
+    /// 其余（函数、题、状态……）是程序自己造的，按 trusted（B33 第 1 点）。
+    pub fn taint(&self) -> Taint {
+        match self {
+            Value::Int(_, t) | Value::Float(_, t) | Value::Bool(_, t) | Value::Text(_, t) => *t,
+            Value::Mat(m) => m.taint,
+            Value::List(l) => l.iter().fold(Taint::Trusted, |t, x| Taint::join(t, x.taint())),
+            Value::Record(fs) => fs.iter().fold(Taint::Trusted, |t, (_, x)| Taint::join(t, x.taint())),
+            Value::Exit(e) => e.taint,
+            Value::Stop(x) => x.taint(),
+            Value::Fail(_, t) => *t,
+            _ => Taint::Trusted,
+        }
+    }
+    /// 把 `t` ∨ 进所有标量叶子（容器递归）。`t` 为 trusted 时原样返回。
+    /// 用于读出规则（从 untrusted 材料读出的全部叶子标 untrusted）与显式数据流（输出 ∨ 输入）。
+    pub fn tainted(self, t: Taint) -> Value {
+        if t == Taint::Trusted {
+            return self;
+        }
+        match self {
+            Value::Int(i, _) => Value::Int(i, t),
+            Value::Float(f, _) => Value::Float(f, t),
+            Value::Bool(b, _) => Value::Bool(b, t),
+            Value::Text(s, _) => Value::Text(s, t),
+            Value::List(l) => Value::list(l.iter().cloned().map(|x| x.tainted(t)).collect()),
+            Value::Record(r) => Value::record(r.iter().cloned().map(|(k, v)| (k, v.tainted(t))).collect()),
+            other => other,
+        }
     }
     pub fn list(v: Vec<Value>) -> Value {
         Value::List(Rc::new(v))
@@ -594,10 +648,10 @@ impl Value {
     pub fn type_name(&self) -> &'static str {
         match self {
             Value::Unit => "Unit",
-            Value::Int(_) => "Int",
-            Value::Float(_) => "Float",
-            Value::Bool(_) => "Bool",
-            Value::Text(_) => "Text",
+            Value::Int(_, _) => "Int",
+            Value::Float(_, _) => "Float",
+            Value::Bool(_, _) => "Bool",
+            Value::Text(_, _) => "Text",
             Value::List(_) => "List",
             Value::Record(_) => "Record",
             Value::Fn(_) => "Fn",
@@ -609,7 +663,7 @@ impl Value {
             Value::Reading(_) => "Reading",
             Value::Exit(_) => "Exit",
             Value::Duty(_) => "Unsure",
-            Value::Fail(_) => "Fail",
+            Value::Fail(..) => "Fail",
             Value::Stop(_) => "Stop",
         }
     }
@@ -623,10 +677,10 @@ impl Value {
     pub fn to_json(&self) -> Json {
         match self {
             Value::Unit => Json::Null,
-            Value::Int(i) => json!(i),
-            Value::Float(f) => json!(f),
-            Value::Bool(b) => json!(b),
-            Value::Text(s) => json!(s.as_ref()),
+            Value::Int(i, _) => json!(i),
+            Value::Float(f, _) => json!(f),
+            Value::Bool(b, _) => json!(b),
+            Value::Text(s, _) => json!(s.as_ref()),
             Value::List(l) => Json::Array(l.iter().map(|v| v.to_json()).collect()),
             Value::Record(r) => {
                 let mut m = serde_json::Map::new();
@@ -644,7 +698,7 @@ impl Value {
             Value::Reading(r) => json!({"reading": r.ledger_key, "q": r.q_hash, "state": r.state_hash, "op": r.op.phys()}),
             Value::Exit(e) => json!({"exit": e.label(), "id": e.id, "consumed": e.consumed.get(), "q": e.q_hash}),
             Value::Duty(e) => json!({"unsure": e.cause(), "duty": e.id, "q": e.q_hash}),
-            Value::Fail(s) => json!({"fail": s.as_ref()}),
+            Value::Fail(s, _) => json!({"fail": s.as_ref()}),
             Value::Stop(v) => json!({"stop": v.to_json()}),
         }
     }
@@ -663,11 +717,11 @@ impl Value {
         Some(match (self, other) {
             (Value::Reading(_), _) | (_, Value::Reading(_)) => return None,
             (Value::Unit, Value::Unit) => true,
-            (Value::Int(a), Value::Int(b)) => a == b,
-            (Value::Float(a), Value::Float(b)) => a == b,
-            (Value::Int(a), Value::Float(b)) | (Value::Float(b), Value::Int(a)) => (*a as f64) == *b,
-            (Value::Bool(a), Value::Bool(b)) => a == b,
-            (Value::Text(a), Value::Text(b)) => a == b,
+            (Value::Int(a, _), Value::Int(b, _)) => a == b,
+            (Value::Float(a, _), Value::Float(b, _)) => a == b,
+            (Value::Int(a, _), Value::Float(b, _)) | (Value::Float(b, _), Value::Int(a, _)) => (*a as f64) == *b,
+            (Value::Bool(a, _), Value::Bool(b, _)) => a == b,
+            (Value::Text(a, _), Value::Text(b, _)) => a == b,
             // 容器里的「不可比」要传上来，不能被 `== Some(true)` 悄悄吃成 false：
             // 读数装进列表或记录还是读数，没有可读的值（J-01）。
             (Value::List(a), Value::List(b)) => {
@@ -691,7 +745,7 @@ impl Value {
             (Value::Duty(a), Value::Duty(b)) => a.id == b.id,
             (Value::Fn(a), Value::Fn(b)) => a.hash == b.hash,
             (Value::Builtin(a), Value::Builtin(b)) => a == b,
-            (Value::Fail(a), Value::Fail(b)) => a == b,
+            (Value::Fail(a, _), Value::Fail(b, _)) => a == b,
             _ => false,
         })
     }

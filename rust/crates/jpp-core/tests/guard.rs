@@ -12,6 +12,7 @@
 //! `taint_out="trusted"` 是作者的**显式标记**，语言只保证它可见可追，**不设审核方**。
 //! 所以这条查的是「守卫里有没有一个 trusted 合取项」，不是「那个 trusted 配不配」。
 
+mod common;
 use std::cell::RefCell;
 
 use jpp_core::effects::{CalibStore, Client, EffectError, GenResult, JudgeResult};
@@ -47,7 +48,7 @@ impl Client for 定值客户端 {
 fn 跑(src: &str, p: f64) -> Result<jpp_core::Outcome, jpp_core::Error> {
     let program = lower(&parse(src).expect("解析")).expect("lower");
     let mut calib = CalibStore::new();
-    calib.put("k", 0.65, 0.35, 100, "上岗").unwrap();
+    common::certified(&mut calib, "k", 0.65, 0.35, 100);
     let mut actions = ActionRegistry::new();
     // 不可逆：发出去就收不回
     actions.register("发邮件", 0.0, false, TaintOut::Trusted, |_| Ok(jpp_core::value::Value::text("已发")));

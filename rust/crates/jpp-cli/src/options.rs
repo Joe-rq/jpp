@@ -2,7 +2,7 @@ use std::path::PathBuf;
 
 pub const HELP: &str = "J++ native source tools\nUsage:\n  jpp parse <file.jpp> [--ast]\n  jpp check <file.jpp>\n  jpp run <file.jpp> [--fixtures <file.json>] [--output <report.json>]\n          [--ledger-out <ledger.json>] [--replay <ledger.json> | --resume <ledger.json>]
           [--profile <profile.json>] [--calib <calib-dir>] [--calib-out <calib-dir>]
-          [--backend fixed|live] [--model <name>]\n  jpp calib-import <labels.jsonl> --calib-out <calib-dir> [--calib <calib-dir>] [--profile <profile.json>]\n          [--alpha 0.1] [--conf-delta 0.1] [--spot-check-min 0.9] [--spot-check-conf 0.95] [--abstain-warn 0.1] [--seed 20260923]\n\nLeading relative imports load source libraries. Run defaults to fixed generation/judgment/response records; no model API requests are made. --backend live switches to the real JEV backend (JevClient::live), reading the API key only from ~/.typesafe-key (never logged or written to any report); it requires jpp-cli to be built with `--features live` and is mutually exclusive with --fixtures. --model names the model for --backend live (default jev-1.13.0). Registered actions: record_check, read_json(path), write_json(path,value). --profile loads a model profile (lines, deltas, windows, class-assumption fields); without it the kernel falls back to code defaults and says so. --calib loads calibration records from a directory of per-key JSON files. --calib-out folds this run's readings into those records and writes them back, which is the only way the calibration loop closes: J-03 forbids a program from writing a line itself. File paths use the working directory. Resume may perform unrecorded actions; replay rejects them. Replay restores the calibration records the ledger recorded as used when they are not supplied again. calib-import is the truth channel: it folds labelled readings (JSONL: key or form, item, p, label true|false|\"ambiguous\", source human|computed|model:<name>, optional spot_check) into calibration records and certifies them by split-sample two-sided commission (B24: lines are chosen on one half, selected by --seed, and certified once on the other half; the method, seed and both halves' sizes are written into the certificate); model-only truth is certified only when a same-key human spot check reaches --spot-check-min: the point estimate below it keeps the record pending; a point estimate at or above it whose one-sided --spot-check-conf lower bound is still below it certifies the line provisionally (gate \"临时上岗\", W-provisional at use) and reports how many more all-agreeing checks would confirm it.";
+          [--backend fixed|live] [--model <name>]\n  jpp calib-import <labels.jsonl> --calib-out <calib-dir> [--calib <calib-dir>] [--profile <profile.json>]\n          [--alpha 0.1] [--conf-delta 0.1] [--spot-check-min 0.9] [--spot-check-conf 0.95] [--abstain-warn 0.1] [--seed 20260923]\n  jpp calib-confirm <calib-dir> <key> --suspend|--keep\n\nLeading relative imports load source libraries. Run defaults to fixed generation/judgment/response records; no model API requests are made. --backend live switches to the real JEV backend (JevClient::live), reading the API key only from ~/.typesafe-key (never logged or written to any report); it requires jpp-cli to be built with `--features live` and is mutually exclusive with --fixtures. --model names the model for --backend live (default jev-1.13.0). Registered actions: record_check, read_json(path), write_json(path,value). --profile loads a model profile (lines, deltas, windows, class-assumption fields); without it the kernel falls back to code defaults and says so. --calib loads calibration records from a directory of per-key JSON files. --calib-out folds this run's readings into those records and writes them back, which is the only way the calibration loop closes: J-03 forbids a program from writing a line itself. File paths use the working directory. Resume may perform unrecorded actions; replay rejects them. Replay restores the calibration records the ledger recorded as used when they are not supplied again. calib-import is the truth channel: it folds labelled readings (JSONL: key or form, item, p, label true|false|\"ambiguous\", source human|computed|model:<name>, optional spot_check) into calibration records and certifies them by split-sample two-sided commission (B24: lines are chosen on one half, selected by --seed, and certified once on the other half; the method, seed and both halves' sizes are written into the certificate); model-only truth is certified only when a same-key human spot check reaches --spot-check-min: the point estimate below it keeps the record pending; a point estimate at or above it whose one-sided --spot-check-conf lower bound is still below it certifies the line provisionally (gate \"临时上岗\", W-provisional at use) and reports how many more all-agreeing checks would confirm it. calib-confirm is the human confirmation of a suspension candidate (B25): a drift signal marks a certified line as a candidate (its exits still route but cannot release an irreversible action), --calib-out writes the candidate status, and --suspend or --keep settles it.";
 
 /// 默认的真机模型名：与 `crates/jpp-core/tests/e_jpp_live.rs`、`tests/jev_client.rs`
 /// 及 `foundation/profile/profiles/jev-1.13.0.json` 用的字符串一致。
@@ -15,6 +15,7 @@ pub enum Command {
     Check { source: PathBuf },
     Run(RunOptions),
     CalibImport(ImportArgs),
+    CalibConfirm { dir: PathBuf, key: String, suspend: bool },
 }
 
 #[derive(Debug, PartialEq)]
@@ -89,6 +90,16 @@ pub fn parse(args: &[String]) -> Result<Command, String> {
     let verb = args[0].as_str();
     if verb == "calib-import" {
         return parse_import(args);
+    }
+    if verb == "calib-confirm" {
+        let dir = args.get(1).ok_or("calib-confirm requires <calib-dir> <key> --suspend|--keep")?;
+        let key = args.get(2).ok_or("calib-confirm requires <calib-dir> <key> --suspend|--keep")?;
+        let suspend = match args.get(3).map(String::as_str) {
+            Some("--suspend") => true,
+            Some("--keep") => false,
+            _ => return Err("calib-confirm requires --suspend or --keep".into()),
+        };
+        return Ok(Command::CalibConfirm { dir: dir.into(), key: key.clone(), suspend });
     }
     if !matches!(verb, "parse" | "check" | "run") {
         return Err(format!("unknown command '{verb}'"));

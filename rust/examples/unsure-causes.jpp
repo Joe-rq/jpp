@@ -1,0 +1,37 @@
+// B3：未决原因 rejected_all 与 no_candidate 的产生与去向。
+// 找「第一个会写 Rust 的候选」：A 组候选全被否决 → 换一批材料再找；B 组没有候选 → 调生成器补候选再找。
+import "../lib/outcome.jpp";
+import "../lib/handlers.jpp";
+budget {calls: 12, cost: 0.01, depth: 256};
+
+let fit = test("这个候选是否会写 Rust？", "cand");
+
+fn find(pool) { first_k(sieve(pool, fit), 1) }
+
+// 按未决原因路由：返回 {via, found, pending}；未决随返回值交出（J-05）
+fn route(r, spare, prompt) {
+    handle(r.value.exit, {
+        act: fn() { {via: "direct", found: map(r.value.items, fn(e) { e.item }), pending: r.pending} },
+        ignore: fn() { {via: "not_enough", found: [], pending: r.pending} },
+        unsure: fn(u) {
+            let c = unsure_cause(u);
+            consume(u, "drop");
+            if c == "rejected_all" {
+                let r2 = retry_with(spare, fit);
+                {via: "rejected_all → 换材料", found: map(r2.value.items, fn(e) { e.item }), pending: r2.pending}
+            } else {
+                if c == "no_candidate" {
+                    let r3 = generate_then_find(prompt, 2, fit);
+                    {via: "no_candidate → 调生成器", found: map(r3.value.items, fn(e) { e.item }), pending: r3.pending}
+                } else {
+                    {via: c, found: [], pending: r.pending}
+                }
+            }
+        }
+    })
+}
+
+let a = find(["甲：只写 Python 数据脚本", "乙：只做界面设计"]);
+let b = find([]);
+{A: route(a, ["丙：写过 Rust 解释器", "丁：只做测试"], "写两份候选人简介"),
+ B: route(b, [], "写两份会写 Rust 的候选人简介")}
