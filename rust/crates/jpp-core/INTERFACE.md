@@ -124,6 +124,8 @@ pub type Env = Rc<EnvNode>;
 | `test(题面: Text, calib: Text) -> Question` | 是非题，下沉成 noul |
 | `select(题面: Text, calib: Text) -> Question` | 在 `over` 里挑一个，下沉成 choice |
 | `measure(题面: Text, [档位: Text…], calib: Text) -> Question` | 分档题，至少两档，下沉成 score |
+| `form(题型: Text, 模板: Text, {calib, scale?, evidence?, presupposition?, request?}) -> Form` | 题式（带 `{槽}` 的题模板）。题型为 `"test"` / `"select"` / `"measure"`；calib 必填且不能是数字（J-03） |
+| `fill(题式: Form, {槽: 值…}) -> Question` | 按填法得到题。槽必须恰好填满（缺槽、多槽都报错）；值取 Text / Int / Float / Bool 的文本形式，读数不能填（J-01） |
 | `judge(state, question) -> Reading` / `judge(state, [question…]) -> [Reading]` | 一状态多题一次问完 |
 | `cut(reading) -> Exit` / `cut(reading, calib_key: Text) -> Exit` | 过线。`calib` 位只收校准记录的**键**，字面量线是 J-03 错 |
 | `ask(state, question) -> Exit` | 问人。没答就是程序级 Pending；次数受 `budget.escalate` 管（J-07） |
@@ -243,6 +245,116 @@ uncertainty}`，直接收 `&[Rc<Reading>]`，不必起解释器。
 **类型名**（标注里认得的）：`Int`、`Decimal`/`Float`、`Bool`、`Text`、`List`、`Record`、`Unit`、
 `Fn(…)->…`。`Mat`、`State`、`Question`、`Reading`、`Exit`、`Method` 这些标了也接受，但静态不据此
 判参数——它们由运行期把关。检查器只在「标注是上面那几个基本档、实参又是字面量」时判不符（`E-type`）。
+
+## 三·四、题与题式是一等值（施工件 b，2026-09-23）
+
+对应 B 栏 B1（题的五件：主体、谓词、划分、请求、前提，待 Nature 批准）与 `08` §1 自指。依据文本 `12` §2.2 本体未改；本节只记实现现状。
+
+**题的只读字段**（`q.字段`；静态检查按同一张表核字段名，写错报 `E-field` 带修法）：
+
+| 字段 | 值 | 说明 |
+|---|---|---|
+| `text` / `predicate` | Text | 题面即谓词：主体（被判断的对象）在状态里，不在题面里 |
+| `op` | `"test"` / `"select"` / `"measure"` | |
+| `subject` | `"on"` / `"over"` | 主体读哪个槽：是非、打分读 `on`；K 选一读 `over`。关系题读一对，由状态决定 |
+| `partition` | `"binary"` / `"k_ary"` / `"ordered"` | 由题型推出 |
+| `request` | `"whether"` / `"one"` / `"degree"` | 本版只接受各题型的缺省请求。K 选一的 `all`（选出全部）会报错并提示：待三路过滤（件 c） |
+| `presupposition` | Text 或 unit | 声明项。本版不发给判断器、不进题哈希、不改 `cut`；前提不成立的出口是 B4 的事 |
+| `calib` `scale` `evidence` `hash` | | 与构造时一致 |
+| `form` `template` `fill` | 题式哈希 / 模板 / 填法记录，手写的题为 unit | |
+
+**题式的只读字段**：`template`、`op`、`slots`、`calib`、`scale`、`evidence`、`presupposition`、`request`、`partition`、`subject`、`hash`。
+
+**不变的东西（有意为之）**：
+- 题哈希只由题型、题面、档位、证据槽决定，题式来源、填法、前提都不进哈希。同题面同题型就是同一道题——账本键与校准查找不会因为「手写」与「由题式填出」而分裂。
+- 校准键仍是题声明的 `calib` 字符串（B2 待第三轮实验与 Nature 裁定）。由于同一题式的所有填法共用题式声明的 `calib`，**「校准挂题式、填法继承线」在现有键上已经能表达**；题上记的 `form` 哈希留给日后若改主键时使用。
+- `test` / `select` 的第三个参数记录现在也接受 `presupposition` 与 `request`（与 `evidence` 并列）。
+- J-02 禁自指不变。J-10 的静态 unsure 预算按调用点计 `test`/`select`/`measure`，**尚不计 `fill` 产生的题**（遗留）。
+
+
+## 三·四·一、三路过滤 `sieve`（施工件 c，2026-09-23）
+
+对应 `05` §1 过滤 `filter(S, q)`「三条流，unsure 是第三条流」与 `16` §1、§7（过滤直接吃题）。依据文本本体未改；普通布尔 `filter` 含义不变。
+
+```
+sieve(items, q)                 → 契约值（§三·四·四）：value = 接受流，detail = {question, ignore}，pending = 未决（含 Unsure(budget)）
+sieve(items, [q1, q2, …])       → 每道题一份，同上
+sieve(items, form, [fill1, …])  → 等价于 sieve(items, [fill(form, fill1), …])
+```
+
+- `items`：材料、状态或任意可成材料的值；**也可以是上一次 sieve 的元素**（带 `item` / `exit` / `trail` 的记录），此时取它的 `item` 当材料、`trail` 接上上一次的出口——产物与输入同形，可再过滤。
+- 每个元素：`{item, index, trail, exit, cause}`；`unobserved` 里的元素没有 `exit`。
+- **三流不漏、互斥**：完整输入时 act ∪ ignore ∪ unsure 覆盖全部 index，各占一次；同一元素出现两次就占两席，同状态同题只问一次（账本同键）。流内保持输入顺序。
+- **直接吃题，结构化批处理**：先把此前登记的判断发出，再把全部元素 × 全部题登记，一次刷新；同状态的题由融合 pass 合成一次调用。实测：同一材料 14 道题，逐题经函数判断 14 次调用，`sieve` 1 次（真机 token 4,228 → 536）。
+- **预算提前停止**：接住 `budget` 停机，已问到的照常分流，没问到的进 `unobserved`，`stopped` 写停止原因，并留 `W-sieve-budget`；之后的判断照常受预算约束。其他停机与错误照常上抛。
+- **出口与责任**：act / ignore 出口由 sieve 路由，记为已消费（`consumed_by = sieve:act|ignore`）；unsure 出口放在 unsure 流里，责任随返回值转交（J-05）。
+- 只收是非题（`test`）；K 选一、打分的分流待后续件。静态检查把 `sieve` 记为 `judge` 效应。
+
+S 库 `lib/materials.jpp` 的 `review_material(opinion, about)`：把评审意见（例如 `gen` 的输出）经 `transform` 包成 `{kind: "review", about, opinion}` 材料，taint 与来源链随原材料继承（`12` §2.11），供判断器按题读（B18）。
+
+## 三·四·二、配对 `pair`、聚合 `tally` / `first_k`、有界迭代 `iterate`（施工件 e、f、g，2026-09-23）
+
+依据 `05` §1 的配对、聚合、递归三个算子。都是纯计算或只经 `sieve` 判断，不含领域算法。
+
+| 构造 | 输入 | 输出 |
+|---|---|---|
+| `pair(左, 右)` / `pair(左, 右, fn(a, b) -> Bool)` / `pair([[a, b], …])` | 两组元素，或调用者给的候选对；第三个参数是调用者的取舍方法 | 关系记录列表 `{item: {a, b}, trail: [], left, right, at: [i, j]}`。`item` 是交给判断器的那份材料，两端对象段标为 `a` / `b`；`left` / `right` 原样保留调用者给的元素 |
+| `tally(sieve 产物)` | 一次 `sieve` 的产物 | `{n, act, ignore, unsure, unobserved, count: [下界, 上界], complete, exists, all, stopped}`。计数区间 = [act, act + unsure + unobserved]；`exists` / `all` 是三值出口，结论取决于未决或未观察元素时为 `unsure`（未观察优先给 `budget`，否则取第一个未决元素的原因），责任随出口交给调用者（J-05） |
+| `first_k(sieve 产物, k)` | 同上，按输入顺序 | `{items, exit, blocked_at, k}`。`exit` 为 act = 凑够 k 个且此前没有未决或未观察元素；ignore = 全部观察完、确定不足 k 个；unsure = 被挡住，`blocked_at` 给位置 |
+| `iterate(bound, 初值, fn(acc, i), measure)` | `measure` 是 `fn(acc) -> Int` 或 `"tokens"`（渲染后 token 估算，与窗口检查同一估法） | `{value, reason, rounds, measures}`。`reason` ∈ `stop`（step 返回 `stop(v)`）/ `bound` / `noshrink`（每层材料不再严格变少，05 §1 第二条终止线）/ `repeat`（账本键在本循环内重复，J-06） |
+
+- 元素识别：带 `item` 与 `trail` 的记录（`sieve` 与 `pair` 的产物）取 `item` 当材料，`trail` 接上一次的出口；因此过滤与配对的产物可以再过滤、再配对（组合封闭）。`sieve` 的输出元素另带 `source`，原样保留调用者交进来的元素（配对产物的两端由此一路保留）。
+- `tally` 与同题多问取均值的 `agg` 无关，后者不变。
+- 普通 `loop` 不变；需要终止原因或第二条终止线时用 `iterate`。
+- 静态检查：`iterate` 与 `loop` 同受 J-06（bound 必带、正整数）与 E7 约束；`pair` 的第三参数、`iterate` 的 step / measure 按方法位置推断效应。
+
+## 三·四·三、真值通道与题式级线（施工件 a，2026-09-23）
+
+依据 B19（校准真值以模型标注为主，小样本人工核对一致率，分歧与敏感项转人）、B2（题式为主键；**待 Nature 批准，本版题式键只作回退层**）、B13（标注者弃权率高 = 题面外延未定）、J-18（重放一致）。全部为增量：老记录、老账本的格式与哈希不变。
+
+| 构造 | 说明 |
+|---|---|
+| `jpp calib-import <labels.jsonl> --calib-out <dir> [--calib <dir>] [--alpha 0.1] [--conf-delta 0.1] [--spot-check-min 0.9] [--abstain-warn 0.1]` | 每行：`key`（校准键）或 `form`（题式规格：op、template、可选 scale / evidence / presupposition / request，哈希与 `.jpp` 的 `form` 同算法）、`item`（材料 id，人工与模型标注靠它配对）、`p`（一次实际运行的读数）、`label` ∈ `true` / `false` / `"ambiguous"`、`source` ∈ `human` / `computed`（真值由构造或程序算出）/ `model:<名>`、可选 `spot_check`（人工抽检批次）。逻辑在 `jpp_core::truth::import_labels` |
+| 真值选择 | 同一 `item` 有人工或构造的真值时用它，否则用模型的；`ambiguous` 不进线，计入 `truth.abstain_rate`，超过 `--abstain-warn` 报 `W-abstain` |
+| 上岗门 | 有只靠模型标注撑起的真值时，要求同键有人工抽检且一致率 ≥ `--spot-check-min`；否则记录停在 `待真值`，`truth.gate` 写「待核：原因」。门槛是参数，不写死在规则里 |
+| 认证 | `CalibStore::commission_two_sided_split`（真值通道所用，B24）：带标注样本先按 `(p, 真值)` 排成规范序，再按 `splitmix64(seed ^ 规范序下标)` 最低位分成选线半与认证半（与行序无关）；选线半上按 `cut` 实际判区（`p ≥ hi + δ` 给 Act、`p ≤ lo − δ` 给 Ignore）联合选线，取两区二项上界各 ≤ α 且已决条数最多的一对；认证半上对该对两侧各检验一次。任一半每侧不足零错误所需条数时停在待核（原因以「待核」开头）。证书新增可选字段 `selection {method, seed, n_select, n_certify, candidates}`，有值时进地址。`calib-import --seed`（默认 20260923）。`commission_two_sided`（同批选线）与原 `commission` 保留不删 |
+| 查找顺序 | `cut`：题键上岗 → 用题键；否则题上有 `form_hash` 且题式键 `\u{1f}form\u{1f}<哈希>` 上岗 → 用题式线，报 `W-form-line`，出口 `line_source=题式级·…`；否则模式级；再否则冷。题式记录经真值通道导入但未上岗时报 `W-form-pending`（写明待核原因），按冷键处理。停岗仍提前返回，回退够不着它 |
+| 账本 | 新字段 `Ledger.calib_used`（键 → `{hash, record}`）：`cut` 实际查到的记录。`--replay` / `--resume` 时，本次没有另给的键从这里补回（stderr 列出补回的键），**只凭账本重放出口逐字节一致**。老账本无此字段，行为不变；头上的整库 `calib_hash` 仍会因为库是子集而报 `W-header` |
+
+新字段：`CalibRecord.truth`（`TruthSummary`：来源计数、弃权、抽检、门、批次）、`CalibRecord.lower`（下侧证书）、`Reading.form_hash`。
+
+已知限制：真值通道只导入是非题；`CalibStore::commission` 仍可被宿主代码直接调用，绕过上岗门（CLI 没有这个入口）；两侧联合选线在同一批标注上选线并给上界，与上侧 `certify` 一样没有选择校正。
+
+## 三·四·四、组合封闭性契约（施工件 i，B17，2026-09-23）
+
+依据 B17（Nature 确认进语言：「拼出来的东西本身能够当零件」）与施工前定的三条不变量。依据文本 `12` 本体未改。
+
+**一种值，所有构造都返回它**：`sieve`（单道题）/ `pair` / `tally` / `first_k` / `iterate` / `outcome` 的结果都是
+
+```
+{kind, value, pending, evidence, resume, spent, detail, purpose}
+```
+
+| 字段 | 含义 |
+|---|---|
+| `kind` | 产生它的构造：sieve / pair / tally / first_k / iterate / outcome |
+| `value` | 产出。sieve：接受流（元素列表）；pair：关系记录列表；tally：`{n, act, ignore, unsure, unobserved, count, complete, exists, all}`；first_k：`{items, exit, k}`；iterate：最后的累积值；outcome：调用者给的 |
+| `pending` | 未决清单，每项 `{element, exit, cause}`；`exit` 是承担责任的出口。预算停机未观察的元素记为 `Unsure(budget)` 进这里（不另设字段） |
+| `evidence` | 账本键（Text）。不存读数、观察或材料副本；凭账本可重建 |
+| `resume` | 续接，总是记录：sieve 预算停机 `{reason: "budget", detail, unobserved}`；first_k 被挡 `{reason: "blocked", at, cause}`；iterate `{reason, rounds, measures}`；outcome 给方法时 `{reason: "continue", next}`；没有则为空记录 |
+| `spent` | `{calls, usd}`：本构造判断过的账本键所属的模型调用数与费用，**按账本记录算**（`Entry::Judge.call` 调用号），融合的一次调用只计一次；重放读出同一个数 |
+| `detail` | 构造特有的已决信息：sieve 为 `{question, ignore}` |
+| `purpose` | 可选可读目的，供诊断，不强制 |
+
+三条不变量及其落点：
+
+1. **契约封闭**：`sieve`、`pair` 的输入可以是列表，也可以是契约值（取其列表产出）；`tally`、`first_k` 只收契约值。调用者用 `outcome({value, pending?, evidence?, resume?, purpose?, detail?})` 构造的契约值与内置构造同一类型，可再交给这些构造。
+2. **未决随包转移**：契约值作输入时，它的未决清单并进新契约（`tally` 在结论被挡时把它们并入 `exists` / `all` 出口并记为已消费）。检查器：绑定契约值的 `let` 之后再没被提到、或契约值在语句位置被丢掉，报 J-05（`examples/errors/outcome-dropped.jpp`）；运行期原有 J-05 照常。`consume(契约值, "drop")` 显式丢整份未决清单并记账。`outcome` 的 pending 每项必须带出口。
+3. **证据只存键**：内置构造写入判断的账本键；`outcome` 的 evidence 只收 Text，给副本报 `E-evidence`。`key_of(出口 | 读数 | 契约值)` 取键（出口在 `cut` 时记下来源账本键）。
+
+读法见 `lib/outcome.jpp`：`accepted`、`ignored`、`undecided`（非 budget 未决）、`unobserved`（budget 未决）、`stopped`。现有示例一次迁移到新形状（不保留旧字段名的兼容层：旧的 `unsure` / `unobserved` 两条流与 `pending` 会让同一出口出现在两个位置，责任追踪反而含糊）。演示程序 `examples/contract.jpp`：sieve → pair → sieve → outcome → pair 第二轮 / 续接 → tally，七个阶段 `keys` 相同。
+
+**校准进料补充（B19 修正、B24 补充）**：`calib-import` 的上岗门按一致率的单侧置信下界判（`--spot-check-min 0.9`、`--spot-check-conf 0.95`）。点估计不过 → 待核；点估计过、下界不过 → 线照常认证，`truth.gate` 为「临时上岗：…再追加 m 条全一致即转正」，`cut` 用到时报 `W-provisional`。`SpotCheck` 新增可选 `lower`、`conf`；`CalibRecord` 新增可选 `scope`（认证集的标注批次与来源计数；材料风格指纹与 `W-calib-scope` 未做）。
 
 ## 三·五、执行模型：惰性登记 + 刷新点 + 分层
 
@@ -2220,3 +2332,50 @@ transform 1 / stop 1 / loop 1`（+1 个低频）。
 **而「两边都空」是「我的探针没跑起来」，不是「行为相同」。**
 我差一点把它们记成「同」。**修好探针后，两个都是「异」。**
 **「两个空值相等」是今晚那条恒真断言的又一张脸。**
+
+## 规则批（2026-09-23，B 栏裁定落代码）
+
+### B29 夹具线与代价参数
+
+- `CalibStore::put` 只写夹具记录（`CalibRecord.fixture = true`，为 `false` 时不序列化）。认证程序（`commission*`、`calib-import`）上岗时清掉这一位。
+- 夹具线 = `fixture` 位为真，或记录没有一张证书（`CalibRecord::fixture_line()`）。凭夹具线得到的出口 `Exit.fixture_line` 为真；强出口时报 `W-fixture-line`（取代原 `W-uncertified`）。
+- J-08：夹具线出口不算放行不可逆 `do` 的可信合取项（`Exit::guard_trusted()`）。
+- `cut(r, {cost: [fp, fn]})`、`cut(r, key, {cost: [fp, fn]})`：只取该记录（先题级、后题式级）上按这个代价矩阵认证的证书的线；没有 → `Unsure(cold)`，J-15 载体 `cost_line`。线仍只来自记录。
+- 测试若要走 J-08 放行路径，用 `tests/common::certified` 附一张明写为「测试合成证书」的证书；语言与 CLI 没有这条路。
+
+### B25 停岗候选
+
+- 记录状态加「停岗候选」（`STATUSES` 五个）。候选线照常用于路由，出口 `Exit.suspend_candidate` 为真，强出口报 `W-suspend-candidate`，J-08 不算可信合取项。
+- 自动标记：`cut` 等消费方调用漂移检查（`报漂移`）；`drift_of(key).可停岗()` 成立时，本趟起该键即为候选（`W-drift` 写明），`Outcome.suspend_candidates` 列出。内核不改记录。
+- CLI：`jpp run … --calib-out <目录>` 把候选键（原上岗）写成「停岗候选」；`jpp calib-confirm <目录> <键> --suspend | --keep` 由人确认，只处理候选状态。
+
+### B28 重复读数合并 `repeat`
+
+- `repeat(读数列表[, "mean" | "median"])`（原 `agg`，旧名一个版本内可用并报 `W-deprecated`）：同题同状态重复读数逐分量取均值或中位数，choice 与 score 也按概率向量逐分量合并；`"mode"`（众数、投票）报错。
+- 合并结果仍是读数，校准键为 `原键·repeat(n=…)`，不借题式或模式线，没有该键的认证记录就是冷；账本写一条 `Effect{kind:"repeat"}` 记 n 与方式，trace 记 `repeat` 事件。
+- `CalibRecord.rerun_independent`（可选）：重跑分歧检验是否通过。未通过或未测时，`repeat` 报 `W-repeat-persistent`（重复只压抖动，不降错，B9）。库里目前没有 `band → 重跑` 处理器；以后加时以这一位为启用条件。
+
+### B32 判断力缺席与时延
+
+- `budget {absent: {retry, backoff, then, breaker}, latency_p95: 秒, unsure: …}`：前端接上三格（`unsure` 以前写不出）。`absent` 缺省 `retry 2, backoff 1, then "escalate", breaker 3`。
+- 判断器调用失败：按 `retry` 次重试，等待 `backoff` 秒起每次翻倍；用尽后：`escalate` → 程序挂起（Pending cause=absent，恢复后 `--resume`）；`conservative` → 该组题出口 `Unsure(absent)`，程序继续；`fail` → 运行期错误。连续缺席达 `breaker` 次后熔断，不再发出。**未声明 `absent` 时沿用旧行为**（客户端错误即运行期错误）。
+- `latency_p95`：本趟判断调用累计耗时上限。某次调用后超出 → 本组题 `Unsure(latency)`；之后的站点不再发，直接 `Unsure(latency)`。
+- 缺席与超时事件记账（`Effect{kind:"absent"}`，键 `absent:<题键>`），只凭账本重放时照记的原因给出，不再发。
+- 检查：`budget.latency_p95` 与档案 `concurrency.latency_s.p95` 比，一层的 p95 已超 → `E-latency`；无循环时「站点数 × p95」超 → `E-latency`；有循环里的站点只能给下界 → `W-latency`；无档案 → `W-untested`。
+
+### B3 未决原因 `rejected_all` 与 `no_candidate`
+
+- `first_k`：没有候选（输入为空）→ `Unsure(no_candidate)`；有候选、全部观察完、一个都没接受 → `Unsure(rejected_all)`；接受了一些但不足 k 个 → `Ignore`（确定不足）。
+- `select` 的 `over` 为空：不发调用，出口 `Unsure(no_candidate)`，报 `W-no-candidate`。
+- 去向示例在 `lib/handlers.jpp`：`retry_with(材料, 题)`（全被否决 → 换材料或换前提）、`generate_then_find(提示, n, 题)`（没有候选 → 调生成器）。演示：`examples/unsure-causes.jpp`（夹具 `fixtures/unsure-causes.json`）。
+
+## B33 值级 taint（2026-09-23）
+
+宿主标量 `Value::Int / Float / Bool / Text` 各带一位 `Taint`（`Value::Int(i, t)` 等；构造可信值用 `Value::int / float / bool / text`）。容器不带位，`Value::taint()` 递归取 ∨；`Value::tainted(t)` 把 `t` ∨ 进所有标量叶子。
+
+- **读出规则**：`content(m)`、`m.content`、`text(m)` 从 untrusted 材料读出的值，所有叶子标 untrusted；不可信 `do` 的 `Fail` 带动作输出位，`fail(reason)` 带理由文字的位。
+- **宿主内传播**：一元、二元运算与内置输出 = ∨ 输入，在 `binop` 与 `apply` 的内置分派处统一计算。例外表 `不做数据流合取的内置`：效应边界与自带规则的内置（按 §2.11 表赋值），以及只搬运元素的 `map / filter / fold / loop / append / concat / slice / reverse / with`（元素保留自身的位）；列表 `+` 同理。不在表上的内置一律 ∨。取字段、下标返回叶子自身的位；用户函数返回值自带位。**控制流不传播**。
+- **进材料**：`mat(v)` 等计算值进槽时 taint = `v.taint()`；成分不可信时 origin 记 `computed`（可信时仍记 `literal`，材料哈希不含 origin）。旧的旁路表 `unwrapped_untrusted` / `untrusted_texts` 与四个辅助函数已删除。
+- `do` 的 `taint_in` 取 `taint_of`（即 `Value::taint()`），裸值经 `inherit` 动作不再洗白。
+- J-08 报错：守卫出口所在状态含成分不可信的计算值材料时，追加「该材料由计算值构成，成分含不可信内容」（按当前各帧产生过的出口近似判定）。
+- 账本格式不变；宿主值不进账本。回归：`crates/jpp-core/tests/value_taint.rs`（探针 A–E2 与控制流、取字段、inherit、J-08 诊断）。

@@ -1,0 +1,16 @@
+// 预算提前停止时，未观察的元素计入计数区间的上界，并让「存在 / 全部」给出 unsure(budget)。
+import "../lib/outcome.jpp";
+budget {calls: 3, cost: 0.01, depth: 256};
+
+let notes = [
+    "这款耳机售价三百九十九元。",
+    "今天天气晴朗，适合出门。",
+    "会员价比原价便宜了五十元。",
+    "新店开业，全场八折。",
+    "价格还没公布，据说下个月发布。"
+];
+let r = sieve(notes, test("这段话给出了具体价格或折扣吗？", "price"));
+let t = tally(r);
+{observed: len(accepted(r)) + len(ignored(r)) + len(undecided(r)), unobserved: map(unobserved(r), fn(p) { p.element.index }),
+ count: t.value.count, stopped: stopped(t),
+ exists: t.value.exists, all: t.value.all, pending: t.pending}

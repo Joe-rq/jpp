@@ -1,0 +1,37 @@
+// 有界迭代的三条终止线（施工件 g）：步数上限、每层材料严格变少、账本键重复。终止原因写进结果。
+import "../lib/outcome.jpp";
+budget {calls: 30, cost: 0.01, depth: 256};
+
+let notes = [
+    "这款耳机售价三百九十九元，现金支付再减十元。",
+    "新店开业，全场八折。",
+    "今天天气晴朗，适合出门。",
+    "会员价比原价便宜了五十元，现金刷卡都行。",
+    "这本书二十九元，现金付款。",
+    "周末去爬山。"
+];
+let layers = [
+    test("这段话提到价格或优惠吗？", "layer"),
+    test("涉及的金额或优惠是否低于一百元？", "layer"),
+    test("这段话提到现金支付吗？", "layer")
+];
+// 每层只留被接受的材料；未决的元素随累积值带着走（J-05：责任不丢）。
+fn step(acc, i) !{judge} {
+    let r = sieve(acc.items, layers[i]);
+    {items: map(accepted(r), fn(e) { e.item }), pending: concat(acc.pending, r.pending)}
+}
+// 另一种合法去向：显式丢弃未决并记账（consume "drop" 会留痕）。
+fn step_drop(acc, i) !{judge} {
+    let r = sieve(acc, layers[i]);
+    consume(r, "drop");
+    map(accepted(r), fn(e) { e.item })
+}
+let byCount = iterate(5, {items: notes, pending: []}, step, fn(acc) { len(acc.items) });
+let byTokens = iterate(5, notes, step_drop, "tokens");
+let short = iterate(1, {items: notes, pending: []}, step, fn(acc) { len(acc.items) });
+
+// 停止原因、轮次与度量在续接 resume 里（B17 取舍）；产出 value 是最后的累积值
+{by_count: {reason: byCount.resume.reason, rounds: byCount.resume.rounds, measures: byCount.resume.measures, left: byCount.value.items},
+ by_tokens: {reason: byTokens.resume.reason, rounds: byTokens.resume.rounds, measures: byTokens.resume.measures},
+ bound_only: {reason: short.resume.reason, rounds: short.resume.rounds},
+ pending: [byCount.value.pending, short.value.pending]}

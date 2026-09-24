@@ -23,7 +23,7 @@ fn 读数(calib: &str, p: f64) -> Rc<Reading> {
         q_hash: "q".into(), state_hash: "s".into(), op: Op::Test, calib: calib.into(),
         answer: Default::default(), fail: None, model_id: "m".into(), ledger_key: "lk".into(),
         over_len: 0, scale: vec![], perms: Default::default(), mode_share: Default::default(),
-        missing_evidence: vec![], state_taint: Default::default(),
+        missing_evidence: vec![], state_taint: Default::default(), form_hash: None,
     };
     r.fill(Answer::Noul(p));
     Rc::new(r)

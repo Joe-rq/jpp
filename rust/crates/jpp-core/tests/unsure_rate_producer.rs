@@ -111,7 +111,7 @@ handle(cut(judge(state(mat("材料")), test("行吗", "k"))), {
 "#).expect("解析")).expect("lower");
         let mut l = Ledger::new();
         let out = run(&program, &mut 定值桩(p), &c, &ActionRegistry::new(), &mut l).expect("跑得完");
-        let 走出来的 = match &out.value { Some(jpp_core::value::Value::Text(t)) => t.to_string(), v => panic!("{v:?}") };
+        let 走出来的 = match &out.value { Some(jpp_core::value::Value::Text(t, _)) => t.to_string(), v => panic!("{v:?}") };
         assert_eq!(
             走出来的 == "un", 按判据算的是unsure,
             "p={p} hi={hi} lo={lo} δ={d}：cut 走的是 {走出来的}，而 unsure_rate 的判据说 unsure={按判据算的是unsure}"
@@ -132,8 +132,8 @@ unsure_bound(judge(state(mat("材料")), test("行吗", "k")))
     let out = run(&program, &mut 桩(RefCell::new(0)), &c, &ActionRegistry::new(), &mut l).expect("跑得完");
     let Some(jpp_core::value::Value::Record(r)) = &out.value else { panic!("unsure_bound 返回记录：{:?}", out.value) };
     let 取 = |名: &str| r.iter().find(|(k, _)| k == 名).map(|(_, v)| v.clone()).unwrap_or_else(|| panic!("没有这一栏：{名}"));
-    let 取整 = |名: &str| match 取(名) { jpp_core::value::Value::Int(i) => i, v => panic!("{名} 不是整数：{v:?}") };
-    let 取浮 = |名: &str| match 取(名) { jpp_core::value::Value::Float(f) => f, v => panic!("{名} 不是浮点：{v:?}") };
+    let 取整 = |名: &str| match 取(名) { jpp_core::value::Value::Int(i, _) => i, v => panic!("{名} 不是整数：{v:?}") };
+    let 取浮 = |名: &str| match 取(名) { jpp_core::value::Value::Float(f, _) => f, v => panic!("{名} 不是浮点：{v:?}") };
     println!("n={} union_bound={} n_unknown={}", 取整("n"), 取浮("union_bound"), 取整("n_unknown"));
     assert_eq!(取整("n"), 1);
     assert_eq!(
@@ -162,34 +162,33 @@ fn 算出来的unsure率写得出也读得回() {
     let _ = std::fs::remove_dir_all(&dir);
 }
 
-/// **这个修补到不了谁那里，写清楚。**
+/// **边界（2026-09-23 更新，施工件 a）**：`.jpp` 作者现在有一条认证入口——`jpp calib-import`
+/// （真值通道）经 `jpp_core::truth::import_labels` 调 `commission_two_sided`，于是走 CLI 的人
+/// 也能得到由认证算出的 `unsure_rate`。**原来的单侧 `commission` 仍然没有 CLI 入口**，
+/// 它只在宿主（Rust）调用方那条路上。
 ///
-/// **`commission` 没有 CLI 入口**（`grep commission crates/jpp-cli/src/` 只命中一句注释）。
-/// 所以「认证算出 `unsure_rate`」这条**只在宿主（Rust）调用方那条路上成立**；
-/// 写 `.jpp` 的人走 `--calib-out` → `--calib`，**那条路上没有任何东西会调 `commission`**，
-/// 于是他的 `unsure_rate` 仍然只能来自**手写的 `--calib` JSON**。
-///
-/// **这正是我这一小时刚给它起了名字的那个形状**（「一个手填的值混进了本该由管道产出的位置」），
-/// **而它现在落在我自己这个修补上**。**不是说这个修补没用**——宿主那条路真的从平凡变成有内容了；
-/// **是说它的覆盖面要说出来，不能让「J-10 的界不再恒等于 n」读成对所有使用者都成立。**
-///
-/// **这条测试不断言行为，它把边界钉在代码里**，免得下一个会话从状态文件里读到一个更宽的结论。
+/// 这条测试仍然不断言行为，只把边界钉在代码里：CLI 源码里**调用**认证的地方只能是真值通道。
 #[test]
-fn 边界_commission没有CLI入口() {
+fn 边界_commission的CLI入口只有真值通道() {
     let cli = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../jpp-cli/src");
-    let mut 命中 = vec![];
+    let mut 调用 = vec![];
     for e in walk(&cli) {
         let t = std::fs::read_to_string(&e).unwrap_or_default();
         for (i, 行) in t.lines().enumerate() {
-            if 行.contains("commission") && !行.trim_start().starts_with("//") {
-                命中.push(format!("{}:{}: {}", e.display(), i + 1, 行.trim()));
+            let 行 = 行.trim_start();
+            if 行.starts_with("//") {
+                continue;
+            }
+            if 行.contains(".commission") || 行.contains("import_labels(") {
+                调用.push(format!("{}:{}: {}", e.display(), i + 1, 行));
             }
         }
     }
     assert!(
-        命中.is_empty(),
-        "**CLI 有了 commission 入口就该来改这条测试和它上面那段话**：{命中:?}"
+        调用.iter().all(|x| x.contains("calib_import.rs") && x.contains("import_labels(")),
+        "**CLI 多了一条认证入口就该来改这条测试和它上面那段话**：{调用:?}"
     );
+    assert!(!调用.is_empty(), "真值通道的入口不见了：{调用:?}");
 }
 
 fn walk(d: &std::path::Path) -> Vec<std::path::PathBuf> {

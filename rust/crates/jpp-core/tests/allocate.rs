@@ -83,7 +83,7 @@ fn readings(case: &Json) -> Vec<Rc<Reading>> {
                 perms: Default::default(),
         mode_share: Default::default(),
         missing_evidence: vec![],
-        state_taint: Default::default(),
+        state_taint: Default::default(), form_hash: None,
             })
         })
         .collect()

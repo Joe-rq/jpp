@@ -1,0 +1,36 @@
+{
+  "description": "Synthetic fixed observations for question-as-data.jpp (construction check only).",
+  "calibrations": [
+    {
+      "key": "form-mention",
+      "hi": 0.75,
+      "lo": 0.25,
+      "n": 1,
+      "status": "上岗"
+    }
+  ],
+  "observations": [
+    {
+      "on": [
+        "他在南宁读的大学，毕业后去了南京工作。"
+      ],
+      "op": "test",
+      "text": "这段话是否提到了南京？只算明确写出这个城市名的情况。",
+      "calib": "form-mention",
+      "answer": {
+        "Noul": 0.99
+      }
+    },
+    {
+      "on": [
+        "他在南宁读的大学，毕业后去了南京工作。"
+      ],
+      "op": "test",
+      "text": "这段话是否提到了南宁？只算明确写出这个城市名的情况。",
+      "calib": "form-mention",
+      "answer": {
+        "Noul": 0.99
+      }
+    }
+  ]
+}

@@ -116,6 +116,7 @@ fn check_with2(
     let mut c = Checker { profile_h5: profile.map(|p| p.arithmetic_capable), ..Checker::default() };
     c.budget(program);
     c.j10(program, calib);
+    c.latency(program, profile);
     c.names_and_readings(program);
     c.syntax(program);
     c.effects(program);
@@ -126,12 +127,27 @@ fn check_with2(
 
 // ---------------------------------------------------------------- 抽象值类别
 
-/// 只区分「读数 / 出口 / 其它」——J-01 与 J-05 的静态面要的就这三档。
+/// 区分「读数 / 出口 / 题 / 题式 / 其它」——J-01 与 J-05 的静态面要前两档；
+/// 题与题式两档让字段名在 check 阶段就能核（施工件 b：题是一等值，字段写错不该等到运行期）。
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum Kind {
     Reading,
     Exit,
+    Question,
+    Form,
+    /// 组合封闭性契约值（B17）：sieve / pair / tally / first_k / iterate / outcome 的结果
+    Outcome,
     Other,
+}
+
+/// 标注里的类型名 → 类别（只认题与题式；其余交给别的检查）
+fn kind_of_annotation(t: &Type) -> Kind {
+    match t {
+        Type::Named(n) if n == "Question" => Kind::Question,
+        Type::Named(n) if n == "Form" => Kind::Form,
+        Type::Named(n) if n == "Outcome" => Kind::Outcome,
+        _ => Kind::Other,
+    }
 }
 
 struct Scope {
@@ -313,7 +329,7 @@ fn is_builtin(n: &str) -> bool {
 /// 这个内置调用会发生哪种效应
 fn builtin_effect(n: &str) -> Option<&'static str> {
     match n {
-        "judge" | "literalize" => Some("judge"),
+        "judge" | "literalize" | "sieve" => Some("judge"),
         "ask" | "escalate" => Some("ask"),
         "gen" => Some("gen"),
         "do" => Some("do"),
@@ -326,6 +342,8 @@ fn method_positions(builtin: &str) -> &'static [usize] {
     match builtin {
         "map" | "filter" => &[1],
         "fold" | "loop" => &[2],
+        "iterate" => &[2, 3],
+        "pair" => &[2],
         "transform" => &[0],
         _ => &[],
     }
@@ -403,6 +421,57 @@ fn walk_block(b: &Block, f: &mut impl FnMut(&Expr)) {
     }
 }
 
+/// 收集所有 `let 名 = 值` 绑定（含嵌套块与函数体）。同名的后写覆盖先写——
+/// 不分作用域，最多把两处同名当成一处多算倍数，往保守那边偏。
+fn 收let绑定(b: &Block, out: &mut std::collections::HashMap<String, Expr>) {
+    let mut 子块: Vec<&Block> = vec![];
+    for s in &b.statements {
+        match s {
+            Statement::Let { name, value, .. } => {
+                out.insert(name.clone(), value.clone());
+                收子块(value, &mut 子块);
+            }
+            Statement::Function { function, .. } => 子块.push(&function.body),
+            Statement::Expression(e) => 收子块(e, &mut 子块),
+        }
+    }
+    if let Some(r) = &b.result {
+        收子块(r, &mut 子块);
+    }
+    for x in 子块 {
+        收let绑定(x, out);
+    }
+}
+
+/// 表达式里**最外一层**的子块（更深的由 `收let绑定` 递归时再收）。
+fn 收子块<'a>(e: &'a Expr, out: &mut Vec<&'a Block>) {
+    match &e.kind {
+        ExprKind::Block(b) => out.push(b),
+        ExprKind::Function(f) => out.push(&f.body),
+        ExprKind::If { condition, yes, no } => {
+            收子块(condition, out);
+            out.push(yes);
+            out.push(no);
+        }
+        ExprKind::List(items) => items.iter().for_each(|x| 收子块(x, out)),
+        ExprKind::Record(fields) => fields.iter().for_each(|(_, x)| 收子块(x, out)),
+        ExprKind::Call { function, arguments } => {
+            收子块(function, out);
+            arguments.iter().for_each(|x| 收子块(x, out));
+        }
+        ExprKind::Field { value, .. } | ExprKind::Unary { value, .. } => 收子块(value, out),
+        ExprKind::Index { value, index } => {
+            收子块(value, out);
+            收子块(index, out);
+        }
+        ExprKind::Binary { left, right, .. } => {
+            收子块(left, out);
+            收子块(right, out);
+        }
+        _ => {}
+    }
+}
+
 // ---------------------------------------------------------------- 预算（E12 / E10）
 
 impl Checker {
@@ -446,6 +515,70 @@ impl Checker {
     ///    **静态看不见的按 1 计**（与 `unsure_bound` 对未知键的处置同口径，最保守）。
     /// 2. **站点不在循环里**。循环里的一个站点在运行期会成为多道题，
     ///    **而静态数不出几道**——所以有循环内站点时，这个和**不再是上界**，诊断里明写。
+    /// **B32 时延预算的静态面**：估计层数 × 画像 p95 超过 `budget.latency_p95` 即拒绝。
+    ///
+    /// 估计按「每个判断站点（`judge` / `sieve`）至少一层」计；同状态的题会融合进同一层，
+    /// 所以这是**上界**，在循环或函数体里的站点另计为「不止一遍」、此时只有下界。
+    /// 下界已超 → 错误；只有上界超而下界不超 → 告警。没有档案 p95 → `W-untested`。
+    fn latency(&mut self, p: &Program, profile: Option<&crate::effects::Profile>) {
+        let Some(b) = &p.budget else { return };
+        let Some(limit) = b.latency_p95 else { return };
+        let mut 重复跨度: Vec<(usize, usize)> = vec![];
+        walk_block(&p.body, &mut |e| {
+            if matches!(call_name(e), Some("loop") | Some("iterate") | Some("map") | Some("filter") | Some("fold") | Some("pair")) {
+                重复跨度.push((e.span.start, e.span.end));
+            }
+        });
+        for st in &p.body.statements {
+            if let Statement::Function { function, .. } = st {
+                重复跨度.push((function.body.span.start, function.body.span.end));
+            }
+        }
+        let mut 一次 = 0usize;
+        let mut 多次 = 0usize;
+        walk_block(&p.body, &mut |e| {
+            if matches!(call_name(e), Some("judge") | Some("sieve")) {
+                if 重复跨度.iter().any(|(a, z)| e.span.start >= *a && e.span.end <= *z) {
+                    多次 += 1;
+                } else {
+                    一次 += 1;
+                }
+            }
+        });
+        if 一次 + 多次 == 0 {
+            return;
+        }
+        let Some(p95) = profile.and_then(|pr| pr.latency_p95) else {
+            self.out.push(Diagnostic::warning(
+                "W-untested",
+                format!("budget.latency_p95 = {limit}s，但没有档案的 p95 时延，估计不了层数 × p95（B32）。修法：--profile 加载档案"),
+                b_span(p),
+            ));
+            return;
+        };
+        let 下界 = p95; // 至少一层
+        let 上界 = (一次 + 多次) as f64 * p95;
+        if 下界 > limit {
+            self.out.push(Diagnostic::error(
+                "E-latency",
+                format!("时延预算 {limit}s 小于一层判断的 p95 时延 {p95}s：这个计划在第一层就会超时（B32，规划器拒绝）。修法：放宽 latency_p95，或减少判断层"),
+                b_span(p),
+            ));
+        } else if 多次 == 0 && 上界 > limit {
+            self.out.push(Diagnostic::error(
+                "E-latency",
+                format!("估计 {一次} 层 × p95 {p95}s = {上界:.2}s，超过时延预算 {limit}s（B32，规划器拒绝）。估计按每个判断站点一层计，同状态的题会融合；确知可融合时放宽预算"),
+                b_span(p),
+            ));
+        } else if 多次 > 0 && 上界 > limit {
+            self.out.push(Diagnostic::warning(
+                "W-latency",
+                format!("{多次} 个判断站点在循环或函数体里，层数静态估不出上界；已知站点 × p95 = {上界:.2}s 已超时延预算 {limit}s（B32）。运行期超出预算的站点会转 Unsure(latency)"),
+                b_span(p),
+            ));
+        }
+    }
+
     fn j10(&mut self, p: &Program, calib: Option<&crate::effects::CalibStore>) {
         let (Some(b), Some(store)) = (&p.budget, calib) else { return };
         let Some(limit) = b.unsure else { return };
@@ -460,7 +593,7 @@ impl Checker {
         //    **往拒绝那边倒**。
         let mut 重复跨度: Vec<(usize, usize)> = vec![];
         walk_block(&p.body, &mut |e| {
-            if matches!(call_name(e), Some("loop") | Some("map") | Some("filter") | Some("fold")) {
+            if matches!(call_name(e), Some("loop") | Some("iterate") | Some("map") | Some("filter") | Some("fold") | Some("pair")) {
                 重复跨度.push((e.span.start, e.span.end));
             }
         });
@@ -469,10 +602,59 @@ impl Checker {
                 重复跨度.push((function.body.span.start, function.body.span.end));
             }
         }
+        // **一个构造站点在运行期可能成为多道读数**（Codex 评审 PR #27）：
+        // `let q = test(…)` 之后 `judge(s1, q)`、`judge(s2, q)` 是两条读数，
+        // `judge([s1, s2, s3], q)` 是三条。按构造站点各计一次会低估，把一个真实的 2u 报成 u。
+        // 这里只做静态数得出的那部分：let 绑定的题被几处 judge/sieve 引用、状态参数是字面列表
+        // （或绑定到字面列表 / `state(…)`）时的长度。长度静态看不见的，按「不是上界」如实说出来。
+        let mut 绑定: std::collections::HashMap<String, Expr> = Default::default();
+        收let绑定(&p.body, &mut 绑定);
+        let 状态倍数 = |e: &Expr| -> Option<usize> {
+            let e = match &e.kind {
+                ExprKind::Name(n) => 绑定.get(n).unwrap_or(e),
+                _ => e,
+            };
+            match &e.kind {
+                ExprKind::List(items) => Some(items.len()),
+                _ if call_name(e) == Some("state") => Some(1),
+                _ => None,
+            }
+        };
+        let 是构造 = |e: &Expr| matches!(call_name(e), Some("test") | Some("select") | Some("measure"));
+        // 站点（按 span 起点）→ 运行期读数的静态倍数；`None` = 有一处用法倍数看不见
+        let mut 倍数: std::collections::HashMap<usize, Option<usize>> = Default::default();
+        let mut 加 = |起: usize, m: Option<usize>| {
+            let e = 倍数.entry(起).or_insert(Some(0));
+            *e = match (*e, m) { (Some(a), Some(b)) => Some(a + b), _ => None };
+        };
+        walk_block(&p.body, &mut |e| {
+            if !matches!(call_name(e), Some("judge") | Some("sieve")) {
+                return;
+            }
+            let args = call_args(e);
+            let (Some(对象), Some(题)) = (args.first(), args.get(1)) else { return };
+            let m = 状态倍数(对象);
+            let 题们: Vec<&Expr> = match &题.kind {
+                ExprKind::List(items) => items.iter().collect(),
+                _ => vec![题],
+            };
+            for q in 题们 {
+                if 是构造(q) {
+                    加(q.span.start, m);
+                } else if let ExprKind::Name(n) = &q.kind {
+                    if let Some(v) = 绑定.get(n) {
+                        if 是构造(v) {
+                            加(v.span.start, m);
+                        }
+                    }
+                }
+            }
+        });
         let mut 和 = 0.0f64;
         let mut 站点数 = 0usize;
         let mut 未知 = 0usize;
         let mut 循环内 = 0usize;
+        let mut 倍数未知 = 0usize;
         let mut 首站点: Option<crate::ast::Span> = None;
         walk_block(&p.body, &mut |e| {
             let 键位 = match call_name(e) {
@@ -489,28 +671,34 @@ impl Checker {
                 循环内 += 1;
             }
             let u = match arguments.get(键位).map(|a| &a.kind) {
-                Some(ExprKind::Text(k)) => {
-                    let rec = store.get(k);
-                    // **与 `unsure_bound` 同口径**（`strength.rs:155`）：只认「上岗」记录的值
-                    match if rec.status == "上岗" { rec.unsure_rate } else { None } {
-                        Some(u) => u,
-                        None => { 未知 += 1; 1.0 }
-                    }
-                }
+                Some(ExprKind::Text(k)) => match store.usable_unsure_rate(&store.get(k)) {
+                    // **与 `unsure_bound` 同口径**（`strength.rs`）：同一个 `CalibStore::usable_unsure_rate`
+                    Some(u) => u,
+                    None => { 未知 += 1; 1.0 }
+                },
                 // 键不是字面量：静态看不见，按 1 计
                 _ => { 未知 += 1; 1.0 }
             };
-            和 += u;
+            // 没有被 judge/sieve 直接用到的站点（例如传进函数）按 1 计，与之前同口径
+            let m = match 倍数.get(&e.span.start) {
+                None | Some(Some(0)) => 1,
+                Some(Some(m)) => *m,
+                Some(None) => { 倍数未知 += 1; 1 }
+            };
+            和 += u * m as f64;
         });
         if 站点数 == 0 || 和 <= limit {
             return;
         }
         let span = 首站点.unwrap_or(p.span);
-        let 循环话 = if 循环内 > 0 {
+        let mut 循环话 = if 循环内 > 0 {
             format!("；**其中 {循环内} 个站点在循环或函数体里，所以这个和不是上界**（那样一个站点在运行期是多道题，静态数不出几道；函数体算进来是因为静态判不了它被调用几次），真实的 unsure 负担只会更高")
         } else {
             String::new()
         };
+        if 倍数未知 > 0 {
+            循环话.push_str(&format!("；**另有 {倍数未知} 个站点被 judge/sieve 问向静态数不出长度的对象列表，这个和也不是上界**"));
+        }
         self.out.push(Diagnostic::warning(
             "J-10",
             format!(
@@ -584,7 +772,7 @@ impl Checker {
     fn scan_function(&mut self, f: &Function, scopes: &mut Vec<Scope>, fn_depth: usize) {
         let mut scope = Scope::new();
         for p in &f.parameters {
-            scope.declared.insert(p.name.clone(), Kind::Other);
+            scope.declared.insert(p.name.clone(), p.annotation.as_ref().map(kind_of_annotation).unwrap_or(Kind::Other));
             scope.defined.insert(p.name.clone());
             if let Some(t) = &p.annotation {
                 scope.annotations.insert(p.name.clone(), t.clone());
@@ -732,8 +920,24 @@ impl Checker {
                 Kind::Other
             }
             ExprKind::Field { value, field } => {
-                if self.scan_expr(value, scopes, fn_depth) == Kind::Reading {
-                    self.reading_err(value.span, format!("读数没有字段 {field} 可读"));
+                match self.scan_expr(value, scopes, fn_depth) {
+                    Kind::Reading => self.reading_err(value.span, format!("读数没有字段 {field} 可读")),
+                    Kind::Question if !crate::interp::QUESTION_FIELDS.contains(&field.as_str()) => self.out.push(Diagnostic::error(
+                        "E-field",
+                        format!("题没有字段 {field}。修法：改成题的可读字段之一：{}", crate::interp::QUESTION_FIELDS.join("、")),
+                        e.span,
+                    )),
+                    Kind::Form if !crate::interp::FORM_FIELDS.contains(&field.as_str()) => self.out.push(Diagnostic::error(
+                        "E-field",
+                        format!("题式没有字段 {field}。修法：改成题式的可读字段之一：{}", crate::interp::FORM_FIELDS.join("、")),
+                        e.span,
+                    )),
+                    Kind::Outcome if !crate::interp::OUTCOME_FIELDS.contains(&field.as_str()) => self.out.push(Diagnostic::error(
+                        "E-field",
+                        format!("契约值没有字段 {field}。修法：改成契约的字段之一：{}（sieve 的 ignore 与题在 detail 里；未观察项是 pending 里 cause=budget 的项）", crate::interp::OUTCOME_FIELDS.join("、")),
+                        e.span,
+                    )),
+                    _ => {}
                 }
                 Kind::Other
             }
@@ -798,6 +1002,11 @@ impl Checker {
                         match n.as_str() {
                             "judge" => Kind::Reading,
                             "cut" | "unsure" | "ask" => Kind::Exit,
+                            "test" | "select" | "measure" | "fill" => Kind::Question,
+                            "form" => Kind::Form,
+                            "pair" | "tally" | "first_k" | "iterate" | "outcome" => Kind::Outcome,
+                            // 单道题返回一个契约值；题列表、题式 + 填法返回契约值的列表
+                            "sieve" if arguments.len() == 2 && !matches!(arguments[1].kind, ExprKind::List(_)) => Kind::Outcome,
                             _ => Kind::Other,
                         }
                     }
@@ -931,7 +1140,16 @@ impl Checker {
                 }
                 // 函数定义是新的词法环境：迭代上下文不穿过它
                 Statement::Function { function, .. } => self.syntax_function(function),
-                Statement::Expression(e) => self.syntax_expr(e, ctx, &varying),
+                Statement::Expression(e) => {
+                    self.syntax_expr(e, ctx, &varying);
+                    if matches!(call_name(e), Some("sieve") | Some("pair") | Some("tally") | Some("first_k") | Some("outcome")) {
+                        self.out.push(Diagnostic::error(
+                            "J-05",
+                            format!("{} 的结果（契约值）在语句位置被丢掉：它的未决清单随包转移，丢掉就是静默丢弃未决（13 §3）。修法：绑定并返回它、交给下一个构造，或 consume(…, \"drop\")", call_name(e).unwrap_or("")),
+                            e.span,
+                        ));
+                    }
+                }
             }
         }
         if let Some(r) = &b.result {
@@ -952,7 +1170,7 @@ impl Checker {
             // 高阶内置：函数参数的体带上迭代上下文
             let (fn_idx, yields) = match name.as_str() {
                 "map" | "filter" => (Some(1usize), true),
-                "fold" | "loop" => (Some(2usize), false),
+                "fold" | "loop" | "iterate" => (Some(2usize), false),
                 _ => (None, false),
             };
             for (i, a) in args.iter().enumerate() {
@@ -1029,6 +1247,25 @@ impl Checker {
                     ));
                 }
             }
+            // E5 / J-06：iterate 同样是有界循环，bound 必带
+            "iterate" => {
+                if args.len() != 4 {
+                    self.out.push(Diagnostic::error(
+                        "J-06",
+                        format!("iterate 要写成 iterate(bound, 初值, fn(acc, i), measure)：measure 是 fn(acc) -> Int 或 \"tokens\"，这里给了 {} 个参数", args.len()),
+                        span,
+                    ));
+                } else if let ExprKind::Integer(n) = &args[0].kind {
+                    if *n <= 0 {
+                        self.out.push(Diagnostic::error("J-06", format!("iterate 的 bound 是 {n}：bound 必须是正整数"), args[0].span));
+                    }
+                } else {
+                    self.out.push(Diagnostic::warning("W-bound", "iterate 的 bound 不是字面量：静态估不出上界，只有运行期能核。修法：写成整数字面量", args[0].span));
+                }
+                if ctx.in_yield {
+                    self.out.push(Diagnostic::error("E7", "map / filter（for…yield）的体内不能含 iterate：它是纯映射。修法：整段改用 iterate 或 fold", span));
+                }
+            }
             "stop" if ctx.in_yield => self.out.push(Diagnostic::error(
                 "E7",
                 "map / filter（for…yield）的体内不能 stop：stop 是 loop 的控制。修法：整段改用 loop 或 fold",
@@ -1041,6 +1278,20 @@ impl Checker {
             "cut" => self.calib_literal(name, args, 1),
             "test" | "select" => self.calib_literal(name, args, 1),
             "measure" => self.calib_literal(name, args, 2),
+            // J-03 在题式上：calib 写在选项记录里，同样不能是数字字面量
+            "form" => {
+                if let Some(ExprKind::Record(fields)) = args.get(2).map(|a| &a.kind) {
+                    if let Some((_, c)) = fields.iter().find(|(k, _)| k == "calib") {
+                        if matches!(c.kind, ExprKind::Decimal(_) | ExprKind::Integer(_) | ExprKind::Bool(_)) {
+                            self.out.push(Diagnostic::error(
+                                "J-03",
+                                "form 的 calib 是数字字面量：线不可字面，这一位只收校准记录的键（Text）。修法：form(…, {calib: \"校准键\"})",
+                                c.span,
+                            ));
+                        }
+                    }
+                }
+            }
             // J-14：on 恰一个判断对象（关系用一对）
             "state" => {
                 if let Some(ExprKind::List(items)) = args.first().map(|a| &a.kind) {
@@ -1137,7 +1388,8 @@ impl Checker {
 
     /// 出口绑定之后在本块里再没被提到 = 静默丢弃
     fn exit_binding(&mut self, value: &Expr, name: &str, span: Span, block: &Block) {
-        if !matches!(call_name(value), Some("cut") | Some("unsure") | Some("ask")) {
+        let is_outcome = matches!(call_name(value), Some("sieve") | Some("pair") | Some("tally") | Some("first_k") | Some("outcome"));
+        if !matches!(call_name(value), Some("cut") | Some("unsure") | Some("ask")) && !is_outcome {
             return;
         }
         let mut used = false;
@@ -1159,7 +1411,13 @@ impl Checker {
         if let Some(r) = &block.result {
             walk_expr(r, &mut note);
         }
-        if !used {
+        if !used && is_outcome {
+            self.out.push(Diagnostic::error(
+                "J-05",
+                format!("契约值 {name} 绑定之后再没被提到：它的未决清单（pending）随包转移给了你，丢掉它就是静默丢弃未决（13 §3）。修法：返回它、交给下一个构造，或 consume({name}, \"drop\") 显式丢并记账"),
+                span,
+            ));
+        } else if !used {
             self.out.push(Diagnostic::error(
                 "J-05",
                 format!("出口 {name} 绑定之后再没被提到：未消费的 unsure 就是静默丢弃。修法：handle({name}, {{…, unsure: …}})，或 consume({name}, \"drop\") 显式丢并记账"),
@@ -1961,4 +2219,9 @@ impl Checker {
             _ => None,
         }
     }
+}
+
+/// 预算声明所在的位置（`Program` 不单独记 budget 的 span，用整个程序的 span）
+fn b_span(p: &Program) -> crate::ast::Span {
+    p.span
 }

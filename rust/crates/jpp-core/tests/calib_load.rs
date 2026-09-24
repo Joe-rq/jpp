@@ -128,7 +128,7 @@ fn save写出来的load读得回去() {
     let cert = Cert { alpha: 0.45, conf_delta: 0.10, hi: 0.8, n_accepted: 20, n_errors: 1, ucb: 0.4,
                       cluster_unit: "条".into(), resample: Some((200, "全过才算过".into())),
                       cost: Some((10.0, 1.0)), bounded_side: "单侧".into(),
-                      label_fp: "abcdef0123456789".into(),
+                      label_fp: "abcdef0123456789".into(), selection: None,
                       label_source: LabelSource::全体 };
     c.records.get_mut("k").unwrap().certs.insert(cert.addr(), cert);
 

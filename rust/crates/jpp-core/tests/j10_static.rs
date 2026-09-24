@@ -8,9 +8,8 @@
 //! 1. `ast::Budget` **没有 `unsure` 这一格**——条文「超 `budget.unsure` 即报」里那个东西不存在；
 //! 2. 检查器只收 `&Profile`，**而 `unsure_rate` 住在 `CalibRecord` 里**，档案里没有。
 //!
-//! **仍然到不了写 `.jpp` 的人**：前端的 `budget` 降级还在 `_ =>` 分支上拒
-//! `unknown budget field 'unsure'`，**所以 `budget {unsure: 0.5}` 今天是解析错**。
-//! 核心这侧的机器是齐的；接线归前端/CLI。**这条边界由本文件最后一条测试钉住。**
+//! 2026-09-23 起前端接上了 `budget {unsure: …}`（规则批 B32 施工时一并接线），
+//! 由 `前端写得出budget_unsure` 钉住。
 
 use std::cell::RefCell;
 use jpp_core::ast::Budget;
@@ -122,17 +121,12 @@ fn 报在任何模型调用之前() {
     assert!(桩.calls() > 0, "**报了照样跑**：报不等于省");
 }
 
-/// **边界：`.jpp` 里今天写不出这一格。** 前端的 `budget` 降级在 `_ =>` 分支上拒未知字段。
-/// **前端一旦接上，这条就会红，逼下一个人来改本文件抬头那段话。**
+/// `.jpp` 里写得出 `budget.unsure`（2026-09-23 前端接上；原「边界：写不出」测试随之改写）。
 #[test]
-fn 边界_前端还写不出budget_unsure() {
-    let e = jpp_frontend::parse("budget {calls: 1, cost: 1, unsure: 0.5};\n1")
-        .map_err(|_| "parse".to_string())
-        .and_then(|p| jpp_frontend::lower(&p).map_err(|d| d.message.clone()));
-    match e {
-        Err(m) => assert!(m.contains("unsure"), "拒的理由要指着这个字段：{m}"),
-        Ok(_) => panic!("**前端接上了 budget.unsure——该来改这条测试和本文件抬头了**"),
-    }
+fn 前端写得出budget_unsure() {
+    // 2026-09-23 规则批（B32 施工时一并接上）：`.jpp` 里的 `budget {unsure: …}` 进到核心 Budget。
+    let p = jpp_frontend::lower(&jpp_frontend::parse("budget {calls: 1, cost: 1, unsure: 0.5};\n1").expect("解析")).expect("lower");
+    assert_eq!(p.budget.expect("有预算").unsure, Some(0.5));
 }
 
 /// **函数体里的站点也算「可能不止一遍」。**

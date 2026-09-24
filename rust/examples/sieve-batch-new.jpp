@@ -1,0 +1,7 @@
+// 同一段材料问 14 道题，直接交给三路过滤：14 道题在同一状态上，合成一次调用。
+import "../lib/outcome.jpp";
+budget {calls: 20, cost: 0.01, depth: 256};
+let mention = form("test", "这段话是否提到了{city}？", {calib: "form-mention"});
+let cities = ["成都", "北京", "上海", "杭州", "西安", "南京", "武汉", "重庆", "天津", "苏州", "长沙", "郑州", "青岛", "厦门"];
+let rs = sieve(["我上个月去了成都出差，顺便见了老朋友。"], mention, map(cities, fn(c) { {city: c} }));
+{answers: map(rs, fn(r) { {asked: r.detail.question.text, act: len(accepted(r)) == 1} }), pending: map(rs, fn(r) { r.pending })}

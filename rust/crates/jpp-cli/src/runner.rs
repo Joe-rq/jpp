@@ -37,7 +37,7 @@ pub fn execute(
         if replay_only {
             return Err("replay has no completed record for read_json".into());
         }
-        let [jpp_core::value::Value::Text(path)] = args else {
+        let [jpp_core::value::Value::Text(path, _)] = args else {
             return Err("read_json expects one file path".into());
         };
         let bytes = std::fs::read(path.as_ref()).map_err(|e| format!("{path}: {e}"))?;
@@ -50,7 +50,7 @@ pub fn execute(
         if replay_only {
             return Err("replay has no completed record for write_json".into());
         }
-        let [jpp_core::value::Value::Text(path), value] = args else {
+        let [jpp_core::value::Value::Text(path, _), value] = args else {
             return Err("write_json expects a file path and a value".into());
         };
         let bytes = serde_json::to_vec_pretty(&value.to_json()).map_err(|e| e.to_string())?;
@@ -59,7 +59,12 @@ pub fn execute(
     });
     let outcome = jpp_core::run(program, client, calibrations, &actions, ledger)?;
     evidence_out.extend(outcome.evidence.iter().cloned());
-    Ok(json!({
+    // J-10 的静态告警只有带校准记录的那次检查报得出来（在 `jpp_core::run` 里），
+    // CLI 执行前那次检查没有记录、报不出它；这里打到 stderr，`--output` 时终端也看得见。
+    for w in outcome.trace.warnings.iter().filter(|w| w.starts_with("J-10")) {
+        eprintln!("warning: {w}");
+    }
+    let mut report = json!({
         "mode": "fixed observations; no model API requests",
         "status": if outcome.pending.is_empty() { "returned" } else { "pending" },
         "value": outcome.value_json(),
@@ -69,7 +74,12 @@ pub fn execute(
                  "tokens": outcome.cost.tokens, "usd": outcome.cost.usd, "asks": outcome.cost.asks},
         "trace": outcome.trace,
         "local_checks": *checks.borrow(),
-    }))
+    });
+    // 停岗候选（B25）只在有时出现，默认输出逐字节不变
+    if !outcome.suspend_candidates.is_empty() {
+        report["suspend_candidates"] = json!(outcome.suspend_candidates);
+    }
+    Ok(report)
 }
 
 fn validate_numbers(value: &Value) -> Result<(), String> {

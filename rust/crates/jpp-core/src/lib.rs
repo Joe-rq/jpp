@@ -17,6 +17,7 @@ pub mod effects;
 pub mod interp;
 pub mod ledger;
 pub mod strength;
+pub mod truth;
 pub mod value;
 
 pub use ast::{Block, Budget, Expr, ExprKind, Function, Parameter, Program, Span, Statement, Type};
@@ -80,7 +81,26 @@ pub fn run(
         return Err(Error::Check(report));
     }
     let budget = program.budget.clone().expect("检查器保证预算存在（E12）");
-    Interp::new(client, ledger, calib, actions, budget).run(program).map_err(Error::Runtime)
+    let out = Interp::new(client, ledger, calib, actions, budget).run(program).map_err(Error::Runtime)?;
+    Ok(带出静态告警(out, &report))
+}
+
+/// **J-10 的静态告警要带到调用者手里。** 它只是告警，`report.is_ok()` 仍为真，
+/// 这份报告若在这里丢掉，调用者就永远看不到「跑之前就知道 unsure 预算不够」这句话。
+/// 只带 J-10：别的静态告警 CLI 在执行前已经用 `check`/`check_with_profile` 打过，
+/// 而只有要整本校准记录的 J-10 必须走这一处（`check_with_calib`）。
+/// 放在 `trace.warnings` 最前面，表示它们先于任何调用成立。运行期出错时这份告警不随 `RtError` 带出。
+fn 带出静态告警(mut out: Outcome, report: &Report) -> Outcome {
+    let 静态: Vec<String> = report
+        .warnings()
+        .iter()
+        .filter(|d| d.rule == "J-10")
+        .map(|d| format!("{}: @{} {}", d.rule, d.span.start, d.message))
+        .collect();
+    if !静态.is_empty() {
+        out.trace.warnings.splice(0..0, 静态);
+    }
+    out
 }
 
 /// 带 `fit` 注册表的入口（`12` §6.0 的 fit 桥要用它）。
@@ -99,8 +119,9 @@ pub fn run_with_fits(
     if !report.is_ok() {
         return Err(Error::Check(report));
     }
-    let budget = program.budget.clone().unwrap_or(Budget { calls: 0, cost: 0.0, depth: None, escalate: None, unsure: None });
-    interp::Interp::with_fits(client, ledger, calib, actions, fits, budget).run(program).map_err(Error::Runtime)
+    let budget = program.budget.clone().unwrap_or(Budget { calls: 0, cost: 0.0, depth: None, escalate: None, unsure: None, absent: None, latency_p95: None });
+    let out = interp::Interp::with_fits(client, ledger, calib, actions, fits, budget).run(program).map_err(Error::Runtime)?;
+    Ok(带出静态告警(out, &report))
 }
 
 /// 跳过静态检查直接执行——只给检查器本身的对照测试用；正常路径请用 [`run`]。
@@ -111,6 +132,6 @@ pub fn run_unchecked(
     actions: &ActionRegistry,
     ledger: &mut Ledger,
 ) -> Result<Outcome, RtError> {
-    let budget = program.budget.clone().unwrap_or(Budget { calls: 0, cost: 0.0, depth: None, escalate: None, unsure: None });
+    let budget = program.budget.clone().unwrap_or(Budget { calls: 0, cost: 0.0, depth: None, escalate: None, unsure: None, absent: None, latency_p95: None });
     Interp::new(client, ledger, calib, actions, budget).run(program)
 }

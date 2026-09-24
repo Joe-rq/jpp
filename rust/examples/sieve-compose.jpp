@@ -1,0 +1,24 @@
+// 组合封闭：一次过滤的产物（带 item / exit / trail 的元素）直接再过滤，trail 记下经过的出口。
+import "../lib/outcome.jpp";
+budget {calls: 20, cost: 0.01, depth: 256};
+
+let mention = form("test", "这段话是否提到了{city}？", {calib: "form-mention"});
+let trip = test("这段话说的是工作出行吗？", "trip");
+let notes = [
+    "我上个月去了成都出差，顺便见了老朋友。",
+    "她的老家在北京，每年春节都回去。",
+    "我们计划明年夏天去成都和北京旅游。",
+    "他从成都调到了杭州分公司。",
+    "周末在家看书，哪儿也没去。"
+];
+
+let first = sieve(notes, fill(mention, {city: "成都"}));
+// 把第一次的契约值整个交给第二次：取它的产出（接受流），它的未决随包带进第二个契约
+let second = sieve(first, trip);
+
+{first_act: map(accepted(first), fn(e) { e.index }),
+ second: {asked: second.detail.question.text,
+          act: map(accepted(second), fn(e) { {item: e.item, trail: map(e.trail, fn(x) { exit_kind(x) })} }),
+          ignore: map(ignored(second), fn(e) { e.item }),
+          kind: second.kind, evidence_keys: len(second.evidence)},
+ pending: second.pending}

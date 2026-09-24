@@ -11,6 +11,7 @@
 //! 判据（总控订正）：**handler 的 `act` 臂根本不是无条件的——它之所以执行，
 //! 正是因为那次 `cut` 切出了 `Act`。那个出口就是守卫。**
 
+mod common;
 use std::cell::RefCell;
 
 use jpp_core::effects::{CalibStore, Client, EffectError, GenResult, JudgeResult};
@@ -53,11 +54,11 @@ impl Client for 桩 {
 fn 动作表() -> ActionRegistry {
     let mut a = ActionRegistry::new();
     // 取外部数据：可逆，产物 **untrusted**
-    a.register("取外部数据", 0.0, true, TaintOut::Untrusted, |_| Ok(Value::Text("外面来的".into())));
+    a.register("取外部数据", 0.0, true, TaintOut::Untrusted, |_| Ok(Value::Text("外面来的".into(), Taint::Trusted)));
     // 取内部数据：可逆，产物 trusted
-    a.register("取内部数据", 0.0, true, TaintOut::Trusted, |_| Ok(Value::Text("自己的".into())));
+    a.register("取内部数据", 0.0, true, TaintOut::Trusted, |_| Ok(Value::Text("自己的".into(), Taint::Trusted)));
     // 发邮件：**不可逆**
-    a.register("发邮件", 0.0, false, TaintOut::Trusted, |_| Ok(Value::Text("已发".into())));
+    a.register("发邮件", 0.0, false, TaintOut::Trusted, |_| Ok(Value::Text("已发".into(), Taint::Trusted)));
     a
 }
 
@@ -69,7 +70,7 @@ fn 跑p(src: &str, p: f64) -> Result<(Json, Vec<String>), String> {
     let program = lower(&parse(src).expect("解析")).expect("lower");
     let mut c = 桩(p, RefCell::new(0));
     let mut calib = CalibStore::new();
-    calib.put("k", 0.8, 0.2, 50, "上岗").unwrap();
+    common::certified(&mut calib, "k", 0.8, 0.2, 50);
     let mut l = Ledger::new();
     run(&program, &mut c, &calib, &动作表(), &mut l)
         .map(|o| (o.value_json(), o.trace.warnings.clone()))

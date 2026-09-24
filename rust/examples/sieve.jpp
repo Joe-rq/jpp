@@ -1,0 +1,31 @@
+// 三路过滤：一组材料 × 一道题 → act / ignore / unsure 三条流（施工件 c，05 §1）。
+// 直接吃题：10 段材料 × 题式的 3 个填法，全部登记后一次刷新，同一段材料上的 3 道题合成一次调用。
+import "../lib/outcome.jpp";
+budget {calls: 12, cost: 0.01, depth: 256};
+
+let mention = form("test", "这段话是否提到了{city}？", {calib: "form-mention"});
+let notes = [
+    "我上个月去了成都出差，顺便见了老朋友。",
+    "她的老家在北京，每年春节都回去。",
+    "这家公司的总部设在杭州。",
+    "我们计划明年夏天去成都和北京旅游。",
+    "他在西安读的大学。",
+    "周末在家看书，哪儿也没去。",
+    "杭州的西湖很美，北京的秋天也不错。",
+    "这份报告需要周五之前提交。",
+    "他从成都调到了杭州分公司。",
+    "我上个月去了成都出差，顺便见了老朋友。"
+];
+
+let results = sieve(notes, mention, [{city: "成都"}, {city: "北京"}, {city: "杭州"}]);
+
+fn indexes(xs) { map(xs, fn(e) { e.index }) }
+fn summary(r) {
+    {asked: r.detail.question.text, act: indexes(accepted(r)), ignore: indexes(ignored(r)),
+     unsure: map(undecided(r), fn(p) { {index: p.element.index, cause: p.cause} }),
+     unobserved: map(unobserved(r), fn(p) { p.element.index }), stopped: stopped(r),
+     complete: len(accepted(r)) + len(ignored(r)) + len(r.pending) == len(notes)}
+}
+
+// 未决清单随返回值交给调用者（J-05；预算未观察项是其中 cause=budget 的 Unsure）
+{streams: map(results, summary), pending: map(results, fn(r) { r.pending })}

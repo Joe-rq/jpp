@@ -1,0 +1,146 @@
+{
+ "description": "Synthetic fixed observations for iterate.jpp (construction check only; not model evaluation). Calibration records are hand-written to exercise routing, not calibration.",
+ "calibrations": [
+  {
+   "key": "layer",
+   "hi": 0.75,
+   "lo": 0.25,
+   "n": 1,
+   "status": "上岗"
+  }
+ ],
+ "observations": [
+  {
+   "on": [
+    "这款耳机售价三百九十九元，现金支付再减十元。"
+   ],
+   "op": "test",
+   "text": "这段话提到价格或优惠吗？",
+   "calib": "layer",
+   "answer": {
+    "Noul": 0.97
+   }
+  },
+  {
+   "on": [
+    "新店开业，全场八折。"
+   ],
+   "op": "test",
+   "text": "这段话提到价格或优惠吗？",
+   "calib": "layer",
+   "answer": {
+    "Noul": 0.95
+   }
+  },
+  {
+   "on": [
+    "今天天气晴朗，适合出门。"
+   ],
+   "op": "test",
+   "text": "这段话提到价格或优惠吗？",
+   "calib": "layer",
+   "answer": {
+    "Noul": 0.02
+   }
+  },
+  {
+   "on": [
+    "会员价比原价便宜了五十元，现金刷卡都行。"
+   ],
+   "op": "test",
+   "text": "这段话提到价格或优惠吗？",
+   "calib": "layer",
+   "answer": {
+    "Noul": 0.96
+   }
+  },
+  {
+   "on": [
+    "这本书二十九元，现金付款。"
+   ],
+   "op": "test",
+   "text": "这段话提到价格或优惠吗？",
+   "calib": "layer",
+   "answer": {
+    "Noul": 0.97
+   }
+  },
+  {
+   "on": [
+    "周末去爬山。"
+   ],
+   "op": "test",
+   "text": "这段话提到价格或优惠吗？",
+   "calib": "layer",
+   "answer": {
+    "Noul": 0.02
+   }
+  },
+  {
+   "on": [
+    "这款耳机售价三百九十九元，现金支付再减十元。"
+   ],
+   "op": "test",
+   "text": "涉及的金额或优惠是否低于一百元？",
+   "calib": "layer",
+   "answer": {
+    "Noul": 0.1
+   }
+  },
+  {
+   "on": [
+    "新店开业，全场八折。"
+   ],
+   "op": "test",
+   "text": "涉及的金额或优惠是否低于一百元？",
+   "calib": "layer",
+   "answer": {
+    "Noul": 0.2
+   }
+  },
+  {
+   "on": [
+    "会员价比原价便宜了五十元，现金刷卡都行。"
+   ],
+   "op": "test",
+   "text": "涉及的金额或优惠是否低于一百元？",
+   "calib": "layer",
+   "answer": {
+    "Noul": 0.9
+   }
+  },
+  {
+   "on": [
+    "这本书二十九元，现金付款。"
+   ],
+   "op": "test",
+   "text": "涉及的金额或优惠是否低于一百元？",
+   "calib": "layer",
+   "answer": {
+    "Noul": 0.95
+   }
+  },
+  {
+   "on": [
+    "会员价比原价便宜了五十元，现金刷卡都行。"
+   ],
+   "op": "test",
+   "text": "这段话提到现金支付吗？",
+   "calib": "layer",
+   "answer": {
+    "Noul": 0.93
+   }
+  },
+  {
+   "on": [
+    "这本书二十九元，现金付款。"
+   ],
+   "op": "test",
+   "text": "这段话提到现金支付吗？",
+   "calib": "layer",
+   "answer": {
+    "Noul": 0.96
+   }
+  }
+ ]
+}

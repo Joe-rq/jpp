@@ -1,0 +1,26 @@
+// 集合聚合（施工件 f）：存在 / 全部 / 计数区间 / 输入顺序中的前 k 个。精确计算，不是概率。
+import "../lib/outcome.jpp";
+budget {calls: 10, cost: 0.01, depth: 256};
+
+let notes = [
+    "这款耳机售价三百九十九元。",
+    "新店开业，全场八折。",
+    "今天天气晴朗，适合出门。",
+    "会员价比原价便宜了五十元。",
+    "价格还没公布，据说下个月发布。"
+];
+let price = test("这段话给出了具体价格或折扣吗？", "price");
+let r = sieve(notes, price);
+let t = tally(r);
+let firstone = first_k(r, 1);
+let firsttwo = first_k(r, 2);
+
+{streams: {act: map(accepted(r), fn(e) { e.index }), ignore: map(ignored(r), fn(e) { e.index }),
+           unsure: map(undecided(r), fn(p) { {index: p.element.index, cause: p.cause} })},
+ count: t.value.count, complete: t.value.complete,
+ exists: t.value.exists, all: t.value.all,
+ // 被挡住的位置在续接里（B17 取舍）
+ first1: {exit: firstone.value.exit, blocked_at: firstone.resume.at},
+ first2: {exit: firsttwo.value.exit, items: map(firsttwo.value.items, fn(e) { e.index }), blocked_at: firsttwo.resume.at},
+ // 三个契约值的未决都交给调用者：t 已把 r 的未决并进它的聚合出口，firstone / firsttwo 带着 r 的未决与各自被挡住的出口
+ pending: [t.pending, firstone.pending, firsttwo.pending]}

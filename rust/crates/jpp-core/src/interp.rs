@@ -97,7 +97,7 @@ pub struct Cost {
 /// **`asked` 不从 taint 推**——`trusted`（状态可信）与 `asked`（经人拍板）
 /// 是那条规则亲口并列的两件事，人答是 trusted 走的是另一条路（§2.11）。
 fn 守卫(e: &Rc<Exit>) -> GuardInfo {
-    GuardInfo { trusted: e.taint == Taint::Trusted, asked: e.from_ask.get() }
+    GuardInfo { trusted: e.guard_trusted(), asked: e.from_ask.get() }
 }
 
 /// 这条线**凭什么**：`手填` 还是某一张证书。与「哪一层」正交。
@@ -112,6 +112,10 @@ fn 凭据(rec: &crate::effects::CalibRecord) -> String {
         },
         None => "手填".to_string(),
     }
+}
+
+fn e_line_empty(s: &str) -> bool {
+    s.is_empty()
 }
 
 /// 取前 n 个**字符**做诊断摘要。
@@ -144,6 +148,9 @@ pub struct Outcome {
     /// 这样 I4「程序里不可写线」在字面上仍然成立：程序连库的可变引用都拿不到。
     /// **重放不进这里**：重放读的是既有事实，不是新观察。
     pub evidence: Vec<(String, crate::effects::Sample)>,
+    /// **停岗候选**（B25）：本趟自动标记的校准键（漂移信号超线）。CLI 的 `--calib-out`
+    /// 把它们写成「停岗候选」；正式停岗由人确认（`jpp calib-confirm`）。
+    pub suspend_candidates: Vec<String>,
 }
 
 impl Outcome {
@@ -216,9 +223,18 @@ pub struct Interp<'a> {
     /// 账本里已有的 `ask` 条数：只参与核 `budget.escalate` 总上限，**不进 `Cost.asks`**
     /// （那个报的是「这次运行实际问了几次人」，重放时该是 0）。
     asks_in_ledger: u64,
+    /// **缺席 / 超时标记**（B32）：账本键 → `absent` / `latency`。`cut` 据此给 `Unsure(原因)`。
+    absent_marks: HashMap<String, String>,
+    /// 连续缺席次数（熔断用）
+    consecutive_absent: u32,
+    /// 本趟判断调用累计耗时（秒，B32 时延预算）
+    latency_spent: f64,
     /// 这一轮里被 `content()` 从 **untrusted 材料**拆出来的内容（规范 JSON）。
     /// `mat()` 拿到其中之一时不能当字面量洗成 trusted——见 `as_mat` 的兜底臂。
-    unwrapped_untrusted: HashSet<String>,
+    /// 从 untrusted 来源拆出的**文本叶子**（K-182 / K-203，2026-09-23）：派生出的新字符串
+    /// （拼接、join、slice、text）按子串关系认回来，不再只做整值精确匹配。
+    /// 含有「成分不可信的计算值」材料的状态哈希（J-08 诊断用，B33 第 8 点）
+    computed_untrusted_states: std::cell::RefCell<HashSet<String>>,
     /// 这次运行已经报过漂移的键：**一条天天响的告警等于没有告警**
     drift_reported: HashSet<String>,
     evidence: Vec<(String, crate::effects::Sample)>,
@@ -321,8 +337,8 @@ pub struct Layer {
 }
 
 pub const BUILTINS: &[&str] = &[
-    "state", "test", "select", "measure", "judge", "cut", "handle", "consume", "gen", "do", "ask", "transform", "mat", "content", "unsure", "pending", "fail", "is_fail", "loop", "stop",
-    "unsure_cause", "untested", "line_source", "taint", "escalate", "literalize", "allocate", "unsure_bound", "agg", "order", "fit",
+    "state", "test", "select", "measure", "form", "fill", "judge", "sieve", "pair", "tally", "first_k", "iterate", "outcome", "key_of", "cut", "handle", "consume", "gen", "do", "ask", "transform", "mat", "content", "unsure", "pending", "fail", "is_fail", "loop", "stop",
+    "unsure_cause", "untested", "line_source", "taint", "escalate", "literalize", "allocate", "unsure_bound", "agg", "repeat", "order", "fit",
     "len", "map", "filter", "fold", "range", "append", "concat", "slice", "contains", "sum", "reverse", "keys", "with", "has", "text", "join", "print", "min", "max", "abs", "floor", "exit_kind",
 ];
 
@@ -361,7 +377,7 @@ impl<'a> Interp<'a> {
         budget: Budget,
     ) -> Interp<'a> {
         let model_id = client.model_id();
-        Interp { client, ledger, calib, actions, fits, budget, trace: Trace::default(), cost: Cost::default(), frames: vec![], loops: vec![], next_exit: 0, depth: 0, run_seq: 0, model_id, pending: vec![], layers: vec![], passes: Passes::default(), guards: vec![], speculated: HashSet::new(), speculation_used: HashSet::new(), last_eval_provenance: None, pending_field_prov: None, asks_in_ledger: 0, unwrapped_untrusted: HashSet::new(), drift_reported: HashSet::new(), evidence: vec![] }
+        Interp { client, ledger, calib, actions, fits, budget, trace: Trace::default(), cost: Cost::default(), frames: vec![], loops: vec![], next_exit: 0, depth: 0, run_seq: 0, model_id, pending: vec![], layers: vec![], passes: Passes::default(), guards: vec![], speculated: HashSet::new(), speculation_used: HashSet::new(), last_eval_provenance: None, pending_field_prov: None, asks_in_ledger: 0, computed_untrusted_states: std::cell::RefCell::new(HashSet::new()), drift_reported: HashSet::new(), evidence: vec![], absent_marks: HashMap::new(), consecutive_absent: 0, latency_spent: 0.0 }
     }
 
     pub fn run(mut self, program: &Program) -> Result<Outcome, RtError> {
@@ -422,9 +438,9 @@ impl<'a> Interp<'a> {
                 if !returned.is_empty() {
                     self.trace.warn(format!("returned_unsure: {}", returned.join(", ")));
                 }
-                Ok(Outcome { value: Some(v), pending: vec![], trace: self.trace, cost: self.cost, returned_unsure: returned, layers: self.layers, evidence: self.evidence })
+                Ok(Outcome { value: Some(v), pending: vec![], trace: self.trace, cost: self.cost, returned_unsure: returned, layers: self.layers, evidence: self.evidence, suspend_candidates: { let mut v: Vec<String> = self.drift_reported.iter().cloned().collect(); v.sort(); v } })
             }
-            Err(Fault::Halt(p)) => Ok(Outcome { value: None, pending: vec![p], trace: self.trace, cost: self.cost, returned_unsure: vec![], layers: self.layers, evidence: self.evidence }),
+            Err(Fault::Halt(p)) => Ok(Outcome { value: None, pending: vec![p], trace: self.trace, cost: self.cost, returned_unsure: vec![], layers: self.layers, evidence: self.evidence, suspend_candidates: { let mut v: Vec<String> = self.drift_reported.iter().cloned().collect(); v.sort(); v } }),
             Err(Fault::Error(e)) => Err(e),
         }
     }
@@ -465,7 +481,7 @@ impl<'a> Interp<'a> {
                     let v = self.eval(value, &env)?;
                     // 记录（而不只是裸 bool）也要记来源：`request_test` 那类 helper 返回的是
                     // `{resolved, value}`，守卫写成 `包.resolved && 包.value`——来源在那个记录上。
-                    if matches!(v, Value::Bool(_) | Value::Record(_)) {
+                    if matches!(v, Value::Bool(_, _) | Value::Record(_)) {
                         let prov = {
                             // 出口按帧记，而 helper 函数自成一帧——`问人(m)` 里的 ask 出口落在
                             // 它自己那帧上，求值结束帧就弹掉了。所以这里看的是**这次求值总共新增了
@@ -476,19 +492,19 @@ impl<'a> Interp<'a> {
                             let mut acc = self.last_eval_provenance.take();
                             for x in made {
                                 let cur = acc.unwrap_or((false, false));
-                                acc = Some((cur.0 || x.taint == Taint::Trusted, cur.1 || x.from_ask.get()));
+                                acc = Some((cur.0 || x.guard_trusted(), cur.1 || x.from_ask.get()));
                             }
                             acc
                         };
                         // 逐字段来源也绑进环境，键是 `名字\u{1f}字段\u{1f}prov`
                         if let Some(各字段) = self.pending_field_prov.take() {
                             for (f, (t, a)) in 各字段 {
-                                env_define(&env, &field_prov_key(name, &f), Value::List(Rc::new(vec![Value::Bool(t), Value::Bool(a)])));
+                                env_define(&env, &field_prov_key(name, &f), Value::List(Rc::new(vec![Value::Bool(t, Taint::Trusted), Value::Bool(a, Taint::Trusted)])));
                             }
                         }
                         // 来源绑进**环境**，作用域与这个绑定完全一致
                         env_define(&env, &prov_key(name), match prov {
-                            Some((t, a)) => Value::List(Rc::new(vec![Value::Bool(t), Value::Bool(a)])),
+                            Some((t, a)) => Value::List(Rc::new(vec![Value::Bool(t, Taint::Trusted), Value::Bool(a, Taint::Trusted)])),
                             // 显式记「这个绑定没有来源」，盖住外层同名绑定的来源
                             None => Value::Unit,
                         });
@@ -526,9 +542,9 @@ impl<'a> Interp<'a> {
     fn eval(&mut self, e: &Expr, env: &Env) -> R<Value> {
         let sp = e.span;
         match &e.kind {
-            ExprKind::Integer(i) => Ok(Value::Int(*i)),
-            ExprKind::Decimal(d) => Ok(Value::Float(*d)),
-            ExprKind::Bool(b) => Ok(Value::Bool(*b)),
+            ExprKind::Integer(i) => Ok(Value::Int(*i, Taint::Trusted)),
+            ExprKind::Decimal(d) => Ok(Value::Float(*d, Taint::Trusted)),
+            ExprKind::Bool(b) => Ok(Value::Bool(*b, Taint::Trusted)),
             ExprKind::Text(t) => Ok(Value::text(t)),
             ExprKind::Unit => Ok(Value::Unit),
             ExprKind::Name(n) => env_lookup(env, n).ok_or_else(|| Fault::Error(RtError::new(None, format!("未定义的名字 {n}"), sp))),
@@ -575,7 +591,7 @@ impl<'a> Interp<'a> {
                 // J-08：条件求值成 Bool 之后 taint 就没了，所以**在这一刻**记下这层守卫的来源。
                 let guard = self.guard_of(condition, env);
                 match c {
-                    Value::Bool(b) => {
+                    Value::Bool(b, _) => {
                         self.guards.push(guard);
                         let r = if b { self.eval_block(yes, env) } else { self.eval_block(no, env) };
                         self.guards.pop();
@@ -593,7 +609,8 @@ impl<'a> Interp<'a> {
                         "content" => {
                             // 刷新点：宿主读内容
                             self.flush("content")?;
-                            Ok(json_to_value(&m.content))
+                            // 读出规则（B33 第 2 点）：从 untrusted 材料读出，所有叶子标 untrusted
+                            Ok(json_to_value(&m.content).tainted(m.taint))
                         }
                         "taint" => Ok(Value::text(if m.taint == Taint::Trusted { "trusted" } else { "untrusted" })),
                         "hash" => Ok(Value::text(&m.hash)),
@@ -603,6 +620,8 @@ impl<'a> Interp<'a> {
                         "kind" => Ok(Value::text(&x.label())),
                         _ => err(None, format!("Exit 没有字段 {field}（用 handle 消费）"), sp),
                     },
+                    Value::Question(q) => question_field(q, field).ok_or_else(|| Fault::Error(RtError::new(None, format!("Question 没有字段 {field}；可读字段：{}", QUESTION_FIELDS.join("、")), sp))),
+                    Value::Form(f) => form_field(f, field).ok_or_else(|| Fault::Error(RtError::new(None, format!("Form 没有字段 {field}；可读字段：{}", FORM_FIELDS.join("、")), sp))),
                     Value::Reading(_) => err(Some("J-01"), "读数没有可读字段；只能经 cut 离开", sp),
                     other => err(None, format!("{} 没有字段 {field}", other.type_name()), sp),
                 }
@@ -611,24 +630,25 @@ impl<'a> Interp<'a> {
                 let v = self.eval(value, env)?;
                 let i = self.eval(index, env)?;
                 match (&v, &i) {
-                    (Value::List(l), Value::Int(k)) => {
+                    (Value::List(l), Value::Int(k, _)) => {
                         let k = *k;
                         if k < 0 || k as usize >= l.len() {
                             return err(None, format!("下标 {k} 越界（长度 {}）", l.len()), sp);
                         }
                         Ok(l[k as usize].clone())
                     }
-                    (Value::Record(_), Value::Text(k)) => v.get(k).ok_or_else(|| Fault::Error(RtError::new(None, format!("记录没有字段 {k}"), sp))),
+                    (Value::Record(_), Value::Text(k, _)) => v.get(k).ok_or_else(|| Fault::Error(RtError::new(None, format!("记录没有字段 {k}"), sp))),
                     _ => err(None, format!("{}[{}] 不可索引", v.type_name(), i.type_name()), sp),
                 }
             }
             ExprKind::Unary { op, value } => {
                 let v = self.eval(value, env)?;
+                let t = v.taint();
                 match (op.as_str(), &v) {
-                    ("!", Value::Bool(b)) => Ok(Value::Bool(!b)),
+                    ("!", Value::Bool(b, _)) => Ok(Value::Bool(!b, t)),
                     // 13 §6：最小整数取负也越界，同样是运行错误
-                    ("-", Value::Int(i)) => Ok(Value::Int(i.checked_neg().ok_or_else(|| overflow("取负", *i, 0, sp))?)),
-                    ("-", Value::Float(f)) => Ok(Value::Float(-f)),
+                    ("-", Value::Int(i, _)) => Ok(Value::Int(i.checked_neg().ok_or_else(|| overflow("取负", *i, 0, sp))?, t)),
+                    ("-", Value::Float(f, _)) => Ok(Value::Float(-f, t)),
                     (_, Value::Reading(_)) => err(Some("J-01"), "读数不能做算术", sp),
                     _ => err(None, format!("一元 {op} 不适用于 {}", v.type_name()), sp),
                 }
@@ -637,12 +657,13 @@ impl<'a> Interp<'a> {
                 if op == "&&" || op == "||" {
                     let l = self.eval(left, env)?;
                     return match (op.as_str(), &l) {
-                        ("&&", Value::Bool(false)) => Ok(Value::Bool(false)),
-                        ("||", Value::Bool(true)) => Ok(Value::Bool(true)),
-                        (_, Value::Bool(_)) => {
+                        ("&&", Value::Bool(false, t)) => Ok(Value::Bool(false, *t)),
+                        ("||", Value::Bool(true, t)) => Ok(Value::Bool(true, *t)),
+                        (_, Value::Bool(_, lt)) => {
+                            let lt = *lt;
                             let r = self.eval(right, env)?;
                             match r {
-                                Value::Bool(_) => Ok(r),
+                                Value::Bool(b, rt) => Ok(Value::Bool(b, Taint::join(lt, rt))),
                                 _ => err(None, format!("{op} 右侧要 Bool"), right.span),
                             }
                         }
@@ -664,7 +685,15 @@ impl<'a> Interp<'a> {
         }
     }
 
+    /// 二元运算。B33：输出 taint = ∨ 两侧（显式数据流）；列表拼接是搬运，元素保留自身的位。
     fn binop(&mut self, op: &str, l: Value, r: Value, sp: Span) -> R<Value> {
+        let t = Taint::join(l.taint(), r.taint());
+        let 搬运 = op == "+" && matches!((&l, &r), (Value::List(_), Value::List(_)));
+        let v = self.binop_raw(op, l, r, sp)?;
+        Ok(if 搬运 { v } else { v.tainted(t) })
+    }
+
+    fn binop_raw(&mut self, op: &str, l: Value, r: Value, sp: Span) -> R<Value> {
         if matches!(l, Value::Reading(_)) || matches!(r, Value::Reading(_)) {
             return err(Some("J-01"), format!("读数不能做 {op}：读数不可比、不可算，只能经 cut 离开"), sp);
         }
@@ -672,44 +701,44 @@ impl<'a> Interp<'a> {
         Ok(match (op, &l, &r) {
             // 13 §6：整数行为不随 Rust 构建模式改变。溢出与除零一律是**指向 .jpp 源码的运行错误**，
             // 不是 debug 崩溃 / release 悄悄回绕。用 checked_* 表达，两种构建下同一规则。
-            ("+", Int(a), Int(b)) => Int(a.checked_add(*b).ok_or_else(|| overflow("加法", *a, *b, sp))?),
-            ("-", Int(a), Int(b)) => Int(a.checked_sub(*b).ok_or_else(|| overflow("减法", *a, *b, sp))?),
-            ("*", Int(a), Int(b)) => Int(a.checked_mul(*b).ok_or_else(|| overflow("乘法", *a, *b, sp))?),
-            ("/", Int(a), Int(b)) => {
+            ("+", Int(a, _), Int(b, _)) => Int(a.checked_add(*b).ok_or_else(|| overflow("加法", *a, *b, sp))?, Taint::Trusted),
+            ("-", Int(a, _), Int(b, _)) => Int(a.checked_sub(*b).ok_or_else(|| overflow("减法", *a, *b, sp))?, Taint::Trusted),
+            ("*", Int(a, _), Int(b, _)) => Int(a.checked_mul(*b).ok_or_else(|| overflow("乘法", *a, *b, sp))?, Taint::Trusted),
+            ("/", Int(a, _), Int(b, _)) => {
                 if *b == 0 {
                     return err(None, "除以零：Int 除法的除数不能是 0", sp);
                 }
-                Int(a.checked_div(*b).ok_or_else(|| overflow("除法", *a, *b, sp))?)
+                Int(a.checked_div(*b).ok_or_else(|| overflow("除法", *a, *b, sp))?, Taint::Trusted)
             }
-            ("%", Int(a), Int(b)) => {
+            ("%", Int(a, _), Int(b, _)) => {
                 if *b == 0 {
                     return err(None, "取模零：Int 取模的除数不能是 0", sp);
                 }
-                Int(a.checked_rem(*b).ok_or_else(|| overflow("取模", *a, *b, sp))?)
+                Int(a.checked_rem(*b).ok_or_else(|| overflow("取模", *a, *b, sp))?, Taint::Trusted)
             }
-            ("+", Float(a), Float(b)) => Float(a + b),
-            ("-", Float(a), Float(b)) => Float(a - b),
-            ("*", Float(a), Float(b)) => Float(a * b),
-            ("/", Float(a), Float(b)) => Float(a / b),
-            ("+", Int(a), Float(b)) | ("+", Float(b), Int(a)) => Float(*a as f64 + b),
-            ("*", Int(a), Float(b)) | ("*", Float(b), Int(a)) => Float(*a as f64 * b),
-            ("-", Int(a), Float(b)) => Float(*a as f64 - b),
-            ("-", Float(a), Int(b)) => Float(a - *b as f64),
-            ("+", Text(a), Text(b)) => Value::text(&format!("{a}{b}")),
+            ("+", Float(a, _), Float(b, _)) => Float(a + b, Taint::Trusted),
+            ("-", Float(a, _), Float(b, _)) => Float(a - b, Taint::Trusted),
+            ("*", Float(a, _), Float(b, _)) => Float(a * b, Taint::Trusted),
+            ("/", Float(a, _), Float(b, _)) => Float(a / b, Taint::Trusted),
+            ("+", Int(a, _), Float(b, _)) | ("+", Float(b, _), Int(a, _)) => Float(*a as f64 + b, Taint::Trusted),
+            ("*", Int(a, _), Float(b, _)) | ("*", Float(b, _), Int(a, _)) => Float(*a as f64 * b, Taint::Trusted),
+            ("-", Int(a, _), Float(b, _)) => Float(*a as f64 - b, Taint::Trusted),
+            ("-", Float(a, _), Int(b, _)) => Float(a - *b as f64, Taint::Trusted),
+            ("+", Text(a, _), Text(b, _)) => Value::text(&format!("{a}{b}")),
             ("+", List(a), List(b)) => Value::list(a.iter().chain(b.iter()).cloned().collect()),
-            ("<", Int(a), Int(b)) => Bool(a < b),
-            ("<=", Int(a), Int(b)) => Bool(a <= b),
-            (">", Int(a), Int(b)) => Bool(a > b),
-            (">=", Int(a), Int(b)) => Bool(a >= b),
-            ("<", Float(a), Float(b)) => Bool(a < b),
-            ("<=", Float(a), Float(b)) => Bool(a <= b),
-            (">", Float(a), Float(b)) => Bool(a > b),
-            (">=", Float(a), Float(b)) => Bool(a >= b),
+            ("<", Int(a, _), Int(b, _)) => Bool(a < b, Taint::Trusted),
+            ("<=", Int(a, _), Int(b, _)) => Bool(a <= b, Taint::Trusted),
+            (">", Int(a, _), Int(b, _)) => Bool(a > b, Taint::Trusted),
+            (">=", Int(a, _), Int(b, _)) => Bool(a >= b, Taint::Trusted),
+            ("<", Float(a, _), Float(b, _)) => Bool(a < b, Taint::Trusted),
+            ("<=", Float(a, _), Float(b, _)) => Bool(a <= b, Taint::Trusted),
+            (">", Float(a, _), Float(b, _)) => Bool(a > b, Taint::Trusted),
+            (">=", Float(a, _), Float(b, _)) => Bool(a >= b, Taint::Trusted),
             // `equals` 返回 None = 里面有读数，不可比（J-01）。这里以前是 `unwrap_or(false)`，
             // 把「不可比」这个信号吃成了「不相等」——顶上那道 J-01 只拦裸读数，
             // 装进列表或记录就从这条缝里漏过去了。
             ("==", _, _) | ("!=", _, _) => match l.equals(&r) {
-                Some(eq) => Bool(if op == "==" { eq } else { !eq }),
+                Some(eq) => Bool(if op == "==" { eq } else { !eq }, Taint::Trusted),
                 None => return err(Some("J-01"), format!("读数不能做 {op}：读数没有可读的值，装进列表或记录也一样。修法：先 cut 成出口再比出口"), sp),
             },
             _ => return err(None, format!("二元 {op} 不适用于 {} 与 {}", l.type_name(), r.type_name()), sp),
@@ -719,7 +748,16 @@ impl<'a> Interp<'a> {
     fn apply(&mut self, f: Value, args: Vec<Value>, sp: Span) -> R<Value> {
         match f {
             Value::Fn(c) => self.call_closure(&c, args, sp),
-            Value::Builtin(name) => self.builtin(name, args, sp),
+            Value::Builtin(name) => {
+                // B33 第 3 点：内置输出 taint = ∨ 输入，在分派处一处统一算。
+                // 效应边界与自带规则的内置（按 §2.11 表赋值）、以及只搬运元素的内置不在此列。
+                let t = if 不做数据流合取的内置.contains(&name) {
+                    Taint::Trusted
+                } else {
+                    args.iter().fold(Taint::Trusted, |t, a| Taint::join(t, a.taint()))
+                };
+                Ok(self.builtin(name, args, sp)?.tainted(t))
+            }
             other => err(None, format!("{} 不可调用", other.type_name()), sp),
         }
     }
@@ -748,7 +786,7 @@ impl<'a> Interp<'a> {
             let prov = frame
                 .exits
                 .iter()
-                .fold(self.last_eval_provenance.unwrap_or((false, false)), |acc, x| (acc.0 || x.taint == Taint::Trusted, acc.1 || x.from_ask.get()));
+                .fold(self.last_eval_provenance.unwrap_or((false, false)), |acc, x| (acc.0 || x.guard_trusted(), acc.1 || x.from_ask.get()));
             self.last_eval_provenance = Some(prov);
         }
         self.depth -= 1;
@@ -799,19 +837,14 @@ impl<'a> Interp<'a> {
                 sp,
             ),
             Value::State(_) | Value::Question(_) | Value::Fn(_) | Value::Builtin(_) | Value::Stop(_) => err(None, format!("{} 不能作材料", v.type_name()), sp),
-            Value::Fail(s) => Ok(Mat::new(json!({"fail": s.as_ref()}), "", vec!["fail".into()], Taint::Trusted, BTreeSet::new())),
-            // 字面量兜底臂。**这里是一条洗白路径**：`content(脏)` 把材料拆成裸值，
-            // 再 `mat(...)` 包回去就成了 `Mat::literal` —— trusted、origin=["literal"]。
-            // 按已立的判据（兜底往拒绝那边倒），拆出来过的内容包回去仍然 untrusted。
+            Value::Fail(s, t) => Ok(Mat::new(json!({"fail": s.as_ref()}), "", vec!["fail".into()], *t, BTreeSet::new())),
+            // 计算值进材料（B33 第 5 点）：taint = 值自身的位（容器递归 ∨）。语法字面量求值即 trusted，
+            // 所以不需要「字面量兜底」那一臂；成分含不可信内容的计算值 origin 记 computed。
+            // trusted 的计算值 origin 仍记 literal：材料哈希不含 origin，但输出里的 origin 保持不变。
             other => {
-                let j = other.to_json();
-                // **递归查**：包装成 `{outer: 拆了}`、`[拆了]` 都算——此前只比顶层那一个值，
-                // 多套一层容器就绕过去了（实测：`mat({outer: content(脏)})` 洗白成功）。
-                if contains_untrusted_part(&self.unwrapped_untrusted, &j) {
-                    Ok(Mat::new(j, "", vec!["unwrapped".into()], Taint::Untrusted, BTreeSet::new()))
-                } else {
-                    Ok(Mat::literal(j))
-                }
+                let t = other.taint();
+                let origin = if t == Taint::Untrusted { "computed" } else { "literal" };
+                Ok(Mat::new(other.to_json(), "", vec![origin.into()], t, BTreeSet::new()))
             }
         }
     }
@@ -821,7 +854,7 @@ impl<'a> Interp<'a> {
             Value::List(l) => l.iter().cloned().collect(),
             other => vec![other.clone()],
         };
-        let has_fail = items.iter().any(|x| matches!(x, Value::Fail(_)));
+        let has_fail = items.iter().any(|x| matches!(x, Value::Fail(..)));
         let mut out = vec![];
         for it in items {
             out.push(self.as_mat(&it, slot, sp)?);
@@ -853,7 +886,12 @@ impl<'a> Interp<'a> {
                 }
             }
         }
-        Ok(Value::State(Rc::new(State::new(on, ctx, r#ref, over, fail))))
+        let st = State::new(on, ctx, r#ref, over, fail);
+        // J-08 诊断（B33 第 8 点）：记下哪些状态含「成分不可信的计算值」材料
+        if [&st.on, &st.ctx, &st.r#ref, &st.over].iter().any(|ms| ms.iter().any(|m| m.taint == Taint::Untrusted && m.origin.iter().any(|o| o == "computed"))) {
+            self.computed_untrusted_states.borrow_mut().insert(st.hash.clone());
+        }
+        Ok(Value::State(Rc::new(st)))
     }
 
     // ---------- 效应 ----------
@@ -894,7 +932,7 @@ impl<'a> Interp<'a> {
                         perms: std::cell::Cell::new(0),
                 mode_share: std::cell::Cell::new(None),
                         missing_evidence: missing_evidence(state, q),
-                        state_taint: state.taint,
+                        state_taint: state.taint, form_hash: q.form_hash.clone(),
                     }))
                 })
                 .collect());
@@ -928,7 +966,7 @@ impl<'a> Interp<'a> {
                     perms: std::cell::Cell::new(0),
                 mode_share: std::cell::Cell::new(None),
                     missing_evidence: missing_evidence(state, q),
-                    state_taint: state.taint,
+                    state_taint: state.taint, form_hash: q.form_hash.clone(),
                 })
             })
             .collect();
@@ -942,6 +980,11 @@ impl<'a> Interp<'a> {
                 readings[i].fill(answer.clone());
                 self.cost.replayed += 1;
                 self.trace.push("judge", k, true, 0.0, sp, format!("「{}」", qs[i].text));
+            } else if qs[i].op == Op::Select && state.over.is_empty() {
+                // **没有候选**（B3）：K 选一的 over 槽是空的，问了也没有可选的——不发，出口 Unsure(no_candidate)，
+                // 去向是调生成器补候选，不同于 tie / insufficient。
+                self.absent_marks.insert(k.clone(), "no_candidate".into());
+                self.trace.warn(format!("W-no-candidate: @{} 选择题「{}」没有候选（over 为空），出口 Unsure(no_candidate)", sp.start, qs[i].text));
             } else {
                 missing.push(i);
             }
@@ -962,6 +1005,182 @@ impl<'a> Interp<'a> {
         Ok(readings.into_iter().map(Value::Reading).collect())
     }
 
+
+    /// 三路过滤的求值（`05` §1）。返回每道题一份 `{question, act, ignore, unsure, unobserved, stopped}`。
+    ///
+    /// - 每个元素保留原值（`item`）、输入位置（`index`）、出口（`exit`）、未决原因（`cause`）、
+    ///   以及经过的前几次过滤（`trail`，由上一次过滤的出口组成）。
+    /// - **完整输入时 act / ignore / unsure 不漏、互斥**；同一元素出现两次就在流里出现两次（各带自己的 index），
+    ///   同状态同题只问一次（账本同键去重）。
+    /// - **预算提前停止**：没问到的元素进 `unobserved`，不混进 ignore 或 unsure；`stopped` 写明原因。
+    ///   这里接住 budget 停机是因为「部分观察 + 未观察范围」本身就是这个算子的一个合法结果；
+    ///   之后的判断照常受预算约束。
+    /// - 输入元素若本身是一次过滤的产物（带 `item` / `exit` / `trail` 的记录），取它的 `item` 当材料，
+    ///   `trail` 接上：**产物与输入同形，可再过滤**（组合封闭）。
+    /// - act / ignore 出口在这里被路由，记为已消费；unsure 出口放进 unsure 流，责任随返回值转交（J-05）。
+    /// 构造一个契约值（字段顺序固定）。
+    #[allow(clippy::too_many_arguments)]
+    fn outcome_value(kind: &str, value: Value, pending: Vec<Value>, evidence: Vec<Value>, resume: Value, spent: (i64, f64), detail: Value, purpose: Value) -> Value {
+        // 续接总是记录（空记录 = 没有停在半路、也没有继续方法），调用者可以用 has 查
+        let resume = if matches!(resume, Value::Unit) { Value::record(vec![]) } else { resume };
+        Value::record(vec![
+            ("kind".into(), Value::text(kind)),
+            ("value".into(), value),
+            ("pending".into(), Value::list(pending)),
+            ("evidence".into(), Value::list(evidence)),
+            ("resume".into(), resume),
+            ("spent".into(), Value::record(vec![("calls".into(), Value::Int(spent.0, Taint::Trusted)), ("usd".into(), Value::Float(spent.1, Taint::Trusted))])),
+            ("detail".into(), detail),
+            ("purpose".into(), purpose),
+        ])
+    }
+
+    /// 未决清单的一项：`{element, exit, cause}`
+    fn pending_entry(element: Value, exit: &Value) -> Value {
+        let cause = match exit {
+            Value::Exit(e) | Value::Duty(e) => Value::text(&e.cause()),
+            _ => Value::Unit,
+        };
+        Value::record(vec![("element".into(), element), ("exit".into(), exit.clone()), ("cause".into(), cause)])
+    }
+
+    /// 本次调用前的记账位置：之后据此算 `spent`，并从 trace 里取本构造触发的判断账本键
+    fn mark(&self) -> (usize, u64, f64) {
+        (self.trace.events.len(), self.cost.calls, self.cost.usd)
+    }
+
+    /// 这一段里判断过的账本键，以及它们花掉的调用与费用。
+    /// **按账本记录算，不按本次实际发出的算**：重放时读出同样的调用号与费用，
+    /// 契约值因此逐字节不变（J-18）。一次调用里融合了多道题，只计一次。
+    fn since(&self, m: (usize, u64, f64)) -> (Vec<Value>, (i64, f64)) {
+        let mut keys: Vec<String> = vec![];
+        for e in &self.trace.events[m.0.min(self.trace.events.len())..] {
+            if e.kind == "judge" && !keys.contains(&e.key) {
+                keys.push(e.key.clone());
+            }
+        }
+        let mut calls: Vec<u64> = vec![];
+        let mut usd = 0.0;
+        for (i, k) in keys.iter().enumerate() {
+            if let Some(Entry::Judge { call, cost, .. }) = self.ledger.get(k) {
+                // 老账本没有调用号：每个键算一次调用（上界）
+                let id = if *call == 0 { u64::MAX - i as u64 } else { *call };
+                if !calls.contains(&id) {
+                    calls.push(id);
+                    usd += cost;
+                }
+            }
+        }
+        let _ = m.1;
+        (keys.into_iter().map(|k| Value::text(&k)).collect(), (calls.len() as i64, usd))
+    }
+
+    /// 输入若是契约值：取出 (产出列表, 未决清单, 证据)；否则 (原列表, 空, 空)。
+    /// 契约值的产出不是列表时报错——只有列表产出能交给吃集合的构造。
+    fn unpack(&self, v: &Value, who: &str, sp: Span) -> R<(Vec<Value>, Vec<Value>, Vec<Value>)> {
+        if is_outcome(v) {
+            let items = match v.get("value") {
+                Some(Value::List(l)) => l.iter().cloned().collect(),
+                other => return err(None, format!("{who} 收到的契约值产出不是列表（是 {}），不能按集合处理；取出其中的列表再交给 {who}", other.map(|x| x.type_name()).unwrap_or("Unit")), sp),
+            };
+            return Ok((items, list_of(v.get("pending")), list_of(v.get("evidence"))));
+        }
+        match v {
+            Value::List(l) => Ok((l.iter().cloned().collect(), vec![], vec![])),
+            other => err(None, format!("{who} 要列表或契约值，收到 {}", other.type_name()), sp),
+        }
+    }
+
+    fn sieve(&mut self, items: &[Value], qs: &[Rc<Question>], carried_pending: &[Value], carried_evidence: &[Value], sp: Span) -> R<Vec<Value>> {
+        let m0 = self.mark();
+        for q in qs {
+            if q.op != Op::Test {
+                return err(None, format!("sieve 只收是非题（test）：题「{}」是 {}。K 选一与打分的分流待后续件", q.text, q.op.fixture_name()), sp);
+            }
+        }
+        // 先把此前登记的判断发出去：下面要接住预算停机，不能连带吞掉别人的登记
+        self.flush("sieve-before")?;
+        let mut prepared: Vec<(Value, Value, Vec<Rc<Reading>>, Value)> = vec![];
+        for it in items {
+            let (material, trail) = element_parts(it);
+            let state = match &material {
+                Value::State(s) => s.clone(),
+                other => match self.make_state(&[other.clone()], sp)? {
+                    Value::State(s) => s,
+                    _ => return err(None, "sieve 无法把元素变成状态", sp),
+                },
+            };
+            let rs = self.judge(&state, qs, sp)?;
+            let rs: Vec<Rc<Reading>> = rs.into_iter().map(|v| match v { Value::Reading(r) => r, _ => unreachable!("judge 只回读数") }).collect();
+            prepared.push((material, trail, rs, it.clone()));
+        }
+        let stopped = match self.flush("sieve") {
+            Ok(()) => None,
+            Err(Fault::Halt(p)) if p.cause == "budget" => Some(p),
+            Err(e) => return Err(e),
+        };
+        let (_, carried_spent) = self.since(m0);
+        let mut out = vec![];
+        for (j, q) in qs.iter().enumerate() {
+            let (mut act, mut ignore, mut pending, mut evidence, mut n_unobserved) = (vec![], vec![], vec![], vec![], 0usize);
+            for (i, (material, trail, rs, source)) in prepared.iter().enumerate() {
+                let r = &rs[j];
+                // `source` = 调用者交进来的原元素（配对产物、上一次过滤的产物……原样保留），
+                // `item` 只是交给判断器的那一份材料。两者分开，来源与关系不会在过滤中丢失。
+                let base = vec![("item".to_string(), material.clone()), ("index".to_string(), Value::Int(i as i64, Taint::Trusted)), ("trail".to_string(), trail.clone()), ("source".to_string(), source.clone())];
+                if r.answer.borrow().is_none() && r.fail.is_none() {
+                    // 预算停机没问到：记为 Unsure(budget) 进未决清单（B17 取舍），不混进 ignore
+                    n_unobserved += 1;
+                    let ex = self.new_exit(ExitKind::Unsure("budget".into()), None, Op::Test, &q.hash, "", crate::value::Taint::Trusted, sp);
+                    let mut rec = base;
+                    rec.push(("exit".to_string(), ex.clone()));
+                    rec.push(("cause".to_string(), Value::text("budget")));
+                    pending.push(Self::pending_entry(Value::record(rec), &ex));
+                    continue;
+                }
+                if !r.ledger_key.is_empty() && !evidence.iter().any(|k: &Value| matches!(k, Value::Text(t, _) if t.as_ref() == r.ledger_key)) {
+                    evidence.push(Value::text(&r.ledger_key));
+                }
+                let exit = self.cut(r, None, None, sp)?;
+                let Value::Exit(e) = &exit else { return err(None, "cut 没有给出出口", sp) };
+                let mut rec = base;
+                rec.push(("exit".to_string(), exit.clone()));
+                match &e.kind {
+                    ExitKind::Act => { e.consumed.set(true); *e.consumed_by.borrow_mut() = "sieve:act".into(); rec.push(("cause".into(), Value::Unit)); act.push(Value::record(rec)); }
+                    ExitKind::Ignore => { e.consumed.set(true); *e.consumed_by.borrow_mut() = "sieve:ignore".into(); rec.push(("cause".into(), Value::Unit)); ignore.push(Value::record(rec)); }
+                    ExitKind::Unsure(_) => { rec.push(("cause".into(), Value::text(&e.cause()))); pending.push(Self::pending_entry(Value::record(rec), &exit)); }
+                    _ => return err(None, "是非题给出了非是非出口", sp),
+                }
+            }
+            if let Some(p) = &stopped {
+                if j == 0 && n_unobserved > 0 {
+                    self.trace.warn(format!("W-sieve-budget: 三路过滤在预算处停止，{} 个元素未观察，记为 Unsure(budget) 进未决清单（未计入 ignore）：{}", n_unobserved, p.detail));
+                }
+            }
+            let resume = match &stopped {
+                Some(p) => Value::record(vec![("reason".into(), Value::text("budget")), ("detail".into(), Value::text(&p.detail)), ("unobserved".into(), Value::Int(n_unobserved as i64, Taint::Trusted))]),
+                None => Value::Unit,
+            };
+            let detail = Value::record(vec![("question".into(), Value::Question(q.clone())), ("ignore".into(), Value::list(ignore))]);
+            out.push((Value::list(act), pending, evidence, resume, detail));
+        }
+        let mut outs = vec![];
+        let n_out = out.len();
+        for (j, (value, pending, evidence, resume, detail)) in out.into_iter().enumerate() {
+            // 多道题一次过滤：调用与费用、以及从输入带进来的未决与证据，只记在第一份契约上，
+            // 其余为零——融合后的调用分不到每道题，重复记会让求和翻倍。
+            let (mut pending, mut evidence) = (pending, evidence);
+            let spent = if j == 0 { carried_spent } else { (0, 0.0) };
+            if j == 0 {
+                pending.extend(carried_pending.iter().cloned());
+                for k in carried_evidence.iter() { push_key(&mut evidence, k.clone()); }
+            }
+            let _ = n_out;
+            outs.push(Self::outcome_value("sieve", value, pending, evidence, resume, spent, detail, Value::Unit));
+        }
+        Ok(outs)
+    }
+
     /// 把后面同状态、可安全提前登记的 `judge` 一起登记上来。
     ///
     /// 停在：遇到分支 / 循环（不跨分支）；遇到会产生副作用或改状态的调用
@@ -980,12 +1199,14 @@ impl<'a> Interp<'a> {
         for (j, st) in b.statements.iter().enumerate().skip(from + 1) {
             let Statement::Let { name, value, .. } = st else { break };
             // 中间有副作用 / 改状态的调用：停
-            if has_impure(value) || has_branch(value) {
+            // 越过的那一句若会触世界（含藏在用户函数里的 do），判断与动作的先后会被改掉：停（K-075）
+            if has_impure(value) || has_branch(value) || may_touch_world(value, env) {
                 break;
             }
             match judged_state(value) {
-                // 同状态（结构相同的表达式）才提；不同状态的层合并没有消费者，不做
-                Some(s2) if same_shape(s2, head_state) => {
+                // 同状态（结构相同的表达式）才提；不同状态的层合并没有消费者，不做。
+                // 被提的这一句要**提前求值**：它自己必须可提前求值（K-069）
+                Some(s2) if same_shape(s2, head_state) && !may_effect(value, env) => {
                     let v = self.eval(value, env)?;
                     env_define(env, name, v);
                     lifted.insert(j);
@@ -1166,6 +1387,11 @@ impl<'a> Interp<'a> {
                     if used.iter().any(|u| born.contains(u)) {
                         return;
                     }
+                    // 推测要**提前求值状态与题**：这两段里只要可能有效应（包括藏在用户函数里的 do），
+                    // 就不推（K-069：`state(mat(side(1)))` 曾在不该走的分支里执行了 side 的 do）
+                    if arguments.iter().any(|a| may_effect(a, env)) {
+                        return;
+                    }
                     // 试着在当前环境里求出状态与题；求不出就放弃这个站点（不报错）
                     if let (Ok(Value::State(st)), Ok(q)) = (self.eval(&arguments[0], env), self.eval(&arguments[1], env)) {
                         let qs: Vec<Rc<Question>> = match q {
@@ -1236,7 +1462,7 @@ impl<'a> Interp<'a> {
                 mode_share: std::cell::Cell::new(None),
                 missing_evidence: missing_evidence(state, q),
                 scale: q.scale.clone(),
-                state_taint: state.taint,
+                state_taint: state.taint, form_hash: q.form_hash.clone(),
             });
             items.push((q.clone(), r, k.clone()));
         }
@@ -1285,7 +1511,7 @@ impl<'a> Interp<'a> {
     fn lookup_field_prov(&self, env: &Env, name: &str, field: &str) -> Option<(bool, bool)> {
         match env_lookup(env, &field_prov_key(name, field))? {
             Value::List(l) if l.len() == 2 => match (&l[0], &l[1]) {
-                (Value::Bool(t), Value::Bool(a)) => Some((*t, *a)),
+                (Value::Bool(t, _), Value::Bool(a, _)) => Some((*t, *a)),
                 _ => None,
             },
             _ => None,
@@ -1300,7 +1526,7 @@ impl<'a> Interp<'a> {
         if made.is_empty() {
             return None;
         }
-        Some(made.iter().fold((false, false), |acc, x| (acc.0 || x.taint == Taint::Trusted, acc.1 || x.from_ask.get())))
+        Some(made.iter().fold((false, false), |acc, x| (acc.0 || x.guard_trusted(), acc.1 || x.from_ask.get())))
     }
 
     /// 字段的值直接引用了某个已有绑定时，取那个绑定的来源
@@ -1321,10 +1547,10 @@ impl<'a> Interp<'a> {
             ExprKind::Name(n) => {
                 let v = env_lookup(env, n)?;
                 match &v {
-                    Value::Exit(x) | Value::Duty(x) => Some((x.taint == Taint::Trusted, x.from_ask.get())),
-                    Value::Bool(_) | Value::Record(_) => match env_lookup(env, &prov_key(n)) {
+                    Value::Exit(x) | Value::Duty(x) => Some((x.guard_trusted(), x.from_ask.get())),
+                    Value::Bool(_, _) | Value::Record(_) => match env_lookup(env, &prov_key(n)) {
                         Some(Value::List(l)) if l.len() == 2 => match (&l[0], &l[1]) {
-                            (Value::Bool(t), Value::Bool(a)) => Some((*t, *a)),
+                            (Value::Bool(t, _), Value::Bool(a, _)) => Some((*t, *a)),
                             _ => None,
                         },
                         _ => None,
@@ -1373,6 +1599,37 @@ impl<'a> Interp<'a> {
                 "W-window: @{} 语境槽 {ctx} token 超 JSON 槽已测窗口 {}（上限未测，超出即无依据）",
                 sp.start, p.json_ctx_window
             ));
+        }
+    }
+
+    /// 记一组题的缺席或超时（B32）：标记给 `cut`，账本记事件（重放据此复现），trace 留痕。
+    /// `attempts`（PR #30 评审 4082390412）：这一组题这一轮实际向后端发出的尝试次数——
+    /// 只是记进账本供审计参考，不是新的重放分支（v1 账本没有专门的 Absent 变体，
+    /// 借 `Entry::Effect` 的 `output` JSON 带这个字段，缺省读不到即 0，旧账本行为不变）。
+    fn 记缺席(&mut self, items: &[(Rc<Question>, Rc<Reading>, String)], cause: &str, site: Span, detail: String, attempts: u64) {
+        for (_, _, k) in items {
+            self.absent_marks.insert(k.clone(), cause.to_string());
+            let mk = format!("absent:{k}");
+            if self.ledger.get(&mk).is_none() {
+                self.ledger.put(Entry::Effect { key: mk.clone(), kind: "absent".into(), output: serde_json::json!({"cause": cause, "detail": detail, "attempts": attempts}), cost: 0.0 });
+            }
+            self.trace.push("absent", &mk, false, 0.0, site, format!("{cause}：{detail}"));
+        }
+        self.trace.warn(format!("W-{cause}: @{} {} 道题转 Unsure({cause})：{detail}", site.start, items.len()));
+    }
+
+    /// 缺席策略的 `then`（B32）：escalate → 程序挂起待续跑；conservative → 出口 Unsure(absent) 继续；fail → 运行期错误。
+    fn 缺席处置(&mut self, items: &[(Rc<Question>, Rc<Reading>, String)], pol: &crate::ast::AbsentPolicy, site: Span, detail: String, attempts: u64) -> R<()> {
+        match pol.then.as_str() {
+            "fail" => err(None, format!("判断器缺席（absent.then=fail）：{detail}"), site),
+            "conservative" => {
+                self.记缺席(items, "absent", site, detail, attempts);
+                Ok(())
+            }
+            _ => {
+                self.trace.warn(format!("W-absent: @{} 判断器缺席，按 absent.then=escalate 挂起：{detail}", site.start));
+                Err(Fault::Halt(Pending { cause: "absent".into(), key: items.first().map(|x| x.2.clone()).unwrap_or_default(), site, detail: format!("判断器缺席：{detail}。恢复后用 --resume 续跑，已完成的判断不再付费") }))
+            }
         }
     }
 
@@ -1444,14 +1701,75 @@ impl<'a> Interp<'a> {
                 }
             }
             let items = 去重;
+            // **缺席 / 超时的重放**（B32）：账本里记过这一组题是缺席或超时的，照记的原因给出，不再发。
+            let 已记: Vec<Option<String>> = items.iter().map(|(_, _, k)| match self.ledger.get(&format!("absent:{k}")) {
+                Some(Entry::Effect { output, .. }) => output.get("cause").and_then(|c| c.as_str()).map(String::from),
+                _ => None,
+            }).collect();
+            if 已记.iter().all(|x| x.is_some()) {
+                for ((_, _, k), c) in items.iter().zip(已记) {
+                    self.absent_marks.insert(k.clone(), c.expect("刚判过"));
+                    self.cost.replayed += 1;
+                }
+                continue;
+            }
+            // **时延预算已用完**（B32）：之后的判断站点转 `Unsure(latency)`，不静默继续，也不再发
+            if let Some(lim) = self.budget.latency_p95 {
+                if self.latency_spent > lim {
+                    self.记缺席(&items, "latency", site, format!("时延预算 {lim}s 已用完（已用 {:.2}s）", self.latency_spent), 0);
+                    continue;
+                }
+            }
+            // **熔断**（B32）：连续缺席到上限后不再发
+            if let Some(pol) = self.budget.absent.clone() {
+                if self.consecutive_absent >= pol.breaker {
+                    self.缺席处置(&items, &pol, site, format!("熔断：连续缺席 {} 次", self.consecutive_absent), 0)?;
+                    continue;
+                }
+            }
             self.charge(1, 0.0, site)?;
             let ask: Vec<&Question> = items.iter().map(|(q, _, _)| q.as_ref()).collect();
-            let res = self.client.judge(&state, &ask).map_err(|e| Fault::Error(RtError::new(None, format!("客户端错误：{}", e.0), site)))?;
+            let 起 = std::time::Instant::now();
+            // **每次发出都计费**（PR #30 评审 4082390412）：首发已在上面核过预算，这里记一次；
+            // 重试前各核一次预算，每次发出（无论成败）都计入 cost.calls，不让重试绕开预算检查。
+            let mut 结果 = self.client.judge(&state, &ask);
+            self.cost.calls += 1;
+            let mut 尝试 = 1u64;
+            // **重试与退避**（B32）：只有声明了 absent 策略才重试；没声明沿用旧行为（客户端错误即运行期错误）
+            if let Some(pol) = self.budget.absent.clone() {
+                let mut 等 = pol.backoff;
+                let mut 次 = 0;
+                while 结果.is_err() && 次 < pol.retry {
+                    if 等 > 0.0 {
+                        std::thread::sleep(std::time::Duration::from_secs_f64(等));
+                    }
+                    等 *= 2.0;
+                    次 += 1;
+                    self.charge(1, 0.0, site)?;
+                    结果 = self.client.judge(&state, &ask);
+                    self.cost.calls += 1;
+                    尝试 += 1;
+                }
+                // **失败路径也计时延**（PR #30 评审 4082390412）：退避睡眠与各次失败请求都占时延预算，
+                // 不再因为下面提前 continue 而漏计。
+                let 用时 = 起.elapsed().as_secs_f64();
+                self.latency_spent += 用时;
+                if let Err(e) = &结果 {
+                    self.consecutive_absent += 1;
+                    self.缺席处置(&items, &pol, site, format!("判断器不可用（重试 {次} 次）：{}", e.0), 尝试)?;
+                    continue;
+                }
+                self.consecutive_absent = 0;
+            } else {
+                let 用时 = 起.elapsed().as_secs_f64();
+                self.latency_spent += 用时;
+            }
+            let res = 结果.map_err(|e| Fault::Error(RtError::new(None, format!("客户端错误：{}", e.0), site)))?;
             if res.answers.len() != ask.len() {
                 return err(None, "客户端返回的答案数与题数不符", site);
             }
             // 13 §5：后端已经返回 = 调用已经发生、钱已经花了。先把事实记下来，再决定要不要继续。
-            self.cost.calls += 1;
+            // （调用次数已在发出时逐次计过，含失败的重试）
             self.cost.tokens += res.tokens;
             self.cost.usd += res.cost;
             layer_calls += 1;
@@ -1465,7 +1783,7 @@ impl<'a> Interp<'a> {
                     r.set_mode_share(*ms, res_perms.get(idx).copied().unwrap_or(0));
                 }
                 self.validate_answer(&a, q, &state, site)?;
-                self.ledger.put(Entry::Judge { key: key.clone(), answer: a.clone(), tokens: res.tokens, cost: res.cost, model_id: self.model_id.clone() });
+                self.ledger.put(Entry::Judge { key: key.clone(), answer: a.clone(), tokens: res.tokens, cost: res.cost, model_id: self.model_id.clone(), call: self.cost.calls });
                 self.trace.push("judge", key, false, res.cost, site, format!("「{}」", q.text));
                 // **运行期写入口的产出端**（`12`:347）。挂在这里而不是挂在「有读数产生」上，
                 // 是因为重放路径（`interp.rs` 的 `ledger.get` 分支）根本不经过这里——
@@ -1489,6 +1807,12 @@ impl<'a> Interp<'a> {
                 // 同键的其余读数（提前登记那些）也要填上，否则它们停在「没有答案」
                 for other in 同键[idx].iter().skip(1) {
                     other.fill(a.clone());
+                }
+            }
+            // **超时站点**（B32）：这一次调用把累计时延推过预算，本组题转 `Unsure(latency)`（答案已记账，但不采信）
+            if let Some(lim) = self.budget.latency_p95 {
+                if self.latency_spent > lim {
+                    self.记缺席(&items, "latency", site, format!("本次调用后累计时延 {:.2}s 超过预算 {lim}s", self.latency_spent), 0);
                 }
             }
             // 事实记完了再核预算：实际费用高于调用前的估计时，停的是**下一步**，不是这一步
@@ -1524,7 +1848,7 @@ impl<'a> Interp<'a> {
     fn new_exit_from(&mut self, kind: ExitKind, untested: Option<String>, op: Op, q_hash: &str, state_hash: &str, taint: Taint, line_source: String, sp: Span) -> Value {
         let id = self.next_exit;
         self.next_exit += 1;
-        let e = Rc::new(Exit { id, op, kind, q_hash: q_hash.into(), state_hash: state_hash.into(), taint, site: sp, from_ask: std::cell::Cell::new(false), consumed: std::cell::Cell::new(false), consumed_by: std::cell::RefCell::new(String::new()), untested, line_source });
+        let e = Rc::new(Exit { id, op, kind, q_hash: q_hash.into(), state_hash: state_hash.into(), taint, site: sp, from_ask: std::cell::Cell::new(false), consumed: std::cell::Cell::new(false), consumed_by: std::cell::RefCell::new(String::new()), untested, line_source, ledger_key: std::cell::RefCell::new(String::new()), fixture_line: std::cell::Cell::new(false), suspend_candidate: std::cell::Cell::new(false) });
         self.frame().exits.push(e.clone());
         Value::Exit(e)
     }
@@ -1574,7 +1898,7 @@ impl<'a> Interp<'a> {
             if d.可停岗() {
                 self.drift_reported.insert(key.to_string());
                 self.trace.warn(format!(
-                    "W-drift: @{} 键 {key} 的近期读数分布与定线时的标注分布已经移开（KS={:.3} PSI={:.3}，参照 {} 条 / 近期 {} 条）。                         **不阻塞、也不停岗**——停岗是人下的判断（12:396 写的是告警）。修法【需接线人】：复核这条线是否还成立，要停就走 put(key, …, \"停岗\")",
+                    "W-drift: @{} 键 {key} 的近期读数分布与定线时的标注分布已经移开（KS={:.3} PSI={:.3}，参照 {} 条 / 近期 {} 条）。                         已自动标为停岗候选（B25）：本趟起这条线的出口照常路由，但不得放行不可逆 do；正式停岗由人确认。修法【需接线人】：--calib-out 写出候选后，用 jpp calib-confirm <目录> <键> --suspend 或 --keep",
                     sp.start, d.ks, d.psi, d.n_ref, d.n_recent
                 ));
             }
@@ -1589,11 +1913,34 @@ impl<'a> Interp<'a> {
         }
     }
 
-    fn cut(&mut self, r: &Reading, calib_key: Option<&str>, sp: Span) -> R<Value> {
+    /// 把 `cut` 查到的一条校准记录记进账本（`Ledger::calib_used`）。库里没有的键不记：
+    /// 重放时它照样查不到，照样是冷，出口一致。
+    fn note_calib(&mut self, key: &str) {
+        if self.ledger.calib_used.contains_key(key) {
+            return;
+        }
+        if let Some(rec) = self.calib.records.get(key) {
+            let j = serde_json::to_value(rec).unwrap_or(serde_json::Value::Null);
+            let h = crate::value::hash_of(&[&j.to_string()]);
+            self.ledger.calib_used.insert(key.to_string(), serde_json::json!({"hash": h, "record": j}));
+        }
+    }
+
+    fn cut(&mut self, r: &Reading, calib_key: Option<&str>, cost: Option<(f64, f64)>, sp: Span) -> R<Value> {
+        let v = self.cut_inner(r, calib_key, cost, sp)?;
+        if let Value::Exit(e) = &v {
+            *e.ledger_key.borrow_mut() = r.ledger_key.clone();
+        }
+        Ok(v)
+    }
+
+    fn cut_inner(&mut self, r: &Reading, calib_key: Option<&str>, cost: Option<(f64, f64)>, sp: Span) -> R<Value> {
         // 刷新点（12 §2.2:129）：cut 要读答案，所以先把这一层发出去
         self.flush("cut")?;
         let key = calib_key.unwrap_or(&r.calib);
         let rec = self.calib.get(key);
+        // 账本记下这次查到的记录（全文 + 哈希），只凭账本重放时据此补回当时的线
+        self.note_calib(key);
         // J-16：fit 的训练集 ≠ 保形集。同源就是「拿训练数据给自己打分」，
         // 过线的那条线因此不再是独立的证据。
         if let Some(fit_name) = r.calib.strip_prefix("fit:") {
@@ -1632,49 +1979,126 @@ impl<'a> Interp<'a> {
         //
         // 查不到题级，就查这一类（`phys` + `literal_mode`）。**查得到也必须留痕**：
         // 模式级的线不能冒充题级的线。
-        let (线, 线源): (Option<(f64, f64)>, String) = if rec.status == "上岗" {
+        let (线, 线源, 夹具): (Option<(f64, f64)>, String, bool) = if rec.status == "上岗" || rec.status == "停岗候选" {
             // **两件正交的事，不许挤进一个字段。**
             // 「题级 / 模式级」答的是**哪一层**；「手填 / 证书」答的是**凭什么**。
             // 第一版我拿后者盖掉了前者，层级信息就没了——`题级有线时用自己的` 当场红。
-            (Some((rec.hi, rec.lo)), format!("题级·{}", 凭据(&rec)))
+            (Some((rec.hi, rec.lo)), format!("题级·{}", 凭据(&rec)), rec.fixture_line())
         } else if rec.status == "停岗" {
-            (None, String::new())
+            (None, String::new(), false)
         } else if r.calib.starts_with("fit:") {
             // **`fit` 的结果不借模式级先验。** `cut(fit结果)` 不带第二参时 `key` 就是
             // `fit:{名}`，而那条记录几乎从不上岗（fit 的校准住在 `error_rate` 里，不是一条线）。
             // 掉到 `mode_key("noul", …)` 上就是**跨种借线**——fit 的可靠性与「裸 noul 判断
             // 这一类的可靠性」毫无关系。**这正是模式键按 `phys` 分格要避免的那件事
             // 从另一道门进来**：`fit` 的 `op.phys()` 是它输入的物理形式，不是它自己的。
-            (None, String::new())
+            (None, String::new(), false)
         } else if r.fail.is_some() {
             // Fail 读数根本走不到过线比较；这里先算线只会白告警一句「借用了模式级先验」，
             // 而它其实什么也没借。**与「没用上线的出口不留来源」同一条**——
             // 审计物上留一句没发生的事，和留一个没用上的来源是同一种假话。
-            (None, String::new())
+            (None, String::new(), false)
+        } else if let Some(fk) = r.form_hash.as_ref().map(|h| crate::effects::CalibStore::form_key(h)).filter(|fk| {
+            self.note_calib(fk);
+            matches!(self.calib.get(fk).status.as_str(), "上岗" | "停岗候选")
+        }) {
+            // **题式级**（B2 待裁，本版只作回退层）：题键没有上岗记录，而这道题由一个
+            // 有上岗记录的题式填出。**留痕**：题式线不冒充题级线。
+            let f = self.calib.get(&fk);
+            self.trace.warn(format!(
+                "W-form-line: @{} 题级校准键 {key} 无上岗记录，用题式级线 {}（n={}）；出口带 line_source=题式级",
+                sp.start, fk.trim_start_matches('\u{1f}').replace('\u{1f}', ":"), f.n
+            ));
+            if let Some(t) = f.truth.as_ref().filter(|t| t.gate.starts_with("临时上岗")) {
+                self.trace.warn(format!("W-provisional: @{} 这条题式级线是{}", sp.start, t.gate));
+            }
+            (Some((f.hi, f.lo)), format!("题式级·{}", 凭据(&f)), f.fixture_line())
         } else {
+            if let Some(fk) = r.form_hash.as_ref().map(|h| crate::effects::CalibStore::form_key(h)) {
+                let f = self.calib.get(&fk);
+                if let Some(t) = &f.truth {
+                    // 真值通道导入过、但没过上岗门的题式：**说出来**，不静默当冷键
+                    self.trace.warn(format!("W-form-pending: @{} 题式级记录未上岗（{}）；本题按冷键处理", sp.start, t.gate));
+                }
+            }
             let mk = crate::effects::CalibStore::mode_key(r.op.phys(), crate::effects::LiteralMode::default());
+            self.note_calib(&mk);
             let m = self.calib.get(&mk);
             if m.status == "上岗" {
                 self.trace.warn(format!(
                     "W-mode-prior: @{} 题级校准键 {key} 无上岗记录，借用模式级先验 {mk}（n={}）；出口带 line_source=模式级",
                     sp.start, m.n
                 ));
-                (Some((m.hi, m.lo)), format!("模式级·{}", 凭据(&m)))
+                (Some((m.hi, m.lo)), format!("模式级·{}", 凭据(&m)), m.fixture_line())
             } else {
-                (None, String::new())
+                (None, String::new(), false)
+            }
+        };
+        // **代价线**（B29 前端补齐 `cut(…, {cost: [fp, fn]})`）：线只取按这个代价矩阵认证过的证书，
+        // 先题级、后题式级；找不到就是冷——**不从别的证书或夹具线借**。
+        let 代价缺线 = cost.is_some();
+        // 所选代价证书所在记录是「停岗」（PR #30 评审 4082390428）：与题级停岗同一路由（drift）
+        let mut 代价停岗 = false;
+        let (线, 线源, 夹具) = match cost {
+            None => (线, 线源, 夹具),
+            Some((fp, fn_)) => {
+                let 同代价 = |rec: &crate::effects::CalibRecord| -> Option<crate::effects::Cert> {
+                    rec.certs.values()
+                        .filter(|c| matches!(c.cost, Some((a, b)) if (a - fp).abs() < 1e-12 && (b - fn_).abs() < 1e-12))
+                        .min_by(|a, b| a.alpha.partial_cmp(&b.alpha).unwrap_or(std::cmp::Ordering::Equal))
+                        .cloned()
+                };
+                // 题式级记录查到就入账（PR #30 评审 4082390437）：只凭账本重放时据此补回同一张证书
+                let 题式 = r.form_hash.as_ref().map(|h| crate::effects::CalibStore::form_key(h)).map(|fk| {
+                    self.note_calib(&fk);
+                    self.calib.get(&fk)
+                });
+                // 候选：题级在前、题式级在后；每张证书带上**它所在记录自己的状态**（评审 4082390428）
+                let mut 候选: Vec<(crate::effects::Cert, f64, &str, String)> = vec![];
+                if let Some(c) = 同代价(&rec) {
+                    候选.push((c, rec.lo, "题级", rec.status.clone()));
+                }
+                if let Some(f) = 题式.as_ref() {
+                    if let Some(c) = 同代价(f) {
+                        候选.push((c, f.lo, "题式级", f.status.clone()));
+                    }
+                }
+                let 可用 = 候选.iter().find(|(_, _, _, st)| st == "上岗" || st == "停岗候选");
+                match 可用 {
+                    // 依据：B25（停岗只看所选记录）；B29（线只取按这个代价认证的证书）
+                    Some((c, lo, 层, _)) if rec.status != "停岗" => (
+                        Some((c.hi, lo.min(c.hi))),
+                        format!("{层}·证书:α={:.2}·代价(fp={fp},fn={fn_})", c.alpha),
+                        false,
+                    ),
+                    _ => {
+                        代价停岗 = 候选.iter().any(|(_, _, _, st)| st == "停岗");
+                        (None, String::new(), false)
+                    }
+                }
             }
         };
         let (kind, untested): (ExitKind, Option<(String, String)>) = if let Some(f) = &r.fail {
             (ExitKind::Unsure(format!("fail:{f}")), None)
-        } else if rec.status == "停岗" {
+        } else if let Some(c) = self.absent_marks.get(&r.ledger_key) {
+            // B32：判断器缺席或超时，出口按 J-05 四条去向路由，不加新去向
+            (ExitKind::Unsure(c.clone()), None)
+        } else if rec.status == "停岗" || 代价停岗 {
             // `drift` **不是**未测：停岗是「测过、而且测出漂了」。两者取值相反，别顺手合并。
             //
             // **停岗在这里提前返回，模式级回退够不着它。** 停岗是人下的判断（这条线不能再用了），
             // 回退到一个类级先验把它放行，是彻头彻尾的假放行。
+            //
+            // `代价停岗`（PR #30 评审 4082390428）：代价分支选中的那张证书所在记录自己「停岗」，
+            // 与题级停岗同一路由——不看题级 `rec.status`，看**所选记录**自己的状态。
             (ExitKind::Unsure("drift".into()), None)
         } else if 线.is_none() {
             // **题级没上岗、模式级也没上岗** → 还是冷。回退没有把所有冷键都放行。
-            (ExitKind::Unsure("cold".into()), Some(("calib_line".into(), "修法【作者可改】：给这道题的校准键写一条上岗记录，或给这一类（phys + literal_mode）写一条模式级记录".into())))
+            if 代价缺线 {
+                (ExitKind::Unsure("cold".into()), Some(("cost_line".into(), "修法【需接线人】：用 commission_costed（或 calib-import）为这个代价矩阵从带真值样本认证一条线；线只来自记录".into())))
+            } else {
+                (ExitKind::Unsure("cold".into()), Some(("calib_line".into(), "修法【作者可改】：给这道题的校准键写一条上岗记录，或给这一类（phys + literal_mode）写一条模式级记录".into())))
+            }
         } else {
             let (hi, lo) = 线.expect("刚判过");
             match &r.answer_after_flush().expect("刷新之后答案必然在") {
@@ -1690,7 +2114,10 @@ impl<'a> Interp<'a> {
                     //
                     // E-JPP-LIVE 那次真机读数 `p = 0.56`、`lo = 0.56`、`δ = 0.04`：
                     // **Rust 给 `Ignore`，Python 给 `Unsure(band)`——那一条实测数据本身就分岔。**
-                    let delta = self.calib.delta_for(&rec, r.op);
+                    let delta = match (线源.starts_with("题式级"), r.form_hash.as_ref()) {
+                        (true, Some(h)) => self.calib.delta_for(&self.calib.get(&crate::effects::CalibStore::form_key(h)), r.op),
+                        _ => self.calib.delta_for(&rec, r.op),
+                    };
                     if *p >= hi + delta {
                         (ExitKind::Act, None)
                     } else if *p <= lo - delta {
@@ -1759,7 +2186,7 @@ impl<'a> Interp<'a> {
             ));
         }
         // **没用上线的出口不留来源**（fail / 冷 / 停岗）：留一个来源就是谎称有线。
-        let 留痕 = if matches!(kind, ExitKind::Unsure(ref c) if c == "cold" || c == "drift" || c.starts_with("fail:")) { String::new() } else { 线源 };
+        let 留痕 = if matches!(kind, ExitKind::Unsure(ref c) if c == "cold" || c == "drift" || c == "absent" || c == "latency" || c == "no_candidate" || c.starts_with("fail:")) { String::new() } else { 线源.clone() };
         // **强出口建在一条未经认证的线上，要出告警。**
         //
         // 判据是 `certs.is_empty()`，**不是 `n` 的大小**：三个出货示例全部拿到强出口，
@@ -1785,14 +2212,30 @@ impl<'a> Interp<'a> {
                 }
             }
         }
-        if 留痕.ends_with("·手填") && matches!(kind, ExitKind::Act | ExitKind::Pick(_) | ExitKind::At(_)) {
+        // **夹具线**（B29）：线来自宿主 `put` 的测试记录或没有证书的记录。J-03 同约束宿主：
+        // 这样的出口照常路由，但不算放行不可逆 `do` 的可信合取项（J-08 按 `guard_trusted` 查）。
+        // 原 `W-uncertified` 并入这里：判据仍是「有没有证书」，外加 `put` 写的夹具位。
+        let 夹具出口 = 夹具 && !留痕.is_empty();
+        if 夹具出口 && matches!(kind, ExitKind::Act | ExitKind::Pick(_) | ExitKind::At(_)) {
             self.trace.warn(format!(
-                "W-uncertified: @{} 键 {key} 的线是手填的、没有保形证书（n={}），而这里给出了强出口 {}。不阻塞。修法【需接线人】：`commission` 是 Rust API，`.jpp` 作者调不到——要凭据得由接线人跑一次认证",
+                "W-fixture-line: @{} 键 {key} 的线是夹具线（宿主 put 写入或没有认证证书，n={}），出口 {} 照常路由，但按 B29 不算放行不可逆 do 的可信合取项。修法【需接线人】：用 calib-import 或 commission 从带真值样本认证这条线",
                 sp.start, rec.n,
                 match &kind { ExitKind::Pick(k) => format!("pick({k})"), other => format!("{other:?}") }
             ));
         }
-        Ok(self.new_exit_from(kind, untested.map(|(carrier, _)| carrier), r.op, &r.q_hash, &r.state_hash, taint, 留痕, sp))
+        let 出口 = self.new_exit_from(kind, untested.map(|(carrier, _)| carrier), r.op, &r.q_hash, &r.state_hash, taint, 留痕, sp);
+        if let Value::Exit(e) = &出口 {
+            e.fixture_line.set(夹具出口);
+            // **停岗候选**（B25）：记录已是候选，或本趟漂移信号刚把它标成候选（`报漂移` 在上面已调用）。
+            // 用的是题式级线时看题式键。候选线的出口照常路由，不算放行不可逆 do 的可信合取项。
+            let 用键 = if 线源.starts_with("题式级") { r.form_hash.as_ref().map(|h| crate::effects::CalibStore::form_key(h)).unwrap_or_else(|| key.to_string()) } else { key.to_string() };
+            let 候选 = !e_line_empty(&e.line_source) && (self.calib.get(&用键).status == "停岗候选" || self.drift_reported.contains(&用键));
+            e.suspend_candidate.set(候选);
+            if 候选 && matches!(e.kind, ExitKind::Act | ExitKind::Pick(_) | ExitKind::At(_)) {
+                self.trace.warn(format!("W-suspend-candidate: @{} 键 {用键} 是停岗候选（B25），出口 {:?} 不得放行不可逆 do", sp.start, e.kind));
+            }
+        }
+        Ok(出口)
     }
 
     fn handle(&mut self, e: &Rc<Exit>, arms: &Value, sp: Span) -> R<Value> {
@@ -1830,8 +2273,8 @@ impl<'a> Interp<'a> {
         let (name, arg): (&str, Value) = match &e.kind {
             ExitKind::Act => ("act", Value::Unit),
             ExitKind::Ignore => ("ignore", Value::Unit),
-            ExitKind::Pick(k) => ("pick", Value::Int(*k as i64)),
-            ExitKind::At(l) => ("at", Value::Int(*l as i64)),
+            ExitKind::Pick(k) => ("pick", Value::Int(*k as i64, Taint::Trusted)),
+            ExitKind::At(l) => ("at", Value::Int(*l as i64, Taint::Trusted)),
             ExitKind::Unsure(_) => unreachable!("上面已经分流"),
         };
         let arm = arms.get(name).or_else(|| arms.get("otherwise")).unwrap();
@@ -1927,10 +2370,17 @@ impl<'a> Interp<'a> {
         if !action.reversible && !self.guards.is_empty() {
             let 放行 = self.guards.iter().any(|g| g.trusted || g.asked);
             if !放行 {
+                // B33 第 8 点：守卫出口所在状态含成分不可信的计算值材料时，说明原因。
+                // 近似：看当前各帧产生过的出口（守卫就是由它们折出来的）。
+                let 计算值 = {
+                    let set = self.computed_untrusted_states.borrow();
+                    self.frames.iter().flat_map(|f| f.exits.iter()).any(|e| set.contains(&e.state_hash))
+                };
+                let 补充 = if 计算值 { "。该材料由计算值构成，成分含不可信内容" } else { "" };
                 return err(
                     Some("J-08"),
                     format!(
-                        "不可逆动作 {name} 的守卫里没有一个来自可信状态的合取项：不可信材料上的判断不得**单独**放行不可逆动作（宪法 IFC / 12 §5 J-08）。修法：在条件里再合取一个来自 trusted 状态的判断，或改走 ask 让人拍板，或把这个动作登记成可逆"
+                        "不可逆动作 {name} 的守卫里没有一个来自可信状态的合取项：不可信材料上的判断不得**单独**放行不可逆动作（宪法 IFC / 12 §5 J-08）。修法：在条件里再合取一个来自 trusted 状态的判断，或改走 ask 让人拍板，或把这个动作登记成可逆。注意：凭夹具线（W-fixture-line，B29）或停岗候选线（W-suspend-candidate，B25）得到的出口不算可信合取项{补充}"
                     ),
                     sp,
                 );
@@ -1952,7 +2402,11 @@ impl<'a> Interp<'a> {
             // 闭包在 `as_mat(exit)` 那里自然截断——做成传递闭包会重演「逐字传播让几乎所有
             // 输出不可用」（宪法第 44 行），材料越传越「派生自所有题」，J-02 最后拦住一切。
             Ok(v) => Value::Mat(Rc::new(Mat::new(v.to_json(), &format!("do:{name}"), vec![format!("do:{key}")], taint, derived_of(args)))),
-            Err(msg) => Value::Fail(Rc::from(format!("{name}: {msg}").as_str())),
+            Err(msg) => {
+                // 失败信息同样来自外面：Fail 带动作的输出位，`text(f)` 经 ∨ 输入带出去
+                let m = format!("{name}: {msg}");
+                Value::Fail(Rc::from(m.as_str()), taint)
+            }
         };
         self.cost.usd += action.cost;
         self.ledger.put(Entry::Effect { key: key.clone(), kind: "do".into(), output: effect_value_to_json(&out), cost: action.cost });
@@ -2109,7 +2563,7 @@ impl<'a> Interp<'a> {
         let mut acc = init;
         let mut result = None;
         for i in 0..bound {
-            let out = self.call_closure(step, vec![acc.clone(), Value::Int(i)], sp);
+            let out = self.call_closure(step, vec![acc.clone(), Value::Int(i, Taint::Trusted)], sp);
             let out = match out {
                 Ok(v) => v,
                 Err(e) => {
@@ -2147,22 +2601,81 @@ impl<'a> Interp<'a> {
                 if n != 2 && n != 3 {
                     return err(None, format!("{name} 需要 2 或 3 个参数（题面, calib[, {{evidence: [槽名…]}}]），收到 {n}"), sp);
                 }
-                let (Value::Text(t), Value::Text(c)) = (&args[0], &args[1]) else { return err(Some("J-03"), format!("{name}(题面: Text, calib: Text) — calib 是校准记录的键，不是线"), sp) };
+                let (Value::Text(t, _), Value::Text(c, _)) = (&args[0], &args[1]) else { return err(Some("J-03"), format!("{name}(题面: Text, calib: Text) — calib 是校准记录的键，不是线"), sp) };
                 let op = if name == "test" { Op::Test } else { Op::Select };
                 let evidence = evidence_of(args.get(2), sp)?;
-                Ok(Value::Question(Rc::new(Question::with_evidence(op, t, c, vec![], evidence))))
+                let mut q = Question::with_evidence(op, t, c, vec![], evidence);
+                let (presupposition, request) = question_decl_of(args.get(2), op, sp)?;
+                q.presupposition = presupposition;
+                q.request = request;
+                Ok(Value::Question(Rc::new(q)))
             }
             "measure" => {
                 arity(3)?;
-                let (Value::Text(t), Value::List(scale), Value::Text(c)) = (&args[0], &args[1], &args[2]) else { return err(None, "measure(题面, [档位…], calib)", sp) };
+                let (Value::Text(t, _), Value::List(scale), Value::Text(c, _)) = (&args[0], &args[1], &args[2]) else { return err(None, "measure(题面, [档位…], calib)", sp) };
                 let mut sc = vec![];
                 for s in scale.iter() {
-                    match s { Value::Text(x) => sc.push(x.to_string()), _ => return err(None, "档位要是 Text", sp) }
+                    match s { Value::Text(x, _) => sc.push(x.to_string()), _ => return err(None, "档位要是 Text", sp) }
                 }
                 if sc.len() < 2 {
                     return err(None, "measure 至少两档", sp);
                 }
                 Ok(Value::Question(Rc::new(Question::new(Op::Measure, t, c, sc))))
+            }
+            "form" => {
+                // form(题型, 模板题面, {calib, scale?, evidence?, presupposition?, request?}) → 题式
+                arity(3)?;
+                let (Value::Text(opname, _), Value::Text(template, _)) = (&args[0], &args[1]) else {
+                    return err(None, "form(题型: \"test\" | \"select\" | \"measure\", 模板题面: Text, {calib: \"校准键\", …})", sp);
+                };
+                let op = match opname.as_ref() {
+                    "test" => Op::Test,
+                    "select" => Op::Select,
+                    "measure" => Op::Measure,
+                    other => return err(None, format!("form 的题型要是 test / select / measure，收到 {other}"), sp),
+                };
+                let Value::Record(_) = &args[2] else { return err(None, "form 的第三个参数要是记录：{calib: \"校准键\", …}", sp) };
+                let calib = match args[2].get("calib") {
+                    Some(Value::Text(c, _)) => c.to_string(),
+                    Some(Value::Int(_, _)) | Some(Value::Float(_, _)) => return err(Some("J-03"), "form 的 calib 是数字：线不可字面，这一位只收校准记录的键（Text）", sp),
+                    _ => return err(Some("J-03"), "form 需要 calib：{calib: \"校准键\"}。线只从校准记录来", sp),
+                };
+                let mut scale = vec![];
+                if let Some(v) = args[2].get("scale") {
+                    let Value::List(l) = v else { return err(None, "scale 要是档位列表", sp) };
+                    for x in l.iter() {
+                        match x { Value::Text(t, _) => scale.push(t.to_string()), _ => return err(None, "档位要是 Text", sp) }
+                    }
+                }
+                match (op, scale.len()) {
+                    (Op::Measure, n) if n < 2 => return err(None, "measure 题式至少两档：{scale: [\"低\", \"高\"]}", sp),
+                    (Op::Test | Op::Select, n) if n > 0 => return err(None, "只有 measure 题式带 scale", sp),
+                    _ => {}
+                }
+                let evidence = evidence_of(Some(&args[2]), sp)?;
+                let (presupposition, request) = question_decl_of(Some(&args[2]), op, sp)?;
+                let f = crate::value::Form::new(op, template, &calib, scale, evidence, presupposition, request).map_err(|m| Fault::Error(RtError::new(None, m, sp)))?;
+                Ok(Value::Form(Rc::new(f)))
+            }
+            "fill" => {
+                // fill(题式, {槽: 值, …}) → 题。值按 text() 渲染；Int/Float/Bool/Text 以外的值不能填进题面。
+                arity(2)?;
+                let Value::Form(f) = &args[0] else { return err(None, format!("fill 的第一个参数要是题式（form(…) 的结果），收到 {}", args[0].type_name()), sp) };
+                let Value::Record(fields) = &args[1] else { return err(None, "fill 的第二个参数要是记录：{槽名: 值}", sp) };
+                let mut fill = vec![];
+                for (k, v) in fields.iter() {
+                    let t = match v {
+                        Value::Text(t, _) => t.to_string(),
+                        Value::Int(i, _) => i.to_string(),
+                        Value::Float(x, _) => x.to_string(),
+                        Value::Bool(b, _) => b.to_string(),
+                        Value::Reading(_) => return err(Some("J-01"), format!("槽 {k} 填的是读数：读数不能进题面（它不是材料，也不可渲染）"), sp),
+                        other => return err(None, format!("槽 {k} 要填 Text / Int / Float / Bool，收到 {}", other.type_name()), sp),
+                    };
+                    fill.push((k.clone(), t));
+                }
+                let q = f.fill(&fill).map_err(|m| Fault::Error(RtError::new(None, m, sp)))?;
+                Ok(Value::Question(Rc::new(q)))
             }
             "judge" => {
                 arity(2)?;
@@ -2202,21 +2715,360 @@ impl<'a> Interp<'a> {
                     _ => err(None, "judge 的第二个参数要是题或题列表", sp),
                 }
             }
-            "cut" => {
-                if n == 0 || n > 2 {
-                    return err(None, "cut(reading) 或 cut(reading, calib_key)", sp);
+            "sieve" => {
+                // 三路过滤（05 §1 `filter(S, q)`，施工件 c）：一组材料 × 一道题（或题列表 / 题式 + 填法）
+                // → 三条流 act / ignore / unsure，外加 unobserved（预算提前停止时没问到的）。
+                // 直接吃题：全部登记完再一次刷新，同状态的题由融合合成一次调用——
+                // 「14 倍」那种绕过批处理的写法在这里没有可写的位置。
+                if n != 2 && n != 3 {
+                    return err(None, "sieve(材料列表, 题 | [题…]) 或 sieve(材料列表, 题式, [填法…])", sp);
                 }
-                let calib = match args.get(1) {
-                    None => None,
-                    Some(Value::Text(k)) => Some(k.to_string()),
-                    Some(other) => return err(Some("J-03"), format!("cut 的校准参数必须是校准记录的键（Text），不能是字面量线；收到 {}", other.type_name()), sp),
+                // 输入可以是列表，也可以是上一个构造的契约值（取它的产出；它的未决与证据带进新契约）
+                let (items, carried_pending, carried_evidence) = self.unpack(&args[0], "sieve", sp)?;
+                let (qs, many) = if n == 3 {
+                    let Value::List(fills) = &args[2] else { return err(None, "sieve(材料, 题式, [填法…]) 的第三个参数要是填法记录的列表", sp) };
+                    let mut qs = vec![];
+                    for f in fills.iter() {
+                        match self.builtin("fill", vec![args[1].clone(), f.clone()], sp)? {
+                            Value::Question(q) => qs.push(q),
+                            _ => return err(None, "fill 没有给出题", sp),
+                        }
+                    }
+                    (qs, true)
+                } else {
+                    match &args[1] {
+                        Value::Question(q) => (vec![q.clone()], false),
+                        Value::List(l) => {
+                            let mut qs = vec![];
+                            for q in l.iter() {
+                                match q { Value::Question(q) => qs.push(q.clone()), other => return err(None, format!("sieve 的题列表里有 {}", other.type_name()), sp) }
+                            }
+                            (qs, true)
+                        }
+                        other => return err(None, format!("sieve 的第二个参数要是题或题列表，收到 {}", other.type_name()), sp),
+                    }
                 };
+                let mut out = self.sieve(&items, &qs, &carried_pending, &carried_evidence, sp)?;
+                if many { Ok(Value::list(out)) } else { Ok(out.remove(0)) }
+            }
+            "pair" => {
+                // 配对（05 §1 `pair(S, T)`，施工件 e）：两组材料 → 关系记录，返回契约值（B17）。
+                // 候选怎么枚举由调用者定：全配对 `pair(左, 右)`；按调用者的方法取舍
+                // `pair(左, 右, fn(a, b) -> Bool)`；或直接给候选对 `pair([[a, b], …])`。
+                // 这里只构造关系，不判断；关系交给 sieve 按关系题分流。
+                // 关系记录：`item` 是交给判断器的一份状态材料，两端对象段结构化标为 a / b；
+                // `left` / `right` 原样保留调用者给的元素。左右可以是契约值：取产出，未决与证据带进新契约。
+                let mut cands: Vec<(Value, Value, i64, i64)> = vec![];
+                let mut carried_pending = vec![];
+                let mut carried_evidence: Vec<Value> = vec![];
+                match n {
+                    1 => {
+                        let Value::List(ps) = &args[0] else { return err(None, "pair([[a, b], …]) 的参数要是候选对的列表", sp) };
+                        for (k, p) in ps.iter().enumerate() {
+                            match p {
+                                Value::List(ab) if ab.len() == 2 => cands.push((ab[0].clone(), ab[1].clone(), k as i64, k as i64)),
+                                other => return err(None, format!("pair 的候选对要是两个元素的列表，第 {k} 个是 {}", other.type_name()), sp),
+                            }
+                        }
+                    }
+                    2 | 3 => {
+                        let (l, lp, le) = self.unpack(&args[0], "pair", sp)?;
+                        let (r, rp, re) = self.unpack(&args[1], "pair", sp)?;
+                        carried_pending.extend(lp);
+                        carried_pending.extend(rp);
+                        for k in le.into_iter().chain(re) { push_key(&mut carried_evidence, k); }
+                        for (i, a) in l.iter().enumerate() {
+                            for (j, b) in r.iter().enumerate() {
+                                if n == 3 {
+                                    match self.apply(args[2].clone(), vec![a.clone(), b.clone()], sp)? {
+                                        Value::Bool(true, _) => {}
+                                        Value::Bool(false, _) => continue,
+                                        other => return err(None, format!("pair 的取舍方法要返回 Bool，收到 {}", other.type_name()), sp),
+                                    }
+                                }
+                                cands.push((a.clone(), b.clone(), i as i64, j as i64));
+                            }
+                        }
+                    }
+                    _ => return err(None, "pair(左, 右) / pair(左, 右, fn(a, b)) / pair([[a, b], …])", sp),
+                }
+                let rels = cands
+                    .into_iter()
+                    .map(|(a, b, i, j)| {
+                        let (ma, _) = element_parts(&a);
+                        let (mb, _) = element_parts(&b);
+                        Value::record(vec![
+                            ("item".into(), Value::record(vec![("a".into(), ma), ("b".into(), mb)])),
+                            ("trail".into(), Value::list(vec![])),
+                            ("left".into(), a),
+                            ("right".into(), b),
+                            ("at".into(), Value::list(vec![Value::Int(i, Taint::Trusted), Value::Int(j, Taint::Trusted)])),
+                        ])
+                    })
+                    .collect();
+                Ok(Self::outcome_value("pair", Value::list(rels), carried_pending, carried_evidence, Value::Unit, (0, 0.0), Value::record(vec![]), Value::Unit))
+            }
+            "tally" => {
+                // 集合聚合（05 §1 `agg(S, op)` 的存在 / 全部 / 计数，施工件 f）：吃一个契约值（通常是 sieve 的）。
+                // 精确计算，不是概率：计数给区间 [act, act + 未决]，未决里 cause=budget 的是未观察项；
+                // 存在、全部是三值出口——结论取决于未决元素时给 unsure。
+                // 输入的未决：结论被它们挡住时并入聚合出口（记为已消费），聚合出口进新的未决清单；
+                // 没挡住结论时原样带进新契约（13 §3：不许无声消失）。
+                arity(1)?;
+                let r = &args[0];
+                if !is_outcome(r) {
+                    return err(None, format!("tally 收一个契约值（sieve / pair / outcome 的结果），收到 {}", r.type_name()), sp);
+                }
+                let act = list_of(r.get("value"));
+                let ignore = list_of(r.get("detail").and_then(|d| d.get("ignore")));
+                let pend = list_of(r.get("pending"));
+                let is_budget = |e: &Value| matches!(e.get("cause"), Some(Value::Text(t, _)) if t.as_ref() == "budget");
+                let no = pend.iter().filter(|e| is_budget(e)).count() as i64;
+                let nu = pend.len() as i64 - no;
+                let (na, ni) = (act.len() as i64, ignore.len() as i64);
+                let mut taint = Taint::Trusted;
+                for e in act.iter().chain(&ignore).chain(&pend) {
+                    if let Some(Value::Exit(x)) = e.get("exit") {
+                        if x.taint != Taint::Trusted { taint = x.taint; }
+                    }
+                }
+                // 结论被谁挡住：未观察优先（原因 budget），否则取第一个未决元素的原因
+                let blocker = if no > 0 { Some("budget".to_string()) } else {
+                    pend.first().and_then(|e| e.get("cause")).map(|c| match c { Value::Text(t, _) => t.to_string(), _ => "band".into() })
+                };
+                let exists = if na > 0 { ExitKind::Act } else if let Some(c) = &blocker { ExitKind::Unsure(c.clone()) } else { ExitKind::Ignore };
+                let all = if ni > 0 { ExitKind::Ignore } else if let Some(c) = &blocker { ExitKind::Unsure(c.clone()) } else { ExitKind::Act };
+                let absorbed = matches!(exists, ExitKind::Unsure(_)) || matches!(all, ExitKind::Unsure(_));
+                let ex = self.new_exit(exists, None, Op::Test, "tally:exists", "", taint, sp);
+                let al = self.new_exit(all, None, Op::Test, "tally:all", "", taint, sp);
+                let mut pending = vec![];
+                if absorbed {
+                    // 元素的未决责任并入聚合出口；聚合出口自己仍要被消费
+                    for e in &pend {
+                        if let Some(Value::Exit(x)) = e.get("exit") { x.consumed.set(true); *x.consumed_by.borrow_mut() = "tally".into(); }
+                    }
+                    for x in [&ex, &al] {
+                        if let Value::Exit(e) = x { if e.is_unsure() { pending.push(Self::pending_entry(Value::Unit, x)); } }
+                    }
+                } else {
+                    pending = pend.clone();
+                    // 已决的聚合出口不带责任
+                    for x in [&ex, &al] { if let Value::Exit(e) = x { if !e.is_unsure() { e.consumed.set(true); *e.consumed_by.borrow_mut() = "tally:decided".into(); } } }
+                }
+                if absorbed {
+                    for x in [&ex, &al] { if let Value::Exit(e) = x { if !e.is_unsure() { e.consumed.set(true); *e.consumed_by.borrow_mut() = "tally:decided".into(); } } }
+                }
+                let value = Value::record(vec![
+                    ("n".into(), Value::Int(na + ni + nu + no, Taint::Trusted)),
+                    ("act".into(), Value::Int(na, Taint::Trusted)),
+                    ("ignore".into(), Value::Int(ni, Taint::Trusted)),
+                    ("unsure".into(), Value::Int(nu, Taint::Trusted)),
+                    ("unobserved".into(), Value::Int(no, Taint::Trusted)),
+                    ("count".into(), Value::list(vec![Value::Int(na, Taint::Trusted), Value::Int(na + nu + no, Taint::Trusted)])),
+                    ("complete".into(), Value::Bool(nu == 0 && no == 0, Taint::Trusted)),
+                    ("exists".into(), ex),
+                    ("all".into(), al),
+                ]);
+                Ok(Self::outcome_value("tally", value, pending, list_of(r.get("evidence")), r.get("resume").unwrap_or(Value::Unit), (0, 0.0), Value::record(vec![]), Value::Unit))
+            }
+            "first_k" => {
+                // 输入顺序中的前 k 个接受项（交接首包「第一个」语义；05 §1 前 k）：
+                // 按原顺序走，遇到未决（含 cause=budget 的未观察项）而还没凑够 k 个，就不能宣称后面的接受项是「前 k 个」。
+                // 产出 `{items, exit}`：act = 凑够了 k 个且之前没有挡路的；ignore = 全部观察完、确定不足 k 个；
+                // unsure = 被挡住。被挡的位置与原因进续接 `resume`（B17 取舍）。
+                // 输入的未决原样带进新契约；被挡住时的 unsure 出口也进未决清单。
+                arity(2)?;
+                let (r, Value::Int(k, _)) = (&args[0], &args[1]) else { return err(None, "first_k(契约值, k: Int)", sp) };
+                let k = *k;
+                if k <= 0 { return err(None, "first_k 的 k 要是正整数", sp); }
+                if !is_outcome(r) { return err(None, format!("first_k 收一个契约值（sieve 的结果），收到 {}", r.type_name()), sp); }
+                let pend = list_of(r.get("pending"));
+                let mut all: Vec<(i64, String, Value)> = vec![];
+                for e in list_of(r.get("value")) { all.push((0, "act".into(), e)); }
+                for e in list_of(r.get("detail").and_then(|d| d.get("ignore"))) { all.push((0, "ignore".into(), e)); }
+                for p in &pend {
+                    let c = match p.get("cause") { Some(Value::Text(t, _)) => t.to_string(), _ => "band".into() };
+                    all.push((0, format!("pending:{c}"), p.get("element").unwrap_or(Value::Unit)));
+                }
+                for x in all.iter_mut() {
+                    x.0 = match x.2.get("index") { Some(Value::Int(i, _)) => i, _ => return err(None, "first_k：元素缺 index（只收 sieve 产物的元素）", sp) };
+                }
+                all.sort_by_key(|x| x.0);
+                let mut items = vec![];
+                // B3：没有候选 → no_candidate（调生成器）；有候选、全部观察完、一个都没接受 → rejected_all（换材料或换前提）；
+                // 接受了一些但不足 k 个 → Ignore（确定不足）。
+                let mut kind = if all.is_empty() {
+                    ExitKind::Unsure("no_candidate".into())
+                } else if all.iter().all(|x| x.1 == "ignore") {
+                    ExitKind::Unsure("rejected_all".into())
+                } else {
+                    ExitKind::Ignore
+                };
+                let mut resume = Value::Unit;
+                let mut taint = Taint::Trusted;
+                for (idx, tag, e) in &all {
+                    if let Some(Value::Exit(x)) = e.get("exit") { if x.taint != Taint::Trusted { taint = x.taint; } }
+                    match tag.as_str() {
+                        "act" => { items.push(e.clone()); if items.len() as i64 == k { kind = ExitKind::Act; break; } }
+                        "ignore" => {}
+                        t => {
+                            let c = t.trim_start_matches("pending:").to_string();
+                            kind = ExitKind::Unsure(c.clone());
+                            resume = Value::record(vec![("reason".into(), Value::text("blocked")), ("at".into(), Value::Int(*idx, Taint::Trusted)), ("cause".into(), Value::text(&c))]);
+                            break;
+                        }
+                    }
+                }
+                let ex = self.new_exit(kind, None, Op::Test, "first_k", "", taint, sp);
+                let mut pending = pend.clone();
+                if let Value::Exit(e) = &ex {
+                    if e.is_unsure() { pending.push(Self::pending_entry(Value::Unit, &ex)); } else { e.consumed.set(true); *e.consumed_by.borrow_mut() = "first_k:decided".into(); }
+                }
+                let value = Value::record(vec![("items".into(), Value::list(items)), ("exit".into(), ex), ("k".into(), Value::Int(k, Taint::Trusted))]);
+                Ok(Self::outcome_value("first_k", value, pending, list_of(r.get("evidence")), resume, (0, 0.0), Value::record(vec![]), Value::Unit))
+            }
+            "iterate" => {
+                // 有界迭代（05 §1 `iterate(f, S, bound)`，施工件 g）：三条终止线并存——
+                // 步数到上限（bound）、每层材料严格变少（measure 不再下降即停，noshrink）、
+                // 账本键在本循环内重复即停（repeat，J-06）。step 返回 stop(v) 也停。
+                // 终止原因写进结果：{value, reason, rounds, measures}。
+                // measure：fn(acc) -> Int，或 "tokens"（按渲染后的 token 估算，与窗口检查同一估法）。
+                arity(4)?;
+                let Value::Int(b, _) = &args[0] else { return err(Some("J-06"), "iterate 的 bound 必须是整数", sp) };
+                let bound = *b;
+                if bound <= 0 { return err(Some("J-06"), format!("iterate 的 bound 必须是正整数，收到 {bound}"), sp); }
+                let Value::Fn(step) = &args[2] else { return err(None, "iterate(bound, 初值, fn(acc, i), measure) 的 step 要是函数", sp) };
+                let step = step.clone();
+                let measure = args[3].clone();
+                let measure_of = |me: &mut Self, v: &Value| -> R<i64> {
+                    match &measure {
+                        Value::Text(t, _) if t.as_ref() == "tokens" => Ok((canon(&v.to_json()).chars().count() as f64 / 1.3) as i64 + 1),
+                        Value::Fn(_) | Value::Builtin(_) => match me.apply(measure.clone(), vec![v.clone()], sp)? {
+                            Value::Int(i, _) => Ok(i),
+                            other => err(None, format!("iterate 的 measure 要返回 Int，收到 {}", other.type_name()), sp),
+                        },
+                        other => err(None, format!("iterate 的 measure 要是 fn(acc) -> Int 或 \"tokens\"，收到 {}", other.type_name()), sp),
+                    }
+                };
+                let m0 = self.mark();
+                let mut acc = args[1].clone();
+                let mut prev = measure_of(self, &acc)?;
+                let mut measures = vec![Value::Int(prev, Taint::Trusted)];
+                let mut reason = "bound";
+                let mut rounds = 0i64;
+                self.loops.push(LoopCtx { seen_keys: HashSet::new(), repeated: None });
+                for i in 0..bound {
+                    let out = match self.call_closure(&step, vec![acc.clone(), Value::Int(i, Taint::Trusted)], sp) {
+                        Ok(v) => v,
+                        Err(e) => { self.loops.pop(); return Err(e); }
+                    };
+                    rounds = i + 1;
+                    if let Value::Stop(v) = out { acc = (*v).clone(); reason = "stop"; break; }
+                    acc = out;
+                    if self.loops.last().and_then(|l| l.repeated.clone()).is_some() { reason = "repeat"; break; }
+                    let m = match measure_of(self, &acc) { Ok(m) => m, Err(e) => { self.loops.pop(); return Err(e); } };
+                    measures.push(Value::Int(m, Taint::Trusted));
+                    if m >= prev { reason = "noshrink"; break; }
+                    prev = m;
+                }
+                self.loops.pop();
+                // 停止原因与轮次进续接（B17 取舍）；产出是最后的累积值
+                let (evidence, spent) = self.since(m0);
+                let resume = Value::record(vec![
+                    ("reason".into(), Value::text(reason)),
+                    ("rounds".into(), Value::Int(rounds, Taint::Trusted)),
+                    ("measures".into(), Value::list(measures)),
+                ]);
+                Ok(Self::outcome_value("iterate", acc, vec![], evidence, resume, spent, Value::record(vec![]), Value::Unit))
+            }
+            "outcome" => {
+                // 调用者自己构造一个契约值（B17）：`outcome({value, pending?, evidence?, resume?, purpose?, detail?})`。
+                // 与内置构造返回同一类型，可再交给 sieve / pair / tally 等。
+                // - pending：出口，或 `{element?, exit, cause?}` 记录；每项必须带出口（责任载体）；
+                // - evidence：只收账本键（Text，由 key_of 取得），不收读数或材料副本（不变量 3）；
+                // - resume：记录；或一个方法，记为 `{reason: "continue", next: 方法}`。
+                arity(1)?;
+                let r = &args[0];
+                if !matches!(r, Value::Record(_)) { return err(None, "outcome({value, pending?, evidence?, resume?, purpose?, detail?})", sp); }
+                if let Value::Record(fs) = r {
+                    for (k, _) in fs.iter() {
+                        if !["value", "pending", "evidence", "resume", "purpose", "detail", "spent"].contains(&k.as_str()) {
+                            return err(None, format!("outcome 不认得字段 {k}：可给 value、pending、evidence、resume、purpose、detail、spent"), sp);
+                        }
+                    }
+                }
+                let Some(value) = r.get("value") else { return err(None, "outcome 必须给 value（产出）", sp) };
+                let mut pending = vec![];
+                for (i, p) in list_of(r.get("pending")).into_iter().enumerate() {
+                    match &p {
+                        Value::Exit(_) | Value::Duty(_) => pending.push(Self::pending_entry(Value::Unit, &p)),
+                        Value::Record(_) => match p.get("exit") {
+                            Some(x @ (Value::Exit(_) | Value::Duty(_))) => pending.push(Self::pending_entry(p.get("element").unwrap_or(Value::Unit), &x)),
+                            _ => return err(Some("J-05"), format!("outcome 的 pending 第 {i} 项没有出口：未决清单的每一项都要带承担责任的出口（exit）。修法：把 cut / handle 前的出口放进来"), sp),
+                        },
+                        other => return err(Some("J-05"), format!("outcome 的 pending 第 {i} 项是 {}：只收出口或带 exit 的记录", other.type_name()), sp),
+                    }
+                }
+                let mut evidence = vec![];
+                for (i, k) in list_of(r.get("evidence")).into_iter().enumerate() {
+                    match &k {
+                        Value::Text(t, _) if !t.is_empty() => push_key(&mut evidence, k.clone()),
+                        other => return err(None, format!("E-evidence: outcome 的 evidence 第 {i} 项是 {}：证据只存账本键（Text），不存读数、观察或材料的副本。修法：用 key_of(出口) 取键", other.type_name()), sp),
+                    }
+                }
+                let resume = match r.get("resume") {
+                    None | Some(Value::Unit) => Value::Unit,
+                    Some(f @ (Value::Fn(_) | Value::Builtin(_))) => Value::record(vec![("reason".into(), Value::text("continue")), ("next".into(), f)]),
+                    Some(rec @ Value::Record(_)) => rec,
+                    Some(other) => return err(None, format!("outcome 的 resume 要是记录或方法，收到 {}", other.type_name()), sp),
+                };
+                let spent = match r.get("spent") {
+                    Some(sv) => (match sv.get("calls") { Some(Value::Int(c, _)) => c, _ => 0 }, match sv.get("usd") { Some(Value::Float(u, _)) => u, Some(Value::Int(u, _)) => u as f64, _ => 0.0 }),
+                    None => (0, 0.0),
+                };
+                Ok(Self::outcome_value("outcome", value, pending, evidence, resume, spent, r.get("detail").unwrap_or(Value::record(vec![])), r.get("purpose").unwrap_or(Value::Unit)))
+            }
+            "key_of" => {
+                // 账本键：出口取它来自的那条账本记录；读数取自己的键；契约值取它的证据列表
+                arity(1)?;
                 match &args[0] {
-                    Value::Reading(r) => self.cut(r, calib.as_deref(), sp),
+                    Value::Exit(e) | Value::Duty(e) => Ok(Value::text(&e.ledger_key.borrow())),
+                    Value::Reading(r) => Ok(Value::text(&r.ledger_key)),
+                    v if is_outcome(v) => Ok(v.get("evidence").unwrap_or(Value::list(vec![]))),
+                    other => err(None, format!("key_of 收出口、读数或契约值，收到 {}", other.type_name()), sp),
+                }
+            }
+            "cut" => {
+                if n == 0 || n > 3 {
+                    return err(None, "cut(reading)、cut(reading, calib_key)、cut(reading, {cost: [fp, fn]}) 或 cut(reading, calib_key, {cost: [fp, fn]})", sp);
+                }
+                // 第二、三位：校准键（Text）与代价（记录 {cost: [fp, fn]}，B29）。线仍只来自记录：
+                // 给了代价，就用该记录上按这个代价矩阵认证过的那张证书的线；没有这张证书 → 冷。
+                let mut calib: Option<String> = None;
+                let mut cost: Option<(f64, f64)> = None;
+                for a in args.iter().skip(1) {
+                    match a {
+                        Value::Text(k, _) if calib.is_none() && cost.is_none() => calib = Some(k.to_string()),
+                        Value::Record(_) if cost.is_none() => {
+                            let c = a.get("cost").ok_or_else(|| Fault::Error(RtError::new(None, "cut 的记录参数只认 {cost: [fp, fn]}", sp)))?;
+                            let nums: Vec<f64> = match &c {
+                                Value::List(l) => l.iter().filter_map(|x| match x { Value::Int(i, _) => Some(*i as f64), Value::Float(f, _) => Some(*f), _ => None }).collect(),
+                                _ => vec![],
+                            };
+                            if nums.len() != 2 || nums.iter().any(|x| !(*x > 0.0)) {
+                                return err(None, "cost 要是两个正数 [fp, fn]：放错一条（假放行）与漏掉一条（假拒绝）的代价", sp);
+                            }
+                            cost = Some((nums[0], nums[1]));
+                        }
+                        other => return err(Some("J-03"), format!("cut 的校准参数必须是校准记录的键（Text）或代价记录 {{cost: [fp, fn]}}，不能是字面量线；收到 {}", other.type_name()), sp),
+                    }
+                }
+                match &args[0] {
+                    Value::Reading(r) => self.cut(r, calib.as_deref(), cost, sp),
                     Value::List(l) => {
                         let mut out = vec![];
                         for r in l.iter() {
-                            match r { Value::Reading(r) => out.push(self.cut(r, calib.as_deref(), sp)?), _ => return err(None, "cut 的列表里有非读数", sp) }
+                            match r { Value::Reading(r) => out.push(self.cut(r, calib.as_deref(), cost, sp)?), _ => return err(None, "cut 的列表里有非读数", sp) }
                         }
                         Ok(Value::list(out))
                     }
@@ -2231,11 +3083,16 @@ impl<'a> Interp<'a> {
             }
             "consume" => {
                 arity(2)?;
-                let Value::Text(how) = &args[1] else { return err(None, "consume(exit | [exits], \"drop\")", sp) };
+                let Value::Text(how, _) = &args[1] else { return err(None, "consume(exit | [exits], \"drop\")", sp) };
                 if how.as_ref() != "drop" {
                     return err(None, "consume 目前只支持 \"drop\"；升级用 ask", sp);
                 }
-                let list: Vec<Value> = match &args[0] { Value::List(l) => l.iter().cloned().collect(), v => vec![v.clone()] };
+                // 契约值：丢它的整个未决清单（每项的 exit）
+                let list: Vec<Value> = if is_outcome(&args[0]) {
+                    list_of(args[0].get("pending")).into_iter().filter_map(|e| e.get("exit")).collect()
+                } else {
+                    match &args[0] { Value::List(l) => l.iter().cloned().collect(), v => vec![v.clone()] }
+                };
                 for v in &list {
                     match v {
                         Value::Exit(e) | Value::Duty(e) => {
@@ -2257,14 +3114,14 @@ impl<'a> Interp<'a> {
             }
             "gen" => {
                 arity(4)?;
-                let (Value::Text(p), ctx, Value::Int(k), Value::Int(r)) = (&args[0], &args[1], &args[2], &args[3]) else { return err(None, "gen(prompt, [ctx], n, retry_seq)", sp) };
+                let (Value::Text(p, _), ctx, Value::Int(k, _), Value::Int(r, _)) = (&args[0], &args[1], &args[2], &args[3]) else { return err(None, "gen(prompt, [ctx], n, retry_seq)", sp) };
                 let (ctx, _) = self.as_mats(ctx, "ctx", sp)?;
                 let p = p.to_string();
                 self.generate(&p, &ctx, *k as usize, *r, sp)
             }
             "do" => {
                 arity(3)?;
-                let (Value::Text(a), Value::List(l), Value::Int(i)) = (&args[0], &args[1], &args[2]) else { return err(None, "do(action, [args], iter_seq)", sp) };
+                let (Value::Text(a, _), Value::List(l), Value::Int(i, _)) = (&args[0], &args[1], &args[2]) else { return err(None, "do(action, [args], iter_seq)", sp) };
                 let a = a.to_string();
                 let l: Vec<Value> = l.iter().cloned().collect();
                 self.do_(&a, &l, *i, sp)
@@ -2290,27 +3147,10 @@ impl<'a> Interp<'a> {
             "content" => {
                 arity(1)?;
                 match &args[0] {
-                    // **untrusted 材料的内容，拆出来仍是 untrusted 的材料**。
-                    //
-                    // 此前这里拆成裸 JSON，再靠 `unwrapped_untrusted` 那张表在 `mat()` 时按值
-                    // 查回来——那条路**按值精确匹配，多套一层容器就绕过去了**（实测：
-                    // `mat({outer: content(脏)})` 洗白成功，而 `mat(content(脏))` 被堵住）。
-                    // **穷举包装方式永远落后一步**，所以改掉机制而不是再打第三个补丁：
-                    // **让值自己带着来源**，容器由 `taint_of` 递归看（它本来就会）。
-                    //
-                    // 代价写明：`content(脏).字段` 这类取字段现在拿到的是材料不是裸值。
-                    // `Field` 那一臂已经对材料做了处理（`content`/`taint`/`hash` 三个字段），
-                    // 所以取普通字段要先 `content(...)` 一次——**这是显式的代价，不是静默的**。
-                    Value::Mat(m) => {
-                        if m.taint == Taint::Untrusted {
-                            // 这一轮里，从 untrusted 材料拆出来的内容。`mat()` 据此不把它洗成
-                            // trusted——**但不再按值精确匹配**（那条路多套一层容器就绕过去了）：
-                            // 记的是**内容本身及其所有子结构**，于是 `{outer: 拆了}` 这类包装
-                            // 里只要含有拆出来的那份内容，`as_mat` 就能认出来。
-                            insert_with_parts(&mut self.unwrapped_untrusted, &m.content);
-                        }
-                        Ok(json_to_value(&m.content))
-                    }
+                    // 读出规则（B33 第 2 点）：从 untrusted 材料读出的值，所有叶子标 untrusted。
+                    // 值自己带着来源，拼接、join、text、取字段之后仍带着（内置输出 ∨ 输入），
+                    // 取代此前按值匹配的旁路表（982d7ca）：那张表没有作用域，同时漏与串。
+                    Value::Mat(m) => Ok(json_to_value(&m.content).tainted(m.taint)),
                     Value::Reading(_) => err(Some("J-01"), "读数没有内容可读；只能经 cut 离开", sp),
                     other => err(None, format!("content 只收材料，收到 {}", other.type_name()), sp),
                 }
@@ -2320,7 +3160,7 @@ impl<'a> Interp<'a> {
                 match &args[0] {
                     // 重新包装：责任继续由这个出口带着，交给调用者
                     Value::Duty(e) => Ok(Value::Exit(e.clone())),
-                    Value::Text(c) => {
+                    Value::Text(c, _) => {
                         let c = c.to_string();
                         Ok(self.new_exit(ExitKind::Unsure(c), None, Op::Test, "explicit", "", Taint::Trusted, sp))
                     }
@@ -2392,23 +3232,23 @@ impl<'a> Interp<'a> {
                 *u.consumed_by.borrow_mut() = "literalize".into();
                 let reading = self.judge(&s, &[q], sp)?.remove(0);
                 match reading {
-                    Value::Reading(r) => self.cut(&r, None, sp),
+                    Value::Reading(r) => self.cut(&r, None, None, sp),
                     other => Ok(other),
                 }
             }
             "pending" => {
                 arity(1)?;
-                let Value::Text(c) = &args[0] else { return err(None, "pending(reason: Text)", sp) };
+                let Value::Text(c, _) = &args[0] else { return err(None, "pending(reason: Text)", sp) };
                 Err(Fault::Halt(Pending { cause: "explicit".into(), key: String::new(), site: sp, detail: c.to_string() }))
             }
             "fail" => {
                 arity(1)?;
-                let Value::Text(c) = &args[0] else { return err(None, "fail(reason: Text)", sp) };
-                Ok(Value::Fail(Rc::from(c.as_ref())))
+                let Value::Text(c, t) = &args[0] else { return err(None, "fail(reason: Text)", sp) };
+                Ok(Value::Fail(Rc::from(c.as_ref()), *t))
             }
             "is_fail" => {
                 arity(1)?;
-                Ok(Value::Bool(matches!(args[0], Value::Fail(_))))
+                Ok(Value::Bool(matches!(args[0], Value::Fail(..)), Taint::Trusted))
             }
             // ---- 长处（G4 §7「判断力花在哪」）：读数是带校准线的随机变量，不是值。
             // 这两个构件只读校准线、不做跨题算术、返回宿主值不返回读数，所以合法（Python
@@ -2420,7 +3260,7 @@ impl<'a> Interp<'a> {
                 let rs = self.readings_of(&args[0], "allocate", sp)?;
                 // **这里也在用线**（`uncertainty` 读 `lines_for`），所以漂移要在这里也报。
                 self.报漂移_批(&rs, sp);
-                let Value::Int(k) = &args[1] else { return err(None, "allocate(读数们, k: Int)：k 是复核名额，通常取 budget.escalate", sp) };
+                let Value::Int(k, _) = &args[1] else { return err(None, "allocate(读数们, k: Int)：k 是复核名额，通常取 budget.escalate", sp) };
                 if *k < 0 {
                     return err(None, format!("allocate: k 必须是非负整数（通常取 budget.escalate），收到 {k}"), sp);
                 }
@@ -2436,8 +3276,8 @@ impl<'a> Interp<'a> {
                 // 以前返回一张下标表，而冷键上那张表恰好是 `[0, 1, …]`——
                 // **一个与不确定性无关、却看起来像答案的答案**。
                 Ok(Value::Record(Rc::new(vec![
-                    ("picked".into(), Value::List(Rc::new(rep.picked.into_iter().map(|i| Value::Int(i as i64)).collect()))),
-                    ("算不出".into(), Value::List(Rc::new(rep.算不出.into_iter().map(|i| Value::Int(i as i64)).collect()))),
+                    ("picked".into(), Value::List(Rc::new(rep.picked.into_iter().map(|i| Value::Int(i as i64, Taint::Trusted)).collect()))),
+                    ("算不出".into(), Value::List(Rc::new(rep.算不出.into_iter().map(|i| Value::Int(i as i64, Taint::Trusted)).collect()))),
                 ])))
             }
             "unsure_bound" => {
@@ -2450,48 +3290,77 @@ impl<'a> Interp<'a> {
                 self.报漂移_批(&rs, sp);
                 let b = crate::strength::unsure_bound(self.calib, &rs);
                 Ok(Value::Record(Rc::new(vec![
-                    ("n".into(), Value::Int(b.n as i64)),
-                    ("union_bound".into(), Value::Float(b.union_bound)),
+                    ("n".into(), Value::Int(b.n as i64, Taint::Trusted)),
+                    ("union_bound".into(), Value::Float(b.union_bound, Taint::Trusted)),
                     // **不给裸浮点。** Rust 侧的 `仅供参考` 类型闸只拦得住 Rust 调用者，
                     // 而**这门语言唯一的用户拿到的是 `Value::Float`，可以直接当判据，没有任何东西会红**
                     // ——「替身上成立、真机上失效」，只是这次的「替身」是宿主语言。
                     // 交成 `Text`：看得见、打得出，**比不了大小、做不了算术**，
                     // 与 Rust 侧那道闸是同一条纪律在同一侧生效。
                     ("independent_any".into(), Value::text(&format!("{:.4}（仅供参考，不可作判据；判据是 union_bound）", b.independent_any.as_reference_only()))),
-                    ("n_unknown".into(), Value::Int(b.n_unknown as i64)),
+                    ("n_unknown".into(), Value::Int(b.n_unknown as i64, Taint::Trusted)),
                 ])))
             }
             // 判断向量的两法（12:134「合法操作**只有两种**…其余运算不存在（J-01）」）。
             // 它们不是「读数列表上的工具函数」——正因为只有这两种，读数才不会被当成数用。
-            "agg" => {
-                arity(1)?;
-                self.flush("agg")?;
-                let rs = self.readings_of(&args[0], "agg", sp)?;
-                if rs.is_empty() {
-                    return err(None, "agg 要至少一条读数", sp);
+            // **同题重复读数的合并（B28）**：`repeat`（原 `agg`）只许均值或中位数，用于压抖动、不为降错；
+            // 合并结果过桥用**含 n 的独立校准键**（`键·repeat(n=…)`，不借题式或模式线），账本记 n；
+            // 对出口取众数（多数表决）禁止——choice 取各候选概率的均值 / 中位数，不投票。
+            // 键未通过重跑分歧检验时（记录 `rerun_independent` 不为真）照常合并但告警：错误持久时重问不降错（B9）。
+            "agg" | "repeat" => {
+                if n == 0 || n > 2 {
+                    return err(None, format!("{name}(读数列表[, \"mean\" | \"median\"])"), sp);
                 }
-                // 同题跨运行的均值（noul/score）或众数（choice）。合并后**仍是读数**——
-                // 所以还能 cut。拿 fold 求平均得到的是裸数，进不了 cut、也不带校准键。
+                if name == "agg" {
+                    self.trace.warn(format!("W-deprecated: @{} agg 已改名 repeat（B28），语义改为只取均值 / 中位数、禁众数；下一版移除 agg", sp.start));
+                }
+                let method = match args.get(1) {
+                    None => "mean".to_string(),
+                    Some(Value::Text(t, _)) if t.as_ref() == "mean" || t.as_ref() == "median" => t.to_string(),
+                    Some(Value::Text(t, _)) if t.as_ref() == "mode" => return err(Some("B28"), "repeat 不许取众数：对出口或选项投票就是多数表决，错误持久时它不降错（B9 / B28）。修法：用 mean 或 median 压抖动", sp),
+                    Some(other) => return err(None, format!("repeat 的方式只收 \"mean\" 或 \"median\"，收到 {}", other.type_name()), sp),
+                };
+                self.flush("repeat")?;
+                let rs = self.readings_of(&args[0], "repeat", sp)?;
+                if rs.is_empty() {
+                    return err(None, "repeat 要至少一条读数", sp);
+                }
+                // 合并后**仍是读数**——所以还能 cut。拿 fold 求平均得到的是裸数，进不了 cut、也不带校准键。
                 let first = &rs[0];
                 if rs.iter().any(|r| r.q_hash != first.q_hash) {
-                    return err(Some("J-01"), "agg 只合并**同一道题**跨运行的读数：收到的读数不是同一道题", sp);
+                    return err(Some("J-01"), "repeat 只合并**同一道题**跨运行的读数：收到的读数不是同一道题", sp);
                 }
-                let merged = merge_runs(&rs, sp)?;
+                let merged = merge_runs(&rs, &method, sp)?;
+                let n_runs = rs.len();
+                let 键 = format!("{}\u{1f}repeat(n={n_runs})", first.calib);
+                let lk = format!("repeat(n={n_runs},{method}):{}", first.ledger_key);
+                if self.ledger.get(&lk).is_none() {
+                    self.ledger.put(Entry::Effect { key: lk.clone(), kind: "repeat".into(), output: serde_json::json!({"n": n_runs, "method": method, "calib": 键.replace('\u{1f}', ":")}), cost: 0.0 });
+                }
+                self.trace.push("repeat", &lk, false, 0.0, sp, format!("n={n_runs} {method}"));
+                if !self.calib.get(&first.calib).rerun_independent.unwrap_or(false) {
+                    self.trace.warn(format!(
+                        "W-repeat-persistent: @{} 键 {} 未通过重跑分歧检验：重复读数只压抖动、不降错（错误持久，B9）。合并结果用独立键 {}，没有它的认证记录就是冷",
+                        sp.start, first.calib, 键.replace('\u{1f}', ":")
+                    ));
+                }
                 Ok(Value::Reading(Rc::new(Reading {
                     q_hash: first.q_hash.clone(),
                     state_hash: first.state_hash.clone(),
                     op: first.op,
-                    calib: first.calib.clone(),
+                    calib: 键,
                     answer: std::cell::RefCell::new(Some(merged)),
                     fail: None,
                     model_id: first.model_id.clone(),
-                    ledger_key: format!("agg:{}", first.ledger_key),
+                    ledger_key: lk,
                     over_len: first.over_len,
                     scale: first.scale.clone(),
                     perms: std::cell::Cell::new(first.perms.get()),
                     mode_share: std::cell::Cell::new(first.mode_share.get()),
                     missing_evidence: first.missing_evidence.clone(),
                     state_taint: rs.iter().fold(Taint::Trusted, |t, r| Taint::join(t, r.state_taint)),
+                    // 合并结果不借题式线：它有自己的含 n 的键（B28）
+                    form_hash: None,
                 })))
             }
             "order" => {
@@ -2511,7 +3380,7 @@ impl<'a> Interp<'a> {
                         }
                     }
                 }
-                Ok(Value::list(self.order_tiers(&rs).into_iter().map(|tier| Value::list(tier.into_iter().map(|i| Value::Int(i as i64)).collect())).collect()))
+                Ok(Value::list(self.order_tiers(&rs).into_iter().map(|tier| Value::list(tier.into_iter().map(|i| Value::Int(i as i64, Taint::Trusted)).collect())).collect()))
             }
             // fit 桥（12 §6.0:315 `fit(名, [读数…])`，**输出仍是读数、仍要 cut**）。
             // 让什么活下来：**跨题的联合判断在类型上仍是读数**，因而仍要过线、仍可能 unsure。
@@ -2519,7 +3388,7 @@ impl<'a> Interp<'a> {
             "fit" => {
                 arity(2)?;
                 self.flush("fit")?;
-                let Value::Text(name) = &args[0] else { return err(Some("J-16"), "fit(名字: Text, [读数…])", sp) };
+                let Value::Text(name, _) = &args[0] else { return err(Some("J-16"), "fit(名字: Text, [读数…])", sp) };
                 let rs = self.readings_of(&args[1], "fit", sp)?;
                 let Some(rec) = self.fits.fits.get(name.as_ref()).cloned() else {
                     return err(Some("J-16"), format!("fit {name} 未注册：fit 只认注册表签名（12:274）。修法：用训练过程注册，或改用 cut"), sp);
@@ -2555,6 +3424,7 @@ impl<'a> Interp<'a> {
                 mode_share: std::cell::Cell::new(None),
                     missing_evidence: vec![],
                     state_taint: rs.iter().fold(Taint::Trusted, |t, r| Taint::join(t, r.state_taint)),
+                    form_hash: None,
                 })))
             }
             "exit_kind" => {
@@ -2563,7 +3433,7 @@ impl<'a> Interp<'a> {
             }
             "loop" => {
                 arity(3)?;
-                let Value::Int(b) = &args[0] else { return err(Some("J-06"), "loop 的 bound 必须是整数字面量或整数值", sp) };
+                let Value::Int(b, _) = &args[0] else { return err(Some("J-06"), "loop 的 bound 必须是整数字面量或整数值", sp) };
                 let (b, init, step) = (*b, args[1].clone(), args[2].clone());
                 self.loop_(b, init, &step, sp)
             }
@@ -2574,9 +3444,9 @@ impl<'a> Interp<'a> {
             "len" => {
                 arity(1)?;
                 match &args[0] {
-                    Value::List(l) => Ok(Value::Int(l.len() as i64)),
-                    Value::Text(t) => Ok(Value::Int(t.chars().count() as i64)),
-                    Value::Record(r) => Ok(Value::Int(r.len() as i64)),
+                    Value::List(l) => Ok(Value::Int(l.len() as i64, Taint::Trusted)),
+                    Value::Text(t, _) => Ok(Value::Int(t.chars().count() as i64, Taint::Trusted)),
+                    Value::Record(r) => Ok(Value::Int(r.len() as i64, Taint::Trusted)),
                     other => err(None, format!("len 不适用于 {}", other.type_name()), sp),
                 }
             }
@@ -2594,8 +3464,8 @@ impl<'a> Interp<'a> {
                     // filter 的谓词必须返回 Bool。返回别的东西以前被**静默当假**：
                     // 出口、未决责任传进来会无声消失，正是 13 §3 要堵的那类。
                     match r {
-                        Value::Bool(true) => out.push(it.clone()),
-                        Value::Bool(false) => {}
+                        Value::Bool(true, _) => out.push(it.clone()),
+                        Value::Bool(false, _) => {}
                         other => {
                             return err(
                                 None,
@@ -2618,8 +3488,8 @@ impl<'a> Interp<'a> {
             }
             "range" => {
                 arity(2)?;
-                let (Value::Int(a), Value::Int(b)) = (&args[0], &args[1]) else { return err(None, "range(a, b)", sp) };
-                Ok(Value::list((*a..*b).map(Value::Int).collect()))
+                let (Value::Int(a, _), Value::Int(b, _)) = (&args[0], &args[1]) else { return err(None, "range(a, b)", sp) };
+                Ok(Value::list((*a..*b).map(Value::int).collect()))
             }
             "append" => {
                 arity(2)?;
@@ -2635,7 +3505,7 @@ impl<'a> Interp<'a> {
             }
             "slice" => {
                 arity(3)?;
-                let (Value::List(l), Value::Int(a), Value::Int(b)) = (&args[0], &args[1], &args[2]) else { return err(None, "slice(list, a, b)", sp) };
+                let (Value::List(l), Value::Int(a, _), Value::Int(b, _)) = (&args[0], &args[1], &args[2]) else { return err(None, "slice(list, a, b)", sp) };
                 let a = (*a).clamp(0, l.len() as i64) as usize;
                 let b = (*b).clamp(a as i64, l.len() as i64) as usize;
                 Ok(Value::list(l[a..b].to_vec()))
@@ -2645,17 +3515,17 @@ impl<'a> Interp<'a> {
                 let Value::List(l) = &args[0] else { return err(None, "contains(list, v)", sp) };
                 for it in l.iter() {
                     match it.equals(&args[1]) {
-                        Some(true) => return Ok(Value::Bool(true)),
+                        Some(true) => return Ok(Value::Bool(true, Taint::Trusted)),
                         None => return err(Some("J-01"), "读数不可比", sp),
                         _ => {}
                     }
                 }
-                Ok(Value::Bool(false))
+                Ok(Value::Bool(false, Taint::Trusted))
             }
             "sum" => {
                 arity(1)?;
                 let Value::List(l) = &args[0] else { return err(None, "sum(list)", sp) };
-                let mut acc = Value::Int(0);
+                let mut acc = Value::Int(0, Taint::Trusted);
                 for it in l.iter() {
                     acc = self.binop("+", acc, it.clone(), sp)?;
                 }
@@ -2663,21 +3533,21 @@ impl<'a> Interp<'a> {
             }
             "min" | "max" => {
                 arity(2)?;
-                let (Value::Int(a), Value::Int(b)) = (&args[0], &args[1]) else { return err(None, format!("{name}(Int, Int)"), sp) };
-                Ok(Value::Int(if name == "min" { *a.min(b) } else { *a.max(b) }))
+                let (Value::Int(a, _), Value::Int(b, _)) = (&args[0], &args[1]) else { return err(None, format!("{name}(Int, Int)"), sp) };
+                Ok(Value::Int(if name == "min" { *a.min(b) } else { *a.max(b) }, Taint::Trusted))
             }
             "abs" => {
                 arity(1)?;
                 match &args[0] {
                     // 13 §6：i64::MIN 没有对应的正数，取绝对值同样越界
-                    Value::Int(a) => Ok(Value::Int(a.checked_abs().ok_or_else(|| overflow("取绝对值", *a, 0, sp))?)),
-                    Value::Float(a) => Ok(Value::Float(a.abs())),
+                    Value::Int(a, _) => Ok(Value::Int(a.checked_abs().ok_or_else(|| overflow("取绝对值", *a, 0, sp))?, Taint::Trusted)),
+                    Value::Float(a, _) => Ok(Value::Float(a.abs(), Taint::Trusted)),
                     _ => err(None, "abs(number)", sp),
                 }
             }
             "floor" => {
                 arity(1)?;
-                match &args[0] { Value::Float(a) => Ok(Value::Int(a.floor() as i64)), Value::Int(a) => Ok(Value::Int(*a)), _ => err(None, "floor(number)", sp) }
+                match &args[0] { Value::Float(a, _) => Ok(Value::Int(a.floor() as i64, Taint::Trusted)), Value::Int(a, _) => Ok(Value::Int(*a, Taint::Trusted)), _ => err(None, "floor(number)", sp) }
             }
             "reverse" => {
                 arity(1)?;
@@ -2691,12 +3561,12 @@ impl<'a> Interp<'a> {
             }
             "has" => {
                 arity(2)?;
-                let (Value::Record(_), Value::Text(k)) = (&args[0], &args[1]) else { return err(None, "has(record, key)", sp) };
-                Ok(Value::Bool(args[0].get(k).is_some()))
+                let (Value::Record(_), Value::Text(k, _)) = (&args[0], &args[1]) else { return err(None, "has(record, key)", sp) };
+                Ok(Value::Bool(args[0].get(k).is_some(), Taint::Trusted))
             }
             "with" => {
                 arity(3)?;
-                let (Value::Record(r), Value::Text(k)) = (&args[0], &args[1]) else { return err(None, "with(record, key, value)", sp) };
+                let (Value::Record(r), Value::Text(k, _)) = (&args[0], &args[1]) else { return err(None, "with(record, key, value)", sp) };
                 let mut v: Vec<(String, Value)> = r.iter().filter(|(kk, _)| kk.as_str() != k.as_ref()).cloned().collect();
                 v.push((k.to_string(), args[2].clone()));
                 Ok(Value::record(v))
@@ -2704,16 +3574,17 @@ impl<'a> Interp<'a> {
             "text" => {
                 arity(1)?;
                 match &args[0] {
-                    Value::Text(t) => Ok(Value::text(t)),
+                    Value::Text(t, _) => Ok(Value::text(t)),
                     Value::Reading(_) => err(Some("J-01"), "读数不能转文字", sp),
-                    Value::Mat(m) => Ok(Value::text(&m.text())),
-                    other => Ok(Value::text(&other.to_json().to_string().trim_matches('"').to_string())),
+                    // 读出规则：材料的文字带材料的位；其余由分派处的 ∨ 输入给出
+                    Value::Mat(m) => Ok(Value::Text(Rc::from(m.text().as_str()), m.taint)),
+                    other => Ok(Value::text(other.to_json().to_string().trim_matches('"'))),
                 }
             }
             "join" => {
                 arity(2)?;
-                let (Value::List(l), Value::Text(sep)) = (&args[0], &args[1]) else { return err(None, "join([Text], sep)", sp) };
-                let parts: Vec<String> = l.iter().map(|v| match v { Value::Text(t) => t.to_string(), o => o.to_json().to_string() }).collect();
+                let (Value::List(l), Value::Text(sep, _)) = (&args[0], &args[1]) else { return err(None, "join([Text], sep)", sp) };
+                let parts: Vec<String> = l.iter().map(|v| match v { Value::Text(t, _) => t.to_string(), o => o.to_json().to_string() }).collect();
                 Ok(Value::text(&parts.join(sep)))
             }
             "print" => {
@@ -2811,46 +3682,37 @@ fn rank_value(r: &Reading) -> Option<f64> {
 }
 
 /// 同题跨运行合并：noul / score 取均值，choice 取众数（`12`:134）
-fn merge_runs(rs: &[Rc<Reading>], sp: Span) -> R<Answer> {
+fn merge_runs(rs: &[Rc<Reading>], method: &str, sp: Span) -> R<Answer> {
     let answers: Vec<Answer> = rs.iter().filter_map(|r| r.answer_after_flush()).collect();
     if answers.is_empty() {
-        return err(Some("J-12"), "agg 收到的读数全是失败或未答，没有可合并的", sp);
+        return err(Some("J-12"), "repeat 收到的读数全是失败或未答，没有可合并的", sp);
     }
+    // 逐分量取均值或中位数（B28）。choice / score 都是概率向量，逐分量合并，不投票。
+    let 合 = |xs: &mut Vec<f64>| -> f64 {
+        if xs.is_empty() {
+            return 0.0;
+        }
+        if method == "median" {
+            xs.sort_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal));
+            let m = xs.len() / 2;
+            if xs.len() % 2 == 1 { xs[m] } else { (xs[m - 1] + xs[m]) / 2.0 }
+        } else {
+            xs.iter().sum::<f64>() / xs.len() as f64
+        }
+    };
+    let 向量 = |pick: &dyn Fn(&Answer) -> Option<Vec<f64>>, len: usize| -> Vec<f64> {
+        (0..len).map(|i| {
+            let mut xs: Vec<f64> = answers.iter().filter_map(|a| pick(a).and_then(|v| v.get(i).copied())).collect();
+            合(&mut xs)
+        }).collect()
+    };
     Ok(match &answers[0] {
         Answer::Noul(_) => {
-            let ps: Vec<f64> = answers.iter().filter_map(|a| if let Answer::Noul(p) = a { Some(*p) } else { None }).collect();
-            Answer::Noul(ps.iter().sum::<f64>() / ps.len() as f64)
+            let mut ps: Vec<f64> = answers.iter().filter_map(|a| if let Answer::Noul(p) = a { Some(*p) } else { None }).collect();
+            Answer::Noul(合(&mut ps))
         }
-        Answer::Score(v0) => {
-            // 逐档取均值
-            let mut acc = vec![0.0; v0.len()];
-            let mut n = 0.0;
-            for a in &answers {
-                if let Answer::Score(v) = a {
-                    for (i, x) in v.iter().enumerate() {
-                        if i < acc.len() {
-                            acc[i] += x;
-                        }
-                    }
-                    n += 1.0;
-                }
-            }
-            Answer::Score(acc.into_iter().map(|x| x / n).collect())
-        }
-        Answer::Choice(v0) => {
-            // 众数：每次运行投给自己的 argmax，票数最多的候选拿 1.0
-            let mut votes = vec![0usize; v0.len()];
-            for a in &answers {
-                if let Answer::Choice(v) = a {
-                    let k = argmax(v).0;
-                    if k < votes.len() {
-                        votes[k] += 1;
-                    }
-                }
-            }
-            let top = votes.iter().enumerate().max_by_key(|(_, n)| **n).map(|(i, _)| i).unwrap_or(0);
-            Answer::Choice((0..v0.len()).map(|i| if i == top { 1.0 } else { 0.0 }).collect())
-        }
+        Answer::Score(v0) => Answer::Score(向量(&|a| if let Answer::Score(v) = a { Some(v.clone()) } else { None }, v0.len())),
+        Answer::Choice(v0) => Answer::Choice(向量(&|a| if let Answer::Choice(v) = a { Some(v.clone()) } else { None }, v0.len())),
     })
 }
 
@@ -2883,7 +3745,7 @@ fn evidence_of(v: Option<&Value>, sp: Span) -> R<Vec<String>> {
     let Value::List(l) = slots else { return err(None, "evidence 要是槽名的列表", sp) };
     let mut out = vec![];
     for s in l.iter() {
-        let Value::Text(t) = s else { return err(None, "evidence 里要是槽名（文本）", sp) };
+        let Value::Text(t, _) = s else { return err(None, "evidence 里要是槽名（文本）", sp) };
         if !matches!(t.as_ref(), "on" | "ctx" | "ref" | "over") {
             return err(None, format!("evidence 里的 {t} 不是槽名；状态只有 on / ctx / ref / over 四个槽"), sp);
         }
@@ -2892,38 +3754,116 @@ fn evidence_of(v: Option<&Value>, sp: Span) -> R<Vec<String>> {
     Ok(out)
 }
 
-/// 把一份内容**及其所有子结构**记进表：包装成容器后也认得出来。
-///
-/// 为什么不按整个值精确匹配：**包装方式是无穷的**，穷举它永远落后一步。
-/// 记子结构之后，判定变成「**这个新材料里含不含从 untrusted 材料拆出来的东西**」。
-fn insert_with_parts(set: &mut HashSet<String>, j: &Json) {
-    // 太小的标量不记：`true` / `0` / `""` 这类会撞上无关的字面量，造成假拒绝
-    let 值得记 = match j {
-        Json::Null | Json::Bool(_) => false,
-        Json::Number(_) => false,
-        Json::String(s) => s.chars().count() >= 3,
-        _ => true,
-    };
-    if 值得记 {
-        set.insert(canon(j));
-    }
-    match j {
-        Json::Object(m) => m.values().for_each(|v| insert_with_parts(set, v)),
-        Json::Array(a) => a.iter().for_each(|v| insert_with_parts(set, v)),
-        _ => {}
+/// 题上可读的字段（只读）。静态检查（check.rs）用同一张表核字段名。
+pub const QUESTION_FIELDS: &[&str] = &["text", "op", "calib", "scale", "evidence", "hash", "subject", "predicate", "partition", "request", "presupposition", "form", "template", "fill"];
+/// 题式上可读的字段（只读）。
+pub const FORM_FIELDS: &[&str] = &["template", "op", "slots", "calib", "scale", "evidence", "presupposition", "request", "partition", "subject", "hash"];
+
+/// 组合封闭性契约（B17，施工件 i）的字段。每个构造（`sieve` / `pair` / `tally` / `first_k` /
+/// `iterate` / `outcome`）返回同一形状的记录，检查器据此核字段名。
+/// - `kind`：产生它的构造；
+/// - `value`：产出；
+/// - `pending`：未决清单，每项 `{element, exit, cause}`，`exit` 承担责任（J-05 / 13 §3）；
+/// - `evidence`：账本键（Text），不存读数或材料的副本；
+/// - `resume`：续接——停在哪里、为什么、可选的继续方法 `next`；
+/// - `spent`：本构造新增的调用与费用 `{calls, usd}`；
+/// - `detail`：构造特有的已决信息（例如 sieve 的 `question`、`ignore`）；
+/// - `purpose`：可选的可读目的，供诊断。
+pub const OUTCOME_FIELDS: &[&str] = &["kind", "value", "pending", "evidence", "resume", "spent", "detail", "purpose"];
+
+/// 这个值是不是一个契约值（字段集合与 `OUTCOME_FIELDS` 一致）
+pub fn is_outcome(v: &Value) -> bool {
+    match v {
+        Value::Record(r) => r.len() == OUTCOME_FIELDS.len() && OUTCOME_FIELDS.iter().all(|f| r.iter().any(|(k, _)| k == f)),
+        _ => false,
     }
 }
 
-/// 这份内容里含不含记过的「从 untrusted 材料拆出来的东西」
-fn contains_untrusted_part(set: &HashSet<String>, j: &Json) -> bool {
-    if set.contains(&canon(j)) {
-        return true;
+/// 证据列表去重追加（证据都是账本键 Text）
+fn push_key(v: &mut Vec<Value>, k: Value) {
+    let same = |a: &Value| matches!((a, &k), (Value::Text(x, _), Value::Text(y, _)) if x == y);
+    if !v.iter().any(same) {
+        v.push(k);
     }
-    match j {
-        Json::Object(m) => m.values().any(|v| contains_untrusted_part(set, v)),
-        Json::Array(a) => a.iter().any(|v| contains_untrusted_part(set, v)),
-        _ => false,
+}
+
+fn list_of(v: Option<Value>) -> Vec<Value> {
+    match v {
+        Some(Value::List(l)) => l.iter().cloned().collect(),
+        _ => vec![],
     }
+}
+
+fn texts(v: &[String]) -> Value {
+    Value::list(v.iter().map(|x| Value::text(x)).collect())
+}
+fn opt_text(v: &Option<String>) -> Value {
+    v.as_deref().map(Value::text).unwrap_or(Value::Unit)
+}
+
+/// B1 五件与题的元数据。`predicate` 就是题面：主体（被判断的对象）在状态里，不在题面里，
+/// 题面说的是对它判断什么。由题式填出的题另有 `template`（带槽的谓词）与 `fill`（填法）。
+fn question_field(q: &Question, field: &str) -> Option<Value> {
+    Some(match field {
+        "text" | "predicate" => Value::text(&q.text),
+        "op" => Value::text(q.op.fixture_name()),
+        "calib" => Value::text(&q.calib),
+        "scale" => texts(&q.scale),
+        "evidence" => texts(&q.evidence),
+        "hash" => Value::text(&q.hash),
+        "subject" => Value::text(q.subject()),
+        "partition" => Value::text(q.partition()),
+        "request" => Value::text(&q.request()),
+        "presupposition" => opt_text(&q.presupposition),
+        "form" => opt_text(&q.form_hash),
+        "template" => opt_text(&q.template),
+        "fill" => match &q.fill {
+            Some(f) => Value::Record(Rc::new(f.iter().map(|(k, v)| (k.clone(), Value::text(v))).collect())),
+            None => Value::Unit,
+        },
+        _ => return None,
+    })
+}
+
+fn form_field(f: &crate::value::Form, field: &str) -> Option<Value> {
+    Some(match field {
+        "template" => Value::text(&f.template),
+        "op" => Value::text(f.op.fixture_name()),
+        "slots" => texts(&f.slots),
+        "calib" => Value::text(&f.calib),
+        "scale" => texts(&f.scale),
+        "evidence" => texts(&f.evidence),
+        "presupposition" => opt_text(&f.presupposition),
+        "request" => Value::text(f.request.as_deref().unwrap_or(crate::value::default_request(f.op))),
+        "partition" => Value::text(match f.op { Op::Test => "binary", Op::Select => "k_ary", Op::Measure => "ordered" }),
+        "subject" => Value::text(match f.op { Op::Select => "over", _ => "on" }),
+        "hash" => Value::text(&f.hash),
+        _ => return None,
+    })
+}
+
+/// 题的声明项：前提（可选文本）与请求（本版只接受各题型的缺省请求，见下）。
+fn question_decl_of(v: Option<&Value>, op: Op, sp: Span) -> R<(Option<String>, Option<String>)> {
+    let Some(v) = v else { return Ok((None, None)) };
+    let presupposition = match v.get("presupposition") {
+        None | Some(Value::Unit) => None,
+        Some(Value::Text(t, _)) => Some(t.to_string()),
+        Some(other) => return err(None, format!("presupposition 要是文本，收到 {}", other.type_name()), sp),
+    };
+    let request = match v.get("request") {
+        None | Some(Value::Unit) => None,
+        Some(Value::Text(t, _)) => {
+            // 本版 `cut` 只实现每个题型的缺省请求。「K 选一、选出全部」（all）要由三路过滤
+            // 与子集判断承担（施工件 c），在那之前声明它只会被静默当成 one——所以拒绝，而不是收下不管。
+            if t.as_ref() != crate::value::default_request(op) {
+                let hint = if op == Op::Select && t.as_ref() == "all" { "；「选出全部」待三路过滤（施工件 c）实现后可用，现在用 map + test 逐个判" } else { "" };
+                return err(None, format!("request 「{t}」不适用于 {} 题：本版只支持缺省请求 {}{hint}", op.fixture_name(), crate::value::default_request(op)), sp);
+            }
+            Some(t.to_string())
+        }
+        Some(other) => return err(None, format!("request 要是文本，收到 {}", other.type_name()), sp),
+    };
+    Ok((presupposition, request))
 }
 
 /// 一组实参里各材料的 `derived_from` 的并（容器要递归看，与 `taint_of` 同）
@@ -2952,17 +3892,24 @@ fn prov_key(name: &str) -> String {
     format!("{name}\u{1f}prov")
 }
 
-/// 一个值携带的 taint：容器要递归看。**没有可信度可言的东西不叫可信**——
-/// 但语言里只有材料带 taint，其余（数字、文本、方法）本来就是程序自己造的，按 Trusted。
+/// 不在分派处做「输出 ∨ 输入」的内置（B33 第 3 点）。两类：
+/// 1. **效应边界与自带规则**：taint 按 `12` §2.11 表在这里赋值（`state`/`mat`/`content`/`judge`/
+///    `cut`/`do`/`gen`/`ask`/`transform`…），或输出本身就带着该有的位（出口、材料、契约值）；
+/// 2. **只搬运元素**：输出的元素就是输入的元素（或用户函数的返回值），各带自身的位；
+///    整体 ∨ 会把一个不可信元素的位抹到所有元素上（取字段 / 下标返回叶子自身的位，同一原则）。
+/// 不在表上的内置（含将来新增的）一律按 ∨ 输入处理——**兜底往拒绝那边倒**。
+const 不做数据流合取的内置: &[&str] = &[
+    // 效应边界与自带规则
+    "state", "test", "select", "measure", "form", "fill", "judge", "cut", "handle", "consume", "do", "gen", "ask",
+    "transform", "mat", "content", "sieve", "pair", "tally", "first_k", "iterate", "outcome", "repeat", "agg",
+    "allocate", "unsure_bound", "fit", "order", "escalate", "literalize", "unsure", "pending", "print", "stop", "fail",
+    // 只搬运元素
+    "map", "filter", "fold", "loop", "append", "concat", "slice", "reverse", "with",
+];
+
+/// 一个值携带的 taint（B33：标量自带位，容器递归 ∨）
 fn taint_of(v: &Value) -> Taint {
-    match v {
-        Value::Mat(m) => m.taint,
-        Value::List(l) => l.iter().fold(Taint::Trusted, |t, x| Taint::join(t, taint_of(x))),
-        Value::Record(fs) => fs.iter().fold(Taint::Trusted, |t, (_, x)| Taint::join(t, taint_of(x))),
-        Value::Exit(e) => e.taint,
-        Value::Stop(x) => taint_of(x),
-        _ => Taint::Trusted,
-    }
+    v.taint()
 }
 
 /// 这个表达式是 `judge(状态, 题)` 吗；是的话给出**状态那一段的语法树**
@@ -2973,6 +3920,93 @@ fn judged_state(e: &Expr) -> Option<&Expr> {
         return None;
     }
     arguments.first()
+}
+
+/// 推测、提升、向量化可以**提前求值**的内置：不触世界、不刷新判断、不销账、不打印。
+/// 不在这张表上的内置（`do`/`gen`/`ask`/`transform`/`cut`/`handle`/`consume`/`sieve`/`print`…）
+/// 与**任何看不透的调用**一样按「可能有效应」处理（K-069：未分析的能力一律保守表示为可能带效应）。
+/// `judge` 在表上：它只登记、不发出，推测本来就是在登记它。
+const 可提前求值的内置: &[&str] = &[
+    "state", "test", "select", "measure", "form", "fill", "judge", "mat", "content", "taint", "key_of",
+    "len", "range", "append", "concat", "slice", "contains", "sum", "reverse", "keys", "with", "has", "text", "join",
+    "min", "max", "abs", "floor", "exit_kind", "unsure_cause", "untested", "line_source", "is_fail", "fail", "stop",
+    "map", "filter", "fold",
+];
+
+/// **看环境判断**：这个表达式求值时会不会产生效应（K-069 / K-075，2026-09-23 修）。
+///
+/// 旧的 `has_impure` 只认内置名，调用用户函数一律当纯，于是推测执行在条件为假的分支里
+/// 提前求值 `state(mat(side(1)))`，`side` 里的 `do` 真的执行了。这里改为：
+/// - 调用内置：只有「可提前求值」表上的才算纯；
+/// - 调用用户函数（或把函数当值传给 `map` 之类）：**看函数体**，不看它的效应声明——
+///   空声明不是纯净的证明；递归时同一个函数只看一次；
+/// - 看不透的调用（名字解析不到、调用一个表达式的结果、字段里的方法）：按有效应。
+fn may_effect(e: &Expr, env: &Env) -> bool {
+    let mut seen: HashSet<String> = HashSet::new();
+    effect_in_expr(e, env, &mut seen, 严格)
+}
+
+/// 只问「会不会触世界」（`do`/`gen`/`ask`/`transform`/`escalate`/`literalize`，含藏在用户函数里的）。
+/// `lift` 用它判断能不能**越过**一句（不求值那一句，只改判断与动作的先后）；`cut`、`handle`
+/// 这类只刷新判断或销账的内置不算触世界。看不透的调用仍按触世界处理。
+fn may_touch_world(e: &Expr, env: &Env) -> bool {
+    let mut seen: HashSet<String> = HashSet::new();
+    effect_in_expr(e, env, &mut seen, 触世界)
+}
+
+const 严格: bool = true;
+const 触世界: bool = false;
+const 触世界的内置: &[&str] = &["do", "gen", "ask", "transform", "escalate", "literalize"];
+
+fn effect_in_value(v: &Value, seen: &mut HashSet<String>, strict: bool) -> bool {
+    match v {
+        Value::Builtin(b) => if strict { !可提前求值的内置.contains(b) } else { 触世界的内置.contains(b) },
+        Value::Fn(c) => {
+            if !seen.insert(c.hash.clone()) {
+                return false;
+            }
+            effect_in_block(&c.function.body, &c.env, seen, strict)
+        }
+        Value::List(l) => l.iter().any(|x| effect_in_value(x, seen, strict)),
+        Value::Record(fs) => fs.iter().any(|(_, x)| effect_in_value(x, seen, strict)),
+        _ => false,
+    }
+}
+
+fn effect_in_block(b: &Block, env: &Env, seen: &mut HashSet<String>, strict: bool) -> bool {
+    b.statements.iter().any(|st| match st {
+        Statement::Let { value, .. } => effect_in_expr(value, env, seen, strict),
+        Statement::Expression(e) => effect_in_expr(e, env, seen, strict),
+        Statement::Function { function, .. } => effect_in_block(&function.body, env, seen, strict),
+    }) || b.result.as_ref().is_some_and(|r| effect_in_expr(r, env, seen, strict))
+}
+
+fn effect_in_expr(e: &Expr, env: &Env, seen: &mut HashSet<String>, strict: bool) -> bool {
+    match &e.kind {
+        ExprKind::Call { function, arguments } => {
+            let callee = match &function.kind {
+                // 名字解析不到（函数体里的局部名、形参）：调用它就看不透
+                ExprKind::Name(n) => match env_lookup(env, n) {
+                    Some(v) => effect_in_value(&v, seen, strict),
+                    None => true,
+                },
+                // 调用一个表达式的结果、字段里的方法：看不透
+                _ => true,
+            };
+            callee || arguments.iter().any(|a| effect_in_expr(a, env, seen, strict))
+        }
+        // 函数被当作值传走（`map(xs, side)`）：它之后会被调用
+        ExprKind::Name(n) => env_lookup(env, n).is_some_and(|v| matches!(v, Value::Fn(_)) && effect_in_value(&v, seen, strict)),
+        ExprKind::Function(f) => effect_in_block(&f.body, env, seen, strict),
+        ExprKind::List(items) => items.iter().any(|x| effect_in_expr(x, env, seen, strict)),
+        ExprKind::Record(fs) => fs.iter().any(|(_, x)| effect_in_expr(x, env, seen, strict)),
+        ExprKind::Field { value, .. } | ExprKind::Unary { value, .. } => effect_in_expr(value, env, seen, strict),
+        ExprKind::Index { value, index } => effect_in_expr(value, env, seen, strict) || effect_in_expr(index, env, seen, strict),
+        ExprKind::Binary { left, right, .. } => effect_in_expr(left, env, seen, strict) || effect_in_expr(right, env, seen, strict),
+        ExprKind::If { condition, yes, no } => effect_in_expr(condition, env, seen, strict) || effect_in_block(yes, env, seen, strict) || effect_in_block(no, env, seen, strict),
+        ExprKind::Block(b) => effect_in_block(b, env, seen, strict),
+        _ => false,
+    }
 }
 
 /// 表达式里有没有会产生副作用或改状态的调用（提升不能跨过它们）
@@ -2997,7 +4031,7 @@ fn has_branch(e: &Expr) -> bool {
         ExprKind::If { .. } => found = true,
         ExprKind::Call { function, .. } => {
             if let ExprKind::Name(n) = &function.kind {
-                if matches!(n.as_str(), "loop" | "map" | "filter" | "fold" | "handle") {
+                if matches!(n.as_str(), "loop" | "iterate" | "map" | "filter" | "fold" | "handle" | "pair") {
                     found = true;
                 }
             }
@@ -3062,8 +4096,8 @@ fn argmax(v: &[f64]) -> (usize, f64) {
 pub fn json_to_value(j: &Json) -> Value {
     match j {
         Json::Null => Value::Unit,
-        Json::Bool(b) => Value::Bool(*b),
-        Json::Number(n) => n.as_i64().map(Value::Int).unwrap_or_else(|| Value::Float(n.as_f64().unwrap_or(0.0))),
+        Json::Bool(b) => Value::Bool(*b, Taint::Trusted),
+        Json::Number(n) => n.as_i64().map(Value::int).unwrap_or_else(|| Value::Float(n.as_f64().unwrap_or(0.0), Taint::Trusted)),
         Json::String(s) => Value::text(s),
         Json::Array(a) => Value::list(a.iter().map(json_to_value).collect()),
         Json::Object(o) => Value::record(o.iter().map(|(k, v)| (k.clone(), json_to_value(v))).collect()),
@@ -3072,7 +4106,7 @@ pub fn json_to_value(j: &Json) -> Value {
 
 pub fn effect_value_to_json(v: &Value) -> Json {
     match v {
-        Value::Fail(s) => json!({"__fail": s.as_ref()}),
+        Value::Fail(s, t) => json!({"__fail": s.as_ref(), "taint": t}),
         // `derived_from` 也要写：不写的话重放出来的程序与原程序**在 J-02 上不是同一个程序**，
         // 而 J-18 的整套重放判定建立在它们是同一个上。
         Value::Mat(m) => json!({"__mat": m.content, "taint": m.taint, "addr": m.addr, "origin": m.origin, "derived_from": m.derived_from}),
@@ -3082,7 +4116,9 @@ pub fn effect_value_to_json(v: &Value) -> Json {
 
 pub fn json_to_effect_value(j: &Json) -> Value {
     if let Some(f) = j.get("__fail").and_then(|x| x.as_str()) {
-        return Value::Fail(Rc::from(f));
+        // 旧账本没有 taint 位：兜底往拒绝那边倒（untrusted），与材料的反序列化同一纪律
+        let t = j.get("taint").and_then(|x| serde_json::from_value::<Taint>(x.clone()).ok()).unwrap_or(Taint::Untrusted);
+        return Value::Fail(Rc::from(f), t);
     }
     if let Some(c) = j.get("__mat") {
         // 兜底往**保守**那边倒。以前是 `.unwrap_or(Taint::Trusted)`：taint 字段坏了或缺了，
@@ -3137,4 +4173,21 @@ fn collect_captured_exits(env: &Env, names: &BTreeSet<String>, depth: u32, out: 
             other => collect_exit_ids(other, out),
         }
     }
+}
+
+/// 一个元素交给判断器的那份材料与来路：
+/// 过滤或配对的产物（带 `item` 与 `trail` 的记录）取 `item` 当材料，`trail` 接上上一次的出口；
+/// 其余值原样当材料、来路为空。产物与输入同形，可再过滤、再配对（组合封闭）。
+fn element_parts(it: &Value) -> (Value, Value) {
+    let is_elem = matches!(it, Value::Record(_)) && it.get("item").is_some() && it.get("trail").is_some();
+    if !is_elem {
+        return (it.clone(), Value::list(vec![]));
+    }
+    let mut t: Vec<Value> = match it.get("trail") { Some(Value::List(l)) => l.iter().cloned().collect(), _ => vec![] };
+    if let Some(e) = it.get("exit") {
+        if !matches!(e, Value::Unit) {
+            t.push(e);
+        }
+    }
+    (it.get("item").unwrap_or(Value::Unit), Value::list(t))
 }

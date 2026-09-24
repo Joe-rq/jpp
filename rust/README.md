@@ -82,6 +82,25 @@ cargo run -p jpp-cli -- run examples/partial.jpp --fixtures examples/fixtures/pa
 方法环境；不能把它说成任意闭包已支持跨进程保存。保持相同源码、输入和校准记录
 才是本包验证的重放条件。
 
+## Getting usable exits on the live backend / 怎么让真机跑出可用出口
+
+A live run returns readings, but `cut` turns a reading into act / ignore only with a
+certified line; with no calibration record every exit is `unsure(cold)`. Lines come
+only from labelled data (J-03). The truth channel imports labels and certifies them:
+
+```sh
+cargo build -p jpp-cli --features live --release
+# 1. run the program live once and keep the readings (report / ledger)
+# 2. label those readings: one JSON object per line, e.g.
+#    {"form": {"op": "test", "template": "这段话是否提到了{city}？"}, "item": "n1", "p": 0.99, "label": true, "source": "computed"}
+./target/release/jpp calib-import labels.jsonl --calib-out calib
+# 3. run again with the records; replay later needs only the ledger
+./target/release/jpp run examples/sieve.jpp --backend live --calib calib --ledger-out ledger.json
+./target/release/jpp run examples/sieve.jpp --replay ledger.json
+```
+
+真机只给读数；出口要靠校准线，线只从带真值的标注来。做法：先真机跑一次拿读数，给读数标真值（`human`、`computed` 或 `model:<名>`），用 `calib-import` 导入并认证，再带 `--calib` 运行。按题式（`form`）导入的线由该题式的所有填法共用（B2 已裁定：题式为校准主键；本版实现为回退层，主键迁移随 B30 进行），出口会注明「题式级」。只有模型标注时，需要同一题式的人工抽检一致率达到门槛（默认 0.9）才上岗；达不到时记录标为「待核」，运行时告警写明原因。账本记下了当次用到的校准记录，只凭账本重放也得到同样的出口。
+
 ## Source and diagnostics / 源码与诊断
 
 Read [the grammar and frontend boundary](FRONTEND.md). `budget` declares literal

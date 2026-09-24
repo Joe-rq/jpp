@@ -595,9 +595,9 @@ fn 部分候选先交付再续解() {
     // `W-bound` / `W-header` 挤在同一个列表里，所以这里不能再断言整个列表为空——
     // 断言落在「有没有那两条真正的体检项」上。把常规记账从 warnings 分出去的提议见
     // COORDINATION.md，等谁下次动 Trace 时一起做。
-    // `W-uncertified` 与 `W-drop-vs-escalate` 同族：常规记账，不是体检项。
+    // `W-fixture-line` 与 `W-drop-vs-escalate` 同族：常规记账，不是体检项。
     // 这里的线是手填的（n=150 / n=90）、没有保形证书，**它本来就该响**。
-    let 体检 = |ws: &[String]| ws.iter().filter(|w| !w.starts_with("W-drop-vs-escalate") && !w.starts_with("W-uncertified")).cloned().collect::<Vec<_>>();
+    let 体检 = |ws: &[String]| ws.iter().filter(|w| !w.starts_with("W-drop-vs-escalate") && !w.starts_with("W-fixture-line")).cloned().collect::<Vec<_>>();
     assert!(体检(&outcome.trace.warnings).is_empty(), "不该有 W-bound / W-header：{:?}", outcome.trace.warnings);
 
     // 旧检查不重做：三条 do 记录的键互不相同，A、B 的那两条在后两轮没有再出现
@@ -632,9 +632,9 @@ fn 部分候选程序重放零调用() {
     assert_eq!(again.cost.calls, 0, "重放零调用");
     assert_eq!(again.cost.replayed, 10, "6 次判断 + 3 次动作 + 1 次变换全部命中账本");
     assert!(replay_log.borrow().is_empty(), "重放不重新执行动作，只取账本里的输出");
-    // `W-uncertified` 与 `W-drop-vs-escalate` 同族：常规记账，不是体检项。
+    // `W-fixture-line` 与 `W-drop-vs-escalate` 同族：常规记账，不是体检项。
     // 这里的线是手填的（n=150 / n=90）、没有保形证书，**它本来就该响**。
-    let 体检 = |ws: &[String]| ws.iter().filter(|w| !w.starts_with("W-drop-vs-escalate") && !w.starts_with("W-uncertified")).cloned().collect::<Vec<_>>();
+    let 体检 = |ws: &[String]| ws.iter().filter(|w| !w.starts_with("W-drop-vs-escalate") && !w.starts_with("W-fixture-line")).cloned().collect::<Vec<_>>();
     assert!(体检(&again.trace.warnings).is_empty(), "{:?}", again.trace.warnings);
 }
 

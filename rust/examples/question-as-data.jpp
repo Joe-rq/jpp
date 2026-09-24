@@ -1,0 +1,32 @@
+// 题作为数据：读出一道题的题面与前提，计算出另一道题，再判断（施工件 b）。
+budget {calls: 6, cost: 0.01, depth: 256};
+
+let mention = form("test", "这段话是否提到了{city}？", {calib: "form-mention"});
+let base = fill(mention, {city: "南京"});
+
+// 由题生成题：收紧题面，并把新前提声明在题上
+fn stricter(q: Question) -> Question {
+    test(q.text + "只算明确写出这个城市名的情况。", q.calib, {presupposition: "材料里至少提到一个地名"})
+}
+let strict = stricter(base);
+
+// 题的列表可以像普通数据一样 map / filter：挑出二元划分的题，再全部收紧
+let pool = [base, fill(mention, {city: "南宁"}), select("哪个城市在长江边？", "form-choice")];
+let binary = filter(pool, fn(q: Question) { q.partition == "binary" });
+let derived = map(binary, stricter);
+
+// 未决不丢：原因写出来，责任随返回值交给调用者（J-05）
+fn verdict(m: Mat, q: Question) !{judge} {
+    handle(cut(judge(state(m), q)), {
+        act: fn() { {answer: "是"} },
+        ignore: fn() { {answer: "否"} },
+        unsure: fn(u) { {answer: "未决", cause: unsure_cause(u), pending: u} }
+    })
+}
+let note = mat("他在南宁读的大学，毕业后去了南京工作。");
+
+{base: {text: base.text, template: base.template, fill: base.fill},
+ strict: {text: strict.text, presupposition: strict.presupposition, from_form: strict.form != unit, same_calib: strict.calib == base.calib},
+ kept: map(binary, fn(q: Question) { q.text }),
+ dropped: len(pool) - len(binary),
+ answers: map(derived, fn(q) !{judge} { {asked: q.text, answer: verdict(note, q)} })}

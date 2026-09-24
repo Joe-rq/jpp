@@ -78,7 +78,7 @@ fn 读数(c: &条, 键: &str) -> Rc<Reading> {
         perms: Default::default(),
         mode_share: Default::default(),
         missing_evidence: vec![],
-        state_taint: Default::default(),
+        state_taint: Default::default(), form_hash: None,
     })
 }
 

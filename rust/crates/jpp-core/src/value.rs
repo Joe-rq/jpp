@@ -152,6 +152,23 @@ pub struct Question {
     #[serde(default)]
     pub evidence: Vec<String>,
     pub hash: String,
+    /// B1 的「前提」：题预设为真的命题（Belnap & Steel 1976）。**只作声明**：
+    /// 本版不发给判断器、不进题哈希、不改 `cut`；前提不成立的出口位置（insufficient）是 B4 的事。
+    #[serde(default)]
+    pub presupposition: Option<String>,
+    /// B1 的「请求」：对 K 元划分，要选一个还是全部。`None` = 按题型取缺省（见 `request()`）。
+    #[serde(default)]
+    pub request: Option<String>,
+    /// 来自哪个题式（题式哈希）。**不进题哈希**：同题面同题型就是同一道题，
+    /// 无论它是手写的还是由题式填出来的。校准键暂不改（B2 待裁），这里只留痕以便日后切换。
+    #[serde(default)]
+    pub form_hash: Option<String>,
+    /// 题式的模板题面（带 `{槽}`）
+    #[serde(default)]
+    pub template: Option<String>,
+    /// 填法：槽名 → 填入的文本
+    #[serde(default)]
+    pub fill: Option<Vec<(String, String)>>,
 }
 
 impl Question {
@@ -162,7 +179,104 @@ impl Question {
     /// 不是同一道题**，账本键按题哈希走，不能让它们共用一条记录。
     pub fn with_evidence(op: Op, text: &str, calib: &str, scale: Vec<String>, evidence: Vec<String>) -> Question {
         let hash = hash_of(&["q", op.phys(), text, &scale.join("\u{1e}"), &evidence.join("\u{1e}")]);
-        Question { op, text: text.to_string(), calib: calib.to_string(), scale, evidence, hash }
+        Question { op, text: text.to_string(), calib: calib.to_string(), scale, evidence, hash, presupposition: None, request: None, form_hash: None, template: None, fill: None }
+    }
+
+    /// B1 的「主体」：判断读状态的哪个槽、几个对象。由题型推出——
+    /// 是非与打分读 `on` 里的一个对象（关系题是一对，由状态决定，不由题决定）；K 选一读 `over` 里的 K 个候选。
+    pub fn subject(&self) -> &'static str {
+        match self.op {
+            Op::Select => "over",
+            Op::Test | Op::Measure => "on",
+        }
+    }
+    /// B1 的「划分」：是非 = 二元划分，K 选一 = K 元划分，打分 = 有序划分（Groenendijk & Stokhof 1984）。
+    pub fn partition(&self) -> &'static str {
+        match self.op {
+            Op::Test => "binary",
+            Op::Select => "k_ary",
+            Op::Measure => "ordered",
+        }
+    }
+    /// B1 的「请求」。缺省：是非题 `whether`（问是否），K 选一 `one`（恰选一个），打分 `degree`（取一档）。
+    pub fn request(&self) -> String {
+        self.request.clone().unwrap_or_else(|| default_request(self.op).to_string())
+    }
+}
+
+pub fn default_request(op: Op) -> &'static str {
+    match op {
+        Op::Test => "whether",
+        Op::Select => "one",
+        Op::Measure => "degree",
+    }
+}
+
+/// 题式：带参数槽的题模板（B1、施工件 b）。`fill` 给每个槽填上文本，得到一道题。
+///
+/// 题式本身不能被判断——`judge` 只收题。它是题的来源，不是题。
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct Form {
+    pub op: Op,
+    /// 模板题面，槽写成 `{名字}`
+    pub template: String,
+    /// 模板里出现的槽名，按首次出现的顺序
+    pub slots: Vec<String>,
+    pub calib: String,
+    pub scale: Vec<String>,
+    pub evidence: Vec<String>,
+    pub presupposition: Option<String>,
+    pub request: Option<String>,
+    pub hash: String,
+}
+
+impl Form {
+    /// 解析模板里的 `{槽}`。`{{` / `}}` 不作转义——模板里不支持字面花括号，出现未闭合的 `{` 报错。
+    pub fn slots_of(template: &str) -> Result<Vec<String>, String> {
+        let mut out: Vec<String> = vec![];
+        let mut rest = template;
+        while let Some(i) = rest.find('{') {
+            let after = &rest[i + 1..];
+            let Some(j) = after.find('}') else { return Err(format!("模板「{template}」里有未闭合的 {{")) };
+            let name = after[..j].trim();
+            if name.is_empty() {
+                return Err(format!("模板「{template}」里有空槽 {{}}"));
+            }
+            if !out.iter().any(|x| x == name) {
+                out.push(name.to_string());
+            }
+            rest = &after[j + 1..];
+        }
+        Ok(out)
+    }
+    pub fn new(op: Op, template: &str, calib: &str, scale: Vec<String>, evidence: Vec<String>, presupposition: Option<String>, request: Option<String>) -> Result<Form, String> {
+        let slots = Form::slots_of(template)?;
+        let hash = hash_of(&["form", op.phys(), template, &scale.join("\u{1e}"), &evidence.join("\u{1e}"), presupposition.as_deref().unwrap_or(""), request.as_deref().unwrap_or("")]);
+        Ok(Form { op, template: template.to_string(), slots, calib: calib.to_string(), scale, evidence, presupposition, request, hash })
+    }
+    /// 按填法得到一道题。槽必须恰好填满：缺槽、多槽都是错——多出来的键多半是拼错的槽名。
+    pub fn fill(&self, fill: &[(String, String)]) -> Result<Question, String> {
+        for s in &self.slots {
+            if !fill.iter().any(|(k, _)| k == s) {
+                return Err(format!("题式「{}」的槽 {s} 没有填", self.template));
+            }
+        }
+        for (k, _) in fill {
+            if !self.slots.iter().any(|s| s == k) {
+                return Err(format!("题式「{}」没有槽 {k}（它的槽是 {}）", self.template, self.slots.join("、")));
+            }
+        }
+        let mut text = self.template.clone();
+        for (k, v) in fill {
+            text = text.replace(&format!("{{{k}}}"), v);
+        }
+        let mut q = Question::with_evidence(self.op, &text, &self.calib, self.scale.clone(), self.evidence.clone());
+        q.presupposition = self.presupposition.clone();
+        q.request = self.request.clone();
+        q.form_hash = Some(self.hash.clone());
+        q.template = Some(self.template.clone());
+        q.fill = Some(self.slots.iter().filter_map(|s| fill.iter().find(|(k, _)| k == s).cloned()).collect());
+        Ok(q)
     }
 }
 
@@ -269,6 +383,10 @@ pub struct Reading {
     /// 以前没有这个字段，`cut` 只好一律给 `Trusted`——**状态算好的 taint 被丢掉了**。
     #[serde(default)]
     pub state_taint: Taint,
+    /// 题来自哪个题式（件 b 的 `form_hash`）。`cut` 在题键没有上岗记录时据此退到题式键
+    /// （B2 待裁，本版只作回退层）。不是由题式填出的题为 `None`。
+    #[serde(default)]
+    pub form_hash: Option<String>,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -315,9 +433,21 @@ pub struct Exit {
     /// 档案字段未测（`choice_same_call_perm_crosstalk`）、`k_limit` 120–250 档未测、
     /// ECE 未过检。重复出现 → 加维度，不加 `cause`。
     pub untested: Option<String>,
+    /// 这个出口来自哪一条账本记录（`cut` 时写入；其余出口为空）。
+    /// 组合封闭性契约的证据只存这个键，不存读数或材料的副本（B17 不变量 3）。
+    pub ledger_key: RefCell<String>,
+    /// **这个出口过的是夹具线**（B29）：线来自宿主 `put` 的测试记录或没有证书的记录。
+    /// 夹具线的出口不算放行不可逆 `do` 的可信合取项。
+    pub fixture_line: Cell<bool>,
+    /// **这条线是停岗候选**（B25）：出口照常路由，不算放行不可逆 `do` 的可信合取项。
+    pub suspend_candidate: Cell<bool>,
 }
 
 impl Exit {
+    /// J-08 的可信合取项：状态可信、且不是凭夹具线得到的（B29）。
+    pub fn guard_trusted(&self) -> bool {
+        self.taint == Taint::Trusted && !self.fixture_line.get() && !self.suspend_candidate.get()
+    }
     pub fn is_unsure(&self) -> bool {
         matches!(self.kind, ExitKind::Unsure(_))
     }
@@ -436,10 +566,13 @@ pub struct Closure {
 #[derive(Clone, Debug)]
 pub enum Value {
     Unit,
-    Int(i64),
-    Float(f64),
-    Bool(bool),
-    Text(Rc<str>),
+    /// 宿主标量各带一位 taint（B33，`12` §2.11「宿主内传播」）：含义与材料相同，
+    /// trusted = 有人为其内容担保。语法字面量求值即 trusted；从 untrusted 材料读出的叶子
+    /// 为 untrusted；内置与运算符的输出取 ∨ 输入；容器不带位，由 `taint_of` 递归取 ∨。
+    Int(i64, Taint),
+    Float(f64, Taint),
+    Bool(bool, Taint),
+    Text(Rc<str>, Taint),
     List(Rc<Vec<Value>>),
     Record(Rc<Vec<(String, Value)>>),
     Fn(Rc<Closure>),
@@ -447,20 +580,64 @@ pub enum Value {
     Mat(Rc<Mat>),
     State(Rc<State>),
     Question(Rc<Question>),
+    /// 题式（带槽的题模板）
+    Form(Rc<Form>),
     Reading(Rc<Reading>),
     Exit(Rc<Exit>),
     /// 未决责任 `U(q)`：`handle` 的 unsure 臂收到的就是它。不可伪造（只能由 handle 交付）、
     /// 不能默默变成材料或 JSON 就算销账。与出口共享同一个 `Rc<Exit>`，销账记录是同一份。
     Duty(Rc<Exit>),
-    /// `do` 的失败值（J-12）
-    Fail(Rc<str>),
+    /// `do` 的失败值（J-12）。**失败信息也是外部世界的输出**：它的 taint 取产生它的动作的
+    /// 输出 taint（`fail()` 由程序自己写，trusted）。此前没有这一位，装进材料时一律 trusted，
+    /// 不可信动作的失败值因此能放行不可逆 do（K-182 / K-203，2026-09-23 修）。
+    Fail(Rc<str>, Taint),
     /// `stop(v)`：有界循环的显式停止
     Stop(Rc<Value>),
 }
 
 impl Value {
+    /// 可信文本（程序自己造的）
     pub fn text(s: &str) -> Value {
-        Value::Text(Rc::from(s))
+        Value::Text(Rc::from(s), Taint::Trusted)
+    }
+    pub fn int(i: i64) -> Value {
+        Value::Int(i, Taint::Trusted)
+    }
+    pub fn float(f: f64) -> Value {
+        Value::Float(f, Taint::Trusted)
+    }
+    pub fn bool(b: bool) -> Value {
+        Value::Bool(b, Taint::Trusted)
+    }
+    /// 这个值携带的 taint：标量取自身位，容器递归取 ∨，材料 / 出口 / 失败值取其位；
+    /// 其余（函数、题、状态……）是程序自己造的，按 trusted（B33 第 1 点）。
+    pub fn taint(&self) -> Taint {
+        match self {
+            Value::Int(_, t) | Value::Float(_, t) | Value::Bool(_, t) | Value::Text(_, t) => *t,
+            Value::Mat(m) => m.taint,
+            Value::List(l) => l.iter().fold(Taint::Trusted, |t, x| Taint::join(t, x.taint())),
+            Value::Record(fs) => fs.iter().fold(Taint::Trusted, |t, (_, x)| Taint::join(t, x.taint())),
+            Value::Exit(e) => e.taint,
+            Value::Stop(x) => x.taint(),
+            Value::Fail(_, t) => *t,
+            _ => Taint::Trusted,
+        }
+    }
+    /// 把 `t` ∨ 进所有标量叶子（容器递归）。`t` 为 trusted 时原样返回。
+    /// 用于读出规则（从 untrusted 材料读出的全部叶子标 untrusted）与显式数据流（输出 ∨ 输入）。
+    pub fn tainted(self, t: Taint) -> Value {
+        if t == Taint::Trusted {
+            return self;
+        }
+        match self {
+            Value::Int(i, _) => Value::Int(i, t),
+            Value::Float(f, _) => Value::Float(f, t),
+            Value::Bool(b, _) => Value::Bool(b, t),
+            Value::Text(s, _) => Value::Text(s, t),
+            Value::List(l) => Value::list(l.iter().cloned().map(|x| x.tainted(t)).collect()),
+            Value::Record(r) => Value::record(r.iter().cloned().map(|(k, v)| (k, v.tainted(t))).collect()),
+            other => other,
+        }
     }
     pub fn list(v: Vec<Value>) -> Value {
         Value::List(Rc::new(v))
@@ -471,10 +648,10 @@ impl Value {
     pub fn type_name(&self) -> &'static str {
         match self {
             Value::Unit => "Unit",
-            Value::Int(_) => "Int",
-            Value::Float(_) => "Float",
-            Value::Bool(_) => "Bool",
-            Value::Text(_) => "Text",
+            Value::Int(_, _) => "Int",
+            Value::Float(_, _) => "Float",
+            Value::Bool(_, _) => "Bool",
+            Value::Text(_, _) => "Text",
             Value::List(_) => "List",
             Value::Record(_) => "Record",
             Value::Fn(_) => "Fn",
@@ -482,10 +659,11 @@ impl Value {
             Value::Mat(_) => "Mat",
             Value::State(_) => "State",
             Value::Question(_) => "Question",
+            Value::Form(_) => "Form",
             Value::Reading(_) => "Reading",
             Value::Exit(_) => "Exit",
             Value::Duty(_) => "Unsure",
-            Value::Fail(_) => "Fail",
+            Value::Fail(..) => "Fail",
             Value::Stop(_) => "Stop",
         }
     }
@@ -499,10 +677,10 @@ impl Value {
     pub fn to_json(&self) -> Json {
         match self {
             Value::Unit => Json::Null,
-            Value::Int(i) => json!(i),
-            Value::Float(f) => json!(f),
-            Value::Bool(b) => json!(b),
-            Value::Text(s) => json!(s.as_ref()),
+            Value::Int(i, _) => json!(i),
+            Value::Float(f, _) => json!(f),
+            Value::Bool(b, _) => json!(b),
+            Value::Text(s, _) => json!(s.as_ref()),
             Value::List(l) => Json::Array(l.iter().map(|v| v.to_json()).collect()),
             Value::Record(r) => {
                 let mut m = serde_json::Map::new();
@@ -516,10 +694,11 @@ impl Value {
             Value::Mat(m) => json!({"mat": m.hash, "content": m.content, "taint": m.taint, "origin": m.origin}),
             Value::State(s) => json!({"state": s.hash, "slots": s.to_json(), "taint": s.taint}),
             Value::Question(q) => json!({"question": q.hash, "op": q.op.phys(), "text": q.text, "calib": q.calib}),
+            Value::Form(f) => json!({"form": f.hash, "op": f.op.phys(), "template": f.template, "slots": f.slots, "calib": f.calib}),
             Value::Reading(r) => json!({"reading": r.ledger_key, "q": r.q_hash, "state": r.state_hash, "op": r.op.phys()}),
             Value::Exit(e) => json!({"exit": e.label(), "id": e.id, "consumed": e.consumed.get(), "q": e.q_hash}),
             Value::Duty(e) => json!({"unsure": e.cause(), "duty": e.id, "q": e.q_hash}),
-            Value::Fail(s) => json!({"fail": s.as_ref()}),
+            Value::Fail(s, _) => json!({"fail": s.as_ref()}),
             Value::Stop(v) => json!({"stop": v.to_json()}),
         }
     }
@@ -538,11 +717,11 @@ impl Value {
         Some(match (self, other) {
             (Value::Reading(_), _) | (_, Value::Reading(_)) => return None,
             (Value::Unit, Value::Unit) => true,
-            (Value::Int(a), Value::Int(b)) => a == b,
-            (Value::Float(a), Value::Float(b)) => a == b,
-            (Value::Int(a), Value::Float(b)) | (Value::Float(b), Value::Int(a)) => (*a as f64) == *b,
-            (Value::Bool(a), Value::Bool(b)) => a == b,
-            (Value::Text(a), Value::Text(b)) => a == b,
+            (Value::Int(a, _), Value::Int(b, _)) => a == b,
+            (Value::Float(a, _), Value::Float(b, _)) => a == b,
+            (Value::Int(a, _), Value::Float(b, _)) | (Value::Float(b, _), Value::Int(a, _)) => (*a as f64) == *b,
+            (Value::Bool(a, _), Value::Bool(b, _)) => a == b,
+            (Value::Text(a, _), Value::Text(b, _)) => a == b,
             // 容器里的「不可比」要传上来，不能被 `== Some(true)` 悄悄吃成 false：
             // 读数装进列表或记录还是读数，没有可读的值（J-01）。
             (Value::List(a), Value::List(b)) => {
@@ -560,13 +739,34 @@ impl Value {
             (Value::Mat(a), Value::Mat(b)) => a.hash == b.hash,
             (Value::State(a), Value::State(b)) => a.hash == b.hash,
             (Value::Question(a), Value::Question(b)) => a.hash == b.hash,
+            (Value::Form(a), Value::Form(b)) => a.hash == b.hash,
             (Value::Exit(a), Value::Exit(b)) => a.kind == b.kind,
             // 责任按身份比：同一道题的两个未决是两份责任
             (Value::Duty(a), Value::Duty(b)) => a.id == b.id,
             (Value::Fn(a), Value::Fn(b)) => a.hash == b.hash,
             (Value::Builtin(a), Value::Builtin(b)) => a == b,
-            (Value::Fail(a), Value::Fail(b)) => a == b,
+            (Value::Fail(a, _), Value::Fail(b, _)) => a == b,
             _ => false,
         })
+    }
+}
+
+#[cfg(test)]
+mod form_tests {
+    use super::*;
+
+    #[test]
+    fn 填法必须恰好填满槽_同题面即同一道题() {
+        let f = Form::new(Op::Test, "{a} 是否早于 {b}？", "k", vec![], vec![], None, None).unwrap();
+        assert_eq!(f.slots, vec!["a", "b"]);
+        let fill = |xs: &[(&str, &str)]| f.fill(&xs.iter().map(|(k, v)| (k.to_string(), v.to_string())).collect::<Vec<_>>());
+        assert!(fill(&[("a", "周一")]).unwrap_err().contains("槽 b 没有填"));
+        assert!(fill(&[("a", "周一"), ("b", "周二"), ("c", "x")]).unwrap_err().contains("没有槽 c"));
+        let q = fill(&[("b", "周二"), ("a", "周一")]).unwrap();
+        assert_eq!(q.text, "周一 是否早于 周二？");
+        assert_eq!(q.fill.as_ref().unwrap()[0].0, "a");
+        // 题式来源不进题哈希：同题面同题型就是同一道题（账本键与校准键不因写法不同而分裂）
+        assert_eq!(q.hash, Question::new(Op::Test, "周一 是否早于 周二？", "k", vec![]).hash);
+        assert!(Form::slots_of("未闭合 {a").is_err());
     }
 }

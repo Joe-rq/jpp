@@ -43,6 +43,28 @@ pub struct Budget {
     /// **这条不停**。**那是条文写的（「即报」），不是实现偷懒**——别顺手「修正」成 Halt。
     #[serde(default)]
     pub unsure: Option<f64>,
+    /// **判断力缺席策略**（B32）：判断器调用失败（连接、超时、无凭据）时怎么办。
+    /// `None` = 未声明：沿用旧行为（客户端错误即运行期错误）。
+    #[serde(default)]
+    pub absent: Option<AbsentPolicy>,
+    /// **时延预算**（B32，秒）：本趟判断调用的累计耗时上限。超出后的判断站点转 `Unsure(latency)`；
+    /// 静态估计（层数 × 画像 p95）超出时检查阶段报错。`None` = 不设限。
+    #[serde(default)]
+    pub latency_p95: Option<f64>,
+}
+
+/// B32：`budget {absent: {retry, backoff, then, breaker}}`。
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct AbsentPolicy {
+    /// 失败后重试次数
+    pub retry: u32,
+    /// 首次重试前等待秒数，之后每次翻倍
+    pub backoff: f64,
+    /// 重试用尽后：`escalate`（程序挂起，cause=absent，待判断器恢复后续跑）/
+    /// `conservative`（该调用的题出口为 `Unsure(absent)`，程序继续）/ `fail`（运行期错误）
+    pub then: String,
+    /// 连续缺席多少次后熔断：之后的判断不再发出，直接按 `then` 处理
+    pub breaker: u32,
 }
 
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]

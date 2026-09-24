@@ -1,0 +1,14 @@
+// 对照组：同一段材料问 14 道题，逐题经函数判断（16 §1 记录的写法）。
+budget {calls: 20, cost: 0.01, depth: 256};
+let mention = form("test", "这段话是否提到了{city}？", {calib: "form-mention"});
+let m = mat("我上个月去了成都出差，顺便见了老朋友。");
+let cities = ["成都", "北京", "上海", "杭州", "西安", "南京", "武汉", "重庆", "天津", "苏州", "长沙", "郑州", "青岛", "厦门"];
+let qs = map(cities, fn(c) { fill(mention, {city: c}) });
+fn verdict(q: Question) !{judge} {
+    handle(cut(judge(state(m), q)), {
+        act: fn() { "是" },
+        ignore: fn() { "否" },
+        unsure: fn(u) { {answer: "未决", pending: u} }
+    })
+}
+map(qs, fn(q) { verdict(q) })

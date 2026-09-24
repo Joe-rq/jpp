@@ -421,7 +421,7 @@ fn 实参必须在参数类型的效应行之内() {
     };
 
     let program = |arg: &str, param_type: Type, apply_effects: &[&str]| Program {
-        budget: Some(Budget { calls: 1, cost: 0.0, depth: None, escalate: None, unsure: None }),
+        budget: Some(Budget { calls: 1, cost: 0.0, depth: None, escalate: None, unsure: None, absent: None, latency_p95: None }),
         body: Block::new(
             vec![
                 leaf("peek", &["judge"]),

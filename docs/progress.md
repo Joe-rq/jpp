@@ -2,6 +2,97 @@
 
 Updated: 2026-09-23. This is a dated report, not an automatically updated dashboard.
 
+## 2026-09-23: fail-open fixes, value-level taint, and five rule-batch items / 放行缺陷修复、值级 taint 与规则批五项
+
+Synced from the research tree through commit `a17596a` (rules batch B29/B25/B28/B32/B3 and the
+B33 value-level taint switch; B24 split-sample certification was already synced in an earlier
+sync). Fixed two fail-open defects: `speculate`/`vectorize` executed `do` on a branch's state
+expression before the branch's own judgement had decided the branch should run (effect analysis
+treated calls to user-defined functions as pure); and untrusted content was laundered "trusted"
+through concatenation (`+`), `join`, `text()`, `m.content`, or a failed untrusted `do`'s error
+text, letting a `mat()` built from it pass the irreversible-`do` gate. The first fix used a side
+table of untrusted text leaves matched by substring; measured against ten probe cases it was
+wrong in both directions -- a one-digit untrusted number survived `text()` concatenation and
+still laundered clean (false accept), while program literals that merely shared a substring with
+previously-read untrusted text were rejected (false reject). It was replaced with value-level
+taint: every scalar `Value` carries a taint bit, propagated through binary/unary operators and
+built-in dispatch (an explicit exception list exempts pass-through built-ins such as `map` and
+`filter`), and read out at `content()`, `m.content`, `text()`, and `Fail`. Five rule-batch items
+landed: B29 makes host `put` write fixture-only records that cannot license an irreversible `do`;
+B25 auto-flags suspension candidates on drift and adds a `calib-confirm` command for the human
+decision; B28 replaces `agg` with `repeat` (mean or median only, no majority vote) and keys
+merged readings by sample count; B32 adds judgement-absence handling (retry, backoff, escalate,
+circuit breaker) and a static latency budget; B3 gives `unsure` two named causes, `rejected_all`
+and `no_candidate`, with library routes for both. B30 (a deterministic tuple-based calibration
+key) was ruled necessary but is not built -- the language surface already lets authors write
+their own calibration keys (`test(question, "k")`), and reconciling that with a mandated tuple
+serialization needs a scope decision first; it is paused, not silently dropped. The Codex review
+comments on PRs [#27](https://github.com/Towow-ai/jpp/pull/27) and
+[#28](https://github.com/Towow-ai/jpp/pull/28) were addressed with local, test-backed fixes (see
+the PR threads for the itemized replies). `cargo build` and `cargo test --workspace --offline`:
+382 passed, 0 failed, 3 ignored. Architecture and engineering reorganization plans are still
+being finalized in the research workspace and are not part of this sync. Full account:
+[rules batch and value-level taint](updates/2026-09-23-rules-and-taint.md).
+
+同步来源是研究树，截至提交 `a17596a`（规则批 B29/B25/B28/B32/B3 与 B33 值级 taint 切换；B24
+拆分样本认证此前已在更早一次同步中带过）。修复了两类放行方向缺陷：`speculate`/`vectorize`
+在分支自己的判断决定要不要走之前，提前对分支状态表达式求值并执行了里面的 `do`（效应分析把
+调用用户函数一律当纯）；不可信内容经 `+` 拼接、`join`、`text()`、`m.content`，或不可信 `do`
+失败后的错误文本，被洗成「可信」，凭它构造的 `mat()` 越过了不可逆 `do` 的关卡。第一版修复用
+旁路表（记不可信文本叶子做子串匹配），十个探针案例实测两个方向都错——一位数不可信数值经
+`text()` 拼接后仍被洗白（假放行），程序自己的字面量因与读过的不可信文本共享子串被误拦（假
+拒绝）。换成值级 taint：每个标量 `Value` 自带一位 taint，经二元/一元运算与内置分派传播
+（`map`/`filter` 等只搬运元素的内置单列例外表），在 `content()`/`m.content`/`text()`/`Fail`
+处读出。规则批五项落地：B29 让宿主 `put` 只写夹具记录，夹具线不得放行不可逆 `do`；B25 按漂移
+自动标记停岗候选，加 `calib-confirm` 命令交人确认；B28 用 `repeat`（只许均值或中位数，禁众数）
+取代 `agg`，合并读数按样本数独立开校准键；B32 加判断力缺席处理（重试/退避/升级/熔断）与静态
+时延预算；B3 给 `unsure` 补 `rejected_all` 与 `no_candidate` 两个具名原因及库内去向。B30（确定
+性元组校准键）已裁定要做但未造——语言表层已经让作者自己写校准键（`test(题面, "k")`），要与
+「代码键必须是元组序列化」的条文对齐，得先裁定作者键的地位，此项暂停、不是被悄悄丢下。Codex
+在 PR [#27](https://github.com/Towow-ai/jpp/pull/27) 与
+[#28](https://github.com/Towow-ai/jpp/pull/28) 上的评审意见已逐条本地修复并配回归测试（逐条
+回复见两个 PR 讨论串）。`cargo build` 与 `cargo test --workspace --offline`：382 通过、0 失败、
+3 忽略。架构与工程方案的重整仍在研究区定稿中，未随本次同步公开。完整说明见
+[规则批与值级 taint](updates/2026-09-23-rules-and-taint.md)。
+
+## 2026-09-23: constructs, live backend and template-level calibration / 构造施工、真实后端与题式级校准
+
+Synced from the research tree through commit `42988c5`. Built: the real JEV backend
+(`--backend live`), questions as first-class values (`form`/`fill`), a three-way sieve that
+takes questions directly plus review-opinion material, pairing (`pair`), set aggregation
+(`tally`/`first_k`), bounded iteration with a shrink line (`iterate`), calibration intake
+(`calib-import`, the truth channel) with form-level line fallback and split-sample two-sided
+certification (B24), and the composition-closure contract (B17) shared by every set-level
+construct. Found: the live backend returns correct readings but every exit is
+`unsure(cold)` without a calibration record; literal question templates read bimodally and
+need only a global line; semantic templates need real calibration, misclassifications
+persist across reruns, and re-asking does not help; human spot-checking showed the
+disagreement was an undefined question scope, not labelling noise — splitting the template
+resolved it, and the topic-relevance template reached 30/30 spot-check agreement and is
+certified. Designed in response: the question template, not the literal question, is the
+calibration primary key (B2); split-sample certification with the gate read off a one-sided
+95% confidence lower bound, not the raw agreement rate (B19/B24); the composition-closure
+contract; and several changes carried from a four-line question-theory literature review.
+Unfinished: of 415 design-ledger items, 89 are built; two classes of fail-open defects
+(`speculate` executing `do` on a branch that should not run; untrusted content becoming
+"trusted" through concatenation/join/failure paths) are ruled to need fixes but are not
+fixed yet; B28–B32 are decided but not yet implemented. `cargo test --workspace --offline`:
+341 passed, 0 failed, 3 ignored. Full account: [constructs and calibration](updates/2026-09-23-constructs-and-calibration.md).
+
+同步来源是研究树，截至提交 `42988c5`。做成了：真实 JEV 后端（`--backend live`）、题成为
+一等值（`form`/`fill`）、三路过滤直接吃题并把评审意见渲染成材料、配对 `pair`、聚合
+`tally`/`first_k`、带收缩终止线的迭代 `iterate`、校准进料 `calib-import`（真值通道，带
+题式级线回退与拆分样本两侧认证 B24）、以及所有集合级构造共用的组合封闭性契约（B17）。
+发现了：真机读数本身正确，但没有校准记录时出口全是 `unsure(cold)`；字面题式读数两极，
+一条全局线就够；语义题式需要真正的校准，错判在重跑间持续存在，重复提问无效；人工抽检
+揭示分歧来自题面外延未定，不是标注噪声——拆题后话题相关题式抽检 30/30 一致并转正上岗。
+针对问题设计了：题式而非字面题作校准主键（B2）；拆分样本认证，上岗门槛看抽检一致率的
+单侧 95% 置信下界而不是原始一致率（B19/B24）；组合封闭性契约；以及四线问题理论调研带来
+的多处改动。未完成：设计总账 415 条中已造出 89 条；两类放行方向缺陷（`speculate` 在不该
+执行的分支上执行 `do`；不可信内容经拼接/join/失败路径变「可信」后越过不可逆 `do` 关卡）
+已裁定要修但尚未修好；B28–B32 已定未造。`cargo test --workspace --offline`：341 通过、
+0 失败、3 忽略。完整说明见[构造施工与校准](updates/2026-09-23-constructs-and-calibration.md)。
+
 ## 2026-09-23: sync research-tree runtime increments / 同步研究树运行时增量
 
 Port the research tree's later Rust increments that the public tree lacked: the static half of J-10 (`budget.unsure` in the AST and a pre-call warning that sums each judge site's `unsure_rate`), a real producer for `CalibRecord.unsure_rate` when `commission` certifies a line, and drift warnings on `allocate`/`unsure_bound` as well as `cut`. The public review fixes (log-space binomial upper bound, the all-reject threshold, portable test paths and fixtures, honest certificate disclosures) are kept, not overwritten. `.jpp` source still cannot write `budget.unsure`; the frontend lowers it as absent. `cargo test --workspace`: 318 passed, 0 failed, 3 ignored.

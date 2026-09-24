@@ -155,7 +155,7 @@ handle(e, {act: fn() { {r: "act", 源: line_source(e)} },
     let (v, w) = 跑(&手填);
     assert_eq!(v["r"], "act");
     assert_eq!(v["源"], "题级·手填", "**层级与凭据都要说**：{v}");
-    assert!(w.iter().any(|x| x.starts_with("W-uncertified")),
+    assert!(w.iter().any(|x| x.starts_with("W-fixture-line")),
             "**强出口建在一条未经认证的手填线上，要出告警**：{w:?}");
 
     // 证书定的线：同样是强出口，**不该告警**
@@ -168,7 +168,7 @@ handle(e, {act: fn() { {r: "act", 源: line_source(e)} },
     let (v2, w2) = 跑(&证书);
     assert_eq!(v2["r"], "act");
     assert!(v2["源"].as_str().unwrap().starts_with("题级·证书:α="), "**要说出是哪张证书**：{v2}");
-    assert!(!w2.iter().any(|x| x.starts_with("W-uncertified")), "认证过的不该告警：{w2:?}");
+    assert!(!w2.iter().any(|x| x.starts_with("W-fixture-line")), "认证过的不该告警：{w2:?}");
 }
 
 /// **三号：两次认证不许覆盖。**

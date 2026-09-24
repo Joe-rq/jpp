@@ -1,0 +1,5 @@
+// 材料构造（S 库）。评审意见 → 材料：Claude 等作检验器时，意见本身不是判断结论，
+// 而是交给判断器读的材料（B18）。用 transform 包装，来源链与 taint 随原材料继承（12 §2.11）。
+fn review_material(opinion: Mat, about: Text) {
+    transform(fn(old) { {kind: "review", about: about, opinion: content(old)} }, opinion)
+}
