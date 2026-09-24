@@ -1548,6 +1548,47 @@ impl<'a> Interp<'a> {
         }
     }
 
+    /// **漂移告警**（`12`:649「漂移监控（无标签：读数分布偏移 + 保形覆盖跌落告警）」）。
+    ///
+    /// **挂在「消费这条校准记录」这个动作上，不挂在 `cut` 上。**
+    /// 原来只在 `cut` 里发，而实测全集（读 `self.calib` 的位置）有三处在 `cut` 之外：
+    /// `allocate`、`unsure_bound`、`delta_for`。**前两处真的在用这条线**——
+    /// `uncertainty` 读 `lines_for`（`strength.rs:76`），`unsure_bound` 读
+    /// **只认「上岗」记录**的 `unsure_rate`（`strength.rs:155`），而它交出去的是
+    /// **J-10 的联合上界，一条语言自己承诺的保证**。读数分布移开之后那个数不再成立，
+    /// 程序拿到一个**静默失效的上界**，零告警。**失败开放**，且正落在「长处」那一侧。
+    ///
+    /// **`delta_for` 没接进来**：它取的是档案的迟滞带宽 δ，不是线；
+    /// 漂移监控管的是**这条线还成不成立**。**这是一条判断不是实测**，记在此处。
+    ///
+    /// **只告警，不动状态**：停岗是人下的判断（走 `put`）。一个只报不动的机制
+    /// **造不出永久锁**——而复岗今天不存在，所以这一点是承重的。
+    ///
+    /// 每个键每次运行只报一次：**一条天天响的告警等于没有告警**。
+    /// 键按「每次运行」去重，所以多个消费方共用同一个键时仍然只响一次。
+    fn 报漂移(&mut self, key: &str, sp: Span) {
+        if self.drift_reported.contains(key) {
+            return;
+        }
+        if let Some(d) = self.calib.drift_of(key) {
+            if d.可停岗() {
+                self.drift_reported.insert(key.to_string());
+                self.trace.warn(format!(
+                    "W-drift: @{} 键 {key} 的近期读数分布与定线时的标注分布已经移开（KS={:.3} PSI={:.3}，参照 {} 条 / 近期 {} 条）。                         **不阻塞、也不停岗**——停岗是人下的判断（12:396 写的是告警）。修法【需接线人】：复核这条线是否还成立，要停就走 put(key, …, \"停岗\")",
+                    sp.start, d.ks, d.psi, d.n_ref, d.n_recent
+                ));
+            }
+        }
+    }
+
+    /// 这批读数各自的校准键上都查一遍漂移（`allocate` / `unsure_bound` 用）。
+    fn 报漂移_批(&mut self, rs: &[Rc<Reading>], sp: Span) {
+        let keys: Vec<String> = rs.iter().map(|r| r.calib.clone()).collect();
+        for k in keys {
+            self.报漂移(&k, sp);
+        }
+    }
+
     fn cut(&mut self, r: &Reading, calib_key: Option<&str>, sp: Span) -> R<Value> {
         // 刷新点（12 §2.2:129）：cut 要读答案，所以先把这一层发出去
         self.flush("cut")?;
@@ -1725,24 +1766,7 @@ impl<'a> Interp<'a> {
         // 用的是 `n = 1` 的手填线、零告警——**同一个字段 `n`，一条路上 1 就够，
         // 另一条路上 22 还不够，中间没有任何东西把这个差别说出来**。
         // 说出那个差别的是「有没有证书」，不是那个数。
-        // **漂移告警**（`12`:396）。`drift_of` 的消费方就在这里——
-        // **否则它就成了第二个「有实现没调用点」的东西，而那正是这一包要修的毛病。**
-        //
-        // **只告警，不动状态**：停岗是人下的判断（走 `put`）。一个只报不动的机制
-        // **造不出永久锁**——而复岗今天不存在，所以这一点是承重的。
-        //
-        // 每个键每次运行只报一次：**一条天天响的告警等于没有告警**。
-        if !self.drift_reported.contains(key) {
-            if let Some(d) = self.calib.drift_of(key) {
-                if d.可停岗() {
-                    self.drift_reported.insert(key.to_string());
-                    self.trace.warn(format!(
-                        "W-drift: @{} 键 {key} 的近期读数分布与定线时的标注分布已经移开（KS={:.3} PSI={:.3}，参照 {} 条 / 近期 {} 条）。                         **不阻塞、也不停岗**——停岗是人下的判断（12:396 写的是告警）。修法【需接线人】：复核这条线是否还成立，要停就走 put(key, …, \"停岗\")",
-                        sp.start, d.ks, d.psi, d.n_ref, d.n_recent
-                    ));
-                }
-            }
-        }
+        self.报漂移(key, sp);
         // **标签来源可疑的证书给出强出口也要留痕。**
         //
         // 与 `bounded_side` **不告警**那条的分界：`bounded_side` 今天只有一个取值，
@@ -2394,6 +2418,8 @@ impl<'a> Interp<'a> {
                 // 刷新点：它要读「离线多远」，那是答案上的量（12 §2.2 的「宿主读内容」同一类）
                 self.flush("allocate")?;
                 let rs = self.readings_of(&args[0], "allocate", sp)?;
+                // **这里也在用线**（`uncertainty` 读 `lines_for`），所以漂移要在这里也报。
+                self.报漂移_批(&rs, sp);
                 let Value::Int(k) = &args[1] else { return err(None, "allocate(读数们, k: Int)：k 是复核名额，通常取 budget.escalate", sp) };
                 if *k < 0 {
                     return err(None, format!("allocate: k 必须是非负整数（通常取 budget.escalate），收到 {k}"), sp);
@@ -2419,6 +2445,9 @@ impl<'a> Interp<'a> {
                 // 只读校准记录的 unsure_rate，不读答案——但读数要先就绪才谈得上「这批读数」
                 self.flush("unsure_bound")?;
                 let rs = self.readings_of(&args[0], "unsure_bound", sp)?;
+                // **J-10 的上界建在 `unsure_rate` 上，而那是标注集上的实测值**——
+                // 分布移开之后它不再成立。**漂了要报，否则上界静默失效。**
+                self.报漂移_批(&rs, sp);
                 let b = crate::strength::unsure_bound(self.calib, &rs);
                 Ok(Value::Record(Rc::new(vec![
                     ("n".into(), Value::Int(b.n as i64)),

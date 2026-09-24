@@ -2,6 +2,12 @@
 
 Updated: 2026-09-23. This is a dated report, not an automatically updated dashboard.
 
+## 2026-09-23: sync research-tree runtime increments / 同步研究树运行时增量
+
+Port the research tree's later Rust increments that the public tree lacked: the static half of J-10 (`budget.unsure` in the AST and a pre-call warning that sums each judge site's `unsure_rate`), a real producer for `CalibRecord.unsure_rate` when `commission` certifies a line, and drift warnings on `allocate`/`unsure_bound` as well as `cut`. The public review fixes (log-space binomial upper bound, the all-reject threshold, portable test paths and fixtures, honest certificate disclosures) are kept, not overwritten. `.jpp` source still cannot write `budget.unsure`; the frontend lowers it as absent. `cargo test --workspace`: 318 passed, 0 failed, 3 ignored.
+
+把研究树里公开仓库缺少的 Rust 增量搬过来：J-10 的静态部分（AST 增加 `budget.unsure`，在任何模型调用之前按各判断位置的 `unsure_rate` 求和并告警）；`commission` 认证一条线时真正写出 `CalibRecord.unsure_rate`；漂移告警从 `cut` 扩到 `allocate` 与 `unsure_bound`。公开侧已有的审查修复（对数空间二项上界、全拒绝阈值、可移植的测试路径与夹具、如实的证书说明）全部保留，未被覆盖。`.jpp` 源码目前还写不出 `budget.unsure`，前端按缺省处理。`cargo test --workspace`：318 通过、0 失败、3 忽略。
+
 ## 2026-09-23: review and integrate the open PRs / 审查并整合待合入 PR
 
 #17's community examples, #25's Rust synchronization and #20's design-revision record
