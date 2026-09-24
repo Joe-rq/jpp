@@ -25,7 +25,7 @@ Expressiveness (lines/effort saved versus hand-written code) has partial evidenc
 
 ## Backends / 后端
 
-The native `jpp run` examples use fixed JSON observations by default, for zero-cost mechanism testing; `--backend live` connects to the real JEV service and requires a capability profile and, for any question without one, a certified calibration record (see above). The retained Python `jpp demo` uses a `FixtureClient` with synthetic calibration, also for zero-cost testing. The two executables share the name `jpp`; use an explicit native path if both are installed.
+The native `jpp run` examples use fixed JSON observations by default, for zero-cost mechanism testing; `--backend live` connects to the real JEV service. On the current `main`, `--profile` is optional: without it the kernel uses code-default lines and deltas and prints that no profile is loaded. The rule that every live run must load a capability profile (B73, step 15d-0) is on the pending sync branch (#31), not in `main` yet. Either way, a question gets decided exits only from a certified calibration record; without one it comes back undecided (see above). The retained Python `jpp demo` uses a `FixtureClient` with synthetic calibration, also for zero-cost testing. The two executables share the name `jpp`; use an explicit native path if both are installed.
 
 Do not reuse fixture calibration records for real decisions -- they exist only to exercise the mechanism. Model service credentials are never committed to this repository; `PyYAML` and `pytest` are separate, separately-licensed dependencies of the Python side. Model services themselves are not distributed or licensed by this repository.
 
@@ -39,4 +39,4 @@ Do not reuse fixture calibration records for real decisions -- they exist only t
 
 项目三条验收标准的如实数字：表达量在孤立对照上是 2–5 倍，还没到 9–20 倍的文献参考带；按新方法做的第一次多实现测量读数是 T1 4.97×、T0 1.36×，都低于参考带；当天诊断（裁定 B96）查出 T1 读数里约 0.9–1.6 倍来自量法，纠正后约 4.1×（全部实现）、3.4×（只算通过验收的），按新口径的重测（步 31-1b）正在进行；其余读数是上面这 2–5 倍的探针读数与评估时试写的两个程序 1.2–1.5 倍的读数。深度证据是固定观察下的跳数分布：一、二、三跳的判断数为 22、12、4；逐跳未决率与真机深度曲线还没测。换后端可用性目前只验证了追踪的八类能力假设中的一类。真机后端上，一批新题测试运行的已决出口占比是 0.255（14/55，含此前全冷的运行）。
 
-公开仓库不包含凭据、私人对话或模型权重。`jpp run` 默认用固定 JSON 观察做零成本机制测试；`--backend live` 接真实 JEV 服务，需要能力画像，新题没有校准记录时会明确返回未决而不是瞎猜阈值。夹具校准记录只用于机制测试，不得用于真实决策。
+公开仓库不包含凭据、私人对话或模型权重。`jpp run` 默认用固定 JSON 观察做零成本机制测试；`--backend live` 接真实 JEV 服务。当前 `main` 上 `--profile` 可选：不带时内核用代码里的缺省线与 δ，并打印「未加载画像」。「真机必须带能力画像」的规则（B73，步 15d-0）在待合入的同步分支（#31）上，还不在 `main`。两种情况下，题都只能凭认证过的校准记录得到已决出口，没有记录时明确返回未决。夹具校准记录只用于机制测试，不得用于真实决策。
