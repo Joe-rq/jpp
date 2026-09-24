@@ -52,10 +52,12 @@ import pathlib, sys
 
 root = pathlib.Path(sys.argv[1])
 
-def rewrite(rel, old, new, count=None):
+def rewrite(rel, old, new, count=None, optional=False):
     p = root / rel
     s = p.read_text(encoding="utf-8")
     n = s.count(old)
+    if optional and n == 0:
+        return
     if n == 0 or (count is not None and n != count):
         sys.exit(f"PORT 改写找不到原文或次数不符（{rel}：{n} 处）：{old[:60]!r}")
     p.write_text(s.replace(old, new), encoding="utf-8")
@@ -85,6 +87,20 @@ fn 读得进e_cal那三条真记录() {
 #[test]
 fn 读得进e_cal旧格式记录夹具() {
     let store = CalibStore::load(&记录夹具()).expect("仓库内三条旧格式夹具该读得进来");''', count=1)
+
+# 探针脚本与运行记录里的本机绝对路径改成相对路径（不被测试或金样读取；研究树改了之后这两条自动跳过）。
+rewrite("probes/scope/rule_gradient.py",
+        'ROOT = pathlib.Path("/Users/nature/个人项目/jev")\nRJ = ROOT / "地基/rust-jpp"\nCAL = ROOT / "实测/校准题式-2026-09-23"',
+        'RJ = pathlib.Path(__file__).resolve().parents[2]  # rust-jpp\nCAL = RJ.parents[1] / "实测/校准题式-2026-09-23"',
+        optional=True)
+rewrite("probes/scope/rule_gradient.py", "（路径写死为本仓库）", "（路径相对本文件；实测目录在公开仓库里没有）", optional=True)
+rewrite("probes/scope/result.json",
+        "/Users/nature/个人项目/jev/.claude/worktrees/agent-a9b7f475a79e897cb/地基/rust-jpp/", "", optional=True)
+import re as _re
+for f in root.rglob("*"):
+    if f.is_file() and "target" not in f.parts and f.suffix in {".py", ".json", ".jsonl", ".toml", ".rs", ".md", ".sh"}:
+        if _re.search(r"/Users/[A-Za-z]", f.read_text(encoding="utf-8", errors="ignore")):
+            print(f"注意：{f.relative_to(root)} 含本机绝对路径，核对后决定是否改写")
 
 # 兜底检查：人工抽检行（source=human 且带 spot_check）不应出现在任何 jsonl 里。
 import json

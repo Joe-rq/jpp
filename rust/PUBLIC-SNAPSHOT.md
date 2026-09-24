@@ -19,10 +19,12 @@
 - `.gitignore`、`crates/jpp-core/tests/fixtures/calib_legacy/`（旧格式校准记录夹具）、`crates/jpp-core/tests/known_defects.rs`（PR #20 评审要求的溢出源码区间断言）、`scripts/ci_public.sh` 与 `scripts/doc_snippets.py`（GitHub CI 用）、本文件。
 - 测试里指向研究区 `foundation/profile/profiles/` 的路径改为本仓的 `src/foundation/profile/profiles/`；`calib_load.rs` 改读上面的旧格式夹具。
 - 读研究区实验原始数据的两个测试（`e_alloc.rs`、`jev_client.rs` 的置换一致率）在这里读不到数据，打印「跳过」后返回。
+- `probes/scope/rule_gradient.py` 的仓库根目录与 `probes/scope/result.json` 里记录的 `--calib` 路径，原是研究区的本机绝对路径，改成相对路径；这两个文件不被测试或金样读取。
 
 - `.gitignore`, `crates/jpp-core/tests/fixtures/calib_legacy/` (legacy-format calibration fixtures), `crates/jpp-core/tests/known_defects.rs` (the overflow source-span assertion requested in the PR #20 review), `scripts/ci_public.sh` and `scripts/doc_snippets.py` (used by GitHub CI), and this file.
 - Test paths into the research `foundation/profile/profiles/` point at this repo's `src/foundation/profile/profiles/`; `calib_load.rs` reads the legacy fixtures above.
 - Two tests that read raw research experiment data (`e_alloc.rs` and the permutation-agreement test in `jev_client.rs`) find no data here, print a skip notice and return.
+- The repository root in `probes/scope/rule_gradient.py` and the `--calib` paths recorded in `probes/scope/result.json` were absolute paths on a research machine; they are rewritten as relative paths. Neither file is read by the tests or goldens.
 
 ## 注释里的研究区路径 / Research paths in comments
 

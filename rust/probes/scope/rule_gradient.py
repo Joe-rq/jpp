@@ -1,12 +1,11 @@
 """B68 修订：指纹口径候选在现有材料上的固定观察（0 费用）。依据文本：地基/附注/2026-09-24-探针首轮裁定.md「B68 修订」。
 复刻 jpp-value::stat::material_fingerprint 与 ScopeRanges::from_texts 的分位取法；在 Rust 之外先算出各判据的预期值，
 Rust 实现修订口径后由 run_check.py / control.py 复跑对账。输出存 rule_gradient.out.txt。
-用法：python3 rule_gradient.py > rule_gradient.out.txt（路径写死为本仓库）。"""
+用法：python3 rule_gradient.py > rule_gradient.out.txt（路径相对本文件；实测目录在公开仓库里没有）。"""
 import json, math, pathlib, re, statistics, collections
 
-ROOT = pathlib.Path("/Users/nature/个人项目/jev")
-RJ = ROOT / "地基/rust-jpp"
-CAL = ROOT / "实测/校准题式-2026-09-23"
+RJ = pathlib.Path(__file__).resolve().parents[2]  # rust-jpp
+CAL = RJ.parents[1] / "实测/校准题式-2026-09-23"
 NAMES = ["字符数", "中文比例", "拉丁字母比例", "数字比例", "标点空白比例", "行数", "平均行长"]
 SCALE = {0, 5, 6}   # 尺度量：字符数、行数、平均行长
 RATIO = {1, 2, 3, 4}
