@@ -29,6 +29,10 @@ step() {
 
 step "cargo fmt --check（计需重排文件数）" python3 scripts/fmt_clippy.py fmt
 step "cargo clippy（计告警数）" python3 scripts/fmt_clippy.py clippy
+# 计数只认「路径:行:列: warning|error: 」这一种短格式；工具链换版本后格式若变，计数会失真。
+# 这里把缓存里的原始输出前几行打出来，便于核对计数口径（第二次运行只读缓存，不重新编译）。
+echo "   clippy 原始输出前 5 行（核对计数口径）："
+cargo clippy --workspace --all-targets --offline --message-format=short 2>&1 | grep -m5 -E "warning|error" | sed 's/^/     /'
 for s in deps lines grep_effect_names grep_constants grep_paths grep_fill grep_rules_checker grep_rt_codes; do
   step "$s" python3 "scripts/$s.py"
 done
