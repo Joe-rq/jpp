@@ -14,6 +14,27 @@ jobs:
         working-directory: rust
       - run: cargo run --locked -p jpp-cli -- run examples/partial.jpp --fixtures examples/fixtures/partial.json
         working-directory: rust
+  rust-checks:
+    # 研究树 scripts/ci.sh 的公开子集（rust/scripts/ci_public.sh）：fmt、clippy、依赖表、行数与 grep 类检查、
+    # 发行画像核对、等价写法对，外加 GUIDE / README / METHODS 的代码片段与全部示例实跑。
+    # 报告模式：读数与基线比较后写进本次运行的摘要页，不使 CI 失败；转拦截按研究树 21 §九·1 逐项进行。
+    # Public subset of the research tree's scripts/ci.sh plus doc snippets and examples, in report mode.
+    name: rust-checks (report)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: cargo fetch --locked
+        working-directory: rust
+      - run: scripts/ci_public.sh
+        working-directory: rust
+        env:
+          JPP_CI_MODE: report
   offline:
     runs-on: ubuntu-latest
     strategy:
