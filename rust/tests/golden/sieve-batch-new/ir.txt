@@ -1,0 +1,151 @@
+ir v1
+budget calls=20 cost=0.01 depth=256 escalate=- unsure=- latency_p95=- absent=-
+block 142..681
+  fn-stmt accepted
+    #0 fn (o:-) -> - effects=-
+      block 1084..1095
+        result
+          #1 field .value
+            #2 name o
+  fn-stmt ignored
+    #3 fn (o:-) -> - effects=-
+      block 1167..1186
+        result
+          #4 field .ignore
+            #5 field .detail
+              #6 name o
+  fn-stmt undecided
+    #7 fn (o:-) -> - effects=-
+      block 1255..1307
+        result
+          #8 call @0 1257..1305
+            callee:
+              #9 name filter
+            #10 field .pending
+              #11 name o
+            #13 fn (p:-) -> - effects=-
+              block 1281..1304
+                result
+                  #14 binary !=
+                    #15 field .cause
+                      #16 name p
+                    #17 text "budget"
+  fn-stmt unobserved
+    #18 fn (o:-) -> - effects=-
+      block 1400..1452
+        result
+          #19 call @1 1402..1450
+            callee:
+              #20 name filter
+            #21 field .pending
+              #22 name o
+            #24 fn (p:-) -> - effects=-
+              block 1426..1449
+                result
+                  #25 binary ==
+                    #26 field .cause
+                      #27 name p
+                    #28 text "budget"
+  fn-stmt stopped
+    #29 fn (o:-) -> - effects=-
+      block 1515..1579
+        result
+          #30 if @2 1517..1577
+            cond:
+              #31 call 1520..1543
+                callee:
+                  #32 name has
+                #33 field .resume
+                  #34 name o
+                #35 text "detail"
+            block 1544..1563
+              result
+                #36 field .detail
+                  #37 field .resume
+                    #38 name o
+            block 1569..1577
+              result
+                #39 unit
+  let mention : -
+    #40 construct form @3 200..274
+      #41 text "test"
+      #42 text "这段话是否提到了{city}？"
+      #43 record 250..273
+        calib:
+          #44 text "form-mention"
+  let cities : -
+    #45 list 289..429
+      #46 text "成都"
+      #47 text "北京"
+      #48 text "上海"
+      #49 text "杭州"
+      #50 text "西安"
+      #51 text "南京"
+      #52 text "武汉"
+      #53 text "重庆"
+      #54 text "天津"
+      #55 text "苏州"
+      #56 text "长沙"
+      #57 text "郑州"
+      #58 text "青岛"
+      #59 text "厦门"
+  let rs : -
+    #60 construct sieve @4 440..551
+      #61 list 446..507
+        #62 text "我上个月去了成都出差，顺便见了老朋友。"
+      #63 name mention
+      #64 call @5 518..550
+        callee:
+          #65 name map
+        #66 name cities
+        #68 fn (c:-) -> - effects=-
+          block 536..549
+            result
+              #69 record 538..547
+                city:
+                  #70 name c
+  result
+    #71 record 553..681
+      answers:
+        #72 call @6 563..641
+          callee:
+            #73 name map
+          #74 name rs
+          #76 fn (r:-) -> - effects=-
+            block 577..640
+              result
+                #77 record 579..638
+                  asked:
+                    #78 field .text
+                      #79 field .question
+                        #80 field .detail
+                          #81 name r
+                  act:
+                    #82 binary ==
+                      #83 call 616..632
+                        callee:
+                          #84 name len
+                        #85 call 620..631
+                          callee:
+                            #86 name accepted
+                          #87 name r
+                      #88 int 1
+      pending:
+        #89 call @7 652..680
+          callee:
+            #90 name map
+          #91 name rs
+          #93 fn (r:-) -> - effects=-
+            block 666..679
+              result
+                #94 field .pending
+                  #95 name r
+sites 8
+  @0 #8 hof:filter 1257..1305 fn=#7 in=-
+  @1 #19 hof:filter 1402..1450 fn=#18 in=-
+  @2 #30 if 1517..1577 fn=#29 in=-
+  @3 #40 construct:form 200..274 fn=- in=-
+  @4 #60 construct:sieve 440..551 fn=- in=-
+  @5 #64 hof:map 518..550 fn=- in=@4
+  @6 #72 hof:map 563..641 fn=- in=-
+  @7 #89 hof:map 652..680 fn=- in=-

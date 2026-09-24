@@ -1,0 +1,152 @@
+ir v1
+budget calls=3 cost=0.01 depth=256 escalate=- unsure=- latency_p95=- absent=-
+block 156..781
+  fn-stmt accepted
+    #0 fn (o:-) -> - effects=-
+      block 1184..1195
+        result
+          #1 field .value
+            #2 name o
+  fn-stmt ignored
+    #3 fn (o:-) -> - effects=-
+      block 1267..1286
+        result
+          #4 field .ignore
+            #5 field .detail
+              #6 name o
+  fn-stmt undecided
+    #7 fn (o:-) -> - effects=-
+      block 1355..1407
+        result
+          #8 call @0 1357..1405
+            callee:
+              #9 name filter
+            #10 field .pending
+              #11 name o
+            #13 fn (p:-) -> - effects=-
+              block 1381..1404
+                result
+                  #14 binary !=
+                    #15 field .cause
+                      #16 name p
+                    #17 text "budget"
+  fn-stmt unobserved
+    #18 fn (o:-) -> - effects=-
+      block 1500..1552
+        result
+          #19 call @1 1502..1550
+            callee:
+              #20 name filter
+            #21 field .pending
+              #22 name o
+            #24 fn (p:-) -> - effects=-
+              block 1526..1549
+                result
+                  #25 binary ==
+                    #26 field .cause
+                      #27 name p
+                    #28 text "budget"
+  fn-stmt stopped
+    #29 fn (o:-) -> - effects=-
+      block 1615..1679
+        result
+          #30 if @2 1617..1677
+            cond:
+              #31 call 1620..1643
+                callee:
+                  #32 name has
+                #33 field .resume
+                  #34 name o
+                #35 text "detail"
+            block 1644..1663
+              result
+                #36 field .detail
+                  #37 field .resume
+                    #38 name o
+            block 1669..1677
+              result
+                #39 unit
+  let notes : -
+    #40 list 212..443
+      #41 text "这款耳机售价三百九十九元。"
+      #42 text "今天天气晴朗，适合出门。"
+      #43 text "会员价比原价便宜了五十元。"
+      #44 text "新店开业，全场八折。"
+      #45 text "价格还没公布，据说下个月发布。"
+  let r : -
+    #46 construct sieve @3 453..529
+      #47 name notes
+      #48 construct test @4 466..528
+        #49 text "这段话给出了具体价格或折扣吗？"
+        #50 text "price"
+  let t : -
+    #51 construct tally @5 539..547
+      #52 name r
+  result
+    #53 record 549..781
+      observed:
+        #54 binary +
+          #55 binary +
+            #56 call 560..576
+              callee:
+                #57 name len
+              #58 call 564..575
+                callee:
+                  #59 name accepted
+                #60 name r
+            #61 call 579..594
+              callee:
+                #62 name len
+              #63 call 583..593
+                callee:
+                  #64 name ignored
+                #65 name r
+          #66 call 597..614
+            callee:
+              #67 name len
+            #68 call 601..613
+              callee:
+                #69 name undecided
+              #70 name r
+      unobserved:
+        #71 call @6 628..673
+          callee:
+            #72 name map
+          #73 call 632..645
+            callee:
+              #74 name unobserved
+            #75 name r
+          #77 fn (p:-) -> - effects=-
+            block 653..672
+              result
+                #78 field .index
+                  #79 field .element
+                    #80 name p
+      count:
+        #81 field .count
+          #82 field .value
+            #83 name t
+      stopped:
+        #84 call 707..717
+          callee:
+            #85 name stopped
+          #86 name t
+      exists:
+        #87 field .exists
+          #88 field .value
+            #89 name t
+      all:
+        #90 field .all
+          #91 field .value
+            #92 name t
+      pending:
+        #93 field .pending
+          #94 name t
+sites 7
+  @0 #8 hof:filter 1357..1405 fn=#7 in=-
+  @1 #19 hof:filter 1502..1550 fn=#18 in=-
+  @2 #30 if 1617..1677 fn=#29 in=-
+  @3 #46 construct:sieve 453..529 fn=- in=-
+  @4 #48 construct:test 466..528 fn=- in=@3
+  @5 #51 construct:tally 539..547 fn=- in=-
+  @6 #71 hof:map 628..673 fn=- in=-

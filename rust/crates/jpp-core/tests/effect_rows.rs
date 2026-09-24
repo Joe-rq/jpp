@@ -18,11 +18,11 @@
 use std::path::Path;
 
 use jpp_core::{Report, check};
-use jpp_frontend::{lower, parse};
+use jpp_core::{lower, syntax::parse};
 
 fn check_source(what: &str, source: &str) -> Report {
     let parsed = parse(source).unwrap_or_else(|d| panic!("{what} 解析失败：{}", d.render(what, source)));
-    let core = lower(&parsed).unwrap_or_else(|d| panic!("{what} lower 失败：{}", d.render(what, source)));
+    let core = lower(&parsed).unwrap_or_else(|d| panic!("{what} lower 失败：{}", d[0].render(what, source)));
     check(&core)
 }
 
@@ -397,17 +397,29 @@ fn apply(m, f) -> Record !{{judge}} {{ f(m) }}
 /// 参数**类型位**上的效应行是对实参的契约：类型说只收纯方法，传一个会 judge 的进来就是错，
 /// 诊断指着**传错东西的那个实参**。
 ///
-/// 这条直接拿 core AST 搭，不走前端——`Fn(A) -!{judge}-> B` 那套文法归 Codex，落地时间与
-/// core 不同步；`tests/effect_rows_typed.rs` 是它的源码级对照，等前端那一版进了再一起跑。
+/// 这条直接拿表层 AST 搭，不走文法（原先搭核心语法树，步 12d 删除后改搭表层 AST 再降级）；
+/// `tests/effect_rows_typed.rs` 是它的源码级对照。
 #[test]
 fn 实参必须在参数类型的效应行之内() {
-    use jpp_core::ast::{Block, Budget, Expr, Function, MethodType, Parameter, Program, Span, Statement, Type};
+    use jpp_core::syntax::ast::{Block, Expr, ExprKind, Function, Parameter, Program, Span, Statement, Type};
 
-    let sp = Span::new(0, 1);
-    let at = Span::new(40, 44); // 实参 peek 的位置
+    let sp = Span { start: 0, end: 1 };
+    let at = Span { start: 40, end: 44 }; // 实参 peek 的位置
     let record = || Type::Named("Record".into());
+    let method = |effects: &[&str]| Type::Method {
+        parameters: vec![record()],
+        result: Box::new(record()),
+        effects: Some(effects.iter().map(|e| e.to_string()).collect()),
+        captures_responsibility: false,
+    };
     // f 的类型：只收纯方法
-    let pure_method = Type::Method(MethodType::omega(vec![record()], record(), &[]));
+    let pure_method = method(&[]);
+    let int = |v| Expr { kind: ExprKind::Integer(v), span: sp };
+    let call = |f: &str, arg: Expr| Expr {
+        kind: ExprKind::Call { function: Box::new(Expr { kind: ExprKind::Name(f.into()), span: sp }), arguments: vec![arg] },
+        span: sp,
+    };
+    let block = |statements, result| Block { statements, result: Some(Box::new(result)), span: sp };
 
     let leaf = |name: &str, effects: &[&str]| Statement::Function {
         name: name.into(),
@@ -415,32 +427,33 @@ fn 实参必须在参数类型的效应行之内() {
             parameters: vec![Parameter { name: "m".into(), annotation: None, span: sp }],
             result_type: Some(record()),
             effects: Some(effects.iter().map(|e| e.to_string()).collect()),
-            body: Block::expr(Expr::int(0, sp)),
+            body: block(vec![], int(0)),
         },
         span: sp,
     };
 
-    let program = |arg: &str, param_type: Type, apply_effects: &[&str]| Program {
-        budget: Some(Budget { calls: 1, cost: 0.0, depth: None, escalate: None, unsure: None, absent: None, latency_p95: None }),
-        body: Block::new(
-            vec![
-                leaf("peek", &["judge"]),
-                leaf("plain", &[]),
-                Statement::Function {
-                    name: "apply".into(),
-                    function: Function {
-                        parameters: vec![Parameter { name: "f".into(), annotation: Some(param_type), span: sp }],
-                        result_type: Some(record()),
-                        effects: Some(apply_effects.iter().map(|e| e.to_string()).collect()),
-                        body: Block::expr(Expr::call_name("f", vec![Expr::int(1, sp)], sp)),
+    let program = |arg: &str, param_type: Type, apply_effects: &[&str]| {
+        let src = Program {
+            budget: jpp_core::syntax::parse("budget {calls: 1, cost: 0}; 0").unwrap().budget,
+            body: block(
+                vec![
+                    leaf("peek", &["judge"]),
+                    leaf("plain", &[]),
+                    Statement::Function {
+                        name: "apply".into(),
+                        function: Function {
+                            parameters: vec![Parameter { name: "f".into(), annotation: Some(param_type), span: sp }],
+                            result_type: Some(record()),
+                            effects: Some(apply_effects.iter().map(|e| e.to_string()).collect()),
+                            body: block(vec![], call("f", int(1))),
+                        },
+                        span: sp,
                     },
-                    span: sp,
-                },
-            ],
-            Some(Expr::call_name("apply", vec![Expr::name(arg, at)], sp)),
-            sp,
-        ),
-        span: sp,
+                ],
+                call("apply", Expr { kind: ExprKind::Name(arg.into()), span: at }),
+            ),
+        };
+        jpp_core::lower(&src).expect("降级")
     };
 
     // 传会 judge 的方法给只收纯方法的位置：报在实参上
@@ -454,7 +467,7 @@ fn 实参必须在参数类型的效应行之内() {
 
     // 把参数类型放宽到 judge 就没事了——注意 apply 自己的标注也得跟着放宽：
     // 参数类型说这个位置会 judge，那 apply 的函数体就真的会 judge
-    let wide = Type::Method(MethodType::omega(vec![record()], record(), &["judge"]));
+    let wide = method(&["judge"]);
     let report = check(&program("peek", wide, &["judge"]));
     assert!(report.find("E-effect").is_none(), "参数类型与 apply 的标注都放宽后不该报：\n{}", report.render());
 }

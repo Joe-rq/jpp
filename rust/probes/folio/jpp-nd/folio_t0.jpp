@@ -1,0 +1,103 @@
+import "../../../lib/outcome.jpp";
+
+budget { calls: 100, cost: 10.0 };
+
+let materials = content(do("read_json", ["../baseline/materials.json"], 0));
+let doc = materials.document;
+let root = materials.root;
+let tree = materials.tree;
+
+fn ask_child_select(cat) {
+  let children = tree[cat];
+  let s = state(doc, {over: children});
+  let q = select("这份法律文书最应归入下列哪一类？", "folio-level");
+  let r = judge(s, q);
+  let c = cut(r);
+  handle(c, {
+    act: fn(x) { {kind: "unsure"} },
+    ignore: fn(x) { {kind: "unsure"} },
+    pick: fn(idx) { {kind: "pick", child: children[idx]} },
+    at: fn(x) { {kind: "unsure"} },
+    unsure: fn(x) { consume(x, "drop"); {kind: "unsure"} }
+  })
+}
+
+fn walk_single(cat, path, step) {
+  if !has(tree, cat) {
+    {leaf: cat, path: path, stopped: "leaf"}
+  } else if step >= 6 {
+    {leaf: cat, path: path, stopped: "depth"}
+  } else {
+    let res = ask_child_select(cat);
+    if res.kind == "pick" {
+      walk_single(res.child, append(path, res.child), step + 1)
+    } else {
+      {leaf: cat, path: path, stopped: "unsure"}
+    }
+  }
+}
+
+fn ask_topic(child) {
+  let s = state(doc);
+  let q = test("这段话的内容是否与「" + child + "」这个话题相关？", "form-topic");
+  let r = judge(s, q);
+  let c = cut(r);
+  handle(c, {
+    act: fn(x) { "yes" },
+    ignore: fn(x) { "no" },
+    pick: fn(x) { "no" },
+    at: fn(x) { "no" },
+    unsure: fn(x) { consume(x, "drop"); "unsure" }
+  })
+}
+
+fn process_children(children, idx, any_yes, yes_list, undecided_count) {
+  if idx >= len(children) {
+    {any_yes: any_yes, yes_list: yes_list, undecided: undecided_count}
+  } else {
+    let child = children[idx];
+    let ans = ask_topic(child);
+    if ans == "yes" {
+      process_children(children, idx + 1, true, append(yes_list, child), undecided_count)
+    } else if ans == "unsure" {
+      process_children(children, idx + 1, any_yes, yes_list, undecided_count + 1)
+    } else {
+      process_children(children, idx + 1, any_yes, yes_list, undecided_count)
+    }
+  }
+}
+
+fn process_cat(cat, dead_ends, next_frontier, undecided_count) {
+  let children = tree[cat];
+  let res = process_children(children, 0, false, [], 0);
+  let new_dead = if res.any_yes { dead_ends } else { append(dead_ends, cat) };
+  {dead_ends: new_dead, next_frontier: concat(next_frontier, res.yes_list),
+   undecided: undecided_count + res.undecided}
+}
+
+fn process_round(cats, idx, dead_ends, next_frontier, undecided_count) {
+  if idx >= len(cats) {
+    {dead_ends: dead_ends, next_frontier: next_frontier, undecided: undecided_count}
+  } else {
+    let r = process_cat(cats[idx], dead_ends, next_frontier, undecided_count);
+    process_round(cats, idx + 1, r.dead_ends, r.next_frontier, r.undecided)
+  }
+}
+
+fn walk_multi(frontier, leaves, dead_ends, layers, undecided, round) {
+  let leaf_cats = filter(frontier, fn(c) { !has(tree, c) });
+  let internal_cats = filter(frontier, fn(c) { has(tree, c) });
+  if len(internal_cats) == 0 {
+    {leaves: concat(leaves, leaf_cats), dead_ends: dead_ends, layers: layers, undecided: undecided}
+  } else if round >= 6 {
+    {leaves: leaves, dead_ends: dead_ends, layers: layers, undecided: undecided}
+  } else {
+    let r = process_round(internal_cats, 0, dead_ends, [], undecided);
+    walk_multi(r.next_frontier, concat(leaves, leaf_cats), r.dead_ends, layers + 1, r.undecided,
+               round + 1)
+  }
+}
+
+let sp = walk_single(root, [], 0);
+let mp = walk_multi([root], [], [], 0, 0, 0);
+{single_path: sp, multi_path: mp}

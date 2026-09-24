@@ -1,0 +1,237 @@
+ir v1
+budget calls=12 cost=0.01 depth=256 escalate=- unsure=- latency_p95=- absent=-
+block 119..1833
+  let mention : -
+    #0 construct form @0 178..296
+      #1 text "test"
+      #2 text "这段话是否提到了{city}？"
+      #3 record 228..295
+        calib:
+          #4 text "form-mention"
+        presupposition:
+          #5 text "这段话是中文叙述"
+  let listed : -
+    #6 construct form @1 311..378
+      #7 text "test"
+      #8 text "清单里是否有{item}？"
+      #9 record 355..377
+        calib:
+          #10 text "form-listed"
+  fn-stmt describe
+    #11 fn (q:{"Named":"Question"}) -> {"Named":"Record"} effects=-
+      block 416..643
+        result
+          #12 record 422..641
+            text:
+              #13 field .text
+                #14 name q
+            op:
+              #15 field .op
+                #16 name q
+            subject:
+              #17 field .subject
+                #18 name q
+            predicate:
+              #19 field .predicate
+                #20 name q
+            partition:
+              #21 field .partition
+                #22 name q
+            request:
+              #23 field .request
+                #24 name q
+            presupposition:
+              #25 field .presupposition
+                #26 name q
+            template:
+              #27 field .template
+                #28 name q
+            fill:
+              #29 field .fill
+                #30 name q
+            from_form:
+              #31 binary !=
+                #32 field .form
+                  #33 name q
+                #34 unit
+  fn-stmt verdict
+    #35 fn (m:{"Named":"Mat"}, q:{"Named":"Question"}) -> - effects=[judge]
+      block 766..976
+        result
+          #36 handle @2 772..974
+            exit:
+              #37 cut @3 779..802
+                reading:
+                  #38 effect judge @4 783..801
+                    state:
+                      #39 state @5 789..797
+                        on:
+                          #40 name m
+                    questions:
+                      #41 name q
+            arms:
+              #42 record 804..973
+                act:
+                  #44 fn () -> - effects=-
+                    block 824..843
+                      result
+                        #45 record 826..841
+                          answer:
+                            #46 text "是"
+                ignore:
+                  #48 fn () -> - effects=-
+                    block 866..885
+                      result
+                        #49 record 868..883
+                          answer:
+                            #50 text "否"
+                unsure:
+                  #52 fn (u:-) -> - effects=-
+                    block 909..967
+                      result
+                        #53 record 911..965
+                          answer:
+                            #54 text "未决"
+                          cause:
+                            #55 call 937..952
+                              callee:
+                                #56 name unsure_cause
+                              #57 name u
+                          pending:
+                            #58 name u
+  let trip : -
+    #59 call 989..1053
+      callee:
+        #60 name mat
+      #61 text "我上个月去了成都出差，顺便见了老朋友。"
+  let cart : -
+    #62 call 1066..1130
+      callee:
+        #63 name mat
+      #64 text "购物清单：牛奶、面包、鸡蛋、苹果、酱油"
+  let cities : -
+    #65 list 1146..1196
+      #66 text "成都"
+      #67 text "北京"
+      #68 text "上海"
+      #69 text "杭州"
+      #70 text "西安"
+  let items : -
+    #71 list 1210..1257
+      #72 text "面包"
+      #73 text "酱油"
+      #74 text "咖啡"
+      #75 text "牛奶"
+      #76 text "盐"
+  let city_questions : -
+    #77 call @6 1280..1327
+      callee:
+        #78 name map
+      #79 name cities
+      #81 fn (c:-) -> - effects=-
+        block 1298..1326
+          result
+            #82 construct fill @7 1300..1324
+              #83 name mention
+              #84 record 1314..1323
+                city:
+                  #85 name c
+  let item_questions : -
+    #86 call @8 1350..1395
+      callee:
+        #87 name map
+      #88 name items
+      #90 fn (i:-) -> - effects=-
+        block 1367..1394
+          result
+            #91 construct fill @9 1369..1392
+              #92 name listed
+              #93 record 1382..1391
+                item:
+                  #94 name i
+  result
+    #95 record 1398..1833
+      forms:
+        #96 list 1406..1615
+          #97 record 1407..1507
+            template:
+              #98 field .template
+                #99 name mention
+            slots:
+              #100 field .slots
+                #101 name mention
+            partition:
+              #102 field .partition
+                #103 name mention
+            hash:
+              #104 field .hash
+                #105 name mention
+          #106 record 1518..1614
+            template:
+              #107 field .template
+                #108 name listed
+            slots:
+              #109 field .slots
+                #110 name listed
+            partition:
+              #111 field .partition
+                #112 name listed
+            hash:
+              #113 field .hash
+                #114 name listed
+      first:
+        #115 call 1625..1652
+          callee:
+            #116 name describe
+          #117 index
+            #118 name city_questions
+            #119 int 0
+      trip:
+        #120 call @10 1661..1742
+          callee:
+            #121 name map
+          #122 name city_questions
+          #124 fn (q:-) -> - effects=[judge]
+            block 1696..1741
+              result
+                #125 record 1698..1739
+                  asked:
+                    #126 field .text
+                      #127 name q
+                  answer:
+                    #128 call 1722..1738
+                      callee:
+                        #129 name verdict
+                      #130 name trip
+                      #131 name q
+      cart:
+        #132 call @11 1751..1832
+          callee:
+            #133 name map
+          #134 name item_questions
+          #136 fn (q:-) -> - effects=[judge]
+            block 1786..1831
+              result
+                #137 record 1788..1829
+                  asked:
+                    #138 field .text
+                      #139 name q
+                  answer:
+                    #140 call 1812..1828
+                      callee:
+                        #141 name verdict
+                      #142 name cart
+                      #143 name q
+sites 12
+  @0 #0 construct:form 178..296 fn=- in=-
+  @1 #6 construct:form 311..378 fn=- in=-
+  @2 #36 handle 772..974 fn=#35 in=-
+  @3 #37 cut 779..802 fn=#35 in=-
+  @4 #38 effect:judge 783..801 fn=#35 in=-
+  @5 #39 state 789..797 fn=#35 in=-
+  @6 #77 hof:map 1280..1327 fn=- in=-
+  @7 #82 construct:fill 1300..1324 fn=#81 in=@6
+  @8 #86 hof:map 1350..1395 fn=- in=-
+  @9 #91 construct:fill 1369..1392 fn=#90 in=@8
+  @10 #120 hof:map 1661..1742 fn=- in=-
+  @11 #132 hof:map 1751..1832 fn=- in=-

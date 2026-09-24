@@ -18,7 +18,7 @@ fn 装(store: &mut CalibStore, key: &str) {
     for i in 0..30 {
         store.absorb(key, Sample {
             p: Some(0.30 + i as f64 * 0.02), label: Some(if i > 6 { 1 } else { 0 }), perms: 0,
-            mode_share: None, mode: LiteralMode::default(), phys: "noul".into(), cluster: None,
+            mode_share: None, mode: LiteralMode::default(), phys: "noul".into(), cluster: None, stratum: None,
         }).expect("折得进");
     }
 }
@@ -99,7 +99,7 @@ fn 未声明标签来源的证书给强出口时留痕() {
         fn calls(&self) -> u64 { *self.0.borrow() }
     }
     let 跑 = |c: &CalibStore| {
-        let program = jpp_frontend::lower(&jpp_frontend::parse(r#"
+        let program = jpp_core::lower(&jpp_core::syntax::parse(r#"
 budget {calls: 4, cost: 1};
 handle(cut(judge(state(mat("材料")), test("行吗", "k"))), {
     act: fn() { "act" }, ignore: fn() { "ig" },
@@ -138,7 +138,7 @@ fn 证书地址不被精度或分隔符撞掉() {
     let 造 = |alpha: f64, cu: &str, 判据: &str| Cert {
         alpha, conf_delta: 0.10, hi: 0.8, n_accepted: 10, n_errors: 0, ucb: 0.05,
         cluster_unit: cu.into(), resample: None, cost: None,
-        bounded_side: String::new(), label_fp: "abcd".into(), selection: None,
+        bounded_side: String::new(), label_fp: "abcd".into(), selection: None, grade: Default::default(),
         label_source: LabelSource::选择子集 { 判据: 判据.into(), 与对错相关: Some(0.5) },
     };
     // 第五位小数不同 → **地址必须不同**

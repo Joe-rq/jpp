@@ -1,0 +1,508 @@
+{
+  "backend": "fixed-0",
+  "cost": {
+    "asks": 0,
+    "calls": 0,
+    "replayed": 11,
+    "tokens": 0,
+    "usd": 0.0
+  },
+  "exits": [
+    {
+      "exit": "act",
+      "grade": "Fixture",
+      "key": "c-tech",
+      "releases": false,
+      "site": 1186
+    },
+    {
+      "exit": "act",
+      "grade": "Fixture",
+      "key": "c-tech",
+      "releases": false,
+      "site": 1186
+    },
+    {
+      "exit": "ignore",
+      "grade": "Fixture",
+      "key": "c-tech",
+      "releases": false,
+      "site": 1186
+    },
+    {
+      "exit": "unsure(band)",
+      "grade": "Fixture",
+      "key": "c-tech",
+      "releases": false,
+      "site": 1186
+    },
+    {
+      "exit": "act",
+      "grade": "Fixture",
+      "key": "c-fit",
+      "releases": false,
+      "site": 1434
+    },
+    {
+      "exit": "unsure(band)",
+      "grade": "Fixture",
+      "key": "c-fit",
+      "releases": false,
+      "site": 1434
+    },
+    {
+      "exit": "ignore",
+      "grade": "Fixture",
+      "key": "c-fit",
+      "releases": false,
+      "site": 1434
+    },
+    {
+      "exit": "act",
+      "grade": "Fixture",
+      "key": "c-fit",
+      "releases": false,
+      "site": 1434
+    },
+    {
+      "exit": "act",
+      "grade": "Fixture",
+      "key": "c-grow",
+      "releases": false,
+      "site": 2097
+    },
+    {
+      "exit": "ignore",
+      "grade": "Fixture",
+      "key": "c-grow",
+      "releases": false,
+      "site": 2097
+    },
+    {
+      "exit": "ignore",
+      "grade": "Fixture",
+      "key": "c-fit",
+      "releases": false,
+      "site": 1795
+    }
+  ],
+  "fixture_description": "Synthetic fixed observations for contract.jpp (construction check only; not model evaluation). Calibration records are hand-written to exercise routing, not calibration. 钱设计 × tech and 后台 × 李工 × fits are set to 0.5 on purpose to show unsure items travelling in the contract.",
+  "local_checks": [],
+  "mode": "replay; no model API requests",
+  "pending": [],
+  "replay": true,
+  "resumed": false,
+  "returned_unsure": [
+    "unsure(band)",
+    "unsure(band)"
+  ],
+  "status": "returned",
+  "trace": {
+    "events": [
+      {
+        "cost": 0.0,
+        "key": "a54eab31e5c5df8a2b004a32",
+        "kind": "judge",
+        "note": "「这个人的技能里有软件开发方面的技能吗？」",
+        "replayed": true,
+        "site": {
+          "end": 1205,
+          "start": 1186
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "98b9803aa5f2140340d5e018",
+        "kind": "judge",
+        "note": "「这个人的技能里有软件开发方面的技能吗？」",
+        "replayed": true,
+        "site": {
+          "end": 1205,
+          "start": 1186
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "00cb64f031b37bf562909472",
+        "kind": "judge",
+        "note": "「这个人的技能里有软件开发方面的技能吗？」",
+        "replayed": true,
+        "site": {
+          "end": 1205,
+          "start": 1186
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "eaa55a81e3e0349b8d3faeb3",
+        "kind": "judge",
+        "note": "「这个人的技能里有软件开发方面的技能吗？」",
+        "replayed": true,
+        "site": {
+          "end": 1205,
+          "start": 1186
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "981b180871cc596f27788f5f",
+        "kind": "judge",
+        "note": "「成员 b 的技能能完成需求 a 吗？」",
+        "replayed": true,
+        "site": {
+          "end": 1456,
+          "start": 1434
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "d7181e1ae3081ea55b77cbfb",
+        "kind": "judge",
+        "note": "「成员 b 的技能能完成需求 a 吗？」",
+        "replayed": true,
+        "site": {
+          "end": 1456,
+          "start": 1434
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "81109a928a2061c84e081eda",
+        "kind": "judge",
+        "note": "「成员 b 的技能能完成需求 a 吗？」",
+        "replayed": true,
+        "site": {
+          "end": 1456,
+          "start": 1434
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "749e43ade070d5d4976a8d7e",
+        "kind": "judge",
+        "note": "「成员 b 的技能能完成需求 a 吗？」",
+        "replayed": true,
+        "site": {
+          "end": 1456,
+          "start": 1434
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "707b5081c74c62474b96c431",
+        "kind": "judge",
+        "note": "「已有组合 a（需求 a.a 与承接成员 a.b）加入新成员 b 后，这个组合整体能更好地完成该需求吗？」",
+        "replayed": true,
+        "site": {
+          "end": 2169,
+          "start": 2097
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "d6fe2a97c911bcf696563427",
+        "kind": "judge",
+        "note": "「已有组合 a（需求 a.a 与承接成员 a.b）加入新成员 b 后，这个组合整体能更好地完成该需求吗？」",
+        "replayed": true,
+        "site": {
+          "end": 2169,
+          "start": 2097
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "d82c5344c23d156263a89a27",
+        "kind": "judge",
+        "note": "「只看成员 b 列出的技能，他能独立完成需求 a 的主要工作吗？」",
+        "replayed": true,
+        "site": {
+          "end": 1870,
+          "start": 1795
+        }
+      }
+    ],
+    "warnings": [
+      "W-fixture-line: @1186 键 c-tech 的线是夹具线（宿主 put 写入或没有认证证书，n=1），出口 Act 照常路由，但按 B29 不算放行不可逆 do 的可信合取项。修法【需接线人】：用 calib-import 或 commission 从带真值样本认证这条线",
+      "W-fixture-line: @1186 键 c-tech 的线是夹具线（宿主 put 写入或没有认证证书，n=1），出口 Act 照常路由，但按 B29 不算放行不可逆 do 的可信合取项。修法【需接线人】：用 calib-import 或 commission 从带真值样本认证这条线",
+      "W-fixture-line: @1434 键 c-fit 的线是夹具线（宿主 put 写入或没有认证证书，n=1），出口 Act 照常路由，但按 B29 不算放行不可逆 do 的可信合取项。修法【需接线人】：用 calib-import 或 commission 从带真值样本认证这条线",
+      "W-fixture-line: @1434 键 c-fit 的线是夹具线（宿主 put 写入或没有认证证书，n=1），出口 Act 照常路由，但按 B29 不算放行不可逆 do 的可信合取项。修法【需接线人】：用 calib-import 或 commission 从带真值样本认证这条线",
+      "W-fixture-line: @2097 键 c-grow 的线是夹具线（宿主 put 写入或没有认证证书，n=1），出口 Act 照常路由，但按 B29 不算放行不可逆 do 的可信合取项。修法【需接线人】：用 calib-import 或 commission 从带真值样本认证这条线",
+      "returned_unsure: unsure(band), unsure(band)"
+    ]
+  },
+  "value": {
+    "engineers": [
+      "王工",
+      "李工"
+    ],
+    "matched": [
+      {
+        "need": "做一个带登录的网页后台",
+        "person": "王工"
+      },
+      {
+        "need": "搭建订单数据库",
+        "person": "李工"
+      }
+    ],
+    "pending": [
+      [
+        {
+          "cause": "band",
+          "element": {
+            "cause": "band",
+            "exit": {
+              "consumed": true,
+              "exit": "unsure(band)",
+              "id": 5,
+              "q": "615a0f8ed47fa7d6f0e1784d"
+            },
+            "index": 1,
+            "item": {
+              "a": "做一个带登录的网页后台",
+              "b": {
+                "name": "李工",
+                "skills": [
+                  "数据库",
+                  "后端"
+                ]
+              }
+            },
+            "source": {
+              "at": [
+                0,
+                1
+              ],
+              "item": {
+                "a": "做一个带登录的网页后台",
+                "b": {
+                  "name": "李工",
+                  "skills": [
+                    "数据库",
+                    "后端"
+                  ]
+                }
+              },
+              "left": "做一个带登录的网页后台",
+              "right": {
+                "cause": null,
+                "exit": {
+                  "consumed": true,
+                  "exit": "act",
+                  "id": 1,
+                  "q": "03d341e836e350eac190d030"
+                },
+                "index": 1,
+                "item": {
+                  "name": "李工",
+                  "skills": [
+                    "数据库",
+                    "后端"
+                  ]
+                },
+                "source": {
+                  "name": "李工",
+                  "skills": [
+                    "数据库",
+                    "后端"
+                  ]
+                },
+                "trail": []
+              },
+              "trail": []
+            },
+            "trail": []
+          },
+          "exit": {
+            "consumed": true,
+            "exit": "unsure(band)",
+            "id": 5,
+            "q": "615a0f8ed47fa7d6f0e1784d"
+          }
+        },
+        {
+          "cause": "band",
+          "element": {
+            "cause": "band",
+            "exit": {
+              "consumed": true,
+              "exit": "unsure(band)",
+              "id": 3,
+              "q": "03d341e836e350eac190d030"
+            },
+            "index": 3,
+            "item": {
+              "name": "钱设计",
+              "skills": [
+                "UI 设计"
+              ]
+            },
+            "source": {
+              "name": "钱设计",
+              "skills": [
+                "UI 设计"
+              ]
+            },
+            "trail": []
+          },
+          "exit": {
+            "consumed": true,
+            "exit": "unsure(band)",
+            "id": 3,
+            "q": "03d341e836e350eac190d030"
+          }
+        }
+      ],
+      []
+    ],
+    "recheck": {
+      "act": 0,
+      "asked": "只看成员 b 列出的技能，他能独立完成需求 a 的主要工作吗？",
+      "count": [
+        0,
+        0
+      ],
+      "exists": {
+        "consumed": true,
+        "exit": "ignore",
+        "id": 11,
+        "q": "tally:exists"
+      },
+      "ignore": 1
+    },
+    "same_type": true,
+    "second_round": {
+      "act": [
+        "王工"
+      ],
+      "checked": "第二轮问的是「已接受的关系 + 新成员」作为一个整体能否更好地完成需求；没有从两两关系推定",
+      "ignore": [
+        "李工"
+      ]
+    },
+    "stages": [
+      {
+        "calls": 4,
+        "evidence": 4,
+        "fields": [
+          "kind",
+          "value",
+          "pending",
+          "evidence",
+          "resume",
+          "spent",
+          "detail",
+          "purpose"
+        ],
+        "kind": "sieve",
+        "pending": 1
+      },
+      {
+        "calls": 0,
+        "evidence": 4,
+        "fields": [
+          "kind",
+          "value",
+          "pending",
+          "evidence",
+          "resume",
+          "spent",
+          "detail",
+          "purpose"
+        ],
+        "kind": "pair",
+        "pending": 1
+      },
+      {
+        "calls": 4,
+        "evidence": 8,
+        "fields": [
+          "kind",
+          "value",
+          "pending",
+          "evidence",
+          "resume",
+          "spent",
+          "detail",
+          "purpose"
+        ],
+        "kind": "sieve",
+        "pending": 2
+      },
+      {
+        "calls": 0,
+        "evidence": 8,
+        "fields": [
+          "kind",
+          "value",
+          "pending",
+          "evidence",
+          "resume",
+          "spent",
+          "detail",
+          "purpose"
+        ],
+        "kind": "outcome",
+        "pending": 2
+      },
+      {
+        "calls": 2,
+        "evidence": 10,
+        "fields": [
+          "kind",
+          "value",
+          "pending",
+          "evidence",
+          "resume",
+          "spent",
+          "detail",
+          "purpose"
+        ],
+        "kind": "sieve",
+        "pending": 2
+      },
+      {
+        "calls": 1,
+        "evidence": 1,
+        "fields": [
+          "kind",
+          "value",
+          "pending",
+          "evidence",
+          "resume",
+          "spent",
+          "detail",
+          "purpose"
+        ],
+        "kind": "sieve",
+        "pending": 0
+      },
+      {
+        "calls": 0,
+        "evidence": 1,
+        "fields": [
+          "kind",
+          "value",
+          "pending",
+          "evidence",
+          "resume",
+          "spent",
+          "detail",
+          "purpose"
+        ],
+        "kind": "tally",
+        "pending": 0
+      }
+    ],
+    "unsure_in_matched": [
+      {
+        "cause": "band",
+        "relation": true
+      },
+      {
+        "cause": "band",
+        "relation": false
+      }
+    ]
+  }
+}

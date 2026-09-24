@@ -1,0 +1,43 @@
+[
+  {
+    "key": "winnow-error",
+    "items": 218,
+    "truth": {
+      "sources": {
+        "computed": 218
+      },
+      "ambiguous": 0,
+      "abstain_rate": 0.0,
+      "spot_check": null,
+      "spot_check_min": 0.9,
+      "gate": "上岗",
+      "batch": "labels.jsonl"
+    },
+    "status": "上岗",
+    "hi": 0.16999999999999998,
+    "lo": 0.16999999999999998,
+    "certification": {
+      "selection": {
+        "method": "split",
+        "seed": 20260923,
+        "n_select": 102,
+        "n_certify": 116,
+        "candidates": 186
+      },
+      "alpha": 0.1,
+      "conf_delta": 0.1,
+      "upper": [
+        57,
+        1,
+        0.06653405378780891
+      ],
+      "lower": [
+        57,
+        0,
+        0.039591178749462
+      ]
+    },
+    "warnings": []
+  }
+]
+导入 218 行，1 个键，写回 calib

@@ -19,7 +19,7 @@ use jpp_core::interp::Interp;
 use jpp_core::ledger::Ledger;
 use jpp_core::value::{Answer, Question, State};
 use jpp_core::ActionRegistry;
-use jpp_frontend::{lower, parse};
+use jpp_core::{lower, syntax::parse};
 use serde_json::Value as Json;
 
 struct 定值客户端 {
@@ -49,7 +49,7 @@ fn 跑一趟(ledger: &mut Ledger, calib: &CalibStore) -> jpp_core::Outcome {
     let program = lower(&parse(程序).expect("解析")).expect("lower");
     let mut c = 定值客户端 { p: 0.9, 次数: RefCell::new(0) };
     let actions = ActionRegistry::default();
-    let it = Interp::new(&mut c, ledger, calib, &actions, program.budget.clone().expect("程序里写了 budget"));
+    let it = Interp::new(&mut c, ledger, calib, &actions, program.budget.clone());
     it.run(&program).expect("跑得完")
 }
 
@@ -95,7 +95,7 @@ fn 宿主手填与程序积累分得开() {
     // 程序积累的：带标注的样本，n 跟着样本走
     let mut store = CalibStore::new();
     for i in 0..3 {
-        store.absorb("积累", Sample { p: Some(0.5 + i as f64 * 0.1), label: Some(1), perms: 0, mode_share: None, mode: LiteralMode::default(), phys: "noul".into(), cluster: None }).expect("折得进");
+        store.absorb("积累", Sample { p: Some(0.5 + i as f64 * 0.1), label: Some(1), perms: 0, mode_share: None, mode: LiteralMode::default(), phys: "noul".into(), cluster: None, stratum: None }).expect("折得进");
     }
     let rec = store.get("积累");
     assert_eq!((rec.n, rec.observations()), (3, 3), "**带标注的才进 n**");
@@ -150,7 +150,7 @@ fn 有线的键上跑出观察是混合() {
     c.put("k", 0.66, 0.56, 73, "上岗").expect("宿主手填一条线");
     assert_eq!(c.get("k").provenance(), Provenance::宿主手填);
     c.absorb("k", Sample { p: Some(0.56), label: None, perms: 0, mode_share: None,
-                           mode: LiteralMode::default(), phys: "noul".into(), cluster: None }).unwrap();
+                           mode: LiteralMode::default(), phys: "noul".into(), cluster: None, stratum: None }).unwrap();
     let r = c.get("k");
     assert_eq!((r.n, r.labeled(), r.observations()), (73, 0, 1));
     assert_eq!(r.provenance(), Provenance::混合,

@@ -21,7 +21,7 @@ use jpp_core::effects::{CalibStore, Client, EffectError, GenResult, JudgeResult,
 use jpp_core::interp::ActionRegistry;
 use jpp_core::ledger::Ledger;
 use jpp_core::value::{Answer, Question, State};
-use jpp_frontend::{lower, parse};
+use jpp_core::{lower, syntax::parse};
 use serde_json::Value as Json;
 
 struct 定值(f64);

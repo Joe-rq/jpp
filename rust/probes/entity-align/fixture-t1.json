@@ -1,0 +1,951 @@
+{
+ "description": "T1：与 T0 夹具同一份读数，去掉校准记录字面量；线只从 labels.jsonl 经 calib-import 来（B79 (d)）。",
+ "calibrations": [],
+ "observations": [
+  {
+   "on": [
+    {
+     "a": {
+      "name": "Hazy Little Thing IPA",
+      "brewery": "Sierra Nevada",
+      "style": "New England IPA",
+      "abv": 6.7
+     },
+     "b": {
+      "name": "Sierra Nevada Hazy Little Thing",
+      "brewery": "Sierra Nevada Brewing Co.",
+      "style": "Hazy IPA",
+      "abv": 6.7
+     }
+    }
+   ],
+   "op": "measure",
+   "text": "两条实体描述作为产品是什么关系？",
+   "calib": "align-link",
+   "answer": {
+    "Score": [
+     0.02,
+     0.08,
+     0.9
+    ]
+   },
+   "scale": [
+    "它们描述的是两种不同的产品。",
+    "它们描述的是密切相关、可能是也可能不是同一款的产品：变体、特别版，或名字两种理解都说得通。",
+    "它们描述的是同一款产品。"
+   ]
+  },
+  {
+   "on": [
+    {
+     "a": {
+      "name": "Hazy Little Thing IPA",
+      "brewery": "Sierra Nevada",
+      "style": "New England IPA",
+      "abv": 6.7
+     },
+     "b": {
+      "name": "Sierra Nevada Hazy Little Thing",
+      "brewery": "Sierra Nevada Brewing Co.",
+      "style": "Hazy IPA",
+      "abv": 6.7
+     }
+    }
+   ],
+   "op": "test",
+   "text": "两条实体写的是同一个啤酒名吗？",
+   "calib": "align-name",
+   "answer": {
+    "Noul": 0.85
+   }
+  },
+  {
+   "on": [
+    {
+     "a": {
+      "name": "Hazy Little Thing IPA",
+      "brewery": "Sierra Nevada",
+      "style": "New England IPA",
+      "abv": 6.7
+     },
+     "b": {
+      "name": "Sierra Nevada Hazy Little Thing",
+      "brewery": "Sierra Nevada Brewing Co.",
+      "style": "Hazy IPA",
+      "abv": 6.7
+     }
+    }
+   ],
+   "op": "test",
+   "text": "两条实体来自同一家酒厂吗？",
+   "calib": "align-brewery",
+   "answer": {
+    "Noul": 0.95
+   }
+  },
+  {
+   "on": [
+    {
+     "a": {
+      "name": "Hazy Little Thing IPA",
+      "brewery": "Sierra Nevada",
+      "style": "New England IPA",
+      "abv": 6.7
+     },
+     "b": {
+      "name": "Sierra Nevada Hazy Little Thing",
+      "brewery": "Sierra Nevada Brewing Co.",
+      "style": "Hazy IPA",
+      "abv": 6.7
+     }
+    }
+   ],
+   "op": "test",
+   "text": "两条实体描述的是同一种啤酒风格吗？",
+   "calib": "align-style",
+   "answer": {
+    "Noul": 0.8
+   }
+  },
+  {
+   "on": [
+    {
+     "a": {
+      "name": "Hazy Little Thing IPA",
+      "brewery": "Sierra Nevada",
+      "style": "New England IPA",
+      "abv": 6.7
+     },
+     "b": {
+      "name": "Guinness Extra Stout",
+      "brewery": "Guinness",
+      "style": "Foreign Extra Stout",
+      "abv": 5.6
+     }
+    }
+   ],
+   "op": "measure",
+   "text": "两条实体描述作为产品是什么关系？",
+   "calib": "align-link",
+   "answer": {
+    "Score": [
+     0.93,
+     0.05,
+     0.02
+    ]
+   },
+   "scale": [
+    "它们描述的是两种不同的产品。",
+    "它们描述的是密切相关、可能是也可能不是同一款的产品：变体、特别版，或名字两种理解都说得通。",
+    "它们描述的是同一款产品。"
+   ]
+  },
+  {
+   "on": [
+    {
+     "a": {
+      "name": "Hazy Little Thing IPA",
+      "brewery": "Sierra Nevada",
+      "style": "New England IPA",
+      "abv": 6.7
+     },
+     "b": {
+      "name": "Guinness Extra Stout",
+      "brewery": "Guinness",
+      "style": "Foreign Extra Stout",
+      "abv": 5.6
+     }
+    }
+   ],
+   "op": "test",
+   "text": "两条实体写的是同一个啤酒名吗？",
+   "calib": "align-name",
+   "answer": {
+    "Noul": 0.02
+   }
+  },
+  {
+   "on": [
+    {
+     "a": {
+      "name": "Hazy Little Thing IPA",
+      "brewery": "Sierra Nevada",
+      "style": "New England IPA",
+      "abv": 6.7
+     },
+     "b": {
+      "name": "Guinness Extra Stout",
+      "brewery": "Guinness",
+      "style": "Foreign Extra Stout",
+      "abv": 5.6
+     }
+    }
+   ],
+   "op": "test",
+   "text": "两条实体来自同一家酒厂吗？",
+   "calib": "align-brewery",
+   "answer": {
+    "Noul": 0.1
+   }
+  },
+  {
+   "on": [
+    {
+     "a": {
+      "name": "Hazy Little Thing IPA",
+      "brewery": "Sierra Nevada",
+      "style": "New England IPA",
+      "abv": 6.7
+     },
+     "b": {
+      "name": "Guinness Extra Stout",
+      "brewery": "Guinness",
+      "style": "Foreign Extra Stout",
+      "abv": 5.6
+     }
+    }
+   ],
+   "op": "test",
+   "text": "两条实体描述的是同一种啤酒风格吗？",
+   "calib": "align-style",
+   "answer": {
+    "Noul": 0.3
+   }
+  },
+  {
+   "on": [
+    {
+     "a": {
+      "name": "Hazy Little Thing IPA",
+      "brewery": "Sierra Nevada",
+      "style": "New England IPA",
+      "abv": 6.7
+     },
+     "b": {
+      "name": "Bell's Two Hearted IPA",
+      "brewery": "Bell's",
+      "style": "IPA",
+      "abv": 7.0
+     }
+    }
+   ],
+   "op": "measure",
+   "text": "两条实体描述作为产品是什么关系？",
+   "calib": "align-link",
+   "answer": {
+    "Score": [
+     0.93,
+     0.05,
+     0.02
+    ]
+   },
+   "scale": [
+    "它们描述的是两种不同的产品。",
+    "它们描述的是密切相关、可能是也可能不是同一款的产品：变体、特别版，或名字两种理解都说得通。",
+    "它们描述的是同一款产品。"
+   ]
+  },
+  {
+   "on": [
+    {
+     "a": {
+      "name": "Hazy Little Thing IPA",
+      "brewery": "Sierra Nevada",
+      "style": "New England IPA",
+      "abv": 6.7
+     },
+     "b": {
+      "name": "Bell's Two Hearted IPA",
+      "brewery": "Bell's",
+      "style": "IPA",
+      "abv": 7.0
+     }
+    }
+   ],
+   "op": "test",
+   "text": "两条实体写的是同一个啤酒名吗？",
+   "calib": "align-name",
+   "answer": {
+    "Noul": 0.02
+   }
+  },
+  {
+   "on": [
+    {
+     "a": {
+      "name": "Hazy Little Thing IPA",
+      "brewery": "Sierra Nevada",
+      "style": "New England IPA",
+      "abv": 6.7
+     },
+     "b": {
+      "name": "Bell's Two Hearted IPA",
+      "brewery": "Bell's",
+      "style": "IPA",
+      "abv": 7.0
+     }
+    }
+   ],
+   "op": "test",
+   "text": "两条实体来自同一家酒厂吗？",
+   "calib": "align-brewery",
+   "answer": {
+    "Noul": 0.1
+   }
+  },
+  {
+   "on": [
+    {
+     "a": {
+      "name": "Hazy Little Thing IPA",
+      "brewery": "Sierra Nevada",
+      "style": "New England IPA",
+      "abv": 6.7
+     },
+     "b": {
+      "name": "Bell's Two Hearted IPA",
+      "brewery": "Bell's",
+      "style": "IPA",
+      "abv": 7.0
+     }
+    }
+   ],
+   "op": "test",
+   "text": "两条实体描述的是同一种啤酒风格吗？",
+   "calib": "align-style",
+   "answer": {
+    "Noul": 0.3
+   }
+  },
+  {
+   "on": [
+    {
+     "a": {
+      "name": "Guinness Draught",
+      "brewery": "Guinness",
+      "style": "Irish Dry Stout",
+      "abv": 4.2
+     },
+     "b": {
+      "name": "Guinness Extra Stout",
+      "brewery": "Guinness",
+      "style": "Foreign Extra Stout",
+      "abv": 5.6
+     }
+    }
+   ],
+   "op": "measure",
+   "text": "两条实体描述作为产品是什么关系？",
+   "calib": "align-link",
+   "answer": {
+    "Score": [
+     0.2,
+     0.72,
+     0.08
+    ]
+   },
+   "scale": [
+    "它们描述的是两种不同的产品。",
+    "它们描述的是密切相关、可能是也可能不是同一款的产品：变体、特别版，或名字两种理解都说得通。",
+    "它们描述的是同一款产品。"
+   ]
+  },
+  {
+   "on": [
+    {
+     "a": {
+      "name": "Guinness Draught",
+      "brewery": "Guinness",
+      "style": "Irish Dry Stout",
+      "abv": 4.2
+     },
+     "b": {
+      "name": "Guinness Extra Stout",
+      "brewery": "Guinness",
+      "style": "Foreign Extra Stout",
+      "abv": 5.6
+     }
+    }
+   ],
+   "op": "test",
+   "text": "两条实体写的是同一个啤酒名吗？",
+   "calib": "align-name",
+   "answer": {
+    "Noul": 0.1
+   }
+  },
+  {
+   "on": [
+    {
+     "a": {
+      "name": "Guinness Draught",
+      "brewery": "Guinness",
+      "style": "Irish Dry Stout",
+      "abv": 4.2
+     },
+     "b": {
+      "name": "Guinness Extra Stout",
+      "brewery": "Guinness",
+      "style": "Foreign Extra Stout",
+      "abv": 5.6
+     }
+    }
+   ],
+   "op": "test",
+   "text": "两条实体来自同一家酒厂吗？",
+   "calib": "align-brewery",
+   "answer": {
+    "Noul": 0.97
+   }
+  },
+  {
+   "on": [
+    {
+     "a": {
+      "name": "Guinness Draught",
+      "brewery": "Guinness",
+      "style": "Irish Dry Stout",
+      "abv": 4.2
+     },
+     "b": {
+      "name": "Guinness Extra Stout",
+      "brewery": "Guinness",
+      "style": "Foreign Extra Stout",
+      "abv": 5.6
+     }
+    }
+   ],
+   "op": "test",
+   "text": "两条实体描述的是同一种啤酒风格吗？",
+   "calib": "align-style",
+   "answer": {
+    "Noul": 0.55
+   }
+  },
+  {
+   "on": [
+    {
+     "a": {
+      "name": "Two Hearted Ale",
+      "brewery": "Bell's Brewery",
+      "style": "American IPA",
+      "abv": 7.0
+     },
+     "b": {
+      "name": "Sierra Nevada Hazy Little Thing",
+      "brewery": "Sierra Nevada Brewing Co.",
+      "style": "Hazy IPA",
+      "abv": 6.7
+     }
+    }
+   ],
+   "op": "measure",
+   "text": "两条实体描述作为产品是什么关系？",
+   "calib": "align-link",
+   "answer": {
+    "Score": [
+     0.93,
+     0.05,
+     0.02
+    ]
+   },
+   "scale": [
+    "它们描述的是两种不同的产品。",
+    "它们描述的是密切相关、可能是也可能不是同一款的产品：变体、特别版，或名字两种理解都说得通。",
+    "它们描述的是同一款产品。"
+   ]
+  },
+  {
+   "on": [
+    {
+     "a": {
+      "name": "Two Hearted Ale",
+      "brewery": "Bell's Brewery",
+      "style": "American IPA",
+      "abv": 7.0
+     },
+     "b": {
+      "name": "Sierra Nevada Hazy Little Thing",
+      "brewery": "Sierra Nevada Brewing Co.",
+      "style": "Hazy IPA",
+      "abv": 6.7
+     }
+    }
+   ],
+   "op": "test",
+   "text": "两条实体写的是同一个啤酒名吗？",
+   "calib": "align-name",
+   "answer": {
+    "Noul": 0.02
+   }
+  },
+  {
+   "on": [
+    {
+     "a": {
+      "name": "Two Hearted Ale",
+      "brewery": "Bell's Brewery",
+      "style": "American IPA",
+      "abv": 7.0
+     },
+     "b": {
+      "name": "Sierra Nevada Hazy Little Thing",
+      "brewery": "Sierra Nevada Brewing Co.",
+      "style": "Hazy IPA",
+      "abv": 6.7
+     }
+    }
+   ],
+   "op": "test",
+   "text": "两条实体来自同一家酒厂吗？",
+   "calib": "align-brewery",
+   "answer": {
+    "Noul": 0.1
+   }
+  },
+  {
+   "on": [
+    {
+     "a": {
+      "name": "Two Hearted Ale",
+      "brewery": "Bell's Brewery",
+      "style": "American IPA",
+      "abv": 7.0
+     },
+     "b": {
+      "name": "Sierra Nevada Hazy Little Thing",
+      "brewery": "Sierra Nevada Brewing Co.",
+      "style": "Hazy IPA",
+      "abv": 6.7
+     }
+    }
+   ],
+   "op": "test",
+   "text": "两条实体描述的是同一种啤酒风格吗？",
+   "calib": "align-style",
+   "answer": {
+    "Noul": 0.3
+   }
+  },
+  {
+   "on": [
+    {
+     "a": {
+      "name": "Two Hearted Ale",
+      "brewery": "Bell's Brewery",
+      "style": "American IPA",
+      "abv": 7.0
+     },
+     "b": {
+      "name": "Guinness Extra Stout",
+      "brewery": "Guinness",
+      "style": "Foreign Extra Stout",
+      "abv": 5.6
+     }
+    }
+   ],
+   "op": "measure",
+   "text": "两条实体描述作为产品是什么关系？",
+   "calib": "align-link",
+   "answer": {
+    "Score": [
+     0.93,
+     0.05,
+     0.02
+    ]
+   },
+   "scale": [
+    "它们描述的是两种不同的产品。",
+    "它们描述的是密切相关、可能是也可能不是同一款的产品：变体、特别版，或名字两种理解都说得通。",
+    "它们描述的是同一款产品。"
+   ]
+  },
+  {
+   "on": [
+    {
+     "a": {
+      "name": "Two Hearted Ale",
+      "brewery": "Bell's Brewery",
+      "style": "American IPA",
+      "abv": 7.0
+     },
+     "b": {
+      "name": "Guinness Extra Stout",
+      "brewery": "Guinness",
+      "style": "Foreign Extra Stout",
+      "abv": 5.6
+     }
+    }
+   ],
+   "op": "test",
+   "text": "两条实体写的是同一个啤酒名吗？",
+   "calib": "align-name",
+   "answer": {
+    "Noul": 0.02
+   }
+  },
+  {
+   "on": [
+    {
+     "a": {
+      "name": "Two Hearted Ale",
+      "brewery": "Bell's Brewery",
+      "style": "American IPA",
+      "abv": 7.0
+     },
+     "b": {
+      "name": "Guinness Extra Stout",
+      "brewery": "Guinness",
+      "style": "Foreign Extra Stout",
+      "abv": 5.6
+     }
+    }
+   ],
+   "op": "test",
+   "text": "两条实体来自同一家酒厂吗？",
+   "calib": "align-brewery",
+   "answer": {
+    "Noul": 0.1
+   }
+  },
+  {
+   "on": [
+    {
+     "a": {
+      "name": "Two Hearted Ale",
+      "brewery": "Bell's Brewery",
+      "style": "American IPA",
+      "abv": 7.0
+     },
+     "b": {
+      "name": "Guinness Extra Stout",
+      "brewery": "Guinness",
+      "style": "Foreign Extra Stout",
+      "abv": 5.6
+     }
+    }
+   ],
+   "op": "test",
+   "text": "两条实体描述的是同一种啤酒风格吗？",
+   "calib": "align-style",
+   "answer": {
+    "Noul": 0.3
+   }
+  },
+  {
+   "on": [
+    {
+     "a": {
+      "name": "Two Hearted Ale",
+      "brewery": "Bell's Brewery",
+      "style": "American IPA",
+      "abv": 7.0
+     },
+     "b": {
+      "name": "Bell's Two Hearted IPA",
+      "brewery": "Bell's",
+      "style": "IPA",
+      "abv": 7.0
+     }
+    }
+   ],
+   "op": "measure",
+   "text": "两条实体描述作为产品是什么关系？",
+   "calib": "align-link",
+   "answer": {
+    "Score": [
+     0.03,
+     0.12,
+     0.85
+    ]
+   },
+   "scale": [
+    "它们描述的是两种不同的产品。",
+    "它们描述的是密切相关、可能是也可能不是同一款的产品：变体、特别版，或名字两种理解都说得通。",
+    "它们描述的是同一款产品。"
+   ]
+  },
+  {
+   "on": [
+    {
+     "a": {
+      "name": "Two Hearted Ale",
+      "brewery": "Bell's Brewery",
+      "style": "American IPA",
+      "abv": 7.0
+     },
+     "b": {
+      "name": "Bell's Two Hearted IPA",
+      "brewery": "Bell's",
+      "style": "IPA",
+      "abv": 7.0
+     }
+    }
+   ],
+   "op": "test",
+   "text": "两条实体写的是同一个啤酒名吗？",
+   "calib": "align-name",
+   "answer": {
+    "Noul": 0.8
+   }
+  },
+  {
+   "on": [
+    {
+     "a": {
+      "name": "Two Hearted Ale",
+      "brewery": "Bell's Brewery",
+      "style": "American IPA",
+      "abv": 7.0
+     },
+     "b": {
+      "name": "Bell's Two Hearted IPA",
+      "brewery": "Bell's",
+      "style": "IPA",
+      "abv": 7.0
+     }
+    }
+   ],
+   "op": "test",
+   "text": "两条实体来自同一家酒厂吗？",
+   "calib": "align-brewery",
+   "answer": {
+    "Noul": 0.93
+   }
+  },
+  {
+   "on": [
+    {
+     "a": {
+      "name": "Two Hearted Ale",
+      "brewery": "Bell's Brewery",
+      "style": "American IPA",
+      "abv": 7.0
+     },
+     "b": {
+      "name": "Bell's Two Hearted IPA",
+      "brewery": "Bell's",
+      "style": "IPA",
+      "abv": 7.0
+     }
+    }
+   ],
+   "op": "test",
+   "text": "两条实体描述的是同一种啤酒风格吗？",
+   "calib": "align-style",
+   "answer": {
+    "Noul": 0.6
+   }
+  },
+  {
+   "on": [
+    {
+     "a": {
+      "name": "Pliny the Elder",
+      "brewery": "Russian River",
+      "style": "Double IPA",
+      "abv": 8.0
+     },
+     "b": {
+      "name": "Sierra Nevada Hazy Little Thing",
+      "brewery": "Sierra Nevada Brewing Co.",
+      "style": "Hazy IPA",
+      "abv": 6.7
+     }
+    }
+   ],
+   "op": "measure",
+   "text": "两条实体描述作为产品是什么关系？",
+   "calib": "align-link",
+   "answer": {
+    "Score": [
+     0.93,
+     0.05,
+     0.02
+    ]
+   },
+   "scale": [
+    "它们描述的是两种不同的产品。",
+    "它们描述的是密切相关、可能是也可能不是同一款的产品：变体、特别版，或名字两种理解都说得通。",
+    "它们描述的是同一款产品。"
+   ]
+  },
+  {
+   "on": [
+    {
+     "a": {
+      "name": "Pliny the Elder",
+      "brewery": "Russian River",
+      "style": "Double IPA",
+      "abv": 8.0
+     },
+     "b": {
+      "name": "Sierra Nevada Hazy Little Thing",
+      "brewery": "Sierra Nevada Brewing Co.",
+      "style": "Hazy IPA",
+      "abv": 6.7
+     }
+    }
+   ],
+   "op": "test",
+   "text": "两条实体写的是同一个啤酒名吗？",
+   "calib": "align-name",
+   "answer": {
+    "Noul": 0.02
+   }
+  },
+  {
+   "on": [
+    {
+     "a": {
+      "name": "Pliny the Elder",
+      "brewery": "Russian River",
+      "style": "Double IPA",
+      "abv": 8.0
+     },
+     "b": {
+      "name": "Sierra Nevada Hazy Little Thing",
+      "brewery": "Sierra Nevada Brewing Co.",
+      "style": "Hazy IPA",
+      "abv": 6.7
+     }
+    }
+   ],
+   "op": "test",
+   "text": "两条实体来自同一家酒厂吗？",
+   "calib": "align-brewery",
+   "answer": {
+    "Noul": 0.1
+   }
+  },
+  {
+   "on": [
+    {
+     "a": {
+      "name": "Pliny the Elder",
+      "brewery": "Russian River",
+      "style": "Double IPA",
+      "abv": 8.0
+     },
+     "b": {
+      "name": "Sierra Nevada Hazy Little Thing",
+      "brewery": "Sierra Nevada Brewing Co.",
+      "style": "Hazy IPA",
+      "abv": 6.7
+     }
+    }
+   ],
+   "op": "test",
+   "text": "两条实体描述的是同一种啤酒风格吗？",
+   "calib": "align-style",
+   "answer": {
+    "Noul": 0.3
+   }
+  },
+  {
+   "on": [
+    {
+     "a": {
+      "name": "Pliny the Elder",
+      "brewery": "Russian River",
+      "style": "Double IPA",
+      "abv": 8.0
+     },
+     "b": {
+      "name": "Bell's Two Hearted IPA",
+      "brewery": "Bell's",
+      "style": "IPA",
+      "abv": 7.0
+     }
+    }
+   ],
+   "op": "measure",
+   "text": "两条实体描述作为产品是什么关系？",
+   "calib": "align-link",
+   "answer": {
+    "Score": [
+     0.93,
+     0.05,
+     0.02
+    ]
+   },
+   "scale": [
+    "它们描述的是两种不同的产品。",
+    "它们描述的是密切相关、可能是也可能不是同一款的产品：变体、特别版，或名字两种理解都说得通。",
+    "它们描述的是同一款产品。"
+   ]
+  },
+  {
+   "on": [
+    {
+     "a": {
+      "name": "Pliny the Elder",
+      "brewery": "Russian River",
+      "style": "Double IPA",
+      "abv": 8.0
+     },
+     "b": {
+      "name": "Bell's Two Hearted IPA",
+      "brewery": "Bell's",
+      "style": "IPA",
+      "abv": 7.0
+     }
+    }
+   ],
+   "op": "test",
+   "text": "两条实体写的是同一个啤酒名吗？",
+   "calib": "align-name",
+   "answer": {
+    "Noul": 0.02
+   }
+  },
+  {
+   "on": [
+    {
+     "a": {
+      "name": "Pliny the Elder",
+      "brewery": "Russian River",
+      "style": "Double IPA",
+      "abv": 8.0
+     },
+     "b": {
+      "name": "Bell's Two Hearted IPA",
+      "brewery": "Bell's",
+      "style": "IPA",
+      "abv": 7.0
+     }
+    }
+   ],
+   "op": "test",
+   "text": "两条实体来自同一家酒厂吗？",
+   "calib": "align-brewery",
+   "answer": {
+    "Noul": 0.1
+   }
+  },
+  {
+   "on": [
+    {
+     "a": {
+      "name": "Pliny the Elder",
+      "brewery": "Russian River",
+      "style": "Double IPA",
+      "abv": 8.0
+     },
+     "b": {
+      "name": "Bell's Two Hearted IPA",
+      "brewery": "Bell's",
+      "style": "IPA",
+      "abv": 7.0
+     }
+    }
+   ],
+   "op": "test",
+   "text": "两条实体描述的是同一种啤酒风格吗？",
+   "calib": "align-style",
+   "answer": {
+    "Noul": 0.3
+   }
+  }
+ ]
+}

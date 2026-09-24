@@ -1,0 +1,57 @@
+// T1 设计者版（步 31-1，施工代理由探针 1 改写：每份结果加 unobserved）。原注：探针 1 · 复现 winnow（GhalebDweikat/winnow）的核心能力：
+// 编码代理的工具输出先切块，逐块判断「与当前任务相关吗」，不相关的块折叠成一行存根，原文存进缓存可再展开；
+// 输出里疑似有报错时整份保留；省下的比例太小时不折叠。
+// 只用 rust-jpp 的公开能力写成。输入来自 input.json（外部数据，J++ 视为不可信材料）。
+import "../../../lib/outcome.jpp";
+budget {calls: 12, cost: 0.2, depth: 256};
+
+// 题。相关性沿用已认证的语义题式（form-topic 的模板，线从真值通道来）；报错题目前没有线。
+let relevant = form("test", "这段话的内容是否与「{concept}」这个话题相关？", {calib: "form-topic"});
+let has_error = test("这段工具输出里是否含有报错、失败或异常信息？", "winnow-error");
+
+// 宿主策略：省下的字符比例低于它就不折叠。这是产品取舍，不是读数的线。
+let min_prune_percent = 20;
+
+let input = content(do("read_json", ["../input.json"], 0));
+
+fn chars(xs) { sum(map(xs, fn(e) { len(e.item) })) }
+fn stub(t) { "[winnow 已折叠 " + text(len(t)) + " 字 · 展开键 " + mat(t).hash + "]" }
+
+// 一份工具输出：两道判断都先登记，再在同一刷新点发出
+fn winnow(result) {
+    let whole = join(result.chunks, "\n");
+    let err = cut(judge(state(mat(whole)), has_error));
+    let r = sieve(result.chunks, relevant, [{concept: input.task}])[0];
+    let pruned = ignored(r);
+    let unobs = map(unobserved(r), fn(p) { p.element.index });
+    let total = sum(map(result.chunks, fn(c) { len(c) }));
+    let keep_all = fn(reason) {
+        {id: result.id, reason: reason, text: result.chunks, pruned: [], uncertain: [], unobserved: unobs, pending: r.pending}
+    };
+    handle(err, {
+        act: fn() { keep_all("error_present") },
+        // 报错题拿不准：按 winnow 的保守原则整份保留；未决责任随返回值交给调用者（J-05）
+        unsure: fn(u) { with(keep_all("error_unsure"), "error_duty", u) },
+        ignore: fn() {
+            if chars(pruned) * 100 < total * min_prune_percent {
+                keep_all("below_min_prune_ratio")
+            } else {
+                // 原文存档：winnow 写进内容寻址缓存。这里写不了文件（write_json 登记为不可逆，
+                // 守卫只有不可信材料上的判断，J-08 拦下），改为随返回值交出，由宿主落盘。见评估缺口 W-1。
+                let cache = map(pruned, fn(e) { {key: mat(e.item).hash, index: e.index, text: e.item} });
+                let folded = map(pruned, fn(e) { e.index });
+                {id: result.id, reason: "pruned",
+                 text: map(range(0, len(result.chunks)), fn(i) {
+                     if contains(folded, i) { stub(result.chunks[i]) } else { result.chunks[i] } }),
+                 pruned: folded,
+                 uncertain: map(undecided(r), fn(p) { p.element.index }),
+                 unobserved: unobs,
+                 archive: cache,
+                 pending: r.pending}
+            }
+        }
+    })
+}
+
+let out = map(range(0, len(input.results)), fn(i) { winnow(input.results[i]) });
+{task: input.task, results: out}

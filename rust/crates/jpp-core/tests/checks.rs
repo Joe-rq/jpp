@@ -6,9 +6,8 @@
 mod common;
 
 use common::*;
-use jpp_core::ast::{Span, Statement};
 use jpp_core::check::Severity;
-use jpp_core::{Type, check};
+use jpp_core::check;
 
 /// `program` 在这些测试里常被局部变量盖住，用别名再取一次
 use common::program as build;
@@ -160,15 +159,14 @@ fn 循环缺bound是错() {
     assert!(check(&two_args).find("J-06").is_some());
 }
 
-/// E12：预算必填。
+/// E12：预算必填。步 12d 起缺预算在降级处报 `J-07a`（IR 的预算必填），不再到检查器。
 #[test]
 fn 缺预算是错() {
-    let program = program(None, vec![], int(1));
-    let at = program.span;
-    let report = check(&program);
-    let d = report.find("J-07").unwrap_or_else(|| panic!("应当报 E12：\n{}", report.render()));
-    assert_eq!(d.span, at);
-    assert!(d.message.contains("budget"), "{}", d.message);
+    let src = source(None, vec![], int(1));
+    let at = src.body.span;
+    let ds = jpp_core::lower(&src).expect_err("缺预算应当降级失败");
+    assert!(ds[0].message.starts_with("J-07a: 程序缺 budget"), "{ds:?}");
+    assert_eq!(ds[0].span, at);
 }
 
 /// E10：程序里有 ask 而 budget 没给 escalate。
@@ -341,7 +339,7 @@ fn 参数类型不符() {
 
 /// `fn twice(x: Int) -> Int !{} { x * 2 }` 后面跟 `twice("不是整数")`
 fn typed_call() -> (jpp_core::Program, Span) {
-    use jpp_core::ast::{Function, Parameter, Statement as S};
+    use Statement as S;
     let twice = S::Function {
         name: "twice".into(),
         function: Function {

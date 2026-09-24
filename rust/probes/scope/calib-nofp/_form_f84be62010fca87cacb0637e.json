@@ -1,0 +1,3590 @@
+{
+ "key": "\u001fform\u001ff84be62010fca87cacb0637e",
+ "hi": 0.5399999999999999,
+ "lo": 0.53,
+ "n": 388,
+ "status": "上岗",
+ "delta": null,
+ "unsure_rate": 0.0052,
+ "unsure_rate_delta": 0.05,
+ "set_id": "",
+ "label_set_id": "truth:语义R-带材料.jsonl",
+ "label_locator": "",
+ "label_fp": "",
+ "label_source": "全体",
+ "certs": {
+  "α=0.1\u001fδ=0.1\u001ff42eafe635fbcc2c\u001f02b7b3636e946b2d\u001ffp=a0e4fd0350eb1a55\u001fsel(split,20260923,181,207)": {
+   "alpha": 0.1,
+   "conf_delta": 0.1,
+   "hi": 0.5399999999999999,
+   "n_accepted": 111,
+   "n_errors": 3,
+   "ucb": 0.05919477542166772,
+   "cluster_unit": "条",
+   "resample": [
+    0,
+    "两侧联合选线（拆分样本）：选线半上取两区上界各 ≤ α 且已决最多的一对，认证半上对该对各检验一次"
+   ],
+   "cost": null,
+   "bounded_side": "上侧：界定 p ≥ hi + δ 一侧的假放行",
+   "label_source": "全体",
+   "label_fp": "a0e4fd0350eb1a55",
+   "selection": {
+    "method": "split",
+    "seed": 20260923,
+    "n_select": 181,
+    "n_certify": 207,
+    "candidates": 1858
+   }
+  }
+ },
+ "samples": [
+  {
+   "p": 0.16,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.98,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.17,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.84,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.01,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.02,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.02,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.04,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.09,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.98,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.98,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.01,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.37,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.22,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.03,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.02,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.22,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.98,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.02,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.01,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.98,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.98,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.02,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.98,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.01,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.98,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.97,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.02,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.03,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.98,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.05,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.69,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.04,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.97,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.07,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.03,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.28,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.07,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.98,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.94,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.01,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.98,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.88,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.03,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.03,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.06,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.01,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.01,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.04,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.1,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.98,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.02,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.03,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.86,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.18,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.45,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.02,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.01,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.86,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.98,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.15,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.03,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.02,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.01,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.01,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.01,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.98,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.01,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.48,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.97,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.22,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.02,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.01,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.97,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.02,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.01,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.03,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.41,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.59,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.06,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.73,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.06,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.94,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.18,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.02,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.02,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.98,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.15,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.14,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.98,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.01,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.03,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.05,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.02,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.02,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.98,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.01,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.92,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.96,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.98,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.07,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.98,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.98,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.02,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.02,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.04,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.03,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.02,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.79,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.03,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.01,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.94,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.22,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.97,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.01,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.98,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.97,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.04,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.03,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.03,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.88,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.98,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.97,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.02,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.01,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.96,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.96,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.03,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.01,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.01,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.04,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.98,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.44,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.01,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.88,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.01,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.04,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.06,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.02,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.94,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.09,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.03,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.02,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.98,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.05,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.98,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.98,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.03,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.98,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.02,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.96,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.05,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.17,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.04,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.98,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.03,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.98,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.02,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.13,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.98,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.01,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.02,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.01,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.02,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.15,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.05,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.01,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.93,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.23,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.97,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.01,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.98,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.97,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.04,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.98,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.98,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.05,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.89,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.98,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.52,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.19,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.02,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.02,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.96,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.03,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.98,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.97,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.02,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.02,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.02,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.05,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.12,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.02,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.05,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.09,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.02,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.73,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.98,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.04,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.13,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.98,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.91,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.03,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.95,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.02,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.12,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.06,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.92,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.4,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.01,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.02,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.06,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.98,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.9,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.16,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.15,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.82,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.07,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.04,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.01,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.1,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.95,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.98,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.93,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.94,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.01,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.03,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.98,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.95,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.02,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.03,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.94,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.02,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.15,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.84,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.01,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.98,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.02,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.67,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.94,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.98,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.02,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.96,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.49,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.02,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.11,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.03,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.98,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.01,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.96,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.98,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.78,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.02,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.96,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.02,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.08,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.95,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.01,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.97,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.32,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.02,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.77,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.98,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.04,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.11,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.89,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.02,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.39,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.99,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.02,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.01,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.02,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.03,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.95,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.96,
+   "label": 1,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.07,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  },
+  {
+   "p": 0.02,
+   "label": 0,
+   "perms": 0,
+   "mode_share": null,
+   "mode": "Unspecified",
+   "phys": "noul",
+   "cluster": null
+  }
+ ],
+ "truth": {
+  "sources": {
+   "human": 30,
+   "model:claude-sonnet-5": 358
+  },
+  "ambiguous": 22,
+  "abstain_rate": 0.05,
+  "spot_check": {
+   "batches": [
+    "nature-r4-R"
+   ],
+   "n": 30,
+   "agree": 30,
+   "rate": 1.0,
+   "lower": 0.9049661471446959,
+   "conf": 0.95
+  },
+  "spot_check_min": 0.9,
+  "gate": "上岗",
+  "batch": "语义R-带材料.jsonl"
+ },
+ "lower": {
+  "alpha": 0.1,
+  "conf_delta": 0.1,
+  "hi": 0.53,
+  "n_accepted": 94,
+  "n_errors": 0,
+  "ucb": 0.024198003994453876,
+  "cluster_unit": "条",
+  "resample": [
+   0,
+   "两侧联合选线（拆分样本）：选线半上取两区上界各 ≤ α 且已决最多的一对，认证半上对该对各检验一次"
+  ],
+  "cost": null,
+  "bounded_side": "下侧：界定 p ≤ lo − δ 一侧的漏放行；hi 字段此处存的是 lo",
+  "label_source": "全体",
+  "label_fp": "a0e4fd0350eb1a55",
+  "selection": {
+   "method": "split",
+   "seed": 20260923,
+   "n_select": 181,
+   "n_certify": 207,
+   "candidates": 1858
+  }
+ },
+ "scope": {
+  "batches": [
+   "语义R-带材料.jsonl"
+  ],
+  "sources": {
+   "human": 30,
+   "model:claude-sonnet-5": 358
+  },
+  "note": "认证集来源与材料指纹范围（B68）"
+ }
+}

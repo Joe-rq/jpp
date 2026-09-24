@@ -1,0 +1,487 @@
+{
+  "backend": "fixed-0",
+  "cost": {
+    "asks": 0,
+    "calls": 10,
+    "replayed": 0,
+    "tokens": 0,
+    "usd": 0.0
+  },
+  "exits": [
+    {
+      "exit": "ignore",
+      "grade": "Fixture",
+      "key": "fixture",
+      "releases": false,
+      "site": 190
+    },
+    {
+      "exit": "act",
+      "grade": "Fixture",
+      "key": "fixture",
+      "releases": false,
+      "site": 190
+    },
+    {
+      "exit": "ignore",
+      "grade": "Fixture",
+      "key": "fixture",
+      "releases": false,
+      "site": 190
+    },
+    {
+      "exit": "ignore",
+      "grade": "Fixture",
+      "key": "fixture",
+      "releases": false,
+      "site": 190
+    },
+    {
+      "exit": "ignore",
+      "grade": "Fixture",
+      "key": "fixture",
+      "releases": false,
+      "site": 190
+    },
+    {
+      "exit": "act",
+      "grade": "Fixture",
+      "key": "fixture",
+      "releases": false,
+      "site": 190
+    },
+    {
+      "exit": "ignore",
+      "grade": "Fixture",
+      "key": "fixture",
+      "releases": false,
+      "site": 190
+    },
+    {
+      "exit": "ignore",
+      "grade": "Fixture",
+      "key": "fixture",
+      "releases": false,
+      "site": 190
+    },
+    {
+      "exit": "act",
+      "grade": "Fixture",
+      "key": "fixture",
+      "releases": false,
+      "site": 190
+    },
+    {
+      "exit": "ignore",
+      "grade": "Fixture",
+      "key": "fixture",
+      "releases": false,
+      "site": 190
+    }
+  ],
+  "fixture_description": "Synthetic fixed observations and synthetic calibration for execution tests only; no live model evaluation.",
+  "local_checks": [],
+  "mode": "fixed observations; no model API requests",
+  "pending": [],
+  "replay": false,
+  "resumed": false,
+  "returned_unsure": [],
+  "status": "returned",
+  "trace": {
+    "events": [
+      {
+        "cost": 0.0,
+        "key": "e5c8b4b1c5180653aa7e6905",
+        "kind": "judge",
+        "note": "「target < 500」",
+        "replayed": false,
+        "site": {
+          "end": 212,
+          "start": 194
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "78f96ecfe05587b254a2b48d",
+        "kind": "judge",
+        "note": "「target < 750」",
+        "replayed": false,
+        "site": {
+          "end": 212,
+          "start": 194
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "869fb13b479730545f8572c6",
+        "kind": "judge",
+        "note": "「target < 625」",
+        "replayed": false,
+        "site": {
+          "end": 212,
+          "start": 194
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "baccef453bdf2fa85bbaed81",
+        "kind": "judge",
+        "note": "「target < 687」",
+        "replayed": false,
+        "site": {
+          "end": 212,
+          "start": 194
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "9d8a8cacf29690826a56a31e",
+        "kind": "judge",
+        "note": "「target < 718」",
+        "replayed": false,
+        "site": {
+          "end": 212,
+          "start": 194
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "174e78b99853c316335718bf",
+        "kind": "judge",
+        "note": "「target < 734」",
+        "replayed": false,
+        "site": {
+          "end": 212,
+          "start": 194
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "ee16f388c92fbf542801b9ec",
+        "kind": "judge",
+        "note": "「target < 726」",
+        "replayed": false,
+        "site": {
+          "end": 212,
+          "start": 194
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "b9a12ca7132573eed26cdaef",
+        "kind": "judge",
+        "note": "「target < 730」",
+        "replayed": false,
+        "site": {
+          "end": 212,
+          "start": 194
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "7dededd6797464dde644df86",
+        "kind": "judge",
+        "note": "「target < 732」",
+        "replayed": false,
+        "site": {
+          "end": 212,
+          "start": 194
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "cce0735b7eae7cd4542f93dc",
+        "kind": "judge",
+        "note": "「target < 731」",
+        "replayed": false,
+        "site": {
+          "end": 212,
+          "start": 194
+        }
+      }
+    ],
+    "warnings": [
+      "W-fixture-line: @190 键 fixture 的线是夹具线（宿主 put 写入或没有认证证书，n=1），出口 Act 照常路由，但按 B29 不算放行不可逆 do 的可信合取项。修法【需接线人】：用 calib-import 或 commission 从带真值样本认证这条线",
+      "W-fixture-line: @190 键 fixture 的线是夹具线（宿主 put 写入或没有认证证书，n=1），出口 Act 照常路由，但按 B29 不算放行不可逆 do 的可信合取项。修法【需接线人】：用 calib-import 或 commission 从带真值样本认证这条线",
+      "W-fixture-line: @190 键 fixture 的线是夹具线（宿主 put 写入或没有认证证书，n=1），出口 Act 照常路由，但按 B29 不算放行不可逆 do 的可信合取项。修法【需接线人】：用 calib-import 或 commission 从带真值样本认证这条线"
+    ]
+  },
+  "value": {
+    "candidates_left": 1,
+    "evidence": [
+      {
+        "exit": {
+          "consumed": true,
+          "exit": "ignore",
+          "id": 0,
+          "q": "3015dd4fb8fdd71dde08ac67"
+        },
+        "id": "7f30143f66b3dfda7649f872|{\"calib\":\"fixture\",\"op\":\"noul\",\"question\":\"3015dd4fb8fdd71dde08ac67\",\"text\":\"target < 500\"}",
+        "material": {
+          "content": {
+            "target": 731
+          },
+          "mat": "7f30143f66b3dfda7649f872",
+          "origin": [
+            "literal"
+          ],
+          "taint": "Trusted"
+        },
+        "question": {
+          "calib": "fixture",
+          "op": "noul",
+          "question": "3015dd4fb8fdd71dde08ac67",
+          "text": "target < 500"
+        },
+        "resolved": true,
+        "value": false
+      },
+      {
+        "exit": {
+          "consumed": true,
+          "exit": "act",
+          "id": 1,
+          "q": "493a190b479b359e3123bb6f"
+        },
+        "id": "7f30143f66b3dfda7649f872|{\"calib\":\"fixture\",\"op\":\"noul\",\"question\":\"493a190b479b359e3123bb6f\",\"text\":\"target < 750\"}",
+        "material": {
+          "content": {
+            "target": 731
+          },
+          "mat": "7f30143f66b3dfda7649f872",
+          "origin": [
+            "literal"
+          ],
+          "taint": "Trusted"
+        },
+        "question": {
+          "calib": "fixture",
+          "op": "noul",
+          "question": "493a190b479b359e3123bb6f",
+          "text": "target < 750"
+        },
+        "resolved": true,
+        "value": true
+      },
+      {
+        "exit": {
+          "consumed": true,
+          "exit": "ignore",
+          "id": 2,
+          "q": "8ee4845aae26a610b3344aeb"
+        },
+        "id": "7f30143f66b3dfda7649f872|{\"calib\":\"fixture\",\"op\":\"noul\",\"question\":\"8ee4845aae26a610b3344aeb\",\"text\":\"target < 625\"}",
+        "material": {
+          "content": {
+            "target": 731
+          },
+          "mat": "7f30143f66b3dfda7649f872",
+          "origin": [
+            "literal"
+          ],
+          "taint": "Trusted"
+        },
+        "question": {
+          "calib": "fixture",
+          "op": "noul",
+          "question": "8ee4845aae26a610b3344aeb",
+          "text": "target < 625"
+        },
+        "resolved": true,
+        "value": false
+      },
+      {
+        "exit": {
+          "consumed": true,
+          "exit": "ignore",
+          "id": 3,
+          "q": "bff20ecb5635a687878b1bf2"
+        },
+        "id": "7f30143f66b3dfda7649f872|{\"calib\":\"fixture\",\"op\":\"noul\",\"question\":\"bff20ecb5635a687878b1bf2\",\"text\":\"target < 687\"}",
+        "material": {
+          "content": {
+            "target": 731
+          },
+          "mat": "7f30143f66b3dfda7649f872",
+          "origin": [
+            "literal"
+          ],
+          "taint": "Trusted"
+        },
+        "question": {
+          "calib": "fixture",
+          "op": "noul",
+          "question": "bff20ecb5635a687878b1bf2",
+          "text": "target < 687"
+        },
+        "resolved": true,
+        "value": false
+      },
+      {
+        "exit": {
+          "consumed": true,
+          "exit": "ignore",
+          "id": 4,
+          "q": "c24b6a3727ec20a58e331f05"
+        },
+        "id": "7f30143f66b3dfda7649f872|{\"calib\":\"fixture\",\"op\":\"noul\",\"question\":\"c24b6a3727ec20a58e331f05\",\"text\":\"target < 718\"}",
+        "material": {
+          "content": {
+            "target": 731
+          },
+          "mat": "7f30143f66b3dfda7649f872",
+          "origin": [
+            "literal"
+          ],
+          "taint": "Trusted"
+        },
+        "question": {
+          "calib": "fixture",
+          "op": "noul",
+          "question": "c24b6a3727ec20a58e331f05",
+          "text": "target < 718"
+        },
+        "resolved": true,
+        "value": false
+      },
+      {
+        "exit": {
+          "consumed": true,
+          "exit": "act",
+          "id": 5,
+          "q": "7480382c6d54590f47b10b92"
+        },
+        "id": "7f30143f66b3dfda7649f872|{\"calib\":\"fixture\",\"op\":\"noul\",\"question\":\"7480382c6d54590f47b10b92\",\"text\":\"target < 734\"}",
+        "material": {
+          "content": {
+            "target": 731
+          },
+          "mat": "7f30143f66b3dfda7649f872",
+          "origin": [
+            "literal"
+          ],
+          "taint": "Trusted"
+        },
+        "question": {
+          "calib": "fixture",
+          "op": "noul",
+          "question": "7480382c6d54590f47b10b92",
+          "text": "target < 734"
+        },
+        "resolved": true,
+        "value": true
+      },
+      {
+        "exit": {
+          "consumed": true,
+          "exit": "ignore",
+          "id": 6,
+          "q": "8445123c5921981f1eaf9807"
+        },
+        "id": "7f30143f66b3dfda7649f872|{\"calib\":\"fixture\",\"op\":\"noul\",\"question\":\"8445123c5921981f1eaf9807\",\"text\":\"target < 726\"}",
+        "material": {
+          "content": {
+            "target": 731
+          },
+          "mat": "7f30143f66b3dfda7649f872",
+          "origin": [
+            "literal"
+          ],
+          "taint": "Trusted"
+        },
+        "question": {
+          "calib": "fixture",
+          "op": "noul",
+          "question": "8445123c5921981f1eaf9807",
+          "text": "target < 726"
+        },
+        "resolved": true,
+        "value": false
+      },
+      {
+        "exit": {
+          "consumed": true,
+          "exit": "ignore",
+          "id": 7,
+          "q": "bb69663b498750389e0336df"
+        },
+        "id": "7f30143f66b3dfda7649f872|{\"calib\":\"fixture\",\"op\":\"noul\",\"question\":\"bb69663b498750389e0336df\",\"text\":\"target < 730\"}",
+        "material": {
+          "content": {
+            "target": 731
+          },
+          "mat": "7f30143f66b3dfda7649f872",
+          "origin": [
+            "literal"
+          ],
+          "taint": "Trusted"
+        },
+        "question": {
+          "calib": "fixture",
+          "op": "noul",
+          "question": "bb69663b498750389e0336df",
+          "text": "target < 730"
+        },
+        "resolved": true,
+        "value": false
+      },
+      {
+        "exit": {
+          "consumed": true,
+          "exit": "act",
+          "id": 8,
+          "q": "6d8550c61e1e0104e0bee1aa"
+        },
+        "id": "7f30143f66b3dfda7649f872|{\"calib\":\"fixture\",\"op\":\"noul\",\"question\":\"6d8550c61e1e0104e0bee1aa\",\"text\":\"target < 732\"}",
+        "material": {
+          "content": {
+            "target": 731
+          },
+          "mat": "7f30143f66b3dfda7649f872",
+          "origin": [
+            "literal"
+          ],
+          "taint": "Trusted"
+        },
+        "question": {
+          "calib": "fixture",
+          "op": "noul",
+          "question": "6d8550c61e1e0104e0bee1aa",
+          "text": "target < 732"
+        },
+        "resolved": true,
+        "value": true
+      },
+      {
+        "exit": {
+          "consumed": true,
+          "exit": "ignore",
+          "id": 9,
+          "q": "5a03ce631d31cf4abbb85b7e"
+        },
+        "id": "7f30143f66b3dfda7649f872|{\"calib\":\"fixture\",\"op\":\"noul\",\"question\":\"5a03ce631d31cf4abbb85b7e\",\"text\":\"target < 731\"}",
+        "material": {
+          "content": {
+            "target": 731
+          },
+          "mat": "7f30143f66b3dfda7649f872",
+          "origin": [
+            "literal"
+          ],
+          "taint": "Trusted"
+        },
+        "question": {
+          "calib": "fixture",
+          "op": "noul",
+          "question": "5a03ce631d31cf4abbb85b7e",
+          "text": "target < 731"
+        },
+        "resolved": true,
+        "value": false
+      }
+    ],
+    "pending": [],
+    "questions": 10,
+    "target": 731
+  }
+}

@@ -85,7 +85,7 @@ fn 打出来的json要能直接粘贴() {
 #[test]
 fn 循环外绑的常量也算常量() {
     let 查 = |src: &str| {
-        let p = jpp_frontend::lower(&jpp_frontend::parse(src).expect("解析")).expect("lower");
+        let p = jpp_core::lower(&jpp_core::syntax::parse(src).expect("解析")).expect("lower");
         jpp_core::check(&p)
     };
     // 字面量：本来就拦

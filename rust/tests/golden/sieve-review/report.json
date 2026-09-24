@@ -1,0 +1,109 @@
+{
+  "backend": "fixed-0",
+  "cost": {
+    "asks": 0,
+    "calls": 3,
+    "replayed": 0,
+    "tokens": 0,
+    "usd": 0.0
+  },
+  "exits": [
+    {
+      "exit": "act",
+      "grade": "Fixture",
+      "key": "review",
+      "releases": false,
+      "site": 682
+    },
+    {
+      "exit": "ignore",
+      "grade": "Fixture",
+      "key": "review",
+      "releases": false,
+      "site": 682
+    }
+  ],
+  "fixture_description": "Synthetic fixed observations for sieve*.jpp (construction check only; not model evaluation). Note 2 × 北京 is set to 0.5 on purpose to show an unsure element; calibration records here are hand-written to exercise routing, not calibration.",
+  "local_checks": [],
+  "mode": "fixed observations; no model API requests",
+  "pending": [],
+  "replay": false,
+  "resumed": false,
+  "returned_unsure": [],
+  "status": "returned",
+  "trace": {
+    "events": [
+      {
+        "cost": 0.0,
+        "key": "00b9cb13c5e07318c7c93a1d",
+        "kind": "gen",
+        "note": "请评审这段代码，指出问题。",
+        "replayed": false,
+        "site": {
+          "end": 518,
+          "start": 458
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "46299ad465ed1e59f28d127c",
+        "kind": "transform",
+        "note": "",
+        "replayed": false,
+        "site": {
+          "end": 2157,
+          "start": 2072
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "cfb8069c11cdf9ed2d0a10ec",
+        "kind": "transform",
+        "note": "",
+        "replayed": false,
+        "site": {
+          "end": 2157,
+          "start": 2072
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "6b94d17c3d790cf40b4fa224",
+        "kind": "judge",
+        "note": "「这条评审意见是否指出了安全问题？」",
+        "replayed": false,
+        "site": {
+          "end": 706,
+          "start": 682
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "50b6d185ea6b7b5f766ac7bc",
+        "kind": "judge",
+        "note": "「这条评审意见是否指出了安全问题？」",
+        "replayed": false,
+        "site": {
+          "end": 706,
+          "start": 682
+        }
+      }
+    ],
+    "warnings": [
+      "W-fixture-line: @682 键 review 的线是夹具线（宿主 put 写入或没有认证证书，n=1），出口 Act 照常路由，但按 B29 不算放行不可逆 do 的可信合取项。修法【需接线人】：用 calib-import 或 commission 从带真值样本认证这条线"
+    ]
+  },
+  "value": {
+    "not_flagged": [
+      1
+    ],
+    "security_flagged": [
+      0
+    ],
+    "taints": [
+      "trusted",
+      "trusted"
+    ],
+    "unsure": []
+  }
+}

@@ -1,0 +1,264 @@
+{
+  "backend": "fixed-0",
+  "cost": {
+    "asks": 0,
+    "calls": 0,
+    "replayed": 11,
+    "tokens": 0,
+    "usd": 0.0
+  },
+  "exits": [
+    {
+      "exit": "act",
+      "grade": "Fixture",
+      "key": "fixture",
+      "releases": false,
+      "site": 186
+    },
+    {
+      "exit": "act",
+      "grade": "Fixture",
+      "key": "fixture",
+      "releases": false,
+      "site": 186
+    },
+    {
+      "exit": "unsure(band)",
+      "grade": "Fixture",
+      "key": "fixture",
+      "releases": false,
+      "site": 186
+    },
+    {
+      "exit": "unsure(band)",
+      "grade": "Fixture",
+      "key": "fixture",
+      "releases": false,
+      "site": 186
+    },
+    {
+      "exit": "act",
+      "grade": "Fixture",
+      "key": "fixture",
+      "releases": false,
+      "site": 186
+    },
+    {
+      "exit": "ignore",
+      "grade": "Fixture",
+      "key": "fixture",
+      "releases": false,
+      "site": 186
+    }
+  ],
+  "fixture_description": "Synthetic fixed observations and synthetic calibration for execution tests only; no live model evaluation.",
+  "local_checks": [],
+  "mode": "replay; no model API requests",
+  "pending": [],
+  "replay": true,
+  "resumed": false,
+  "returned_unsure": [],
+  "status": "returned",
+  "trace": {
+    "events": [
+      {
+        "cost": 0.0,
+        "key": "f64c2a27c70964a381b29441",
+        "kind": "judge",
+        "note": "「Candidate fits?」",
+        "replayed": true,
+        "site": {
+          "end": 208,
+          "start": 190
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "1ea1a44f3cfa664fe7d98cad",
+        "kind": "judge",
+        "note": "「Candidate fits?」",
+        "replayed": true,
+        "site": {
+          "end": 208,
+          "start": 190
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "235c1f1d70b1931415b125ce",
+        "kind": "judge",
+        "note": "「Candidate fits?」",
+        "replayed": true,
+        "site": {
+          "end": 208,
+          "start": 190
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "f2b97dba659770f974ad98db",
+        "kind": "judge",
+        "note": "「Candidate fits?」",
+        "replayed": true,
+        "site": {
+          "end": 208,
+          "start": 190
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "f9353180f5af88e7cfacd6a4",
+        "kind": "do",
+        "note": "record_check",
+        "replayed": true,
+        "site": {
+          "end": 1081,
+          "start": 972
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "e1e8ba93db05c758d7f3b770",
+        "kind": "do",
+        "note": "record_check",
+        "replayed": true,
+        "site": {
+          "end": 1081,
+          "start": 972
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "b3af66de2ec21d7cd00a4895",
+        "kind": "transform",
+        "note": "",
+        "replayed": true,
+        "site": {
+          "end": 3269,
+          "start": 3224
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "db50bb288ba14ddfdc317871",
+        "kind": "judge",
+        "note": "「Candidate fits?」",
+        "replayed": true,
+        "site": {
+          "end": 208,
+          "start": 190
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "b60e8b2b88d9894bf9c142d0",
+        "kind": "do",
+        "note": "record_check",
+        "replayed": true,
+        "site": {
+          "end": 1081,
+          "start": 972
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "c03263884664a5ac5bc7a145",
+        "kind": "transform",
+        "note": "",
+        "replayed": true,
+        "site": {
+          "end": 3269,
+          "start": 3224
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "468595bb5fcc5c16918ddaf8",
+        "kind": "judge",
+        "note": "「Candidate fits?」",
+        "replayed": true,
+        "site": {
+          "end": 208,
+          "start": 190
+        }
+      }
+    ],
+    "warnings": [
+      "W-fixture-line: @186 键 fixture 的线是夹具线（宿主 put 写入或没有认证证书，n=1），出口 Act 照常路由，但按 B29 不算放行不可逆 do 的可信合取项。修法【需接线人】：用 calib-import 或 commission 从带真值样本认证这条线",
+      "W-fixture-line: @186 键 fixture 的线是夹具线（宿主 put 写入或没有认证证书，n=1），出口 Act 照常路由，但按 B29 不算放行不可逆 do 的可信合取项。修法【需接线人】：用 calib-import 或 commission 从带真值样本认证这条线",
+      "W-untyped-transfer: observe 把 unsure(band) 装在返回值里交了出去，但返回类型没提 Exit，调用者从签名上看不出自己收到了一份未决。修法：把返回类型标为含 Exit（如 `-> Exit`、`-> Record<Exit>`）",
+      "W-untyped-transfer: read 把 unsure(band) 装在返回值里交了出去，但返回类型没提 Exit，调用者从签名上看不出自己收到了一份未决。修法：把返回类型标为含 Exit（如 `-> Exit`、`-> Record<Exit>`）",
+      "W-untyped-transfer: observe 把 unsure(band) 装在返回值里交了出去，但返回类型没提 Exit，调用者从签名上看不出自己收到了一份未决。修法：把返回类型标为含 Exit（如 `-> Exit`、`-> Record<Exit>`）",
+      "W-untyped-transfer: read 把 unsure(band) 装在返回值里交了出去，但返回类型没提 Exit，调用者从签名上看不出自己收到了一份未决。修法：把返回类型标为含 Exit（如 `-> Exit`、`-> Record<Exit>`）",
+      "W-untyped-transfer: validate 把 unsure(band) 装在返回值里交了出去，但返回类型没提 Exit，调用者从签名上看不出自己收到了一份未决。修法：把返回类型标为含 Exit（如 `-> Exit`、`-> Record<Exit>`）",
+      "W-untyped-transfer: validate 把 unsure(band) 装在返回值里交了出去，但返回类型没提 Exit，调用者从签名上看不出自己收到了一份未决。修法：把返回类型标为含 Exit（如 `-> Exit`、`-> Record<Exit>`）",
+      "W-drop-vs-escalate: 显式丢弃了未决责任 unsure(band)（题 c7a73a26）；drop 合法且已记账，但只有 escalate 会把它交给人",
+      "W-fixture-line: @186 键 fixture 的线是夹具线（宿主 put 写入或没有认证证书，n=1），出口 Act 照常路由，但按 B29 不算放行不可逆 do 的可信合取项。修法【需接线人】：用 calib-import 或 commission 从带真值样本认证这条线",
+      "W-drop-vs-escalate: 显式丢弃了未决责任 unsure(band)（题 c7a73a26）；drop 合法且已记账，但只有 escalate 会把它交给人"
+    ]
+  },
+  "value": {
+    "final": {
+      "best": {
+        "cost": 2,
+        "members": [
+          "C"
+        ]
+      },
+      "evidence": [
+        "f64c2a27c70964a381b29441",
+        "1ea1a44f3cfa664fe7d98cad",
+        "235c1f1d70b1931415b125ce",
+        "f2b97dba659770f974ad98db",
+        "db50bb288ba14ddfdc317871",
+        "468595bb5fcc5c16918ddaf8"
+      ],
+      "pending": []
+    },
+    "improved": {
+      "best": {
+        "cost": 2,
+        "members": [
+          "C"
+        ]
+      },
+      "evidence": [
+        "f64c2a27c70964a381b29441",
+        "1ea1a44f3cfa664fe7d98cad",
+        "235c1f1d70b1931415b125ce",
+        "f2b97dba659770f974ad98db",
+        "db50bb288ba14ddfdc317871"
+      ],
+      "pending": [
+        "D"
+      ]
+    },
+    "initial": {
+      "best": {
+        "cost": 9,
+        "members": [
+          "A",
+          "B"
+        ]
+      },
+      "evidence": [
+        "f64c2a27c70964a381b29441",
+        "1ea1a44f3cfa664fe7d98cad",
+        "235c1f1d70b1931415b125ce",
+        "f2b97dba659770f974ad98db"
+      ],
+      "pending": [
+        "C",
+        "D"
+      ]
+    },
+    "terminal": true,
+    "used_before_complete": {
+      "cost": 9,
+      "members": [
+        "A",
+        "B"
+      ]
+    }
+  }
+}

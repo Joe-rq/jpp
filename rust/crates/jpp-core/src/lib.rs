@@ -1,7 +1,7 @@
 //! J++ 共同内核：程序表示、值与环境、静态检查、解释执行、效应适配、账本与重放。
 //!
-//! 唯一入口是 [`run`]：先静态检查（[`check::check`]），无错再解释执行。前端负责 `.jpp` → [`ast::Program`]
-//! 的解析与 lower，不执行程序；CLI 负责文件、固定观察表与报告。接口说明见 `INTERFACE.md`。
+//! 唯一入口是 [`run`]：先静态检查（[`check::check`]），无错再解释执行。`.jpp` 经 [`syntax::parse`] 与 [`lower`]
+//! 降到 IR（[`Program`]），降级不执行程序；CLI 负责文件、固定观察表与报告。接口说明见 `INTERFACE.md`。
 //!
 //! ```ignore
 //! use jpp_core::{run, effects::{FixedClient, CalibStore}, interp::ActionRegistry, ledger::Ledger};
@@ -10,17 +10,18 @@
 //! let outcome = run(&program, &mut client, &CalibStore::new(), &ActionRegistry::new(), &mut ledger)?;
 //! ```
 
-pub mod ast;
-pub mod check;
-pub mod conformal;
+pub use jpp_check as check;
+pub use jpp_value::stat as conformal;
 pub mod effects;
 pub mod interp;
 pub mod ledger;
-pub mod strength;
-pub mod truth;
-pub mod value;
+pub mod names;
+pub use jpp_calib::strength;
+pub use jpp_calib::truth;
+pub use jpp_value::value;
 
-pub use ast::{Block, Budget, Expr, ExprKind, Function, Parameter, Program, Span, Statement, Type};
+pub use jpp_ir::ir;
+pub use jpp_ir::ir::{Block, Budget, Expr, Function, Parameter, Program, Span, Stmt, Type};
 pub use check::{Diagnostic, Report, Severity, check, check_with_calib, check_with_profile};
 pub use effects::{CalibRecord, CalibStore, Client, EffectError, FixedClient, JevClient, NoCallClient, obs_key};
 pub use interp::{ActionRegistry, Cost, Interp, Outcome, RtError, TaintOut};
@@ -80,8 +81,26 @@ pub fn run(
     if !report.is_ok() {
         return Err(Error::Check(report));
     }
-    let budget = program.budget.clone().expect("检查器保证预算存在（E12）");
+    let budget = program.budget.clone();
     let out = Interp::new(client, ledger, calib, actions, budget).run(program).map_err(Error::Runtime)?;
+    Ok(带出静态告警(out, &report))
+}
+
+/// 审计重放（B35；21 步 3）：只凭账本重现首跑。与 [`run`] 相同，只是账本里记过的调用照记录计入预算，
+/// 缺的记录报 `E-replay`（致命，不进 cause）。续跑用 [`run`]（已记录的不付费、继续往下）。
+pub fn run_replay(
+    program: &Program,
+    client: &mut dyn Client,
+    calib: &CalibStore,
+    actions: &ActionRegistry,
+    ledger: &mut Ledger,
+) -> Result<Outcome, Error> {
+    let report = check_with_calib(program, calib);
+    if !report.is_ok() {
+        return Err(Error::Check(report));
+    }
+    let budget = program.budget.clone();
+    let out = Interp::new(client, ledger, calib, actions, budget).audit_replay().run(program).map_err(Error::Runtime)?;
     Ok(带出静态告警(out, &report))
 }
 
@@ -119,7 +138,7 @@ pub fn run_with_fits(
     if !report.is_ok() {
         return Err(Error::Check(report));
     }
-    let budget = program.budget.clone().unwrap_or(Budget { calls: 0, cost: 0.0, depth: None, escalate: None, unsure: None, absent: None, latency_p95: None });
+    let budget = program.budget.clone();
     let out = interp::Interp::with_fits(client, ledger, calib, actions, fits, budget).run(program).map_err(Error::Runtime)?;
     Ok(带出静态告警(out, &report))
 }
@@ -132,6 +151,14 @@ pub fn run_unchecked(
     actions: &ActionRegistry,
     ledger: &mut Ledger,
 ) -> Result<Outcome, RtError> {
-    let budget = program.budget.clone().unwrap_or(Budget { calls: 0, cost: 0.0, depth: None, escalate: None, unsure: None, absent: None, latency_p95: None });
+    let budget = program.budget.clone();
     Interp::new(client, ledger, calib, actions, budget).run(program)
+}
+
+pub use jpp_syntax as syntax;
+
+/// 把表层程序降到 IR（步 12d）：`jpp_syntax::lower` 配上外观层组装的名字表（[`names::CurrentNames`]）。
+/// 缺预算、预算块写错在这里报（`J-07a`）。
+pub fn lower(p: &syntax::ast::Program) -> Result<Program, Vec<syntax::Diagnostic>> {
+    syntax::lower(p, &names::CurrentNames)
 }

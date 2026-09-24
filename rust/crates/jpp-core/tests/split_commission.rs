@@ -8,7 +8,7 @@ fn 折入(n: usize) -> CalibStore {
         let pos = i % 2 == 0;
         let p = if pos { 0.95 + (i % 5) as f64 * 0.01 } else { 0.01 + (i % 5) as f64 * 0.01 };
         c.absorb("k", Sample { p: Some(p), label: Some(u8::from(pos)), perms: 0, mode_share: None,
-            mode: LiteralMode::default(), phys: "noul".into(), cluster: None }).expect("折得进");
+            mode: LiteralMode::default(), phys: "noul".into(), cluster: None, stratum: None }).expect("折得进");
     }
     c
 }

@@ -18,14 +18,34 @@ use jpp_core::effects::CalibStore;
 use jpp_core::strength::{allocate, allocate_report, uncertainty};
 use jpp_core::value::{Answer, Op, Reading};
 
+
+// 读数是句柄、答案在表里（步 11b-3）：测试自带一张答案表，经 `Answers` 交给 `strength`。
+thread_local! {
+    static 答: std::cell::RefCell<jpp_core::value::AnswerTable> = Default::default();
+    static 号: std::cell::Cell<u64> = const { std::cell::Cell::new(0) };
+}
+fn 新句柄() -> u64 {
+    号.with(|c| {
+        let v = c.get();
+        c.set(v + 1);
+        v
+    })
+}
+fn 记答(r: &Reading, a: Answer) {
+    答.with(|t| t.borrow_mut().insert(r, a));
+}
+fn 答表() -> jpp_core::value::AnswerTable {
+    答.with(|t| t.borrow().clone())
+}
+
 fn 读数(calib: &str, p: f64) -> Rc<Reading> {
     let r = Reading {
         q_hash: "q".into(), state_hash: "s".into(), op: Op::Test, calib: calib.into(),
-        answer: Default::default(), fail: None, model_id: "m".into(), ledger_key: "lk".into(),
+        id: 新句柄(), fail: None, model_id: "m".into(), ledger_key: "lk".into(),
         over_len: 0, scale: vec![], perms: Default::default(), mode_share: Default::default(),
-        missing_evidence: vec![], state_taint: Default::default(), form_hash: None,
+        missing_evidence: vec![], state_taint: Default::default(), form_hash: None, fp: None,
     };
-    r.fill(Answer::Noul(p));
+    记答(&r, Answer::Noul(p));
     Rc::new(r)
 }
 
@@ -39,10 +59,10 @@ fn 冷键上不许静默按下标排() {
 
     // **算不出来的不是一个数**
     for r in &rs {
-        assert_eq!(uncertainty(&calib, r), None, "冷键上 uncertainty 该是「算不出」，不是一个可排序的数");
+        assert_eq!(uncertainty(&calib, &答表(), r), None, "冷键上 uncertainty 该是「算不出」，不是一个可排序的数");
     }
 
-    let rep = allocate_report(&calib, &rs, 2);
+    let rep = allocate_report(&calib, &答表(), &rs, 2);
     assert!(rep.picked.is_empty(), "**一条都排不了序，就不许给出前 k 个**：{:?}", rep.picked);
     assert_eq!(rep.算不出.len(), 6, "六条全算不出，而且要说出来");
     // 退化答案长这样，现在不许再出现
@@ -59,11 +79,11 @@ fn 有线的键上照常给正确答案() {
     let rs: Vec<_> = P.iter().map(|p| 读数("k", *p)).collect();
 
     for r in &rs {
-        assert!(uncertainty(&calib, r).is_some(), "有线就算得出");
+        assert!(uncertainty(&calib, &答表(), r).is_some(), "有线就算得出");
     }
-    let picked = allocate(&calib, &rs, 2);
+    let picked = allocate(&calib, &答表(), &rs, 2);
     assert_eq!(picked, vec![2, 3], "0.55 与 0.47 在带内 = 最不确定：{picked:?}");
-    assert!(allocate_report(&calib, &rs, 2).算不出.is_empty());
+    assert!(allocate_report(&calib, &答表(), &rs, 2).算不出.is_empty());
 }
 
 /// **混着来**：有线的排得了、冷的排不了，**两者不许混在一张榜上**。
@@ -75,7 +95,7 @@ fn 冷的与有线的不混进一张榜() {
     calib.profile.delta = (0.0, 0.0, 0.0);
     let rs = vec![读数("冷", 0.99), 读数("热", 0.5), 读数("冷", 0.01), 读数("热", 0.99)];
 
-    let rep = allocate_report(&calib, &rs, 3);
+    let rep = allocate_report(&calib, &答表(), &rs, 3);
     assert_eq!(rep.picked, vec![1, 3], "只有两条排得了序，k=3 也只能给两条");
     assert_eq!(rep.算不出, vec![0, 2], "**排不了的要点名，不是悄悄掉队**");
 }
@@ -106,7 +126,7 @@ let rs = [judge(state(mat("a")), test("q","k")), judge(state(mat("b")), test("q"
           judge(state(mat("c")), test("q","k"))];
 allocate(rs, 2)
 "#;
-    let program = jpp_frontend::lower(&jpp_frontend::parse(src).expect("解析")).expect("lower");
+    let program = jpp_core::lower(&jpp_core::syntax::parse(src).expect("解析")).expect("lower");
     let mut l = Ledger::new();
     let out = run(&program, &mut 桩(RefCell::new(0)), &CalibStore::new(), &ActionRegistry::new(), &mut l).expect("跑得完");
     let v = out.value_json();

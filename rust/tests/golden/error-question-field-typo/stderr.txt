@@ -1,0 +1,7 @@
+<ROOT>/examples/errors/question-field-typo.jpp:2:9: W-diag-mention-scope: 题面问「提到」却没有声明外延：代称、所属成员、联想相关算不算，读题的人各有口径（B13；第三轮人机一致 78%，分歧全部来自这里）。修法：写明口径，例如「是否直接写出了…，或用代称明确指向它（只是话题相关不算）」，或改问「是否与…这个话题相关」
+let q = test("这段话是否提到了北京？", "form-mention");
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<ROOT>/examples/errors/question-field-typo.jpp:3:1: E-field: 题没有字段 txt。修法：改成题的可读字段之一：text、op、calib、scale、evidence、hash、subject、predicate、partition、request、presupposition、form、template、fill
+q.txt
+^^^^^
+<ROOT>/examples/errors/question-field-typo.jpp: check failed (1 errors)

@@ -17,7 +17,7 @@ use jpp_core::effects::{CalibStore, Client, EffectError, GenResult, JudgeResult,
 use jpp_core::ledger::Ledger;
 use jpp_core::value::{Answer, Question, State};
 use jpp_core::{run, ActionRegistry};
-use jpp_frontend::{lower, parse};
+use jpp_core::{lower, syntax::parse};
 use serde_json::Value as Json;
 
 struct 定值(f64, RefCell<u64>);
@@ -70,7 +70,7 @@ fn 跑完程序之后人还能写线上岗() {
 fn 只有观察的记录不算程序积累() {
     let mut c = CalibStore::new();
     c.absorb("k", Sample { p: Some(0.9), label: None, perms: 0, mode_share: None,
-                           mode: LiteralMode::default(), phys: "noul".into(), cluster: None }).unwrap();
+                           mode: LiteralMode::default(), phys: "noul".into(), cluster: None, stratum: None }).unwrap();
     let rec = c.get("k");
     assert_eq!((rec.n, rec.observations(), rec.labeled()), (0, 1, 0));
     assert_eq!(rec.provenance(), Provenance::只有观察,
@@ -83,7 +83,7 @@ fn 只有观察的记录不算程序积累() {
 fn 没标注与认证不过说的不是同一句() {
     let mut 无标注 = CalibStore::new();
     无标注.absorb("k", Sample { p: Some(0.9), label: None, perms: 0, mode_share: None,
-                                mode: LiteralMode::default(), phys: "noul".into(), cluster: None }).unwrap();
+                                mode: LiteralMode::default(), phys: "noul".into(), cluster: None, stratum: None }).unwrap();
     let a = 无标注.commission("k", 0.10, 0.10, "条").expect_err("没标注就认不了");
     assert!(matches!(a, Refusal::跑不成(_)), "没有终点可报：{a:?}");
     assert_eq!(a.n_needed(), None);
@@ -91,7 +91,7 @@ fn 没标注与认证不过说的不是同一句() {
     let mut 有标注 = CalibStore::new();
     for i in 0..10 {
         有标注.absorb("k", Sample { p: Some(0.5 + i as f64 * 0.04), label: Some(i % 2), perms: 0,
-                                    mode_share: None, mode: LiteralMode::default(), phys: "noul".into(), cluster: None }).unwrap();
+                                    mode_share: None, mode: LiteralMode::default(), phys: "noul".into(), cluster: None, stratum: None }).unwrap();
     }
     let b = 有标注.commission("k", 0.01, 0.10, "条").expect_err("10 条撑不起 α=0.01");
     assert!(matches!(b, Refusal::认证不过(_)), "有终点可报：{b:?}");
@@ -109,7 +109,7 @@ fn 收紧不需要凭据放宽才需要() {
     // 先用带标注的证据认证上岗
     for i in 0..30 {
         c.absorb("k", Sample { p: Some(0.30 + i as f64 * 0.02), label: Some(if i > 6 { 1 } else { 0 }), perms: 0,
-                               mode_share: None, mode: LiteralMode::default(), phys: "noul".into(), cluster: None }).unwrap();
+                               mode_share: None, mode: LiteralMode::default(), phys: "noul".into(), cluster: None, stratum: None }).unwrap();
     }
     c.commission("k", 0.45, 0.10, "条").expect("认得动");
     assert_eq!(c.get("k").status, "上岗");
@@ -162,7 +162,7 @@ handle(e, {act: fn() { {r: "act", 源: line_source(e)} },
     let mut 证书 = CalibStore::new();
     for i in 0..30 {
         证书.absorb("k", Sample { p: Some(0.30 + i as f64 * 0.02), label: Some(if i > 6 { 1 } else { 0 }), perms: 0,
-                                  mode_share: None, mode: LiteralMode::default(), phys: "noul".into(), cluster: None }).unwrap();
+                                  mode_share: None, mode: LiteralMode::default(), phys: "noul".into(), cluster: None, stratum: None }).unwrap();
     }
     证书.commission("k", 0.45, 0.10, "条").expect("认得动");
     let (v2, w2) = 跑(&证书);
@@ -182,7 +182,7 @@ fn 两张不同风险目标的证书并存而不是覆盖() {
     let mut c = CalibStore::new();
     for i in 0..30 {
         c.absorb("k", Sample { p: Some(0.30 + i as f64 * 0.02), label: Some(if i > 6 { 1 } else { 0 }), perms: 0,
-                               mode_share: None, mode: LiteralMode::default(), phys: "noul".into(), cluster: None }).unwrap();
+                               mode_share: None, mode: LiteralMode::default(), phys: "noul".into(), cluster: None, stratum: None }).unwrap();
     }
     let 强 = c.commission("k", 0.45, 0.10, "条").expect("认得动");
     let 线1 = c.get("k").hi;
@@ -207,7 +207,7 @@ fn 同一个风险目标重认是更新那一格() {
     let mut c = CalibStore::new();
     for i in 0..30 {
         c.absorb("k", Sample { p: Some(0.30 + i as f64 * 0.02), label: Some(if i > 6 { 1 } else { 0 }), perms: 0,
-                               mode_share: None, mode: LiteralMode::default(), phys: "noul".into(), cluster: None }).unwrap();
+                               mode_share: None, mode: LiteralMode::default(), phys: "noul".into(), cluster: None, stratum: None }).unwrap();
     }
     c.commission("k", 0.45, 0.10, "条").unwrap();
     c.commission("k", 0.45, 0.10, "条").unwrap();

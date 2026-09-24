@@ -1,0 +1,11 @@
+[package]
+name = "jpp-value"
+version = "0.1.0"
+edition = "2024"
+license = "MIT"
+description = "J++ value model (L1): values, materials, questions, readings, exits; stat module"
+
+[dependencies]
+jpp-ir = { path = "../jpp-ir" }
+serde = { version = "1", features = ["derive", "rc"] }
+serde_json = "1"

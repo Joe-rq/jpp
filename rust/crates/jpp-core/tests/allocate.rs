@@ -69,12 +69,12 @@ fn readings(case: &Json) -> Vec<Rc<Reading>> {
                 }
                 other => panic!("基准里没预期的题式 {other}"),
             };
-            Rc::new(Reading {
+            let r = Rc::new(Reading {
                 q_hash: format!("q{i}"),
                 state_hash: format!("s{i}"),
                 op,
                 calib: "k".into(),
-                answer: Some(answer).into(),
+                id: 新句柄(),
                 fail: None,
                 model_id: "fixed-0".into(),
                 ledger_key: format!("L{i}"),
@@ -83,11 +83,32 @@ fn readings(case: &Json) -> Vec<Rc<Reading>> {
                 perms: Default::default(),
         mode_share: Default::default(),
         missing_evidence: vec![],
-        state_taint: Default::default(), form_hash: None,
-            })
+        state_taint: Default::default(), form_hash: None, fp: None,
+            });
+            记答(&r, answer);
+            r
         })
         .collect()
 }
+// 读数是句柄、答案在表里（步 11b-3）：测试自带一张答案表，经 `Answers` 交给 `strength`。
+thread_local! {
+    static 答: std::cell::RefCell<jpp_core::value::AnswerTable> = Default::default();
+    static 号: std::cell::Cell<u64> = const { std::cell::Cell::new(0) };
+}
+fn 新句柄() -> u64 {
+    号.with(|c| {
+        let v = c.get();
+        c.set(v + 1);
+        v
+    })
+}
+fn 记答(r: &Reading, a: Answer) {
+    答.with(|t| t.borrow_mut().insert(r, a));
+}
+fn 答表() -> jpp_core::value::AnswerTable {
+    答.with(|t| t.borrow().clone())
+}
+
 
 #[test]
 fn 与python内核选出同一批下标() {
@@ -98,7 +119,7 @@ fn 与python内核选出同一批下标() {
     for case in cases {
         let name = case["name"].as_str().unwrap();
         let k = case["k"].as_u64().unwrap() as usize;
-        let got = allocate(&store(case, profile), &readings(case), k);
+        let got = { let rs = readings(case); allocate(&store(case, profile), &答表(), &rs, k) };
         let want: Vec<usize> = case["picked"].as_array().unwrap().iter().map(|x| x.as_u64().unwrap() as usize).collect();
         assert_eq!(got, want, "用例 {name}：Rust 选了 {got:?}，Python 选了 {want:?}");
     }
@@ -129,7 +150,7 @@ fn 冷记录的线来自档案不来自记录() {
     let find = |n: &str| cases.iter().find(|c| c["name"] == n).unwrap_or_else(|| panic!("基准里缺 {n}"));
     let (a, b) = (find("cold_record"), find("cold_lines_ignored"));
     assert_ne!(a["hi"], b["hi"], "两个用例的记录线本来就该不同，否则这条测不出东西");
-    let pa = allocate(&store(a, &o["profile"]), &readings(a), a["k"].as_u64().unwrap() as usize);
-    let pb = allocate(&store(b, &o["profile"]), &readings(b), b["k"].as_u64().unwrap() as usize);
+    let pa = allocate(&store(a, &o["profile"]), &答表(), &readings(a), a["k"].as_u64().unwrap() as usize);
+    let pb = allocate(&store(b, &o["profile"]), &答表(), &readings(b), b["k"].as_u64().unwrap() as usize);
     assert_eq!(pa, pb, "冷记录写什么线都一样：线只从档案的 safety_lines 来");
 }

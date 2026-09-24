@@ -2,11 +2,12 @@
 use crate::{
     fixture::Fixture,
     options::{Backend, DEFAULT_LIVE_MODEL, RunOptions},
+    profile_resolve::{Resolved, uses_live_backend},
     runner,
 };
 use jpp_core::{
-    ast::Program,
-    effects::{CalibStore, Client, FixedClient},
+    Program,
+    effects::{CalibStore, Client, FixedClient, Profile},
     ledger::Ledger,
 };
 use serde::{Serialize, de::DeserializeOwned};
@@ -14,16 +15,32 @@ use std::{fs, path::Path};
 
 /// `--backend live`：只在 `live` feature 开着时才真的接 `JevClient::live`
 /// （凭据只从 `~/.typesafe-key` 读，这条路上不碰任何 CLI 参数或日志）。
+/// 价格从画像来（B73）：画像已由 `profile_resolve` 解析，这里不会是没有画像的情形。
 #[cfg(feature = "live")]
-fn live_client(model: &str) -> Result<Box<dyn Client>, String> {
-    jpp_core::effects::JevClient::live(model)
+fn live_client(model: &str, profile: &Profile) -> Result<Box<dyn Client>, String> {
+    jpp_core::effects::JevClient::live(model, profile.price_per_input_token)
         .map(|c| Box::new(c) as Box<dyn Client>)
         .map_err(|e| e.0)
 }
 
 #[cfg(not(feature = "live"))]
-fn live_client(_model: &str) -> Result<Box<dyn Client>, String> {
+fn live_client(_model: &str, _profile: &Profile) -> Result<Box<dyn Client>, String> {
     Err("--backend live requires jpp-cli built with `--features live`".into())
+}
+
+/// 真机运行的画像没有价格时（B73；`20` §3.9 `cost` 未测行）：报告的费用记 `Unknown`，
+/// 报 `W-cost-unknown`（stderr 与 `trace.warnings` 各一条）。预算里这部分按 0 累计（B42 不拒）。
+fn mark_cost_unknown(report: &mut serde_json::Value, profile_path: &Path) {
+    let w = format!(
+        // 依据：B73（地基/附注/2026-09-24-评估①裁定.md §二；21 步 15d-0）
+        "W-cost-unknown: 画像 {} 没有 cost.price_usd_per_input_token，本次真机费用记为 Unknown，预算的费用上限没有核到",
+        profile_path.display()
+    );
+    eprintln!("warning: {w}");
+    report["cost"]["usd"] = serde_json::json!("Unknown");
+    if let Some(ws) = report["trace"]["warnings"].as_array_mut() {
+        ws.push(serde_json::json!(w));
+    }
 }
 
 /// 重放专用：拒绝一切调用（同 `jpp_core::effects::NoCallClient`），但 `model_id` 是
@@ -61,6 +78,14 @@ impl Client for ReplayClient {
     }
 }
 
+/// 画像由 `profile_resolve` 解析（B73），装进校准库；账本头的 `profile_hash` 从这里来
+/// （`interp/outcome.rs` 读 `calib.profile().hash`）。
+fn install_profile(store: &mut CalibStore, 画像: Option<&Resolved>) {
+    if let Some(r) = 画像 {
+        store.profile = r.profile.clone();
+    }
+}
+
 fn read_json<T: DeserializeOwned>(path: &Path) -> Result<T, String> {
     let bytes = fs::read(path).map_err(|e| format!("{}: {e}", path.display()))?;
     serde_json::from_slice(&bytes).map_err(|e| format!("{}: {e}", path.display()))
@@ -75,8 +100,16 @@ fn write_json<T: Serialize>(path: &Path, value: &T) -> Result<(), String> {
 pub fn run_checked(
     program: &Program,
     options: &RunOptions,
-    loaded: &jpp_frontend::loader::LoadedProgram,
+    loaded: &jpp_syntax::loader::LoadedProgram,
+    画像: Option<Resolved>,
 ) -> Result<(), String> {
+    // 真机分支一定有画像：`profile_resolve::resolve` 解析不到时已报 `E-profile-missing`。
+    let 真机画像 = match (&画像, uses_live_backend(options)) {
+        (Some(r), true) => Some(r),
+        // 依据：B73（地基/附注/2026-09-24-评估①裁定.md §二；21 步 15d-0）
+        (None, true) => return Err("E-profile-missing: --backend live 需要能力画像（B73）".into()),
+        _ => None,
+    };
     // 越界接线：`--calib` 先装目录里的记录，`--fixtures` 的 `calibrations` 再覆盖同名键。
     // **顺序是「夹具优先」**，因为夹具是这一次跑的显式布置，而目录是常备资产；
     // 两边都给同一个键时**谁赢要说得出来**，所以下面会把被覆盖的键报出来。
@@ -100,7 +133,9 @@ pub fn run_checked(
             Backend::Live if options.replay.is_some() => (Box::new(FixedClient::new()), CalibStore::new(), None),
             Backend::Live => {
                 let model = options.model.as_deref().unwrap_or(DEFAULT_LIVE_MODEL);
-                (live_client(model)?, CalibStore::new(), None)
+                // 依据：B73（地基/附注/2026-09-24-评估①裁定.md §二；21 步 15d-0）
+                let r = 真机画像.ok_or("E-profile-missing: --backend live 需要能力画像（B73）")?;
+                (live_client(model, &r.profile)?, CalibStore::new(), None)
             }
         },
     };
@@ -116,28 +151,29 @@ pub fn run_checked(
     if !被覆盖.is_empty() {
         eprintln!("注意：--fixtures 的 calibrations 覆盖了 --calib 目录里的同名键：{}", 被覆盖.join("、"));
     }
-    if let Some(path) = &options.profile {
-        目录记录.profile = jpp_core::effects::Profile::load(path).map_err(|e| format!("{}: {e}", path.display()))?;
-    }
-    // **「这次用了哪份档案」要说得出来**：接上档案之后，同一个程序会从「算不出 + 告警」
-    // 变成「真的排出来」——**那是使用者那一侧的行为变化，不能没有可见的成因。**
-    //
-    // **只在真的给了参数时才打**：一个参数都不给时，输出与接线前**逐字节相同**——
-    // **不越界的人不受影响**，这是那条保障的技术形式。
-    if options.profile.is_some() || options.calib.is_some() {
+    install_profile(&mut 目录记录, 画像.as_ref());
+    // **「这次用了哪份画像」要说得出来**，无条件打印（B73）：固定观察在步 15d 删除
+    // 代码兜底之前可以无画像运行，但线与 δ 用的是代码兜底这件事每次都要看得见。
     eprintln!(
         "档案：{}；校准记录：{} 条（{}）",
-        match (&options.profile, &目录记录.profile.hash) {
-            (Some(p), Some(h)) => format!("{} (hash {h})", p.display()),
+        match (&画像, &目录记录.profile.hash) {
+            (Some(r), Some(h)) => format!("{} (hash {h})", r.path.display()),
             _ => "未加载，线与 δ 用的是代码兜底".to_string(),
         },
         目录记录.records.len(),
         match &options.calib { Some(d) => format!("--calib {}", d.display()), None => "仅来自 --fixtures".into() }
     );
-    }
     let mut calibrations = 目录记录;
+    // 账本 v2（步 7）：只经 `Ledger::decode` 读；v1 报 E-ledger-archived，末行半写截断并报告
     let mut ledger = match options.replay.as_ref().or(options.resume.as_ref()) {
-        Some(path) => read_json::<Ledger>(path)?,
+        Some(path) => {
+            let text = fs::read_to_string(path).map_err(|e| format!("{}: {e}", path.display()))?;
+            let (l, truncated) = Ledger::decode(&text).map_err(|e| format!("{}: {e}", path.display()))?;
+            if let Some(t) = truncated {
+                eprintln!("{}: {}", path.display(), t.render());
+            }
+            l
+        }
         None => Ledger::new(),
     };
     ledger.rebuild_index();
@@ -162,7 +198,7 @@ pub fn run_checked(
     let replay_model_id = ledger
         .header
         .as_ref()
-        .map(|h| h.model_id.clone())
+        .map(|h| h.model_id().to_string())
         .unwrap_or_else(|| "fixed-0".to_string());
     let mut evidence: Vec<(String, jpp_core::effects::Sample)> = vec![];
     let result = if options.replay.is_some() {
@@ -198,7 +234,7 @@ pub fn run_checked(
     }
     // Preserve any completed effects even when execution ends in a runtime error.
     if let Some(path) = &options.ledger_out {
-        write_json(path, &ledger)?;
+        fs::write(path, ledger.encode()).map_err(|e| format!("{}: {e}", path.display()))?;
     }
     // **说清楚这一趟实际用了哪个后端**：replay 从不碰 client（哪怕 `--backend live`
     // 也构造了一个，只是没被 `runner::execute` 用到），真机与固定观察之外没有第三档。
@@ -210,43 +246,34 @@ pub fn run_checked(
             Backend::Fixed => ("fixed observations; no model API requests", client.model_id()),
         }
     };
+    // 检查诊断与运行期错误走渲染层（步 9a）：同码同址折叠，`--json` 时每条一行 JSON
     let mut report = result.map_err(|error| {
-        let e = match error {
-            jpp_core::Error::Runtime(e) => e,
-            jpp_core::Error::Check(report) => {
-                return report
-                    .diagnostics
-                    .iter()
-                    .map(|d| {
-                        loaded.render(&jpp_frontend::Diagnostic::new(
-                            format!("{}: {}", d.rule, d.message),
-                            jpp_frontend::ast::Span {
-                                start: d.span.start,
-                                end: d.span.end,
-                            },
-                        ))
-                    })
-                    .collect::<Vec<_>>()
-                    .join("\n");
-            }
+        let items = match error {
+            jpp_core::Error::Runtime(e) => vec![crate::diag_json::from_runtime(&e)],
+            jpp_core::Error::Check(report) => report.diagnostics.iter().map(crate::diag_json::from_check).collect(),
         };
-        let diagnostic = jpp_frontend::Diagnostic::new(
-            match e.rule {
-                Some(rule) => format!("{rule}: {}", e.message),
-                None => e.message,
-            },
-            jpp_frontend::ast::Span {
-                start: e.span.start,
-                end: e.span.end,
-            },
-        );
-        loaded.render(&diagnostic)
+        crate::diag_json::render_all(loaded, items).join("\n")
     })?;
     report["fixture_description"] = serde_json::json!(description);
     report["replay"] = serde_json::json!(options.replay.is_some());
     report["resumed"] = serde_json::json!(options.resume.is_some());
     report["mode"] = serde_json::json!(mode_label);
     report["backend"] = serde_json::json!(backend_label);
+    if let Some(r) = 真机画像.filter(|r| r.profile.price_per_input_token.is_none()) {
+        mark_cost_unknown(&mut report, &r.path);
+    }
+    // `run --json`：运行期告警（`trace.warnings` 里带编号的行）折叠后以 JSON Lines 写到 stderr；报告不动
+    if crate::diag_json::json_mode() {
+        let items = report["trace"]["warnings"]
+            .as_array()
+            .into_iter()
+            .flatten()
+            .filter_map(|w| w.as_str().and_then(crate::diag_json::Item::from_warning))
+            .collect();
+        for line in crate::diag_json::render_all(loaded, items) {
+            eprintln!("{line}");
+        }
+    }
     if let Some(path) = &options.output {
         write_json(path, &report)?;
         println!(
@@ -275,8 +302,8 @@ mod tests {
     /// 与 `crates/jpp-cli/tests/wiring.rs` 的 `calib目录让unsure_bound不再恒等于n` 同一份
     /// 程序骨架：单道 `test` 题喂进 `unsure_bound`，产出是一个数，便于比较真实跑与重放。
     fn 程序() -> Program {
-        jpp_frontend::lower(
-            &jpp_frontend::parse("budget {calls: 4, cost: 0};\nlet r = judge(state(mat(\"材料\")), test(\"行吗\",\"k\"));\nunsure_bound([r])\n")
+        jpp_core::lower(
+            &jpp_syntax::parse("budget {calls: 4, cost: 0};\nlet r = judge(state(mat(\"材料\")), test(\"行吗\",\"k\"));\nunsure_bound([r])\n")
                 .expect("解析"),
         )
         .expect("lower")
@@ -317,6 +344,57 @@ mod tests {
                 .expect("用刚写的账本重放跑得完");
         assert_eq!(replay_report["cost"]["calls"], json!(0), "重放不应产生任何新调用");
         assert_eq!(replay_report["value"], report["value"], "重放结果要与真实运行一致");
+    }
+
+    fn 发行画像选项() -> RunOptions {
+        RunOptions {
+            source: "p.jpp".into(),
+            fixtures: None,
+            output: None,
+            ledger_out: None,
+            replay: None,
+            resume: None,
+            profile: None,
+            calib: None,
+            calib_out: None,
+            backend: Backend::Live,
+            model: None,
+            profiles_dir: Some(std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../profiles")),
+        }
+    }
+
+    /// B73：真机路径按 `--profiles-dir/<model>.json` 解析发行画像，装进校准库，
+    /// 账本头 `profile_hash` 非空（= 发行画像的哈希），费用 = input tokens × 画像价格。
+    #[test]
+    fn 真机画像进账本头_价格从画像来() {
+        let program = 程序();
+        let 画像 = crate::profile_resolve::resolve(&发行画像选项()).expect("解析").expect("真机必有画像");
+        let price = 画像.profile.price_per_input_token.expect("发行画像带价格");
+        let mut calib = CalibStore::new();
+        install_profile(&mut calib, Some(&画像));
+        let mut client = JevClient::with_transport(
+            "jev-1.13.0",
+            Box::new(|_body| Ok(json!({"answers": {"q0": {"noul": 0.8}}, "usage": {"input_tokens": 1000}}))),
+        )
+        .with_price(画像.profile.price_per_input_token);
+        let mut ledger = Ledger::new();
+        ledger.rebuild_index();
+        let mut evidence = vec![];
+        let report = runner::execute(&program, &mut client, &calib, &mut ledger, false, &mut evidence).expect("跑得完");
+        let h = ledger.header.as_ref().expect("有账本头");
+        assert_eq!(h.compared.profile_hash.as_deref(), Some("56817be03183293c"), "账本头记发行画像的哈希");
+        assert_eq!(report["cost"]["tokens"], json!(1000));
+        assert_eq!(report["cost"]["usd"].as_f64(), Some(1000.0 * price), "费用 = tokens × 画像价格");
+    }
+
+    /// B73：画像没有价格 → 报告费用记 `Unknown`，`trace.warnings` 有 `W-cost-unknown`。
+    #[test]
+    fn 画像无价格时费用记unknown() {
+        let mut report = json!({"cost": {"usd": 0.0}, "trace": {"warnings": []}});
+        mark_cost_unknown(&mut report, std::path::Path::new("p.json"));
+        assert_eq!(report["cost"]["usd"], json!("Unknown"));
+        // 依据：B73（地基/附注/2026-09-24-评估①裁定.md §二；21 步 15d-0）
+        assert!(report["trace"]["warnings"][0].as_str().unwrap().starts_with("W-cost-unknown"));
     }
 
     /// **transport 失败时报错要说得清楚**：错误原因要冒泡到 `jpp_core::Error::Runtime`，

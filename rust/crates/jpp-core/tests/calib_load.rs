@@ -82,7 +82,7 @@ fn 混题型的样本不许认证() {
             mode_share: None, mode: LiteralMode::default(),
             // **一半 noul、一半 choice**
             phys: if i % 2 == 0 { "noul".into() } else { "choice".into() },
-            cluster: None,
+            cluster: None, stratum: None,
         }).unwrap();
     }
     let e = c.commission("k", 0.45, 0.10, "条").expect_err("混题型的样本不该认证得出一条线");
@@ -93,7 +93,7 @@ fn 混题型的样本不许认证() {
     let mut d = CalibStore::new();
     for i in 0..20 {
         d.absorb("k", Sample { p: Some(0.3 + i as f64 * 0.03), label: Some(if i > 5 { 1 } else { 0 }), perms: 0,
-                               mode_share: None, mode: LiteralMode::default(), phys: "noul".into(), cluster: None }).unwrap();
+                               mode_share: None, mode: LiteralMode::default(), phys: "noul".into(), cluster: None, stratum: None }).unwrap();
     }
     assert!(d.commission("k", 0.45, 0.10, "条").is_ok());
 }
@@ -124,11 +124,11 @@ fn save写出来的load读得回去() {
     c.declare_label_set("k", "label-A", "somewhere/labels.csv", "deadbeefdeadbeef").unwrap();
     c.set_label_source("k", LabelSource::选择子集 { 判据: "两模型一致".into(), 与对错相关: Some(0.527) }).unwrap();
     c.absorb("k", Sample { p: Some(0.9), label: Some(1), perms: 2, mode_share: Some(1.0),
-                           mode: LiteralMode::CodeLiteral, phys: "noul".into(), cluster: Some("段甲".into()) }).unwrap();
+                           mode: LiteralMode::CodeLiteral, phys: "noul".into(), cluster: Some("段甲".into()), stratum: None }).unwrap();
     let cert = Cert { alpha: 0.45, conf_delta: 0.10, hi: 0.8, n_accepted: 20, n_errors: 1, ucb: 0.4,
                       cluster_unit: "条".into(), resample: Some((200, "全过才算过".into())),
                       cost: Some((10.0, 1.0)), bounded_side: "单侧".into(),
-                      label_fp: "abcdef0123456789".into(), selection: None,
+                      label_fp: "abcdef0123456789".into(), selection: None, grade: Default::default(),
                       label_source: LabelSource::全体 };
     c.records.get_mut("k").unwrap().certs.insert(cert.addr(), cert);
 

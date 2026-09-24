@@ -1,4 +1,4 @@
-# J++ native kernel (Rust) — reviewed status, 2026-09-23
+# J++ native kernel (Rust) — status, 2026-09-23
 
 `.jpp` source → lex → parse → lower → check → interpret. The Python tree under
 `src/foundation/jv/` is the frozen reference implementation, kept as a behavioural oracle. It is
@@ -15,35 +15,30 @@ jpp run   <file.jpp> --fixtures <f.json> [--output <r.json>] [--ledger-out <l.js
           [--profile <p.json>] [--calib <dir>] [--calib-out <dir>]
 ```
 
-| Component | Lines | State |
-|---|---:|---|
-| lexer + parser + lower + loader | 977 | complete for the current surface |
-| static checker | 1851 | 17 of 18 typing rules; `J-17` not implemented |
-| interpreter | 3111 | 53 builtins |
-| effects (judge / gen / do / ask / cut / state) | 1512 | `lifecycle.jpp` exercises escalation to human response with fixtures |
-| ledger (replay / resume) | 158 | replay verified: identical keys across three live runs |
-| conformal / calibration | — | experimental host implementation; **no general selected-threshold risk guarantee** |
+The current surface includes source lexing/parsing/lowering/loading, shared static
+checking and interpretation, the six semantic forms (`judge`, `gen`, `do`, `ask`,
+`cut`, `state`), ledger replay/resume, and host-side conformal/calibration support. The
+checker still leaves `J-17` open, and the conformal family has no `.jpp` language
+surface. Avoid relying on old per-module line and builtin counts here; the source
+and tests are the authority.
 
-PR #25's review checkout reports 304 passing Rust tests and 3 explicitly ignored tests/snippets.
-PR #20 adds one enabled overflow source-span regression, bringing the combined suite to 305.
-Live model calls were not run. Some historical research-data probes return early when
-private records are absent; this count does not establish new experiment results.
-Source-line and builtin counts above are the original inventory, not a generated census.
+The full `cargo test --workspace --quiet` command completed successfully on
+2026-09-23: **315 passed, 0 failed, 3 ignored** across all reported targets
+(two integration tests and one documentation example ignored). The output is
+retained in the research workspace's [verification log](../../进展/2026-09-23/verification/docs-drift-cargo-test.log).
+This verifies the local research tree, not the older public Rust snapshot or live-model quality.
+
+`ask` is exercised by `examples/lifecycle.jpp`: `request_test` in
+`lib/observations.jpp` reaches the ask path. `library_lifecycle.rs` verifies the
+pending → response → resume → replay sequence and the retained input snapshot,
+using fixed responses rather than an interactive UI.
 
 ## The calibration loop
 
-The observation persistence round trip works: readings written by `--calib-out` are read back by `--calib`, and a
-second pass accumulates onto them. Seven builtins were then probed with and without a line in
-service — six behave differently, and for two of them (`cut`, `line_source`) the program does
-not complete at all when no line exists.
-
-This is not the complete labeled-data → commissioning workflow. `certify` scans
-thresholds on the same samples used for pointwise binomial bounds; selection correction
-or independent validation remains unimplemented. The costed path checks distinct dataset
-IDs but still reads the same stored samples. A `Cert` is an experimental host-policy
-record, not proof of general risk control. The synthetic Monte Carlo test covers one
-distribution only. PR review fixed large-sample binomial underflow and preserved the
-reject-all threshold so scores equal to 1 are not accidentally accepted.
+The read/write round trip is covered: readings written by `--calib-out` can be read
+back by `--calib`, and a second pass accumulates onto those records. This proves the
+CLI serialization path only. It does not constitute complete certification of
+untagged observations; host-side `commission` remains the certification step.
 
 ## Known gaps, stated plainly
 
@@ -55,9 +50,8 @@ reject-all threshold so scores equal to 1 are not accidentally accepted.
   writing a line — but it means those capabilities arrive through host plumbing, not the
   language.
 - **`J-17` has zero implementation** anywhere in the tree.
-- **Human response is fixture-driven in the CLI.** See `examples/lifecycle.jpp`; a live interaction channel remains separate work.
-- 46 of the 53 builtins have not been probed against calibration state; they are believed
-  line-independent, which is a judgement rather than a measurement.
+- The calibration-state probes cover a selected subset of builtins; they do not
+  establish a measured calibration-independence result for every remaining operation.
 
 ## Layout
 

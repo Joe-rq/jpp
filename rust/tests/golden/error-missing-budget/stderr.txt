@@ -1,0 +1,3 @@
+<ROOT>/examples/errors/missing-budget.jpp:1:1: J-07a: 程序缺 budget：预算是对调用数与花费总和的断言，没有它就没有「超即停」的依据。修法：源码首行写 `budget {calls: N, cost: X, depth: D};`
+fn twice(x: Int) -> Int { x * 2 }
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

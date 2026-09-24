@@ -1,0 +1,407 @@
+{
+  "backend": "fixed-0",
+  "cost": {
+    "asks": 0,
+    "calls": 2,
+    "replayed": 8,
+    "tokens": 0,
+    "usd": 0.0
+  },
+  "exits": [
+    {
+      "exit": "act",
+      "grade": "Fixture",
+      "key": "form-mention",
+      "releases": false,
+      "site": 779
+    },
+    {
+      "exit": "ignore",
+      "grade": "Fixture",
+      "key": "form-mention",
+      "releases": false,
+      "site": 779
+    },
+    {
+      "exit": "ignore",
+      "grade": "Fixture",
+      "key": "form-mention",
+      "releases": false,
+      "site": 779
+    },
+    {
+      "exit": "unsure(band)",
+      "grade": "Fixture",
+      "key": "form-mention",
+      "releases": false,
+      "site": 779
+    },
+    {
+      "exit": "ignore",
+      "grade": "Fixture",
+      "key": "form-mention",
+      "releases": false,
+      "site": 779
+    },
+    {
+      "exit": "act",
+      "grade": "Fixture",
+      "key": "form-listed",
+      "releases": false,
+      "site": 779
+    },
+    {
+      "exit": "act",
+      "grade": "Fixture",
+      "key": "form-listed",
+      "releases": false,
+      "site": 779
+    },
+    {
+      "exit": "ignore",
+      "grade": "Fixture",
+      "key": "form-listed",
+      "releases": false,
+      "site": 779
+    },
+    {
+      "exit": "act",
+      "grade": "Fixture",
+      "key": "form-listed",
+      "releases": false,
+      "site": 779
+    },
+    {
+      "exit": "ignore",
+      "grade": "Fixture",
+      "key": "form-listed",
+      "releases": false,
+      "site": 779
+    }
+  ],
+  "fixture_description": "Synthetic fixed observations for question-forms.jpp (construction check only; not model evaluation). 杭州 is set to 0.5 on purpose to show an unsure exit.",
+  "local_checks": [],
+  "mode": "fixed observations; no model API requests",
+  "pending": [],
+  "replay": false,
+  "resumed": false,
+  "returned_unsure": [
+    "unsure(band)"
+  ],
+  "status": "returned",
+  "trace": {
+    "events": [
+      {
+        "cost": 0.0,
+        "key": "cdceaf6cf32b552d9eab9bf0",
+        "kind": "judge",
+        "note": "「这段话是否提到了北京？」",
+        "replayed": false,
+        "site": {
+          "end": 801,
+          "start": 783
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "88dc107f76310f16100c5de1",
+        "kind": "judge",
+        "note": "「这段话是否提到了上海？」",
+        "replayed": false,
+        "site": {
+          "end": 801,
+          "start": 783
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "fec73260ce24f93fa9ab99b0",
+        "kind": "judge",
+        "note": "「这段话是否提到了杭州？」",
+        "replayed": false,
+        "site": {
+          "end": 801,
+          "start": 783
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "6686cdb2d6e2a12638ea5a45",
+        "kind": "judge",
+        "note": "「这段话是否提到了西安？」",
+        "replayed": false,
+        "site": {
+          "end": 801,
+          "start": 783
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "b199a35a5578afb5fe1d5a0b",
+        "kind": "judge",
+        "note": "「这段话是否提到了成都？」",
+        "replayed": false,
+        "site": {
+          "end": 801,
+          "start": 783
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "cdceaf6cf32b552d9eab9bf0",
+        "kind": "judge",
+        "note": "「这段话是否提到了北京？」",
+        "replayed": true,
+        "site": {
+          "end": 801,
+          "start": 783
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "88dc107f76310f16100c5de1",
+        "kind": "judge",
+        "note": "「这段话是否提到了上海？」",
+        "replayed": true,
+        "site": {
+          "end": 801,
+          "start": 783
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "fec73260ce24f93fa9ab99b0",
+        "kind": "judge",
+        "note": "「这段话是否提到了杭州？」",
+        "replayed": true,
+        "site": {
+          "end": 801,
+          "start": 783
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "6686cdb2d6e2a12638ea5a45",
+        "kind": "judge",
+        "note": "「这段话是否提到了西安？」",
+        "replayed": true,
+        "site": {
+          "end": 801,
+          "start": 783
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "e2853cca7cda5e69b758e65e",
+        "kind": "judge",
+        "note": "「清单里是否有酱油？」",
+        "replayed": false,
+        "site": {
+          "end": 801,
+          "start": 783
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "810ca5b04b540dca0a32afb5",
+        "kind": "judge",
+        "note": "「清单里是否有咖啡？」",
+        "replayed": false,
+        "site": {
+          "end": 801,
+          "start": 783
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "9e7d019a88abbc9116a29c3e",
+        "kind": "judge",
+        "note": "「清单里是否有牛奶？」",
+        "replayed": false,
+        "site": {
+          "end": 801,
+          "start": 783
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "89e7438e0bf4ba8737af61b9",
+        "kind": "judge",
+        "note": "「清单里是否有盐？」",
+        "replayed": false,
+        "site": {
+          "end": 801,
+          "start": 783
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "e2df1c26751d1540850b71a2",
+        "kind": "judge",
+        "note": "「清单里是否有面包？」",
+        "replayed": false,
+        "site": {
+          "end": 801,
+          "start": 783
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "e2853cca7cda5e69b758e65e",
+        "kind": "judge",
+        "note": "「清单里是否有酱油？」",
+        "replayed": true,
+        "site": {
+          "end": 801,
+          "start": 783
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "810ca5b04b540dca0a32afb5",
+        "kind": "judge",
+        "note": "「清单里是否有咖啡？」",
+        "replayed": true,
+        "site": {
+          "end": 801,
+          "start": 783
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "9e7d019a88abbc9116a29c3e",
+        "kind": "judge",
+        "note": "「清单里是否有牛奶？」",
+        "replayed": true,
+        "site": {
+          "end": 801,
+          "start": 783
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "89e7438e0bf4ba8737af61b9",
+        "kind": "judge",
+        "note": "「清单里是否有盐？」",
+        "replayed": true,
+        "site": {
+          "end": 801,
+          "start": 783
+        }
+      }
+    ],
+    "warnings": [
+      "W-fixture-line: @779 键 form-mention 的线是夹具线（宿主 put 写入或没有认证证书，n=1），出口 Act 照常路由，但按 B29 不算放行不可逆 do 的可信合取项。修法【需接线人】：用 calib-import 或 commission 从带真值样本认证这条线",
+      "W-untyped-transfer: verdict 把 unsure(band) 装在返回值里交了出去，但返回类型没提 Exit，调用者从签名上看不出自己收到了一份未决。修法：把返回类型标为含 Exit（如 `-> Exit`、`-> Record<Exit>`）",
+      "W-untyped-transfer: <fn> 把 unsure(band) 装在返回值里交了出去，但返回类型没提 Exit，调用者从签名上看不出自己收到了一份未决。修法：把返回类型标为含 Exit（如 `-> Exit`、`-> Record<Exit>`）",
+      "W-fixture-line: @779 键 form-listed 的线是夹具线（宿主 put 写入或没有认证证书，n=1），出口 Act 照常路由，但按 B29 不算放行不可逆 do 的可信合取项。修法【需接线人】：用 calib-import 或 commission 从带真值样本认证这条线",
+      "W-fixture-line: @779 键 form-listed 的线是夹具线（宿主 put 写入或没有认证证书，n=1），出口 Act 照常路由，但按 B29 不算放行不可逆 do 的可信合取项。修法【需接线人】：用 calib-import 或 commission 从带真值样本认证这条线",
+      "W-fixture-line: @779 键 form-listed 的线是夹具线（宿主 put 写入或没有认证证书，n=1），出口 Act 照常路由，但按 B29 不算放行不可逆 do 的可信合取项。修法【需接线人】：用 calib-import 或 commission 从带真值样本认证这条线",
+      "returned_unsure: unsure(band)"
+    ]
+  },
+  "value": {
+    "cart": [
+      {
+        "answer": {
+          "answer": "是"
+        },
+        "asked": "清单里是否有面包？"
+      },
+      {
+        "answer": {
+          "answer": "是"
+        },
+        "asked": "清单里是否有酱油？"
+      },
+      {
+        "answer": {
+          "answer": "否"
+        },
+        "asked": "清单里是否有咖啡？"
+      },
+      {
+        "answer": {
+          "answer": "是"
+        },
+        "asked": "清单里是否有牛奶？"
+      },
+      {
+        "answer": {
+          "answer": "否"
+        },
+        "asked": "清单里是否有盐？"
+      }
+    ],
+    "first": {
+      "fill": {
+        "city": "成都"
+      },
+      "from_form": true,
+      "op": "test",
+      "partition": "binary",
+      "predicate": "这段话是否提到了成都？",
+      "presupposition": "这段话是中文叙述",
+      "request": "whether",
+      "subject": "on",
+      "template": "这段话是否提到了{city}？",
+      "text": "这段话是否提到了成都？"
+    },
+    "forms": [
+      {
+        "hash": "8817cd3762f5ed6078db2ad3",
+        "partition": "binary",
+        "slots": [
+          "city"
+        ],
+        "template": "这段话是否提到了{city}？"
+      },
+      {
+        "hash": "76c41c46bdffcdc9fe71e049",
+        "partition": "binary",
+        "slots": [
+          "item"
+        ],
+        "template": "清单里是否有{item}？"
+      }
+    ],
+    "trip": [
+      {
+        "answer": {
+          "answer": "是"
+        },
+        "asked": "这段话是否提到了成都？"
+      },
+      {
+        "answer": {
+          "answer": "否"
+        },
+        "asked": "这段话是否提到了北京？"
+      },
+      {
+        "answer": {
+          "answer": "否"
+        },
+        "asked": "这段话是否提到了上海？"
+      },
+      {
+        "answer": {
+          "answer": "未决",
+          "cause": "band",
+          "pending": {
+            "duty": 3,
+            "q": "c50b398094fecd0e5a1a57aa",
+            "unsure": "band"
+          }
+        },
+        "asked": "这段话是否提到了杭州？"
+      },
+      {
+        "answer": {
+          "answer": "否"
+        },
+        "asked": "这段话是否提到了西安？"
+      }
+    ]
+  }
+}

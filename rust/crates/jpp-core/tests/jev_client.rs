@@ -123,9 +123,15 @@ fn 费用与token照记() {
     // **默认不发置换**（调用数 ×2 的钱不替作者花），要测它就显式开
     c.permute = true;
     let s = Rc::new(State::new(vec![Mat::literal(json!("x"))], vec![], vec![], vec![], false));
+    // 价格只住画像（B73，步 15d-0）：没给价格时不折钱，由宿主报 `W-cost-unknown`
     let r = c.judge(&s, &[&Question::new(Op::Test, "行吗", "k", vec![])]).expect("跑得通");
     assert_eq!(r.tokens, 1000);
-    assert!(r.cost > 0.0, "token 要折成钱");
+    assert_eq!(r.cost, 0.0, "没有画像价格就没有代码里的兜底价格");
+    let p = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../profiles/jev-1.13.0.json");
+    let price = jpp_core::effects::Profile::load(&p).expect("发行画像").price_per_input_token;
+    let mut c = c.with_price(price);
+    let r = c.judge(&s, &[&Question::new(Op::Test, "行吗", "k", vec![])]).expect("跑得通");
+    assert_eq!(r.cost, 1000.0 * price.expect("发行画像带价格"), "token 按画像价格折成钱");
 }
 
 /// **跨内核对照：Rust 路径上跑出真的置换一致率，与 Python 那 8 条对得上。**

@@ -1,0 +1,13 @@
+[package]
+name = "jpp-calib"
+version = "0.1.0"
+edition = "2024"
+license = "MIT"
+description = "J++ calibration (L3): calibration records, certification, store, fit registry, truth channel, strength estimates"
+
+[dependencies]
+jpp-ir = { path = "../jpp-ir" }
+jpp-value = { path = "../jpp-value" }
+jpp-effects = { path = "../jpp-effects" }
+serde = { version = "1", features = ["derive", "rc"] }
+serde_json = "1"

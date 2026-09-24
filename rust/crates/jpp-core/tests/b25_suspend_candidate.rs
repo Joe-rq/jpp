@@ -8,7 +8,7 @@ use jpp_core::effects::{CalibStore, Client, EffectError, GenResult, JudgeResult,
 use jpp_core::ledger::Ledger;
 use jpp_core::value::{Answer, Question, State};
 use jpp_core::{ActionRegistry, TaintOut, run};
-use jpp_frontend::{lower, parse};
+use jpp_core::{lower, syntax::parse};
 use serde_json::Value as Json;
 
 struct 定值(f64, RefCell<u64>);
@@ -44,7 +44,7 @@ fn 跑(calib: &CalibStore) -> Result<(Json, Vec<String>, Vec<String>), String> {
 
 fn 观察(c: &mut CalibStore, ps: &[f64], label: Option<u8>) {
     for p in ps {
-        c.absorb("k", Sample { p: Some(*p), label, perms: 0, mode_share: None, mode: LiteralMode::default(), phys: "noul".into(), cluster: None }).unwrap();
+        c.absorb("k", Sample { p: Some(*p), label, perms: 0, mode_share: None, mode: LiteralMode::default(), phys: "noul".into(), cluster: None, stratum: None }).unwrap();
     }
 }
 

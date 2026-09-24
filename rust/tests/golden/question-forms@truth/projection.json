@@ -1,0 +1,130 @@
+{
+  "asks": 0,
+  "calls": 2,
+  "effects": [],
+  "judge_registrations": 18,
+  "pending": [],
+  "returned_unsure": [
+    "unsure(band)",
+    "unsure(band)",
+    "unsure(band)"
+  ],
+  "status": "returned",
+  "usd": 0.0,
+  "value": {
+    "cart": [
+      {
+        "answer": {
+          "answer": "是"
+        },
+        "asked": "清单里是否有面包？"
+      },
+      {
+        "answer": {
+          "answer": "是"
+        },
+        "asked": "清单里是否有酱油？"
+      },
+      {
+        "answer": {
+          "answer": "否"
+        },
+        "asked": "清单里是否有咖啡？"
+      },
+      {
+        "answer": {
+          "answer": "是"
+        },
+        "asked": "清单里是否有牛奶？"
+      },
+      {
+        "answer": {
+          "answer": "未决",
+          "cause": "band",
+          "pending": {
+            "duty": 9,
+            "q": "f7d96e73ddd5b286c877f43e",
+            "unsure": "band"
+          }
+        },
+        "asked": "清单里是否有盐？"
+      }
+    ],
+    "first": {
+      "fill": {
+        "city": "成都"
+      },
+      "from_form": true,
+      "op": "test",
+      "partition": "binary",
+      "predicate": "这段话是否提到了成都？",
+      "presupposition": "这段话是中文叙述",
+      "request": "whether",
+      "subject": "on",
+      "template": "这段话是否提到了{city}？",
+      "text": "这段话是否提到了成都？"
+    },
+    "forms": [
+      {
+        "hash": "8817cd3762f5ed6078db2ad3",
+        "partition": "binary",
+        "slots": [
+          "city"
+        ],
+        "template": "这段话是否提到了{city}？"
+      },
+      {
+        "hash": "76c41c46bdffcdc9fe71e049",
+        "partition": "binary",
+        "slots": [
+          "item"
+        ],
+        "template": "清单里是否有{item}？"
+      }
+    ],
+    "trip": [
+      {
+        "answer": {
+          "answer": "是"
+        },
+        "asked": "这段话是否提到了成都？"
+      },
+      {
+        "answer": {
+          "answer": "否"
+        },
+        "asked": "这段话是否提到了北京？"
+      },
+      {
+        "answer": {
+          "answer": "否"
+        },
+        "asked": "这段话是否提到了上海？"
+      },
+      {
+        "answer": {
+          "answer": "未决",
+          "cause": "band",
+          "pending": {
+            "duty": 3,
+            "q": "c50b398094fecd0e5a1a57aa",
+            "unsure": "band"
+          }
+        },
+        "asked": "这段话是否提到了杭州？"
+      },
+      {
+        "answer": {
+          "answer": "未决",
+          "cause": "band",
+          "pending": {
+            "duty": 4,
+            "q": "b2bea2367f63ccb55abcbc2e",
+            "unsure": "band"
+          }
+        },
+        "asked": "这段话是否提到了西安？"
+      }
+    ]
+  }
+}

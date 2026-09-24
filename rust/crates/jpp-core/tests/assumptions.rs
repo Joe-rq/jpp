@@ -11,7 +11,7 @@
 
 use jpp_core::check::{check, check_with_profile, Severity};
 use jpp_core::effects::{Profile, Tri};
-use jpp_frontend::{lower, parse};
+use jpp_core::{lower, syntax::parse};
 
 /// 读数做算术：J-01 的「算术在宿主」那一面，`12`:328 明写依赖 H5。
 const 算术: &str = r#"

@@ -7,7 +7,7 @@ file actions are connected to the same core. See [the runnable guide](METHODS-AN
 本包已在已提交第四包内核上验证方法契约、跨文件源码库和固定后端恢复；后续 core
 在途修改由原归口继续，不属于本次验证快照。
 
-Source parsing, lowering, shared checking and execution are connected. All three
+Source parsing, lowering, shared checking and execution are connected. All five
 source examples, source-position errors, budget stopping and ledger replay have
 passed integration tests. A native install outside the checkout runs with an empty
 PATH, without Python or Cargo. The checks use fixed observations, not a live model.
@@ -95,11 +95,17 @@ cargo build -p jpp-cli --features live --release
 #    {"form": {"op": "test", "template": "这段话是否提到了{city}？"}, "item": "n1", "p": 0.99, "label": true, "source": "computed"}
 ./target/release/jpp calib-import labels.jsonl --calib-out calib
 # 3. run again with the records; replay later needs only the ledger
-./target/release/jpp run examples/sieve.jpp --backend live --calib calib --ledger-out ledger.json
+./target/release/jpp run examples/sieve.jpp --backend live --profiles-dir profiles --calib calib --ledger-out ledger.json
 ./target/release/jpp run examples/sieve.jpp --replay ledger.json
 ```
 
-真机只给读数；出口要靠校准线，线只从带真值的标注来。做法：先真机跑一次拿读数，给读数标真值（`human`、`computed` 或 `model:<名>`），用 `calib-import` 导入并认证，再带 `--calib` 运行。按题式（`form`）导入的线由该题式的所有填法共用（B2 已裁定：题式为校准主键；本版实现为回退层，主键迁移随 B30 进行），出口会注明「题式级」。只有模型标注时，需要同一题式的人工抽检一致率达到门槛（默认 0.9）才上岗；达不到时记录标为「待核」，运行时告警写明原因。账本记下了当次用到的校准记录，只凭账本重放也得到同样的出口。
+Live runs need a capability profile (B73). The repository ships `profiles/jev-1.13.0.json` (delta, concurrency, price, and the measurement IDs it was built from; generated from `地基/foundation/profile/profiles/` by `scripts/gen_profiles.py`). The CLI takes `--profile <file>`, else `--profiles-dir <dir>/<model>.json`, else `profiles/` next to the `jpp` executable; if none is found the run stops with `E-profile-missing` and lists the paths it tried. The profile hash goes into the ledger header, and the price comes only from the profile.
+
+真机运行必须带能力画像（B73）。仓库附带 `profiles/jev-1.13.0.json`（含 δ、并发、价格，并注明来源实测编号；由 `scripts/gen_profiles.py` 从 `地基/foundation/profile/profiles/` 生成）。CLI 按 `--profile <文件>`，否则按 `--profiles-dir <目录>/<model>.json`，再否则按 `jpp` 可执行文件旁的 `profiles/` 查找；找不到时报 `E-profile-missing` 并列出试过的路径。画像哈希写进账本头，价格只从画像读。
+
+真机只给读数；出口要靠校准线，线只从带真值的标注来。做法：先真机跑一次拿读数，给读数标真值（`human`、`computed` 或 `model:<名>`），用 `calib-import` 导入并认证，再带 `--calib` 运行。按题式（`form`）导入的线由该题式的所有填法共用（B2 待批，本版为回退层），出口会注明「题式级」。只有模型标注时，需要同一题式的人工抽检一致率达到门槛（默认 0.9）才上岗；达不到时记录标为「待核」，运行时告警写明原因。账本记下了当次用到的校准记录，只凭账本重放也得到同样的出口。
+
+**样本量与两档线（B72、B75）。** 拆分认证要求四个格（选线半的正例、负例，认证半的上侧、下侧）各有足够的零错已决条数，并且随机分半。离线对照（`地基/评估/2026-09-24-B72对照/results_sweep.md`）得出的实际下限：正式线（`--alpha 0.1`）字面题式约 160 条，语义题式 200 条也不保证；试用线（`--alpha-trial 0.25`）字面题式约 60–80 条，语义题式约 80–100 条。`calib-import` 先按正式 α 认证，不过再按试用 α 认证；已有正式线的键不会被试用线覆盖。试用线的出口照常给出 act/ignore 供路由，报 `W-trial-line`，但不能放行不可逆 `do`。报告的 `exits` 表逐出口写明所用线的等级（`Certified` 正式、`Form` 题式、`Trial` 试用、`Class` 借线、`Fixture` 夹具、`Cold` 没用上线等）和是否放行。类记录（`class` 行）要来自至少两个不同题式（同一题式的不同填法算一个来源，`--class-min-sources`），每个来源的条数要够该档要求；类线同样只路由、不放行不可逆 `do`。
 
 ## Source and diagnostics / 源码与诊断
 

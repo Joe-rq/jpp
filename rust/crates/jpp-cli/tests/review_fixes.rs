@@ -31,5 +31,20 @@ fn replay_with_backend_live_does_not_initialize_the_live_client() {
     let _ = fs::remove_dir_all(&d);
 }
 
-// J-10 告警随 run 带出的回归测试在 jpp-core/tests/review_fixes.rs：本快照的前端还写不出
-// `budget {unsure: …}`（B32 接线未同步），CLI 这一层今天到不了 J-10。
+/// 带校准记录的 J-10 静态告警：进报告的 `trace.warnings`，也打到 stderr（`--output` 时终端看得见）。
+#[test]
+fn j10_static_warning_reaches_the_report_and_stderr() {
+    let d = scratch("j10");
+    fs::write(
+        d.join("p.jpp"),
+        "budget {calls: 1, cost: 1, unsure: 0.5};\nlet q = test(\"甲\", \"ka\");\nlet r = test(\"乙\", \"kb\");\n1",
+    )
+    .unwrap();
+    let out = jpp(&d, &["run", "p.jpp", "--output", "r.json"]);
+    let stderr = String::from_utf8_lossy(&out.stderr);
+    assert!(out.status.success(), "{stderr}");
+    assert!(stderr.contains("J-10"), "{stderr}");
+    let report: Value = serde_json::from_slice(&fs::read(d.join("r.json")).unwrap()).unwrap();
+    assert!(report["trace"]["warnings"].to_string().contains("J-10"), "{report}");
+    let _ = fs::remove_dir_all(&d);
+}

@@ -11,7 +11,7 @@ use jpp_core::interp::{ActionRegistry, TaintOut};
 use jpp_core::ledger::Ledger;
 use jpp_core::value::{Answer, Op, Question, State, Value};
 use jpp_core::run;
-use jpp_frontend::{lower, parse};
+use jpp_core::{lower, syntax::parse};
 use serde_json::Value as Json;
 
 /// **一（最值钱，且免费）：固定观察未命中，要打出内核自己算的那份状态与题。**
@@ -97,7 +97,7 @@ fn j08没触发的两个原因各自独立成立() {
     }
     let 跑 = |可逆: bool| {
         let mut a = ActionRegistry::new();
-        a.register("动作", 0.0, 可逆, TaintOut::Trusted, |_| Ok(Value::Text("做了".into(), jpp_core::value::Taint::Trusted)));
+        a.register("动作", 0.0, 可逆, TaintOut::Trusted, |_| Ok(Value::Text("做了".into(), jpp_core::value::Taint::Trusted.into())));
         let program = lower(&parse(r#"
 budget {calls: 4, cost: 1, depth: 8};
 let 料 = gen("写一句", [], 1, 0);
@@ -131,8 +131,8 @@ fn 作者查得到哪些动作不可逆() {
         fn calls(&self) -> u64 { 0 }
     }
     let mut a = ActionRegistry::new();
-    a.register("读一下", 0.0, true, TaintOut::Untrusted, |_| Ok(Value::Text("x".into(), jpp_core::value::Taint::Trusted)));
-    a.register("发出去", 0.0, false, TaintOut::Trusted, |_| Ok(Value::Text("x".into(), jpp_core::value::Taint::Trusted)));
+    a.register("读一下", 0.0, true, TaintOut::Untrusted, |_| Ok(Value::Text("x".into(), jpp_core::value::Taint::Trusted.into())));
+    a.register("发出去", 0.0, false, TaintOut::Trusted, |_| Ok(Value::Text("x".into(), jpp_core::value::Taint::Trusted.into())));
     let program = lower(&parse("budget {calls:0,cost:0}; do(\"打错的名字\", [], 0)").expect("解析")).expect("lower");
     let mut l = Ledger::new();
     let e = run(&program, &mut 桩, &CalibStore::new(), &a, &mut l).expect_err("未登记该报错").render();

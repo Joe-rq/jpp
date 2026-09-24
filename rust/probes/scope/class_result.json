@@ -1,0 +1,121 @@
+{
+ "A": {
+  "winnow": {
+   "report_same": true,
+   "ledger_same": true,
+   "class_line_new": 0,
+   "exit": [
+    0,
+    0
+   ]
+  },
+  "folio": {
+   "report_same": true,
+   "ledger_same": true,
+   "class_line_new": 0,
+   "exit": [
+    0,
+    0
+   ]
+  },
+  "entity-align": {
+   "report_same": true,
+   "ledger_same": true,
+   "class_line_new": 0,
+   "exit": [
+    0,
+    0
+   ]
+  },
+  "scope-folio": {
+   "report_same": true,
+   "ledger_same": true,
+   "class_line_new": 0,
+   "exit": [
+    0,
+    0
+   ]
+  },
+  "scope-winnow": {
+   "report_same": true,
+   "ledger_same": true,
+   "class_line_new": 0,
+   "exit": [
+    0,
+    0
+   ]
+  },
+  "scope-topic": {
+   "report_same": true,
+   "ledger_same": true,
+   "class_line_new": 0,
+   "exit": [
+    0,
+    0
+   ]
+  }
+ },
+ "B": {
+  "import_stdout_tail": "    \"spot_check_min\": 0.9,\n      \"gate\": \"上岗\",\n      \"batch\": \"class-labels.jsonl\"\n    },\n    \"status\": \"上岗\",\n    \"hi\": 0.5399999999999999,\n    \"lo\": 0.53,\n    \"certification\": {\n      \"selection\": {\n        \"method\": \"split\",\n        \"seed\": 20260923,\n        \"n_select\": 181,\n        \"n_certify\": 207,\n        \"candidates\": 1858\n      },\n      \"alpha\": 0.1,\n      \"conf_delta\": 0.1,\n      \"upper\": [\n        111,\n        3,\n        0.05919477542166772\n      ],\n      \"lower\": [\n        94,\n        0,\n        0.024198003994453876\n      ]\n    },\n    \"scope_self_outside\": 0,\n    \"warnings\": []\n  }\n]",
+  "import_exit": 0,
+  "rows": 440,
+  "rows_missing_fill": 0,
+  "questions": 21,
+  "records": {
+   "_class_form-topic.json": {
+    "key": "\u001fclass\u001fform-topic",
+    "status": "上岗",
+    "hi": 0.5399999999999999,
+    "lo": 0.53,
+    "n": 388
+   }
+  },
+  "form_record": {
+   "status": "上岗",
+   "hi": 0.5399999999999999,
+   "lo": 0.53,
+   "n": 388
+  },
+  "folio": {
+   "exit": 0,
+   "class_line": 10,
+   "form_line": 0,
+   "calib_scope": 10,
+   "value_same_as_form_line_run": true
+  },
+  "winnow": {
+   "exit": 0,
+   "class_line": 9,
+   "form_line": 0,
+   "calib_scope": 9,
+   "value_same_as_form_line_run": true
+  },
+  "topic-relevance": {
+   "exit": 0,
+   "class_line": 36,
+   "form_line": 0,
+   "calib_scope": 0,
+   "value_same_as_form_line_run": true
+  }
+ },
+ "C": {
+  "folio": {
+   "exit": 0,
+   "class_line": 0,
+   "form_line": 10,
+   "calib_scope": 10
+  },
+  "winnow": {
+   "exit": 0,
+   "class_line": 0,
+   "form_line": 9,
+   "calib_scope": 9
+  },
+  "topic-relevance": {
+   "exit": 0,
+   "class_line": 0,
+   "form_line": 36,
+   "calib_scope": 0
+  }
+ }
+}

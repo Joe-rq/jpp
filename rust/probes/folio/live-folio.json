@@ -1,0 +1,184 @@
+{
+  "backend": "jev-1.13.0",
+  "cost": {
+    "asks": 0,
+    "calls": 4,
+    "replayed": 0,
+    "tokens": 2341,
+    "usd": 0.000098322
+  },
+  "fixture_description": null,
+  "local_checks": [],
+  "mode": "live model backend (~/.typesafe-key)",
+  "pending": [],
+  "replay": false,
+  "resumed": false,
+  "returned_unsure": [
+    "unsure(cold|untested:calib_line)"
+  ],
+  "status": "returned",
+  "trace": {
+    "events": [
+      {
+        "cost": 0.000025914,
+        "key": "0c6fca17a95f29b32d567957",
+        "kind": "judge",
+        "note": "「这份法律文书最应归入下列哪一类？」",
+        "replayed": false,
+        "site": {
+          "end": 2563,
+          "start": 2524
+        }
+      },
+      {
+        "cost": 0.000025032,
+        "key": "6abaf292d39e5c7c6866f76d",
+        "kind": "judge",
+        "note": "「这段话的内容是否与「合同与协议」这个话题相关？」",
+        "replayed": false,
+        "site": {
+          "end": 3806,
+          "start": 3747
+        }
+      },
+      {
+        "cost": 0.000025032,
+        "key": "b917070a8b3cce4787d6caba",
+        "kind": "judge",
+        "note": "「这段话的内容是否与「诉讼文书」这个话题相关？」",
+        "replayed": false,
+        "site": {
+          "end": 3806,
+          "start": 3747
+        }
+      },
+      {
+        "cost": 0.000025032,
+        "key": "065afb37d88020a41d90dea1",
+        "kind": "judge",
+        "note": "「这段话的内容是否与「公司治理文件」这个话题相关？」",
+        "replayed": false,
+        "site": {
+          "end": 3806,
+          "start": 3747
+        }
+      },
+      {
+        "cost": 0.000025032,
+        "key": "6f55c8df241e80ce54bd7f70",
+        "kind": "judge",
+        "note": "「这段话的内容是否与「知识产权文件」这个话题相关？」",
+        "replayed": false,
+        "site": {
+          "end": 3806,
+          "start": 3747
+        }
+      },
+      {
+        "cost": 0.000023562,
+        "key": "9d0e4b8d02261780a1ef9f80",
+        "kind": "judge",
+        "note": "「这段话的内容是否与「租赁合同」这个话题相关？」",
+        "replayed": false,
+        "site": {
+          "end": 3806,
+          "start": 3747
+        }
+      },
+      {
+        "cost": 0.000023562,
+        "key": "396f17c8d7db8736a87d164d",
+        "kind": "judge",
+        "note": "「这段话的内容是否与「买卖合同」这个话题相关？」",
+        "replayed": false,
+        "site": {
+          "end": 3806,
+          "start": 3747
+        }
+      },
+      {
+        "cost": 0.000023562,
+        "key": "6da1bb8e1e8fa6b5cac6db89",
+        "kind": "judge",
+        "note": "「这段话的内容是否与「劳动合同」这个话题相关？」",
+        "replayed": false,
+        "site": {
+          "end": 3806,
+          "start": 3747
+        }
+      },
+      {
+        "cost": 0.000023814,
+        "key": "d9cf4a15be28e4aa5739937f",
+        "kind": "judge",
+        "note": "「这段话的内容是否与「住宅租赁合同」这个话题相关？」",
+        "replayed": false,
+        "site": {
+          "end": 3806,
+          "start": 3747
+        }
+      },
+      {
+        "cost": 0.000023814,
+        "key": "074854ee0815c9b0af7325c9",
+        "kind": "judge",
+        "note": "「这段话的内容是否与「商铺租赁合同」这个话题相关？」",
+        "replayed": false,
+        "site": {
+          "end": 3806,
+          "start": 3747
+        }
+      },
+      {
+        "cost": 0.000023814,
+        "key": "113504ff01bd75b2cacb8357",
+        "kind": "judge",
+        "note": "「这段话的内容是否与「设备租赁合同」这个话题相关？」",
+        "replayed": false,
+        "site": {
+          "end": 3806,
+          "start": 3747
+        }
+      }
+    ],
+    "warnings": [
+      "W-untested: @2520 calib_line 在本次路径上没有被测量，按 J-15 取保守项（出口 cold）。修法【作者可改】：给这道题的校准键写一条上岗记录，或给这一类（phys + literal_mode）写一条模式级记录",
+      "W-untyped-transfer: <fn> 把 unsure(cold|untested:calib_line) 装在返回值里交了出去，但返回类型没提 Exit，调用者从签名上看不出自己收到了一份未决。修法：把返回类型标为含 Exit（如 `-> Exit`、`-> Record<Exit>`）",
+      "W-untyped-transfer: descend_one 把 unsure(cold|untested:calib_line) 装在返回值里交了出去，但返回类型没提 Exit，调用者从签名上看不出自己收到了一份未决。修法：把返回类型标为含 Exit（如 `-> Exit`、`-> Record<Exit>`）",
+      "W-form-line: @3747 题级校准键 form-topic 无上岗记录，用题式级线 form:f84be62010fca87cacb0637e（n=388）；出口带 line_source=题式级",
+      "W-form-line: @3747 题级校准键 form-topic 无上岗记录，用题式级线 form:f84be62010fca87cacb0637e（n=388）；出口带 line_source=题式级",
+      "W-form-line: @3747 题级校准键 form-topic 无上岗记录，用题式级线 form:f84be62010fca87cacb0637e（n=388）；出口带 line_source=题式级",
+      "W-form-line: @3747 题级校准键 form-topic 无上岗记录，用题式级线 form:f84be62010fca87cacb0637e（n=388）；出口带 line_source=题式级",
+      "W-form-line: @3747 题级校准键 form-topic 无上岗记录，用题式级线 form:f84be62010fca87cacb0637e（n=388）；出口带 line_source=题式级",
+      "W-form-line: @3747 题级校准键 form-topic 无上岗记录，用题式级线 form:f84be62010fca87cacb0637e（n=388）；出口带 line_source=题式级",
+      "W-form-line: @3747 题级校准键 form-topic 无上岗记录，用题式级线 form:f84be62010fca87cacb0637e（n=388）；出口带 line_source=题式级",
+      "W-form-line: @3747 题级校准键 form-topic 无上岗记录，用题式级线 form:f84be62010fca87cacb0637e（n=388）；出口带 line_source=题式级",
+      "W-form-line: @3747 题级校准键 form-topic 无上岗记录，用题式级线 form:f84be62010fca87cacb0637e（n=388）；出口带 line_source=题式级",
+      "W-form-line: @3747 题级校准键 form-topic 无上岗记录，用题式级线 form:f84be62010fca87cacb0637e（n=388）；出口带 line_source=题式级",
+      "returned_unsure: unsure(cold|untested:calib_line)"
+    ]
+  },
+  "value": {
+    "multi_path": {
+      "dead_ends": [],
+      "layers": 3,
+      "leaves": [
+        "住宅租赁合同"
+      ],
+      "pending": [],
+      "undecided": []
+    },
+    "single_path": {
+      "leaf": "法律文书",
+      "path": [],
+      "pending": [
+        {
+          "duty": 0,
+          "q": "9bced147d2c2533f49fa2147",
+          "unsure": "cold"
+        }
+      ],
+      "stopped": "unsure"
+    }
+  }
+}

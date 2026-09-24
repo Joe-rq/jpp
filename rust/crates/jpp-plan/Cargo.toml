@@ -1,0 +1,10 @@
+[package]
+name = "jpp-plan"
+version = "0.1.0"
+edition = "2024"
+license = "MIT"
+description = "J++ planning (L3): pass switches, static trigger plans, runtime hooks for speculation, lift and vectorization"
+
+[dependencies]
+jpp-ir = { path = "../jpp-ir" }
+jpp-effects = { path = "../jpp-effects" }

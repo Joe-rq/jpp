@@ -1,0 +1,44 @@
+{
+  "asks": 0,
+  "calls": 1,
+  "effects": [],
+  "judge_registrations": 3,
+  "pending": [],
+  "returned_unsure": [],
+  "status": "returned",
+  "usd": 0.0,
+  "value": {
+    "answers": [
+      {
+        "answer": {
+          "answer": "是"
+        },
+        "asked": "这段话是否提到了南京？只算明确写出这个城市名的情况。"
+      },
+      {
+        "answer": {
+          "answer": "是"
+        },
+        "asked": "这段话是否提到了南宁？只算明确写出这个城市名的情况。"
+      }
+    ],
+    "base": {
+      "fill": {
+        "city": "南京"
+      },
+      "template": "这段话是否提到了{city}？",
+      "text": "这段话是否提到了南京？"
+    },
+    "dropped": 1,
+    "kept": [
+      "这段话是否提到了南京？",
+      "这段话是否提到了南宁？"
+    ],
+    "strict": {
+      "from_form": false,
+      "presupposition": "材料里至少提到一个地名",
+      "same_calib": true,
+      "text": "这段话是否提到了南京？只算明确写出这个城市名的情况。"
+    }
+  }
+}

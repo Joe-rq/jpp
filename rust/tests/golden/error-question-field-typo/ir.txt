@@ -1,0 +1,12 @@
+ir v1
+budget calls=0 cost=0 depth=256 escalate=- unsure=- latency_p95=- absent=-
+block 0..112
+  let q : -
+    #0 construct test @0 48..105
+      #1 text "这段话是否提到了北京？"
+      #2 text "form-mention"
+  result
+    #3 field .txt
+      #4 name q
+sites 1
+  @0 #0 construct:test 48..105 fn=- in=-

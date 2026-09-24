@@ -1,0 +1,47 @@
+import "../../../lib/outcome.jpp";
+
+budget {calls: 60, cost: 60.0, depth: 5};
+
+let m = do("read_json", ["../baseline/t1/materials.json"], 0);
+let chats = content(m).chats;
+let n = len(chats);
+
+let q1 = test("这段客服对话里，顾客是否明确提出要退款或退钱？", "cs-refund");
+let o1 = sieve(chats, q1);
+
+let q2 = test(
+  "这段客服对话里，顾客的措辞是否情绪激烈（例如愤怒、威胁投诉或曝光、连续质问）？",
+  "cs-heated"
+);
+let o2 = sieve(accepted(o1), q2);
+
+let no_refund = map(ignored(o1), fn(e) { e.index });
+let urgent = map(accepted(o2), fn(e) { e.source.index });
+let refund_calm = map(ignored(o2), fn(e) { e.source.index });
+
+let o1_review_idx = map(undecided(o1), fn(p) { p.element.index });
+let o2_review_idx = map(undecided(o2), fn(p) { p.element.source.index });
+let all_idx = range(0, n);
+let review = filter(all_idx, fn(i) {
+  contains(o1_review_idx, i) || contains(o2_review_idx, i)
+});
+
+let o1_unobs_idx = map(unobserved(o1), fn(p) { p.element.index });
+let o2_unobs_idx = map(unobserved(o2), fn(p) { p.element.source.index });
+let unobserved_idx = filter(all_idx, fn(i) {
+  contains(o1_unobs_idx, i) || contains(o2_unobs_idx, i)
+});
+
+let lo = len(urgent);
+let hi = lo + len(review) + len(unobserved_idx);
+
+{
+  urgent: urgent,
+  refund_calm: refund_calm,
+  no_refund: no_refund,
+  review: review,
+  unobserved: unobserved_idx,
+  urgent_count: [lo, hi],
+  refund_pass: o1,
+  heated_pass: o2
+}

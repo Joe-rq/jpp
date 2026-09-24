@@ -1,0 +1,445 @@
+//! 保形弃权域：**先回答「这条线能不能被认证」，再谈线定在哪**。
+//!
+//! **从 `foundation/experiments/conformal-proto` 原样搬过来，不重写**（总控点名）。
+//! 原型那三道「空放行区不算解」的保护**一道不少地搬全了**——原型自己实测过
+//! **单独去掉任何一道都不会变红，三道一起去掉才红**（`ecal.rs` 6 条里红 4 条）。
+//! **少搬一道，看起来是对的，而且看不出来。**
+
+use serde::{Deserialize, Serialize};
+
+use std::collections::BTreeMap;
+
+/// 二项比例的**精确**上置信界（Clopper–Pearson）。
+///
+/// 为什么不用 Hoeffding：在我们的 n 上 Hoeffding 的松弛是
+/// `sqrt(ln(1/δ)/2n)`——n=20 时 **0.24**，对任何低于 24% 的风险目标都是空的。
+/// 精确二项界在小 n 上紧得多，而且这里的损失本来就是 0/1，用不着次高斯放缩。
+pub fn binomial_upper(k: usize, n: usize, conf_delta: f64) -> f64 {
+    // **`n == 0` 返回 1.0 是承重的，不是防御性写法。** 空放行区的风险**没有定义**，
+    // 返回 0.0（「零错所以零风险」）会让「全弃权」在算术上满足任何 α，于是全弃权被
+    // 报成「认证通过的线」。返回 1.0 是「说不准时往拒绝那边倒」的直接实例。
+    if n == 0 || k >= n {
+        return 1.0;
+    }
+    let log_choose = (1..=k)
+        .map(|i| ((n - i + 1) as f64 / i as f64).ln())
+        .sum::<f64>();
+    let (mut lo, mut hi) = (k as f64 / n as f64, 1.0);
+    for _ in 0..200 {
+        let mid = (lo + hi) / 2.0;
+        // P(Bin(n, mid) ≤ k)
+        // mid >= k/n: the largest relevant mass is at k. Starting from 0
+        // can underflow even when the CDF is large (e.g. n=1000, k=900).
+        let mut term = (log_choose + k as f64 * mid.ln() + (n - k) as f64 * (-mid).ln_1p()).exp();
+        let mut cdf = term;
+        for i in (1..=k).rev() {
+            term *= i as f64 / (n - i + 1) as f64 * (1.0 - mid) / mid;
+            cdf += term;
+        }
+        if cdf > conf_delta { lo = mid } else { hi = mid }
+    }
+    (lo + hi) / 2.0
+}
+
+/// 零错时要认证到 α 所需的**放行条数**：`ln δ / ln(1−α)`。
+/// 这是「就算一条都不错，样本也得有这么多」的下限，与读数准不准无关。
+pub fn n_needed_zero_error(alpha: f64, conf_delta: f64) -> usize {
+    (conf_delta.ln() / (1.0 - alpha).ln()).ceil() as usize
+}
+
+/// 一次实验性阈值扫描的结果。**拒绝是一等出口**，不是错误。
+/// `ucb` 是逐阈值二项上界；同批选线尚无选择校正，不能解释为整体风险保证。
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub enum Certificate {
+    /// 认证成功：`hi` 之上放行，风险上界 `ucb ≤ α`。
+    Line {
+        hi: f64,
+        n_accepted: usize,
+        n_errors: usize,
+        ucb: f64,
+    },
+    /// **认证失败**：任何非平凡的线都给不出 ≤ α 的上界。
+    /// `best_ucb` 是这批数据上能拿到的**最紧**上界（对应最保守的非空放行区）。
+    Refused {
+        best_ucb: f64,
+        best_hi: f64,
+        best_n_accepted: usize,
+        n_needed: usize,
+    },
+}
+
+impl Certificate {
+    /// 拒绝时该点亮的 J-15 载体名。**不新造机制**：
+    /// 「这条线没被认证」与「置换没测过」「线是冷的」是同一个性质——
+    /// **一个被声明为判据、但在本次路径上没有被测量的量**。
+    pub fn untested_carrier(&self) -> Option<&'static str> {
+        match self {
+            Certificate::Line { .. } => None,
+            Certificate::Refused { .. } => Some("conformal_line"),
+        }
+    }
+    pub fn is_refused(&self) -> bool {
+        matches!(self, Certificate::Refused { .. })
+    }
+}
+
+/// 保形风险控制（RCPS 形状）：**从最宽的线往紧里走，取第一个上界 ≤ α 的线**。
+///
+/// `samples`：`(读数 p, 这条读数蕴含的判断对不对)`。损失 = 放行区里的假放行。
+///
+/// Experimental scan: thresholds are selected on the same samples used for
+/// pointwise Clopper–Pearson bounds. No selection correction or independent
+/// validation set is implemented. `Certificate` is the existing API name,
+/// not a distribution-free guarantee for the selected threshold.
+///
+/// **空放行区不算解。** 这一条是纪律不是实现细节：`t = 1.0` 上「放行 0 条、
+/// 假放行 0 条」在算术上满足任何 α，但它说的是「全弃权」——把全弃权报成
+/// 「认证通过的线」，正是**结论把注意力从依据上引开**的那个形状。
+pub fn certify(samples: &[(f64, bool)], alpha: f64, conf_delta: f64) -> Certificate {
+    let mut pts: Vec<(f64, bool)> = samples.to_vec();
+    pts.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap());
+    let mut ps: Vec<f64> = pts.iter().map(|x| x.0).collect();
+    ps.dedup();
+    let mut cands = vec![0.0];
+    for w in ps.windows(2) {
+        cands.push((w[0] + w[1]) / 2.0);
+    }
+    // **不放 1.0**：那是全弃权，不是线。（这是三道保护的第二道，见 `binomial_upper` 的 `n == 0`。）
+    let mut best: Option<(f64, f64, usize)> = None; // (ucb, hi, n_accepted)
+    for t in cands {
+        let acc: Vec<&(f64, bool)> = pts.iter().filter(|x| x.0 >= t).collect();
+        // 第三道。**实测：单独去掉这一道不会变红**——候选表里本来就没有让放行区为空的阈值。
+        // 三道一起去掉才红（tests/ecal.rs 的「空放行区不算解」，6 条里红 4 条）。
+        if acc.is_empty() {
+            continue;
+        }
+        let k = acc.iter().filter(|x| !x.1).count();
+        let ucb = binomial_upper(k, acc.len(), conf_delta);
+        if best.as_ref().map(|b| ucb < b.0).unwrap_or(true) {
+            best = Some((ucb, t, acc.len()));
+        }
+        if ucb <= alpha {
+            return Certificate::Line {
+                hi: t,
+                n_accepted: acc.len(),
+                n_errors: k,
+                ucb,
+            };
+        }
+    }
+    let (best_ucb, best_hi, best_n) = best.unwrap_or((1.0, 1.0, 0));
+    Certificate::Refused {
+        best_ucb,
+        best_hi,
+        best_n_accepted: best_n,
+        n_needed: n_needed_zero_error(alpha, conf_delta),
+    }
+}
+
+/// **无标签**漂移统计。`12`:410 那一行里唯一带「必备」二字的东西，而它今天两边都没有：
+/// `jv/calib.py` 的 `drift_stat` 是声明了从不算的字段（全仓只有写死的 `0.0`），
+/// `core/calib.py::should_suspend` 是另一个系统的、**要标签**的错误率监控。
+///
+/// 这里给的是只用读数分布的两个量——**不需要真值，所以每次运行都能算**：
+/// - `ks`：两样本 Kolmogorov–Smirnov 统计量（读数分布位移）
+/// - `psi`：population stability index（分桶质量迁移，工业上常用 0.1 / 0.25 两档）
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct DriftReport {
+    pub ks: f64,
+    pub psi: f64,
+    pub n_ref: usize,
+    pub n_recent: usize,
+    /// **这个 KS 显著吗**（α=0.05 的两样本临界值）。**`false` = 不显著。**
+    ///
+    /// **原来这一位叫 `underpowered`，而那是个错名**：200 条对 200 条的**同分布**
+    /// 数据 `ks = 0 < crit`，于是它报「功效不足」——**而真相是功效充足、没有漂移**。
+    /// **「测不出来」与「测出来没有漂」被压成了同一位。**
+    /// 实测：`同分布 200v200 → underpowered = true`。
+    pub significant: bool,
+    /// **样本小到连完全分离都不显著**——那才是真的功效不足。
+    /// `ks` 的上限是 1，所以判据是 `crit > 1`，即 `1/n_ref + 1/n_recent > (1/1.36)²`。
+    /// **这一位与 J-15 同族：量本身没被可信地测量。**
+    pub underpowered: bool,
+}
+
+impl DriftReport {
+    /// **这份报告够不够当停岗的依据。**
+    ///
+    /// **它不停岗**——`12`:396 写的是**告警**，停岗仍是人下的判断。它只回答
+    /// 「拿这个去停岗站不站得住」。
+    ///
+    /// `underpowered` 时**一律不够**。当初加那一位的理由是「一次 20 条的抽样不该把一个键
+    /// 停岗」；**而更硬的理由是：复岗今天不存在（`commission` 明写不经由它复岗），
+    /// 所以一次假停岗是永久的。** 两种错的代价不对称，不对称的那一侧是不可逆的那一侧。
+    pub fn 可停岗(&self) -> bool {
+        self.significant && !self.underpowered
+    }
+}
+
+pub fn drift(reference: &[f64], recent: &[f64], bins: usize) -> DriftReport {
+    let ks = {
+        let mut a = reference.to_vec();
+        let mut b = recent.to_vec();
+        a.sort_by(|x, y| x.partial_cmp(y).unwrap());
+        b.sort_by(|x, y| x.partial_cmp(y).unwrap());
+        let mut all: Vec<f64> = a.iter().chain(b.iter()).copied().collect();
+        all.sort_by(|x, y| x.partial_cmp(y).unwrap());
+        all.iter()
+            .map(|t| {
+                let fa = a.iter().filter(|x| *x <= t).count() as f64 / a.len().max(1) as f64;
+                let fb = b.iter().filter(|x| *x <= t).count() as f64 / b.len().max(1) as f64;
+                (fa - fb).abs()
+            })
+            .fold(0.0, f64::max)
+    };
+    let hist = |v: &[f64]| -> Vec<f64> {
+        let mut h = vec![0.0; bins];
+        for x in v {
+            let i = ((x * bins as f64).floor() as usize).min(bins - 1);
+            h[i] += 1.0;
+        }
+        let n = v.len().max(1) as f64;
+        h.into_iter().map(|c| c / n).collect()
+    };
+    let (ha, hb) = (hist(reference), hist(recent));
+    let eps = 1e-4;
+    let psi = ha
+        .iter()
+        .zip(hb.iter())
+        .map(|(a, b)| {
+            let (a, b) = (a.max(eps), b.max(eps));
+            (b - a) * (b / a).ln()
+        })
+        .sum::<f64>();
+    // KS 的 α=0.05 临界值 ≈ 1.36·sqrt(1/n1 + 1/n2)；小于它就分不出移没移。
+    let crit =
+        1.36 * (1.0 / reference.len().max(1) as f64 + 1.0 / recent.len().max(1) as f64).sqrt();
+    DriftReport {
+        ks,
+        psi,
+        n_ref: reference.len(),
+        n_recent: recent.len(),
+        significant: ks >= crit,
+        // **完全分离（ks = 1）都不显著，才叫功效不足**
+        underpowered: crit > 1.0,
+    }
+}
+
+/// 把标注集按**对象段**分簇，每簇取一条——簇级保形。
+///
+/// 为什么需要它：可交换性在我们这里**不是被时间打破的，是被材料复用打破的**。
+/// E-CAL 那 297 条读数只由 61 个不同片段重组而成；按对象段分簇后
+/// noul 36 簇 / choice 37 簇 / score 28 簇。**同一段落的多条读数不是多次独立观察。**
+pub fn cluster_subsample(samples: &[(f64, bool, String)], seed: u64) -> Vec<(f64, bool)> {
+    let mut by: BTreeMap<&str, Vec<(f64, bool)>> = BTreeMap::new();
+    for (p, l, seg) in samples {
+        by.entry(seg.as_str()).or_default().push((*p, *l));
+    }
+    let mut s = seed.wrapping_mul(6364136223846793005).wrapping_add(1);
+    by.values()
+        .map(|v| {
+            s = s
+                .wrapping_mul(6364136223846793005)
+                .wrapping_add(1442695040888963407);
+            v[(s >> 33) as usize % v.len()]
+        })
+        .collect()
+}
+
+/// **代价比线**（`12` §2.3；从 Python `calib.py::cost_line` 原样搬）。
+///
+/// 在标注集上找使经验代价 `fp·#误放行 + fn·#漏放行` 最小的阈值 `t`；出口 `Act` 当 `p ≥ t`。
+/// 这是贝叶斯代价比线的**经验版**（校准好时二者收敛）；**保形风险控制的有限样本修正不在这里**。
+/// 它只保证一件事：**线随代价矩阵移动、不由程序手写。**
+///
+/// **「并列取更高的 `t`」是承重的**：代价相同时取更严的那条，**宁可 unsure**。
+/// 丢了它，并列时会滑向更宽松的线，而那正是「说不准往拒绝那边倒」要防的。
+pub fn cost_line(samples: &[(f64, bool)], fp: f64, fn_: f64) -> Result<CostLine, String> {
+    if samples.is_empty() {
+        return Err("cost_line: 标注集为空，线只从记录来（I4）".into());
+    }
+    if fp < 0.0 || fn_ < 0.0 || fp + fn_ == 0.0 {
+        return Err("cost_line: 代价必须非负且不全为 0".into());
+    }
+    let mut pts: Vec<(f64, bool)> = samples.to_vec();
+    pts.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap_or(std::cmp::Ordering::Equal));
+    // **这里不去重，`certify` 那边去重——两个函数的候选规则不一样，别照抄邻居的。**
+    // Python `cost_line` 的 `ps` 没有 dedup，于是重复值之间的「中点」就是那个值本身，
+    // **候选表里因此含有样本点本身**。我第一版顺手抄了 `certify` 的 `ps.dedup()`，
+    // 线就从 0.59 掉到 0.585——放行集合恰好没变，**所以三个数里有两个仍然对得上**。
+    let ps: Vec<f64> = pts.iter().map(|x| x.0).collect();
+    let mut cands = vec![0.0];
+    for w in ps.windows(2) {
+        cands.push((w[0] + w[1]) / 2.0);
+    }
+    cands.push(1.0 + 1e-9);
+    let (mut best_t, mut best_c): (f64, Option<f64>) = (0.0, None);
+    for t in cands {
+        let c: f64 = pts.iter().filter(|(p, l)| *p >= t && !*l).count() as f64 * fp
+            + pts.iter().filter(|(p, l)| *p < t && *l).count() as f64 * fn_;
+        // **并列取更高的 `t`**（宁可 unsure）——与 Python 逐字同序
+        if best_c.is_none()
+            || c < best_c.expect("已判")
+            || (c == best_c.expect("已判") && t > best_t)
+        {
+            best_t = t;
+            best_c = Some(c);
+        }
+    }
+    let n = pts.len();
+    // Keep the reject-all sentinel. Clamping it to 1 accepts scores equal to 1
+    // and makes the returned acceptance counts disagree with the optimized cost.
+    let line = best_t;
+    let acc: Vec<&(f64, bool)> = pts.iter().filter(|(p, _)| *p >= line).collect();
+    let 误放行 = acc.iter().filter(|(_, l)| !*l).count();
+    Ok(CostLine {
+        line,
+        cost: best_c.unwrap_or(0.0),
+        n,
+        fp,
+        fn_,
+        n_accepted: acc.len(),
+        n_false_accept: 误放行,
+        // **放行集合为空时假放行率无定义**，不是 0——返回 `None`，与 `binomial_upper` 的
+        // `n == 0 → 1.0` 同一条：空放行区上的「零错」不是证据。
+        false_accept_rate: if acc.is_empty() {
+            None
+        } else {
+            Some(误放行 as f64 / acc.len() as f64)
+        },
+    })
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct CostLine {
+    /// Inclusive threshold; a value above 1 represents rejecting all scores.
+    pub line: f64,
+    pub cost: f64,
+    pub n: usize,
+    pub fp: f64,
+    pub fn_: f64,
+    /// 放行集合大小。**必须和 `false_accept_rate` 一起看**——
+    /// 一个缩小的放行集合把率压低了，那不是变好。
+    pub n_accepted: usize,
+    pub n_false_accept: usize,
+    /// 放行集合为空时是 `None`，不是 0
+    pub false_accept_rate: Option<f64>,
+}
+
+// ---------------------------------------------------------------- 认证范围的材料指纹（B68）
+
+/// 材料指纹的量名（B68 第 1 条）：只用可从材料算出的统计量，不问判断器「是不是同一风格」（P7）。
+/// 顺序固定，[`material_fingerprint`] 按这个顺序给值。
+pub const FP_NAMES: [&str; 7] = [
+    "字符数",
+    "中文比例",
+    "拉丁字母比例",
+    "数字比例",
+    "标点空白比例",
+    "行数",
+    "平均行长",
+];
+
+/// 一段材料文本的指纹（B68）：字符数；中文、拉丁字母、数字、标点与空白四类字符的比例；
+/// 行数与平均行长。比例的分母是字符数；空文本的比例全为 0。
+pub fn material_fingerprint(text: &str) -> [f64; 7] {
+    let (mut n, mut cjk, mut latin, mut digit, mut punct) = (0usize, 0usize, 0usize, 0usize, 0usize);
+    for c in text.chars() {
+        n += 1;
+        if ('\u{4e00}'..='\u{9fff}').contains(&c) || ('\u{3400}'..='\u{4dbf}').contains(&c) {
+            cjk += 1;
+        } else if c.is_numeric() {
+            digit += 1;
+        } else if c.is_alphabetic() {
+            latin += 1;
+        } else {
+            punct += 1;
+        }
+    }
+    let lines = text.lines().count().max(1);
+    let r = |k: usize| if n == 0 { 0.0 } else { k as f64 / n as f64 };
+    [n as f64, r(cjk), r(latin), r(digit), r(punct), lines as f64, n as f64 / lines as f64]
+}
+
+/// 认证集的范围：每个指纹量在认证集上的分位区间（B68）。
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct ScopeRanges {
+    /// 取区间用的分位（导入参数 `scope_quantiles`，缺省 [0.01, 0.99]）
+    pub quantiles: (f64, f64),
+    /// 算指纹用的材料条数
+    pub n: usize,
+    /// 按 [`FP_NAMES`] 顺序：（量名，下界，上界）。有 `margins` 时已含边距。
+    pub ranges: Vec<(String, f64, f64)>,
+    /// 区间边距（B68 修订）：尺度量乘除 k、比例量加减 m。缺省 = 旧记录，区间是裸分位。
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub margins: Option<ScopeMargins>,
+}
+
+/// 认证范围的边距参数（B68 修订）：分位区间只去离群点，同风格容差由边距给。
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+pub struct ScopeMargins {
+    /// 尺度量（字符数、行数、平均行长）：[q_lo / k, q_hi × k]
+    pub k: f64,
+    /// 比例量（中文、拉丁、数字、标点空白）：[q_lo − m, q_hi + m] ∩ [0, 1]
+    pub m: f64,
+}
+
+impl Default for ScopeMargins {
+    fn default() -> Self {
+        ScopeMargins { k: 2.0, m: 0.10 }
+    }
+}
+
+/// 指纹量是否尺度量（按 [`FP_NAMES`] 下标）；其余为比例量。
+fn is_scale(i: usize) -> bool {
+    matches!(i, 0 | 5 | 6)
+}
+
+impl ScopeRanges {
+    /// 由一批材料文本算出范围。没有文本时 `None`。
+    pub fn from_texts<'a>(
+        texts: impl IntoIterator<Item = &'a str>,
+        quantiles: (f64, f64),
+        margins: Option<ScopeMargins>,
+    ) -> Option<ScopeRanges> {
+        let fps: Vec<[f64; 7]> = texts.into_iter().map(material_fingerprint).collect();
+        if fps.is_empty() {
+            return None;
+        }
+        let q = |xs: &mut Vec<f64>, p: f64| {
+            xs.sort_by(|a, b| a.total_cmp(b));
+            let i = ((xs.len() - 1) as f64 * p).round() as usize;
+            xs[i.min(xs.len() - 1)]
+        };
+        let ranges = FP_NAMES
+            .iter()
+            .enumerate()
+            .map(|(k, name)| {
+                let mut xs: Vec<f64> = fps.iter().map(|f| f[k]).collect();
+                let lo = q(&mut xs, quantiles.0);
+                let hi = q(&mut xs, quantiles.1);
+                let (lo, hi) = match margins {
+                    None => (lo, hi),
+                    Some(g) if is_scale(k) => (lo / g.k, hi * g.k),
+                    Some(g) => ((lo - g.m).max(0.0), (hi + g.m).min(1.0)),
+                };
+                (name.to_string(), lo, hi)
+            })
+            .collect();
+        Some(ScopeRanges {
+            quantiles,
+            n: fps.len(),
+            ranges,
+            margins,
+        })
+    }
+
+    /// 这段材料的指纹落在哪个量的区间外；都在区间内时 `None`。返回（量名，值，下界，上界）。
+    pub fn outside(&self, fp: &[f64; 7]) -> Option<(String, f64, f64, f64)> {
+        self.ranges
+            .iter()
+            .zip(fp.iter())
+            .find(|((_, lo, hi), v)| **v < *lo - 1e-12 || **v > *hi + 1e-12)
+            .map(|((name, lo, hi), v)| (name.clone(), *v, *lo, *hi))
+    }
+}

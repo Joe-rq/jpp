@@ -1,0 +1,63 @@
+budget {calls: 100, cost: 1000.0};
+
+fn route_from(cand, anss, i, acc) {
+  let material = cand[i].item;
+  let pair_ds = cut(anss[i]);
+  let tier = handle(pair_ds[0], {
+    at: fn(v) { v },
+    unsure: fn(u) { consume(u, "drop"); 0 - 1 }
+  });
+  let name_h = handle(pair_ds[1], {
+    act: fn(x) { "是" }, ignore: fn(x) { "否" },
+    unsure: fn(u) { consume(u, "drop"); "未决" }
+  });
+  let brewery_h = handle(pair_ds[2], {
+    act: fn(x) { "是" }, ignore: fn(x) { "否" },
+    unsure: fn(u) { consume(u, "drop"); "未决" }
+  });
+  let style_h = handle(pair_ds[3], {
+    act: fn(x) { "是" }, ignore: fn(x) { "否" },
+    unsure: fn(u) { consume(u, "drop"); "未决" }
+  });
+  let act = if tier == 2 { "assert sameAs" } else {
+    if tier == 0 { "leave unlinked" } else { "curator queue" }
+  };
+  let tkey = if tier == 2 { "sameAs" } else {
+    if tier == 0 { "unlinked" } else { "curator" }
+  };
+  let entry = {pair: {a: material.a.name, b: material.b.name}, outcome: act,
+    hints: {name: name_h, brewery: brewery_h, style: style_h}};
+  {
+    routed: append(acc.routed, entry),
+    sameAs: acc.sameAs + (if tkey == "sameAs" { 1 } else { 0 }),
+    curator: acc.curator + (if tkey == "curator" { 1 } else { 0 }),
+    unlinked: acc.unlinked + (if tkey == "unlinked" { 1 } else { 0 })
+  }
+}
+
+fn main() {
+  let m = do("read_json", ["../baseline/t1/materials.json"], 0);
+  let data = content(m);
+  let o = pair(data.catalog_a, data.catalog_b);
+  let cand = filter(o.value, fn(p) { abs(p.item.a.abv - p.item.b.abv) <= 1.5 });
+  let states = map(cand, fn(p) { state(mat(p.item)) });
+  let qr = measure("两条实体描述作为产品是什么关系？",
+    ["它们描述的是两种不同的产品。",
+     "它们描述的是密切相关、可能是也可能不是同一款的产品：变体、特别版，或名字两种理解都说得通。",
+     "它们描述的是同一款产品。"],
+    "align-link");
+  let qn = test("两条实体写的是同一个啤酒名吗？", "align-name");
+  let qb = test("两条实体来自同一家酒厂吗？", "align-brewery");
+  let qs = test("两条实体描述的是同一种啤酒风格吗？", "align-style");
+  let anss = judge(states, [qr, qn, qb, qs]);
+  let init = {routed: [], sameAs: 0, curator: 0, unlinked: 0};
+  let res = fold(range(0, len(cand)), init, fn(acc, i) {
+    route_from(cand, anss, i, acc)
+  });
+  {candidates: len(cand),
+   tally: {sameAs: res.sameAs, curator: res.curator, unlinked: res.unlinked},
+   routed: res.routed,
+   unobserved: []}
+}
+
+main()

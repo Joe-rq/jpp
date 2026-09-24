@@ -1,0 +1,156 @@
+{
+ "about": "步 0 门禁：每个示例一次固定观察运行的金样（21 §二·1）。字段：source 源码；fixtures 固定观察；calib 校准记录目录；files 运行目录里预置的文件；resume_from 从某个用例的账本续跑；expect=error 表示预期失败，金样为规范化后的 stderr。",
+ "cases": [
+  {
+   "name": "adaptive",
+   "source": "examples/adaptive.jpp",
+   "fixtures": "examples/fixtures/adaptive.json"
+  },
+  {
+   "name": "composition",
+   "source": "examples/composition.jpp"
+  },
+  {
+   "name": "contract",
+   "source": "examples/contract.jpp",
+   "fixtures": "examples/fixtures/contract.json"
+  },
+  {
+   "name": "iterate",
+   "source": "examples/iterate.jpp",
+   "fixtures": "examples/fixtures/iterate.json"
+  },
+  {
+   "name": "library-methods",
+   "source": "examples/library-methods.jpp"
+  },
+  {
+   "name": "lifecycle",
+   "source": "examples/lifecycle.jpp",
+   "fixtures": "examples/fixtures/lifecycle.json",
+   "files": {
+    "input.json": "{\"goal\":\"a reusable plan\"}"
+   }
+  },
+  {
+   "name": "lifecycle-resume",
+   "source": "examples/lifecycle.jpp",
+   "fixtures": "examples/fixtures/lifecycle-response.json",
+   "resume_from": "lifecycle"
+  },
+  {
+   "name": "pair-team",
+   "source": "examples/pair-team.jpp",
+   "fixtures": "examples/fixtures/pair-team.json"
+  },
+  {
+   "name": "partial",
+   "source": "examples/partial.jpp",
+   "fixtures": "examples/fixtures/partial.json"
+  },
+  {
+   "name": "question-as-data",
+   "source": "examples/question-as-data.jpp",
+   "fixtures": "examples/fixtures/question-as-data.json"
+  },
+  {
+   "name": "question-forms",
+   "source": "examples/question-forms.jpp",
+   "fixtures": "examples/fixtures/question-forms.json"
+  },
+  {
+   "name": "question-forms@truth",
+   "source": "examples/question-forms.jpp",
+   "fixtures": "examples/fixtures/question-forms-truth.json",
+   "calib": "tests/golden/_calib/b24"
+  },
+  {
+   "name": "sieve",
+   "source": "examples/sieve.jpp",
+   "fixtures": "examples/fixtures/sieve.json"
+  },
+  {
+   "name": "sieve@truth",
+   "source": "examples/sieve.jpp",
+   "fixtures": "examples/fixtures/sieve-truth.json",
+   "calib": "tests/golden/_calib/b24"
+  },
+  {
+   "name": "sieve-batch-new",
+   "source": "examples/sieve-batch-new.jpp",
+   "fixtures": "examples/fixtures/sieve-batch.json"
+  },
+  {
+   "name": "sieve-batch-old",
+   "source": "examples/sieve-batch-old.jpp",
+   "fixtures": "examples/fixtures/sieve-batch.json"
+  },
+  {
+   "name": "sieve-budget",
+   "source": "examples/sieve-budget.jpp",
+   "fixtures": "examples/fixtures/sieve.json"
+  },
+  {
+   "name": "sieve-compose",
+   "source": "examples/sieve-compose.jpp",
+   "fixtures": "examples/fixtures/sieve.json"
+  },
+  {
+   "name": "sieve-review",
+   "source": "examples/sieve-review.jpp",
+   "fixtures": "examples/fixtures/sieve.json"
+  },
+  {
+   "name": "tally",
+   "source": "examples/tally.jpp",
+   "fixtures": "examples/fixtures/tally.json"
+  },
+  {
+   "name": "tally-budget",
+   "source": "examples/tally-budget.jpp",
+   "fixtures": "examples/fixtures/tally.json"
+  },
+  {
+   "name": "topic-relevance",
+   "source": "examples/topic-relevance.jpp",
+   "fixtures": "examples/fixtures/topic-relevance.json",
+   "calib": "tests/golden/_calib/b24"
+  },
+  {
+   "name": "truth-pending",
+   "source": "examples/truth-pending.jpp",
+   "fixtures": "examples/fixtures/truth-pending.json",
+   "calib": "tests/golden/_calib/pending"
+  },
+  {
+   "name": "unsure-causes",
+   "source": "examples/unsure-causes.jpp",
+   "fixtures": "examples/fixtures/unsure-causes.json"
+  },
+  {
+   "name": "error-missing-budget",
+   "source": "examples/errors/missing-budget.jpp",
+   "expect": "error"
+  },
+  {
+   "name": "error-outcome-dropped",
+   "source": "examples/errors/outcome-dropped.jpp",
+   "expect": "error"
+  },
+  {
+   "name": "error-question-field-typo",
+   "source": "examples/errors/question-field-typo.jpp",
+   "expect": "error"
+  },
+  {
+   "name": "error-syntax",
+   "source": "examples/errors/syntax.jpp",
+   "expect": "error"
+  },
+  {
+   "name": "error-type-mismatch",
+   "source": "examples/errors/type-mismatch.jpp",
+   "expect": "error"
+  }
+ ]
+}

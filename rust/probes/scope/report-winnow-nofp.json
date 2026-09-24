@@ -1,0 +1,243 @@
+{
+  "backend": "fixed-0",
+  "cost": {
+    "asks": 0,
+    "calls": 11,
+    "replayed": 0,
+    "tokens": 0,
+    "usd": 0.0
+  },
+  "fixture_description": "Synthetic fixed observations for probes/winnow (construction check only).",
+  "local_checks": [],
+  "mode": "fixed observations; no model API requests",
+  "pending": [],
+  "replay": false,
+  "resumed": false,
+  "returned_unsure": [
+    "unsure(band)"
+  ],
+  "status": "returned",
+  "trace": {
+    "events": [
+      {
+        "cost": 0.0,
+        "key": "417e194b1fe73225ca6af73d",
+        "kind": "do",
+        "note": "read_json",
+        "replayed": false,
+        "site": {
+          "end": 1053,
+          "start": 1019
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "838e3225439ce25ddd48077d",
+        "kind": "judge",
+        "note": "「这段工具输出里是否含有报错、失败或异常信息？」",
+        "replayed": false,
+        "site": {
+          "end": 1400,
+          "start": 1365
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "1d9130bed7f1fa20cd19419b",
+        "kind": "judge",
+        "note": "「这段话的内容是否与「修复登录接口在密码为空时返回 500 的问题」这个话题相关？」",
+        "replayed": false,
+        "site": {
+          "end": 1470,
+          "start": 1415
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "53722090f7e9ccb29e5a9fb4",
+        "kind": "judge",
+        "note": "「这段话的内容是否与「修复登录接口在密码为空时返回 500 的问题」这个话题相关？」",
+        "replayed": false,
+        "site": {
+          "end": 1470,
+          "start": 1415
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "4368fb9f0936faf26f078971",
+        "kind": "judge",
+        "note": "「这段话的内容是否与「修复登录接口在密码为空时返回 500 的问题」这个话题相关？」",
+        "replayed": false,
+        "site": {
+          "end": 1470,
+          "start": 1415
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "95c2d902e1ed4e43074a8373",
+        "kind": "judge",
+        "note": "「这段话的内容是否与「修复登录接口在密码为空时返回 500 的问题」这个话题相关？」",
+        "replayed": false,
+        "site": {
+          "end": 1470,
+          "start": 1415
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "483fe0a3f21da1d3f94ebcee",
+        "kind": "judge",
+        "note": "「这段工具输出里是否含有报错、失败或异常信息？」",
+        "replayed": false,
+        "site": {
+          "end": 1400,
+          "start": 1365
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "d3197d1adb5608abec279125",
+        "kind": "judge",
+        "note": "「这段话的内容是否与「修复登录接口在密码为空时返回 500 的问题」这个话题相关？」",
+        "replayed": false,
+        "site": {
+          "end": 1470,
+          "start": 1415
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "4550b1e96e3108175250d7ff",
+        "kind": "judge",
+        "note": "「这段话的内容是否与「修复登录接口在密码为空时返回 500 的问题」这个话题相关？」",
+        "replayed": false,
+        "site": {
+          "end": 1470,
+          "start": 1415
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "d8be20e8917906c047c5f462",
+        "kind": "judge",
+        "note": "「这段话的内容是否与「修复登录接口在密码为空时返回 500 的问题」这个话题相关？」",
+        "replayed": false,
+        "site": {
+          "end": 1470,
+          "start": 1415
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "45a423d815539da29a98b33d",
+        "kind": "judge",
+        "note": "「这段话的内容是否与「修复登录接口在密码为空时返回 500 的问题」这个话题相关？」",
+        "replayed": false,
+        "site": {
+          "end": 1470,
+          "start": 1415
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "bdf35be6ca3da4e474d9943b",
+        "kind": "judge",
+        "note": "「这段话的内容是否与「修复登录接口在密码为空时返回 500 的问题」这个话题相关？」",
+        "replayed": false,
+        "site": {
+          "end": 1470,
+          "start": 1415
+        }
+      }
+    ],
+    "warnings": [
+      "W-fixture-line: @1361 键 winnow-error 的线是夹具线（宿主 put 写入或没有认证证书，n=1），出口 Act 照常路由，但按 B29 不算放行不可逆 do 的可信合取项。修法【需接线人】：用 calib-import 或 commission 从带真值样本认证这条线",
+      "W-form-line: @1415 题级校准键 form-topic 无上岗记录，用题式级线 form:f84be62010fca87cacb0637e（n=388）；出口带 line_source=题式级",
+      "W-form-line: @1415 题级校准键 form-topic 无上岗记录，用题式级线 form:f84be62010fca87cacb0637e（n=388）；出口带 line_source=题式级",
+      "W-form-line: @1415 题级校准键 form-topic 无上岗记录，用题式级线 form:f84be62010fca87cacb0637e（n=388）；出口带 line_source=题式级",
+      "W-form-line: @1415 题级校准键 form-topic 无上岗记录，用题式级线 form:f84be62010fca87cacb0637e（n=388）；出口带 line_source=题式级",
+      "W-form-line: @1415 题级校准键 form-topic 无上岗记录，用题式级线 form:f84be62010fca87cacb0637e（n=388）；出口带 line_source=题式级",
+      "W-form-line: @1415 题级校准键 form-topic 无上岗记录，用题式级线 form:f84be62010fca87cacb0637e（n=388）；出口带 line_source=题式级",
+      "W-form-line: @1415 题级校准键 form-topic 无上岗记录，用题式级线 form:f84be62010fca87cacb0637e（n=388）；出口带 line_source=题式级",
+      "W-form-line: @1415 题级校准键 form-topic 无上岗记录，用题式级线 form:f84be62010fca87cacb0637e（n=388）；出口带 line_source=题式级",
+      "W-form-line: @1415 题级校准键 form-topic 无上岗记录，用题式级线 form:f84be62010fca87cacb0637e（n=388）；出口带 line_source=题式级",
+      "W-untyped-transfer: winnow 把 unsure(band) 装在返回值里交了出去，但返回类型没提 Exit，调用者从签名上看不出自己收到了一份未决。修法：把返回类型标为含 Exit（如 `-> Exit`、`-> Record<Exit>`）",
+      "W-untyped-transfer: <fn> 把 unsure(band) 装在返回值里交了出去，但返回类型没提 Exit，调用者从签名上看不出自己收到了一份未决。修法：把返回类型标为含 Exit（如 `-> Exit`、`-> Record<Exit>`）",
+      "returned_unsure: unsure(band)"
+    ]
+  },
+  "value": {
+    "results": [
+      {
+        "id": "tool-1:cargo test",
+        "pending": [],
+        "pruned": [],
+        "reason": "error_present",
+        "text": [
+          "   Compiling serde v1.0.210\n   Compiling tokio v1.40.0\n   Compiling hyper v1.4.1\n   Compiling auth-service v0.3.2 (/work/auth-service)",
+          "running 14 tests\ntest metrics::tests::bucket_rollover ... ok\ntest metrics::tests::histogram_merge ... ok\ntest config::tests::parse_env ... ok\ntest config::tests::default_port ... ok",
+          "test login::tests::empty_password_returns_400 ... FAILED\n---- login::tests::empty_password_returns_400 stdout ----\nthread panicked at src/login.rs:57:41:\ncalled `Option::unwrap()` on a `None` value\nassertion failed: status == 400, got 500",
+          "test result: FAILED. 13 passed; 1 failed; 0 ignored; finished in 0.42s"
+        ],
+        "uncertain": []
+      },
+      {
+        "archive": [
+          {
+            "index": 1,
+            "key": "33c12ed9b5dcdd354c6792e8",
+            "text": "src/metrics.rs:12:// counts password resets per hour for the dashboard\nsrc/metrics.rs:13:static PASSWORD_RESETS: AtomicU64 = AtomicU64::new(0);"
+          },
+          {
+            "index": 2,
+            "key": "442a618262f467f69e228135",
+            "text": "src/migrations/0003_add_password_hash.sql:1:ALTER TABLE users ADD COLUMN password_hash TEXT NOT NULL DEFAULT '';\nsrc/migrations/0003_add_password_hash.sql:2:-- backfilled by scripts/backfill.py"
+          }
+        ],
+        "id": "tool-2:grep -rn password src/",
+        "pending": [
+          {
+            "cause": "band",
+            "element": {
+              "cause": "band",
+              "exit": {
+                "consumed": true,
+                "exit": "unsure(band)",
+                "id": 9,
+                "q": "fec11a2898f4ba766aeac87a"
+              },
+              "index": 3,
+              "item": "src/i18n/zh.ftl:40:password-too-short = 密码长度至少 8 位\nsrc/i18n/zh.ftl:41:password-reset-mail = 重置密码邮件已发送\nsrc/i18n/en.ftl:40:password-too-short = Password must be at least 8 characters",
+              "source": "src/i18n/zh.ftl:40:password-too-short = 密码长度至少 8 位\nsrc/i18n/zh.ftl:41:password-reset-mail = 重置密码邮件已发送\nsrc/i18n/en.ftl:40:password-too-short = Password must be at least 8 characters",
+              "trail": []
+            },
+            "exit": {
+              "consumed": true,
+              "exit": "unsure(band)",
+              "id": 9,
+              "q": "fec11a2898f4ba766aeac87a"
+            }
+          }
+        ],
+        "pruned": [
+          1,
+          2
+        ],
+        "reason": "pruned",
+        "text": [
+          "src/login.rs:52:    let password = form.password.as_deref();\nsrc/login.rs:57:    let hash = hash_password(password.unwrap());\nsrc/login.rs:58:    if !verify(&user.hash, &hash) { return Err(Status::Unauthorized) }",
+          "[winnow 已折叠 143 字 · 展开键 33c12ed9b5dcdd354c6792e8]",
+          "[winnow 已折叠 193 字 · 展开键 442a618262f467f69e228135]",
+          "src/i18n/zh.ftl:40:password-too-short = 密码长度至少 8 位\nsrc/i18n/zh.ftl:41:password-reset-mail = 重置密码邮件已发送\nsrc/i18n/en.ftl:40:password-too-short = Password must be at least 8 characters",
+          "src/login/form.rs:8:pub struct LoginForm { pub user: String, pub password: Option<String> }"
+        ],
+        "uncertain": [
+          3
+        ]
+      }
+    ],
+    "task": "修复登录接口在密码为空时返回 500 的问题"
+  }
+}

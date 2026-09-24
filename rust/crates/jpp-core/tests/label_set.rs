@@ -18,7 +18,7 @@ fn 装(c: &mut CalibStore, key: &str, 偏移: f64) {
     for i in 0..30 {
         c.absorb(key, Sample {
             p: Some(0.30 + i as f64 * 0.02 + 偏移), label: Some(if i > 6 { 1 } else { 0 }), perms: 0,
-            mode_share: None, mode: LiteralMode::default(), phys: "noul".into(), cluster: None,
+            mode_share: None, mode: LiteralMode::default(), phys: "noul".into(), cluster: None, stratum: None,
         }).unwrap();
     }
 }
@@ -57,12 +57,12 @@ fn 指纹对顺序不敏感() {
     let mut 正 = CalibStore::new();
     for i in 0..10 {
         正.absorb("k", Sample { p: Some(0.3 + i as f64 * 0.05), label: Some(i % 2), perms: 0, mode_share: None,
-                                mode: LiteralMode::default(), phys: "noul".into(), cluster: None }).unwrap();
+                                mode: LiteralMode::default(), phys: "noul".into(), cluster: None, stratum: None }).unwrap();
     }
     let mut 逆 = CalibStore::new();
     for i in (0..10).rev() {
         逆.absorb("k", Sample { p: Some(0.3 + i as f64 * 0.05), label: Some(i % 2), perms: 0, mode_share: None,
-                                mode: LiteralMode::default(), phys: "noul".into(), cluster: None }).unwrap();
+                                mode: LiteralMode::default(), phys: "noul".into(), cluster: None, stratum: None }).unwrap();
     }
     assert_eq!(正.commission("k", 0.6, 0.10, "条").map(|c| c.label_fp),
                逆.commission("k", 0.6, 0.10, "条").map(|c| c.label_fp),

@@ -1,0 +1,76 @@
+{
+ "catalog_a": [
+  {
+   "name": "Hazy Little Thing IPA",
+   "brewery": "Sierra Nevada",
+   "style": "New England IPA",
+   "abv": 6.7
+  },
+  {
+   "name": "Guinness Draught",
+   "brewery": "Guinness",
+   "style": "Irish Dry Stout",
+   "abv": 4.2
+  },
+  {
+   "name": "Two Hearted Ale",
+   "brewery": "Bell's Brewery",
+   "style": "American IPA",
+   "abv": 7.0
+  },
+  {
+   "name": "Pliny the Elder",
+   "brewery": "Russian River",
+   "style": "Double IPA",
+   "abv": 8.0
+  }
+ ],
+ "catalog_b": [
+  {
+   "name": "Sierra Nevada Hazy Little Thing",
+   "brewery": "Sierra Nevada Brewing Co.",
+   "style": "Hazy IPA",
+   "abv": 6.7
+  },
+  {
+   "name": "Guinness Extra Stout",
+   "brewery": "Guinness",
+   "style": "Foreign Extra Stout",
+   "abv": 5.6
+  },
+  {
+   "name": "Bell's Two Hearted IPA",
+   "brewery": "Bell's",
+   "style": "IPA",
+   "abv": 7.0
+  },
+  {
+   "name": "Pliny the Younger",
+   "brewery": "Russian River Brewing",
+   "style": "Triple IPA",
+   "abv": 10.25
+  }
+ ],
+ "thresholds": {
+  "align-link": {
+   "hi": 0.75,
+   "lo": 0.25,
+   "delta": 0.15
+  },
+  "align-name": {
+   "hi": 0.75,
+   "lo": 0.25,
+   "delta": 0.05
+  },
+  "align-brewery": {
+   "hi": 0.75,
+   "lo": 0.25,
+   "delta": 0.05
+  },
+  "align-style": {
+   "hi": 0.75,
+   "lo": 0.25,
+   "delta": 0.05
+  }
+ }
+}

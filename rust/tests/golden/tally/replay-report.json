@@ -1,0 +1,341 @@
+{
+  "backend": "fixed-0",
+  "cost": {
+    "asks": 0,
+    "calls": 0,
+    "replayed": 5,
+    "tokens": 0,
+    "usd": 0.0
+  },
+  "exits": [
+    {
+      "exit": "unsure(band)",
+      "grade": "Fixture",
+      "key": "price",
+      "releases": false,
+      "site": 532
+    },
+    {
+      "exit": "act",
+      "grade": "Fixture",
+      "key": "price",
+      "releases": false,
+      "site": 532
+    },
+    {
+      "exit": "ignore",
+      "grade": "Fixture",
+      "key": "price",
+      "releases": false,
+      "site": 532
+    },
+    {
+      "exit": "act",
+      "grade": "Fixture",
+      "key": "price",
+      "releases": false,
+      "site": 532
+    },
+    {
+      "exit": "unsure(band)",
+      "grade": "Fixture",
+      "key": "price",
+      "releases": false,
+      "site": 532
+    }
+  ],
+  "fixture_description": "Synthetic fixed observations for tally*.jpp (construction check only; not model evaluation). Calibration records are hand-written to exercise routing, not calibration. Items 0 and 4 are set to 0.5 on purpose to show unsure elements.",
+  "local_checks": [],
+  "mode": "replay; no model API requests",
+  "pending": [],
+  "replay": true,
+  "resumed": false,
+  "returned_unsure": [
+    "unsure(band)",
+    "unsure(band)",
+    "unsure(band)",
+    "unsure(band)"
+  ],
+  "status": "returned",
+  "trace": {
+    "events": [
+      {
+        "cost": 0.0,
+        "key": "faf2654baf428ca9589cdbbb",
+        "kind": "judge",
+        "note": "「这段话给出了具体价格或折扣吗？」",
+        "replayed": true,
+        "site": {
+          "end": 551,
+          "start": 532
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "81a1273b0086109e9d4200af",
+        "kind": "judge",
+        "note": "「这段话给出了具体价格或折扣吗？」",
+        "replayed": true,
+        "site": {
+          "end": 551,
+          "start": 532
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "7c7f309b2064fd596c0a5efa",
+        "kind": "judge",
+        "note": "「这段话给出了具体价格或折扣吗？」",
+        "replayed": true,
+        "site": {
+          "end": 551,
+          "start": 532
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "c26d338ec28d7406e049a606",
+        "kind": "judge",
+        "note": "「这段话给出了具体价格或折扣吗？」",
+        "replayed": true,
+        "site": {
+          "end": 551,
+          "start": 532
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "9f2117d3875cc5b971fc50e7",
+        "kind": "judge",
+        "note": "「这段话给出了具体价格或折扣吗？」",
+        "replayed": true,
+        "site": {
+          "end": 551,
+          "start": 532
+        }
+      }
+    ],
+    "warnings": [
+      "W-fixture-line: @532 键 price 的线是夹具线（宿主 put 写入或没有认证证书，n=1），出口 Act 照常路由，但按 B29 不算放行不可逆 do 的可信合取项。修法【需接线人】：用 calib-import 或 commission 从带真值样本认证这条线",
+      "W-fixture-line: @532 键 price 的线是夹具线（宿主 put 写入或没有认证证书，n=1），出口 Act 照常路由，但按 B29 不算放行不可逆 do 的可信合取项。修法【需接线人】：用 calib-import 或 commission 从带真值样本认证这条线",
+      "returned_unsure: unsure(band), unsure(band), unsure(band), unsure(band)"
+    ]
+  },
+  "value": {
+    "all": {
+      "consumed": true,
+      "exit": "ignore",
+      "id": 6,
+      "q": "tally:all"
+    },
+    "complete": false,
+    "count": [
+      2,
+      4
+    ],
+    "exists": {
+      "consumed": true,
+      "exit": "act",
+      "id": 5,
+      "q": "tally:exists"
+    },
+    "first1": {
+      "blocked_at": 0,
+      "exit": {
+        "consumed": true,
+        "exit": "unsure(band)",
+        "id": 7,
+        "q": "first_k"
+      }
+    },
+    "first2": {
+      "blocked_at": 0,
+      "exit": {
+        "consumed": true,
+        "exit": "unsure(band)",
+        "id": 8,
+        "q": "first_k"
+      },
+      "items": []
+    },
+    "pending": [
+      [
+        {
+          "cause": "band",
+          "element": {
+            "cause": "band",
+            "exit": {
+              "consumed": true,
+              "exit": "unsure(band)",
+              "id": 0,
+              "q": "78e15a646880a5dfabb72438"
+            },
+            "index": 0,
+            "item": "这款耳机售价三百九十九元。",
+            "source": "这款耳机售价三百九十九元。",
+            "trail": []
+          },
+          "exit": {
+            "consumed": true,
+            "exit": "unsure(band)",
+            "id": 0,
+            "q": "78e15a646880a5dfabb72438"
+          }
+        },
+        {
+          "cause": "band",
+          "element": {
+            "cause": "band",
+            "exit": {
+              "consumed": true,
+              "exit": "unsure(band)",
+              "id": 4,
+              "q": "78e15a646880a5dfabb72438"
+            },
+            "index": 4,
+            "item": "价格还没公布，据说下个月发布。",
+            "source": "价格还没公布，据说下个月发布。",
+            "trail": []
+          },
+          "exit": {
+            "consumed": true,
+            "exit": "unsure(band)",
+            "id": 4,
+            "q": "78e15a646880a5dfabb72438"
+          }
+        }
+      ],
+      [
+        {
+          "cause": "band",
+          "element": {
+            "cause": "band",
+            "exit": {
+              "consumed": true,
+              "exit": "unsure(band)",
+              "id": 0,
+              "q": "78e15a646880a5dfabb72438"
+            },
+            "index": 0,
+            "item": "这款耳机售价三百九十九元。",
+            "source": "这款耳机售价三百九十九元。",
+            "trail": []
+          },
+          "exit": {
+            "consumed": true,
+            "exit": "unsure(band)",
+            "id": 0,
+            "q": "78e15a646880a5dfabb72438"
+          }
+        },
+        {
+          "cause": "band",
+          "element": {
+            "cause": "band",
+            "exit": {
+              "consumed": true,
+              "exit": "unsure(band)",
+              "id": 4,
+              "q": "78e15a646880a5dfabb72438"
+            },
+            "index": 4,
+            "item": "价格还没公布，据说下个月发布。",
+            "source": "价格还没公布，据说下个月发布。",
+            "trail": []
+          },
+          "exit": {
+            "consumed": true,
+            "exit": "unsure(band)",
+            "id": 4,
+            "q": "78e15a646880a5dfabb72438"
+          }
+        },
+        {
+          "cause": "band",
+          "element": null,
+          "exit": {
+            "consumed": true,
+            "exit": "unsure(band)",
+            "id": 7,
+            "q": "first_k"
+          }
+        }
+      ],
+      [
+        {
+          "cause": "band",
+          "element": {
+            "cause": "band",
+            "exit": {
+              "consumed": true,
+              "exit": "unsure(band)",
+              "id": 0,
+              "q": "78e15a646880a5dfabb72438"
+            },
+            "index": 0,
+            "item": "这款耳机售价三百九十九元。",
+            "source": "这款耳机售价三百九十九元。",
+            "trail": []
+          },
+          "exit": {
+            "consumed": true,
+            "exit": "unsure(band)",
+            "id": 0,
+            "q": "78e15a646880a5dfabb72438"
+          }
+        },
+        {
+          "cause": "band",
+          "element": {
+            "cause": "band",
+            "exit": {
+              "consumed": true,
+              "exit": "unsure(band)",
+              "id": 4,
+              "q": "78e15a646880a5dfabb72438"
+            },
+            "index": 4,
+            "item": "价格还没公布，据说下个月发布。",
+            "source": "价格还没公布，据说下个月发布。",
+            "trail": []
+          },
+          "exit": {
+            "consumed": true,
+            "exit": "unsure(band)",
+            "id": 4,
+            "q": "78e15a646880a5dfabb72438"
+          }
+        },
+        {
+          "cause": "band",
+          "element": null,
+          "exit": {
+            "consumed": true,
+            "exit": "unsure(band)",
+            "id": 8,
+            "q": "first_k"
+          }
+        }
+      ]
+    ],
+    "streams": {
+      "act": [
+        1,
+        3
+      ],
+      "ignore": [
+        2
+      ],
+      "unsure": [
+        {
+          "cause": "band",
+          "index": 0
+        },
+        {
+          "cause": "band",
+          "index": 4
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,179 @@
+{
+  "backend": "fixed-0",
+  "cost": {
+    "asks": 0,
+    "calls": 3,
+    "replayed": 0,
+    "tokens": 0,
+    "usd": 0.0
+  },
+  "exits": [
+    {
+      "exit": "unsure(band)",
+      "grade": "Fixture",
+      "key": "price",
+      "releases": false,
+      "site": 453
+    },
+    {
+      "exit": "ignore",
+      "grade": "Fixture",
+      "key": "price",
+      "releases": false,
+      "site": 453
+    },
+    {
+      "exit": "act",
+      "grade": "Fixture",
+      "key": "price",
+      "releases": false,
+      "site": 453
+    }
+  ],
+  "fixture_description": "Synthetic fixed observations for tally*.jpp (construction check only; not model evaluation). Calibration records are hand-written to exercise routing, not calibration. Items 0 and 4 are set to 0.5 on purpose to show unsure elements.",
+  "local_checks": [],
+  "mode": "fixed observations; no model API requests",
+  "pending": [],
+  "replay": false,
+  "resumed": false,
+  "returned_unsure": [
+    "unsure(band)",
+    "unsure(budget)",
+    "unsure(budget)"
+  ],
+  "status": "returned",
+  "trace": {
+    "events": [
+      {
+        "cost": 0.0,
+        "key": "b11c7c0fb6ec7fc2dd3bb105",
+        "kind": "judge",
+        "note": "「这段话给出了具体价格或折扣吗？」",
+        "replayed": false,
+        "site": {
+          "end": 529,
+          "start": 453
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "8c4d61b23936bd43a6cbf3f6",
+        "kind": "judge",
+        "note": "「这段话给出了具体价格或折扣吗？」",
+        "replayed": false,
+        "site": {
+          "end": 529,
+          "start": 453
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "46defecff962b3b66744703f",
+        "kind": "judge",
+        "note": "「这段话给出了具体价格或折扣吗？」",
+        "replayed": false,
+        "site": {
+          "end": 529,
+          "start": 453
+        }
+      }
+    ],
+    "warnings": [
+      "W-fixture-line: @453 键 price 的线是夹具线（宿主 put 写入或没有认证证书，n=1），出口 Act 照常路由，但按 B29 不算放行不可逆 do 的可信合取项。修法【需接线人】：用 calib-import 或 commission 从带真值样本认证这条线",
+      "W-sieve-budget: 三路过滤在预算处停止，2 个元素未观察，记为 Unsure(budget) 进未决清单（未计入 ignore）：预算耗尽：calls 3+1 / 3，cost 0.000000+0.000000 / 0.010000",
+      "returned_unsure: unsure(band), unsure(budget), unsure(budget)"
+    ]
+  },
+  "value": {
+    "all": {
+      "consumed": true,
+      "exit": "ignore",
+      "id": 6,
+      "q": "tally:all"
+    },
+    "count": [
+      1,
+      4
+    ],
+    "exists": {
+      "consumed": true,
+      "exit": "act",
+      "id": 5,
+      "q": "tally:exists"
+    },
+    "observed": 3,
+    "pending": [
+      {
+        "cause": "band",
+        "element": {
+          "cause": "band",
+          "exit": {
+            "consumed": true,
+            "exit": "unsure(band)",
+            "id": 0,
+            "q": "78e15a646880a5dfabb72438"
+          },
+          "index": 0,
+          "item": "这款耳机售价三百九十九元。",
+          "source": "这款耳机售价三百九十九元。",
+          "trail": []
+        },
+        "exit": {
+          "consumed": true,
+          "exit": "unsure(band)",
+          "id": 0,
+          "q": "78e15a646880a5dfabb72438"
+        }
+      },
+      {
+        "cause": "budget",
+        "element": {
+          "cause": "budget",
+          "exit": {
+            "consumed": true,
+            "exit": "unsure(budget)",
+            "id": 3,
+            "q": "78e15a646880a5dfabb72438"
+          },
+          "index": 3,
+          "item": "新店开业，全场八折。",
+          "source": "新店开业，全场八折。",
+          "trail": []
+        },
+        "exit": {
+          "consumed": true,
+          "exit": "unsure(budget)",
+          "id": 3,
+          "q": "78e15a646880a5dfabb72438"
+        }
+      },
+      {
+        "cause": "budget",
+        "element": {
+          "cause": "budget",
+          "exit": {
+            "consumed": true,
+            "exit": "unsure(budget)",
+            "id": 4,
+            "q": "78e15a646880a5dfabb72438"
+          },
+          "index": 4,
+          "item": "价格还没公布，据说下个月发布。",
+          "source": "价格还没公布，据说下个月发布。",
+          "trail": []
+        },
+        "exit": {
+          "consumed": true,
+          "exit": "unsure(budget)",
+          "id": 4,
+          "q": "78e15a646880a5dfabb72438"
+        }
+      }
+    ],
+    "stopped": "预算耗尽：calls 3+1 / 3，cost 0.000000+0.000000 / 0.010000",
+    "unobserved": [
+      3,
+      4
+    ]
+  }
+}

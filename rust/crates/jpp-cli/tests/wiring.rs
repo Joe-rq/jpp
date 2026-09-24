@@ -65,14 +65,14 @@ fn calib目录让unsure_bound不再恒等于n() {
     let _ = fs::remove_dir_all(&d);
 }
 
-/// **一个参数都不给时，输出与接线前逐字节相同。**
-/// **不越界的人不受影响**——这是那条保障的技术形式。
+/// 一个参数都不给时 stdout 与接线前逐字节相同；stderr 只多一行「未加载画像」提示。
+/// 步 15d-0（B73）起这行提示无条件打印：固定观察无画像时线与 δ 用的是代码兜底，每次都要看得见。
 #[test]
 fn 不传新参数时输出不变() {
     let d = 临时("same");
     fs::write(d.join("h.jpp"), "budget {calls: 0, cost: 0};\n1 + 1\n").unwrap();
     let (out, err) = 跑(&["run", d.join("h.jpp").to_str().unwrap()]);
-    assert!(err.is_empty(), "**不给新参数就不该多出任何 stderr**：{err:?}");
+    assert_eq!(err, "档案：未加载，线与 δ 用的是代码兜底；校准记录：0 条（仅来自 --fixtures）\n", "stderr 只该有画像提示这一行");
     assert!(out.contains("\"value\": 2"), "{out}");
     let _ = fs::remove_dir_all(&d);
 }
@@ -132,13 +132,15 @@ fn 校准环闭合() {
     let _ = fs::remove_dir_all(&d);
 }
 
-/// **不传新参数时输出仍与今天逐字节相同**（`--calib-out` 这一轮加的，同一条保障）。
+/// 不传 `--calib-out` 时不多出校准写回的输出（`--calib-out` 这一轮加的，同一条保障）；
+/// stderr 只有步 15d-0 起无条件打印的画像提示。
 #[test]
 fn 不传calib_out时也不多出任何输出() {
     let d = 临时("same2");
     fs::write(d.join("h.jpp"), "budget {calls: 0, cost: 0};\n1 + 1\n").unwrap();
     let (out, err) = 跑(&["run", d.join("h.jpp").to_str().unwrap()]);
-    assert!(err.is_empty(), "**不给新参数就不该多出任何 stderr**：{err:?}");
+    assert_eq!(err.lines().count(), 1, "stderr 只该有画像提示这一行：{err:?}");
+    assert!(err.contains("未加载") && !err.contains("校准记录已写回"), "{err:?}");
     assert!(out.contains("\"value\": 2"));
     let _ = fs::remove_dir_all(&d);
 }

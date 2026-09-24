@@ -6,11 +6,11 @@
 
 
 use jpp_core::{Report, check};
-use jpp_frontend::{lower, parse};
+use jpp_core::{lower, syntax::parse};
 
 fn check_source(what: &str, source: &str) -> Report {
     let parsed = parse(source).unwrap_or_else(|d| panic!("{what} 解析失败：{}", d.render(what, source)));
-    let core = lower(&parsed).unwrap_or_else(|d| panic!("{what} lower 失败：{}", d.render(what, source)));
+    let core = lower(&parsed).unwrap_or_else(|d| panic!("{what} lower 失败：{}", d[0].render(what, source)));
     check(&core)
 }
 

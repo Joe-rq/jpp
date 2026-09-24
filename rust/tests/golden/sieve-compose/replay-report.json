@@ -1,0 +1,205 @@
+{
+  "backend": "fixed-0",
+  "cost": {
+    "asks": 0,
+    "calls": 0,
+    "replayed": 8,
+    "tokens": 0,
+    "usd": 0.0
+  },
+  "exits": [
+    {
+      "exit": "act",
+      "grade": "Fixture",
+      "key": "form-mention",
+      "releases": false,
+      "site": 659
+    },
+    {
+      "exit": "ignore",
+      "grade": "Fixture",
+      "key": "form-mention",
+      "releases": false,
+      "site": 659
+    },
+    {
+      "exit": "act",
+      "grade": "Fixture",
+      "key": "form-mention",
+      "releases": false,
+      "site": 659
+    },
+    {
+      "exit": "act",
+      "grade": "Fixture",
+      "key": "form-mention",
+      "releases": false,
+      "site": 659
+    },
+    {
+      "exit": "ignore",
+      "grade": "Fixture",
+      "key": "form-mention",
+      "releases": false,
+      "site": 659
+    },
+    {
+      "exit": "act",
+      "grade": "Fixture",
+      "key": "trip",
+      "releases": false,
+      "site": 843
+    },
+    {
+      "exit": "ignore",
+      "grade": "Fixture",
+      "key": "trip",
+      "releases": false,
+      "site": 843
+    },
+    {
+      "exit": "act",
+      "grade": "Fixture",
+      "key": "trip",
+      "releases": false,
+      "site": 843
+    }
+  ],
+  "fixture_description": "Synthetic fixed observations for sieve*.jpp (construction check only; not model evaluation). Note 2 × 北京 is set to 0.5 on purpose to show an unsure element; calibration records here are hand-written to exercise routing, not calibration.",
+  "local_checks": [],
+  "mode": "replay; no model API requests",
+  "pending": [],
+  "replay": true,
+  "resumed": false,
+  "returned_unsure": [],
+  "status": "returned",
+  "trace": {
+    "events": [
+      {
+        "cost": 0.0,
+        "key": "715464d81a3761da4ae4fdf4",
+        "kind": "judge",
+        "note": "「这段话是否提到了成都？」",
+        "replayed": true,
+        "site": {
+          "end": 704,
+          "start": 659
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "3290f878fb60e0a61dc4b200",
+        "kind": "judge",
+        "note": "「这段话是否提到了成都？」",
+        "replayed": true,
+        "site": {
+          "end": 704,
+          "start": 659
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "8b79b9a8ee85491840dafb72",
+        "kind": "judge",
+        "note": "「这段话是否提到了成都？」",
+        "replayed": true,
+        "site": {
+          "end": 704,
+          "start": 659
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "f1ae5ab12b7d2fef0a3b3cd6",
+        "kind": "judge",
+        "note": "「这段话是否提到了成都？」",
+        "replayed": true,
+        "site": {
+          "end": 704,
+          "start": 659
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "195ac98216c2ec7a79231696",
+        "kind": "judge",
+        "note": "「这段话是否提到了成都？」",
+        "replayed": true,
+        "site": {
+          "end": 704,
+          "start": 659
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "f7057c3b01ec232f08eb779c",
+        "kind": "judge",
+        "note": "「这段话说的是工作出行吗？」",
+        "replayed": true,
+        "site": {
+          "end": 861,
+          "start": 843
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "3315b695454605d26564232c",
+        "kind": "judge",
+        "note": "「这段话说的是工作出行吗？」",
+        "replayed": true,
+        "site": {
+          "end": 861,
+          "start": 843
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "012261c1bc6f8f9a4ae6eae2",
+        "kind": "judge",
+        "note": "「这段话说的是工作出行吗？」",
+        "replayed": true,
+        "site": {
+          "end": 861,
+          "start": 843
+        }
+      }
+    ],
+    "warnings": [
+      "W-fixture-line: @659 键 form-mention 的线是夹具线（宿主 put 写入或没有认证证书，n=1），出口 Act 照常路由，但按 B29 不算放行不可逆 do 的可信合取项。修法【需接线人】：用 calib-import 或 commission 从带真值样本认证这条线",
+      "W-fixture-line: @659 键 form-mention 的线是夹具线（宿主 put 写入或没有认证证书，n=1），出口 Act 照常路由，但按 B29 不算放行不可逆 do 的可信合取项。修法【需接线人】：用 calib-import 或 commission 从带真值样本认证这条线",
+      "W-fixture-line: @659 键 form-mention 的线是夹具线（宿主 put 写入或没有认证证书，n=1），出口 Act 照常路由，但按 B29 不算放行不可逆 do 的可信合取项。修法【需接线人】：用 calib-import 或 commission 从带真值样本认证这条线",
+      "W-fixture-line: @843 键 trip 的线是夹具线（宿主 put 写入或没有认证证书，n=1），出口 Act 照常路由，但按 B29 不算放行不可逆 do 的可信合取项。修法【需接线人】：用 calib-import 或 commission 从带真值样本认证这条线",
+      "W-fixture-line: @843 键 trip 的线是夹具线（宿主 put 写入或没有认证证书，n=1），出口 Act 照常路由，但按 B29 不算放行不可逆 do 的可信合取项。修法【需接线人】：用 calib-import 或 commission 从带真值样本认证这条线"
+    ]
+  },
+  "value": {
+    "first_act": [
+      0,
+      2,
+      3
+    ],
+    "pending": [],
+    "second": {
+      "act": [
+        {
+          "item": "我上个月去了成都出差，顺便见了老朋友。",
+          "trail": [
+            "act"
+          ]
+        },
+        {
+          "item": "他从成都调到了杭州分公司。",
+          "trail": [
+            "act"
+          ]
+        }
+      ],
+      "asked": "这段话说的是工作出行吗？",
+      "evidence_keys": 8,
+      "ignore": [
+        "我们计划明年夏天去成都和北京旅游。"
+      ],
+      "kind": "sieve"
+    }
+  }
+}

@@ -1,0 +1,79 @@
+import "../../../lib/outcome.jpp";
+budget {calls: 200, cost: 200, depth: 6};
+
+fn stub(chunk_len, key) {
+  join(["[winnow 已折叠 ", text(chunk_len), " 字 · 展开键 ", key, "]"], "")
+}
+
+fn fp_key(idx, chunk) {
+  join(["h", text(idx), "-", text(len(chunk))], "")
+}
+
+fn char_total(chunks) {
+  sum(map(chunks, fn(c) { len(c) }))
+}
+
+fn process_chunks(task, r) {
+  let chunks = r.chunks;
+  let qtext = join(["这段话的内容是否与「", task, "」这个话题相关？"], "");
+  let relq = test(qtext, "form-topic");
+  let ro = sieve(chunks, relq);
+  let irrelevant = ignored(ro);
+  let uncertain_els = undecided(ro);
+  let consumed = map(uncertain_els, fn(p) { consume(p.exit, "drop") });
+  let pruned_idx = map(irrelevant, fn(e) { e.index });
+  let uncertain_idx = map(uncertain_els, fn(p) { p.element.index });
+  let cand_chars = sum(map(irrelevant, fn(e) { len(e.item) }));
+  let total_chars = char_total(chunks);
+  if (cand_chars * 100 < total_chars * 20) {
+    { id: r.id, reason: "below_min_prune_ratio", pruned: [], uncertain: [],
+      text: chunks, archive: [] }
+  } else {
+    let idxs = range(0, len(chunks));
+    let text_out = map(idxs, fn(i) {
+      if (contains(pruned_idx, i)) {
+        stub(len(chunks[i]), fp_key(i, chunks[i]))
+      } else {
+        chunks[i]
+      }
+    });
+    let pruned_only = filter(idxs, fn(i) { contains(pruned_idx, i) });
+    let archive = map(pruned_only, fn(i) {
+      { key: fp_key(i, chunks[i]), index: i, text: chunks[i] }
+    });
+    { id: r.id, reason: "pruned", pruned: pruned_idx, uncertain: uncertain_idx,
+      text: text_out, archive: archive }
+  }
+}
+
+let raw = do("read_json", ["../baseline/materials.json"], 0);
+if (is_fail(raw)) {
+  { task: "", results: [] }
+} else {
+  let data = raw.content;
+  let task = data.tool_outputs.task;
+  let results = data.tool_outputs.results;
+  let n = len(results);
+  let materials_err = map(results, fn(r) { join(r.chunks, "\n") });
+  let errq = test("这段工具输出里是否含有报错、失败或异常信息？", "winnow-error");
+  let eo = sieve(materials_err, errq);
+  let err_present = accepted(eo);
+  let err_unsure = undecided(eo);
+  let err_consumed = map(err_unsure, fn(p) { consume(p.exit, "drop") });
+  let idxs = range(0, n);
+  let entries = map(idxs, fn(i) {
+    let r = results[i];
+    let hit_present = filter(err_present, fn(e) { e.index == i });
+    let hit_unsure = filter(err_unsure, fn(p) { p.element.index == i });
+    if (len(hit_present) > 0) {
+      { id: r.id, reason: "error_present", pruned: [], uncertain: [],
+        text: r.chunks, archive: [] }
+    } else if (len(hit_unsure) > 0) {
+      { id: r.id, reason: "error_unsure", pruned: [], uncertain: [],
+        text: r.chunks, archive: [] }
+    } else {
+      process_chunks(task, r)
+    }
+  });
+  { task: task, results: entries }
+}

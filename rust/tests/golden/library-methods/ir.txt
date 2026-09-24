@@ -1,0 +1,84 @@
+ir v1
+budget calls=0 cost=0 depth=256 escalate=- unsure=- latency_p95=- absent=-
+block 29..343
+  fn-stmt compose_methods
+    #0 fn (first:-, second:-) -> - effects=-
+      block 442..484
+        result
+          #2 fn (value:-) -> - effects=-
+            block 458..482
+              result
+                #3 call 460..480
+                  callee:
+                    #4 name second
+                  #5 call 467..479
+                    callee:
+                      #6 name first
+                    #7 name value
+  fn-stmt apply_method
+    #8 fn (value:-, method:-) -> - effects=-
+      block 517..534
+        result
+          #9 call 519..532
+            callee:
+              #10 name method
+            #11 name value
+  fn-stmt map_ints
+    #12 fn (values:{"Applied":["List",[{"Named":"Int"}]]}, method:{"Method":{"params":[{"Named":"Int"}],"ret":{"Named":"Int"},"effects":[],"captures_responsibility":false}}) -> {"Applied":["List",[{"Named":"Int"}]]} effects=[]
+      block 657..684
+        result
+          #13 call @0 663..682
+            callee:
+              #14 name map
+            #15 name values
+            #16 name method
+  fn-stmt increment
+    #17 fn (x:{"Named":"Int"}) -> {"Named":"Int"} effects=[]
+      block 102..111
+        result
+          #18 binary +
+            #19 name x
+            #20 int 1
+  fn-stmt twice
+    #21 fn (x:{"Named":"Int"}) -> {"Named":"Int"} effects=[]
+      block 140..149
+        result
+          #22 binary *
+            #23 name x
+            #24 int 2
+  fn-stmt package
+    #25 fn () -> {"Method":{"params":[{"Named":"Int"}],"ret":{"Named":"Int"},"effects":[],"captures_responsibility":false}} effects=[]
+      block 189..230
+        result
+          #26 call 195..228
+            callee:
+              #27 name compose_methods
+            #28 name increment
+            #29 name twice
+  let methods : -
+    #30 record 245..260
+      go:
+        #31 call 250..259
+          callee:
+            #32 name package
+  result
+    #33 record 262..343
+      results:
+        #34 call 272..304
+          callee:
+            #35 name map_ints
+          #36 list 281..291
+            #37 int 1
+            #38 int 2
+            #39 int 20
+          #40 field .go
+            #41 name methods
+      direct:
+        #42 call 314..342
+          callee:
+            #43 name apply_method
+          #44 int 20
+          #45 field .go
+            #46 name methods
+sites 1
+  @0 #13 hof:map 663..682 fn=#12 in=-

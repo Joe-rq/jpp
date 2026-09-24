@@ -1,0 +1,288 @@
+ir v1
+budget calls=12 cost=0.01 depth=256 escalate=- unsure=- latency_p95=- absent=-
+block 282..1709
+  fn-stmt accepted
+    #0 fn (o:-) -> - effects=- ; {"effect":{"known":[],"open":false},"summary":{"may_touch_world":false,"may_refresh":false},"duty_kind":null,"refresh_point":false}
+      block 2112..2123
+        result
+          #1 field .value
+            #2 name o
+  fn-stmt ignored
+    #3 fn (o:-) -> - effects=- ; {"effect":{"known":[],"open":false},"summary":{"may_touch_world":false,"may_refresh":false},"duty_kind":null,"refresh_point":false}
+      block 2195..2214
+        result
+          #4 field .ignore
+            #5 field .detail
+              #6 name o
+  fn-stmt undecided
+    #7 fn (o:-) -> - effects=- ; {"effect":{"known":[],"open":false},"summary":{"may_touch_world":false,"may_refresh":false},"duty_kind":null,"refresh_point":false}
+      block 2283..2335
+        result
+          #8 call @0 2285..2333
+            callee:
+              #9 name filter
+            #10 field .pending
+              #11 name o
+            #13 fn (p:-) -> - effects=-
+              block 2309..2332
+                result
+                  #14 binary !=
+                    #15 field .cause
+                      #16 name p
+                    #17 text "budget"
+  fn-stmt unobserved
+    #18 fn (o:-) -> - effects=- ; {"effect":{"known":[],"open":false},"summary":{"may_touch_world":false,"may_refresh":false},"duty_kind":null,"refresh_point":false}
+      block 2428..2480
+        result
+          #19 call @1 2430..2478
+            callee:
+              #20 name filter
+            #21 field .pending
+              #22 name o
+            #24 fn (p:-) -> - effects=-
+              block 2454..2477
+                result
+                  #25 binary ==
+                    #26 field .cause
+                      #27 name p
+                    #28 text "budget"
+  fn-stmt stopped
+    #29 fn (o:-) -> - effects=- ; {"effect":{"known":[],"open":false},"summary":{"may_touch_world":false,"may_refresh":false},"duty_kind":null,"refresh_point":false}
+      block 2543..2607
+        result
+          #30 if @2 2545..2605
+            cond:
+              #31 call 2548..2571
+                callee:
+                  #32 name has
+                #33 field .resume
+                  #34 name o
+                #35 text "detail"
+            block 2572..2591
+              result
+                #36 field .detail
+                  #37 field .resume
+                    #38 name o
+            block 2597..2605
+              result
+                #39 unit
+  fn-stmt retry_with
+    #40 fn (materials:-, q:-) -> - effects=- ; {"effect":{"known":["judge"],"open":false},"summary":{"may_touch_world":false,"may_refresh":false},"duty_kind":null,"refresh_point":false}
+      block 3054..3089
+        result
+          #41 construct first_k @3 3056..3087
+            #42 construct sieve @4 3064..3083
+              #43 name materials
+              #44 name q
+            #45 int 1
+  fn-stmt generate_then_find
+    #46 fn (prompt:-, n:-, q:-) -> - effects=- ; {"effect":{"known":["gen","judge"],"open":false},"summary":{"may_touch_world":false,"may_refresh":true},"duty_kind":null,"refresh_point":false}
+      block 3191..3238
+        result
+          #47 construct first_k @5 3193..3236
+            #48 construct sieve @6 3201..3232
+              #49 effect gen @7 3207..3228 ; {"effect":{"known":["gen"],"open":false},"summary":null,"duty_kind":null,"refresh_point":false}
+                prompt:
+                  #50 name prompt
+                ctx:
+                  #51 list 3219..3221
+                n:
+                  #52 name n
+                retry_seq:
+                  #53 int 0
+              #54 name q
+            #55 int 1
+  let fit : -
+    #56 construct test @8 337..385
+      #57 text "这个候选是否会写 Rust？"
+      #58 text "cand"
+  fn-stmt find
+    #59 fn (pool:-) -> - effects=- ; {"effect":{"known":["judge"],"open":false},"summary":{"may_touch_world":false,"may_refresh":false},"duty_kind":null,"refresh_point":false}
+      block 402..434
+        result
+          #60 construct first_k @9 404..432
+            #61 construct sieve @10 412..428
+              #62 name pool
+              #63 name fit
+            #64 int 1
+  fn-stmt route
+    #65 fn (r:-, spare:-, prompt:-) -> - effects=- ; {"effect":{"known":["gen","judge"],"open":false},"summary":{"may_touch_world":false,"may_refresh":true},"duty_kind":null,"refresh_point":false}
+      block 556..1452
+        result
+          #66 handle @11 562..1450
+            exit:
+              #67 field .exit
+                #68 field .value
+                  #69 name r
+            arms:
+              #70 record 583..1449
+                act:
+                  #72 fn () -> - effects=-
+                    block 603..687
+                      result
+                        #73 record 605..685
+                          via:
+                            #74 text "direct"
+                          found:
+                            #75 call @12 628..664
+                              callee:
+                                #76 name map
+                              #77 field .items
+                                #78 field .value
+                                  #79 name r
+                              #81 fn (e:-) -> - effects=-
+                                block 653..663
+                                  result
+                                    #82 field .item
+                                      #83 name e
+                          pending:
+                            #84 field .pending
+                              #85 name r
+                ignore:
+                  #87 fn () -> - effects=-
+                    block 710..764
+                      result
+                        #88 record 712..762
+                          via:
+                            #89 text "not_enough"
+                          found:
+                            #90 list 739..741
+                          pending:
+                            #91 field .pending
+                              #92 name r
+                unsure:
+                  #94 fn (u:-) -> - effects=-
+                    block 788..1443
+                      let c : -
+                        #95 call 810..825
+                          callee:
+                            #96 name unsure_cause
+                          #97 name u
+                      #98 consume @13 839..857
+                        #99 name u
+                        #100 text "drop"
+                      result
+                        #101 if @14 871..1433
+                          cond:
+                            #102 binary ==
+                              #103 name c
+                              #104 text "rejected_all"
+                          block 894..1077
+                            let r2 : -
+                              #105 call 921..943
+                                callee:
+                                  #106 name retry_with
+                                #107 name spare
+                                #108 name fit
+                            result
+                              #109 record 961..1063
+                                via:
+                                  #110 text "rejected_all → 换材料"
+                                found:
+                                  #111 call @15 1004..1041
+                                    callee:
+                                      #112 name map
+                                    #113 field .items
+                                      #114 field .value
+                                        #115 name r2
+                                    #117 fn (e:-) -> - effects=-
+                                      block 1030..1040
+                                        result
+                                          #118 field .item
+                                            #119 name e
+                                pending:
+                                  #120 field .pending
+                                    #121 name r2
+                          block 1083..1433
+                            result
+                              #122 if @16 1101..1419
+                                cond:
+                                  #123 binary ==
+                                    #124 name c
+                                    #125 text "no_candidate"
+                                block 1124..1334
+                                  let r3 : -
+                                    #126 call 1155..1189
+                                      callee:
+                                        #127 name generate_then_find
+                                      #128 name prompt
+                                      #129 int 2
+                                      #130 name fit
+                                  result
+                                    #131 record 1211..1316
+                                      via:
+                                        #132 text "no_candidate → 调生成器"
+                                      found:
+                                        #133 call @17 1257..1294
+                                          callee:
+                                            #134 name map
+                                          #135 field .items
+                                            #136 field .value
+                                              #137 name r3
+                                          #139 fn (e:-) -> - effects=-
+                                            block 1283..1293
+                                              result
+                                                #140 field .item
+                                                  #141 name e
+                                      pending:
+                                        #142 field .pending
+                                          #143 name r3
+                                block 1340..1419
+                                  result
+                                    #144 record 1362..1401
+                                      via:
+                                        #145 name c
+                                      found:
+                                        #146 list 1378..1380
+                                      pending:
+                                        #147 field .pending
+                                          #148 name r
+  let a : -
+    #149 call 1462..1532
+      callee:
+        #150 name find
+      #151 list 1467..1531
+        #152 text "甲：只写 Python 数据脚本"
+        #153 text "乙：只做界面设计"
+  let b : -
+    #154 call 1542..1550
+      callee:
+        #155 name find
+      #156 list 1547..1549
+  result
+    #157 record 1552..1709
+      A:
+        #158 call 1556..1647
+          callee:
+            #159 name route
+          #160 name a
+          #161 list 1565..1618
+            #162 text "丙：写过 Rust 解释器"
+            #163 text "丁：只做测试"
+          #164 text "写两份候选人简介"
+      B:
+        #165 call 1653..1708
+          callee:
+            #166 name route
+          #167 name b
+          #168 list 1662..1664
+          #169 text "写两份会写 Rust 的候选人简介"
+sites 18
+  @0 #8 hof:filter 2285..2333 fn=#7 in=-
+  @1 #19 hof:filter 2430..2478 fn=#18 in=-
+  @2 #30 if 2545..2605 fn=#29 in=-
+  @3 #41 construct:first_k 3056..3087 fn=#40 in=-
+  @4 #42 construct:sieve 3064..3083 fn=#40 in=@3
+  @5 #47 construct:first_k 3193..3236 fn=#46 in=-
+  @6 #48 construct:sieve 3201..3232 fn=#46 in=@5
+  @7 #49 effect:gen 3207..3228 fn=#46 in=@6
+  @8 #56 construct:test 337..385 fn=- in=-
+  @9 #60 construct:first_k 404..432 fn=#59 in=-
+  @10 #61 construct:sieve 412..428 fn=#59 in=@9
+  @11 #66 handle 562..1450 fn=#65 in=-
+  @12 #75 hof:map 628..664 fn=#72 in=-
+  @13 #98 consume:consume 839..857 fn=#94 in=-
+  @14 #101 if 871..1433 fn=#94 in=-
+  @15 #111 hof:map 1004..1041 fn=#94 in=-
+  @16 #122 if 1101..1419 fn=#94 in=-
+  @17 #133 hof:map 1257..1294 fn=#94 in=-

@@ -1,0 +1,302 @@
+{
+  "backend": "fixed-0",
+  "cost": {
+    "asks": 0,
+    "calls": 6,
+    "replayed": 0,
+    "tokens": 0,
+    "usd": 0.0
+  },
+  "fixture_description": "Synthetic fixed observations for probes/folio (construction check only).",
+  "local_checks": [],
+  "mode": "fixed observations; no model API requests",
+  "pending": [],
+  "replay": false,
+  "resumed": false,
+  "returned_unsure": [
+    "unsure(band)",
+    "unsure(band)",
+    "unsure(band)"
+  ],
+  "status": "returned",
+  "trace": {
+    "events": [
+      {
+        "cost": 0.0,
+        "key": "c6a64cc24d595faa8f3a15a5",
+        "kind": "judge",
+        "note": "「这份法律文书最应归入下列哪一类？」",
+        "replayed": false,
+        "site": {
+          "end": 2563,
+          "start": 2524
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "9a246199dcb26c4ad3993883",
+        "kind": "judge",
+        "note": "「这份法律文书最应归入下列哪一类？」",
+        "replayed": false,
+        "site": {
+          "end": 2563,
+          "start": 2524
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "76c6021ff9a568eaf92d04da",
+        "kind": "judge",
+        "note": "「这份法律文书最应归入下列哪一类？」",
+        "replayed": false,
+        "site": {
+          "end": 2563,
+          "start": 2524
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "33d647b4125930d43534ef56",
+        "kind": "judge",
+        "note": "「这段话的内容是否与「合同与协议」这个话题相关？」",
+        "replayed": false,
+        "site": {
+          "end": 3806,
+          "start": 3747
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "0b0cea7f49e10ff63c088f20",
+        "kind": "judge",
+        "note": "「这段话的内容是否与「诉讼文书」这个话题相关？」",
+        "replayed": false,
+        "site": {
+          "end": 3806,
+          "start": 3747
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "aa9ca7cad2822c49fd70de14",
+        "kind": "judge",
+        "note": "「这段话的内容是否与「公司治理文件」这个话题相关？」",
+        "replayed": false,
+        "site": {
+          "end": 3806,
+          "start": 3747
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "aadb9fd25ebc08c259b375ea",
+        "kind": "judge",
+        "note": "「这段话的内容是否与「知识产权文件」这个话题相关？」",
+        "replayed": false,
+        "site": {
+          "end": 3806,
+          "start": 3747
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "120b30f8606f61965590fd57",
+        "kind": "judge",
+        "note": "「这段话的内容是否与「租赁合同」这个话题相关？」",
+        "replayed": false,
+        "site": {
+          "end": 3806,
+          "start": 3747
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "fe427a88144e863ed2385bc4",
+        "kind": "judge",
+        "note": "「这段话的内容是否与「买卖合同」这个话题相关？」",
+        "replayed": false,
+        "site": {
+          "end": 3806,
+          "start": 3747
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "8e08c2518373365f3d217ab2",
+        "kind": "judge",
+        "note": "「这段话的内容是否与「劳动合同」这个话题相关？」",
+        "replayed": false,
+        "site": {
+          "end": 3806,
+          "start": 3747
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "52ebbfe156101d750a5543a3",
+        "kind": "judge",
+        "note": "「这段话的内容是否与「住宅租赁合同」这个话题相关？」",
+        "replayed": false,
+        "site": {
+          "end": 3806,
+          "start": 3747
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "7f6b2f1f1eb1823b159e1b07",
+        "kind": "judge",
+        "note": "「这段话的内容是否与「商铺租赁合同」这个话题相关？」",
+        "replayed": false,
+        "site": {
+          "end": 3806,
+          "start": 3747
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "d9e6d20d4a2e7edd1fac45a1",
+        "kind": "judge",
+        "note": "「这段话的内容是否与「设备租赁合同」这个话题相关？」",
+        "replayed": false,
+        "site": {
+          "end": 3806,
+          "start": 3747
+        }
+      }
+    ],
+    "warnings": [
+      "W-fixture-line: @2520 键 folio-level 的线是夹具线（宿主 put 写入或没有认证证书，n=1），出口 pick(0) 照常路由，但按 B29 不算放行不可逆 do 的可信合取项。修法【需接线人】：用 calib-import 或 commission 从带真值样本认证这条线",
+      "W-fixture-line: @2520 键 folio-level 的线是夹具线（宿主 put 写入或没有认证证书，n=1），出口 pick(0) 照常路由，但按 B29 不算放行不可逆 do 的可信合取项。修法【需接线人】：用 calib-import 或 commission 从带真值样本认证这条线",
+      "W-untyped-transfer: <fn> 把 unsure(band) 装在返回值里交了出去，但返回类型没提 Exit，调用者从签名上看不出自己收到了一份未决。修法：把返回类型标为含 Exit（如 `-> Exit`、`-> Record<Exit>`）",
+      "W-untyped-transfer: descend_one 把 unsure(band) 装在返回值里交了出去，但返回类型没提 Exit，调用者从签名上看不出自己收到了一份未决。修法：把返回类型标为含 Exit（如 `-> Exit`、`-> Record<Exit>`）",
+      "W-form-line: @3747 题级校准键 form-topic 无上岗记录，用题式级线 form:f84be62010fca87cacb0637e（n=388）；出口带 line_source=题式级",
+      "W-form-line: @3747 题级校准键 form-topic 无上岗记录，用题式级线 form:f84be62010fca87cacb0637e（n=388）；出口带 line_source=题式级",
+      "W-form-line: @3747 题级校准键 form-topic 无上岗记录，用题式级线 form:f84be62010fca87cacb0637e（n=388）；出口带 line_source=题式级",
+      "W-form-line: @3747 题级校准键 form-topic 无上岗记录，用题式级线 form:f84be62010fca87cacb0637e（n=388）；出口带 line_source=题式级",
+      "W-untyped-transfer: <fn> 把 unsure(band) 装在返回值里交了出去，但返回类型没提 Exit，调用者从签名上看不出自己收到了一份未决。修法：把返回类型标为含 Exit（如 `-> Exit`、`-> Record<Exit>`）",
+      "W-form-line: @3747 题级校准键 form-topic 无上岗记录，用题式级线 form:f84be62010fca87cacb0637e（n=388）；出口带 line_source=题式级",
+      "W-form-line: @3747 题级校准键 form-topic 无上岗记录，用题式级线 form:f84be62010fca87cacb0637e（n=388）；出口带 line_source=题式级",
+      "W-form-line: @3747 题级校准键 form-topic 无上岗记录，用题式级线 form:f84be62010fca87cacb0637e（n=388）；出口带 line_source=题式级",
+      "W-form-line: @3747 题级校准键 form-topic 无上岗记录，用题式级线 form:f84be62010fca87cacb0637e（n=388）；出口带 line_source=题式级",
+      "W-form-line: @3747 题级校准键 form-topic 无上岗记录，用题式级线 form:f84be62010fca87cacb0637e（n=388）；出口带 line_source=题式级",
+      "W-form-line: @3747 题级校准键 form-topic 无上岗记录，用题式级线 form:f84be62010fca87cacb0637e（n=388）；出口带 line_source=题式级",
+      "W-untyped-transfer: <fn> 把 unsure(band) 装在返回值里交了出去，但返回类型没提 Exit，调用者从签名上看不出自己收到了一份未决。修法：把返回类型标为含 Exit（如 `-> Exit`、`-> Record<Exit>`）",
+      "W-untyped-transfer: descend_all 把 unsure(band) 装在返回值里交了出去，但返回类型没提 Exit，调用者从签名上看不出自己收到了一份未决。修法：把返回类型标为含 Exit（如 `-> Exit`、`-> Record<Exit>`）",
+      "W-untyped-transfer: descend_all 把 unsure(band) 装在返回值里交了出去，但返回类型没提 Exit，调用者从签名上看不出自己收到了一份未决。修法：把返回类型标为含 Exit（如 `-> Exit`、`-> Record<Exit>`）",
+      "returned_unsure: unsure(band), unsure(band), unsure(band)"
+    ]
+  },
+  "value": {
+    "multi_path": {
+      "dead_ends": [],
+      "layers": 3,
+      "leaves": [
+        "住宅租赁合同"
+      ],
+      "pending": [
+        {
+          "cause": "band",
+          "element": {
+            "cause": "band",
+            "exit": {
+              "consumed": true,
+              "exit": "unsure(band)",
+              "id": 5,
+              "q": "5de2212dc01cca30ad3c8998"
+            },
+            "index": 0,
+            "item": {
+              "content": "房屋租赁合同\n出租方（甲方）：王建国  承租方（乙方）：李敏\n第一条 甲方将位于杭州市西湖区文三路 88 号 3 单元 502 室的住房出租给乙方居住使用，建筑面积 89 平方米。\n第二条 租赁期限自 2026 年 3 月 1 日起至 2027 年 2 月 28 日止。\n第三条 月租金人民币 4500 元，押一付三，乙方应于每季度首月 5 日前支付。\n第四条 租赁期间乙方不得将房屋转租或改作经营用途。",
+              "mat": "8c13a9d01676cd1cde4cefbb",
+              "origin": [
+                "literal"
+              ],
+              "taint": "Trusted"
+            },
+            "source": {
+              "content": "房屋租赁合同\n出租方（甲方）：王建国  承租方（乙方）：李敏\n第一条 甲方将位于杭州市西湖区文三路 88 号 3 单元 502 室的住房出租给乙方居住使用，建筑面积 89 平方米。\n第二条 租赁期限自 2026 年 3 月 1 日起至 2027 年 2 月 28 日止。\n第三条 月租金人民币 4500 元，押一付三，乙方应于每季度首月 5 日前支付。\n第四条 租赁期间乙方不得将房屋转租或改作经营用途。",
+              "mat": "8c13a9d01676cd1cde4cefbb",
+              "origin": [
+                "literal"
+              ],
+              "taint": "Trusted"
+            },
+            "trail": []
+          },
+          "exit": {
+            "consumed": true,
+            "exit": "unsure(band)",
+            "id": 5,
+            "q": "5de2212dc01cca30ad3c8998"
+          }
+        },
+        {
+          "cause": "band",
+          "element": {
+            "cause": "band",
+            "exit": {
+              "consumed": true,
+              "exit": "unsure(band)",
+              "id": 11,
+              "q": "30671a07dd422e3e01dc54b6"
+            },
+            "index": 0,
+            "item": {
+              "content": "房屋租赁合同\n出租方（甲方）：王建国  承租方（乙方）：李敏\n第一条 甲方将位于杭州市西湖区文三路 88 号 3 单元 502 室的住房出租给乙方居住使用，建筑面积 89 平方米。\n第二条 租赁期限自 2026 年 3 月 1 日起至 2027 年 2 月 28 日止。\n第三条 月租金人民币 4500 元，押一付三，乙方应于每季度首月 5 日前支付。\n第四条 租赁期间乙方不得将房屋转租或改作经营用途。",
+              "mat": "8c13a9d01676cd1cde4cefbb",
+              "origin": [
+                "literal"
+              ],
+              "taint": "Trusted"
+            },
+            "source": {
+              "content": "房屋租赁合同\n出租方（甲方）：王建国  承租方（乙方）：李敏\n第一条 甲方将位于杭州市西湖区文三路 88 号 3 单元 502 室的住房出租给乙方居住使用，建筑面积 89 平方米。\n第二条 租赁期限自 2026 年 3 月 1 日起至 2027 年 2 月 28 日止。\n第三条 月租金人民币 4500 元，押一付三，乙方应于每季度首月 5 日前支付。\n第四条 租赁期间乙方不得将房屋转租或改作经营用途。",
+              "mat": "8c13a9d01676cd1cde4cefbb",
+              "origin": [
+                "literal"
+              ],
+              "taint": "Trusted"
+            },
+            "trail": []
+          },
+          "exit": {
+            "consumed": true,
+            "exit": "unsure(band)",
+            "id": 11,
+            "q": "30671a07dd422e3e01dc54b6"
+          }
+        }
+      ],
+      "undecided": [
+        {
+          "consumed": true,
+          "exit": "unsure(band)",
+          "id": 5,
+          "q": "5de2212dc01cca30ad3c8998"
+        },
+        {
+          "consumed": true,
+          "exit": "unsure(band)",
+          "id": 11,
+          "q": "30671a07dd422e3e01dc54b6"
+        }
+      ]
+    },
+    "single_path": {
+      "leaf": "租赁合同",
+      "path": [
+        "合同与协议",
+        "租赁合同"
+      ],
+      "pending": [
+        {
+          "duty": 2,
+          "q": "9bced147d2c2533f49fa2147",
+          "unsure": "band"
+        }
+      ],
+      "stopped": "unsure"
+    }
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "asks": 1,
+  "calls": 2,
+  "effects": [
+    [
+      "do",
+      "read_json",
+      "0e9e718e6ed5c26eb75729be",
+      false
+    ],
+    [
+      "gen",
+      "Suggest a plan",
+      "25bc17604887d5629a65766f",
+      false
+    ],
+    [
+      "ask",
+      "「Publish this plan?」未答 → Pending",
+      "b7ba25bcfb4cb5572e2f062b",
+      false
+    ]
+  ],
+  "judge_registrations": 1,
+  "pending": [
+    [
+      "ask",
+      {
+        "end": 1686,
+        "start": 1656
+      }
+    ]
+  ],
+  "returned_unsure": [],
+  "status": "pending",
+  "usd": 0.0,
+  "value": null
+}

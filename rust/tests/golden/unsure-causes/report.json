@@ -1,0 +1,174 @@
+{
+  "backend": "fixed-0",
+  "cost": {
+    "asks": 0,
+    "calls": 7,
+    "replayed": 0,
+    "tokens": 0,
+    "usd": 0.0
+  },
+  "exits": [
+    {
+      "exit": "ignore",
+      "grade": "Fixture",
+      "key": "cand",
+      "releases": false,
+      "site": 412
+    },
+    {
+      "exit": "ignore",
+      "grade": "Fixture",
+      "key": "cand",
+      "releases": false,
+      "site": 412
+    },
+    {
+      "exit": "act",
+      "grade": "Fixture",
+      "key": "cand",
+      "releases": false,
+      "site": 3064
+    },
+    {
+      "exit": "ignore",
+      "grade": "Fixture",
+      "key": "cand",
+      "releases": false,
+      "site": 3064
+    },
+    {
+      "exit": "act",
+      "grade": "Fixture",
+      "key": "cand",
+      "releases": false,
+      "site": 3201
+    },
+    {
+      "exit": "ignore",
+      "grade": "Fixture",
+      "key": "cand",
+      "releases": false,
+      "site": 3201
+    }
+  ],
+  "fixture_description": "Synthetic fixed observations for unsure-causes.jpp (construction check only; not model evaluation). The calibration record is hand-written to exercise routing, not calibration.",
+  "local_checks": [],
+  "mode": "fixed observations; no model API requests",
+  "pending": [],
+  "replay": false,
+  "resumed": false,
+  "returned_unsure": [],
+  "status": "returned",
+  "trace": {
+    "events": [
+      {
+        "cost": 0.0,
+        "key": "2f5e596a2647710d53c2734e",
+        "kind": "judge",
+        "note": "「这个候选是否会写 Rust？」",
+        "replayed": false,
+        "site": {
+          "end": 428,
+          "start": 412
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "2d77caf1189a3eafc797ffaf",
+        "kind": "judge",
+        "note": "「这个候选是否会写 Rust？」",
+        "replayed": false,
+        "site": {
+          "end": 428,
+          "start": 412
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "e4151089ad62611abd48ba32",
+        "kind": "judge",
+        "note": "「这个候选是否会写 Rust？」",
+        "replayed": false,
+        "site": {
+          "end": 3083,
+          "start": 3064
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "9db477fb1fae6b19c7937b36",
+        "kind": "judge",
+        "note": "「这个候选是否会写 Rust？」",
+        "replayed": false,
+        "site": {
+          "end": 3083,
+          "start": 3064
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "90b3d467997e87f9069149ab",
+        "kind": "gen",
+        "note": "写两份会写 Rust 的候选人简介",
+        "replayed": false,
+        "site": {
+          "end": 3228,
+          "start": 3207
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "2a7b2098a9e41e74d2980ae7",
+        "kind": "judge",
+        "note": "「这个候选是否会写 Rust？」",
+        "replayed": false,
+        "site": {
+          "end": 3232,
+          "start": 3201
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "c43ce34c68a666c7174db2d9",
+        "kind": "judge",
+        "note": "「这个候选是否会写 Rust？」",
+        "replayed": false,
+        "site": {
+          "end": 3232,
+          "start": 3201
+        }
+      }
+    ],
+    "warnings": [
+      "W-untyped-transfer: find 把 unsure(rejected_all) 装在返回值里交了出去，但返回类型没提 Exit，调用者从签名上看不出自己收到了一份未决。修法：把返回类型标为含 Exit（如 `-> Exit`、`-> Record<Exit>`）",
+      "W-untyped-transfer: find 把 unsure(no_candidate) 装在返回值里交了出去，但返回类型没提 Exit，调用者从签名上看不出自己收到了一份未决。修法：把返回类型标为含 Exit（如 `-> Exit`、`-> Record<Exit>`）",
+      "W-drop-vs-escalate: 显式丢弃了未决责任 unsure(rejected_all)（题 first_k）；drop 合法且已记账，但只有 escalate 会把它交给人",
+      "W-fixture-line: @3064 键 cand 的线是夹具线（宿主 put 写入或没有认证证书，n=1），出口 Act 照常路由，但按 B29 不算放行不可逆 do 的可信合取项。修法【需接线人】：用 calib-import 或 commission 从带真值样本认证这条线",
+      "W-drop-vs-escalate: 显式丢弃了未决责任 unsure(no_candidate)（题 first_k）；drop 合法且已记账，但只有 escalate 会把它交给人",
+      "W-fixture-line: @3201 键 cand 的线是夹具线（宿主 put 写入或没有认证证书，n=1），出口 Act 照常路由，但按 B29 不算放行不可逆 do 的可信合取项。修法【需接线人】：用 calib-import 或 commission 从带真值样本认证这条线"
+    ]
+  },
+  "value": {
+    "A": {
+      "found": [
+        "丙：写过 Rust 解释器"
+      ],
+      "pending": [],
+      "via": "rejected_all → 换材料"
+    },
+    "B": {
+      "found": [
+        {
+          "content": "戊：维护过 Rust 网络库",
+          "mat": "1cbd2ca2b0ce848b790b3a2b",
+          "origin": [
+            "gen:90b3d467997e87f9069149ab"
+          ],
+          "taint": "Trusted"
+        }
+      ],
+      "pending": [],
+      "via": "no_candidate → 调生成器"
+    }
+  }
+}

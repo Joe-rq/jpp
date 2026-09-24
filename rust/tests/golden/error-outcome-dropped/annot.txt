@@ -1,0 +1,21 @@
+ir v1
+budget calls=4 cost=0.01 depth=256 escalate=- unsure=- latency_p95=- absent=-
+block 138..350
+  let notes : -
+    #0 list 193..261
+      #1 text "这款耳机售价三百九十九元。"
+      #2 text "价格还没公布。"
+  let r : -
+    #3 construct sieve @0 271..338
+      #4 name notes
+      #5 construct test @1 284..337
+        #6 text "这段话给出了具体价格吗？"
+        #7 text "price"
+  result
+    #8 call 340..350
+      callee:
+        #9 name len
+      #10 name notes
+sites 2
+  @0 #3 construct:sieve 271..338 fn=- in=-
+  @1 #5 construct:test 284..337 fn=- in=@0

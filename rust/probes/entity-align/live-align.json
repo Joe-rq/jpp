@@ -1,0 +1,1018 @@
+{
+  "backend": "jev-1.13.0",
+  "cost": {
+    "asks": 0,
+    "calls": 9,
+    "replayed": 32,
+    "tokens": 4907,
+    "usd": 0.000206094
+  },
+  "fixture_description": null,
+  "local_checks": [],
+  "mode": "live model backend (~/.typesafe-key)",
+  "pending": [],
+  "replay": false,
+  "resumed": false,
+  "returned_unsure": [
+    "unsure(cold|untested:calib_line)",
+    "unsure(cold|untested:calib_line)",
+    "unsure(cold|untested:calib_line)",
+    "unsure(cold|untested:calib_line)",
+    "unsure(cold|untested:calib_line)",
+    "unsure(cold|untested:calib_line)",
+    "unsure(cold|untested:calib_line)",
+    "unsure(cold|untested:calib_line)",
+    "unsure(cold|untested:calib_line)"
+  ],
+  "status": "returned",
+  "trace": {
+    "events": [
+      {
+        "cost": 0.000022932,
+        "key": "35a61fec936f8d4fee6512ae",
+        "kind": "judge",
+        "note": "「两条实体描述作为产品是什么关系？」",
+        "replayed": false,
+        "site": {
+          "end": 2582,
+          "start": 2517
+        }
+      },
+      {
+        "cost": 0.000022932,
+        "key": "e0e32cd6622501b658efa3d4",
+        "kind": "judge",
+        "note": "「两条实体写的是同一个啤酒名吗？」",
+        "replayed": false,
+        "site": {
+          "end": 2582,
+          "start": 2517
+        }
+      },
+      {
+        "cost": 0.000022932,
+        "key": "cd654c0352747462079f6800",
+        "kind": "judge",
+        "note": "「两条实体来自同一家酒厂吗？」",
+        "replayed": false,
+        "site": {
+          "end": 2582,
+          "start": 2517
+        }
+      },
+      {
+        "cost": 0.000022932,
+        "key": "ee583013ca4bdb1464c937c6",
+        "kind": "judge",
+        "note": "「两条实体描述的是同一种啤酒风格吗？」",
+        "replayed": false,
+        "site": {
+          "end": 2582,
+          "start": 2517
+        }
+      },
+      {
+        "cost": 0.000022805999999999998,
+        "key": "50305b7f0b66887f877a9c63",
+        "kind": "judge",
+        "note": "「两条实体描述作为产品是什么关系？」",
+        "replayed": false,
+        "site": {
+          "end": 2582,
+          "start": 2517
+        }
+      },
+      {
+        "cost": 0.000022805999999999998,
+        "key": "b2b3c0a32948733ebb9f317a",
+        "kind": "judge",
+        "note": "「两条实体写的是同一个啤酒名吗？」",
+        "replayed": false,
+        "site": {
+          "end": 2582,
+          "start": 2517
+        }
+      },
+      {
+        "cost": 0.000022805999999999998,
+        "key": "073e24efe4bf4daeb7010989",
+        "kind": "judge",
+        "note": "「两条实体来自同一家酒厂吗？」",
+        "replayed": false,
+        "site": {
+          "end": 2582,
+          "start": 2517
+        }
+      },
+      {
+        "cost": 0.000022805999999999998,
+        "key": "3514345bc0030a4b364055da",
+        "kind": "judge",
+        "note": "「两条实体描述的是同一种啤酒风格吗？」",
+        "replayed": false,
+        "site": {
+          "end": 2582,
+          "start": 2517
+        }
+      },
+      {
+        "cost": 0.000022974,
+        "key": "97f2ca1506366552c2f1bac9",
+        "kind": "judge",
+        "note": "「两条实体描述作为产品是什么关系？」",
+        "replayed": false,
+        "site": {
+          "end": 2582,
+          "start": 2517
+        }
+      },
+      {
+        "cost": 0.000022974,
+        "key": "5e9ddbbe2718388c9d236c13",
+        "kind": "judge",
+        "note": "「两条实体写的是同一个啤酒名吗？」",
+        "replayed": false,
+        "site": {
+          "end": 2582,
+          "start": 2517
+        }
+      },
+      {
+        "cost": 0.000022974,
+        "key": "ed84df7e0dd5c48c0253d2cd",
+        "kind": "judge",
+        "note": "「两条实体来自同一家酒厂吗？」",
+        "replayed": false,
+        "site": {
+          "end": 2582,
+          "start": 2517
+        }
+      },
+      {
+        "cost": 0.000022974,
+        "key": "9b82d04809b45c13e4a6aa85",
+        "kind": "judge",
+        "note": "「两条实体描述的是同一种啤酒风格吗？」",
+        "replayed": false,
+        "site": {
+          "end": 2582,
+          "start": 2517
+        }
+      },
+      {
+        "cost": 0.000023058,
+        "key": "ee600fdccc544128ebe79dd2",
+        "kind": "judge",
+        "note": "「两条实体描述作为产品是什么关系？」",
+        "replayed": false,
+        "site": {
+          "end": 2582,
+          "start": 2517
+        }
+      },
+      {
+        "cost": 0.000023058,
+        "key": "4b4f8d3ffee6a70659d4eb11",
+        "kind": "judge",
+        "note": "「两条实体写的是同一个啤酒名吗？」",
+        "replayed": false,
+        "site": {
+          "end": 2582,
+          "start": 2517
+        }
+      },
+      {
+        "cost": 0.000023058,
+        "key": "efb00c5c7c776c8949114f76",
+        "kind": "judge",
+        "note": "「两条实体来自同一家酒厂吗？」",
+        "replayed": false,
+        "site": {
+          "end": 2582,
+          "start": 2517
+        }
+      },
+      {
+        "cost": 0.000023058,
+        "key": "40aa19d23b4647a2da897a9b",
+        "kind": "judge",
+        "note": "「两条实体描述的是同一种啤酒风格吗？」",
+        "replayed": false,
+        "site": {
+          "end": 2582,
+          "start": 2517
+        }
+      },
+      {
+        "cost": 0.000022848,
+        "key": "ebf3ccf8c2292d3f4c17cd60",
+        "kind": "judge",
+        "note": "「两条实体描述作为产品是什么关系？」",
+        "replayed": false,
+        "site": {
+          "end": 2582,
+          "start": 2517
+        }
+      },
+      {
+        "cost": 0.000022848,
+        "key": "76eb4a810cf99b50e9ff189d",
+        "kind": "judge",
+        "note": "「两条实体写的是同一个啤酒名吗？」",
+        "replayed": false,
+        "site": {
+          "end": 2582,
+          "start": 2517
+        }
+      },
+      {
+        "cost": 0.000022848,
+        "key": "121d332b0ca2d86cfe94246e",
+        "kind": "judge",
+        "note": "「两条实体来自同一家酒厂吗？」",
+        "replayed": false,
+        "site": {
+          "end": 2582,
+          "start": 2517
+        }
+      },
+      {
+        "cost": 0.000022848,
+        "key": "431175d5d9a75579aa681ba4",
+        "kind": "judge",
+        "note": "「两条实体描述的是同一种啤酒风格吗？」",
+        "replayed": false,
+        "site": {
+          "end": 2582,
+          "start": 2517
+        }
+      },
+      {
+        "cost": 0.000022722,
+        "key": "f2a9af348d3e3d2cc4aece83",
+        "kind": "judge",
+        "note": "「两条实体描述作为产品是什么关系？」",
+        "replayed": false,
+        "site": {
+          "end": 2582,
+          "start": 2517
+        }
+      },
+      {
+        "cost": 0.000022722,
+        "key": "de387a37e3bf728159cbbb52",
+        "kind": "judge",
+        "note": "「两条实体写的是同一个啤酒名吗？」",
+        "replayed": false,
+        "site": {
+          "end": 2582,
+          "start": 2517
+        }
+      },
+      {
+        "cost": 0.000022722,
+        "key": "d32bc4a7c21ae372fa16d9c6",
+        "kind": "judge",
+        "note": "「两条实体来自同一家酒厂吗？」",
+        "replayed": false,
+        "site": {
+          "end": 2582,
+          "start": 2517
+        }
+      },
+      {
+        "cost": 0.000022722,
+        "key": "385d5605d1331feb9e551c1d",
+        "kind": "judge",
+        "note": "「两条实体描述的是同一种啤酒风格吗？」",
+        "replayed": false,
+        "site": {
+          "end": 2582,
+          "start": 2517
+        }
+      },
+      {
+        "cost": 0.000022974,
+        "key": "32b19b81c9188d6028960550",
+        "kind": "judge",
+        "note": "「两条实体描述作为产品是什么关系？」",
+        "replayed": false,
+        "site": {
+          "end": 2582,
+          "start": 2517
+        }
+      },
+      {
+        "cost": 0.000022974,
+        "key": "f1a4512c4d8e5d3db8790e93",
+        "kind": "judge",
+        "note": "「两条实体写的是同一个啤酒名吗？」",
+        "replayed": false,
+        "site": {
+          "end": 2582,
+          "start": 2517
+        }
+      },
+      {
+        "cost": 0.000022974,
+        "key": "e0b71e646c85c15594efc3f2",
+        "kind": "judge",
+        "note": "「两条实体来自同一家酒厂吗？」",
+        "replayed": false,
+        "site": {
+          "end": 2582,
+          "start": 2517
+        }
+      },
+      {
+        "cost": 0.000022974,
+        "key": "52802695f7deca74c4b69d0a",
+        "kind": "judge",
+        "note": "「两条实体描述的是同一种啤酒风格吗？」",
+        "replayed": false,
+        "site": {
+          "end": 2582,
+          "start": 2517
+        }
+      },
+      {
+        "cost": 0.000022638,
+        "key": "2b2e12729c3bf19b1f2fe809",
+        "kind": "judge",
+        "note": "「两条实体描述作为产品是什么关系？」",
+        "replayed": false,
+        "site": {
+          "end": 2582,
+          "start": 2517
+        }
+      },
+      {
+        "cost": 0.000022638,
+        "key": "5ea9c536ce78deceb914d148",
+        "kind": "judge",
+        "note": "「两条实体写的是同一个啤酒名吗？」",
+        "replayed": false,
+        "site": {
+          "end": 2582,
+          "start": 2517
+        }
+      },
+      {
+        "cost": 0.000022638,
+        "key": "5f79324cc474aee6e7fa9b7d",
+        "kind": "judge",
+        "note": "「两条实体来自同一家酒厂吗？」",
+        "replayed": false,
+        "site": {
+          "end": 2582,
+          "start": 2517
+        }
+      },
+      {
+        "cost": 0.000022638,
+        "key": "db900176754c50c994ebc2c1",
+        "kind": "judge",
+        "note": "「两条实体描述的是同一种啤酒风格吗？」",
+        "replayed": false,
+        "site": {
+          "end": 2582,
+          "start": 2517
+        }
+      },
+      {
+        "cost": 0.000023142,
+        "key": "e6be5374ed5d1be3f2a9ae20",
+        "kind": "judge",
+        "note": "「两条实体描述作为产品是什么关系？」",
+        "replayed": false,
+        "site": {
+          "end": 2582,
+          "start": 2517
+        }
+      },
+      {
+        "cost": 0.000023142,
+        "key": "51ff38f4c700ae117eb8eec1",
+        "kind": "judge",
+        "note": "「两条实体写的是同一个啤酒名吗？」",
+        "replayed": false,
+        "site": {
+          "end": 2582,
+          "start": 2517
+        }
+      },
+      {
+        "cost": 0.000023142,
+        "key": "347746fd0d8d7e248bd0580d",
+        "kind": "judge",
+        "note": "「两条实体来自同一家酒厂吗？」",
+        "replayed": false,
+        "site": {
+          "end": 2582,
+          "start": 2517
+        }
+      },
+      {
+        "cost": 0.000023142,
+        "key": "35843b1a61395cbe262b89b1",
+        "kind": "judge",
+        "note": "「两条实体描述的是同一种啤酒风格吗？」",
+        "replayed": false,
+        "site": {
+          "end": 2582,
+          "start": 2517
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "35a61fec936f8d4fee6512ae",
+        "kind": "judge",
+        "note": "「两条实体描述作为产品是什么关系？」",
+        "replayed": true,
+        "site": {
+          "end": 2582,
+          "start": 2517
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "e0e32cd6622501b658efa3d4",
+        "kind": "judge",
+        "note": "「两条实体写的是同一个啤酒名吗？」",
+        "replayed": true,
+        "site": {
+          "end": 2582,
+          "start": 2517
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "cd654c0352747462079f6800",
+        "kind": "judge",
+        "note": "「两条实体来自同一家酒厂吗？」",
+        "replayed": true,
+        "site": {
+          "end": 2582,
+          "start": 2517
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "ee583013ca4bdb1464c937c6",
+        "kind": "judge",
+        "note": "「两条实体描述的是同一种啤酒风格吗？」",
+        "replayed": true,
+        "site": {
+          "end": 2582,
+          "start": 2517
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "50305b7f0b66887f877a9c63",
+        "kind": "judge",
+        "note": "「两条实体描述作为产品是什么关系？」",
+        "replayed": true,
+        "site": {
+          "end": 2582,
+          "start": 2517
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "b2b3c0a32948733ebb9f317a",
+        "kind": "judge",
+        "note": "「两条实体写的是同一个啤酒名吗？」",
+        "replayed": true,
+        "site": {
+          "end": 2582,
+          "start": 2517
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "073e24efe4bf4daeb7010989",
+        "kind": "judge",
+        "note": "「两条实体来自同一家酒厂吗？」",
+        "replayed": true,
+        "site": {
+          "end": 2582,
+          "start": 2517
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "3514345bc0030a4b364055da",
+        "kind": "judge",
+        "note": "「两条实体描述的是同一种啤酒风格吗？」",
+        "replayed": true,
+        "site": {
+          "end": 2582,
+          "start": 2517
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "97f2ca1506366552c2f1bac9",
+        "kind": "judge",
+        "note": "「两条实体描述作为产品是什么关系？」",
+        "replayed": true,
+        "site": {
+          "end": 2582,
+          "start": 2517
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "5e9ddbbe2718388c9d236c13",
+        "kind": "judge",
+        "note": "「两条实体写的是同一个啤酒名吗？」",
+        "replayed": true,
+        "site": {
+          "end": 2582,
+          "start": 2517
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "ed84df7e0dd5c48c0253d2cd",
+        "kind": "judge",
+        "note": "「两条实体来自同一家酒厂吗？」",
+        "replayed": true,
+        "site": {
+          "end": 2582,
+          "start": 2517
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "9b82d04809b45c13e4a6aa85",
+        "kind": "judge",
+        "note": "「两条实体描述的是同一种啤酒风格吗？」",
+        "replayed": true,
+        "site": {
+          "end": 2582,
+          "start": 2517
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "ee600fdccc544128ebe79dd2",
+        "kind": "judge",
+        "note": "「两条实体描述作为产品是什么关系？」",
+        "replayed": true,
+        "site": {
+          "end": 2582,
+          "start": 2517
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "4b4f8d3ffee6a70659d4eb11",
+        "kind": "judge",
+        "note": "「两条实体写的是同一个啤酒名吗？」",
+        "replayed": true,
+        "site": {
+          "end": 2582,
+          "start": 2517
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "efb00c5c7c776c8949114f76",
+        "kind": "judge",
+        "note": "「两条实体来自同一家酒厂吗？」",
+        "replayed": true,
+        "site": {
+          "end": 2582,
+          "start": 2517
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "40aa19d23b4647a2da897a9b",
+        "kind": "judge",
+        "note": "「两条实体描述的是同一种啤酒风格吗？」",
+        "replayed": true,
+        "site": {
+          "end": 2582,
+          "start": 2517
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "ebf3ccf8c2292d3f4c17cd60",
+        "kind": "judge",
+        "note": "「两条实体描述作为产品是什么关系？」",
+        "replayed": true,
+        "site": {
+          "end": 2582,
+          "start": 2517
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "76eb4a810cf99b50e9ff189d",
+        "kind": "judge",
+        "note": "「两条实体写的是同一个啤酒名吗？」",
+        "replayed": true,
+        "site": {
+          "end": 2582,
+          "start": 2517
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "121d332b0ca2d86cfe94246e",
+        "kind": "judge",
+        "note": "「两条实体来自同一家酒厂吗？」",
+        "replayed": true,
+        "site": {
+          "end": 2582,
+          "start": 2517
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "431175d5d9a75579aa681ba4",
+        "kind": "judge",
+        "note": "「两条实体描述的是同一种啤酒风格吗？」",
+        "replayed": true,
+        "site": {
+          "end": 2582,
+          "start": 2517
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "f2a9af348d3e3d2cc4aece83",
+        "kind": "judge",
+        "note": "「两条实体描述作为产品是什么关系？」",
+        "replayed": true,
+        "site": {
+          "end": 2582,
+          "start": 2517
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "de387a37e3bf728159cbbb52",
+        "kind": "judge",
+        "note": "「两条实体写的是同一个啤酒名吗？」",
+        "replayed": true,
+        "site": {
+          "end": 2582,
+          "start": 2517
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "d32bc4a7c21ae372fa16d9c6",
+        "kind": "judge",
+        "note": "「两条实体来自同一家酒厂吗？」",
+        "replayed": true,
+        "site": {
+          "end": 2582,
+          "start": 2517
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "385d5605d1331feb9e551c1d",
+        "kind": "judge",
+        "note": "「两条实体描述的是同一种啤酒风格吗？」",
+        "replayed": true,
+        "site": {
+          "end": 2582,
+          "start": 2517
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "32b19b81c9188d6028960550",
+        "kind": "judge",
+        "note": "「两条实体描述作为产品是什么关系？」",
+        "replayed": true,
+        "site": {
+          "end": 2582,
+          "start": 2517
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "f1a4512c4d8e5d3db8790e93",
+        "kind": "judge",
+        "note": "「两条实体写的是同一个啤酒名吗？」",
+        "replayed": true,
+        "site": {
+          "end": 2582,
+          "start": 2517
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "e0b71e646c85c15594efc3f2",
+        "kind": "judge",
+        "note": "「两条实体来自同一家酒厂吗？」",
+        "replayed": true,
+        "site": {
+          "end": 2582,
+          "start": 2517
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "52802695f7deca74c4b69d0a",
+        "kind": "judge",
+        "note": "「两条实体描述的是同一种啤酒风格吗？」",
+        "replayed": true,
+        "site": {
+          "end": 2582,
+          "start": 2517
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "2b2e12729c3bf19b1f2fe809",
+        "kind": "judge",
+        "note": "「两条实体描述作为产品是什么关系？」",
+        "replayed": true,
+        "site": {
+          "end": 2582,
+          "start": 2517
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "5ea9c536ce78deceb914d148",
+        "kind": "judge",
+        "note": "「两条实体写的是同一个啤酒名吗？」",
+        "replayed": true,
+        "site": {
+          "end": 2582,
+          "start": 2517
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "5f79324cc474aee6e7fa9b7d",
+        "kind": "judge",
+        "note": "「两条实体来自同一家酒厂吗？」",
+        "replayed": true,
+        "site": {
+          "end": 2582,
+          "start": 2517
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "db900176754c50c994ebc2c1",
+        "kind": "judge",
+        "note": "「两条实体描述的是同一种啤酒风格吗？」",
+        "replayed": true,
+        "site": {
+          "end": 2582,
+          "start": 2517
+        }
+      }
+    ],
+    "warnings": [
+      "W-untested: @2612 calib_line 在本次路径上没有被测量，按 J-15 取保守项（出口 cold）。修法【作者可改】：给这道题的校准键写一条上岗记录，或给这一类（phys + literal_mode）写一条模式级记录",
+      "W-drop-vs-escalate: 显式丢弃了未决责任 unsure(cold|untested:calib_line)（题 f017288d）；drop 合法且已记账，但只有 escalate 会把它交给人",
+      "W-untested: @2639 calib_line 在本次路径上没有被测量，按 J-15 取保守项（出口 cold）。修法【作者可改】：给这道题的校准键写一条上岗记录，或给这一类（phys + literal_mode）写一条模式级记录",
+      "W-drop-vs-escalate: 显式丢弃了未决责任 unsure(cold|untested:calib_line)（题 1e91cd50）；drop 合法且已记账，但只有 escalate 会把它交给人",
+      "W-untested: @2664 calib_line 在本次路径上没有被测量，按 J-15 取保守项（出口 cold）。修法【作者可改】：给这道题的校准键写一条上岗记录，或给这一类（phys + literal_mode）写一条模式级记录",
+      "W-drop-vs-escalate: 显式丢弃了未决责任 unsure(cold|untested:calib_line)（题 aeb75505）；drop 合法且已记账，但只有 escalate 会把它交给人",
+      "W-untested: @2738 calib_line 在本次路径上没有被测量，按 J-15 取保守项（出口 cold）。修法【作者可改】：给这道题的校准键写一条上岗记录，或给这一类（phys + literal_mode）写一条模式级记录",
+      "W-untyped-transfer: route 把 unsure(cold|untested:calib_line) 装在返回值里交了出去，但返回类型没提 Exit，调用者从签名上看不出自己收到了一份未决。修法：把返回类型标为含 Exit（如 `-> Exit`、`-> Record<Exit>`）",
+      "W-untested: @2612 calib_line 在本次路径上没有被测量，按 J-15 取保守项（出口 cold）。修法【作者可改】：给这道题的校准键写一条上岗记录，或给这一类（phys + literal_mode）写一条模式级记录",
+      "W-drop-vs-escalate: 显式丢弃了未决责任 unsure(cold|untested:calib_line)（题 f017288d）；drop 合法且已记账，但只有 escalate 会把它交给人",
+      "W-untested: @2639 calib_line 在本次路径上没有被测量，按 J-15 取保守项（出口 cold）。修法【作者可改】：给这道题的校准键写一条上岗记录，或给这一类（phys + literal_mode）写一条模式级记录",
+      "W-drop-vs-escalate: 显式丢弃了未决责任 unsure(cold|untested:calib_line)（题 1e91cd50）；drop 合法且已记账，但只有 escalate 会把它交给人",
+      "W-untested: @2664 calib_line 在本次路径上没有被测量，按 J-15 取保守项（出口 cold）。修法【作者可改】：给这道题的校准键写一条上岗记录，或给这一类（phys + literal_mode）写一条模式级记录",
+      "W-drop-vs-escalate: 显式丢弃了未决责任 unsure(cold|untested:calib_line)（题 aeb75505）；drop 合法且已记账，但只有 escalate 会把它交给人",
+      "W-untested: @2738 calib_line 在本次路径上没有被测量，按 J-15 取保守项（出口 cold）。修法【作者可改】：给这道题的校准键写一条上岗记录，或给这一类（phys + literal_mode）写一条模式级记录",
+      "W-untyped-transfer: route 把 unsure(cold|untested:calib_line) 装在返回值里交了出去，但返回类型没提 Exit，调用者从签名上看不出自己收到了一份未决。修法：把返回类型标为含 Exit（如 `-> Exit`、`-> Record<Exit>`）",
+      "W-untested: @2612 calib_line 在本次路径上没有被测量，按 J-15 取保守项（出口 cold）。修法【作者可改】：给这道题的校准键写一条上岗记录，或给这一类（phys + literal_mode）写一条模式级记录",
+      "W-drop-vs-escalate: 显式丢弃了未决责任 unsure(cold|untested:calib_line)（题 f017288d）；drop 合法且已记账，但只有 escalate 会把它交给人",
+      "W-untested: @2639 calib_line 在本次路径上没有被测量，按 J-15 取保守项（出口 cold）。修法【作者可改】：给这道题的校准键写一条上岗记录，或给这一类（phys + literal_mode）写一条模式级记录",
+      "W-drop-vs-escalate: 显式丢弃了未决责任 unsure(cold|untested:calib_line)（题 1e91cd50）；drop 合法且已记账，但只有 escalate 会把它交给人",
+      "W-untested: @2664 calib_line 在本次路径上没有被测量，按 J-15 取保守项（出口 cold）。修法【作者可改】：给这道题的校准键写一条上岗记录，或给这一类（phys + literal_mode）写一条模式级记录",
+      "W-drop-vs-escalate: 显式丢弃了未决责任 unsure(cold|untested:calib_line)（题 aeb75505）；drop 合法且已记账，但只有 escalate 会把它交给人",
+      "W-untested: @2738 calib_line 在本次路径上没有被测量，按 J-15 取保守项（出口 cold）。修法【作者可改】：给这道题的校准键写一条上岗记录，或给这一类（phys + literal_mode）写一条模式级记录",
+      "W-untyped-transfer: route 把 unsure(cold|untested:calib_line) 装在返回值里交了出去，但返回类型没提 Exit，调用者从签名上看不出自己收到了一份未决。修法：把返回类型标为含 Exit（如 `-> Exit`、`-> Record<Exit>`）",
+      "W-untested: @2612 calib_line 在本次路径上没有被测量，按 J-15 取保守项（出口 cold）。修法【作者可改】：给这道题的校准键写一条上岗记录，或给这一类（phys + literal_mode）写一条模式级记录",
+      "W-drop-vs-escalate: 显式丢弃了未决责任 unsure(cold|untested:calib_line)（题 f017288d）；drop 合法且已记账，但只有 escalate 会把它交给人",
+      "W-untested: @2639 calib_line 在本次路径上没有被测量，按 J-15 取保守项（出口 cold）。修法【作者可改】：给这道题的校准键写一条上岗记录，或给这一类（phys + literal_mode）写一条模式级记录",
+      "W-drop-vs-escalate: 显式丢弃了未决责任 unsure(cold|untested:calib_line)（题 1e91cd50）；drop 合法且已记账，但只有 escalate 会把它交给人",
+      "W-untested: @2664 calib_line 在本次路径上没有被测量，按 J-15 取保守项（出口 cold）。修法【作者可改】：给这道题的校准键写一条上岗记录，或给这一类（phys + literal_mode）写一条模式级记录",
+      "W-drop-vs-escalate: 显式丢弃了未决责任 unsure(cold|untested:calib_line)（题 aeb75505）；drop 合法且已记账，但只有 escalate 会把它交给人",
+      "W-untested: @2738 calib_line 在本次路径上没有被测量，按 J-15 取保守项（出口 cold）。修法【作者可改】：给这道题的校准键写一条上岗记录，或给这一类（phys + literal_mode）写一条模式级记录",
+      "W-untyped-transfer: route 把 unsure(cold|untested:calib_line) 装在返回值里交了出去，但返回类型没提 Exit，调用者从签名上看不出自己收到了一份未决。修法：把返回类型标为含 Exit（如 `-> Exit`、`-> Record<Exit>`）",
+      "W-untested: @2612 calib_line 在本次路径上没有被测量，按 J-15 取保守项（出口 cold）。修法【作者可改】：给这道题的校准键写一条上岗记录，或给这一类（phys + literal_mode）写一条模式级记录",
+      "W-drop-vs-escalate: 显式丢弃了未决责任 unsure(cold|untested:calib_line)（题 f017288d）；drop 合法且已记账，但只有 escalate 会把它交给人",
+      "W-untested: @2639 calib_line 在本次路径上没有被测量，按 J-15 取保守项（出口 cold）。修法【作者可改】：给这道题的校准键写一条上岗记录，或给这一类（phys + literal_mode）写一条模式级记录",
+      "W-drop-vs-escalate: 显式丢弃了未决责任 unsure(cold|untested:calib_line)（题 1e91cd50）；drop 合法且已记账，但只有 escalate 会把它交给人",
+      "W-untested: @2664 calib_line 在本次路径上没有被测量，按 J-15 取保守项（出口 cold）。修法【作者可改】：给这道题的校准键写一条上岗记录，或给这一类（phys + literal_mode）写一条模式级记录",
+      "W-drop-vs-escalate: 显式丢弃了未决责任 unsure(cold|untested:calib_line)（题 aeb75505）；drop 合法且已记账，但只有 escalate 会把它交给人",
+      "W-untested: @2738 calib_line 在本次路径上没有被测量，按 J-15 取保守项（出口 cold）。修法【作者可改】：给这道题的校准键写一条上岗记录，或给这一类（phys + literal_mode）写一条模式级记录",
+      "W-untyped-transfer: route 把 unsure(cold|untested:calib_line) 装在返回值里交了出去，但返回类型没提 Exit，调用者从签名上看不出自己收到了一份未决。修法：把返回类型标为含 Exit（如 `-> Exit`、`-> Record<Exit>`）",
+      "W-untested: @2612 calib_line 在本次路径上没有被测量，按 J-15 取保守项（出口 cold）。修法【作者可改】：给这道题的校准键写一条上岗记录，或给这一类（phys + literal_mode）写一条模式级记录",
+      "W-drop-vs-escalate: 显式丢弃了未决责任 unsure(cold|untested:calib_line)（题 f017288d）；drop 合法且已记账，但只有 escalate 会把它交给人",
+      "W-untested: @2639 calib_line 在本次路径上没有被测量，按 J-15 取保守项（出口 cold）。修法【作者可改】：给这道题的校准键写一条上岗记录，或给这一类（phys + literal_mode）写一条模式级记录",
+      "W-drop-vs-escalate: 显式丢弃了未决责任 unsure(cold|untested:calib_line)（题 1e91cd50）；drop 合法且已记账，但只有 escalate 会把它交给人",
+      "W-untested: @2664 calib_line 在本次路径上没有被测量，按 J-15 取保守项（出口 cold）。修法【作者可改】：给这道题的校准键写一条上岗记录，或给这一类（phys + literal_mode）写一条模式级记录",
+      "W-drop-vs-escalate: 显式丢弃了未决责任 unsure(cold|untested:calib_line)（题 aeb75505）；drop 合法且已记账，但只有 escalate 会把它交给人",
+      "W-untested: @2738 calib_line 在本次路径上没有被测量，按 J-15 取保守项（出口 cold）。修法【作者可改】：给这道题的校准键写一条上岗记录，或给这一类（phys + literal_mode）写一条模式级记录",
+      "W-untyped-transfer: route 把 unsure(cold|untested:calib_line) 装在返回值里交了出去，但返回类型没提 Exit，调用者从签名上看不出自己收到了一份未决。修法：把返回类型标为含 Exit（如 `-> Exit`、`-> Record<Exit>`）",
+      "W-untested: @2612 calib_line 在本次路径上没有被测量，按 J-15 取保守项（出口 cold）。修法【作者可改】：给这道题的校准键写一条上岗记录，或给这一类（phys + literal_mode）写一条模式级记录",
+      "W-drop-vs-escalate: 显式丢弃了未决责任 unsure(cold|untested:calib_line)（题 f017288d）；drop 合法且已记账，但只有 escalate 会把它交给人",
+      "W-untested: @2639 calib_line 在本次路径上没有被测量，按 J-15 取保守项（出口 cold）。修法【作者可改】：给这道题的校准键写一条上岗记录，或给这一类（phys + literal_mode）写一条模式级记录",
+      "W-drop-vs-escalate: 显式丢弃了未决责任 unsure(cold|untested:calib_line)（题 1e91cd50）；drop 合法且已记账，但只有 escalate 会把它交给人",
+      "W-untested: @2664 calib_line 在本次路径上没有被测量，按 J-15 取保守项（出口 cold）。修法【作者可改】：给这道题的校准键写一条上岗记录，或给这一类（phys + literal_mode）写一条模式级记录",
+      "W-drop-vs-escalate: 显式丢弃了未决责任 unsure(cold|untested:calib_line)（题 aeb75505）；drop 合法且已记账，但只有 escalate 会把它交给人",
+      "W-untested: @2738 calib_line 在本次路径上没有被测量，按 J-15 取保守项（出口 cold）。修法【作者可改】：给这道题的校准键写一条上岗记录，或给这一类（phys + literal_mode）写一条模式级记录",
+      "W-untyped-transfer: route 把 unsure(cold|untested:calib_line) 装在返回值里交了出去，但返回类型没提 Exit，调用者从签名上看不出自己收到了一份未决。修法：把返回类型标为含 Exit（如 `-> Exit`、`-> Record<Exit>`）",
+      "W-untested: @2612 calib_line 在本次路径上没有被测量，按 J-15 取保守项（出口 cold）。修法【作者可改】：给这道题的校准键写一条上岗记录，或给这一类（phys + literal_mode）写一条模式级记录",
+      "W-drop-vs-escalate: 显式丢弃了未决责任 unsure(cold|untested:calib_line)（题 f017288d）；drop 合法且已记账，但只有 escalate 会把它交给人",
+      "W-untested: @2639 calib_line 在本次路径上没有被测量，按 J-15 取保守项（出口 cold）。修法【作者可改】：给这道题的校准键写一条上岗记录，或给这一类（phys + literal_mode）写一条模式级记录",
+      "W-drop-vs-escalate: 显式丢弃了未决责任 unsure(cold|untested:calib_line)（题 1e91cd50）；drop 合法且已记账，但只有 escalate 会把它交给人",
+      "W-untested: @2664 calib_line 在本次路径上没有被测量，按 J-15 取保守项（出口 cold）。修法【作者可改】：给这道题的校准键写一条上岗记录，或给这一类（phys + literal_mode）写一条模式级记录",
+      "W-drop-vs-escalate: 显式丢弃了未决责任 unsure(cold|untested:calib_line)（题 aeb75505）；drop 合法且已记账，但只有 escalate 会把它交给人",
+      "W-untested: @2738 calib_line 在本次路径上没有被测量，按 J-15 取保守项（出口 cold）。修法【作者可改】：给这道题的校准键写一条上岗记录，或给这一类（phys + literal_mode）写一条模式级记录",
+      "W-untyped-transfer: route 把 unsure(cold|untested:calib_line) 装在返回值里交了出去，但返回类型没提 Exit，调用者从签名上看不出自己收到了一份未决。修法：把返回类型标为含 Exit（如 `-> Exit`、`-> Record<Exit>`）",
+      "W-untested: @2612 calib_line 在本次路径上没有被测量，按 J-15 取保守项（出口 cold）。修法【作者可改】：给这道题的校准键写一条上岗记录，或给这一类（phys + literal_mode）写一条模式级记录",
+      "W-drop-vs-escalate: 显式丢弃了未决责任 unsure(cold|untested:calib_line)（题 f017288d）；drop 合法且已记账，但只有 escalate 会把它交给人",
+      "W-untested: @2639 calib_line 在本次路径上没有被测量，按 J-15 取保守项（出口 cold）。修法【作者可改】：给这道题的校准键写一条上岗记录，或给这一类（phys + literal_mode）写一条模式级记录",
+      "W-drop-vs-escalate: 显式丢弃了未决责任 unsure(cold|untested:calib_line)（题 1e91cd50）；drop 合法且已记账，但只有 escalate 会把它交给人",
+      "W-untested: @2664 calib_line 在本次路径上没有被测量，按 J-15 取保守项（出口 cold）。修法【作者可改】：给这道题的校准键写一条上岗记录，或给这一类（phys + literal_mode）写一条模式级记录",
+      "W-drop-vs-escalate: 显式丢弃了未决责任 unsure(cold|untested:calib_line)（题 aeb75505）；drop 合法且已记账，但只有 escalate 会把它交给人",
+      "W-untested: @2738 calib_line 在本次路径上没有被测量，按 J-15 取保守项（出口 cold）。修法【作者可改】：给这道题的校准键写一条上岗记录，或给这一类（phys + literal_mode）写一条模式级记录",
+      "W-untyped-transfer: route 把 unsure(cold|untested:calib_line) 装在返回值里交了出去，但返回类型没提 Exit，调用者从签名上看不出自己收到了一份未决。修法：把返回类型标为含 Exit（如 `-> Exit`、`-> Record<Exit>`）",
+      "returned_unsure: unsure(cold|untested:calib_line), unsure(cold|untested:calib_line), unsure(cold|untested:calib_line), unsure(cold|untested:calib_line), unsure(cold|untested:calib_line), unsure(cold|untested:calib_line), unsure(cold|untested:calib_line), unsure(cold|untested:calib_line), unsure(cold|untested:calib_line)"
+    ]
+  },
+  "value": {
+    "candidates": 9,
+    "routed": [
+      {
+        "duty": {
+          "duty": 3,
+          "q": "def8233fd336c608493579ae",
+          "unsure": "cold"
+        },
+        "hints": {
+          "brewery": "未决",
+          "name": "未决",
+          "style": "未决"
+        },
+        "outcome": "curator queue",
+        "pair": {
+          "a": "Hazy Little Thing IPA",
+          "b": "Sierra Nevada Hazy Little Thing"
+        }
+      },
+      {
+        "duty": {
+          "duty": 7,
+          "q": "def8233fd336c608493579ae",
+          "unsure": "cold"
+        },
+        "hints": {
+          "brewery": "未决",
+          "name": "未决",
+          "style": "未决"
+        },
+        "outcome": "curator queue",
+        "pair": {
+          "a": "Hazy Little Thing IPA",
+          "b": "Guinness Extra Stout"
+        }
+      },
+      {
+        "duty": {
+          "duty": 11,
+          "q": "def8233fd336c608493579ae",
+          "unsure": "cold"
+        },
+        "hints": {
+          "brewery": "未决",
+          "name": "未决",
+          "style": "未决"
+        },
+        "outcome": "curator queue",
+        "pair": {
+          "a": "Hazy Little Thing IPA",
+          "b": "Bell's Two Hearted IPA"
+        }
+      },
+      {
+        "duty": {
+          "duty": 15,
+          "q": "def8233fd336c608493579ae",
+          "unsure": "cold"
+        },
+        "hints": {
+          "brewery": "未决",
+          "name": "未决",
+          "style": "未决"
+        },
+        "outcome": "curator queue",
+        "pair": {
+          "a": "Guinness Draught",
+          "b": "Guinness Extra Stout"
+        }
+      },
+      {
+        "duty": {
+          "duty": 19,
+          "q": "def8233fd336c608493579ae",
+          "unsure": "cold"
+        },
+        "hints": {
+          "brewery": "未决",
+          "name": "未决",
+          "style": "未决"
+        },
+        "outcome": "curator queue",
+        "pair": {
+          "a": "Two Hearted Ale",
+          "b": "Sierra Nevada Hazy Little Thing"
+        }
+      },
+      {
+        "duty": {
+          "duty": 23,
+          "q": "def8233fd336c608493579ae",
+          "unsure": "cold"
+        },
+        "hints": {
+          "brewery": "未决",
+          "name": "未决",
+          "style": "未决"
+        },
+        "outcome": "curator queue",
+        "pair": {
+          "a": "Two Hearted Ale",
+          "b": "Guinness Extra Stout"
+        }
+      },
+      {
+        "duty": {
+          "duty": 27,
+          "q": "def8233fd336c608493579ae",
+          "unsure": "cold"
+        },
+        "hints": {
+          "brewery": "未决",
+          "name": "未决",
+          "style": "未决"
+        },
+        "outcome": "curator queue",
+        "pair": {
+          "a": "Two Hearted Ale",
+          "b": "Bell's Two Hearted IPA"
+        }
+      },
+      {
+        "duty": {
+          "duty": 31,
+          "q": "def8233fd336c608493579ae",
+          "unsure": "cold"
+        },
+        "hints": {
+          "brewery": "未决",
+          "name": "未决",
+          "style": "未决"
+        },
+        "outcome": "curator queue",
+        "pair": {
+          "a": "Pliny the Elder",
+          "b": "Sierra Nevada Hazy Little Thing"
+        }
+      },
+      {
+        "duty": {
+          "duty": 35,
+          "q": "def8233fd336c608493579ae",
+          "unsure": "cold"
+        },
+        "hints": {
+          "brewery": "未决",
+          "name": "未决",
+          "style": "未决"
+        },
+        "outcome": "curator queue",
+        "pair": {
+          "a": "Pliny the Elder",
+          "b": "Bell's Two Hearted IPA"
+        }
+      }
+    ],
+    "tally": {
+      "curator": 9,
+      "sameAs": 0,
+      "unlinked": 0
+    }
+  }
+}

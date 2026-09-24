@@ -23,7 +23,7 @@ fn 装样本(store: &mut CalibStore, key: &str, t: &str) {
     for (p, l, seg) in 取(t) {
         store.absorb(key, Sample {
             p: Some(p), label: Some(if l { 1 } else { 0 }), perms: 0, mode_share: None,
-            mode: LiteralMode::default(), phys: t.into(), cluster: Some(seg),
+            mode: LiteralMode::default(), phys: t.into(), cluster: Some(seg), stratum: None,
         }).expect("折得进");
     }
 }
@@ -112,7 +112,7 @@ fn 簇的单位必须声明且不许推断() {
     let mut 无簇 = CalibStore::new();
     for (p, l, _) in 取("noul") {
         无簇.absorb("k", Sample { p: Some(p), label: Some(if l { 1 } else { 0 }), perms: 0,
-                                  mode_share: None, mode: LiteralMode::default(), phys: "noul".into(), cluster: None }).unwrap();
+                                  mode_share: None, mode: LiteralMode::default(), phys: "noul".into(), cluster: None, stratum: None }).unwrap();
     }
     match 无簇.commission("k", 0.45, 0.10, "对象段") {
         Err(Refusal::跑不成(why)) => assert!(why.contains("簇"), "{why}"),

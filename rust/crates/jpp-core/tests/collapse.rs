@@ -15,7 +15,7 @@ fn 装(c: &mut CalibStore, key: &str) {
     for i in 0..30 {
         c.absorb(key, Sample {
             p: Some(0.30 + i as f64 * 0.02), label: Some(if i > 6 { 1 } else { 0 }), perms: 0,
-            mode_share: None, mode: LiteralMode::default(), phys: "noul".into(), cluster: None,
+            mode_share: None, mode: LiteralMode::default(), phys: "noul".into(), cluster: None, stratum: None,
         }).unwrap();
     }
 }
@@ -99,8 +99,8 @@ fn 出口的taint对jpp可见() {
     }
     let 跑 = |动作: &str| {
         let mut a = ActionRegistry::new();
-        a.register("取外部", 0.0, true, TaintOut::Untrusted, |_| Ok(Value::Text("脏".into(), jpp_core::value::Taint::Trusted)));
-        a.register("取内部", 0.0, true, TaintOut::Trusted, |_| Ok(Value::Text("净".into(), jpp_core::value::Taint::Trusted)));
+        a.register("取外部", 0.0, true, TaintOut::Untrusted, |_| Ok(Value::Text("脏".into(), jpp_core::value::Taint::Trusted.into())));
+        a.register("取内部", 0.0, true, TaintOut::Trusted, |_| Ok(Value::Text("净".into(), jpp_core::value::Taint::Trusted.into())));
         let src = format!(r#"
 budget {{calls: 4, cost: 1, depth: 8}};
 let m = do("{动作}", [], 0);
@@ -108,7 +108,7 @@ let e = cut(judge(state(m), test("行吗", "k")));
 handle(e, {{act: fn() {{ {{来源: taint(e)}} }}, ignore: fn() {{ {{来源: taint(e)}} }},
            unsure: fn(u) {{ consume(u, "drop"); {{来源: taint(e)}} }}}})
 "#);
-        let program = jpp_frontend::lower(&jpp_frontend::parse(&src).expect("解析")).expect("lower");
+        let program = jpp_core::lower(&jpp_core::syntax::parse(&src).expect("解析")).expect("lower");
         let mut calib = CalibStore::new();
         calib.put("k", 0.8, 0.2, 50, "上岗").unwrap();
         let mut l = Ledger::new();
@@ -150,10 +150,10 @@ fn 读taint不能替代可信判断() {
     }
     let 跑 = |src: &str| {
         let mut a = ActionRegistry::new();
-        a.register("取外部", 0.0, true, TaintOut::Untrusted, |_| Ok(Value::Text("脏".into(), jpp_core::value::Taint::Trusted)));
-        a.register("取内部", 0.0, true, TaintOut::Trusted, |_| Ok(Value::Text("净".into(), jpp_core::value::Taint::Trusted)));
-        a.register("发出去", 0.0, false, TaintOut::Trusted, |_| Ok(Value::Text("发了".into(), jpp_core::value::Taint::Trusted)));
-        let program = jpp_frontend::lower(&jpp_frontend::parse(src).expect("解析")).expect("lower");
+        a.register("取外部", 0.0, true, TaintOut::Untrusted, |_| Ok(Value::Text("脏".into(), jpp_core::value::Taint::Trusted.into())));
+        a.register("取内部", 0.0, true, TaintOut::Trusted, |_| Ok(Value::Text("净".into(), jpp_core::value::Taint::Trusted.into())));
+        a.register("发出去", 0.0, false, TaintOut::Trusted, |_| Ok(Value::Text("发了".into(), jpp_core::value::Taint::Trusted.into())));
+        let program = jpp_core::lower(&jpp_core::syntax::parse(src).expect("解析")).expect("lower");
         let mut calib = CalibStore::new();
         common::certified(&mut calib, "k", 0.7, 0.3, 50);
         let mut l = Ledger::new();
@@ -224,7 +224,7 @@ let r = judge(state(mat("被判的")), test("行吗", "k"));
 let g = fn(m) { let _ = r; content(m) };
 {a: content(transform(g, mat("材料")))}
 "#;
-    let program = jpp_frontend::lower(&jpp_frontend::parse(src).expect("解析")).expect("lower");
+    let program = jpp_core::lower(&jpp_core::syntax::parse(src).expect("解析")).expect("lower");
     let mut l = Ledger::new();
     let out = run(&program, &mut 桩, &CalibStore::new(), &ActionRegistry::new(), &mut l).expect("跑得完");
     let _ = &out;

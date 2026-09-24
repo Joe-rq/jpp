@@ -16,7 +16,7 @@ fn 观察(c: &mut CalibStore, key: &str, ps: &[f64], label: Option<u8>) {
     for p in ps {
         c.absorb(key, Sample {
             p: Some(*p), label, perms: 0, mode_share: None,
-            mode: LiteralMode::default(), phys: "noul".into(), cluster: None,
+            mode: LiteralMode::default(), phys: "noul".into(), cluster: None, stratum: None,
         }).unwrap();
     }
 }
@@ -109,7 +109,7 @@ fn cut那一步会因漂移告警() {
         fn calls(&self) -> u64 { *self.0.borrow() }
     }
     let 跑 = |c: &CalibStore| {
-        let program = jpp_frontend::lower(&jpp_frontend::parse(r#"
+        let program = jpp_core::lower(&jpp_core::syntax::parse(r#"
 budget {calls: 4, cost: 1};
 handle(cut(judge(state(mat("材料")), test("行吗", "k"))), {
     act: fn() { "act" }, ignore: fn() { "ig" },
@@ -169,7 +169,7 @@ fn 不经cut的消费方也要报漂移() {
         fn calls(&self) -> u64 { *self.0.borrow() }
     }
     let 跑 = |src: &str, c: &CalibStore| {
-        let program = jpp_frontend::lower(&jpp_frontend::parse(src).expect("解析")).expect("lower");
+        let program = jpp_core::lower(&jpp_core::syntax::parse(src).expect("解析")).expect("lower");
         let mut l = Ledger::new();
         run(&program, &mut 桩(RefCell::new(0)), c, &ActionRegistry::new(), &mut l).expect("跑得完").trace.warnings.clone()
     };

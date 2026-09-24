@@ -1,0 +1,212 @@
+ir v1
+budget calls=10 cost=0.01 depth=256 escalate=- unsure=- latency_p95=- absent=-
+block 158..1378
+  fn-stmt accepted
+    #0 fn (o:-) -> - effects=-
+      block 1781..1792
+        result
+          #1 field .value
+            #2 name o
+  fn-stmt ignored
+    #3 fn (o:-) -> - effects=-
+      block 1864..1883
+        result
+          #4 field .ignore
+            #5 field .detail
+              #6 name o
+  fn-stmt undecided
+    #7 fn (o:-) -> - effects=-
+      block 1952..2004
+        result
+          #8 call @0 1954..2002
+            callee:
+              #9 name filter
+            #10 field .pending
+              #11 name o
+            #13 fn (p:-) -> - effects=-
+              block 1978..2001
+                result
+                  #14 binary !=
+                    #15 field .cause
+                      #16 name p
+                    #17 text "budget"
+  fn-stmt unobserved
+    #18 fn (o:-) -> - effects=-
+      block 2097..2149
+        result
+          #19 call @1 2099..2147
+            callee:
+              #20 name filter
+            #21 field .pending
+              #22 name o
+            #24 fn (p:-) -> - effects=-
+              block 2123..2146
+                result
+                  #25 binary ==
+                    #26 field .cause
+                      #27 name p
+                    #28 text "budget"
+  fn-stmt stopped
+    #29 fn (o:-) -> - effects=-
+      block 2212..2276
+        result
+          #30 if @2 2214..2274
+            cond:
+              #31 call 2217..2240
+                callee:
+                  #32 name has
+                #33 field .resume
+                  #34 name o
+                #35 text "detail"
+            block 2241..2260
+              result
+                #36 field .detail
+                  #37 field .resume
+                    #38 name o
+            block 2266..2274
+              result
+                #39 unit
+  let notes : -
+    #40 list 215..446
+      #41 text "这款耳机售价三百九十九元。"
+      #42 text "新店开业，全场八折。"
+      #43 text "今天天气晴朗，适合出门。"
+      #44 text "会员价比原价便宜了五十元。"
+      #45 text "价格还没公布，据说下个月发布。"
+  let price : -
+    #46 construct test @3 460..522
+      #47 text "这段话给出了具体价格或折扣吗？"
+      #48 text "price"
+  let r : -
+    #49 construct sieve @4 532..551
+      #50 name notes
+      #51 name price
+  let t : -
+    #52 construct tally @5 561..569
+      #53 name r
+  let firstone : -
+    #54 construct first_k @6 586..599
+      #55 name r
+      #56 int 1
+  let firsttwo : -
+    #57 construct first_k @7 616..629
+      #58 name r
+      #59 int 2
+  result
+    #60 record 632..1378
+      streams:
+        #61 record 642..818
+          act:
+            #62 call @8 648..683
+              callee:
+                #63 name map
+              #64 call 652..663
+                callee:
+                  #65 name accepted
+                #66 name r
+              #68 fn (e:-) -> - effects=-
+                block 671..682
+                  result
+                    #69 field .index
+                      #70 name e
+          ignore:
+            #71 call @9 693..727
+              callee:
+                #72 name map
+              #73 call 697..707
+                callee:
+                  #74 name ignored
+                #75 name r
+              #77 fn (e:-) -> - effects=-
+                block 715..726
+                  result
+                    #78 field .index
+                      #79 name e
+          unsure:
+            #80 call @10 748..817
+              callee:
+                #81 name map
+              #82 call 752..764
+                callee:
+                  #83 name undecided
+                #84 name r
+              #86 fn (p:-) -> - effects=-
+                block 772..816
+                  result
+                    #87 record 774..814
+                      index:
+                        #88 field .index
+                          #89 field .element
+                            #90 name p
+                      cause:
+                        #91 field .cause
+                          #92 name p
+      count:
+        #93 field .count
+          #94 field .value
+            #95 name t
+      complete:
+        #96 field .complete
+          #97 field .value
+            #98 name t
+      exists:
+        #99 field .exists
+          #100 field .value
+            #101 name t
+      all:
+        #102 field .all
+          #103 field .value
+            #104 name t
+      first1:
+        #105 record 974..1033
+          exit:
+            #106 field .exit
+              #107 field .value
+                #108 name firstone
+          blocked_at:
+            #109 field .at
+              #110 field .resume
+                #111 name firstone
+      first2:
+        #112 record 1044..1156
+          exit:
+            #113 field .exit
+              #114 field .value
+                #115 name firsttwo
+          items:
+            #116 call @11 1079..1123
+              callee:
+                #117 name map
+              #118 field .items
+                #119 field .value
+                  #120 name firsttwo
+              #122 fn (e:-) -> - effects=-
+                block 1111..1122
+                  result
+                    #123 field .index
+                      #124 name e
+          blocked_at:
+            #125 field .at
+              #126 field .resume
+                #127 name firsttwo
+      pending:
+        #128 list 1330..1377
+          #129 field .pending
+            #130 name t
+          #131 field .pending
+            #132 name firstone
+          #133 field .pending
+            #134 name firsttwo
+sites 12
+  @0 #8 hof:filter 1954..2002 fn=#7 in=-
+  @1 #19 hof:filter 2099..2147 fn=#18 in=-
+  @2 #30 if 2214..2274 fn=#29 in=-
+  @3 #46 construct:test 460..522 fn=- in=-
+  @4 #49 construct:sieve 532..551 fn=- in=-
+  @5 #52 construct:tally 561..569 fn=- in=-
+  @6 #54 construct:first_k 586..599 fn=- in=-
+  @7 #57 construct:first_k 616..629 fn=- in=-
+  @8 #62 hof:map 648..683 fn=- in=-
+  @9 #71 hof:map 693..727 fn=- in=-
+  @10 #80 hof:map 748..817 fn=- in=-
+  @11 #116 hof:map 1079..1123 fn=- in=-

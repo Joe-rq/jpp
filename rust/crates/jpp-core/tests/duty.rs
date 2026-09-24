@@ -8,12 +8,12 @@ mod common;
 
 use common::*;
 use common::program as build;
-use jpp_core::ast::{Budget, Program};
+use jpp_core::{Budget, Program};
 use jpp_core::effects::{CalibStore, FixedClient};
 use jpp_core::interp::ActionRegistry;
 use jpp_core::ledger::Ledger;
 use jpp_core::value::{Answer, Mat, Op, Question, State};
-use jpp_core::{Error, Expr, check, run, run_unchecked};
+use jpp_core::{Error, check, run, run_unchecked};
 use serde_json::json;
 
 const ASK: &str = "这个对吗？";
@@ -72,7 +72,7 @@ fn go(program: &Program) -> Result<jpp_core::Outcome, Error> {
 fn 忽略未决责任的臂是错() {
     let arm = lambda(&["u"], body(vec![], int(7)));
     let at = match &arm.kind {
-        jpp_core::ExprKind::Function(_) => arm.span,
+        ExprKind::Function(_) => arm.span,
         _ => unreachable!(),
     };
     let program = duty_program(arm, 0);
@@ -216,11 +216,21 @@ fn 责任不能变成材料() {
     assert!(e.message.contains("材料"), "{}", e.message);
 }
 
+/// 表层的方法类型 `Fn(params) -!{effects}-> ret`（`linear` 即 `Fn¹`，捕获了未决责任）
+fn method(params: Vec<Type>, ret: Type, effects: &[&str], linear: bool) -> Type {
+    Type::Method {
+        parameters: params,
+        result: Box::new(ret),
+        effects: Some(effects.iter().map(|e| e.to_string()).collect()),
+        captures_responsibility: linear,
+    }
+}
+
 /// 捕获了责任的 `Fn¹` 不能交给 map：它可能被调用任意次，也可能一次都不调。
 #[test]
 fn 捕获责任的方法不能交给map() {
-    use jpp_core::ast::{Function, MethodType, Parameter, Statement as S, Type};
-    let linear = Type::Method(MethodType::linear(vec![Type::Named("Int".into())], Type::Named("Int".into()), &[]));
+    use Statement as S;
+    let linear = method(vec![Type::Named("Int".into())], Type::Named("Int".into()), &[], true);
     let apply_all = S::Function {
         name: "apply_all".into(),
         function: Function {
@@ -243,8 +253,8 @@ fn 捕获责任的方法不能交给map() {
 /// 方法类型带效应行时，经参数调用的效应也能核——这正是 `Type::Function` 补不上的那一半。
 #[test]
 fn 方法类型带着效应行走() {
-    use jpp_core::ast::{Function, MethodType, Parameter, Statement as S, Type};
-    let judging = Type::Method(MethodType::omega(vec![Type::Named("Mat".into())], Type::Named("Record".into()), &["judge"]));
+    use Statement as S;
+    let judging = method(vec![Type::Named("Mat".into())], Type::Named("Record".into()), &["judge"], false);
     let driver = S::Function {
         name: "drive".into(),
         function: Function {

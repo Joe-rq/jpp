@@ -9,8 +9,8 @@ use std::cell::RefCell;
 use jpp_core::effects::{CalibStore, Client, EffectError, JudgeResult, NoCallClient};
 use jpp_core::ledger::Ledger;
 use jpp_core::value::{Answer, Question, State};
-use jpp_core::{ActionRegistry, ast, run};
-use jpp_frontend::{lower, parse};
+use jpp_core::{ActionRegistry, run};
+use jpp_core::{lower, syntax::parse};
 use serde_json::Value as Json;
 
 // ---------------------------------------------------------------- 测试替身
@@ -42,9 +42,9 @@ impl Client for CostlyClient {
     }
 }
 
-fn program(src: &str) -> ast::Program {
+fn program(src: &str) -> jpp_core::Program {
     let parsed = parse(src).unwrap_or_else(|d| panic!("解析失败：{}", d.render("t.jpp", src)));
-    lower(&parsed).unwrap_or_else(|d| panic!("lower 失败：{}", d.render("t.jpp", src)))
+    lower(&parsed).unwrap_or_else(|d| panic!("lower 失败：{}", d[0].render("t.jpp", src)))
 }
 
 fn calib() -> CalibStore {
