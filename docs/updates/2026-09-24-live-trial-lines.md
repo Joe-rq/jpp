@@ -1,6 +1,8 @@
 # From "every new question is undecided" to a usable live run: trial-grade calibration lines / 从「新题一律未决」到真机可用：试用档校准线
 
-2026-09-24. Research-workspace design and testing; not yet part of the public Rust tree.
+2026-09-24. Built in the research workspace; the code is on the same-day sync branch `sync/2026-09-24-architecture`, pending review before it is pushed and merged into this repository's `main`.
+
+2026-09-24。研究工作区已经造出并实测；代码在同日同步分支 `sync/2026-09-24-architecture` 上，待审核后推送并合入本仓库 `main`。
 
 ## English
 
