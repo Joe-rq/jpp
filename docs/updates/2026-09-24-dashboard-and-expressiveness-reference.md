@@ -1,10 +1,12 @@
 # A repeatable dashboard, and why the expressiveness ratio needs two task tiers / 一套能反复跑的验收仪表，与表达量比为什么要分两档
 
-2026-09-24. Research-workspace decisions and design work; nothing in this update has landed in the public Rust tree yet.
+2026-09-24. Research-workspace decisions, design work, and a first measurement run. The dashboard script and most of the readings below are built, on the same-day sync branch `sync/2026-09-24-architecture`, pending review before it is pushed and merged into this repository's `main`.
+
+2026-09-24。研究工作区的裁定、设计工作与第一次测量。仪表脚本与下文大多数读数已经造出，代码在同日同步分支 `sync/2026-09-24-architecture` 上，待审核后推送并合入本仓库 `main`。
 
 ## English
 
-An internal review of the research tree, run after a large refactor milestone, delivered a blunt verdict: "what's been built is not broken, but it has no effect yet." The kernel semantics hold up under controlled tests, but on the real JEV backend every new question came back `Unsure(cold)` -- undecided, because no calibrated threshold existed for it. Zero decided outcomes. The review also found that the project's own default-profile fallback (used when a run has no explicit capability profile) was silently deciding outcomes through hardcoded constants, which is exactly the kind of design drift the project's own rules forbid. Two things followed from this: numbers needed to replace impressions, and one number in particular -- how many times shorter a J++ program is than the equivalent hand-written program -- needed a cleaner definition than it had.
+An internal review of the research tree, run after a large refactor milestone, found that the kernel's semantics hold up under controlled tests, but on the real JEV backend every new question came back `Unsure(cold)` -- undecided, because no calibrated threshold existed for it. Zero decided outcomes. The review also found that the project's own default-profile fallback (used when a run has no explicit capability profile) was silently deciding outcomes through hardcoded constants, which the project's own design rules forbid. Two things followed from this: numbers needed to replace impressions, and one number in particular -- how many times shorter a J++ program is than the equivalent hand-written program -- needed a cleaner definition than it had.
 
 **The dashboard.** Seven repeatable measurements were adopted as the standing acceptance instrument, to be re-run at every milestone and after every substantial engineering step, with results logged to the project blackboard rather than asserted in prose:
 
@@ -22,11 +24,11 @@ An eighth measurement, coverage across task categories, is tracked but does not 
 
 **How the ratio itself is measured.** A second problem showed up alongside the tiering: J++ source in the test programs runs about 15 tokens per line, versus about 7 for the Python baselines -- more than double the density. A raw line-count ratio overstates the win; a raw token-count ratio understates it, because it penalizes J++ for being visually compact rather than functionally shorter. The fix adopted is to normalize both sides to the same line width (wrapping at 100 columns, counting double-width for Chinese-width characters) before counting lines -- putting both languages back in the units the reference literature actually used. That wrap-normalized line ratio is now the primary reading, reported alongside the raw line ratio, the token ratio, and the call-count ratio side by side rather than folded into one number, since when they disagree it's informative, not noise to be averaged away.
 
-**Where this leaves the target.** The T0/T1 split and the wrap-normalized reading are now the accounting rule; a full multi-implementation measurement on real tasks under this rule -- five-plus independent implementations per side, not one -- is the next step, and it is what will produce the number that gets compared against the 9-20x band. That number is not yet public. What's settled is the method for producing it honestly: same task brief on both sides, baseline written by someone who didn't design the language, and no credit given for duties the task brief didn't actually require.
+**Where this leaves the target.** The T0/T1 split and the wrap-normalized reading are now the accounting rule, and a first measurement under it has been run in the research workspace: five-plus independent implementations per side, each written by someone who did not design the language. That reading is not included in this update. What's public: on isolated probe comparisons written before the tiering fix, the ratio was 2x-5x, and a set of short trial programs measured 1.2x-1.5x; on the live backend, the share of decided outcomes among a set of new-question test runs is 0.255 (14 of 55); the depth curve after chaining shows 22 decided outcomes at one layer, 12 at two layers, and 4 at three layers. With these readings in, all seven dashboard items now have numbers.
 
 ## 中文
 
-一轮针对研究树大重构里程碑之后的独立复核给出一句直白的结论：「做出来的东西不烂，但现在还没有效果。」内核语义在受控测试下成立，但接上真实 JEV 后端后，任何新题的出口都是 `Unsure(cold)`——未决，因为这道题还没有校准阈值。已决出口是零个。复核还发现，项目自己「无画像时的兜底常数」正在悄悄替代画像决定出口，这正是项目规则明令禁止的那种设计漂移。由此得到两条后续：用数字取代印象；其中一个数字——J++ 程序比等价手写程序短多少倍——尤其需要比原来更清楚的定义。
+一轮针对研究树大重构里程碑之后的独立复核发现：内核语义在受控测试下成立，但接上真实 JEV 后端后，任何新题的出口都是 `Unsure(cold)`——未决，因为这道题还没有校准阈值。已决出口是零个。复核还发现，项目自己「无画像时的兜底常数」正在悄悄替代画像决定出口，这正是项目设计规则明令禁止的事。由此得到两条后续：用数字取代印象；其中一个数字——J++ 程序比等价手写程序短多少倍——尤其需要比原来更清楚的定义。
 
 **仪表。** 七项可反复运行的测量被定为常设验收工具，每个里程碑和每个重要工程步骤后重跑一次，结果记入项目黑板而不是写进叙述性文字：
 
@@ -44,4 +46,4 @@ An eighth measurement, coverage across task categories, is tracked but does not 
 
 **比值本身怎么量。** 分档之外还冒出第二个问题：测试程序里 J++ 源码每行约 15 个 token，Python 基线约 7 个——密度差两倍还多。原始行数比会高估优势；原始 token 比会低估它，因为它把「视觉紧凑」错当成了「功能上更短」而扣分。采用的修法是把两侧都按同一行宽折行（100 列换行，中文字符按双宽计）后再数行数——把两种语言换算回参考文献实际使用的单位。这个折行归一的行数比现在是主读数，与原始行数比、token 比、调用数比并列报告，而不是揉成一个数字，因为它们出现分歧时本身就是信息，不该被平均抹掉。
 
-**目标现在在哪。** T0/T1 分档与折行归一读数已定为记账规则；下一步是按这条规则在真实任务上做一次完整的多实现测量——每侧五个以上独立实现，不是一个——这才会产出真正拿去对照 9–20 倍参考带的数字。这个数字目前还没有公开。已经定下的是如何诚实地产出它：两侧用同一份任务书，基线由没有参与设计这门语言的人写，任务书没实际要求的职责不算分。
+**目标现在在哪。** T0/T1 分档与折行归一读数已定为记账规则，按这条规则做的第一次测量已经在研究工作区跑过：每侧五个以上独立实现，都由没有参与设计这门语言的人写。这个读数本篇不公布。可以公开的是：分档修法之前写的孤立探针对照，比值 2–5 倍，一组短试写程序测得 1.2–1.5 倍；真机后端上，一批新题测试运行里已决出口占比 0.255（14/55）；链式深度曲线在一层得到 22 个已决出口、两层 12 个、三层 4 个。加上这些读数，仪表七项现在全部有数。
