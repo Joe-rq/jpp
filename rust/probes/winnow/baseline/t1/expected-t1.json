@@ -1,0 +1,24 @@
+{
+ "task": "修复登录接口在密码为空时返回 500 的问题",
+ "results": [
+  {
+   "id": "tool-1:cargo test",
+   "reason": "error_present",
+   "pruned": [],
+   "uncertain": [],
+   "unobserved": []
+  },
+  {
+   "id": "tool-2:grep -rn password src/",
+   "reason": "pruned",
+   "pruned": [
+    1,
+    2
+   ],
+   "uncertain": [
+    3
+   ],
+   "unobserved": []
+  }
+ ]
+}

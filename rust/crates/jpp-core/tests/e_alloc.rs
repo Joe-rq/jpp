@@ -63,13 +63,33 @@ fn 判对(题型: &str, truth: &str, value: Option<i64>, p: f64) -> Option<bool>
     }
 }
 
+
+// 读数是句柄、答案在表里（步 11b-3）：测试自带一张答案表，经 `Answers` 交给 `strength`。
+thread_local! {
+    static 答: std::cell::RefCell<jpp_core::value::AnswerTable> = Default::default();
+    static 号: std::cell::Cell<u64> = const { std::cell::Cell::new(0) };
+}
+fn 新句柄() -> u64 {
+    号.with(|c| {
+        let v = c.get();
+        c.set(v + 1);
+        v
+    })
+}
+fn 记答(r: &Reading, a: Answer) {
+    答.with(|t| t.borrow_mut().insert(r, a));
+}
+fn 答表() -> jpp_core::value::AnswerTable {
+    答.with(|t| t.borrow().clone())
+}
+
 fn 读数(c: &条, 键: &str) -> Rc<Reading> {
-    Rc::new(Reading {
+    let r = Rc::new(Reading {
         q_hash: String::new(),
         state_hash: String::new(),
         op: c.op,
         calib: 键.into(),
-        answer: Some(Answer::Noul(c.p)).into(),
+        id: 新句柄(),
         fail: None,
         model_id: "jev".into(),
         ledger_key: String::new(),
@@ -78,8 +98,10 @@ fn 读数(c: &条, 键: &str) -> Rc<Reading> {
         perms: Default::default(),
         mode_share: Default::default(),
         missing_evidence: vec![],
-        state_taint: Default::default(), form_hash: None,
-    })
+        state_taint: Default::default(), form_hash: None, fp: None,
+    });
+    记答(&r, Answer::Noul(c.p));
+    r
 }
 
 /// 错误率：被复核的那些按真值算（不算错），其余按读数所蕴含的判断算
@@ -178,7 +200,7 @@ fn e_alloc_真读数上不确定度能不能排出错误() {
             let 键 = 题型.split('/').next_back().unwrap();
             let rs: Vec<Rc<Reading>> = 条们.iter().map(|c| 读数(c, 键)).collect();
             // 并列为 0 的比例：它直接决定 allocate 有没有区分力
-            let 并列 = rs.iter().filter(|r| jpp_core::strength::uncertainty(calib, r) == Some(0.0)).count();
+            let 并列 = rs.iter().filter(|r| jpp_core::strength::uncertainty(calib, &答表(), r) == Some(0.0)).count();
             println!(
                 "--- {题型}（n={n}，不复核错误率={:.3}，不确定度并列为 0 的 {并列} 条 = {:.0}%）",
                 错误率(条们, &[]),
@@ -189,7 +211,7 @@ fn e_alloc_真读数上不确定度能不能排出错误() {
                 if k > n {
                     continue;
                 }
-                let a = 错误率(条们, &allocate(calib, &rs, k));
+                let a = 错误率(条们, &allocate(calib, &答表(), &rs, k));
                 let mut acc = 0.0;
                 for seed in 0..200u64 {
                     acc += 错误率(条们, &随机抽(seed, n, k));

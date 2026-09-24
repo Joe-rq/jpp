@@ -25,6 +25,9 @@ pub struct Generation {
     pub prompt: String,
     pub retry_seq: u64,
     pub output: Vec<Value>,
+    /// 可选：这份输出只对这组上下文成立（步 4d）。缺省 = 不看上下文（改前行为）
+    #[serde(default)]
+    pub ctx: Option<Vec<Value>>,
 }
 
 #[derive(Deserialize)]
@@ -57,6 +60,11 @@ pub struct Observation {
     #[serde(default)]
     pub scale: Vec<String>,
     pub answer: Answer,
+    /// 可选：这条 select 观察测过的置换数与众数占比（步 4d）。缺省 = 没测过置换
+    #[serde(default)]
+    pub perms: Option<usize>,
+    #[serde(default)]
+    pub mode_share: Option<f64>,
 }
 
 impl Observation {
@@ -107,10 +115,23 @@ impl Fixture {
                 false,
             );
             let question = o.checked_question()?;
-            client.observe(&state, &question, o.answer.clone());
+            let key = client.observe(&state, &question, o.answer.clone());
+            match (o.perms, o.mode_share) {
+                (Some(k), Some(s)) => client.fix_perms(&key, k, s),
+                (None, None) => {}
+                _ => {
+                    return Err(format!(
+                        "fixture observation {:?}: perms and mode_share go together",
+                        o.text
+                    ));
+                }
+            }
         }
         for g in &self.generations {
-            client.fix_gen(&g.prompt, g.retry_seq, g.output.clone());
+            match &g.ctx {
+                Some(ctx) => client.fix_gen_ctx(&g.prompt, g.retry_seq, ctx, g.output.clone()),
+                None => client.fix_gen(&g.prompt, g.retry_seq, g.output.clone()),
+            }
         }
         for r in &self.responses {
             let o = &r.question;

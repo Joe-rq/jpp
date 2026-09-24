@@ -20,7 +20,7 @@ use jpp_core::value::Value;
 use jpp_core::ledger::Ledger;
 use jpp_core::value::{Answer, Question, State, Taint};
 use jpp_core::run;
-use jpp_frontend::{lower, parse};
+use jpp_core::{lower, syntax::parse};
 use serde_json::{json, Value as Json};
 
 struct 桩(f64, RefCell<u64>);
@@ -31,8 +31,9 @@ impl Client for 桩 {
         // **答案形状要跟题走**：给 select 题回 Noul，撞的是 validate_answer，不是 J-08
         let answers = qs.iter().map(|q| match q.op {
             jpp_core::value::Op::Select => {
-                let mut v = vec![0.05; s.over.len().max(1)];
-                v[0] = 1.0 - 0.05 * (s.over.len().max(1) - 1) as f64;
+                // B63：select 带 δ 迟滞（δ = 0.15），胜出概率须 ≥ hi + δ = 0.95；取 0.99 留出余量
+                let mut v = vec![0.01; s.over.len().max(1)];
+                v[0] = 1.0 - 0.01 * (s.over.len().max(1) - 1) as f64;
                 Answer::Choice(v)
             }
             jpp_core::value::Op::Measure => Answer::Score(q.scale.iter().map(|_| 0.5).collect()),
@@ -54,11 +55,11 @@ impl Client for 桩 {
 fn 动作表() -> ActionRegistry {
     let mut a = ActionRegistry::new();
     // 取外部数据：可逆，产物 **untrusted**
-    a.register("取外部数据", 0.0, true, TaintOut::Untrusted, |_| Ok(Value::Text("外面来的".into(), Taint::Trusted)));
+    a.register("取外部数据", 0.0, true, TaintOut::Untrusted, |_| Ok(Value::Text("外面来的".into(), Taint::Trusted.into())));
     // 取内部数据：可逆，产物 trusted
-    a.register("取内部数据", 0.0, true, TaintOut::Trusted, |_| Ok(Value::Text("自己的".into(), Taint::Trusted)));
+    a.register("取内部数据", 0.0, true, TaintOut::Trusted, |_| Ok(Value::Text("自己的".into(), Taint::Trusted.into())));
     // 发邮件：**不可逆**
-    a.register("发邮件", 0.0, false, TaintOut::Trusted, |_| Ok(Value::Text("已发".into(), Taint::Trusted)));
+    a.register("发邮件", 0.0, false, TaintOut::Trusted, |_| Ok(Value::Text("已发".into(), Taint::Trusted.into())));
     a
 }
 
@@ -193,7 +194,7 @@ fn 证书要说出自己只界定哪一侧() {
     let mut c = CalibStore::new();
     for i in 0..30 {
         c.absorb("k", Sample { p: Some(0.30 + i as f64 * 0.02), label: Some(if i > 6 { 1 } else { 0 }), perms: 0,
-                               mode_share: None, mode: LiteralMode::default(), phys: "noul".into(), cluster: None }).unwrap();
+                               mode_share: None, mode: LiteralMode::default(), phys: "noul".into(), cluster: None, stratum: None }).unwrap();
     }
     let cert = c.commission("k", 0.45, 0.10, "条").expect("认得动");
     // **这件事要是数据，不是一行注释**

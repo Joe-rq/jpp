@@ -1,0 +1,12 @@
+[package]
+name = "jpp-ledger"
+version = "0.1.0"
+edition = "2024"
+license = "MIT"
+description = "J++ ledger (L3): append-only JSONL hash-chained ledger, header, byte-level codec, read-only aggregates"
+
+[dependencies]
+jpp-ir = { path = "../jpp-ir" }
+jpp-value = { path = "../jpp-value" }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"

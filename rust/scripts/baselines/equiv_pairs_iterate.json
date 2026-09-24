@@ -1,0 +1,7 @@
+{
+ "ratio": 2.0,
+ "detail": [
+  "examples/iterate.jpp 实际 24 次 / 单链路所需 12 次（by_count.measures=[6, 4, 2, 2], rounds=3，取前 rounds 项求和）",
+  "同一程序内两条语义等价链路 step/step_drop 各问一遍同一批题；账本键含调用位置，位置不同不复用（地基/过程记录/2026-09-23-施工efg.md 第38行：'固定观察下调用 24 次而不是 12 次'）。快写法数＝单条链路本该需要的调用数，取 value.by_count.measures[:rounds] 求和（该子程序按条数收缩，前 rounds 轮各问一层）。"
+ ]
+}

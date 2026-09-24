@@ -1,0 +1,12 @@
+[package]
+name = "jpp-check"
+version = "0.1.0"
+edition = "2024"
+license = "MIT"
+description = "J++ static checker (L3): names, types, effect rows, J/B rules, B13 diagnostics"
+
+[dependencies]
+jpp-ir = { path = "../jpp-ir" }
+jpp-effects = { path = "../jpp-effects" }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"

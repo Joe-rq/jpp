@@ -20,7 +20,7 @@ use jpp_core::effects::{CalibStore, Client, EffectError, JudgeResult};
 use jpp_core::ledger::Ledger;
 use jpp_core::value::{Answer, Question, State, Value};
 use jpp_core::{ActionRegistry, run};
-use jpp_frontend::{lower, parse};
+use jpp_core::{lower, syntax::parse};
 use serde_json::Value as Json;
 
 const CALIB: &str = "doc.含数字";
@@ -86,7 +86,7 @@ fn 跑一次() -> (Vec<usize>, Vec<String>, Vec<(String, f64)>) {
     let texts: Vec<String> = 段落.iter().map(|(t, _, _)| format!("\"{t}\"")).collect();
     let source = 源码.replace("段落", &format!("[{}]", texts.join(", ")));
     let parsed = parse(&source).unwrap_or_else(|d| panic!("解析失败：{}", d.render("strength.jpp", &source)));
-    let program = lower(&parsed).unwrap_or_else(|d| panic!("lower 失败：{}", d.render("strength.jpp", &source)));
+    let program = lower(&parsed).unwrap_or_else(|d| panic!("lower 失败：{}", d[0].render("strength.jpp", &source)));
 
     let mut calib = CalibStore::new();
     calib.put(CALIB, 0.65, 0.35, 100, "上岗").expect("校准记录合法");

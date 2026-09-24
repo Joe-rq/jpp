@@ -65,7 +65,7 @@ fn 真实路径上岗() -> CalibStore {
         let p = 0.02 + i as f64 * 0.016;
         c.absorb("k", Sample {
             p: Some(p), label: Some(if p > 0.55 { 1 } else { 0 }), perms: 0, mode_share: None,
-            mode: LiteralMode::default(), phys: "noul".into(), cluster: None,
+            mode: LiteralMode::default(), phys: "noul".into(), cluster: None, stratum: None,
         }).expect("折得进");
     }
     c.commission("k", 0.10, 0.10, "条").expect("认得动");
@@ -103,7 +103,7 @@ fn 那个判据与cut真走出来的出口一致() {
     // 三个点：明显过线、带内、以及「若 lo 有意义的话会被 Ignore」的低分
     for p in [(hi + d + 0.05).min(0.999), (hi + d) / 2.0, 0.001] {
         let 按判据算的是unsure = !(p >= hi + d) && !(p <= lo - d);
-        let program = jpp_frontend::lower(&jpp_frontend::parse(r#"
+        let program = jpp_core::lower(&jpp_core::syntax::parse(r#"
 budget {calls: 4, cost: 1};
 handle(cut(judge(state(mat("材料")), test("行吗", "k"))), {
     act: fn() { "act" }, ignore: fn() { "ig" },
@@ -124,7 +124,7 @@ handle(cut(judge(state(mat("材料")), test("行吗", "k"))), {
 #[test]
 fn 真实路径上的界不再平凡() {
     let c = 真实路径上岗();
-    let program = jpp_frontend::lower(&jpp_frontend::parse(r#"
+    let program = jpp_core::lower(&jpp_core::syntax::parse(r#"
 budget {calls: 4, cost: 1};
 unsure_bound(judge(state(mat("材料")), test("行吗", "k")))
 "#).expect("解析")).expect("lower");

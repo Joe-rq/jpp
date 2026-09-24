@@ -1,0 +1,104 @@
+import "../../../lib/outcome.jpp";
+budget {calls: 11, cost: 500, depth: 8};
+
+fn stub(chunk_len, key) {
+  join(["[winnow 已折叠 ", text(chunk_len), " 字 · 展开键 ", key, "]"], "")
+}
+
+fn fp_key(idx, chunk) {
+  join(["h", text(idx), "-", text(len(chunk))], "")
+}
+
+fn char_total(chunks) {
+  sum(map(chunks, fn(c) { len(c) }))
+}
+
+fn idx_of(list) { map(list, fn(e) { e.index }) }
+fn idx_of_pending(list) { map(list, fn(p) { p.element.index }) }
+
+fn observed_indices(o) {
+  concat(concat(idx_of(o.value), idx_of(o.detail.ignore)), idx_of_pending(undecided(o)))
+}
+
+let raw = do("read_json", ["../baseline/t1/materials.json"], 0);
+if (is_fail(raw)) {
+  { task: "", results: [] }
+} else {
+  let data = raw.content;
+  let task = data.tool_outputs.task;
+  let results = data.tool_outputs.results;
+  let n = len(results);
+
+  let err_materials = map(results, fn(r) { join(r.chunks, "\n") });
+  let errq = test("这段工具输出里是否含有报错、失败或异常信息？", "winnow-error");
+  let eo = sieve(err_materials, errq);
+  let err_c = map(eo.pending, fn(p) { consume(p.exit, "drop") });
+  let err_present_idx = idx_of(eo.value);
+  let err_pending_idx = idx_of_pending(undecided(eo));
+  let err_observed_idx = observed_indices(eo);
+
+  let chunk_texts = fold(results, [], fn(acc, r) { concat(acc, r.chunks) });
+  let qtext = join(["这段话的内容是否与「", task, "」这个话题相关？"], "");
+  let relq = test(qtext, "form-topic");
+  let ro = sieve(chunk_texts, relq);
+  let rel_c = map(ro.pending, fn(p) { consume(p.exit, "drop") });
+  let rel_irrelevant_idx = idx_of(ro.detail.ignore);
+  let rel_uncertain_idx = idx_of_pending(undecided(ro));
+  let rel_observed_idx = observed_indices(ro);
+
+  let starts = fold(results, {list: [], total: 0}, fn(acc, r) {
+    { list: append(acc.list, acc.total), total: acc.total + len(r.chunks) }
+  }).list;
+
+  let idxs = range(0, n);
+  let entries = map(idxs, fn(i) {
+    let r = results[i];
+    let nch = len(r.chunks);
+    let start = starts[i];
+    let local_range = range(0, nch);
+    let is_present = contains(err_present_idx, i);
+    let is_pending_err = contains(err_pending_idx, i);
+    let is_observed_err = contains(err_observed_idx, i);
+    let unobs_local = filter(local_range, fn(li) {
+      !contains(rel_observed_idx, start + li)
+    });
+    if (!is_observed_err) {
+      { id: r.id, reason: "error_unobserved", pruned: [], uncertain: [],
+        unobserved: local_range, text: r.chunks, archive: [] }
+    } else if (is_present) {
+      { id: r.id, reason: "error_present", pruned: [], uncertain: [],
+        unobserved: unobs_local, text: r.chunks, archive: [] }
+    } else if (is_pending_err) {
+      { id: r.id, reason: "error_unsure", pruned: [], uncertain: [],
+        unobserved: unobs_local, text: r.chunks, archive: [] }
+    } else {
+      let candidate_local = filter(local_range, fn(li) {
+        contains(rel_irrelevant_idx, start + li)
+      });
+      let uncertain_local = filter(local_range, fn(li) {
+        contains(rel_uncertain_idx, start + li)
+      });
+      let candidate_chars = sum(map(candidate_local, fn(li) { len(r.chunks[li]) }));
+      let total_chars = char_total(r.chunks);
+      if (candidate_chars * 100 < total_chars * 20) {
+        { id: r.id, reason: "below_min_prune_ratio", pruned: [], uncertain: [],
+          unobserved: unobs_local, text: r.chunks, archive: [] }
+      } else {
+        let text_out = map(local_range, fn(li) {
+          if (contains(candidate_local, li)) {
+            stub(len(r.chunks[li]), fp_key(li, r.chunks[li]))
+          } else {
+            r.chunks[li]
+          }
+        });
+        let archive = map(candidate_local, fn(li) {
+          { key: fp_key(li, r.chunks[li]), index: li, text: r.chunks[li] }
+        });
+        { id: r.id, reason: "pruned", pruned: candidate_local,
+          uncertain: uncertain_local, unobserved: unobs_local,
+          text: text_out, archive: archive }
+      }
+    }
+  });
+  { task: task, results: entries }
+}

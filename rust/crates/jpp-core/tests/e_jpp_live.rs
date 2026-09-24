@@ -11,7 +11,7 @@ use jpp_core::effects::{CalibStore, Client, EffectError, GenResult, JudgeResult,
 use jpp_core::interp::{ActionRegistry, TaintOut};
 use jpp_core::ledger::Ledger;
 use jpp_core::value::{Answer, Question, State, Value};
-use jpp_frontend::{lower, parse};
+use jpp_core::{lower, syntax::parse};
 use serde_json::Value as Json;
 
 /// 覆盖四种效应：`judge`（test + select）、`gen`、`do`、`ask`（预置答案，不真打断人）。
@@ -37,7 +37,7 @@ let 挑 = handle(cut(judge(state(mat("选一个最合适的说法"), {over: [稿
 fn 动作表() -> ActionRegistry {
     let mut a = ActionRegistry::new();
     a.register("取内部", 0.0, true, TaintOut::Trusted,
-        |_| Ok(Value::Text("本季度门店客流同比上升 12%，其中周末占比 58%。".into(), jpp_core::value::Taint::Trusted)));
+        |_| Ok(Value::Text("本季度门店客流同比上升 12%，其中周末占比 58%。".into(), jpp_core::value::Taint::Trusted.into())));
     a
 }
 
@@ -115,7 +115,7 @@ fn 真机_重跑三次() {
         let (mut 总usd, mut 总tok, mut 总请求) = (0.0, 0u64, 0u64);
         let mut 出口 = vec![];
         for i in 1..=3 {
-            let mut c = jpp_core::effects::JevClient::live("jev-1.13.0").expect("密钥只从 ~/.typesafe-key 读");
+            let mut c = jpp_core::effects::JevClient::live("jev-1.13.0", 发行画像价格()).expect("密钥只从 ~/.typesafe-key 读");
             c.permute = true;
             let mut l = Ledger::new();
             let o = jpp_core::run(&program, &mut c, &校准(), &动作表(), &mut l).expect("跑得完");
@@ -147,7 +147,7 @@ fn 真机_单次() {
     #[cfg(feature = "live")]
     {
         let program = lower(&parse(程序).expect("解析")).expect("lower");
-        let mut c = jpp_core::effects::JevClient::live("jev-1.13.0").expect("密钥只从 ~/.typesafe-key 读");
+        let mut c = jpp_core::effects::JevClient::live("jev-1.13.0", 发行画像价格()).expect("密钥只从 ~/.typesafe-key 读");
         // **这一跑要显式开置换**：默认关是我自己定的（「这笔钱不能默认替作者花掉」），
         // 而赌 5b 点名的正是置换路径——**不开就花了钱也验不到它**，
         // 而且 `mode_share` 空会让 `cut` 给 `Unsure(untested:permutation)`，
@@ -178,4 +178,11 @@ fn 真机_单次() {
         println!("*** 实际花费 usd={:.6} tokens={} calls={}（从 Outcome.cost 取，flush 时由后端返回值写入）",
                  o.cost.usd, o.cost.tokens, o.cost.calls);
     }
+}
+
+/// 价格只住画像（B73）：真机测试从发行画像 `profiles/jev-1.13.0.json` 读价格。
+#[cfg(feature = "live")]
+fn 发行画像价格() -> Option<f64> {
+    let p = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../profiles/jev-1.13.0.json");
+    jpp_core::effects::Profile::load(&p).expect("发行画像读得到").price_per_input_token
 }

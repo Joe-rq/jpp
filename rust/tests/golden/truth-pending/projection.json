@@ -1,0 +1,74 @@
+{
+  "asks": 0,
+  "calls": 2,
+  "effects": [],
+  "judge_registrations": 2,
+  "pending": [],
+  "returned_unsure": [
+    "unsure(cold|untested:calib_line)",
+    "unsure(cold|untested:calib_line)"
+  ],
+  "status": "returned",
+  "usd": 0.0,
+  "value": {
+    "act": 0,
+    "asked": "这段话是否提到了钢琴？",
+    "ignore": 0,
+    "pending": [
+      {
+        "cause": "cold",
+        "element": {
+          "cause": "cold",
+          "exit": {
+            "consumed": true,
+            "exit": "unsure(cold|untested:calib_line)",
+            "id": 0,
+            "q": "c3ba62228369b670cc9b0c55"
+          },
+          "index": 0,
+          "item": "那台立式乐器占了客厅一角，搬家时最费劲。",
+          "source": "那台立式乐器占了客厅一角，搬家时最费劲。",
+          "trail": []
+        },
+        "exit": {
+          "consumed": true,
+          "exit": "unsure(cold|untested:calib_line)",
+          "id": 0,
+          "q": "c3ba62228369b670cc9b0c55"
+        }
+      },
+      {
+        "cause": "cold",
+        "element": {
+          "cause": "cold",
+          "exit": {
+            "consumed": true,
+            "exit": "unsure(cold|untested:calib_line)",
+            "id": 1,
+            "q": "c3ba62228369b670cc9b0c55"
+          },
+          "index": 1,
+          "item": "他背起吉他，坐在公园长椅上弹唱了一下午。",
+          "source": "他背起吉他，坐在公园长椅上弹唱了一下午。",
+          "trail": []
+        },
+        "exit": {
+          "consumed": true,
+          "exit": "unsure(cold|untested:calib_line)",
+          "id": 1,
+          "q": "c3ba62228369b670cc9b0c55"
+        }
+      }
+    ],
+    "unsure": [
+      {
+        "cause": "cold",
+        "index": 0
+      },
+      {
+        "cause": "cold",
+        "index": 1
+      }
+    ]
+  }
+}

@@ -1,0 +1,252 @@
+ir v1
+budget calls=30 cost=0.01 depth=256 escalate=- unsure=- latency_p95=- absent=-
+block 170..1929
+  fn-stmt accepted
+    #0 fn (o:-) -> - effects=-
+      block 2332..2343
+        result
+          #1 field .value
+            #2 name o
+  fn-stmt ignored
+    #3 fn (o:-) -> - effects=-
+      block 2415..2434
+        result
+          #4 field .ignore
+            #5 field .detail
+              #6 name o
+  fn-stmt undecided
+    #7 fn (o:-) -> - effects=-
+      block 2503..2555
+        result
+          #8 call @0 2505..2553
+            callee:
+              #9 name filter
+            #10 field .pending
+              #11 name o
+            #13 fn (p:-) -> - effects=-
+              block 2529..2552
+                result
+                  #14 binary !=
+                    #15 field .cause
+                      #16 name p
+                    #17 text "budget"
+  fn-stmt unobserved
+    #18 fn (o:-) -> - effects=-
+      block 2648..2700
+        result
+          #19 call @1 2650..2698
+            callee:
+              #20 name filter
+            #21 field .pending
+              #22 name o
+            #24 fn (p:-) -> - effects=-
+              block 2674..2697
+                result
+                  #25 binary ==
+                    #26 field .cause
+                      #27 name p
+                    #28 text "budget"
+  fn-stmt stopped
+    #29 fn (o:-) -> - effects=-
+      block 2763..2827
+        result
+          #30 if @2 2765..2825
+            cond:
+              #31 call 2768..2791
+                callee:
+                  #32 name has
+                #33 field .resume
+                  #34 name o
+                #35 text "detail"
+            block 2792..2811
+              result
+                #36 field .detail
+                  #37 field .resume
+                    #38 name o
+            block 2817..2825
+              result
+                #39 unit
+  let notes : -
+    #40 list 227..526
+      #41 text "这款耳机售价三百九十九元，现金支付再减十元。"
+      #42 text "新店开业，全场八折。"
+      #43 text "今天天气晴朗，适合出门。"
+      #44 text "会员价比原价便宜了五十元，现金刷卡都行。"
+      #45 text "这本书二十九元，现金付款。"
+      #46 text "周末去爬山。"
+  let layers : -
+    #47 list 541..729
+      #48 construct test @3 547..600
+        #49 text "这段话提到价格或优惠吗？"
+        #50 text "layer"
+      #51 construct test @4 606..671
+        #52 text "涉及的金额或优惠是否低于一百元？"
+        #53 text "layer"
+      #54 construct test @5 677..727
+        #55 text "这段话提到现金支付吗？"
+        #56 text "layer"
+  fn-stmt step
+    #57 fn (acc:-, i:-) -> - effects=[judge]
+      block 857..990
+        let r : -
+          #58 construct sieve @6 871..898
+            #59 field .items
+              #60 name acc
+            #61 index
+              #62 name layers
+              #63 name i
+        result
+          #64 record 904..988
+            items:
+              #65 call @7 912..946
+                callee:
+                  #66 name map
+                #67 call 916..927
+                  callee:
+                    #68 name accepted
+                  #69 name r
+                #71 fn (e:-) -> - effects=-
+                  block 935..945
+                    result
+                      #72 field .item
+                        #73 name e
+            pending:
+              #74 call 957..987
+                callee:
+                  #75 name concat
+                #76 field .pending
+                  #77 name acc
+                #78 field .pending
+                  #79 name r
+  fn-stmt step_drop
+    #80 fn (acc:-, i:-) -> - effects=[judge]
+      block 1109..1210
+        let r : -
+          #81 construct sieve @8 1123..1144
+            #82 name acc
+            #83 index
+              #84 name layers
+              #85 name i
+        #86 consume @9 1150..1168
+          #87 name r
+          #88 text "drop"
+        result
+          #89 call @10 1174..1208
+            callee:
+              #90 name map
+            #91 call 1178..1189
+              callee:
+                #92 name accepted
+              #93 name r
+            #95 fn (e:-) -> - effects=-
+              block 1197..1207
+                result
+                  #96 field .item
+                    #97 name e
+  let byCount : -
+    #98 construct iterate @11 1225..1298
+      #99 int 5
+      #100 record 1236..1263
+        items:
+          #101 name notes
+        pending:
+          #102 list 1260..1262
+      #103 name step
+      #105 fn (acc:-) -> - effects=-
+        block 1279..1297
+          result
+            #106 call 1281..1295
+              callee:
+                #107 name len
+              #108 field .items
+                #109 name acc
+  let byTokens : -
+    #110 construct iterate @12 1315..1353
+      #111 int 5
+      #112 name notes
+      #113 name step_drop
+      #114 text "tokens"
+  let short : -
+    #115 construct iterate @13 1367..1440
+      #116 int 1
+      #117 record 1378..1405
+        items:
+          #118 name notes
+        pending:
+          #119 list 1402..1404
+      #120 name step
+      #122 fn (acc:-) -> - effects=-
+        block 1421..1439
+          result
+            #123 call 1423..1437
+              callee:
+                #124 name len
+              #125 field .items
+                #126 name acc
+  result
+    #127 record 1550..1929
+      by_count:
+        #128 record 1561..1685
+          reason:
+            #129 field .reason
+              #130 field .resume
+                #131 name byCount
+          rounds:
+            #132 field .rounds
+              #133 field .resume
+                #134 name byCount
+          measures:
+            #135 field .measures
+              #136 field .resume
+                #137 name byCount
+          left:
+            #138 field .items
+              #139 field .value
+                #140 name byCount
+      by_tokens:
+        #141 record 1699..1799
+          reason:
+            #142 field .reason
+              #143 field .resume
+                #144 name byTokens
+          rounds:
+            #145 field .rounds
+              #146 field .resume
+                #147 name byTokens
+          measures:
+            #148 field .measures
+              #149 field .resume
+                #150 name byTokens
+      bound_only:
+        #151 record 1814..1872
+          reason:
+            #152 field .reason
+              #153 field .resume
+                #154 name short
+          rounds:
+            #155 field .rounds
+              #156 field .resume
+                #157 name short
+      pending:
+        #158 list 1884..1928
+          #159 field .pending
+            #160 field .value
+              #161 name byCount
+          #162 field .pending
+            #163 field .value
+              #164 name short
+sites 14
+  @0 #8 hof:filter 2505..2553 fn=#7 in=-
+  @1 #19 hof:filter 2650..2698 fn=#18 in=-
+  @2 #30 if 2765..2825 fn=#29 in=-
+  @3 #48 construct:test 547..600 fn=- in=-
+  @4 #51 construct:test 606..671 fn=- in=-
+  @5 #54 construct:test 677..727 fn=- in=-
+  @6 #58 construct:sieve 871..898 fn=#57 in=-
+  @7 #65 hof:map 912..946 fn=#57 in=-
+  @8 #81 construct:sieve 1123..1144 fn=#80 in=-
+  @9 #86 consume:consume 1150..1168 fn=#80 in=-
+  @10 #89 hof:map 1174..1208 fn=#80 in=-
+  @11 #98 construct:iterate 1225..1298 fn=- in=-
+  @12 #110 construct:iterate 1315..1353 fn=- in=-
+  @13 #115 construct:iterate 1367..1440 fn=- in=-

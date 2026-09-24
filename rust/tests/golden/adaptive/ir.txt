@@ -1,0 +1,320 @@
+ir v1
+budget calls=10 cost=0 depth=256 escalate=- unsure=- latency_p95=- absent=-
+block 81..1812
+  fn-stmt observe
+    #0 fn (m:{"Named":"Mat"}, q:{"Named":"Question"}) -> {"Named":"Record"} effects=[judge]
+      block 173..565
+        let exit : -
+          #1 cut @0 190..213
+            reading:
+              #2 effect judge @1 194..212
+                state:
+                  #3 state @2 200..208
+                    on:
+                      #4 name m
+                questions:
+                  #5 name q
+        let result : -
+          #6 handle @3 232..438
+            exit:
+              #7 name exit
+            arms:
+              #8 record 245..437
+                act:
+                  #10 fn () -> - effects=-
+                    block 265..298
+                      result
+                        #11 record 267..296
+                          resolved:
+                            #12 bool true
+                          value:
+                            #13 bool true
+                ignore:
+                  #15 fn () -> - effects=-
+                    block 321..355
+                      result
+                        #16 record 323..353
+                          resolved:
+                            #17 bool true
+                          value:
+                            #18 bool false
+                unsure:
+                  #20 fn (cause:-) -> - effects=-
+                    block 383..431
+                      result
+                        #21 record 385..429
+                          resolved:
+                            #22 bool false
+                          value:
+                            #23 unit
+                          cause:
+                            #24 name cause
+        result
+          #25 record 444..563
+            resolved:
+              #26 field .resolved
+                #27 name result
+            value:
+              #28 field .value
+                #29 name result
+            exit:
+              #30 name exit
+            material:
+              #31 name m
+            question:
+              #32 name q
+            id:
+              #33 binary +
+                #34 binary +
+                  #35 field .hash
+                    #36 name m
+                  #37 text "|"
+                #38 call 555..562
+                  callee:
+                    #39 name text
+                  #40 name q
+  fn-stmt resolved
+    #41 fn (o:-) -> {"Named":"Bool"} effects=-
+      block 589..603
+        result
+          #42 field .resolved
+            #43 name o
+  fn-stmt answer
+    #44 fn (o:-) -> {"Named":"Bool"} effects=-
+      block 625..695
+        result
+          #45 if @4 627..693
+            cond:
+              #46 field .resolved
+                #47 name o
+            block 641..652
+              result
+                #48 field .value
+                  #49 name o
+            block 658..693
+              result
+                #50 call 660..691
+                  callee:
+                    #51 name pending
+                  #52 text "answer is unresolved"
+  fn-stmt step
+    #53 fn (s:{"Named":"Record"}) -> {"Named":"Record"} effects=[judge]
+      block 734..1268
+        let midpoint : -
+          #54 binary /
+            #55 binary +
+              #56 field .lo
+                #57 name s
+              #58 field .hi
+                #59 name s
+            #60 int 2
+        let q : -
+          #61 construct test @5 786..831
+            #62 binary +
+              #63 text "target < "
+              #64 call 805..819
+                callee:
+                  #65 name text
+                #66 name midpoint
+            #67 text "fixture"
+        let o : -
+          #68 call 845..867
+            callee:
+              #69 name observe
+            #70 field .material
+              #71 name s
+            #72 name q
+        result
+          #73 if @6 873..1266
+            cond:
+              #74 call 876..887
+                callee:
+                  #75 name resolved
+                #76 name o
+            block 888..1155
+              result
+                #77 if @7 898..1149
+                  cond:
+                    #78 call 901..910
+                      callee:
+                        #79 name answer
+                      #80 name o
+                  block 911..1027
+                    result
+                      #81 record 925..1017
+                        lo:
+                          #82 field .lo
+                            #83 name s
+                        hi:
+                          #84 name midpoint
+                        material:
+                          #85 field .material
+                            #86 name s
+                        evidence:
+                          #87 call 982..1003
+                            callee:
+                              #88 name append
+                            #89 field .evidence
+                              #90 name s
+                            #91 name o
+                        pending:
+                          #92 list 1014..1016
+                  block 1033..1149
+                    result
+                      #93 record 1047..1139
+                        lo:
+                          #94 name midpoint
+                        hi:
+                          #95 field .hi
+                            #96 name s
+                        material:
+                          #97 field .material
+                            #98 name s
+                        evidence:
+                          #99 call 1104..1125
+                            callee:
+                              #100 name append
+                            #101 field .evidence
+                              #102 name s
+                            #103 name o
+                        pending:
+                          #104 list 1136..1138
+            block 1161..1266
+              result
+                #105 record 1171..1260
+                  lo:
+                    #106 field .lo
+                      #107 name s
+                  hi:
+                    #108 field .hi
+                      #109 name s
+                  material:
+                    #110 field .material
+                      #111 name s
+                  evidence:
+                    #112 call 1224..1245
+                      callee:
+                        #113 name append
+                      #114 field .evidence
+                        #115 name s
+                      #116 name o
+                  pending:
+                    #117 list 1256..1259
+                      #118 name o
+  fn-stmt done
+    #119 fn (s:{"Named":"Record"}) -> {"Named":"Bool"} effects=-
+      block 1297..1339
+        result
+          #120 binary ||
+            #121 binary <=
+              #122 binary -
+                #123 field .hi
+                  #124 name s
+                #125 field .lo
+                  #126 name s
+              #127 int 1
+            #128 binary >
+              #129 call 1319..1333
+                callee:
+                  #130 name len
+                #131 field .pending
+                  #132 name s
+              #133 int 0
+  fn-stmt solve
+    #134 fn (input:{"Named":"Mat"}, method:{"Function":[[{"Named":"Record"}],{"Named":"Record"}]}) -> {"Named":"Record"} effects=[judge]
+      block 1411..1619
+        result
+          #135 loop @8 1417..1617
+            bound:
+              #136 int 10
+            #137 record 1426..1487
+              lo:
+                #138 int 0
+              hi:
+                #139 int 1000
+              material:
+                #140 name input
+              evidence:
+                #141 list 1471..1473
+              pending:
+                #142 list 1484..1486
+            #144 fn (s:-, index:-) -> - effects=-
+              block 1502..1616
+                let next : -
+                  #145 if @9 1523..1558
+                    cond:
+                      #146 call 1526..1533
+                        callee:
+                          #147 name done
+                        #148 name s
+                    block 1534..1539
+                      result
+                        #149 name s
+                    block 1545..1558
+                      result
+                        #150 call 1547..1556
+                          callee:
+                            #151 name method
+                          #152 name s
+                result
+                  #153 if @10 1568..1610
+                    cond:
+                      #154 call 1571..1581
+                        callee:
+                          #155 name done
+                        #156 name next
+                    block 1582..1596
+                      result
+                        #157 call 1584..1594
+                          callee:
+                            #158 name stop
+                          #159 name next
+                    block 1602..1610
+                      result
+                        #160 name next
+  let result : -
+    #161 call 1634..1665
+      callee:
+        #162 name solve
+      #163 call 1640..1658
+        callee:
+          #164 name mat
+        #165 record 1644..1657
+          target:
+            #166 int 731
+      #167 name step
+  result
+    #168 record 1667..1812
+      target:
+        #169 field .lo
+          #170 name result
+      candidates_left:
+        #171 binary -
+          #172 field .hi
+            #173 name result
+          #174 field .lo
+            #175 name result
+      questions:
+        #176 call 1739..1759
+          callee:
+            #177 name len
+          #178 field .evidence
+            #179 name result
+      pending:
+        #180 field .pending
+          #181 name result
+      evidence:
+        #182 field .evidence
+          #183 name result
+sites 11
+  @0 #1 cut 190..213 fn=#0 in=-
+  @1 #2 effect:judge 194..212 fn=#0 in=-
+  @2 #3 state 200..208 fn=#0 in=-
+  @3 #6 handle 232..438 fn=#0 in=-
+  @4 #45 if 627..693 fn=#44 in=-
+  @5 #61 construct:test 786..831 fn=#53 in=-
+  @6 #73 if 873..1266 fn=#53 in=-
+  @7 #77 if 898..1149 fn=#53 in=-
+  @8 #135 loop 1417..1617 fn=#134 in=-
+  @9 #145 if 1523..1558 fn=#144 in=@8
+  @10 #153 if 1568..1610 fn=#144 in=@8

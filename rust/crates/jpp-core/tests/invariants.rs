@@ -8,7 +8,7 @@ use jpp_core::effects::{CalibStore, Client, EffectError, JudgeResult};
 use jpp_core::ledger::{Entry, Ledger};
 use jpp_core::value::{Answer, Question, State};
 use jpp_core::{ActionRegistry, run};
-use jpp_frontend::{lower, parse};
+use jpp_core::{lower, syntax::parse};
 use serde_json::Value as Json;
 
 struct 定值客户端 {
@@ -83,8 +83,8 @@ consume([e1, e2], "drop");
 #[test]
 fn 账本只增不覆盖() {
     let mut l = Ledger::new();
-    l.put(Entry::Judge { key: "K".into(), answer: Answer::Noul(0.9), tokens: 1, cost: 0.5, model_id: "m1".into(), call: 0 });
-    l.put(Entry::Judge { key: "K".into(), answer: Answer::Noul(0.1), tokens: 99, cost: 9.9, model_id: "m2".into(), call: 0 });
+    l.put(Entry::judge("K", Answer::Noul(0.9), 1, 0.5, "m1", 0));
+    l.put(Entry::judge("K", Answer::Noul(0.1), 99, 9.9, "m2", 0));
 
     assert_eq!(l.entries.len(), 1, "同键只该有一条");
     let Some(Entry::Judge { answer, tokens, cost, model_id, .. }) = l.get("K") else { panic!("取得到这一条") };
@@ -387,7 +387,7 @@ fn 改键之后旧账本是miss不是撞错() {
     // 用旧口径（无 site）写的账本：新键查不到它，而不是命中它
     let 旧 = jpp_core::value::hash_of(&["judge", "m", "状态哈希", "题哈希", "noul", jpp_core::ledger::RENDER_VERSION, "0", "0"]);
     let mut l = Ledger::new();
-    l.put(Entry::Judge { key: 旧.clone(), answer: Answer::Noul(0.9), tokens: 0, cost: 0.0, model_id: "m".into(), call: 0 });
+    l.put(Entry::judge(旧.clone(), Answer::Noul(0.9), 0, 0.0, "m", 0));
     assert!(l.get(&甲).is_none(), "新键不该命中旧口径写下的记录——失效方式必须是 miss");
     assert!(l.get(&乙).is_none());
     assert_ne!(旧, 甲, "新旧键本来就该不同");
@@ -505,7 +505,7 @@ fn 四个效应键的成分与依据对得上() {
         let program = lower(&parse(src).expect("解析")).expect("lower");
         let calib = CalibStore::new();
         let mut actions = ActionRegistry::new();
-        actions.register("记一笔", 0.0, true, jpp_core::TaintOut::Trusted, |_| Ok(jpp_core::value::Value::Int(1, jpp_core::value::Taint::Trusted)));
+        actions.register("记一笔", 0.0, true, jpp_core::TaintOut::Trusted, |_| Ok(jpp_core::value::Value::Int(1, jpp_core::value::Taint::Trusted.into())));
         let mut client = 定值客户端 { p: 0.9, calls: RefCell::new(0) };
         let mut ledger = Ledger::new();
         let out = run(&program, &mut client, &calib, &actions, &mut ledger).unwrap_or_else(|e| panic!("跑完：{}", e.render()));

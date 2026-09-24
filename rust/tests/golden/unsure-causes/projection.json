@@ -1,0 +1,40 @@
+{
+  "asks": 0,
+  "calls": 7,
+  "effects": [
+    [
+      "gen",
+      "写两份会写 Rust 的候选人简介",
+      "90b3d467997e87f9069149ab",
+      false
+    ]
+  ],
+  "judge_registrations": 6,
+  "pending": [],
+  "returned_unsure": [],
+  "status": "returned",
+  "usd": 0.0,
+  "value": {
+    "A": {
+      "found": [
+        "丙：写过 Rust 解释器"
+      ],
+      "pending": [],
+      "via": "rejected_all → 换材料"
+    },
+    "B": {
+      "found": [
+        {
+          "content": "戊：维护过 Rust 网络库",
+          "mat": "1cbd2ca2b0ce848b790b3a2b",
+          "origin": [
+            "gen:90b3d467997e87f9069149ab"
+          ],
+          "taint": "Trusted"
+        }
+      ],
+      "pending": [],
+      "via": "no_candidate → 调生成器"
+    }
+  }
+}

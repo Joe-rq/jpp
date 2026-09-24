@@ -1,0 +1,232 @@
+{
+  "asks": 0,
+  "calls": 5,
+  "effects": [],
+  "judge_registrations": 5,
+  "pending": [],
+  "returned_unsure": [
+    "unsure(band)",
+    "unsure(band)",
+    "unsure(band)",
+    "unsure(band)"
+  ],
+  "status": "returned",
+  "usd": 0.0,
+  "value": {
+    "all": {
+      "consumed": true,
+      "exit": "ignore",
+      "id": 6,
+      "q": "tally:all"
+    },
+    "complete": false,
+    "count": [
+      2,
+      4
+    ],
+    "exists": {
+      "consumed": true,
+      "exit": "act",
+      "id": 5,
+      "q": "tally:exists"
+    },
+    "first1": {
+      "blocked_at": 0,
+      "exit": {
+        "consumed": true,
+        "exit": "unsure(band)",
+        "id": 7,
+        "q": "first_k"
+      }
+    },
+    "first2": {
+      "blocked_at": 0,
+      "exit": {
+        "consumed": true,
+        "exit": "unsure(band)",
+        "id": 8,
+        "q": "first_k"
+      },
+      "items": []
+    },
+    "pending": [
+      [
+        {
+          "cause": "band",
+          "element": {
+            "cause": "band",
+            "exit": {
+              "consumed": true,
+              "exit": "unsure(band)",
+              "id": 0,
+              "q": "78e15a646880a5dfabb72438"
+            },
+            "index": 0,
+            "item": "这款耳机售价三百九十九元。",
+            "source": "这款耳机售价三百九十九元。",
+            "trail": []
+          },
+          "exit": {
+            "consumed": true,
+            "exit": "unsure(band)",
+            "id": 0,
+            "q": "78e15a646880a5dfabb72438"
+          }
+        },
+        {
+          "cause": "band",
+          "element": {
+            "cause": "band",
+            "exit": {
+              "consumed": true,
+              "exit": "unsure(band)",
+              "id": 4,
+              "q": "78e15a646880a5dfabb72438"
+            },
+            "index": 4,
+            "item": "价格还没公布，据说下个月发布。",
+            "source": "价格还没公布，据说下个月发布。",
+            "trail": []
+          },
+          "exit": {
+            "consumed": true,
+            "exit": "unsure(band)",
+            "id": 4,
+            "q": "78e15a646880a5dfabb72438"
+          }
+        }
+      ],
+      [
+        {
+          "cause": "band",
+          "element": {
+            "cause": "band",
+            "exit": {
+              "consumed": true,
+              "exit": "unsure(band)",
+              "id": 0,
+              "q": "78e15a646880a5dfabb72438"
+            },
+            "index": 0,
+            "item": "这款耳机售价三百九十九元。",
+            "source": "这款耳机售价三百九十九元。",
+            "trail": []
+          },
+          "exit": {
+            "consumed": true,
+            "exit": "unsure(band)",
+            "id": 0,
+            "q": "78e15a646880a5dfabb72438"
+          }
+        },
+        {
+          "cause": "band",
+          "element": {
+            "cause": "band",
+            "exit": {
+              "consumed": true,
+              "exit": "unsure(band)",
+              "id": 4,
+              "q": "78e15a646880a5dfabb72438"
+            },
+            "index": 4,
+            "item": "价格还没公布，据说下个月发布。",
+            "source": "价格还没公布，据说下个月发布。",
+            "trail": []
+          },
+          "exit": {
+            "consumed": true,
+            "exit": "unsure(band)",
+            "id": 4,
+            "q": "78e15a646880a5dfabb72438"
+          }
+        },
+        {
+          "cause": "band",
+          "element": null,
+          "exit": {
+            "consumed": true,
+            "exit": "unsure(band)",
+            "id": 7,
+            "q": "first_k"
+          }
+        }
+      ],
+      [
+        {
+          "cause": "band",
+          "element": {
+            "cause": "band",
+            "exit": {
+              "consumed": true,
+              "exit": "unsure(band)",
+              "id": 0,
+              "q": "78e15a646880a5dfabb72438"
+            },
+            "index": 0,
+            "item": "这款耳机售价三百九十九元。",
+            "source": "这款耳机售价三百九十九元。",
+            "trail": []
+          },
+          "exit": {
+            "consumed": true,
+            "exit": "unsure(band)",
+            "id": 0,
+            "q": "78e15a646880a5dfabb72438"
+          }
+        },
+        {
+          "cause": "band",
+          "element": {
+            "cause": "band",
+            "exit": {
+              "consumed": true,
+              "exit": "unsure(band)",
+              "id": 4,
+              "q": "78e15a646880a5dfabb72438"
+            },
+            "index": 4,
+            "item": "价格还没公布，据说下个月发布。",
+            "source": "价格还没公布，据说下个月发布。",
+            "trail": []
+          },
+          "exit": {
+            "consumed": true,
+            "exit": "unsure(band)",
+            "id": 4,
+            "q": "78e15a646880a5dfabb72438"
+          }
+        },
+        {
+          "cause": "band",
+          "element": null,
+          "exit": {
+            "consumed": true,
+            "exit": "unsure(band)",
+            "id": 8,
+            "q": "first_k"
+          }
+        }
+      ]
+    ],
+    "streams": {
+      "act": [
+        1,
+        3
+      ],
+      "ignore": [
+        2
+      ],
+      "unsure": [
+        {
+          "cause": "band",
+          "index": 0
+        },
+        {
+          "cause": "band",
+          "index": 4
+        }
+      ]
+    }
+  }
+}

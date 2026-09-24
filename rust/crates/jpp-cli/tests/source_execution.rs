@@ -202,7 +202,8 @@ fn questions_are_data_that_compute_new_questions() {
     assert_eq!(v["strict"]["from_form"], false);
     assert_eq!(v["dropped"], 1);
     assert_eq!(v["answers"].as_array().unwrap().len(), 2);
-    assert_eq!(report["cost"]["calls"], 2);
+    // 步 13b：`map(derived, fn(q){ … verdict(note, q) … })` 穿过 `verdict` 包装向量化，两题同状态合一次调用
+    assert_eq!(report["cost"]["calls"], 1);
 }
 
 /// 施工件 c：三路过滤。完整输入时三流不漏、互斥，保持输入顺序；重复输入各占一席、只问一次；
@@ -238,12 +239,13 @@ fn sieve_budget_stop_reports_unobserved_range() {
     assert_eq!(s["ignore"], json!([1, 2]));
 }
 
-/// 直接吃题消除「14 倍」：同一材料 14 道题，逐题经函数判断 14 次调用，交给 sieve 1 次。
+/// 「14 倍」消除：同一材料 14 道题，交给 sieve 1 次；逐题经函数判断的写法在步 13b 之前 14 次，
+/// 之后向量化穿过 `verdict` 包装，同样 1 次（`16` §一；`地基/过程记录/工程-步13b.md`）。
 #[test]
 fn sieve_fuses_questions_on_one_state() {
     let old = run(&["run", "examples/sieve-batch-old.jpp", "--fixtures", "examples/fixtures/sieve-batch.json"]);
     let new = run(&["run", "examples/sieve-batch-new.jpp", "--fixtures", "examples/fixtures/sieve-batch.json"]);
-    assert_eq!(old["cost"]["calls"], 14);
+    assert_eq!(old["cost"]["calls"], 1);
     assert_eq!(new["cost"]["calls"], 1);
 }
 

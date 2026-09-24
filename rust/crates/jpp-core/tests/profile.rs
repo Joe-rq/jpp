@@ -88,16 +88,7 @@ fn 没加载档案时要留下痕迹而不是装作有() {
 fn 换档案重放会报w_header() {
     use jpp_core::ledger::{Header, Ledger};
 
-    let 头 = |h: Option<&str>| Header {
-        budget_calls: 10,
-        budget_cost: 1.0,
-        model_id: "m".into(),
-        render_version: "r".into(),
-        handler_version: "h".into(),
-        profile_hash: h.map(|x| x.into()),
-        behavior_hash: None,
-        calib_hash: None,
-    };
+    let 头 = |h: Option<&str>| Header::new(10, 1.0, "m", "r", "h").with_profile_hash(h.map(|x| x.into()));
     let mut l = Ledger::new();
     l.set_header(头(Some("档案甲")));
     assert!(l.header_warning.is_none(), "第一次写头不该告警");

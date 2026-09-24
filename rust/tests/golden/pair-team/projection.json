@@ -1,0 +1,211 @@
+{
+  "asks": 0,
+  "calls": 14,
+  "effects": [],
+  "judge_registrations": 14,
+  "pending": [],
+  "returned_unsure": [
+    "unsure(band)",
+    "unsure(band)"
+  ],
+  "status": "returned",
+  "usd": 0.0,
+  "value": {
+    "pending": [
+      [
+        {
+          "cause": "band",
+          "element": {
+            "cause": "band",
+            "exit": {
+              "consumed": true,
+              "exit": "unsure(band)",
+              "id": 1,
+              "q": "615a0f8ed47fa7d6f0e1784d"
+            },
+            "index": 1,
+            "item": {
+              "a": "做一个带登录的网页后台",
+              "b": {
+                "name": "李工",
+                "skills": [
+                  "数据库",
+                  "后端"
+                ]
+              }
+            },
+            "source": {
+              "at": [
+                0,
+                1
+              ],
+              "item": {
+                "a": "做一个带登录的网页后台",
+                "b": {
+                  "name": "李工",
+                  "skills": [
+                    "数据库",
+                    "后端"
+                  ]
+                }
+              },
+              "left": "做一个带登录的网页后台",
+              "right": {
+                "name": "李工",
+                "skills": [
+                  "数据库",
+                  "后端"
+                ]
+              },
+              "trail": []
+            },
+            "trail": []
+          },
+          "exit": {
+            "consumed": true,
+            "exit": "unsure(band)",
+            "id": 1,
+            "q": "615a0f8ed47fa7d6f0e1784d"
+          }
+        },
+        {
+          "cause": "band",
+          "element": {
+            "cause": "band",
+            "exit": {
+              "consumed": true,
+              "exit": "unsure(band)",
+              "id": 9,
+              "q": "615a0f8ed47fa7d6f0e1784d"
+            },
+            "index": 9,
+            "item": {
+              "a": "给安卓应用做界面",
+              "b": {
+                "name": "王工",
+                "skills": [
+                  "web",
+                  "后端"
+                ]
+              }
+            },
+            "source": {
+              "at": [
+                3,
+                0
+              ],
+              "item": {
+                "a": "给安卓应用做界面",
+                "b": {
+                  "name": "王工",
+                  "skills": [
+                    "web",
+                    "后端"
+                  ]
+                }
+              },
+              "left": "给安卓应用做界面",
+              "right": {
+                "name": "王工",
+                "skills": [
+                  "web",
+                  "后端"
+                ]
+              },
+              "trail": []
+            },
+            "trail": []
+          },
+          "exit": {
+            "consumed": true,
+            "exit": "unsure(band)",
+            "id": 9,
+            "q": "615a0f8ed47fa7d6f0e1784d"
+          }
+        }
+      ],
+      []
+    ],
+    "round1": {
+      "act": [
+        {
+          "need": "做一个带登录的网页后台",
+          "person": "王工"
+        },
+        {
+          "need": "搭建订单数据库",
+          "person": "李工"
+        },
+        {
+          "need": "写一篇产品发布稿",
+          "person": "赵老师"
+        }
+      ],
+      "all": {
+        "consumed": true,
+        "exit": "ignore",
+        "id": 13,
+        "q": "tally:all"
+      },
+      "count": [
+        3,
+        5
+      ],
+      "exists": {
+        "consumed": true,
+        "exit": "act",
+        "id": 12,
+        "q": "tally:exists"
+      },
+      "pairs": 12,
+      "unsure": [
+        {
+          "cause": "band",
+          "pair": {
+            "need": "做一个带登录的网页后台",
+            "person": "李工"
+          }
+        },
+        {
+          "cause": "band",
+          "pair": {
+            "need": "给安卓应用做界面",
+            "person": "王工"
+          }
+        }
+      ]
+    },
+    "round2": {
+      "act": [
+        "李工"
+      ],
+      "all": {
+        "consumed": true,
+        "exit": "ignore",
+        "id": 17,
+        "q": "tally:all"
+      },
+      "checked": "第二轮问的是「已成组合 + 新成员」作为一个整体能否完成需求；没有从两两关系推定整体成立",
+      "combo": {
+        "need": "做一个带登录的网页后台",
+        "person": "王工"
+      },
+      "combo_round1_exit": [
+        "act"
+      ],
+      "count": [
+        1,
+        1
+      ],
+      "exists": {
+        "consumed": true,
+        "exit": "act",
+        "id": 16,
+        "q": "tally:exists"
+      },
+      "ignore": [
+        "钱设计"
+      ]
+    }
+  }
+}

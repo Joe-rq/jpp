@@ -187,9 +187,13 @@ fn replay_rejects_unrecorded_file_writes_and_input_overflow_is_a_fail_value() {
         "write.jpp",
         "budget {calls:0,cost:0}; is_fail(do(\"write_json\", [\"out.json\", 42], 0))",
     );
-    assert_eq!(
-        temp.run(&["run", "write.jpp", "--replay", "empty.json"])["value"],
-        true
+    // 步 3（B35）：只凭账本重放遇到未记录的写文件，是重放缺记录，报 E-replay（致命），不执行动作
+    let replayed = temp.call(&["run", "write.jpp", "--replay", "empty.json"]);
+    assert!(!replayed.status.success());
+    assert!(
+        String::from_utf8_lossy(&replayed.stderr).contains("E-replay"),
+        "{}",
+        String::from_utf8_lossy(&replayed.stderr)
     );
     assert!(!temp.0.join("out.json").exists());
     temp.write("input.json", "{\"x\":18446744073709551615}");

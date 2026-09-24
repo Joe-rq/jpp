@@ -1,0 +1,186 @@
+ir v1
+budget calls=20 cost=0.01 depth=256 escalate=- unsure=- latency_p95=- absent=-
+block 156..1222
+  fn-stmt accepted
+    #0 fn (o:-) -> - effects=-
+      block 1625..1636
+        result
+          #1 field .value
+            #2 name o
+  fn-stmt ignored
+    #3 fn (o:-) -> - effects=-
+      block 1708..1727
+        result
+          #4 field .ignore
+            #5 field .detail
+              #6 name o
+  fn-stmt undecided
+    #7 fn (o:-) -> - effects=-
+      block 1796..1848
+        result
+          #8 call @0 1798..1846
+            callee:
+              #9 name filter
+            #10 field .pending
+              #11 name o
+            #13 fn (p:-) -> - effects=-
+              block 1822..1845
+                result
+                  #14 binary !=
+                    #15 field .cause
+                      #16 name p
+                    #17 text "budget"
+  fn-stmt unobserved
+    #18 fn (o:-) -> - effects=-
+      block 1941..1993
+        result
+          #19 call @1 1943..1991
+            callee:
+              #20 name filter
+            #21 field .pending
+              #22 name o
+            #24 fn (p:-) -> - effects=-
+              block 1967..1990
+                result
+                  #25 binary ==
+                    #26 field .cause
+                      #27 name p
+                    #28 text "budget"
+  fn-stmt stopped
+    #29 fn (o:-) -> - effects=-
+      block 2056..2120
+        result
+          #30 if @2 2058..2118
+            cond:
+              #31 call 2061..2084
+                callee:
+                  #32 name has
+                #33 field .resume
+                  #34 name o
+                #35 text "detail"
+            block 2085..2104
+              result
+                #36 field .detail
+                  #37 field .resume
+                    #38 name o
+            block 2110..2118
+              result
+                #39 unit
+  let mention : -
+    #40 construct form @3 215..289
+      #41 text "test"
+      #42 text "这段话是否提到了{city}？"
+      #43 record 265..288
+        calib:
+          #44 text "form-mention"
+  let trip : -
+    #45 construct test @4 302..354
+      #46 text "这段话说的是工作出行吗？"
+      #47 text "trip"
+  let notes : -
+    #48 list 368..644
+      #49 text "我上个月去了成都出差，顺便见了老朋友。"
+      #50 text "她的老家在北京，每年春节都回去。"
+      #51 text "我们计划明年夏天去成都和北京旅游。"
+      #52 text "他从成都调到了杭州分公司。"
+      #53 text "周末在家看书，哪儿也没去。"
+  let first : -
+    #54 construct sieve @5 659..704
+      #55 name notes
+      #56 construct fill @6 672..703
+        #57 name mention
+        #58 record 686..702
+          city:
+            #59 text "成都"
+  let second : -
+    #60 construct sieve @7 843..861
+      #61 name first
+      #62 name trip
+  result
+    #63 record 864..1222
+      first_act:
+        #64 call @8 876..915
+          callee:
+            #65 name map
+          #66 call 880..895
+            callee:
+              #67 name accepted
+            #68 name first
+          #70 fn (e:-) -> - effects=-
+            block 903..914
+              result
+                #71 field .index
+                  #72 name e
+      second:
+        #73 record 926..1195
+          asked:
+            #74 field .text
+              #75 field .question
+                #76 field .detail
+                  #77 name second
+          act:
+            #78 call @9 978..1070
+              callee:
+                #79 name map
+              #80 call 982..998
+                callee:
+                  #81 name accepted
+                #82 name second
+              #84 fn (e:-) -> - effects=-
+                block 1006..1069
+                  result
+                    #85 record 1008..1067
+                      item:
+                        #86 field .item
+                          #87 name e
+                      trail:
+                        #88 call @10 1030..1066
+                          callee:
+                            #89 name map
+                          #90 field .trail
+                            #91 name e
+                          #93 fn (x:-) -> - effects=-
+                            block 1049..1065
+                              result
+                                #94 call 1051..1063
+                                  callee:
+                                    #95 name exit_kind
+                                  #96 name x
+          ignore:
+            #97 call @11 1090..1128
+              callee:
+                #98 name map
+              #99 call 1094..1109
+                callee:
+                  #100 name ignored
+                #101 name second
+              #103 fn (e:-) -> - effects=-
+                block 1117..1127
+                  result
+                    #104 field .item
+                      #105 name e
+          kind:
+            #106 field .kind
+              #107 name second
+          evidence_keys:
+            #108 call 1174..1194
+              callee:
+                #109 name len
+              #110 field .evidence
+                #111 name second
+      pending:
+        #112 field .pending
+          #113 name second
+sites 12
+  @0 #8 hof:filter 1798..1846 fn=#7 in=-
+  @1 #19 hof:filter 1943..1991 fn=#18 in=-
+  @2 #30 if 2058..2118 fn=#29 in=-
+  @3 #40 construct:form 215..289 fn=- in=-
+  @4 #45 construct:test 302..354 fn=- in=-
+  @5 #54 construct:sieve 659..704 fn=- in=-
+  @6 #56 construct:fill 672..703 fn=- in=@5
+  @7 #60 construct:sieve 843..861 fn=- in=-
+  @8 #64 hof:map 876..915 fn=- in=-
+  @9 #78 hof:map 978..1070 fn=- in=-
+  @10 #88 hof:map 1030..1066 fn=#84 in=@9
+  @11 #97 hof:map 1090..1128 fn=- in=-

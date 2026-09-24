@@ -1,0 +1,109 @@
+# 表达量比计量（验收 1，A-6）。口径与参考系：地基/附注/2026-09-24-评估①裁定.md §六·2–3；
+# 出处：地基/研究/07-语言倍率参考系-出处核实.md、地基/研究/08-表达力换算与DSL实测倍率.md §七。
+# 行号区间手工标注；改分类即改本文件，scripts/measure_expr.py 只计数与核对。
+# 2026-09-24 B78、B80（地基/附注/2026-09-24-仪表读数1裁定.md §一、§二）：基线两口径全计；runtime 只报占比、不从口径里扣；
+# 主读数为折行归一行数比（100 列、CJK 双宽），原始行数比、token 比、调用数比并列；caliber1_band 同作折行归一的带。
+[reference]
+frame = "专用语言对通用语言（J++ 源码按 COCOMO II 生成器计数规则当作写给生成器的输入）"
+caliber1_band = [9.0, 20.0]   # T1 的带（B79；Nature 2026-09-24 确认验收 1 按 T1 判）； 只算专用语言文本：GAL 9×、Jones C→SQL 9.8×、TranscriptSQL 与 Sawzall 10×、BOOM-MR 16.6×
+t0_band = [2.7, 4.3]         # T0（最小任务书）对 LMQL 带：同规模同结构，基线 34–78 行（B79）
+caliber2_band = [3.5, 4.6]    # 计入生成器或胶水：GAL 3.5×、BOOM-MR 3.9×、QSM C→SQL 4.6×
+time_band = [1.45, 6.0]       # Sprat 1.45–2.3× 到 RISLA 4–6×；只报位置，不设通过线
+control = "弱受控：单份 J++ 对 1 份基线；J++ 与基线作者不同人"
+
+[project]
+name = "trial-refund"
+original = "阶段评估①试写 1：客服对话找「要退款且情绪激烈」"
+shape = "是非题两道；链式两层"
+projection = "refund"   # probes/_baseline/accept.py 里的投影函数
+
+[jpp]
+run_dir = "../../../评估/2026-09-24-试写/refund"
+source = "../../../评估/2026-09-24-试写/refund/refund.jpp"
+fixture = "../../../评估/2026-09-24-试写/refund/fixture.json"
+data = "11-22"               # 数据行：字面材料、候选列表、标签集、只做装载的行
+coordination = "6,37,39,40"      # 协调行：budget、未决去向、pending 转交等服务于八条缝的行
+minutes = "无数"
+minutes_note = "两个试写程序合计：读文档约 25 分钟，写两个程序与两份夹具脚本 5 分钟、修通 1 分钟（阶段评估① §2.2），未按程序拆分"
+
+[[jpp.glue]]                       # 夹具脚本：两侧共用的测试设施（基线经不计行的 SDK 读同一份夹具），只报不计（B78）
+what = "夹具脚本"
+shared = true
+file = "../../../评估/2026-09-24-试写/refund/make_fixture.py"
+data = "15-16,23-24"          # 合成读数与校准记录字面量
+
+[[jpp.glue]]                       # 口径二计入：生产运行必需的胶水（CLI 或 Session 调用、动作登记、calib-import）
+what = "CLI 调用（jpp run … --fixtures …）"
+lines = 1
+
+[baseline]
+dir = "baseline"                   # 任务书、materials.json、expected.json 与基线实现所在目录
+
+[[baseline.impl]]
+file = "refund_a.py"
+author = "Sonnet 5 子代理（未参与 J++ 设计，只见任务书、materials.json 与判断接口；2026-09-24 派发）"
+data = "18-20,22-25"               # 读 materials.json 与拆包的行
+runtime = "7-14,37,39-41,50,52-53"         # 运行时职责：阈值换算、三态分支、未决收集
+coordination = "7-14,37,39-41,50,52-53"
+minutes = 0.38           # 代理墙钟 15:40:45 → 15:41:08（拿到任务书到首次通过验收）；与 J++ 侧作者不同，不计时间比
+passed = "2026-09-24 python3 scripts/measure_expr.py --check trial-refund：通过（一次通过）"
+
+[[baseline.impl]]                  # T0 第二份基线（步 31-1，另一个 Sonnet 代理，同规程）
+tier = "t0"
+file = "refund_b.py"
+author = "Sonnet 5 子代理（未参与 J++ 设计，只见任务书、materials.json 与判断接口；2026-09-24 步 31-1 派发）"
+data = "26-31"
+runtime = "17-22,40,44-46,48,53-54"
+coordination = "17-22,40,44-46,48,53-54"
+minutes = 0.85
+passed = "2026-09-24 --check trial-refund：通过（一次通过；代理墙钟 20:05:43→20:06:34）"
+
+[[baseline.impl]]                  # T1 基线（步 31-1，Sonnet 代理，只见任务书 T0+T1 节、t1/materials.json、labels.jsonl 与判断接口）
+tier = "t1"
+file = "t1/refund_t1_a.py"
+author = "Sonnet 5 子代理（未参与 J++ 设计；2026-09-24 步 31-1 派发）"
+data = "229-232"
+runtime = ""
+coordination = ""
+minutes = 13.82
+
+# —— T1（完整职责任务书，B79；步 31-1）——
+passed = "2026-09-24 --check trial-refund --tier t1：一次全过（20:09:10→20:22:59）"
+
+[t1]
+fixture = "fixture-t1.json"        # 与 T0 夹具同一份读数，去掉校准记录字面量；线只从 baseline/t1/labels.jsonl 经 calib-import 来
+calls_max = 14                    # (c) 调用上限：每层每份材料至多一次（任务书 T1 节）
+rounds_max = 2                   # (c) 轮数上限（J++ 侧取账本里不同 layer 的个数）
+
+[[t1.glue]]                        # 口径二计入：T1 的线从标注导入，生产运行必需
+what = "calib-import 调用（jpp calib-import labels.jsonl --calib-out …）"
+lines = 1
+
+[[jpp.impl]]                       # J++ 设计者 T1 版：试写 1 加 unobserved 输出（施工代理改写，步 31-1）
+tier = "t1"
+source = "t1/refund_t1.jpp"
+run_dir = "t1"
+projection = "refund"
+author = "设计者版 T0（Fable 试写）+ 施工代理按 T1 任务书加输出"
+data = "11-22"
+coordination = "6,37,40,41,42"
+
+[[jpp.impl]]                       # J++ 非设计者 T0 版（步 31-1，Sonnet 代理，只见任务书、GUIDE.md 与 lib/outcome.jpp）
+tier = "t0"
+source = "jpp-nd/refund_t0.jpp"
+run_dir = "jpp-nd"
+author = "Sonnet 5 子代理（未参与 J++ 设计；2026-09-24 步 31-1 派发）"
+data = "5-6"
+coordination = "3"
+minutes = 14.77
+passed = "2026-09-24 --check trial-refund：通过（20:34:08→20:48:54）"
+
+[[jpp.impl]]                       # J++ 非设计者 T1 版（步 31-1，Sonnet 代理，只见任务书、GUIDE.md 与 lib/outcome.jpp）
+tier = "t1"
+source = "jpp-nd/refund_t1.jpp"
+run_dir = "jpp-nd"
+author = "Sonnet 5 子代理（未参与 J++ 设计；2026-09-24 步 31-1 派发）"
+data = "5-6"
+coordination = "3"
+minutes = 2.25
+passed = "2026-09-24 --tier t1：五项全过（21:20:01→21:22:16）"

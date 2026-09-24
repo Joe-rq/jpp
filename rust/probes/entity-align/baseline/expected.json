@@ -1,0 +1,118 @@
+{
+ "candidates": 9,
+ "tally": {
+  "curator": 2,
+  "sameAs": 1,
+  "unlinked": 6
+ },
+ "routed": [
+  {
+   "pair": {
+    "a": "Hazy Little Thing IPA",
+    "b": "Sierra Nevada Hazy Little Thing"
+   },
+   "outcome": "assert sameAs",
+   "hints": {
+    "brewery": "是",
+    "name": "是",
+    "style": "是"
+   }
+  },
+  {
+   "pair": {
+    "a": "Hazy Little Thing IPA",
+    "b": "Guinness Extra Stout"
+   },
+   "outcome": "leave unlinked",
+   "hints": {
+    "brewery": "否",
+    "name": "否",
+    "style": "未决"
+   }
+  },
+  {
+   "pair": {
+    "a": "Hazy Little Thing IPA",
+    "b": "Bell's Two Hearted IPA"
+   },
+   "outcome": "leave unlinked",
+   "hints": {
+    "brewery": "否",
+    "name": "否",
+    "style": "未决"
+   }
+  },
+  {
+   "pair": {
+    "a": "Guinness Draught",
+    "b": "Guinness Extra Stout"
+   },
+   "outcome": "curator queue",
+   "hints": {
+    "brewery": "是",
+    "name": "否",
+    "style": "未决"
+   }
+  },
+  {
+   "pair": {
+    "a": "Two Hearted Ale",
+    "b": "Sierra Nevada Hazy Little Thing"
+   },
+   "outcome": "leave unlinked",
+   "hints": {
+    "brewery": "否",
+    "name": "否",
+    "style": "未决"
+   }
+  },
+  {
+   "pair": {
+    "a": "Two Hearted Ale",
+    "b": "Guinness Extra Stout"
+   },
+   "outcome": "leave unlinked",
+   "hints": {
+    "brewery": "否",
+    "name": "否",
+    "style": "未决"
+   }
+  },
+  {
+   "pair": {
+    "a": "Two Hearted Ale",
+    "b": "Bell's Two Hearted IPA"
+   },
+   "outcome": "curator queue",
+   "hints": {
+    "brewery": "是",
+    "name": "是",
+    "style": "未决"
+   }
+  },
+  {
+   "pair": {
+    "a": "Pliny the Elder",
+    "b": "Sierra Nevada Hazy Little Thing"
+   },
+   "outcome": "leave unlinked",
+   "hints": {
+    "brewery": "否",
+    "name": "否",
+    "style": "未决"
+   }
+  },
+  {
+   "pair": {
+    "a": "Pliny the Elder",
+    "b": "Bell's Two Hearted IPA"
+   },
+   "outcome": "leave unlinked",
+   "hints": {
+    "brewery": "否",
+    "name": "否",
+    "style": "未决"
+   }
+  }
+ ]
+}

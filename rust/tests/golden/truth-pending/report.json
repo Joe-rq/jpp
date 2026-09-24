@@ -1,0 +1,129 @@
+{
+  "backend": "fixed-0",
+  "cost": {
+    "asks": 0,
+    "calls": 2,
+    "replayed": 0,
+    "tokens": 0,
+    "usd": 0.0
+  },
+  "exits": [
+    {
+      "exit": "unsure(cold|untested:calib_line)",
+      "grade": "Cold",
+      "releases": false,
+      "site": 466
+    },
+    {
+      "exit": "unsure(cold|untested:calib_line)",
+      "grade": "Cold",
+      "releases": false,
+      "site": 466
+    }
+  ],
+  "fixture_description": "Real JEV readings recorded 2026-09-23 (进展/2026-09-23/live/truth-truth-pending-live-ledger.json), replayed as fixed observations for the golden gate.",
+  "local_checks": [],
+  "mode": "fixed observations; no model API requests",
+  "pending": [],
+  "replay": false,
+  "resumed": false,
+  "returned_unsure": [
+    "unsure(cold|untested:calib_line)",
+    "unsure(cold|untested:calib_line)"
+  ],
+  "status": "returned",
+  "trace": {
+    "events": [
+      {
+        "cost": 0.0,
+        "key": "f742504ac754174a740c0b83",
+        "kind": "judge",
+        "note": "「这段话是否提到了钢琴？」",
+        "replayed": false,
+        "site": {
+          "end": 510,
+          "start": 466
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "c6382fb2e46f34173a3be548",
+        "kind": "judge",
+        "note": "「这段话是否提到了钢琴？」",
+        "replayed": false,
+        "site": {
+          "end": 510,
+          "start": 466
+        }
+      }
+    ],
+    "warnings": [
+      "W-form-pending: @466 题式级记录未上岗（待核：人工抽检一致率 0.78（39/50）< 门槛 0.90）；本题按冷键处理",
+      "W-untested: @466 calib_line 在本次路径上没有被测量，按 J-15 取保守项（出口 cold）。修法【作者可改】：用 calib-import 从带真值样本为这道题或它的题式认证一条线（模式级记录不供线，B44）",
+      "W-form-pending: @466 题式级记录未上岗（待核：人工抽检一致率 0.78（39/50）< 门槛 0.90）；本题按冷键处理",
+      "W-untested: @466 calib_line 在本次路径上没有被测量，按 J-15 取保守项（出口 cold）。修法【作者可改】：用 calib-import 从带真值样本为这道题或它的题式认证一条线（模式级记录不供线，B44）",
+      "returned_unsure: unsure(cold|untested:calib_line), unsure(cold|untested:calib_line)"
+    ]
+  },
+  "value": {
+    "act": 0,
+    "asked": "这段话是否提到了钢琴？",
+    "ignore": 0,
+    "pending": [
+      {
+        "cause": "cold",
+        "element": {
+          "cause": "cold",
+          "exit": {
+            "consumed": true,
+            "exit": "unsure(cold|untested:calib_line)",
+            "id": 0,
+            "q": "c3ba62228369b670cc9b0c55"
+          },
+          "index": 0,
+          "item": "那台立式乐器占了客厅一角，搬家时最费劲。",
+          "source": "那台立式乐器占了客厅一角，搬家时最费劲。",
+          "trail": []
+        },
+        "exit": {
+          "consumed": true,
+          "exit": "unsure(cold|untested:calib_line)",
+          "id": 0,
+          "q": "c3ba62228369b670cc9b0c55"
+        }
+      },
+      {
+        "cause": "cold",
+        "element": {
+          "cause": "cold",
+          "exit": {
+            "consumed": true,
+            "exit": "unsure(cold|untested:calib_line)",
+            "id": 1,
+            "q": "c3ba62228369b670cc9b0c55"
+          },
+          "index": 1,
+          "item": "他背起吉他，坐在公园长椅上弹唱了一下午。",
+          "source": "他背起吉他，坐在公园长椅上弹唱了一下午。",
+          "trail": []
+        },
+        "exit": {
+          "consumed": true,
+          "exit": "unsure(cold|untested:calib_line)",
+          "id": 1,
+          "q": "c3ba62228369b670cc9b0c55"
+        }
+      }
+    ],
+    "unsure": [
+      {
+        "cause": "cold",
+        "index": 0
+      },
+      {
+        "cause": "cold",
+        "index": 1
+      }
+    ]
+  }
+}

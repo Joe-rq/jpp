@@ -1,11 +1,10 @@
 //! 公开仓库 Codex 评审（Towow-ai/jpp PR #27 / #28）指出的问题，各一条回归测试。
 //! Regression tests for the Codex review comments on Towow-ai/jpp PR #27 / #28.
-use jpp_core::ast::Budget;
 use jpp_core::effects::{CalibStore, LiteralMode, Sample};
 use jpp_core::truth::{ImportOptions, LabelRow, import_labels};
 
 fn 样本(p: f64, label: u8, phys: &str, mode_share: Option<f64>) -> Sample {
-    Sample { p: Some(p), label: Some(label), perms: 0, mode_share, mode: LiteralMode::default(), phys: phys.into(), cluster: None }
+    Sample { p: Some(p), label: Some(label), perms: 0, mode_share, mode: LiteralMode::default(), phys: phys.into(), cluster: None, stratum: None }
 }
 
 /// 60 条、一个题型，走 absorb + commission 上岗。
@@ -17,10 +16,9 @@ fn 上岗(c: &mut CalibStore, key: &str, phys: &str, mode_share: Option<f64>) {
     c.commission(key, 0.10, 0.10, "条").expect("认得动");
 }
 
-fn 带unsure预算(src: &str, unsure: f64) -> jpp_core::ast::Program {
-    let mut p = jpp_frontend::lower(&jpp_frontend::parse(src).expect("解析")).expect("lower");
-    let b = p.budget.take().expect("源码里有 budget");
-    p.budget = Some(Budget { unsure: Some(unsure), ..b });
+fn 带unsure预算(src: &str, unsure: f64) -> jpp_core::Program {
+    let mut p = jpp_core::lower(&jpp_core::syntax::parse(src).expect("解析")).expect("lower");
+    p.budget.unsure = Some(unsure);
     p
 }
 
@@ -89,17 +87,19 @@ fn choice_置换未测时unsure率为一() {
     let mut c = CalibStore::new();
     上岗(&mut c, "kc", "choice", None);
     assert_eq!(c.get("kc").unsure_rate, Some(1.0));
-    assert_eq!(c.get("kc").unsure_rate_delta, None, "choice 的出口不看 δ，不绑 δ");
+    // B63 起 K 元划分的出口也带 δ 迟滞，率绑认证时的 δ（档案缺省 select 的 δ = 0.15）
+    assert_eq!(c.get("kc").unsure_rate_delta, Some(0.15), "choice 的率绑 δ（B63）");
 }
 
-/// choice（置换一致）与 score：`p >= hi` 放行，没有 δ，也没有低侧出口。
+/// choice（置换一致）与 score：`p >= hi + δ` 放行（B63 带 δ 迟滞），没有低侧出口。
 #[test]
 fn choice与score_按p不小于hi计() {
     for phys in ["choice", "score"] {
         let mut c = CalibStore::new();
         上岗(&mut c, "k", phys, Some(1.0));
         let r = c.get("k");
-        let 期望 = (0..60).filter(|i| 0.02 + *i as f64 * 0.016 < r.hi).count() as f64 / 60.0;
+        let d = r.unsure_rate_delta.expect("B63：K 元划分的率绑 δ");
+        let 期望 = (0..60).filter(|i| 0.02 + *i as f64 * 0.016 < r.hi + d).count() as f64 / 60.0;
         assert!((r.unsure_rate.unwrap() - 期望).abs() < 1e-4, "{phys}: {:?} vs {期望}", r.unsure_rate);
     }
 }
@@ -164,7 +164,7 @@ fn 行(item: String, p: f64, label: bool, source: &str) -> LabelRow {
 }
 
 fn 导入选项() -> ImportOptions {
-    ImportOptions { alpha: 0.10, conf_delta: 0.10, spot_check_min: 0.9, spot_check_conf: 0.95, abstain_warn: 0.1, batch: "b".into(), seed: 20260923 }
+    ImportOptions { alpha: 0.10, conf_delta: 0.10, spot_check_min: 0.9, spot_check_conf: 0.95, abstain_warn: 0.1, batch: "b".into(), seed: 20260923, extent_min_disagree: 3, extent_same_dir: 0.8, extent_same_tier: 2.0 / 3.0, scope_quantiles: (0.01, 0.99), scope_margins: Default::default(), class_min_sources: 2, alpha_trial: None }
 }
 
 /// 第一次只导入模型标注（没有抽检）→ 待核；存盘、装回，第二次只导入人工行。

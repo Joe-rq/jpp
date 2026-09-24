@@ -1,6 +1,6 @@
 # J++ source frontend — initial grammar
 
-Status: source parsing and lowering target the shared core AST. Three source
+Status: source parsing and lowering target the shared core AST. Five source
 programs have executed through the common checker and interpreter. Known literal
 argument type errors, missing budgets and source syntax errors are tested; this is
 a defined static-check subset, with remaining dynamic rules enforced at runtime.

@@ -1,0 +1,106 @@
+{
+  "asks": 0,
+  "calls": 3,
+  "effects": [],
+  "judge_registrations": 3,
+  "pending": [],
+  "returned_unsure": [
+    "unsure(band)",
+    "unsure(budget)",
+    "unsure(budget)"
+  ],
+  "status": "returned",
+  "usd": 0.0,
+  "value": {
+    "all": {
+      "consumed": true,
+      "exit": "ignore",
+      "id": 6,
+      "q": "tally:all"
+    },
+    "count": [
+      1,
+      4
+    ],
+    "exists": {
+      "consumed": true,
+      "exit": "act",
+      "id": 5,
+      "q": "tally:exists"
+    },
+    "observed": 3,
+    "pending": [
+      {
+        "cause": "band",
+        "element": {
+          "cause": "band",
+          "exit": {
+            "consumed": true,
+            "exit": "unsure(band)",
+            "id": 0,
+            "q": "78e15a646880a5dfabb72438"
+          },
+          "index": 0,
+          "item": "这款耳机售价三百九十九元。",
+          "source": "这款耳机售价三百九十九元。",
+          "trail": []
+        },
+        "exit": {
+          "consumed": true,
+          "exit": "unsure(band)",
+          "id": 0,
+          "q": "78e15a646880a5dfabb72438"
+        }
+      },
+      {
+        "cause": "budget",
+        "element": {
+          "cause": "budget",
+          "exit": {
+            "consumed": true,
+            "exit": "unsure(budget)",
+            "id": 3,
+            "q": "78e15a646880a5dfabb72438"
+          },
+          "index": 3,
+          "item": "新店开业，全场八折。",
+          "source": "新店开业，全场八折。",
+          "trail": []
+        },
+        "exit": {
+          "consumed": true,
+          "exit": "unsure(budget)",
+          "id": 3,
+          "q": "78e15a646880a5dfabb72438"
+        }
+      },
+      {
+        "cause": "budget",
+        "element": {
+          "cause": "budget",
+          "exit": {
+            "consumed": true,
+            "exit": "unsure(budget)",
+            "id": 4,
+            "q": "78e15a646880a5dfabb72438"
+          },
+          "index": 4,
+          "item": "价格还没公布，据说下个月发布。",
+          "source": "价格还没公布，据说下个月发布。",
+          "trail": []
+        },
+        "exit": {
+          "consumed": true,
+          "exit": "unsure(budget)",
+          "id": 4,
+          "q": "78e15a646880a5dfabb72438"
+        }
+      }
+    ],
+    "stopped": "预算耗尽：calls 3+1 / 3，cost 0.000000+0.000000 / 0.010000",
+    "unobserved": [
+      3,
+      4
+    ]
+  }
+}

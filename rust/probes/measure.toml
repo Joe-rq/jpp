@@ -1,0 +1,89 @@
+# 探针集的共用计量头：能力对照（验收 1 的能力维度，A-6 §六·4，Nature 2026-09-24 决定的维度、Fable 定的表）。
+# 各项目的表达量比在 probes/<项目>/measure.toml；本文件只放全集共用的 [capabilities]。
+# scripts/dashboard.py 逐项执行 `measure`（命令或内置检查），按「通过项 / 12」报。
+# status：measured = 由仪表当场取数判定；untested = 还没有取数办法，写明原因与哪一步之后可测。
+# 第一版（步 31-0）按裁定只填 A3、A4、A5、A7，另加 B5（金样里已有现成用例）。
+
+[capabilities.A1]
+name = "认证后的已决出口"
+jpp = "B24 拆分认证，出口带等级，线只从记录来（J-03）"
+baseline = "自写 Clopper–Pearson 拆分认证与记录库（约 300–500 行）；通常写死阈值"
+status = "untested"
+why = "要对基线测「阈值有无错误率上界」与重写同功能的行数；步 31 补全"
+
+[capabilities.A2]
+name = "未决必须消费"
+jpp = "J-05 静态与运行期责任表"
+baseline = "无编译器；未决静默丢"
+status = "untested"
+why = "要对基线注入未决路径数静默丢失次数；步 31 补全"
+
+[capabilities.A3]
+name = "逐字节重放"
+jpp = "账本 v2、E-replay、W-header"
+baseline = "自录每次调用并回放"
+status = "measured"
+measure = "cargo test -p jpp-cli --test golden --offline -- examples_match_golden_and_replay；scripts/replay_scan.py 差异组数 = 0"
+
+[capabilities.A4]
+name = "值级 taint 拦不可逆 do"
+jpp = "B33、J-08、谱系（17b 后）"
+baseline = "无"
+status = "measured"
+measure = "cargo test -p jpp-core --test failopen --offline"
+
+[capabilities.A5]
+name = "同状态多题合并、层批发"
+jpp = "fuse / lift / vectorize"
+baseline = "手工拼批"
+status = "measured"
+measure = "scripts/equiv_pairs.py 的 sieve_batch 比值 ≤ 1.5（同一程序两种写法都合并成一次批发；步 13b 前判据是「> 1」即快写法一次批发，13b 后慢写法也降到 1 次，判据随之改，31-0b）"
+
+[capabilities.A6]
+name = "线的适用范围与停岗候选"
+jpp = "B68 指纹、B25 漂移"
+baseline = "无"
+status = "untested"
+why = "要换风格材料看告警与降级；步 31 补全"
+
+[capabilities.A7]
+name = "换画像程序不改"
+jpp = "画像只经 Session 注入"
+baseline = "常数散在代码里"
+status = "measured"
+measure = "覆盖的类假设数 / 8 = 8 才算通过；取数同仪表「换画像通过数」"
+
+[capabilities.B1]
+name = "题式复用与借线"
+jpp = "题库条目、类键（B34/B75）"
+baseline = "每题重新标注"
+status = "untested"
+why = "要测新程序校准 0 行的条件与告警；27a 首批题式后可测"
+
+[capabilities.B2]
+name = "三态分流"
+jpp = "handle 臂"
+baseline = "if p > 0.5 else"
+status = "untested"
+why = "要数三值分支行数与遗漏未决臂的数；本轮基线的运行时职责行已在 measure.toml 里标出，步 31 按多实现统计"
+
+[capabilities.B3]
+name = "预算与费用估计"
+jpp = "budget 必填、B42 计划期估计"
+baseline = "事后看账单"
+status = "untested"
+why = "计划期费用估计未造（D10.4）；13b 之后可测"
+
+[capabilities.B4]
+name = "账本审计与深度曲线"
+jpp = "depth_profile、trace"
+baseline = "自加日志"
+status = "untested"
+why = "账本 parents/hop 恒空，17a 之后可测"
+
+[capabilities.B5]
+name = "静态诊断"
+jpp = "J-*、B13"
+baseline = "无"
+status = "measured"
+measure = "金样 error-question-field-typo：写坏题面时报编号诊断（W-diag-mention-scope、E-field）；cargo test -p jpp-cli --test golden 通过即成立"

@@ -1,0 +1,164 @@
+{
+  "asks": 0,
+  "calls": 12,
+  "effects": [],
+  "judge_registrations": 36,
+  "pending": [],
+  "returned_unsure": [
+    "unsure(band)",
+    "unsure(band)"
+  ],
+  "status": "returned",
+  "usd": 0.0,
+  "value": {
+    "streams": [
+      {
+        "act": [
+          0,
+          10
+        ],
+        "asked": "这段话的内容是否与「城市通勤」这个话题相关？",
+        "count": [
+          2,
+          3
+        ],
+        "exists": {
+          "consumed": true,
+          "exit": "act",
+          "id": 36,
+          "q": "tally:exists"
+        },
+        "ignore": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          7,
+          8,
+          9,
+          11
+        ],
+        "pending": [
+          {
+            "cause": "band",
+            "element": {
+              "cause": "band",
+              "exit": {
+                "consumed": true,
+                "exit": "unsure(band)",
+                "id": 6,
+                "q": "7a6f10be28556d2c104d925d"
+              },
+              "index": 6,
+              "item": "孩子第一次独自坐公交去上学，爸爸悄悄跟在后面好几站。",
+              "source": "孩子第一次独自坐公交去上学，爸爸悄悄跟在后面好几站。",
+              "trail": []
+            },
+            "exit": {
+              "consumed": true,
+              "exit": "unsure(band)",
+              "id": 6,
+              "q": "7a6f10be28556d2c104d925d"
+            }
+          }
+        ],
+        "unsure": [
+          {
+            "cause": "band",
+            "index": 6
+          }
+        ]
+      },
+      {
+        "act": [
+          1
+        ],
+        "asked": "这段话的内容是否与「理财」这个话题相关？",
+        "count": [
+          1,
+          1
+        ],
+        "exists": {
+          "consumed": true,
+          "exit": "act",
+          "id": 38,
+          "q": "tally:exists"
+        },
+        "ignore": [
+          0,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11
+        ],
+        "pending": [],
+        "unsure": []
+      },
+      {
+        "act": [
+          3,
+          8
+        ],
+        "asked": "这段话的内容是否与「职业焦虑」这个话题相关？",
+        "count": [
+          2,
+          3
+        ],
+        "exists": {
+          "consumed": true,
+          "exit": "act",
+          "id": 40,
+          "q": "tally:exists"
+        },
+        "ignore": [
+          1,
+          2,
+          4,
+          5,
+          6,
+          7,
+          9,
+          10,
+          11
+        ],
+        "pending": [
+          {
+            "cause": "band",
+            "element": {
+              "cause": "band",
+              "exit": {
+                "consumed": true,
+                "exit": "unsure(band)",
+                "id": 24,
+                "q": "c5f33984208e42a67dda8e17"
+              },
+              "index": 0,
+              "item": "早高峰的地铁挤得像沙丁鱼罐头，她每天六点半就得出门才能准时打卡。",
+              "source": "早高峰的地铁挤得像沙丁鱼罐头，她每天六点半就得出门才能准时打卡。",
+              "trail": []
+            },
+            "exit": {
+              "consumed": true,
+              "exit": "unsure(band)",
+              "id": 24,
+              "q": "c5f33984208e42a67dda8e17"
+            }
+          }
+        ],
+        "unsure": [
+          {
+            "cause": "band",
+            "index": 0
+          }
+        ]
+      }
+    ]
+  }
+}

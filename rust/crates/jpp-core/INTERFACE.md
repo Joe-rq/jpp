@@ -2,53 +2,34 @@
 
 版本：首包，2026-09-21。对应 crate `jpp-core 0.1.0`，edition 2024。
 
-core 负责共同程序表示、值与环境、静态检查、解释执行、效应适配、账本与重放。它不解析源码：前端保留
-自己的带 `Span` AST，写 `lower()` 映射到这里的 `ast::Program`。语义依据是 `12-IR与类契约-v0.1.md`
-的六种效应形式与 J-01…J-18，诊断编号依据 `11-语言规范-v1.md` §诊断；Rust 自己的类型系统不替代
-J++ 的检查器，纪律由 `check.rs` 与 `interp.rs` 两处把关。
+core 负责共同程序表示、值与环境、静态检查、解释执行、效应适配、账本与重放。源码经 `jpp-syntax`
+（原 `jpp-frontend`，步 12d 改名）解析成表层 AST，再由 `jpp_core::lower` 降到 IR（`ir::Program`）；
+检查器与解释器只读 IR。语义依据是 `12-IR与类契约-v0.1.md` 的六种效应形式与 J-01…J-18，诊断编号
+依据 `11-语言规范-v1.md` §诊断；Rust 自己的类型系统不替代 J++ 的检查器，纪律由检查器与解释器两处把关。
 
-## 一、程序表示
+## 一、程序表示（步 12d 起是 IR）
 
 ```rust
-pub struct Program { pub budget: Option<Budget>, pub body: Block, pub span: Span }
-pub struct Budget  { pub calls: u64, pub cost: f64, pub depth: Option<u32>, pub escalate: Option<u64> }
-pub struct Block   { pub statements: Vec<Statement>, pub result: Option<Box<Expr>>, pub span: Span }
-pub struct Expr    { pub kind: ExprKind, pub span: Span }
-pub struct Span    { pub start: usize, pub end: usize }   // 字节偏移，与前端一致
+// 入口（jpp-core 外观）
+pub fn lower(p: &syntax::ast::Program) -> Result<ir::Program, Vec<syntax::Diagnostic>>;
+pub fn check(program: &ir::Program) -> Report;          // 以及 check_with_profile / check_with_calib
+pub fn run(program: &ir::Program, …) -> Result<Outcome, Error>;   // 以及 run_replay / run_with_fits / run_unchecked
 
-pub enum Statement {
-    Let { name: String, annotation: Option<Type>, value: Expr, span: Span },
-    Function { name: String, function: Function, span: Span },
-    Expression(Expr),
-}
-
-pub enum ExprKind {
-    Integer(i64), Decimal(f64), Bool(bool), Text(String), Unit,
-    Name(String), List(Vec<Expr>), Record(Vec<(String, Expr)>),
-    Function(Function),
-    Call { function: Box<Expr>, arguments: Vec<Expr> },
-    Field { value: Box<Expr>, field: String },
-    Index { value: Box<Expr>, index: Box<Expr> },
-    Unary { op: String, value: Box<Expr> },
-    Binary { op: String, left: Box<Expr>, right: Box<Expr> },
-    If { condition: Box<Expr>, yes: Block, no: Block },
-    Block(Block),
-}
-
-pub struct Function {
-    pub parameters: Vec<Parameter>,
-    pub result_type: Option<Type>,
-    pub effects: Option<Vec<String>>,   // None = 未声明；Some([]) = 显式纯
-    pub body: Block,
-}
+// jpp_ir::ir（节选；完整定义见 crates/jpp-ir/src/ir/）
+pub struct Program { pub version: u32, pub budget: Budget, pub body: Block, pub sites: SiteTable, pub span: Span }
+pub struct Budget  { pub calls: u64, pub cost: f64, pub depth: Option<u32>, pub escalate: Option<u64>,
+                     pub unsure: Option<f64>, pub absent: Option<AbsentPolicy>, pub latency_p95: Option<f64> }
+pub struct Expr    { pub id: NodeId, pub node: Node, pub span: Span }
+pub enum Node { State{..}, Effect{..}, Cut{..}, Fit{..}, Loop{..}, Handle{..}, Consume{..}, Construct{..}, Host(Host) }
 pub struct Parameter { pub name: String, pub annotation: Option<Type>, pub span: Span }
 pub enum Type {
-    Named(String),
-    Applied(String, Vec<Type>),
+    Named(TypeName),
+    Applied(TypeName, Vec<Type>),
     Function(Vec<Type>, Box<Type>),   // 旧形式：效应行未知
     Method(MethodType),               // 方法类型：效应行与责任捕获跟着类型走
 }
-
+pub enum TypeName { Int, Decimal, Float, Bool, Text, List, Record, Unit, Fn, Method,
+                    Question, Form, Outcome, Exit, Other(String) }   // 序列化为作者写的原文
 pub struct MethodType {
     pub params: Vec<Type>,
     pub ret: Box<Type>,
@@ -57,23 +38,28 @@ pub struct MethodType {
 }
 ```
 
+**降级做的事（`jpp-syntax::lower`，名字表由 `jpp_core::names::CurrentNames` 组装）。** 调用位置上的名字
+按三张表解析成节点：效应表（`jpp-effects` 注册表）里的名字 → `Node::Effect`（输入按效应的槽名排列），
+构造表里的名字 → `Node::Construct`，`state`/`cut`/`fit`/`loop`/`handle`/`consume`/`escalate`/`literalize`
+各有自己的节点，`map`/`filter`/`fold` 是带站点的宿主调用，其余是宿主调用或用户名字；被 `let`、函数名、
+形参遮蔽的名字按用户名字处理。每个站点进站点表，记所属函数与最近外层 `Loop`/高阶/构造站点。作者写的
+类型标注解析成类型化的 `Type`（类型名成为 `TypeName`）；降级不推断表达式类别。函数的 `source_hash`
+（闭包身份、`transform` 键与捕获指纹）按步 12c 的口径算，账本键不变。
+
+**降级报的两条诊断**（`syntax::Diagnostic`，报文以规则号开头）：`J-07a` 缺 `budget` 或 `budget` 缺
+`calls`/`cost`（预算必填，检查器不再报缺预算）；`E-form-as-value` 效应名、语言形式名或内核构造名出现在
+调用位置以外（赋值、传参、放进容器；`20·B56`），只有宿主内置与用户名字可以作值。
+
 **`Type::Method` 是给前端加的位置。** 方法一旦经参数、记录字段、返回值传递，`Function` 定义节点上的
 `!{…}` 就跟不过去了，契约在边界上丢掉。`Type::Method` 把效应行放进**类型**本身，所以
 `fn solve(input: Mat, method: Fn(Record) -> Record !{judge})` 里的 `method(s)` 不再是「静态判不了」。
 `captures_responsibility` 区分 Codex 说的 `Fn¹`（捕获了未决责任，不可重复调用、不可丢弃）与 `Fnω`；
-core 现在会拦住把 `Fn¹` 交给 `map` / `filter` 的写法。
+core 现在会拦住把 `Fn¹` 交给 `map` / `filter` 的写法。文法已支持类型位上的效应行：
+`Fn(Record) -!{judge}-> Record` 降成 `Type::Method`，不写效应行的 `Fn(A) -> B` 仍是 `Type::Function`。
 
-前端现在的文法还写不出类型上的效应行（`type` 产生式里没有 `!{…}`），lower 出来的是旧的
-`Type::Function`，core 按「效应未知」处理，与改动前行为一致。要把这一半用起来，前端需要把
-`!{…}` 加进**类型**的文法，并在 lower 时产出 `Type::Method`。`Type::Function` 会一直保留。
+`effects` 里的名字目前只认 `judge` / `gen` / `do` / `ask`；`transform` 是记账变换，不是效应形式，不写进标注。
 
-没有效应专用节点。`judge`、`do`、`gen`、`ask`、`transform` 都是普通 `Call`，名字在根环境里解析成
-`Value::Builtin`；检查器与解释器按名字认它们。前端不需要为效应造节点，只要把调用原样 lower 过来。
-
-`budget` 缺失保持 `None`，由检查器报 J-07——前端不要造默认预算。`effects` 里的名字目前只认
-`judge` / `gen` / `do` / `ask`；`transform` 是记账变换，不是效应形式，不写进标注。
-
-全部节点 `#[derive(Serialize, Deserialize)]`，serde 默认表示，可往返。外部表示形状见下面第六节的样例。
+全部 IR 节点 `#[derive(Serialize, Deserialize)]`，可往返；`jpp_ir::ir::print` 给出可 diff 的文本形式。
 
 ## 二、值与环境
 
@@ -222,7 +208,16 @@ uncertainty}`，直接收 `&[Rc<Reading>]`，不必起解释器。
 三个决定，写明理由：
 - **读不到档案就报错，不悄悄回退兜底值**——那正是「替不确定说确定」。要兜底得显式写
   `Profile::default()`。
-- **兜底档案的 `hash` 是 `None`**，账本头照此记。否则「用了兜底」与「档案恰好等于兜底」
+- **真机运行必须有画像（B73，步 15d-0）**：`--backend live` 的首跑与续接按 `--profile <文件>`，
+  否则按 `--profiles-dir <目录>/<model>.json`，再否则按可执行文件旁的 `profiles/<model>.json`
+  解析；解析不到报 `E-profile-missing` 并写明试过的路径，不回退兜底值。路径只在 CLI 解析，
+  内核只收 `Profile` 值。发行附带 `profiles/jev-1.13.0.json`（`scripts/gen_profiles.py` 生成）。
+  价格只从画像 `cost.price_usd_per_input_token` 读，没有价格时费用记 `Unknown` 并报
+  `W-cost-unknown`。重放不发调用，不要求画像。
+- **固定观察在步 15d 之前可以无画像运行**（线与 δ 用 `Profile::default()`），但「档案：未加载，
+  线与 δ 用的是代码兜底」这行提示**无条件打印**。「读不到就报错」管的是给了路径而读不到；
+  没给路径时，真机报 `E-profile-missing`，固定观察打印提示，两条合成一个口径。
+- **兜底档案的 `hash` 是 `None`**，账本头照此记；真机运行有画像，`profile_hash` 不再为空。否则「用了兜底」与「档案恰好等于兜底」
   在账本上分不开。`profile_hash` 变化（含有→无）会报 `W-header`。
 - **头在 `run()` 入口定稿**，不等跑完补齐：档案是运行前就定下的输入。
 
@@ -319,7 +314,7 @@ S 库 `lib/materials.jpp` 的 `review_material(opinion, about)`：把评审意�
 | 上岗门 | 有只靠模型标注撑起的真值时，要求同键有人工抽检且一致率 ≥ `--spot-check-min`；否则记录停在 `待真值`，`truth.gate` 写「待核：原因」。门槛是参数，不写死在规则里 |
 | 认证 | `CalibStore::commission_two_sided_split`（真值通道所用，B24）：带标注样本先按 `(p, 真值)` 排成规范序，再按 `splitmix64(seed ^ 规范序下标)` 最低位分成选线半与认证半（与行序无关）；选线半上按 `cut` 实际判区（`p ≥ hi + δ` 给 Act、`p ≤ lo − δ` 给 Ignore）联合选线，取两区二项上界各 ≤ α 且已决条数最多的一对；认证半上对该对两侧各检验一次。任一半每侧不足零错误所需条数时停在待核（原因以「待核」开头）。证书新增可选字段 `selection {method, seed, n_select, n_certify, candidates}`，有值时进地址。`calib-import --seed`（默认 20260923）。`commission_two_sided`（同批选线）与原 `commission` 保留不删 |
 | 查找顺序 | `cut`：题键上岗 → 用题键；否则题上有 `form_hash` 且题式键 `\u{1f}form\u{1f}<哈希>` 上岗 → 用题式线，报 `W-form-line`，出口 `line_source=题式级·…`；否则模式级；再否则冷。题式记录经真值通道导入但未上岗时报 `W-form-pending`（写明待核原因），按冷键处理。停岗仍提前返回，回退够不着它 |
-| 账本 | 新字段 `Ledger.calib_used`（键 → `{hash, record}`）：`cut` 实际查到的记录。`--replay` / `--resume` 时，本次没有另给的键从这里补回（stderr 列出补回的键），**只凭账本重放出口逐字节一致**。老账本无此字段，行为不变；头上的整库 `calib_hash` 仍会因为库是子集而报 `W-header` |
+| 账本 | 新字段 `Ledger.calib_used`（键 → `{hash, record}`）：`cut` 实际查到的记录，**本趟命中集合，每趟改写**（B83，步 7c：入口比对后清空，本趟按当前视图重填；续接后只凭账本重放复现续接趟）。`--replay` / `--resume` 时，本次没有另给的键从这里补回（stderr 列出补回的键），**只凭账本重放出口逐字节一致**。老账本无此字段，行为不变；头上的整库 `calib_hash` 因为库是子集必然不同，步 7b（B77）起只凭账本重放不比它，改比 `calib_used_hash`（命中记录集合的哈希），不再报假 `W-header` |
 
 新字段：`CalibRecord.truth`（`TruthSummary`：来源计数、弃权、抽检、门、批次）、`CalibRecord.lower`（下侧证书）、`Reading.form_hash`。
 
@@ -355,6 +350,18 @@ S 库 `lib/materials.jpp` 的 `review_material(opinion, about)`：把评审意�
 读法见 `lib/outcome.jpp`：`accepted`、`ignored`、`undecided`（非 budget 未决）、`unobserved`（budget 未决）、`stopped`。现有示例一次迁移到新形状（不保留旧字段名的兼容层：旧的 `unsure` / `unobserved` 两条流与 `pending` 会让同一出口出现在两个位置，责任追踪反而含糊）。演示程序 `examples/contract.jpp`：sieve → pair → sieve → outcome → pair 第二轮 / 续接 → tally，七个阶段 `keys` 相同。
 
 **校准进料补充（B19 修正、B24 补充）**：`calib-import` 的上岗门按一致率的单侧置信下界判（`--spot-check-min 0.9`、`--spot-check-conf 0.95`）。点估计不过 → 待核；点估计过、下界不过 → 线照常认证，`truth.gate` 为「临时上岗：…再追加 m 条全一致即转正」，`cut` 用到时报 `W-provisional`。`SpotCheck` 新增可选 `lower`、`conf`；`CalibRecord` 新增可选 `scope`（认证集的标注批次与来源计数；材料风格指纹与 `W-calib-scope` 未做）。
+
+## 三·四·五、账本 v2（工程步 7，格式步，2026-09-24）
+
+依据 `20` §2.3 `jpp-ledger`、§3.7、§九；`21` 步 7；B40、B55、B59、B61。落盘只经 `Ledger::encode` / `Ledger::decode`（`Ledger` 不再派生 serde，没有第二条序列化路径）。
+
+| 项 | 内容 |
+|---|---|
+| 文件 | JSONL 链式。首行 `{"version":2,"header":…,"calib_used":…}`；之后每条一行 `{"seq":n,"prev":<上一行的哈希>,"entry":…}` |
+| 头 | `{budget:{calls,cost}, compared:{model_id, render_version, handler_version, profile_hash, behavior_hash, calib_hash, calib_used_hash, lib_version, bank_version, ir_version, entry_hash}}`（十一字段，`calib_used_hash` 步 7b 加，B77）。比对只在 `HeaderCompared::diff_in`：只凭账本重放不比 `calib_hash`、续接全比（B77）；预算记录不比对（B61）；`W-header` 只列不同的字段 |
+| 条目 | `Judge` 带结构化键 `jkey`（`jpp_ir::key::JudgeKey`，`digest()` 与旧 `judge_key` 相同）、`calib_ref`（题声明的校准键）、`layer`、`merged_by`（一次调用多于一题记 `fuse`）、`parents`/`hop`/`reused_from`（恒空，步 17、19 填）。`Effect` 带 `ekey`、`output_mat`（恒空，步 17/18 填）。`Ask` 带 `ekey`；**已问未答也入账**（`answer: null`），重放照记的以 `Pending` 结束，续跑问到答案另起一条（`Ledger::put_answer`，只增）。`Absent`（取代原 `kind:"absent"` 的效应条目）。`Intent`、`Halt` 已定义、本版不产生 |
+| 解码 | 末行半写 → 截断到最后一条完整条目，报 `W-ledger-truncated`（CLI 打到 stderr）；完整行读不成、链断、未知字段 → `E-ledger-corrupt` 指出行号；v1（整份 JSON）→ `E-ledger-archived`，用标签 `ledger-v1-archive` 处的二进制重放 |
+| `budget.escalate` | 上限数的是**已答**的 `Ask` 条目（与入账前一致） |
 
 ## 三·五、执行模型：惰性登记 + 刷新点 + 分层
 
@@ -803,7 +810,10 @@ pub enum Severity { Error, Warning }
 | 规则 | 判什么 |
 | --- | --- |
 | `J-06` | `loop` 缺 bound，或 bound 是非正整数字面量 |
-| `J-07` | 程序缺 `budget`；程序里有 `ask` / `escalate` 而 `budget.escalate` 是 0 |
+| `J-07a` | 降级报：程序缺 `budget`，或 `budget` 缺 `calls` / `cost`（步 12d 起缺预算不再到检查器） |
+| `E-form-as-value` | 降级报：效应名、语言形式名或内核构造名出现在调用位置以外（`20·B56`） |
+| `E-kind-conflict` | 题式槽声明与可见结构矛盾（B76，步 12e-1）：`over_kind` 声明在非 `select` 题式上，或与判断站点上可见的 `over` 形状不符（`labels`/`actions` 对计算材料，`candidates` 对字面文本，`questions` 对非题值）。题类由 `jpp_ir::question_kind` 推出，作者不可写；`over` 形状看不见时不报 |
+| `J-07` | 程序里有 `ask` / `escalate` 而 `budget.escalate` 是 0 |
 | `E7` | `map` / `filter`（`for…yield`）的体内含 `loop` / `stop` |
 | `J-01` | 读数进状态槽、做算术、做比较、取字段、当 `if` 条件、当 `handle` 的第一个参数 |
 | `J-03` | `cut` / `test` / `select` / `measure` 的 calib 位是数字字面量（线不可字面） |
@@ -830,6 +840,30 @@ Int 是有符号 64 位；要大整数另行扩展，不在本轮顺便改数值
 **J-05 的 unsure 臂销账核**（臂体没把责任交出去、臂收不下责任、`otherwise` 想兜 Unsure、责任被当材料）、
 J-06 键重复即停与调用深度超限、J-11 动作未登记、类型不符、固定观察未命中。运行期的提示进
 `Trace.warnings`：`W-header`、`W-bound`、`W-noprogress`、`W-drop-vs-escalate`、`returned_unsure`。
+
+**运行期编号**（步 9a）：不属于某条依据规则的运行期错误一律带 `E-rt-<名>`，`RtError.rule` 不再为空。
+编号与类型说明的唯一来源是 `crates/jpp-cli/src/diag_json.rs` 的 `RT_CODES`（单元测试核对 `interp/` 用到的编号都在表里），
+CI 脚本 `scripts/grep_rt_codes.py` 计不带编号的站点（基线 0）。
+
+| 编号 | 类型说明 |
+| --- | --- |
+| `E-rt-arity` | 内置或构造收到的参数个数不对 |
+| `E-rt-arg` | 实参的类型或形状不对；报文给出正确写法（如 `slice(list, a, b)`） |
+| `E-rt-type` | 运算、条件或谓词的值类型不对（二元 / 一元运算、`if` 条件、`filter` 谓词、`len`） |
+| `E-rt-name` | 未定义的名字、未知内置、调用了不可调用的值 |
+| `E-rt-field` | 记录、材料、题、题式、出口上没有这个字段 |
+| `E-rt-index` | 下标越界或值不可索引 |
+| `E-rt-int` | Int 溢出、除以零、取模零（`13` §6） |
+| `E-rt-question` | 题或题式构造不合法（题型、档位、`evidence` 槽名、`request`、`presupposition`、`fill` 的槽） |
+| `E-rt-client` | 外部组件报错（判断器客户端、`gen`、`ask`） |
+| `E-rt-answer` | 判断器答案的形状或条数与题不符 |
+| `E-rt-absent` | 判断器缺席且缺席策略为 `fail` |
+
+**机读出口**（步 9a）：`jpp check <f> --json` 在 stdout 出一个文档 `{file, ok, errors, warnings, diagnostics}`；
+`jpp run … --json` 报告不变，诊断（静态检查、运行期错误、`trace.warnings` 里带编号的告警）以 JSON Lines 写到 stderr，
+每行以 `{` 开头。每条诊断 `{code, level, span: {file, line, col, start, end}, message, fix, applicability, count}`，
+运行期编号另带 `explain`；`applicability` 为 `manual`、`wiring`（修法标了【需接线人】）或 `null`。
+编号、位置、报文三者相同的诊断折叠为一条，文本输出在报文后加「（同码同址 ×N）」；报告与 `trace.warnings` 不折叠。
 
 检查器的口径是**宁可漏报也不误报**：静态判不准的一律交给运行期，`Type` 里 core 认不得的名字不参与
 `E-type`。
@@ -2379,3 +2413,19 @@ transform 1 / stop 1 / loop 1`（+1 个低频）。
 - `do` 的 `taint_in` 取 `taint_of`（即 `Value::taint()`），裸值经 `inherit` 动作不再洗白。
 - J-08 报错：守卫出口所在状态含成分不可信的计算值材料时，追加「该材料由计算值构成，成分含不可信内容」（按当前各帧产生过的出口近似判定）。
 - 账本格式不变；宿主值不进账本。回归：`crates/jpp-core/tests/value_taint.rs`（探针 A–E2 与控制流、取字段、inherit、J-08 诊断）。
+
+## B84 值级来源（步 17c，2026-09-24）
+
+B33 的那一位推广为来源标签 `Provenance { taint, sources }`（`jpp_value::prov`）：`sources` 是直接来源读数的账本键集合。标量第二字段改为 `Provenance`（构造可信值仍用 `Value::int / float / bool / text`；手写时 `Taint::Trusted.into()`）。`Value::prov()` 递归合并，`Value::taint()` 是它的 taint 分量、结果与 B33 逐值相同；`Value::with_prov(p)` 是 `tainted` 的推广（taint 分量只进标量叶子；sources 分量进标量叶子与材料、题的 `from_key`）。合并只在 `prov::join`（taint ∨、sources ∪）。
+
+- 与 B33 同一张边界表：内置分派、二元与一元运算 join 输入；`content()`/`m.content`/`text(m)` 读出带材料的标签；`mat(v)` 计算值的 `from_key` = `v` 的 sources；`do`/`gen`/`transform` 输出承接输入；`sieve` 元素的 `item` 带选中它的出口键；`pick`/`at` 臂的 k 带（出口 taint，{出口键}）。
+- **唯一不同的一行**：按计算下标或字段取值（`xs[k]`、`r[name]`），sources 并入键的 sources，taint 仍取元素自身的位。控制流不传播。
+- `test`/`select`/`measure`/`fill` 以计算出的文本或填入值造题时，题的 `from_key` 并入其 sources（`fill` 为裁定原文；前三者为步 17c 的解释登记）；`literalize` 的题带未决出口键。
+- `Mat`/`State`/`Question` 分存 `taint` 与 `from_key`/`parents` 两个字段（报告 JSON 不变），传播只经 `prov()`/`with_prov()`。`derived_from` 本步保持现行传播（J-02 不变），是 sources 题哈希投影的子集；投影化在步 18。
+- 账本 `Judge.parents`/`hop` 由此按值级来源计（`iterate` 三层 hop 1/2/3）。账本编码只写 taint 分量，格式不变。回归：`crates/jpp-core/tests/bypass_b84_provenance.rs`。
+
+## B76 题类（运行时半，步 12e-2，2026-09-24）
+
+- `form(op, 模板, {…, over_kind: "labels" | "candidates" | "questions" | "actions"})`：题式对 `over` 的声明，经 `fill` 带到题（`Form.over_kind`、`Question.over_kind`）；不进 `form_hash`、`q_hash`，空不序列化；非法值报 `E-rt-question`。
+- `Question::kind()`：基础类（不看状态）；`Question::kind_on(&SlotShape)`：给定槽形时的精化类；`State::slot_shape()`：`on` 单对象 / 一对，`over` 空 / 字面标签 / 计算材料。推断函数只在 `jpp-ir::question_kind`。
+- 运行时在登记读数时按「题 × 状态槽形」记精化类（按读数句柄，`21` 写作 `ReadingMeta.kind`）。报告、账本不打印题类。校准记录的 `kind` 分类字段随步 20a（校准格式步）落地。

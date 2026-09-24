@@ -1,0 +1,13 @@
+// 真值通道的第一步：把报错题问一遍构造出来的 220 段工具输出，留下读数，再按构造真值导入。
+// 题面与 winnow.jpp 的报错题逐字相同（同题同键）。
+import "../../../lib/outcome.jpp";
+budget {calls: 230, cost: 0.2, depth: 256};
+let has_error = test("这段工具输出里是否含有报错、失败或异常信息？", "winnow-error");
+let chunks = content(do("read_json", ["chunks.json"], 1)).chunks;
+let r = sieve(chunks, has_error);
+// 每个元素的账本键，用来把读数配回材料编号（读数本身不进值，J-01）
+let keys = concat(concat(map(accepted(r), fn(e) { {i: e.index, k: key_of(e.exit)} }),
+                         map(ignored(r), fn(e) { {i: e.index, k: key_of(e.exit)} })),
+                  map(r.pending, fn(p) { {i: p.element.index, k: key_of(p.exit)} }));
+consume(r, "drop");
+{n: len(chunks), spent: r.spent, keys: keys}

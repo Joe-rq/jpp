@@ -14,7 +14,7 @@ use std::rc::Rc;
 
 use common::*;
 use jpp_core::effects::{CalibStore, FixedClient, NoCallClient};
-use jpp_core::interp::{ActionRegistry, TaintOut};
+use jpp_core::interp::{ActionRegistry, Interp, Passes, TaintOut};
 use jpp_core::ledger::{Entry, Ledger};
 use jpp_core::value::{Answer, Mat, Op, Question, State};
 use jpp_core::{Program, run};
@@ -555,7 +555,7 @@ fn partial_program() -> Program {
 }
 
 /// 取一个部分结果里可展示的三项（`more` 是方法值，不进对照）
-fn snapshot(which: &str) -> jpp_core::Expr {
+fn snapshot(which: &str) -> Expr {
     rec(vec![
         ("plan", field(name(which), "plan")),
         ("pending", field(name(which), "pending")),
@@ -590,7 +590,10 @@ fn 部分候选先交付再续解() {
     assert_eq!(log.borrow().len(), 3, "三次本地检查：A、B 各一次，C 补材料后一次");
     assert_eq!(outcome.trace.count("do", false), 3);
     assert_eq!(outcome.trace.count("transform", false), 1, "只给 C 补了材料");
-    assert_eq!(outcome.cost.replayed, 0, "第一次跑没有旧账本可重放");
+    // 步 13b（事后补登，见 `地基/过程记录/工程-步13b.md`）：`screen` 的 `map` 体经 `look(c, q)` 包装判断，
+    // 向量化穿过包装后，后续各轮在第 0 轮刷新前已登记；真走到时命中本趟账本，计入 `replayed`。
+    // 第一次跑没有旧账本，这 3 条都是本趟提前登记的命中，调用数仍是 6。
+    assert_eq!(outcome.cost.replayed, 3, "本趟提前登记的站点被真走到时命中");
     // `W-drop-vs-escalate` 是**常规记账**（显式丢弃已记账），不是「可能有问题」。它和
     // `W-bound` / `W-header` 挤在同一个列表里，所以这里不能再断言整个列表为空——
     // 断言落在「有没有那两条真正的体检项」上。把常规记账从 warnings 分出去的提议见
@@ -666,4 +669,40 @@ fn 错的效应标注拦得住() {
         let report = jpp_core::check(&good);
         assert!(report.is_ok(), "{name} 标对了不该被报：{}", report.render());
     }
+}
+
+/// 步 13b（主会话要求）：穿过 `look` 包装的向量化省的是层数，不多花调用；预算紧时也不多花、出口不变。
+fn 跑_开关(program: &Program, passes: Passes) -> jpp_core::Outcome {
+    let log = Rc::new(RefCell::new(Vec::new()));
+    let mut client = fixed_client();
+    let mut ledger = Ledger::new();
+    let calib = calibrations();
+    let acts = actions(log);
+    let mut it = Interp::new(&mut client, &mut ledger, &calib, &acts, program.budget.clone());
+    it.passes = passes;
+    it.run(program).unwrap_or_else(|e| panic!("{}", e.render()))
+}
+
+#[test]
+fn 部分候选_穿过包装只省层数() {
+    let program = partial_program();
+    let 开 = 跑_开关(&program, Passes::default());
+    let 关 = 跑_开关(&program, Passes { vectorize: false, ..Passes::default() });
+    assert_eq!(开.cost.calls, 关.cost.calls, "调用数不变");
+    assert_eq!(开.value_json(), 关.value_json(), "出口不变");
+    assert!(开.layers.len() < 关.layers.len(), "层数变少：开 {} 关 {}", 开.layers.len(), 关.layers.len());
+    assert_eq!((开.cost.calls, 开.layers.len(), 关.layers.len()), (6, 3, 6));
+}
+
+#[test]
+fn 部分候选_预算紧时提前登记不多花() {
+    let mut program = partial_program();
+    program.budget.calls = 4;
+    let 开 = 跑_开关(&program, Passes::default());
+    let 关 = 跑_开关(&program, Passes { vectorize: false, ..Passes::default() });
+    assert!(开.cost.calls <= 4, "不超预算：{}", 开.cost.calls);
+    assert!(关.cost.calls < 6, "预算确实吃紧（原程序要 6 次）：{}", 关.cost.calls);
+    assert_eq!(开.cost.calls, 关.cost.calls, "预算紧时调用数不因提前登记而增加");
+    assert_eq!(开.value_json(), 关.value_json(), "出口不变");
+    assert_eq!(开.returned_unsure, 关.returned_unsure);
 }

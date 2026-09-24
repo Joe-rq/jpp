@@ -1,0 +1,13 @@
+[package]
+name = "jpp-effects"
+version = "0.1.0"
+edition = "2024"
+license = "MIT"
+description = "J++ effects (L2): effect registry (EffectSpec), capability profile types, read-only view traits"
+
+[dependencies]
+jpp-ir = { path = "../jpp-ir" }
+jpp-value = { path = "../jpp-value" }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+sha2 = "0.10"

@@ -12,7 +12,6 @@
 //! 由 `前端写得出budget_unsure` 钉住。
 
 use std::cell::RefCell;
-use jpp_core::ast::Budget;
 use jpp_core::effects::{CalibStore, Client, EffectError, GenResult, JudgeResult, LiteralMode, Sample};
 use jpp_core::value::{Answer, Question, State};
 
@@ -27,7 +26,7 @@ fn 记录本(keys: &[(String, f64)]) -> CalibStore {
             let p = 0.02 + i as f64 * 0.016;
             c.absorb(k, Sample {
                 p: Some(p), label: Some(if p > 0.55 { 1 } else { 0 }), perms: 0, mode_share: None,
-                mode: LiteralMode::default(), phys: "noul".into(), cluster: None,
+                mode: LiteralMode::default(), phys: "noul".into(), cluster: None, stratum: None,
             }).expect("折得进");
         }
         c.commission(k, 0.10, 0.10, "条").expect("认得动");
@@ -36,11 +35,11 @@ fn 记录本(keys: &[(String, f64)]) -> CalibStore {
     c
 }
 
-/// 前端今天写不出 `budget {unsure: …}`，所以从核心 AST 直接装一个预算进去。
-fn 带unsure预算(src: &str, unsure: Option<f64>) -> jpp_core::ast::Program {
-    let mut p = jpp_frontend::lower(&jpp_frontend::parse(src).expect("解析")).expect("lower");
-    let b = p.budget.take().expect("源码里有 budget");
-    p.budget = Some(Budget { unsure, ..b });
+/// 降级后直接改 IR 的预算（源码里写 `budget {unsure: …}` 也行，见 `前端写得出budget_unsure`；
+/// 这里要同一份程序配不同的 `unsure`）。
+fn 带unsure预算(src: &str, unsure: Option<f64>) -> jpp_core::Program {
+    let mut p = jpp_core::lower(&jpp_core::syntax::parse(src).expect("解析")).expect("lower");
+    p.budget.unsure = unsure;
     p
 }
 
@@ -125,8 +124,8 @@ fn 报在任何模型调用之前() {
 #[test]
 fn 前端写得出budget_unsure() {
     // 2026-09-23 规则批（B32 施工时一并接上）：`.jpp` 里的 `budget {unsure: …}` 进到核心 Budget。
-    let p = jpp_frontend::lower(&jpp_frontend::parse("budget {calls: 1, cost: 1, unsure: 0.5};\n1").expect("解析")).expect("lower");
-    assert_eq!(p.budget.expect("有预算").unsure, Some(0.5));
+    let p = jpp_core::lower(&jpp_core::syntax::parse("budget {calls: 1, cost: 1, unsure: 0.5};\n1").expect("解析")).expect("lower");
+    assert_eq!(p.budget.unsure, Some(0.5));
 }
 
 /// **函数体里的站点也算「可能不止一遍」。**

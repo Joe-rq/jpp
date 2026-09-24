@@ -1,0 +1,119 @@
+{
+ "candidates": 9,
+ "tally": {
+  "sameAs": 1,
+  "curator": 2,
+  "unlinked": 6
+ },
+ "routed": [
+  {
+   "pair": {
+    "a": "Hazy Little Thing IPA",
+    "b": "Sierra Nevada Hazy Little Thing"
+   },
+   "outcome": "assert sameAs",
+   "hints": {
+    "name": "是",
+    "brewery": "是",
+    "style": "是"
+   }
+  },
+  {
+   "pair": {
+    "a": "Hazy Little Thing IPA",
+    "b": "Guinness Extra Stout"
+   },
+   "outcome": "leave unlinked",
+   "hints": {
+    "name": "否",
+    "brewery": "否",
+    "style": "未决"
+   }
+  },
+  {
+   "pair": {
+    "a": "Hazy Little Thing IPA",
+    "b": "Bell's Two Hearted IPA"
+   },
+   "outcome": "leave unlinked",
+   "hints": {
+    "name": "否",
+    "brewery": "否",
+    "style": "未决"
+   }
+  },
+  {
+   "pair": {
+    "a": "Guinness Draught",
+    "b": "Guinness Extra Stout"
+   },
+   "outcome": "curator queue",
+   "hints": {
+    "name": "否",
+    "brewery": "是",
+    "style": "未决"
+   }
+  },
+  {
+   "pair": {
+    "a": "Two Hearted Ale",
+    "b": "Sierra Nevada Hazy Little Thing"
+   },
+   "outcome": "leave unlinked",
+   "hints": {
+    "name": "否",
+    "brewery": "否",
+    "style": "未决"
+   }
+  },
+  {
+   "pair": {
+    "a": "Two Hearted Ale",
+    "b": "Guinness Extra Stout"
+   },
+   "outcome": "leave unlinked",
+   "hints": {
+    "name": "否",
+    "brewery": "否",
+    "style": "未决"
+   }
+  },
+  {
+   "pair": {
+    "a": "Two Hearted Ale",
+    "b": "Bell's Two Hearted IPA"
+   },
+   "outcome": "curator queue",
+   "hints": {
+    "name": "是",
+    "brewery": "是",
+    "style": "未决"
+   }
+  },
+  {
+   "pair": {
+    "a": "Pliny the Elder",
+    "b": "Sierra Nevada Hazy Little Thing"
+   },
+   "outcome": "leave unlinked",
+   "hints": {
+    "name": "否",
+    "brewery": "否",
+    "style": "未决"
+   }
+  },
+  {
+   "pair": {
+    "a": "Pliny the Elder",
+    "b": "Bell's Two Hearted IPA"
+   },
+   "outcome": "leave unlinked",
+   "hints": {
+    "name": "否",
+    "brewery": "否",
+    "style": "未决"
+   }
+  }
+ ],
+ "unobserved": []
+}

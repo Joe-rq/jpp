@@ -1,0 +1,144 @@
+import "../../../lib/outcome.jpp";
+
+budget { calls: 1000, cost: 100.0 };
+
+let materials = content(do("read_json", ["../baseline/t1/materials.json"], 0));
+let doc = materials.document;
+let root = materials.root;
+let tree = materials.tree;
+
+fn ask_child_select(cat) {
+  let children = tree[cat];
+  let s = state(doc, {over: children});
+  let q = select("这份法律文书最应归入下列哪一类？", "folio-level");
+  let r = judge(s, q);
+  let c = cut(r);
+  handle(c, {
+    act: fn(x) { {kind: "unsure"} },
+    ignore: fn(x) { {kind: "unsure"} },
+    pick: fn(idx) { {kind: "pick", child: children[idx]} },
+    at: fn(x) { {kind: "unsure"} },
+    unsure: fn(x) { consume(x, "drop"); {kind: "unsure"} }
+  })
+}
+
+fn walk_single(cat, path, step) {
+  if !has(tree, cat) {
+    {leaf: cat, path: path, stopped: "leaf", unobserved: []}
+  } else if step >= 6 {
+    {leaf: cat, path: path, stopped: "depth", unobserved: []}
+  } else {
+    let res = ask_child_select(cat);
+    if res.kind == "pick" {
+      walk_single(res.child, append(path, res.child), step + 1)
+    } else {
+      {leaf: cat, path: path, stopped: "unsure", unobserved: []}
+    }
+  }
+}
+
+let topic_tpl = form("test", "这段话的内容是否与「{子类}」这个话题相关？", {calib: "form-topic"});
+
+fn ask_round(pairs, idx, fills) {
+  if idx >= len(pairs) {
+    sieve([doc], topic_tpl, fills)
+  } else {
+    ask_round(pairs, idx + 1, append(fills, {子类: pairs[idx].child}))
+  }
+}
+
+fn classify(ci) {
+  if len(accepted(ci)) > 0 {
+    "yes"
+  } else if len(unobserved(ci)) > 0 {
+    "budget"
+  } else if len(undecided(ci)) > 0 {
+    "unsure"
+  } else {
+    "no"
+  }
+}
+
+fn build_pairs(cats, idx, acc) {
+  if idx >= len(cats) {
+    acc
+  } else {
+    let cat = cats[idx];
+    build_pairs(cats, idx + 1, concat(acc, map(tree[cat], fn(ch) { {cat: cat, child: ch} })))
+  }
+}
+
+fn fold_children(pairs, results, idx, limit, any_yes, yes_list, undecided_count, unobs) {
+  if idx >= limit {
+    {any_yes: any_yes, yes_list: yes_list, undecided: undecided_count, unobs: unobs}
+  } else {
+    let p = pairs[idx];
+    let ci = results[idx];
+    let cls = classify(ci);
+    if cls == "yes" {
+      fold_children(pairs, results, idx + 1, limit, true, append(yes_list, p.child),
+                    undecided_count, unobs)
+    } else if cls == "unsure" {
+      consume(ci, "drop");
+      fold_children(pairs, results, idx + 1, limit, any_yes, yes_list,
+                    undecided_count + 1, unobs)
+    } else if cls == "budget" {
+      consume(ci, "drop");
+      fold_children(pairs, results, idx + 1, limit, any_yes, yes_list,
+                    undecided_count, append(unobs, p.child))
+    } else {
+      fold_children(pairs, results, idx + 1, limit, any_yes, yes_list, undecided_count, unobs)
+    }
+  }
+}
+
+fn fold_cats(cats, pairs, results, cat_idx, cursor, dead_ends, yes_list, undecided_count, unobs) {
+  if cat_idx >= len(cats) {
+    {dead_ends: dead_ends, yes_list: yes_list, undecided: undecided_count, unobs: unobs}
+  } else {
+    let cat = cats[cat_idx];
+    let nchild = len(tree[cat]);
+    let r = fold_children(pairs, results, cursor, cursor + nchild, false, [], 0, []);
+    let new_dead = if r.any_yes { dead_ends } else { append(dead_ends, cat) };
+    fold_cats(cats, pairs, results, cat_idx + 1, cursor + nchild, new_dead,
+              concat(yes_list, r.yes_list), undecided_count + r.undecided,
+              concat(unobs, r.unobs))
+  }
+}
+
+fn process_round(cats) {
+  let pairs = build_pairs(cats, 0, []);
+  let results = ask_round(pairs, 0, []);
+  let folded = fold_cats(cats, pairs, results, 0, 0, [], [], 0, []);
+  if len(folded.unobs) > 0 {
+    {cut: true, unobs: folded.unobs}
+  } else {
+    {cut: false, next_frontier: folded.yes_list, dead_ends: folded.dead_ends,
+     undecided: folded.undecided}
+  }
+}
+
+fn walk_multi(frontier, leaves, dead_ends, layers, undecided, round) {
+  let leaf_cats = filter(frontier, fn(c) { !has(tree, c) });
+  let internal_cats = filter(frontier, fn(c) { has(tree, c) });
+  if len(internal_cats) == 0 {
+    {leaves: concat(leaves, leaf_cats), dead_ends: dead_ends, layers: layers,
+     undecided: undecided, unobserved: []}
+  } else if round >= 6 {
+    {leaves: leaves, dead_ends: dead_ends, layers: layers, undecided: undecided,
+     unobserved: []}
+  } else {
+    let pr = process_round(internal_cats);
+    if pr.cut {
+      {leaves: leaves, dead_ends: dead_ends, layers: layers, undecided: undecided,
+       unobserved: pr.unobs}
+    } else {
+      walk_multi(pr.next_frontier, concat(leaves, leaf_cats), concat(dead_ends, pr.dead_ends),
+                 layers + 1, undecided + pr.undecided, round + 1)
+    }
+  }
+}
+
+let sp = walk_single(root, [], 0);
+let mp = walk_multi([root], [], [], 0, 0, 0);
+{single_path: sp, multi_path: mp}

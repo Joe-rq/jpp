@@ -10,7 +10,7 @@ use jpp_core::{run, ActionRegistry, Error};
 #[test]
 fn overflow_is_a_runtime_error_at_the_expression() {
     let src = "budget {calls: 0, cost: 0, depth: 8};\n9223372036854775807 + 1";
-    let program = jpp_frontend::lower(&jpp_frontend::parse(src).unwrap()).unwrap();
+    let program = jpp_core::lower(&jpp_core::syntax::parse(src).unwrap()).unwrap();
     let mut client = FixedClient::new();
     let mut ledger = Ledger::new();
     let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {

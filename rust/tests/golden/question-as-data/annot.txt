@@ -1,0 +1,198 @@
+ir v1
+budget calls=6 cost=0.01 depth=256 escalate=- unsure=- latency_p95=- absent=-
+block 111..1663
+  let mention : -
+    #0 construct form @0 169..243
+      #1 text "test"
+      #2 text "这段话是否提到了{city}？"
+      #3 record 219..242
+        calib:
+          #4 text "form-mention"
+  let base : -
+    #5 construct fill @1 256..287
+      #6 name mention
+      #7 record 270..286
+        city:
+          #8 text "南京"
+  fn-stmt stricter
+    #9 fn (q:{"Named":"Question"}) -> {"Named":"Question"} effects=- ; {"effect":{"known":[],"open":false},"summary":{"may_touch_world":false,"may_refresh":false},"duty_kind":null,"refresh_point":false}
+      block 394..528
+        result
+          #10 construct test @2 400..526
+            #11 binary +
+              #12 field .text
+                #13 name q
+              #14 text "只算明确写出这个城市名的情况。"
+            #15 field .calib
+              #16 name q
+            #17 record 472..525
+              presupposition:
+                #18 text "材料里至少提到一个地名"
+  let strict : -
+    #19 call 542..556
+      callee:
+        #20 name stricter
+      #21 name base
+  let pool : -
+    #22 list 671..764
+      #23 name base
+      #24 construct fill @3 678..709
+        #25 name mention
+        #26 record 692..708
+          city:
+            #27 text "南宁"
+      #28 construct select @4 711..763
+        #29 text "哪个城市在长江边？"
+        #30 text "form-choice"
+  let binary : -
+    #31 call @5 779..836
+      callee:
+        #32 name filter
+      #33 name pool
+      #35 fn (q:{"Named":"Question"}) -> - effects=-
+        block 808..835
+          result
+            #36 binary ==
+              #37 field .partition
+                #38 name q
+              #39 text "binary"
+  let derived : -
+    #40 call @6 852..873
+      callee:
+        #41 name map
+      #42 name binary
+      #43 name stricter
+  fn-stmt verdict
+    #44 fn (m:{"Named":"Mat"}, q:{"Named":"Question"}) -> - effects=[judge] ; {"effect":{"known":["judge"],"open":false},"summary":{"may_touch_world":false,"may_refresh":false},"duty_kind":null,"refresh_point":false}
+      block 997..1207
+        result
+          #45 handle @7 1003..1205
+            exit:
+              #46 cut @8 1010..1033
+                reading:
+                  #47 effect judge @9 1014..1032 ; {"effect":{"known":["judge"],"open":false},"summary":null,"duty_kind":null,"refresh_point":false}
+                    state:
+                      #48 state @10 1020..1028
+                        on:
+                          #49 name m
+                    questions:
+                      #50 name q
+            arms:
+              #51 record 1035..1204
+                act:
+                  #53 fn () -> - effects=-
+                    block 1055..1074
+                      result
+                        #54 record 1057..1072
+                          answer:
+                            #55 text "是"
+                ignore:
+                  #57 fn () -> - effects=-
+                    block 1097..1116
+                      result
+                        #58 record 1099..1114
+                          answer:
+                            #59 text "否"
+                unsure:
+                  #61 fn (u:-) -> - effects=-
+                    block 1140..1198
+                      result
+                        #62 record 1142..1196
+                          answer:
+                            #63 text "未决"
+                          cause:
+                            #64 call 1168..1183
+                              callee:
+                                #65 name unsure_cause
+                              #66 name u
+                          pending:
+                            #67 name u
+  let note : -
+    #68 call 1219..1283
+      callee:
+        #69 name mat
+      #70 text "他在南宁读的大学，毕业后去了南京工作。"
+  result
+    #71 record 1286..1663
+      base:
+        #72 record 1293..1352
+          text:
+            #73 field .text
+              #74 name base
+          template:
+            #75 field .template
+              #76 name base
+          fill:
+            #77 field .fill
+              #78 name base
+      strict:
+        #79 record 1363..1493
+          text:
+            #80 field .text
+              #81 name strict
+          presupposition:
+            #82 field .presupposition
+              #83 name strict
+          from_form:
+            #84 binary !=
+              #85 field .form
+                #86 name strict
+              #87 unit
+          same_calib:
+            #88 binary ==
+              #89 field .calib
+                #90 name strict
+              #91 field .calib
+                #92 name base
+      kept:
+        #93 call @11 1502..1541
+          callee:
+            #94 name map
+          #95 name binary
+          #97 fn (q:{"Named":"Question"}) -> - effects=-
+            block 1530..1540
+              result
+                #98 field .text
+                  #99 name q
+      dropped:
+        #100 binary -
+          #101 call 1553..1562
+            callee:
+              #102 name len
+            #103 name pool
+          #104 call 1565..1576
+            callee:
+              #105 name len
+            #106 name binary
+      answers:
+        #107 call @12 1588..1662
+          callee:
+            #108 name map
+          #109 name derived
+          #111 fn (q:-) -> - effects=[judge] ; {"effect":{"known":["judge"],"open":false},"summary":{"may_touch_world":false,"may_refresh":false},"duty_kind":null,"refresh_point":false}
+            block 1616..1661
+              result
+                #112 record 1618..1659
+                  asked:
+                    #113 field .text
+                      #114 name q
+                  answer:
+                    #115 call 1642..1658
+                      callee:
+                        #116 name verdict
+                      #117 name note
+                      #118 name q
+sites 13
+  @0 #0 construct:form 169..243 fn=- in=-
+  @1 #5 construct:fill 256..287 fn=- in=-
+  @2 #10 construct:test 400..526 fn=#9 in=-
+  @3 #24 construct:fill 678..709 fn=- in=-
+  @4 #28 construct:select 711..763 fn=- in=-
+  @5 #31 hof:filter 779..836 fn=- in=-
+  @6 #40 hof:map 852..873 fn=- in=-
+  @7 #45 handle 1003..1205 fn=#44 in=-
+  @8 #46 cut 1010..1033 fn=#44 in=-
+  @9 #47 effect:judge 1014..1032 fn=#44 in=-
+  @10 #48 state 1020..1028 fn=#44 in=-
+  @11 #93 hof:map 1502..1541 fn=- in=-
+  @12 #107 hof:map 1588..1662 fn=- in=-

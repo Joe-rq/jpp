@@ -1,0 +1,109 @@
+{
+  "backend": "fixed-0",
+  "cost": {
+    "asks": 0,
+    "calls": 1,
+    "replayed": 1,
+    "tokens": 0,
+    "usd": 0.0
+  },
+  "exits": [
+    {
+      "exit": "act",
+      "grade": "Fixture",
+      "key": "form-mention",
+      "releases": false,
+      "site": 1010
+    },
+    {
+      "exit": "act",
+      "grade": "Fixture",
+      "key": "form-mention",
+      "releases": false,
+      "site": 1010
+    }
+  ],
+  "fixture_description": "Synthetic fixed observations for question-as-data.jpp (construction check only).",
+  "local_checks": [],
+  "mode": "fixed observations; no model API requests",
+  "pending": [],
+  "replay": false,
+  "resumed": false,
+  "returned_unsure": [],
+  "status": "returned",
+  "trace": {
+    "events": [
+      {
+        "cost": 0.0,
+        "key": "3760f5ca457b2ec3ed68e49b",
+        "kind": "judge",
+        "note": "「这段话是否提到了南宁？只算明确写出这个城市名的情况。」",
+        "replayed": false,
+        "site": {
+          "end": 1032,
+          "start": 1014
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "a384e3a3c82161f7149d2a85",
+        "kind": "judge",
+        "note": "「这段话是否提到了南京？只算明确写出这个城市名的情况。」",
+        "replayed": false,
+        "site": {
+          "end": 1032,
+          "start": 1014
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "3760f5ca457b2ec3ed68e49b",
+        "kind": "judge",
+        "note": "「这段话是否提到了南宁？只算明确写出这个城市名的情况。」",
+        "replayed": true,
+        "site": {
+          "end": 1032,
+          "start": 1014
+        }
+      }
+    ],
+    "warnings": [
+      "W-fixture-line: @1010 键 form-mention 的线是夹具线（宿主 put 写入或没有认证证书，n=1），出口 Act 照常路由，但按 B29 不算放行不可逆 do 的可信合取项。修法【需接线人】：用 calib-import 或 commission 从带真值样本认证这条线",
+      "W-fixture-line: @1010 键 form-mention 的线是夹具线（宿主 put 写入或没有认证证书，n=1），出口 Act 照常路由，但按 B29 不算放行不可逆 do 的可信合取项。修法【需接线人】：用 calib-import 或 commission 从带真值样本认证这条线"
+    ]
+  },
+  "value": {
+    "answers": [
+      {
+        "answer": {
+          "answer": "是"
+        },
+        "asked": "这段话是否提到了南京？只算明确写出这个城市名的情况。"
+      },
+      {
+        "answer": {
+          "answer": "是"
+        },
+        "asked": "这段话是否提到了南宁？只算明确写出这个城市名的情况。"
+      }
+    ],
+    "base": {
+      "fill": {
+        "city": "南京"
+      },
+      "template": "这段话是否提到了{city}？",
+      "text": "这段话是否提到了南京？"
+    },
+    "dropped": 1,
+    "kept": [
+      "这段话是否提到了南京？",
+      "这段话是否提到了南宁？"
+    ],
+    "strict": {
+      "from_form": false,
+      "presupposition": "材料里至少提到一个地名",
+      "same_calib": true,
+      "text": "这段话是否提到了南京？只算明确写出这个城市名的情况。"
+    }
+  }
+}

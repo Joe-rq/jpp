@@ -29,14 +29,34 @@ use jpp_core::value::{Answer, Op, Reading};
 use serde_json::Value as Json;
 use std::rc::Rc;
 
+
+// 读数是句柄、答案在表里（步 11b-3）：测试自带一张答案表，经 `Answers` 交给 `strength`。
+thread_local! {
+    static 答: std::cell::RefCell<jpp_core::value::AnswerTable> = Default::default();
+    static 号: std::cell::Cell<u64> = const { std::cell::Cell::new(0) };
+}
+fn 新句柄() -> u64 {
+    号.with(|c| {
+        let v = c.get();
+        c.set(v + 1);
+        v
+    })
+}
+fn 记答(r: &Reading, a: Answer) {
+    答.with(|t| t.borrow_mut().insert(r, a));
+}
+fn 答表() -> jpp_core::value::AnswerTable {
+    答.with(|t| t.borrow().clone())
+}
+
 fn 读数(calib: &str, p: f64) -> Rc<Reading> {
     let r = Reading {
         q_hash: "q".into(), state_hash: "s".into(), op: Op::Test, calib: calib.into(),
-        answer: Default::default(), fail: None, model_id: "m".into(), ledger_key: "lk".into(),
+        id: 新句柄(), fail: None, model_id: "m".into(), ledger_key: "lk".into(),
         over_len: 0, scale: vec![], perms: Default::default(), mode_share: Default::default(),
-        missing_evidence: vec![], state_taint: Default::default(), form_hash: None,
+        missing_evidence: vec![], state_taint: Default::default(), form_hash: None, fp: None,
     };
-    r.fill(Answer::Noul(p));
+    记答(&r, Answer::Noul(p));
     Rc::new(r)
 }
 
@@ -78,7 +98,7 @@ fn uncertainty在上岗档上与python相同() {
         let mut store = CalibStore::new();
         store.put("k", hi, lo, 10, "上岗").unwrap();
         store.profile.delta = (delta, delta, delta);
-        let 我 = uncertainty(&store, &读数("k", p)).expect("上岗档一定算得出");
+        let 我 = { let r = 读数("k", p); uncertainty(&store, &答表(), &r) }.expect("上岗档一定算得出");
         let 它 = g["u"].as_f64().unwrap();
         if (我 - 它).abs() > 1e-9 {
             分岔.push(format!("p={p} hi={hi} lo={lo} δ={delta}: Rust={我} Python={它}"));
@@ -99,11 +119,11 @@ fn uncertainty在上岗档上与python相同() {
 #[test]
 fn 冷键上的分岔是有意的() {
     let 空档 = CalibStore::new(); // 没加载档案
-    assert_eq!(uncertainty(&空档, &读数("冷", 0.5)), None, "Rust：算不出");
+    assert_eq!({ let r = 读数("冷", 0.5); uncertainty(&空档, &答表(), &r) }, None, "Rust：算不出");
     // Python 在同样输入下会给 0.0（带 = 整个 [0,1]）——**那个 0.0 恰好排在最前面**
     let mut 有档 = CalibStore::new();
     有档.profile.hash = Some("装过了".into());
     有档.profile.safety = (0.75, 0.25);
     有档.profile.delta = (0.04, 0.04, 0.04);
-    assert!(uncertainty(&有档, &读数("冷", 0.95)).is_some(), "档案装了就照 Python 那样给数");
+    assert!({ let r = 读数("冷", 0.95); uncertainty(&有档, &答表(), &r) }.is_some(), "档案装了就照 Python 那样给数");
 }

@@ -1,6 +1,6 @@
 //! Host wiring only: fixed observations, local action registration and report I/O.
 use jpp_core::{
-    ast::Program,
+    Program,
     effects::{CalibStore, Client},
     interp::{ActionRegistry, TaintOut, json_to_value},
     ledger::Ledger,
@@ -57,7 +57,12 @@ pub fn execute(
         std::fs::write(path.as_ref(), bytes).map_err(|e| format!("{path}: {e}"))?;
         Ok(value.clone())
     });
-    let outcome = jpp_core::run(program, client, calibrations, &actions, ledger)?;
+    // 重放是审计重现（B35）：账本记过的调用照记录计预算，缺记录即 E-replay；续跑与首跑走 run
+    let outcome = if replay_only {
+        jpp_core::run_replay(program, client, calibrations, &actions, ledger)?
+    } else {
+        jpp_core::run(program, client, calibrations, &actions, ledger)?
+    };
     evidence_out.extend(outcome.evidence.iter().cloned());
     // J-10 的静态告警只有带校准记录的那次检查报得出来（在 `jpp_core::run` 里），
     // CLI 执行前那次检查没有记录、报不出它；这里打到 stderr，`--output` 时终端也看得见。
@@ -78,6 +83,11 @@ pub fn execute(
     // 停岗候选（B25）只在有时出现，默认输出逐字节不变
     if !outcome.suspend_candidates.is_empty() {
         report["suspend_candidates"] = json!(outcome.suspend_candidates);
+    }
+    // 逐出口记线等级（步 20f）：只在运行里有 `cut` 出口时出现。出口不进账本（`20` §3.7(1)），
+    // 只凭账本重放时按账本头 `calib_used` 的记录重算出同一张表
+    if !outcome.exits.is_empty() {
+        report["exits"] = json!(outcome.exits);
     }
     Ok(report)
 }

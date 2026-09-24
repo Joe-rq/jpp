@@ -1,0 +1,82 @@
+import "../../../lib/outcome.jpp";
+
+budget { calls: 100, cost: 100.0 };
+
+fn count_of(counts, name) {
+  let hit = filter(counts, fn(c) { c.name == name });
+  if (len(hit) > 0) { hit[0].n } else { 0 }
+}
+
+fn bump(counts, name) {
+  let hit = filter(counts, fn(c) { c.name == name });
+  if (len(hit) > 0) {
+    map(counts, fn(c) {
+      if (c.name == name) { {"name": c.name, "n": c.n + 1} } else { c }
+    })
+  } else {
+    append(counts, {"name": name, "n": 1})
+  }
+}
+
+let raw = do("read_json", ["../baseline/materials.json"], 0);
+let data = if (is_fail(raw)) { fail("read_json failed") } else { raw };
+let candidates = data.content.candidates;
+let interviewers = data.content.interviewers;
+
+let pairs = fold(candidates, [], fn(acc, c) {
+  let matches = filter(interviewers, fn(iv) { contains(iv.levels, c.level) });
+  let ps = map(matches, fn(iv) { {"a": c, "b": iv} });
+  concat(acc, ps)
+});
+
+let q = test(
+  "面试官 b 的专长是否覆盖候选人 a 的技术方向，足以对其进行技术面试？",
+  "iv-cover"
+);
+let o = sieve(pairs, q);
+
+let acc_pairs = accepted(o);
+let rej_pairs = ignored(o);
+let rev_pairs = undecided(o);
+
+let rejected = map(rej_pairs, fn(el) {
+  {"candidate": el.item.a.name, "interviewer": el.item.b.name}
+});
+let review = map(rev_pairs, fn(el) {
+  {"candidate": el.element.item.a.name, "interviewer": el.element.item.b.name}
+});
+
+let assign_init = {"plan": [], "assigned": [], "counts": []};
+let assign_final = fold(acc_pairs, assign_init, fn(st, el) {
+  let cand = el.item.a.name;
+  let intv = el.item.b.name;
+  let already = contains(st.assigned, cand);
+  let cnt = count_of(st.counts, intv);
+  if (already) {
+    st
+  } else if (cnt >= 2) {
+    st
+  } else {
+    {
+      "plan": append(st.plan, {"candidate": cand, "interviewer": intv}),
+      "assigned": append(st.assigned, cand),
+      "counts": bump(st.counts, intv)
+    }
+  }
+});
+
+let plan = assign_final.plan;
+let placed = assign_final.assigned;
+let unplaced = map(
+  filter(candidates, fn(c) { !contains(placed, c.name) }),
+  fn(c) { c.name }
+);
+
+let _c = consume(o, "drop");
+{
+  "pairs_asked": len(pairs),
+  "plan": plan,
+  "unplaced": unplaced,
+  "review": review,
+  "rejected": rejected
+}

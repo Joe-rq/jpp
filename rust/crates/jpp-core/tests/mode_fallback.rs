@@ -1,21 +1,15 @@
-//! **模式级键回退查找**（`12`:136）：
-//! `calib_key = (q_text_hash, slot_kinds, phys, render_version, literal_mode)`，
-//! 「**题级样本不够时用模式级校准做先验收缩**（jev-f6）」。
+//! **模式键不在查找链上（B44，步 11b-2）**。
 //!
-//! **只做查找那一半。** 收缩估计器（定收缩强度、标定）是研究，**明确不做**——见文末。
-//!
-//! **为什么它是长处不是栅栏**：现在所有冷键一律 `Unsure(cold)`。这一格填上，
-//! **整类样本不足的题跟着受益**。
-//!
-//! **硬边界：模式级的线不能冒充题级的线。** 用了回退要在出口上留痕，
-//! 让 handler 分得出「这道题自己的线」和「这类题的线」——**不留痕就是把两种
-//! 证据强度压平**，那正是这几轮一直在拆的东西。
+//! 原先（`12`:136 旧文）题级与题式级都没有上岗记录时，借模式级「上岗」记录直接切出口
+//! （`W-mode-prior`）。B44 裁定：模式级记录只作 `commission` 的先验输入，不是认证线；
+//! 查找链是 题键 → 题式键 → 冷（类键一级见 B34，步 20）。本文件原来钉的是回退行为，
+//! 步 11b-2 起改钉「不回退」：有模式级记录也仍是冷，且不留来源。
 
 use jpp_core::effects::{CalibStore, LiteralMode};
 use jpp_core::ledger::Ledger;
 use jpp_core::value::Answer;
 use jpp_core::{run, ActionRegistry};
-use jpp_frontend::{lower, parse};
+use jpp_core::{lower, syntax::parse};
 
 mod 桩 {
     use jpp_core::effects::{Client, EffectError, GenResult, JudgeResult};
@@ -62,21 +56,21 @@ fn 题级冷且模式级也没有时仍然冷() {
     assert_eq!(v["线源"], "", "没有线可用，就不该谎称有来源");
 }
 
-/// **B 的绿**：题级冷、**模式级有线** → 拿到线，且出口带着「用的是模式级」的痕迹。
+/// **B44：题级冷时不借模式级。** 模式级有上岗记录，出口仍是冷，且不留来源。
+/// （步 11b-2 前这里断言 `act` 与 `模式级·手填`，是回退行为。）
 #[test]
-fn 题级冷时回退到模式级并留痕() {
+fn 题级冷时不借模式级() {
     let mut calib = CalibStore::new();
-    // 这一类题（noul + 默认字面模式）的线：在 200 条标注上定过
+    // 这一类题（noul + 默认字面模式）的记录：只作先验，不供线
     calib.put(&CalibStore::mode_key("noul", LiteralMode::default()), 0.80, 0.20, 200, "上岗").expect("写得进");
 
     let v = 跑(&calib, 0.95);
-    assert_eq!(v["结果"], "act", "0.95 过了模式级的 hi=0.80：{v}");
-    assert_eq!(v["线源"], "模式级·手填", "**模式级的线不能冒充题级的线**");
+    assert_eq!(v["结果"], "cold", "模式级记录不供线（B44）：{v}");
+    assert_eq!(v["线源"], "", "没有用上线就不留来源");
 
-    // 同一条线，p 落在带内 → 仍是 unsure，但来源照样留痕
     let v = 跑(&calib, 0.5);
-    assert_eq!(v["结果"], "band");
-    assert_eq!(v["线源"], "模式级·手填");
+    assert_eq!(v["结果"], "cold");
+    assert_eq!(v["线源"], "");
 }
 
 /// **题级有线时不回退**：自己的线优先，来源是题级。
@@ -144,7 +138,7 @@ fn _用到answer(a: &Answer) -> bool {
 fn 待真值不供线() {
     use jpp_core::effects::Sample;
     let mut calib = CalibStore::new();
-    calib.absorb("题级.没测过", Sample { p: Some(0.9), label: None, perms: 0, mode_share: None, mode: LiteralMode::default(), phys: "noul".into(), cluster: None }).expect("折得进");
+    calib.absorb("题级.没测过", Sample { p: Some(0.9), label: None, perms: 0, mode_share: None, mode: LiteralMode::default(), phys: "noul".into(), cluster: None, stratum: None }).expect("折得进");
     assert_eq!(calib.get("题级.没测过").status, "待真值");
 
     let v = 跑(&calib, 0.95);

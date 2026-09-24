@@ -1,0 +1,101 @@
+ir v1
+budget calls=20 cost=0.01 depth=256 escalate=- unsure=- latency_p95=- absent=-
+block 99..749
+  let mention : -
+    #0 construct form @0 157..231
+      #1 text "test"
+      #2 text "这段话是否提到了{city}？"
+      #3 record 207..230
+        calib:
+          #4 text "form-mention"
+  let m : -
+    #5 call 241..305
+      callee:
+        #6 name mat
+      #7 text "我上个月去了成都出差，顺便见了老朋友。"
+  let cities : -
+    #8 list 320..460
+      #9 text "成都"
+      #10 text "北京"
+      #11 text "上海"
+      #12 text "杭州"
+      #13 text "西安"
+      #14 text "南京"
+      #15 text "武汉"
+      #16 text "重庆"
+      #17 text "天津"
+      #18 text "苏州"
+      #19 text "长沙"
+      #20 text "郑州"
+      #21 text "青岛"
+      #22 text "厦门"
+  let qs : -
+    #23 call @1 471..518
+      callee:
+        #24 name map
+      #25 name cities
+      #27 fn (c:-) -> - effects=-
+        block 489..517
+          result
+            #28 construct fill @2 491..515
+              #29 name mention
+              #30 record 505..514
+                city:
+                  #31 name c
+  fn-stmt verdict
+    #32 fn (q:{"Named":"Question"}) -> - effects=[judge] ; {"effect":{"known":["judge"],"open":false},"summary":{"may_touch_world":false,"may_refresh":false},"duty_kind":null,"refresh_point":false}
+      block 553..719
+        result
+          #33 handle @3 559..717
+            exit:
+              #34 cut @4 566..589
+                reading:
+                  #35 effect judge @5 570..588 ; {"effect":{"known":["judge"],"open":false},"summary":null,"duty_kind":null,"refresh_point":false}
+                    state:
+                      #36 state @6 576..584
+                        on:
+                          #37 name m
+                    questions:
+                      #38 name q
+            arms:
+              #39 record 591..716
+                act:
+                  #41 fn () -> - effects=-
+                    block 611..620
+                      result
+                        #42 text "是"
+                ignore:
+                  #44 fn () -> - effects=-
+                    block 643..652
+                      result
+                        #45 text "否"
+                unsure:
+                  #47 fn (u:-) -> - effects=-
+                    block 676..710
+                      result
+                        #48 record 678..708
+                          answer:
+                            #49 text "未决"
+                          pending:
+                            #50 name u
+  result
+    #51 call @7 720..749
+      callee:
+        #52 name map
+      #53 name qs
+      #55 fn (q:-) -> - effects=-
+        block 734..748
+          result
+            #56 call 736..746
+              callee:
+                #57 name verdict
+              #58 name q
+sites 8
+  @0 #0 construct:form 157..231 fn=- in=-
+  @1 #23 hof:map 471..518 fn=- in=-
+  @2 #28 construct:fill 491..515 fn=#27 in=@1
+  @3 #33 handle 559..717 fn=#32 in=-
+  @4 #34 cut 566..589 fn=#32 in=-
+  @5 #35 effect:judge 570..588 fn=#32 in=-
+  @6 #36 state 576..584 fn=#32 in=-
+  @7 #51 hof:map 720..749 fn=- in=-

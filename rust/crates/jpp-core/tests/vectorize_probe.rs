@@ -7,7 +7,7 @@ use jpp_core::effects::{CalibStore, Client, EffectError, GenResult, JudgeResult}
 use jpp_core::interp::{ActionRegistry, Interp, Passes};
 use jpp_core::ledger::Ledger;
 use jpp_core::value::{Answer, Question, State};
-use jpp_frontend::{lower, parse};
+use jpp_core::{lower, syntax::parse};
 
 struct 记账(RefCell<Vec<usize>>);
 impl Client for 记账 {
@@ -32,7 +32,7 @@ fn 跑p(src: &str, passes: Passes) -> (u64, usize, Vec<usize>) {
     calib.put("k", 0.8, 0.2, 50, "上岗").unwrap();
     let mut l = Ledger::new();
     let acts = ActionRegistry::new();
-    let b = program.budget.clone().expect("有");
+    let b = program.budget.clone();
     let mut it = Interp::new(&mut c, &mut l, &calib, &acts, b);
     it.passes = passes;
     let o = it.run(&program).expect("跑得完");

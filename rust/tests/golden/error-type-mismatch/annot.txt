@@ -1,0 +1,16 @@
+ir v1
+budget calls=0 cost=0 depth=- escalate=- unsure=- latency_p95=- absent=-
+block 0..85
+  fn-stmt twice
+    #0 fn (x:{"Named":"Int"}) -> {"Named":"Int"} effects=- ; {"effect":{"known":[],"open":false},"summary":{"may_touch_world":false,"may_refresh":false},"duty_kind":null,"refresh_point":false}
+      block 52..61
+        result
+          #1 binary *
+            #2 name x
+            #3 int 2
+  result
+    #4 call 62..85
+      callee:
+        #5 name twice
+      #6 text "not an integer"
+sites 0

@@ -1,5 +1,4 @@
-//! B33 值级 taint 的回归（B 栏 §七）。探针记录属研究区探索性材料，按既定边界不随本次
-//! 同步公开；背景与两个方向的实测错误见 `docs/progress.md`（2026-09-23 一节）。
+//! B33 值级 taint 的回归（B 栏 §七；探针原样见 `地基/附注/2026-09-23-B33-值级taint-探针.md`）。
 //!
 //! 旁路表机制（982d7ca）两个方向都错：一位数不可信 JSON 数值经 `text()` 拼接后放行（C，假放行）；
 //! 程序字面量因与读过的不可信文本共享子串被拦（A、B、E2，假拒绝）。值级 taint 下：
@@ -14,7 +13,7 @@ use jpp_core::interp::{json_to_value, ActionRegistry, Interp, Passes};
 use jpp_core::ledger::Ledger;
 use jpp_core::value::{Answer, Question, State, Value};
 use jpp_core::TaintOut;
-use jpp_frontend::{lower, parse};
+use jpp_core::{lower, syntax::parse};
 use serde_json::Value as Json;
 
 struct C {
@@ -59,7 +58,7 @@ fn run(src: &str, page: Json) -> (Result<jpp_core::Outcome, String>, bool) {
     a.register("取外部数据", 0.0, true, TaintOut::Untrusted, move |_| Ok(json_to_value(&pg)));
     let mut client = C { p: 0.9, log: log.clone() };
     let mut ledger = Ledger::new();
-    let budget = program.budget.clone().unwrap();
+    let budget = program.budget.clone();
     let mut it = Interp::new(&mut client, &mut ledger, &calib, &a, budget);
     it.passes = Passes::default();
     let out = it.run(&program).map_err(|e| e.render());
@@ -177,7 +176,7 @@ let ok = handle(cut(judge(state(洗), test("该发吗", "k"))), {
     a.register("透传", 0.0, true, TaintOut::Inherit, |args| Ok(args[0].clone()));
     let mut client = C { p: 0.9, log: log.clone() };
     let mut ledger = Ledger::new();
-    let budget = program.budget.clone().unwrap();
+    let budget = program.budget.clone();
     let mut it = Interp::new(&mut client, &mut ledger, &calib, &a, budget);
     it.passes = Passes::default();
     let out = it.run(&program).map_err(|e| e.render());

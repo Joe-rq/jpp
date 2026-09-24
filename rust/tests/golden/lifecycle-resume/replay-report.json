@@ -1,0 +1,98 @@
+{
+  "backend": "fixed-0",
+  "cost": {
+    "asks": 0,
+    "calls": 0,
+    "replayed": 4,
+    "tokens": 0,
+    "usd": 0.0
+  },
+  "exits": [
+    {
+      "exit": "act",
+      "grade": "Fixture",
+      "key": "fixture",
+      "releases": false,
+      "site": 1295
+    }
+  ],
+  "fixture_description": "Resume the recorded program with a human-response fixture; no fresh generation or judgment records are needed.",
+  "local_checks": [],
+  "mode": "replay; no model API requests",
+  "pending": [],
+  "replay": true,
+  "resumed": false,
+  "returned_unsure": [],
+  "status": "returned",
+  "trace": {
+    "events": [
+      {
+        "cost": 0.0,
+        "key": "0e9e718e6ed5c26eb75729be",
+        "kind": "do",
+        "note": "read_json",
+        "replayed": true,
+        "site": {
+          "end": 245,
+          "start": 211
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "25bc17604887d5629a65766f",
+        "kind": "gen",
+        "note": "Suggest a plan",
+        "replayed": true,
+        "site": {
+          "end": 299,
+          "start": 263
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "e7d8e048455964fe521abdd4",
+        "kind": "judge",
+        "note": "「Fits the request?」",
+        "replayed": true,
+        "site": {
+          "end": 1331,
+          "start": 1299
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "b7ba25bcfb4cb5572e2f062b",
+        "kind": "ask",
+        "note": "「Publish this plan?」已答",
+        "replayed": false,
+        "site": {
+          "end": 1686,
+          "start": 1656
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "cfc84489ed877d36df34ec50",
+        "kind": "do",
+        "note": "write_json",
+        "replayed": true,
+        "site": {
+          "end": 731,
+          "start": 660
+        }
+      }
+    ],
+    "warnings": [
+      "W-fixture-line: @1295 键 fixture 的线是夹具线（宿主 put 写入或没有认证证书，n=100），出口 Act 照常路由，但按 B29 不算放行不可逆 do 的可信合取项。修法【需接线人】：用 calib-import 或 commission 从带真值样本认证这条线"
+    ]
+  },
+  "value": {
+    "plan": {
+      "cost": 2,
+      "name": "shared plan"
+    },
+    "request": {
+      "goal": "a reusable plan"
+    }
+  }
+}

@@ -97,7 +97,7 @@ fn 代价定线证书定能不能上岗() {
     for (p, l, seg) in 取() {
         store.absorb("e_cal.noul", Sample {
             p: Some(p), label: Some(if l { 1 } else { 0 }), perms: 0, mode_share: None,
-            mode: LiteralMode::default(), phys: "noul".into(), cluster: Some(seg),
+            mode: LiteralMode::default(), phys: "noul".into(), cluster: Some(seg), stratum: None,
         }).expect("折得进");
     }
     // J-16：代价线的标注集必须与保形集不同源
@@ -129,7 +129,7 @@ fn 代价线只对test题有定义() {
     let mut store = CalibStore::new();
     for i in 0..20 {
         store.absorb("k", Sample { p: Some(0.3 + i as f64 * 0.03), label: Some(if i > 5 { 1 } else { 0 }), perms: 0,
-                                   mode_share: None, mode: LiteralMode::default(), phys: "choice".into(), cluster: None }).unwrap();
+                                   mode_share: None, mode: LiteralMode::default(), phys: "choice".into(), cluster: None, stratum: None }).unwrap();
     }
     store.set_label_set_id("k", "L").unwrap();
     store.set_set_id("k", "C").unwrap();
@@ -164,7 +164,7 @@ let r = judge(state(mat("材料")), test("行吗", "k"));
 let b = unsure_bound([r]);
 {尾}
 "#);
-        let program = jpp_frontend::lower(&jpp_frontend::parse(&src).expect("解析")).expect("lower");
+        let program = jpp_core::lower(&jpp_core::syntax::parse(&src).expect("解析")).expect("lower");
         let mut l = Ledger::new();
         jpp_core::run(&program, &mut 桩, &CalibStore::new(), &ActionRegistry::new(), &mut l)
             .map(|o| o.value_json().to_string()).map_err(|e| e.render())
@@ -188,7 +188,7 @@ fn 同风险目标时取线更高的那张() {
     let mut store = CalibStore::new();
     for (p, l, seg) in 取() {
         store.absorb("k", Sample { p: Some(p), label: Some(if l { 1 } else { 0 }), perms: 0, mode_share: None,
-                                   mode: LiteralMode::default(), phys: "noul".into(), cluster: Some(seg) }).unwrap();
+                                   mode: LiteralMode::default(), phys: "noul".into(), cluster: Some(seg), stratum: None }).unwrap();
     }
     store.set_label_set_id("k", "L").unwrap();
     store.set_set_id("k", "C").unwrap();

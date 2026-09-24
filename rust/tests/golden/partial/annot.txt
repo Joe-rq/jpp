@@ -1,0 +1,864 @@
+ir v1
+budget calls=6 cost=0 depth=256 escalate=- unsure=- latency_p95=- absent=-
+block 78..5687
+  fn-stmt observe
+    #0 fn (m:{"Named":"Mat"}, q:{"Named":"Question"}) -> {"Named":"Record"} effects=[judge] ; {"effect":{"known":["judge"],"open":false},"summary":{"may_touch_world":false,"may_refresh":false},"duty_kind":null,"refresh_point":false}
+      block 169..561
+        let exit : -
+          #1 cut @0 186..209
+            reading:
+              #2 effect judge @1 190..208 ; {"effect":{"known":["judge"],"open":false},"summary":null,"duty_kind":null,"refresh_point":false}
+                state:
+                  #3 state @2 196..204
+                    on:
+                      #4 name m
+                questions:
+                  #5 name q
+        let result : -
+          #6 handle @3 228..434
+            exit:
+              #7 name exit
+            arms:
+              #8 record 241..433
+                act:
+                  #10 fn () -> - effects=-
+                    block 261..294
+                      result
+                        #11 record 263..292
+                          resolved:
+                            #12 bool true
+                          value:
+                            #13 bool true
+                ignore:
+                  #15 fn () -> - effects=-
+                    block 317..351
+                      result
+                        #16 record 319..349
+                          resolved:
+                            #17 bool true
+                          value:
+                            #18 bool false
+                unsure:
+                  #20 fn (cause:-) -> - effects=-
+                    block 379..427
+                      result
+                        #21 record 381..425
+                          resolved:
+                            #22 bool false
+                          value:
+                            #23 unit
+                          cause:
+                            #24 name cause
+        result
+          #25 record 440..559
+            resolved:
+              #26 field .resolved
+                #27 name result
+            value:
+              #28 field .value
+                #29 name result
+            exit:
+              #30 name exit
+            material:
+              #31 name m
+            question:
+              #32 name q
+            id:
+              #33 binary +
+                #34 binary +
+                  #35 field .hash
+                    #36 name m
+                  #37 text "|"
+                #38 call 551..558
+                  callee:
+                    #39 name text
+                  #40 name q
+  fn-stmt resolved
+    #41 fn (o:-) -> {"Named":"Bool"} effects=- ; {"effect":{"known":[],"open":false},"summary":{"may_touch_world":false,"may_refresh":false},"duty_kind":null,"refresh_point":false}
+      block 585..599
+        result
+          #42 field .resolved
+            #43 name o
+  fn-stmt answer
+    #44 fn (o:-) -> {"Named":"Bool"} effects=- ; {"effect":{"known":[],"open":false},"summary":{"may_touch_world":false,"may_refresh":false},"duty_kind":null,"refresh_point":false}
+      block 621..691
+        result
+          #45 if @4 623..689
+            cond:
+              #46 field .resolved
+                #47 name o
+            block 637..648
+              result
+                #48 field .value
+                  #49 name o
+            block 654..689
+              result
+                #50 call 656..687
+                  callee:
+                    #51 name pending
+                  #52 text "answer is unresolved"
+  fn-stmt observation_id
+    #53 fn (o:-) -> {"Named":"Text"} effects=- ; {"effect":{"known":[],"open":false},"summary":{"may_touch_world":false,"may_refresh":false},"duty_kind":null,"refresh_point":false}
+      block 721..729
+        result
+          #54 field .id
+            #55 name o
+  fn-stmt accepted
+    #56 fn (item:{"Named":"Record"}) -> {"Named":"Bool"} effects=- ; {"effect":{"known":[],"open":false},"summary":{"may_touch_world":false,"may_refresh":false},"duty_kind":null,"refresh_point":false}
+      block 764..845
+        result
+          #57 if @5 770..843
+            cond:
+              #58 call 773..799
+                callee:
+                  #59 name resolved
+                #60 field .observation
+                  #61 name item
+            block 800..828
+              result
+                #62 call 802..826
+                  callee:
+                    #63 name answer
+                  #64 field .observation
+                    #65 name item
+            block 834..843
+              result
+                #66 bool false
+  fn-stmt inspect
+    #67 fn (candidate:{"Named":"Record"}) -> {"Named":"Record"} effects=[do] ; {"effect":{"known":["do"],"open":false},"summary":{"may_touch_world":true,"may_refresh":true},"duty_kind":null,"refresh_point":false}
+      block 893..1084
+        let valid : -
+          #68 binary &&
+            #69 binary >
+              #70 field .cost
+                #71 name candidate
+              #72 int 0
+            #73 binary >
+              #74 call 933..954
+                callee:
+                  #75 name len
+                #76 field .skills
+                  #77 name candidate
+              #78 int 0
+        result
+          #79 call 964..1082
+            callee:
+              #80 name content
+            #81 effect do @6 972..1081 ; {"effect":{"known":["do"],"open":false},"summary":null,"duty_kind":null,"refresh_point":false}
+              action:
+                #82 text "record_check"
+              args:
+                #83 list 991..1077
+                  #84 record 992..1076
+                    name:
+                      #85 field .name
+                        #86 name candidate
+                    cost:
+                      #87 field .cost
+                        #88 name candidate
+                    skills:
+                      #89 field .skills
+                        #90 name candidate
+                    valid:
+                      #91 name valid
+              iter_seq:
+                #92 int 0
+  fn-stmt read
+    #93 fn (candidate:{"Named":"Record"}) -> {"Named":"Record"} effects=[judge] ; {"effect":{"known":["judge"],"open":false},"summary":{"may_touch_world":false,"may_refresh":false},"duty_kind":null,"refresh_point":false}
+      block 1132..1264
+        let m : -
+          #94 call 1146..1160
+            callee:
+              #95 name mat
+            #96 name candidate
+        result
+          #97 record 1166..1262
+            candidate:
+              #98 name candidate
+            material:
+              #99 name m
+            observation:
+              #100 call 1215..1261
+                callee:
+                  #101 name observe
+                #102 name m
+                #103 construct test @7 1226..1260
+                  #104 text "Candidate fits?"
+                  #105 text "fixture"
+  fn-stmt validate
+    #106 fn (candidates:{"Applied":["List",[{"Named":"Record"}]]}) -> {"Named":"Record"} effects=[judge,do] ; {"effect":{"known":["do","judge"],"open":false},"summary":{"may_touch_world":true,"may_refresh":true},"duty_kind":null,"refresh_point":false}
+      block 1327..1577
+        let items : -
+          #107 call @8 1345..1366
+            callee:
+              #108 name map
+            #109 name candidates
+            #110 name read
+        let checked : -
+          #111 call @9 1386..1476
+            callee:
+              #112 name map
+            #113 call @10 1390..1413
+              callee:
+                #114 name filter
+              #115 name items
+              #116 name accepted
+            #118 fn (item:{"Named":"Record"}) -> {"Named":"Record"} effects=[do] ; {"effect":{"known":["do"],"open":false},"summary":{"may_touch_world":true,"may_refresh":true},"duty_kind":null,"refresh_point":false}
+              block 1448..1475
+                result
+                  #119 call 1450..1473
+                    callee:
+                      #120 name inspect
+                    #121 field .candidate
+                      #122 name item
+        result
+          #123 record 1482..1575
+            items:
+              #124 name items
+            checked:
+              #125 name checked
+            evidence:
+              #126 call @11 1525..1574
+                callee:
+                  #127 name map
+                #128 name items
+                #130 fn (item:{"Named":"Record"}) -> - effects=-
+                  block 1553..1573
+                    result
+                      #131 field .observation
+                        #132 name item
+  fn-stmt combinations
+    #133 fn (candidates:{"Applied":["List",[{"Named":"Record"}]]}) -> {"Applied":["List",[{"Applied":["List",[{"Named":"Record"}]]}]]} effects=- ; {"effect":{"known":[],"open":false},"summary":{"may_touch_world":false,"may_refresh":false},"duty_kind":null,"refresh_point":false}
+      block 1710..1847
+        result
+          #134 call @12 1716..1845
+            callee:
+              #135 name fold
+            #136 name candidates
+            #137 list 1733..1737
+              #138 list 1734..1736
+            #140 fn (groups:-, candidate:-) -> - effects=-
+              block 1761..1844
+                result
+                  #141 call 1771..1838
+                    callee:
+                      #142 name concat
+                    #143 name groups
+                    #144 call @13 1786..1837
+                      callee:
+                        #145 name map
+                      #146 name groups
+                      #148 fn (group:-) -> - effects=-
+                        block 1808..1836
+                          result
+                            #149 call 1810..1834
+                              callee:
+                                #150 name append
+                              #151 name group
+                              #152 name candidate
+  fn-stmt cost
+    #153 fn (group:-) -> {"Named":"Int"} effects=- ; {"effect":{"known":[],"open":false},"summary":{"may_touch_world":false,"may_refresh":false},"duty_kind":null,"refresh_point":false}
+      block 1871..1938
+        result
+          #154 call @14 1873..1936
+            callee:
+              #155 name fold
+            #156 name group
+            #157 int 0
+            #159 fn (total:-, candidate:-) -> - effects=-
+              block 1909..1935
+                result
+                  #160 binary +
+                    #161 name total
+                    #162 field .cost
+                      #163 name candidate
+  fn-stmt has_skill
+    #164 fn (group:-, skill:{"Named":"Text"}) -> {"Named":"Bool"} effects=- ; {"effect":{"known":[],"open":false},"summary":{"may_touch_world":false,"may_refresh":false},"duty_kind":null,"refresh_point":false}
+      block 1980..2075
+        result
+          #165 call @15 1986..2073
+            callee:
+              #166 name fold
+            #167 name group
+            #168 bool false
+            #170 fn (found:-, candidate:-) -> - effects=-
+              block 2026..2072
+                result
+                  #171 binary ||
+                    #172 name found
+                    #173 call 2037..2070
+                      callee:
+                        #174 name contains
+                      #175 field .skills
+                        #176 name candidate
+                      #177 name skill
+  fn-stmt feasible
+    #178 fn (group:-) -> {"Named":"Bool"} effects=- ; {"effect":{"known":[],"open":false},"summary":{"may_touch_world":false,"may_refresh":false},"duty_kind":null,"refresh_point":false}
+      block 2103..2183
+        result
+          #179 binary &&
+            #180 binary &&
+              #181 binary <=
+                #182 call 2105..2116
+                  callee:
+                    #183 name cost
+                  #184 name group
+                #185 int 10
+              #186 call 2126..2149
+                callee:
+                  #187 name has_skill
+                #188 name group
+                #189 text "web"
+            #190 call 2153..2181
+              callee:
+                #191 name has_skill
+              #192 name group
+              #193 text "database"
+  fn-stmt plans
+    #194 fn (s:{"Named":"Record"}) -> {"Named":"Record"} effects=- ; {"effect":{"known":[],"open":false},"summary":{"may_touch_world":false,"may_refresh":false},"duty_kind":null,"refresh_point":false}
+      block 2215..2546
+        let choices : -
+          #195 call @16 2235..2303
+            callee:
+              #196 name filter
+            #197 call 2242..2292
+              callee:
+                #198 name combinations
+              #199 call @17 2255..2291
+                callee:
+                  #200 name filter
+                #201 field .checked
+                  #202 name s
+                #204 fn (c:-) -> - effects=-
+                  block 2279..2290
+                    result
+                      #205 field .valid
+                        #206 name c
+            #207 name feasible
+        let cheapest : -
+          #208 call @18 2324..2500
+            callee:
+              #209 name fold
+            #210 name choices
+            #211 record 2338..2362
+              members:
+                #212 list 2348..2350
+              cost:
+                #213 int 999
+            #215 fn (best:-, group:-) -> - effects=-
+              block 2380..2499
+                result
+                  #216 if @19 2390..2493
+                    cond:
+                      #217 binary <
+                        #218 call 2393..2404
+                          callee:
+                            #219 name cost
+                          #220 name group
+                        #221 field .cost
+                          #222 name best
+                    block 2417..2479
+                      result
+                        #223 record 2419..2477
+                          members:
+                            #224 call @20 2429..2457
+                              callee:
+                                #225 name map
+                              #226 name group
+                              #228 fn (c:-) -> - effects=-
+                                block 2446..2456
+                                  result
+                                    #229 field .name
+                                      #230 name c
+                          cost:
+                            #231 call 2465..2476
+                              callee:
+                                #232 name cost
+                              #233 name group
+                    block 2485..2493
+                      result
+                        #234 name best
+        result
+          #235 record 2506..2544
+            choices:
+              #236 name choices
+            cheapest:
+              #237 name cheapest
+  fn-stmt unresolved_items
+    #238 fn (s:{"Named":"Record"}) -> - effects=- ; {"effect":{"known":[],"open":false},"summary":{"may_touch_world":false,"may_refresh":false},"duty_kind":null,"refresh_point":false}
+      block 2579..2640
+        result
+          #239 call @21 2581..2638
+            callee:
+              #240 name filter
+            #241 field .items
+              #242 name s
+            #244 fn (item:-) -> - effects=-
+              block 2606..2637
+                result
+                  #245 unary !
+                    #246 call 2609..2635
+                      callee:
+                        #247 name resolved
+                      #248 field .observation
+                        #249 name item
+  fn-stmt advance
+    #250 fn (s:{"Named":"Record"}, strategy:-) -> {"Named":"Record"} effects=[judge,do] ; {"effect":{"known":["do","judge"],"open":true},"summary":{"may_touch_world":true,"may_refresh":true},"duty_kind":null,"refresh_point":false}
+      block 2697..3961
+        let changed : -
+          #251 call @22 2717..3408
+            callee:
+              #252 name map
+            #253 field .items
+              #254 name s
+            #256 fn (item:-) -> - effects=[judge] ; {"effect":{"known":["judge"],"open":true},"summary":{"may_touch_world":true,"may_refresh":true},"duty_kind":null,"refresh_point":false}
+              block 2748..3407
+                result
+                  #257 if @23 2758..3401
+                    cond:
+                      #258 binary &&
+                        #259 unary !
+                          #260 call 2762..2788
+                            callee:
+                              #261 name resolved
+                            #262 field .observation
+                              #263 name item
+                        #264 call 2792..2806
+                          callee:
+                            #265 name strategy
+                          #266 name item
+                    block 2807..3387
+                      #267 consume @24 3020..3058
+                        #268 field .exit
+                          #269 field .observation
+                            #270 name item
+                        #271 text "drop"
+                      let c : -
+                        #272 field .candidate
+                          #273 name item
+                      let revised : -
+                        #274 record 3122..3202
+                          name:
+                            #275 field .name
+                              #276 name c
+                          cost:
+                            #277 field .cost
+                              #278 name c
+                          skills:
+                            #279 field .skills
+                              #280 name c
+                          flag:
+                            #281 binary ==
+                              #282 field .name
+                                #283 name c
+                              #284 text "C"
+                          revision:
+                            #285 int 1
+                      let m : -
+                        #286 effect transform @25 3224..3269 ; {"effect":{"known":["transform"],"open":false},"summary":null,"duty_kind":null,"refresh_point":false}
+                          f:
+                            #288 fn (old:-) -> - effects=-
+                              block 3242..3253
+                                result
+                                  #289 name revised
+                          args:
+                            #290 field .material
+                              #291 name item
+                      result
+                        #292 record 3283..3377
+                          candidate:
+                            #293 name revised
+                          material:
+                            #294 name m
+                          observation:
+                            #295 call 3330..3376
+                              callee:
+                                #296 name observe
+                              #297 name m
+                              #298 construct test @26 3341..3375
+                                #299 text "Candidate fits?"
+                                #300 text "fixture"
+                    block 3393..3401
+                      result
+                        #301 name item
+        let old_names : -
+          #302 call @27 3430..3462
+            callee:
+              #303 name map
+            #304 field .checked
+              #305 name s
+            #307 fn (c:-) -> - effects=-
+              block 3451..3461
+                result
+                  #308 field .name
+                    #309 name c
+        let newly_accepted : -
+          #310 call @28 3489..3578
+            callee:
+              #311 name filter
+            #312 name changed
+            #314 fn (item:-) -> - effects=-
+              block 3514..3577
+                result
+                  #315 binary &&
+                    #316 call 3516..3530
+                      callee:
+                        #317 name accepted
+                      #318 name item
+                    #319 unary !
+                      #320 call 3535..3575
+                        callee:
+                          #321 name contains
+                        #322 name old_names
+                        #323 field .name
+                          #324 field .candidate
+                            #325 name item
+        let new_checks : -
+          #326 call @29 3601..3664
+            callee:
+              #327 name map
+            #328 name newly_accepted
+            #330 fn (item:-) -> - effects=[do] ; {"effect":{"known":["do"],"open":false},"summary":{"may_touch_world":true,"may_refresh":true},"duty_kind":null,"refresh_point":false}
+              block 3636..3663
+                result
+                  #331 call 3638..3661
+                    callee:
+                      #332 name inspect
+                    #333 field .candidate
+                      #334 name item
+        let old_ids : -
+          #335 call @30 3684..3728
+            callee:
+              #336 name map
+            #337 field .evidence
+              #338 name s
+            #340 fn (o:-) -> - effects=-
+              block 3706..3727
+                result
+                  #341 call 3708..3725
+                    callee:
+                      #342 name observation_id
+                    #343 name o
+        let new_evidence : -
+          #344 call @31 3753..3853
+            callee:
+              #345 name filter
+            #346 call @32 3760..3803
+              callee:
+                #347 name map
+              #348 name changed
+              #350 fn (item:-) -> - effects=-
+                block 3782..3802
+                  result
+                    #351 field .observation
+                      #352 name item
+            #354 fn (o:-) -> - effects=-
+              block 3811..3852
+                result
+                  #355 unary !
+                    #356 call 3814..3850
+                      callee:
+                        #357 name contains
+                      #358 name old_ids
+                      #359 call 3832..3849
+                        callee:
+                          #360 name observation_id
+                        #361 name o
+        result
+          #362 record 3859..3959
+            items:
+              #363 name changed
+            checked:
+              #364 call 3885..3914
+                callee:
+                  #365 name concat
+                #366 field .checked
+                  #367 name s
+                #368 name new_checks
+            evidence:
+              #369 call 3926..3958
+                callee:
+                  #370 name concat
+                #371 field .evidence
+                  #372 name s
+                #373 name new_evidence
+  fn-stmt packet
+    #374 fn (current:-, project:-, remaining:-, next:-) -> {"Named":"Record"} effects=- ; {"effect":{"known":[],"open":true},"summary":{"may_touch_world":true,"may_refresh":true},"duty_kind":null,"refresh_point":false}
+      block 4302..4707
+        result
+          #375 construct outcome @33 4308..4705
+            #376 record 4316..4704
+              value:
+                #377 call 4324..4340
+                  callee:
+                    #378 name project
+                  #379 name current
+              pending:
+                #380 call @34 4364..4456
+                  callee:
+                    #381 name map
+                  #382 call 4368..4386
+                    callee:
+                      #383 name remaining
+                    #384 name current
+                  #386 fn (item:-) -> - effects=-
+                    block 4397..4455
+                      result
+                        #387 record 4399..4453
+                          element:
+                            #388 field .candidate
+                              #389 name item
+                          exit:
+                            #390 field .exit
+                              #391 field .observation
+                                #392 name item
+              evidence:
+                #393 call @35 4481..4528
+                  callee:
+                    #394 name map
+                  #395 field .evidence
+                    #396 name current
+                  #398 fn (o:-) -> - effects=-
+                    block 4509..4527
+                      result
+                        #399 construct key_of @36 4511..4525
+                          #400 field .exit
+                            #401 name o
+              resume:
+                #402 if @37 4551..4703
+                  cond:
+                    #403 binary ==
+                      #404 call 4554..4577
+                        callee:
+                          #405 name len
+                        #406 call 4558..4576
+                          callee:
+                            #407 name remaining
+                          #408 name current
+                      #409 int 0
+                  block 4583..4589
+                    result
+                      #410 record 4585..4587
+                  block 4595..4703
+                    result
+                      #412 fn (strategy:-) -> - effects=-
+                        block 4627..4688
+                          result
+                            #413 call 4629..4686
+                              callee:
+                                #414 name packet
+                              #415 call 4636..4659
+                                callee:
+                                  #416 name next
+                                #417 name current
+                                #418 name strategy
+                              #419 name project
+                              #420 name remaining
+                              #421 name next
+  fn-stmt promising
+    #422 fn (item:-) -> {"Named":"Bool"} effects=- ; {"effect":{"known":[],"open":false},"summary":{"may_touch_world":false,"may_refresh":false},"duty_kind":null,"refresh_point":false}
+      block 4735..4763
+        result
+          #423 binary <=
+            #424 field .cost
+              #425 field .candidate
+                #426 name item
+            #427 int 2
+  fn-stmt everything
+    #428 fn (item:-) -> {"Named":"Bool"} effects=- ; {"effect":{"known":[],"open":false},"summary":{"may_touch_world":false,"may_refresh":false},"duty_kind":null,"refresh_point":false}
+      block 4792..4800
+        result
+          #429 bool true
+  fn-stmt enough
+    #430 fn (value:-) -> {"Named":"Bool"} effects=- ; {"effect":{"known":[],"open":false},"summary":{"may_touch_world":false,"may_refresh":false},"duty_kind":null,"refresh_point":false}
+      block 4826..4852
+        result
+          #431 binary >
+            #432 call 4828..4846
+              callee:
+                #433 name len
+              #434 field .choices
+                #435 name value
+            #436 int 0
+  let initial : -
+    #437 call 4868..5212
+      callee:
+        #438 name packet
+      #439 call 4875..5177
+        callee:
+          #440 name validate
+        #441 list 4884..5176
+          #442 record 4890..4952
+            name:
+              #443 text "A"
+            cost:
+              #444 int 4
+            skills:
+              #445 list 4919..4926
+                #446 text "web"
+            flag:
+              #447 bool true
+            revision:
+              #448 int 0
+          #449 record 4958..5025
+            name:
+              #450 text "B"
+            cost:
+              #451 int 5
+            skills:
+              #452 list 4987..4999
+                #453 text "database"
+            flag:
+              #454 bool true
+            revision:
+              #455 int 0
+          #456 record 5031..5105
+            name:
+              #457 text "C"
+            cost:
+              #458 int 2
+            skills:
+              #459 list 5060..5079
+                #460 text "web"
+                #461 text "database"
+            flag:
+              #462 unit
+            revision:
+              #463 int 0
+          #464 record 5111..5174
+            name:
+              #465 text "D"
+            cost:
+              #466 int 20
+            skills:
+              #467 list 5141..5148
+                #468 text "web"
+            flag:
+              #469 unit
+            revision:
+              #470 int 0
+      #471 name plans
+      #472 name unresolved_items
+      #473 name advance
+  let used : -
+    #474 if @38 5225..5290
+      cond:
+        #475 call 5228..5249
+          callee:
+            #476 name enough
+          #477 field .value
+            #478 name initial
+      block 5250..5276
+        result
+          #479 field .cheapest
+            #480 field .value
+              #481 name initial
+      block 5282..5290
+        result
+          #482 unit
+  let improved : -
+    #483 call 5307..5337
+      callee:
+        #484 field .next
+          #485 field .resume
+            #486 name initial
+      #487 name promising
+  let completed : -
+    #488 call 5355..5387
+      callee:
+        #489 field .next
+          #490 field .resume
+            #491 name improved
+      #492 name everything
+  fn-stmt snapshot
+    #493 fn (p:-) -> {"Named":"Record"} effects=- ; {"effect":{"known":[],"open":false},"summary":{"may_touch_world":false,"may_refresh":false},"duty_kind":null,"refresh_point":false}
+      block 5414..5532
+        result
+          #494 record 5420..5530
+            best:
+              #495 field .cheapest
+                #496 field .value
+                  #497 name p
+            pending:
+              #498 call @39 5454..5502
+                callee:
+                  #499 name map
+                #500 field .pending
+                  #501 name p
+                #503 fn (entry:-) -> - effects=-
+                  block 5479..5501
+                    result
+                      #504 field .name
+                        #505 field .element
+                          #506 name entry
+            evidence:
+              #507 field .evidence
+                #508 name p
+  result
+    #509 record 5533..5687
+      used_before_complete:
+        #510 name used
+      initial:
+        #511 call 5571..5588
+          callee:
+            #512 name snapshot
+          #513 name initial
+      improved:
+        #514 call 5600..5618
+          callee:
+            #515 name snapshot
+          #516 name improved
+      final:
+        #517 call 5628..5647
+          callee:
+            #518 name snapshot
+          #519 name completed
+      terminal:
+        #520 binary ==
+          #521 call 5659..5681
+            callee:
+              #522 name len
+            #523 field .pending
+              #524 name completed
+          #525 int 0
+sites 40
+  @0 #1 cut 186..209 fn=#0 in=-
+  @1 #2 effect:judge 190..208 fn=#0 in=-
+  @2 #3 state 196..204 fn=#0 in=-
+  @3 #6 handle 228..434 fn=#0 in=-
+  @4 #45 if 623..689 fn=#44 in=-
+  @5 #57 if 770..843 fn=#56 in=-
+  @6 #81 effect:do 972..1081 fn=#67 in=-
+  @7 #103 construct:test 1226..1260 fn=#93 in=-
+  @8 #107 hof:map 1345..1366 fn=#106 in=-
+  @9 #111 hof:map 1386..1476 fn=#106 in=-
+  @10 #113 hof:filter 1390..1413 fn=#106 in=@9
+  @11 #126 hof:map 1525..1574 fn=#106 in=-
+  @12 #134 hof:fold 1716..1845 fn=#133 in=-
+  @13 #144 hof:map 1786..1837 fn=#140 in=@12
+  @14 #154 hof:fold 1873..1936 fn=#153 in=-
+  @15 #165 hof:fold 1986..2073 fn=#164 in=-
+  @16 #195 hof:filter 2235..2303 fn=#194 in=-
+  @17 #199 hof:filter 2255..2291 fn=#194 in=@16
+  @18 #208 hof:fold 2324..2500 fn=#194 in=-
+  @19 #216 if 2390..2493 fn=#215 in=@18
+  @20 #224 hof:map 2429..2457 fn=#215 in=@18
+  @21 #239 hof:filter 2581..2638 fn=#238 in=-
+  @22 #251 hof:map 2717..3408 fn=#250 in=-
+  @23 #257 if 2758..3401 fn=#256 in=@22
+  @24 #267 consume:consume 3020..3058 fn=#256 in=@22
+  @25 #286 effect:transform 3224..3269 fn=#256 in=@22
+  @26 #298 construct:test 3341..3375 fn=#256 in=@22
+  @27 #302 hof:map 3430..3462 fn=#250 in=-
+  @28 #310 hof:filter 3489..3578 fn=#250 in=-
+  @29 #326 hof:map 3601..3664 fn=#250 in=-
+  @30 #335 hof:map 3684..3728 fn=#250 in=-
+  @31 #344 hof:filter 3753..3853 fn=#250 in=-
+  @32 #346 hof:map 3760..3803 fn=#250 in=@31
+  @33 #375 construct:outcome 4308..4705 fn=#374 in=-
+  @34 #380 hof:map 4364..4456 fn=#374 in=@33
+  @35 #393 hof:map 4481..4528 fn=#374 in=@33
+  @36 #399 construct:key_of 4511..4525 fn=#398 in=@35
+  @37 #402 if 4551..4703 fn=#374 in=@33
+  @38 #474 if 5225..5290 fn=- in=-
+  @39 #498 hof:map 5454..5502 fn=#493 in=-

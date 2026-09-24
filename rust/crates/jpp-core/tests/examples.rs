@@ -10,7 +10,7 @@ use std::path::Path;
 
 use common::with_effects;
 use jpp_core::check;
-use jpp_frontend::{lower, parse};
+use jpp_core::{lower, syntax::parse};
 
 fn lowered(file: &str) -> jpp_core::Program {
     let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../examples").join(file);
@@ -22,7 +22,7 @@ fn report_for(file: &str) -> (String, jpp_core::Report) {
     let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../examples").join(file);
     let source = std::fs::read_to_string(&path).unwrap_or_else(|e| panic!("读不到 {}：{e}", path.display()));
     let parsed = parse(&source).unwrap_or_else(|d| panic!("{} 解析失败：{}", file, d.render(file, &source)));
-    let core = lower(&parsed).unwrap_or_else(|d| panic!("{} lower 失败：{}", file, d.render(file, &source)));
+    let core = lower(&parsed).unwrap_or_else(|d| panic!("{} lower 失败：{}", file, d[0].render(file, &source)));
     (source, check(&core))
 }
 
@@ -51,9 +51,10 @@ fn 错误样例要被认出来() {
     let dir = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../examples/errors");
     let path = dir.join("missing-budget.jpp");
     let source = std::fs::read_to_string(&path).expect("读得到缺预算样例");
-    let core = lower(&parse(&source).expect("语法本身没问题")).expect("lower 通过");
-    let report = check(&core);
-    let d = report.find("J-07").unwrap_or_else(|| panic!("缺预算应当报 J-07：\n{}", report.render()));
+    // 步 12d 起缺预算在降级处报 J-07a（IR 的预算必填），不再到检查器
+    let ds = lower(&parse(&source).expect("语法本身没问题")).expect_err("缺预算应当降级失败");
+    let d = &ds[0];
+    assert!(d.message.starts_with("J-07a: "), "缺预算应当报 J-07a：{ds:?}");
     assert!(d.span.end <= source.len(), "位置要落在源码里");
 }
 

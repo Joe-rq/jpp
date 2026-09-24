@@ -14,7 +14,7 @@ use jpp_core::interp::{Interp, Passes};
 use jpp_core::ledger::Ledger;
 use jpp_core::value::{Answer, Question, State};
 use jpp_core::ActionRegistry;
-use jpp_frontend::{lower, parse};
+use jpp_core::{lower, syntax::parse};
 use serde_json::Value as Json;
 
 /// 数调用：每次调用问了几道题
@@ -48,7 +48,7 @@ fn 跑(src: &str, p: f64, passes: Passes) -> (jpp_core::Outcome, Vec<usize>) {
     let mut client = 记账客户端 { p, 每次题数: RefCell::new(vec![]) };
     let mut ledger = Ledger::new();
     let actions = ActionRegistry::new();
-    let budget = program.budget.clone().expect("有预算");
+    let budget = program.budget.clone();
     let mut it = Interp::new(&mut client, &mut ledger, &calib, &actions, budget);
     it.passes = passes;
     let out = it.run(&program).unwrap_or_else(|e| panic!("程序应当跑完：{}", e.render()));

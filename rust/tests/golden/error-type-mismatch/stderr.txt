@@ -1,0 +1,4 @@
+<ROOT>/examples/errors/type-mismatch.jpp:3:7: E-type: twice 的这个参数标的是 Int，这里给的是 Text 字面量
+twice("not an integer")
+      ^^^^^^^^^^^^^^^^
+<ROOT>/examples/errors/type-mismatch.jpp: check failed (1 errors)

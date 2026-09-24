@@ -1,0 +1,26 @@
+{
+ "N": 4,
+ "calls": 4,
+ "expected": {
+  "single_path": {
+   "leaf": "租赁合同",
+   "path": [
+    "合同与协议",
+    "租赁合同"
+   ],
+   "stopped": "unsure",
+   "unobserved": []
+  },
+  "multi_path": {
+   "leaves": [],
+   "dead_ends": [],
+   "layers": 1,
+   "undecided": 1,
+   "unobserved": [
+    "租赁合同",
+    "买卖合同",
+    "劳动合同"
+   ]
+  }
+ }
+}

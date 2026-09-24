@@ -1,6 +1,6 @@
 //! `jpp calib-import`：真值通道的命令行入口（B19）。逻辑在 `jpp_core::truth`。
 use crate::options::ImportArgs;
-use jpp_core::{effects::{CalibStore, Profile}, truth::{ImportOptions, LabelRow, import_labels}};
+use jpp_core::{effects::{CalibStore, Profile}, truth::{ImportOptions, LabelRow, ScopeMargins, import_labels}};
 use std::fs;
 
 pub fn run(a: &ImportArgs) -> Result<(), String> {
@@ -20,7 +20,7 @@ pub fn run(a: &ImportArgs) -> Result<(), String> {
         store.profile = Profile::load(p).map_err(|e| format!("{}: {e}", p.display()))?;
     }
     let batch = a.labels.file_name().map(|s| s.to_string_lossy().to_string()).unwrap_or_default();
-    let opt = ImportOptions { alpha: a.alpha, conf_delta: a.conf_delta, spot_check_min: a.spot_check_min, spot_check_conf: a.spot_check_conf, abstain_warn: a.abstain_warn, batch, seed: a.seed };
+    let opt = ImportOptions { alpha: a.alpha, conf_delta: a.conf_delta, spot_check_min: a.spot_check_min, spot_check_conf: a.spot_check_conf, abstain_warn: a.abstain_warn, batch, seed: a.seed, extent_min_disagree: a.extent_min_disagree, extent_same_dir: a.extent_same_dir, extent_same_tier: a.extent_same_tier, scope_quantiles: a.scope_quantiles, scope_margins: ScopeMargins { k: a.scope_margins.0, m: a.scope_margins.1 }, class_min_sources: a.class_min_sources, alpha_trial: Some(a.alpha_trial) };
     let reports = import_labels(&mut store, &rows, &opt)?;
     for r in &reports {
         for w in &r.warnings {

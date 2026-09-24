@@ -5,8 +5,8 @@
 //! 2. taint 洗白：不可信内容经 `+` 拼接、`join`、`text`、`m.content`，或经不可信 `do` 的 `Fail`，
 //!    再 `mat()` 就成了可信材料，放行了不可逆 `do`（宪法 IFC 行，J-08）。
 //!
-//! 每条都是**修前失败、修后通过**的最小程序；背景与实测过程见
-//! `docs/progress.md`（2026-09-23 一节）。原始过程记录在研究区，未随本次同步公开。
+//! 每条都是**修前失败、修后通过**的最小程序，原样记在
+//! `地基/过程记录/2026-09-23-修复放行缺陷.md`。
 
 mod common;
 use std::cell::RefCell;
@@ -17,7 +17,7 @@ use jpp_core::interp::{ActionRegistry, Interp, Passes};
 use jpp_core::ledger::Ledger;
 use jpp_core::value::{Answer, Question, State, Value};
 use jpp_core::TaintOut;
-use jpp_frontend::{lower, parse};
+use jpp_core::{lower, syntax::parse};
 use serde_json::Value as Json;
 
 struct 记序客户端 {
@@ -70,7 +70,7 @@ fn 跑(src: &str, p: f64, passes: Passes) -> (Result<jpp_core::Outcome, String>,
     let actions = 动作表(&日志);
     let mut client = 记序客户端 { p, 日志: 日志.clone() };
     let mut ledger = Ledger::new();
-    let budget = program.budget.clone().expect("有预算");
+    let budget = program.budget.clone();
     let mut it = Interp::new(&mut client, &mut ledger, &calib, &actions, budget);
     it.passes = passes;
     let out = it.run(&program).map_err(|e| e.render());

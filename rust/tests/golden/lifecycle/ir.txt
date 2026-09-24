@@ -1,0 +1,242 @@
+ir v1
+budget calls=2 cost=0 depth=256 escalate=1 unsure=- latency_p95=- absent=-
+block 63..798
+  fn-stmt compose_methods
+    #0 fn (first:-, second:-) -> - effects=-
+      block 897..939
+        result
+          #2 fn (value:-) -> - effects=-
+            block 913..937
+              result
+                #3 call 915..935
+                  callee:
+                    #4 name second
+                  #5 call 922..934
+                    callee:
+                      #6 name first
+                    #7 name value
+  fn-stmt apply_method
+    #8 fn (value:-, method:-) -> - effects=-
+      block 972..989
+        result
+          #9 call 974..987
+            callee:
+              #10 name method
+            #11 name value
+  fn-stmt map_ints
+    #12 fn (values:{"Applied":["List",[{"Named":"Int"}]]}, method:{"Method":{"params":[{"Named":"Int"}],"ret":{"Named":"Int"},"effects":[],"captures_responsibility":false}}) -> {"Applied":["List",[{"Named":"Int"}]]} effects=[]
+      block 1112..1139
+        result
+          #13 call @0 1118..1137
+            callee:
+              #14 name map
+            #15 name values
+            #16 name method
+  fn-stmt observe_test
+    #17 fn (material:{"Named":"Mat"}, question:{"Named":"Question"}) -> {"Named":"Record"} effects=[judge]
+      block 1278..1573
+        let exit : -
+          #18 cut @1 1295..1332
+            reading:
+              #19 effect judge @2 1299..1331
+                state:
+                  #20 state @3 1305..1320
+                    on:
+                      #21 name material
+                questions:
+                  #22 name question
+        result
+          #23 handle @4 1338..1571
+            exit:
+              #24 name exit
+            arms:
+              #25 record 1351..1570
+                act:
+                  #27 fn () -> - effects=-
+                    block 1371..1404
+                      result
+                        #28 record 1373..1402
+                          resolved:
+                            #29 bool true
+                          value:
+                            #30 bool true
+                ignore:
+                  #32 fn () -> - effects=-
+                    block 1427..1461
+                      result
+                        #33 record 1429..1459
+                          resolved:
+                            #34 bool true
+                          value:
+                            #35 bool false
+                unsure:
+                  #37 fn (responsibility:-) -> - effects=-
+                    block 1498..1564
+                      result
+                        #38 record 1500..1562
+                          resolved:
+                            #39 bool false
+                          value:
+                            #40 unit
+                          responsibility:
+                            #41 name responsibility
+  fn-stmt request_test
+    #42 fn (material:{"Named":"Mat"}, question:{"Named":"Question"}) -> {"Named":"Record"} effects=[ask]
+      block 1643..1910
+        result
+          #43 handle @5 1649..1908
+            exit:
+              #44 effect ask @6 1656..1686
+                state:
+                  #45 state @7 1660..1675
+                    on:
+                      #46 name material
+                question:
+                  #47 name question
+            arms:
+              #48 record 1688..1907
+                act:
+                  #50 fn () -> - effects=-
+                    block 1708..1741
+                      result
+                        #51 record 1710..1739
+                          resolved:
+                            #52 bool true
+                          value:
+                            #53 bool true
+                ignore:
+                  #55 fn () -> - effects=-
+                    block 1764..1798
+                      result
+                        #56 record 1766..1796
+                          resolved:
+                            #57 bool true
+                          value:
+                            #58 bool false
+                unsure:
+                  #60 fn (responsibility:-) -> - effects=-
+                    block 1835..1901
+                      result
+                        #61 record 1837..1899
+                          resolved:
+                            #62 bool false
+                          value:
+                            #63 unit
+                          responsibility:
+                            #64 name responsibility
+  let input : -
+    #65 effect do @8 211..245
+      action:
+        #66 text "read_json"
+      args:
+        #67 list 227..241
+          #68 text "input.json"
+      iter_seq:
+        #69 int 0
+  let proposals : -
+    #70 effect gen @9 263..299
+      prompt:
+        #71 text "Suggest a plan"
+      ctx:
+        #72 list 285..292
+          #73 name input
+      n:
+        #74 int 1
+      retry_seq:
+        #75 int 0
+  let candidate : -
+    #76 index
+      #77 name proposals
+      #78 int 0
+  let judged : -
+    #79 call 344..405
+      callee:
+        #80 name observe_test
+      #81 name candidate
+      #82 construct test @10 368..404
+        #83 text "Fits the request?"
+        #84 text "fixture"
+  result
+    #85 if @11 407..798
+      cond:
+        #86 binary &&
+          #87 field .resolved
+            #88 name judged
+          #89 field .value
+            #90 name judged
+      block 442..770
+        let approval : -
+          #91 call 463..523
+            callee:
+              #92 name request_test
+            #93 name candidate
+            #94 construct test @12 487..522
+              #95 text "Publish this plan?"
+              #96 text "human"
+        result
+          #97 if @13 529..768
+            cond:
+              #98 binary &&
+                #99 field .resolved
+                  #100 name approval
+                #101 field .value
+                  #102 name approval
+            block 568..738
+              let report : -
+                #103 record 591..642
+                  plan:
+                    #104 call 598..616
+                      callee:
+                        #105 name content
+                      #106 name candidate
+                  request:
+                    #107 call 627..641
+                      callee:
+                        #108 name content
+                      #109 name input
+              result
+                #110 call 652..732
+                  callee:
+                    #111 name content
+                  #112 effect do @14 660..731
+                    action:
+                      #113 text "write_json"
+                    args:
+                      #114 list 677..727
+                        #115 text "result.json"
+                        #116 call 693..726
+                          callee:
+                            #117 name apply_method
+                          #118 name report
+                          #120 fn (x:-) -> - effects=-
+                            block 720..725
+                              result
+                                #121 name x
+                    iter_seq:
+                      #122 int 0
+            block 744..768
+              result
+                #123 record 746..766
+                  approval:
+                    #124 name approval
+      block 776..798
+        result
+          #125 record 778..796
+            judgment:
+              #126 name judged
+sites 15
+  @0 #13 hof:map 1118..1137 fn=#12 in=-
+  @1 #18 cut 1295..1332 fn=#17 in=-
+  @2 #19 effect:judge 1299..1331 fn=#17 in=-
+  @3 #20 state 1305..1320 fn=#17 in=-
+  @4 #23 handle 1338..1571 fn=#17 in=-
+  @5 #43 handle 1649..1908 fn=#42 in=-
+  @6 #44 effect:ask 1656..1686 fn=#42 in=-
+  @7 #45 state 1660..1675 fn=#42 in=-
+  @8 #65 effect:do 211..245 fn=- in=-
+  @9 #70 effect:gen 263..299 fn=- in=-
+  @10 #82 construct:test 368..404 fn=- in=-
+  @11 #85 if 407..798 fn=- in=-
+  @12 #94 construct:test 487..522 fn=- in=-
+  @13 #97 if 529..768 fn=- in=-
+  @14 #112 effect:do 660..731 fn=- in=-

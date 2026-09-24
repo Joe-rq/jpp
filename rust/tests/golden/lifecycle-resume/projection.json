@@ -1,0 +1,44 @@
+{
+  "asks": 1,
+  "calls": 0,
+  "effects": [
+    [
+      "do",
+      "read_json",
+      "0e9e718e6ed5c26eb75729be",
+      true
+    ],
+    [
+      "gen",
+      "Suggest a plan",
+      "25bc17604887d5629a65766f",
+      true
+    ],
+    [
+      "ask",
+      "「Publish this plan?」已答",
+      "b7ba25bcfb4cb5572e2f062b",
+      false
+    ],
+    [
+      "do",
+      "write_json",
+      "cfc84489ed877d36df34ec50",
+      false
+    ]
+  ],
+  "judge_registrations": 1,
+  "pending": [],
+  "returned_unsure": [],
+  "status": "returned",
+  "usd": 0.0,
+  "value": {
+    "plan": {
+      "cost": 2,
+      "name": "shared plan"
+    },
+    "request": {
+      "goal": "a reusable plan"
+    }
+  }
+}

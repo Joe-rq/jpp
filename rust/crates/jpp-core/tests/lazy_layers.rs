@@ -15,7 +15,7 @@ use jpp_core::ledger::Ledger;
 use jpp_core::value::{Answer, Question, State};
 use jpp_core::interp::Passes;
 use jpp_core::{ActionRegistry, run};
-use jpp_frontend::{lower, parse};
+use jpp_core::{lower, syntax::parse};
 use serde_json::Value as Json;
 
 /// 记下每次调用问了几道题——融合有没有发生，看的就是这个
@@ -50,7 +50,7 @@ fn 跑_带开关(src: &str, p: f64, passes: jpp_core::interp::Passes) -> (jpp_co
     let mut client = 记账客户端 { p, 每次题数: vec![] };
     let mut ledger = Ledger::new();
     let actions = ActionRegistry::new();
-    let budget = program.budget.clone().expect("有预算");
+    let budget = program.budget.clone();
     let mut it = jpp_core::interp::Interp::new(&mut client, &mut ledger, &calib, &actions, budget);
     it.passes = passes;
     let out = it.run(&program).unwrap_or_else(|e| panic!("程序应当跑完：{}", e.render()));
@@ -164,7 +164,7 @@ consume(出口, "drop");
         calib.put("k", 0.65, 0.35, 100, "上岗").unwrap();
         let mut client = 记账客户端 { p: 0.9, 每次题数: vec![] };
         let mut ledger = jpp_core::ledger::Ledger::new();
-        let budget = program.budget.clone().expect("有预算");
+        let budget = program.budget.clone();
         let actions = ActionRegistry::new();
         let mut it = Interp::new(&mut client, &mut ledger, &calib, &actions, budget);
         it.passes = passes;
@@ -315,7 +315,7 @@ consume([e1, e2, e3], "drop");
         let mut client = 记账客户端 { p: 0.9, 每次题数: vec![] };
         let mut ledger = jpp_core::ledger::Ledger::new();
         let actions = ActionRegistry::new();
-        let budget = program.budget.clone().expect("有预算");
+        let budget = program.budget.clone();
         let mut it = Interp::new(&mut client, &mut ledger, &calib, &actions, budget);
         it.passes = passes;
         let out = it.run(&program).unwrap_or_else(|e| panic!("程序应当跑完：{}", e.render()));

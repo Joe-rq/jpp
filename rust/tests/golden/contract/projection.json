@@ -1,0 +1,288 @@
+{
+  "asks": 0,
+  "calls": 11,
+  "effects": [],
+  "judge_registrations": 11,
+  "pending": [],
+  "returned_unsure": [
+    "unsure(band)",
+    "unsure(band)"
+  ],
+  "status": "returned",
+  "usd": 0.0,
+  "value": {
+    "engineers": [
+      "王工",
+      "李工"
+    ],
+    "matched": [
+      {
+        "need": "做一个带登录的网页后台",
+        "person": "王工"
+      },
+      {
+        "need": "搭建订单数据库",
+        "person": "李工"
+      }
+    ],
+    "pending": [
+      [
+        {
+          "cause": "band",
+          "element": {
+            "cause": "band",
+            "exit": {
+              "consumed": true,
+              "exit": "unsure(band)",
+              "id": 5,
+              "q": "615a0f8ed47fa7d6f0e1784d"
+            },
+            "index": 1,
+            "item": {
+              "a": "做一个带登录的网页后台",
+              "b": {
+                "name": "李工",
+                "skills": [
+                  "数据库",
+                  "后端"
+                ]
+              }
+            },
+            "source": {
+              "at": [
+                0,
+                1
+              ],
+              "item": {
+                "a": "做一个带登录的网页后台",
+                "b": {
+                  "name": "李工",
+                  "skills": [
+                    "数据库",
+                    "后端"
+                  ]
+                }
+              },
+              "left": "做一个带登录的网页后台",
+              "right": {
+                "cause": null,
+                "exit": {
+                  "consumed": true,
+                  "exit": "act",
+                  "id": 1,
+                  "q": "03d341e836e350eac190d030"
+                },
+                "index": 1,
+                "item": {
+                  "name": "李工",
+                  "skills": [
+                    "数据库",
+                    "后端"
+                  ]
+                },
+                "source": {
+                  "name": "李工",
+                  "skills": [
+                    "数据库",
+                    "后端"
+                  ]
+                },
+                "trail": []
+              },
+              "trail": []
+            },
+            "trail": []
+          },
+          "exit": {
+            "consumed": true,
+            "exit": "unsure(band)",
+            "id": 5,
+            "q": "615a0f8ed47fa7d6f0e1784d"
+          }
+        },
+        {
+          "cause": "band",
+          "element": {
+            "cause": "band",
+            "exit": {
+              "consumed": true,
+              "exit": "unsure(band)",
+              "id": 3,
+              "q": "03d341e836e350eac190d030"
+            },
+            "index": 3,
+            "item": {
+              "name": "钱设计",
+              "skills": [
+                "UI 设计"
+              ]
+            },
+            "source": {
+              "name": "钱设计",
+              "skills": [
+                "UI 设计"
+              ]
+            },
+            "trail": []
+          },
+          "exit": {
+            "consumed": true,
+            "exit": "unsure(band)",
+            "id": 3,
+            "q": "03d341e836e350eac190d030"
+          }
+        }
+      ],
+      []
+    ],
+    "recheck": {
+      "act": 0,
+      "asked": "只看成员 b 列出的技能，他能独立完成需求 a 的主要工作吗？",
+      "count": [
+        0,
+        0
+      ],
+      "exists": {
+        "consumed": true,
+        "exit": "ignore",
+        "id": 11,
+        "q": "tally:exists"
+      },
+      "ignore": 1
+    },
+    "same_type": true,
+    "second_round": {
+      "act": [
+        "王工"
+      ],
+      "checked": "第二轮问的是「已接受的关系 + 新成员」作为一个整体能否更好地完成需求；没有从两两关系推定",
+      "ignore": [
+        "李工"
+      ]
+    },
+    "stages": [
+      {
+        "calls": 4,
+        "evidence": 4,
+        "fields": [
+          "kind",
+          "value",
+          "pending",
+          "evidence",
+          "resume",
+          "spent",
+          "detail",
+          "purpose"
+        ],
+        "kind": "sieve",
+        "pending": 1
+      },
+      {
+        "calls": 0,
+        "evidence": 4,
+        "fields": [
+          "kind",
+          "value",
+          "pending",
+          "evidence",
+          "resume",
+          "spent",
+          "detail",
+          "purpose"
+        ],
+        "kind": "pair",
+        "pending": 1
+      },
+      {
+        "calls": 4,
+        "evidence": 8,
+        "fields": [
+          "kind",
+          "value",
+          "pending",
+          "evidence",
+          "resume",
+          "spent",
+          "detail",
+          "purpose"
+        ],
+        "kind": "sieve",
+        "pending": 2
+      },
+      {
+        "calls": 0,
+        "evidence": 8,
+        "fields": [
+          "kind",
+          "value",
+          "pending",
+          "evidence",
+          "resume",
+          "spent",
+          "detail",
+          "purpose"
+        ],
+        "kind": "outcome",
+        "pending": 2
+      },
+      {
+        "calls": 2,
+        "evidence": 10,
+        "fields": [
+          "kind",
+          "value",
+          "pending",
+          "evidence",
+          "resume",
+          "spent",
+          "detail",
+          "purpose"
+        ],
+        "kind": "sieve",
+        "pending": 2
+      },
+      {
+        "calls": 1,
+        "evidence": 1,
+        "fields": [
+          "kind",
+          "value",
+          "pending",
+          "evidence",
+          "resume",
+          "spent",
+          "detail",
+          "purpose"
+        ],
+        "kind": "sieve",
+        "pending": 0
+      },
+      {
+        "calls": 0,
+        "evidence": 1,
+        "fields": [
+          "kind",
+          "value",
+          "pending",
+          "evidence",
+          "resume",
+          "spent",
+          "detail",
+          "purpose"
+        ],
+        "kind": "tally",
+        "pending": 0
+      }
+    ],
+    "unsure_in_matched": [
+      {
+        "cause": "band",
+        "relation": true
+      },
+      {
+        "cause": "band",
+        "relation": false
+      }
+    ]
+  }
+}

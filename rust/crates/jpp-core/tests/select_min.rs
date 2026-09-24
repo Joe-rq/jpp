@@ -20,7 +20,7 @@ use jpp_core::effects::{CalibStore, Client, JevClient};
 use jpp_core::ledger::Ledger;
 use jpp_core::value::{Mat, Op, Question, State};
 use jpp_core::{ActionRegistry, run};
-use jpp_frontend::{lower, parse};
+use jpp_core::{lower, syntax::parse};
 use serde_json::{Value as Json, json};
 
 /// 一个**能指定 `mode_share`** 的客户端。`None` 模拟 K-noul 那条路——那上面根本没有
