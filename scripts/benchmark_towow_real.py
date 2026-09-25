@@ -17,7 +17,7 @@ def main():
     import torch
     from sentence_transformers import SentenceTransformer
     from jpp.towow_population import lexical_ranking
-    torch.set_num_threads(4)
+    torch.set_num_threads(2)
     people=json.loads(a.data.read_text())['people']
     start=perf_counter()
     model=SentenceTransformer(str(a.model),device='cpu',local_files_only=True)
