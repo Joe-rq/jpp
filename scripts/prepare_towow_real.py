@@ -1,9 +1,18 @@
 """Prepare identifier-minimized public-source research data; no network access."""
 import argparse
 from hashlib import sha256
+import importlib.util
 import json
 from pathlib import Path
 import re
+
+
+def _trim_module():
+    path=Path(__file__).with_name('trim_towow_real_abstracts.py')
+    spec=importlib.util.spec_from_file_location('trim_towow_real_abstracts',path)
+    module=importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
 
 def prepare(root, destination):
@@ -19,6 +28,10 @@ def prepare(root, destination):
         for value in personal:
             text=re.sub(r'(?<!\w)'+re.escape(value)+r'(?!\w)','[person]',text,flags=re.I)
         people.append({'id':ids[p['profile_id']],'source_type':p['source_type'],'context':text})
+    # 2026-09-25 decision: academic entries publish the paper title and a hand-written
+    # one-sentence description, never the abstract text from the source corpus.
+    trim=_trim_module()
+    trim.trim({'people':people},trim.load_descriptions())
     label_path=root/'relations/ground_truth.json'
     original=json.loads(label_path.read_text())['relations']
     missing=[r for r in original if r['agent_a'] not in ids or r['agent_b'] not in ids]
