@@ -4,13 +4,13 @@
   "distinct_profile_texts": 271,
   "candidate_coverage_ceiling": {
     "10": {
-      "covered_edges": 675,
+      "covered_edges": 674,
       "total_edges": 963,
       "curated_cross_source_covered": 0,
       "curated_cross_source_total": 24,
       "directed_candidate_slots": 3250,
       "by_type": {
-        "github_same_org": 120,
+        "github_same_org": 119,
         "same_team_complementary": 12,
         "same_team_equivalent": 21,
         "coauthor_same_field": 522
@@ -54,14 +54,14 @@
         "same_team_equivalent": 21,
         "coauthor_same_field": 599,
         "cross_source_same_field": 5,
-        "cross_source_complementary": 2,
-        "cross_source_functional": 1
+        "cross_source_complementary": 1,
+        "cross_source_functional": 2
       }
     },
     "160": {
-      "covered_edges": 956,
+      "covered_edges": 958,
       "total_edges": 963,
-      "curated_cross_source_covered": 17,
+      "curated_cross_source_covered": 19,
       "curated_cross_source_total": 24,
       "directed_candidate_slots": 52000,
       "by_type": {
@@ -69,7 +69,7 @@
         "same_team_complementary": 12,
         "same_team_equivalent": 21,
         "coauthor_same_field": 599,
-        "cross_source_same_field": 6,
+        "cross_source_same_field": 8,
         "cross_source_complementary": 5,
         "cross_source_functional": 6
       }
@@ -93,80 +93,79 @@
   },
   "miss_decomposition": {
     "known_edges": 963,
-    "found_at_10": 697,
+    "found_at_10": 692,
     "outside_both_top20_pools": 133,
-    "inside_pool_but_not_found_at_10": 133
+    "inside_pool_but_not_found_at_10": 138
   },
   "curated_cross_source_best_endpoint_ranks": [
-    47,
     48,
     52,
     55,
-    56,
-    59,
-    65,
-    78,
-    89,
-    97,
-    105,
-    109,
-    112,
-    112,
-    119,
-    133,
-    154,
-    180,
-    181,
-    195,
-    205,
-    212,
-    216,
-    264
+    55,
+    57,
+    60,
+    66,
+    67,
+    88,
+    91,
+    95,
+    102,
+    116,
+    116,
+    117,
+    121,
+    135,
+    136,
+    156,
+    211,
+    215,
+    227,
+    230,
+    232
   ],
   "same_budget_source_diversity_probes": [
     {
       "candidate_limit": 20,
       "different_source_slots": 4,
-      "covered_edges": 797,
+      "covered_edges": 793,
       "total_edges": 963,
-      "curated_cross_source_covered": 7,
+      "curated_cross_source_covered": 5,
       "curated_cross_source_total": 24,
       "directed_candidate_slots": 6500,
       "by_type": {
-        "github_same_org": 165,
+        "github_same_org": 164,
         "same_team_complementary": 12,
         "same_team_equivalent": 21,
-        "coauthor_same_field": 592,
+        "coauthor_same_field": 591,
         "cross_source_same_field": 4,
-        "cross_source_complementary": 2,
         "cross_source_functional": 1
       },
-      "added_vs_rrf20": 7,
-      "lost_vs_rrf20": 40
+      "added_vs_rrf20": 5,
+      "lost_vs_rrf20": 42
     },
     {
       "candidate_limit": 20,
       "different_source_slots": 8,
-      "covered_edges": 734,
+      "covered_edges": 730,
       "total_edges": 963,
-      "curated_cross_source_covered": 10,
+      "curated_cross_source_covered": 9,
       "curated_cross_source_total": 24,
       "directed_candidate_slots": 6500,
       "by_type": {
-        "github_same_org": 137,
+        "github_same_org": 135,
         "same_team_complementary": 12,
         "same_team_equivalent": 21,
-        "coauthor_same_field": 554,
+        "coauthor_same_field": 553,
         "cross_source_same_field": 6,
-        "cross_source_complementary": 2,
+        "cross_source_complementary": 1,
         "cross_source_functional": 2
       },
-      "added_vs_rrf20": 10,
-      "lost_vs_rrf20": 106
+      "added_vs_rrf20": 9,
+      "lost_vs_rrf20": 109
     }
   ],
   "api_calls": 0,
   "api_cost_usd": 0,
-  "data_sha256": "51375d3b6ef88c96145f5d9c953ae6eae0633743f89b90bab19be61d1646cdac",
-  "results_sha256": "db63392aa303b3786c2e793acdf393cdf5d2a9c3479a353dd3bb5b3c07214493"
+  "data_sha256": "8116309e18d2bb4e90d475a5e5531542dad852ec4a24b3581d9230aa29e7bce1",
+  "results_sha256": "dd9a3331515dc511103f10640706b469b968946a5f96f5334a6144a6bee1c3a5"
 }
