@@ -40,7 +40,8 @@ handle(e, {act: fn() { "act" }, ignore: fn() { "ig" }, unsure: fn(u) { let c = u
 "#;
 
 fn 跑(src: &str, calib: &CalibStore, p: f64) -> (Json, Vec<String>) {
-    let program = lower(&parse(src).expect("解析")).expect("lower");
+    let mut program = lower(&parse(src).expect("解析")).expect("lower");
+    program.entry.guard = true; // 测放行把关本身：开 --guard（意图汇编 11a）
     let mut l = Ledger::new();
     let o = run(&program, 定值端口(p), calib, &ActionRegistry::new(), &mut l).expect("跑得完");
     (o.value_json(), o.trace.warnings.clone())
@@ -90,7 +91,8 @@ fn cost_line_form_level_suspended_is_drift() {
     assert_eq!(v, Json::from("act"), "对照：题式级上岗时代价线放行 {w:?}");
     c.records.get_mut(&fk).unwrap().status = "停岗".into();
     let (v, w) = 跑(程序, &c, 0.9);
-    assert_eq!(v, Json::from("drift"), "题式级停岗与题级停岗同路由 {w:?}");
+    // B187（批 9）：`cause` 删 `drift`——停岗的记录不供线，题式级停岗与题级停岗同样按判断器的回答走
+    assert_eq!(v, Json::from("act"), "题式级停岗与题级停岗同路由 {w:?}");
 }
 
 #[test]
@@ -98,7 +100,8 @@ fn cost_line_cold_record_with_cert_is_cold() {
     let mut c = CalibStore::new();
     带代价证书(&mut c, "k", "冷");
     let (v, w) = 跑(程序, &c, 0.9);
-    assert_eq!(v, Json::from("cold"), "{w:?}");
+    // 冷记录上的代价证书不供线；B187 起按判断器的回答走（0.9 → act），另报 cost_line 载体
+    assert_eq!(v, Json::from("act"), "{w:?}");
     assert!(w.iter().any(|x| x.contains("cost_line")), "{w:?}");
 }
 

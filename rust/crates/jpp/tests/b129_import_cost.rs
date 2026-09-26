@@ -128,7 +128,8 @@ handle(cut(judge(state(mat("{材料}")), fill(f, {{x: "退款"}})){cut参}), {{
 }
 
 fn 跑(src: &str, calib: &CalibStore, p: f64) -> Result<jpp::Outcome, String> {
-    let program = lower(&parse(src).expect("解析")).expect("lower");
+    let mut program = lower(&parse(src).expect("解析")).expect("lower");
+    program.entry.guard = true; // 测放行把关本身：开 --guard（意图汇编 11a）
     let mut a = ActionRegistry::new();
     a.register("退款", 0.0, false, TaintOut::Trusted, |_| {
         Ok(Value::Text("已退".into(), Taint::Trusted.into()))
@@ -185,9 +186,9 @@ fn 代价线证书与出口() {
     // 不带代价的 cut 按记录的线切，结果同
     assert_eq!(出口(0.95, "").0, json!("act"));
     assert_eq!(出口(0.5, "").0, json!("unsure"));
-    // 换一对代价：没有这张证书，冷
+    // 换一对代价：没有这张证书——B187 起按判断器的回答走（0.95 出 act），另报 J-15 载体 cost_line
     let o = 跑(&程序(", {cost: [2, 10]}", "\"act\""), &store, 0.95).unwrap();
-    assert_eq!(o.value_json(), json!("unsure"));
+    assert_eq!(o.value_json(), json!("act"));
     assert!(
         o.trace
             .warnings

@@ -178,7 +178,8 @@ impl JudgeKey {
             &self.site.to_string(),
         ])
     }
-    /// 去掉调用位置与运行序号后的缓存键（`12` §2.10、B40）。步 19 启用；步 7 只定义。
+    /// 去掉调用位置与运行序号后的缓存键（`12` §2.10、B40）。步 19 启用：选择题（物理形式 `choice`）
+    /// 按 `perm_seed` 分开（B40「按 `perm_seed` 索引，命中只复用同 seed」），其余不含它。
     pub fn cache_key(&self) -> CacheKey {
         CacheKey {
             model_id: self.model_id.clone(),
@@ -186,6 +187,7 @@ impl JudgeKey {
             q: self.q.clone(),
             phys: self.phys.clone(),
             render: self.render.clone(),
+            perm_seed: (self.phys == "choice").then_some(self.perm_seed),
         }
     }
 }
@@ -199,18 +201,26 @@ pub struct CacheKey {
     pub q: String,
     pub phys: String,
     pub render: String,
+    /// 只有选择题填（B40，步 19）；为空时摘要与步 7 定义的相同
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub perm_seed: Option<u64>,
 }
 
 impl CacheKey {
     pub fn digest(&self) -> String {
-        hash_of(&[
+        let seed = self.perm_seed.map(|s| s.to_string());
+        let mut parts: Vec<&str> = vec![
             "cache",
             &self.model_id,
             &self.state,
             &self.q,
             &self.phys,
             &self.render,
-        ])
+        ];
+        if let Some(s) = &seed {
+            parts.push(s);
+        }
+        hash_of(&parts)
     }
 }
 
@@ -232,6 +242,16 @@ impl EffectKey {
     pub fn digest(&self) -> String {
         let parts: Vec<&str> = self.parts.iter().map(String::as_str).collect();
         effect_key(&self.kind, &parts)
+    }
+    /// 可复用键（步 19；B20、jev-ca 提醒 1、B151）：去掉第一段（调用位置）后的方法身份与输入，
+    /// 给了模型再加模型（生成物：同一提示换模型不是同一件产物）。哪些效应复用、带不带模型由注册表
+    /// `EffectSpec.reuse` 定，调用方按它传参（`20` A2：注册表外不按效应名分支）。账本键不变，仍带调用位置。
+    pub fn cache_digest(&self, model: Option<&str>) -> Option<String> {
+        let rest = self.parts.get(1..)?;
+        let mut parts: Vec<&str> = vec!["effect-cache", &self.kind];
+        parts.extend(model);
+        parts.extend(rest.iter().map(String::as_str));
+        Some(hash_of(&parts))
     }
 }
 
@@ -364,7 +384,8 @@ impl LiteralMode {
 /// `Certified`。这个优先序步 20f 起已在报告 `exits` 表里用，本步不改。
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 pub enum LineGrade {
-    /// 没用上线（冷、停岗、缺席、失败、证据不足）
+    /// 没用上线、也没有判断器的回答可走（停岗、缺席、失败、证据不足；作者要求证书线而没有证书；
+    /// 非 `max` 统计量或拟合分数上没写声明线）
     Cold,
     /// 夹具线：宿主 `put` 写入，或没有认证证书（B29）
     Fixture,
@@ -382,6 +403,10 @@ pub enum LineGrade {
     /// 路由可用；放行不可逆 `do` 须宿主另作接受（`Exit::host_accepts_declared`，20j-2 置位）。
     /// 与上面七档不在同一条优先序上：它不来自记录，只由声明分支给出。
     Declared,
+    /// 判断器自己的回答（意图汇编 11a，2026-09-26）：没有记录的线、作者也没写线时，`cut` 按判断器的回答走——
+    /// 是非题 p > 0.5 为 act、p < 0.5 为 ignore，select / measure 取概率最大的候选或档位，恰好并列出
+    /// `Unsure(tie)`。与声明线一样不来自记录，不在上面七档的优先序上。不作放行证据：只在宿主开 `--guard` 时有意义。
+    Answer,
 }
 
 impl LineGrade {
@@ -396,11 +421,55 @@ impl LineGrade {
             LineGrade::Form => "Form",
             LineGrade::Certified => "Certified",
             LineGrade::Declared => "Declared",
+            LineGrade::Answer => "Answer",
         }
     }
     /// 等级这一项放不放行不可逆 `do`：只有主键记录（题键、题式键）经正式 α 认证才放行（B75 放行原则）。
     /// 完整判定还要看正交位，只在 `jpp_value::value::Exit::releases` 一处合成。
     pub fn releases(self) -> bool {
         matches!(self, LineGrade::Certified | LineGrade::Form)
+    }
+}
+
+#[cfg(test)]
+mod cache_key_tests {
+    //! 步 19（B40、B20）：缓存键不含调用位置；选择题按 `perm_seed` 分开；`do` 不复用。
+    use super::*;
+
+    #[test]
+    fn 非选择题的摘要与步7相同_选择题按seed分开() {
+        let a = JudgeKey::new("m", "s", "q", "noul", 1, 0, 10).cache_key();
+        let b = JudgeKey::new("m", "s", "q", "noul", 2, 5, 99).cache_key();
+        assert_eq!(
+            a.digest(),
+            b.digest(),
+            "是非题不看 seed、调用位置、运行序号"
+        );
+        assert_eq!(
+            a.digest(),
+            hash_of(&["cache", "m", "s", "q", "noul", RENDER_VERSION]),
+            "非选择题的摘要与步 7 的定义相同"
+        );
+        let c1 = JudgeKey::new("m", "s", "q", "choice", 1, 0, 10).cache_key();
+        let c1b = JudgeKey::new("m", "s", "q", "choice", 1, 0, 99).cache_key();
+        let c2 = JudgeKey::new("m", "s", "q", "choice", 2, 0, 10).cache_key();
+        assert_eq!(c1.digest(), c1b.digest(), "同 seed 复用");
+        assert_ne!(c1.digest(), c2.digest(), "选择题 seed 不同不复用");
+    }
+
+    #[test]
+    fn 效应缓存键去掉调用位置_给模型才带模型() {
+        let g1 = EffectKey::new("gen", &["10", "提示", "h1", "3", "0"]);
+        let g2 = EffectKey::new("gen", &["99", "提示", "h1", "3", "0"]);
+        assert_eq!(g1.cache_digest(Some("甲")), g2.cache_digest(Some("甲")));
+        assert_ne!(g1.cache_digest(Some("甲")), g1.cache_digest(Some("乙")));
+        assert_ne!(g1.digest(), g2.digest(), "账本键仍带调用位置");
+        let t1 = EffectKey::new("transform", &["10", "f", "cap", "a"]);
+        let t2 = EffectKey::new("transform", &["20", "f", "cap", "a"]);
+        assert_eq!(
+            t1.cache_digest(None),
+            t2.cache_digest(None),
+            "不给模型：只看方法身份与输入"
+        );
     }
 }

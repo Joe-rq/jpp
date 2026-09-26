@@ -3,19 +3,26 @@
 // ground(action, args_of, render) -> fn(cand: Mat) -> Mat | Fail
 //   action   已登记的 do 动作名（如 "exec_py"、"check_tests"），由调用者传入
 //   args_of  fn(候选材料) -> [实参]，给出动作的实参列表，如 fn(c) { [content(c), "", 5] }
-//   render   fn(候选材料, 输出材料) -> Text，把候选与执行输出渲染成判断要看的字面材料
+//   render   fn(候选材料, 输出材料) -> Text | Record，把候选与执行输出渲染成判断要看的材料。可以返回文字，
+//            也可以返回记录（B184）：返回记录时推荐把结构化字段（如 error、rows、exit_code、stdout）与
+//            渲染文字一起放进去——结构化字段供 opts.keep 读（代码能定的用代码），渲染文字供 JEV 读。
 // 产物经 transform 得到（transform 只收一份材料，候选由闭包捕获）：taint 承接执行输出（执行器为 untrusted，
 // 产物也是），来源边承接输出；输出的来源里已并进实参（候选内容）的来源。
-// 动作报错（包括没有沙箱时的 NoSandbox）时返回 do 的失败值：交给 sieve 后这个元素未决，不中断程序。
-// 超时与非零退出码写在执行器的输出记录里（timed_out、exit_code），不是失败值，由 render 渲染、交判断定。
+// 动作报错时返回 do 的失败值：交给 sieve 后这个元素未决，不中断程序（没有沙箱时执行器照跑，B187）。
+// 超时与非零退出码写在执行器的输出记录里（timed_out、exit_code），不是失败值，由 render 渲染、交判断定；
+// render 返回记录时这些字段也可以直接读，不必再解析渲染文字。
 // iter_seq 恒为 0：同一动作、同一实参第二次按键从账本取，同一段代码只跑一次。
 //
-// verify(cands, grounder, q) = sieve(map(cands, grounder), q)：返回契约值，出口照普通 sieve 放行。
+// verify(cands, grounder, q, opts) = sieve(kept, q, {line: opts.line})：kept = 接地后不是 Fail 且 opts.keep 为真的项；
+// opts.keep? : fn(Mat) -> Bool 缺省恒真，只对材料求值，不拦截 Fail（Fail 原样进 sieve，sieve 自己转成
+// Unsure(fail)）；被 keep 排除的记 detail.excluded，不进 sieve、不花调用（B184，与 search 的 opts.keep
+// 同一语义）。opts.line? 判断的线，写法同 cut 的第二参（B128 补齐，过程记录 工程-sieve声明线.md），作者
+// 按自己的判定规则切；不给线时走 cut 的缺省规则。返回契约值，出口照普通 sieve 放行。
 // ground 是函数值，可以直接放进 search 的 opts.ground，就是「提出 → 执行 → 判 → 再提出」的闭环。
 //
-// 注意（过程记录 工程-步25e.md 问题清单）：这里的 do 动作名不是字面量，检查期不报 E-action-no-sandbox，
-// 没有沙箱时到运行期才得到失败值（进 pending）；CLI 把非字面动作名的 do 算作可能不可逆，
-// 引本文件的程序运行时要给 --ledger-out。
+// 注意（过程记录 工程-步25e.md 问题清单）：这里的 do 动作名不是字面量，检查期不报沙箱告警；CLI 把
+// 非字面动作名的 do 算作可能不可逆：不给 --ledger-out 时账本写到源文件旁的缺省路径，开 --guard 时要给
+// --ledger-out（B187）。           
 import "../outcome.jpp";
 
 fn ground(action, args_of, render) {
@@ -25,6 +32,14 @@ fn ground(action, args_of, render) {
     }
 }
 
-fn verify(cands, grounder, q) {
-    sieve(map(cands, grounder), q)
+fn verify(cands, grounder, q, opts) {
+    let keep = if has(opts, "keep") { opts.keep } else { fn(m) { true } };
+    let gd = map(cands, grounder);
+    // 判断分工定律谓词半（B181/B184）：接地失败的（is_fail）不受 keep 拦截，原样交给 sieve
+    let excluded = filter(gd, fn(c) { !is_fail(c) && !keep(c) });
+    let kept = filter(gd, fn(c) { is_fail(c) || keep(c) });
+    // 线（B128 补齐）：opts.line 原样交给 sieve；只在给了时才传选项（不给线的程序与改前相同，旧二进制照样能跑）
+    let o = if has(opts, "line") { sieve(kept, q, {line: opts.line}) } else { sieve(kept, q) };
+    outcome({value: o.value, pending: o.pending, evidence: o.evidence, resume: o.resume,
+             detail: with(o.detail, "excluded", excluded)})
 }

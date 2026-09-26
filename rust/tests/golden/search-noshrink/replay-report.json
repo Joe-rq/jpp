@@ -17,7 +17,7 @@
       "key": "search-fit",
       "pos": 0,
       "releases": false,
-      "site": 6331
+      "site": 11397
     },
     {
       "exit": "ignore",
@@ -27,7 +27,7 @@
       "key": "search-fit",
       "pos": 1,
       "releases": false,
-      "site": 6331
+      "site": 11397
     },
     {
       "exit": "unsure(band)",
@@ -37,7 +37,7 @@
       "key": "search-fit",
       "pos": 2,
       "releases": false,
-      "site": 6331
+      "site": 11397
     },
     {
       "exit": "ignore",
@@ -47,7 +47,7 @@
       "key": "search-fit",
       "pos": 0,
       "releases": false,
-      "site": 6331
+      "site": 11397
     },
     {
       "exit": "ignore",
@@ -57,7 +57,7 @@
       "key": "search-fit",
       "pos": 1,
       "releases": false,
-      "site": 6331
+      "site": 11397
     }
   ],
   "fixture_description": "Synthetic fixed observations for search-noshrink.jpp (construction check only; not model evaluation). Round 0 yields one fitting name, one rejected and one in band (refined into round 1's context); round 1 re-proposes the round-0 good name (reused, not judged again) and two new names that are both rejected, so the accumulated good names do not grow and the search ends at noshrink. The calibration record is hand-written to exercise routing.",
@@ -91,35 +91,35 @@
       },
       {
         "cost": 0.0,
-        "key": "8597be49ad69515715da6e3e",
+        "key": "6ed6c37b8e559458aad9c855",
         "kind": "judge",
         "note": "「这个名字适合做一家社区咖啡馆的店名吗？」",
         "replayed": true,
         "site": {
-          "end": 6365,
-          "start": 6331
+          "end": 11418,
+          "start": 11397
         }
       },
       {
         "cost": 0.0,
-        "key": "3861238418b5172c56e89a0c",
+        "key": "550230a99906a5e443c4d59c",
         "kind": "judge",
         "note": "「这个名字适合做一家社区咖啡馆的店名吗？」",
         "replayed": true,
         "site": {
-          "end": 6365,
-          "start": 6331
+          "end": 11418,
+          "start": 11397
         }
       },
       {
         "cost": 0.0,
-        "key": "45ad9f8df1999fcd0424bb82",
+        "key": "958df254c2462445f9a10cc3",
         "kind": "judge",
         "note": "「这个名字适合做一家社区咖啡馆的店名吗？」",
         "replayed": true,
         "site": {
-          "end": 6365,
-          "start": 6331
+          "end": 11418,
+          "start": 11397
         }
       },
       {
@@ -135,30 +135,29 @@
       },
       {
         "cost": 0.0,
-        "key": "cd8408c882ee9aa3ebfc2e61",
+        "key": "3a9db9a93b6152a4f18084f4",
         "kind": "judge",
         "note": "「这个名字适合做一家社区咖啡馆的店名吗？」",
         "replayed": true,
         "site": {
-          "end": 6365,
-          "start": 6331
+          "end": 11418,
+          "start": 11397
         }
       },
       {
         "cost": 0.0,
-        "key": "3173eff264f06a7cacc73cd1",
+        "key": "282bae1a321ac7c08ccb8f98",
         "kind": "judge",
         "note": "「这个名字适合做一家社区咖啡馆的店名吗？」",
         "replayed": true,
         "site": {
-          "end": 6365,
-          "start": 6331
+          "end": 11418,
+          "start": 11397
         }
       }
     ],
     "warnings": [
-      "W-window-untested: @6331 画像没有测过窗口（window），对象长度不核；超窗的语境可能接管读数而无痕",
-      "W-fixture-line: @6331 键 search-fit 的线是夹具线（宿主 put 写入或没有认证证书，n=1），出口 Act 照常路由，但按 B29 不算放行不可逆 do 的可信合取项。修法【需接线人】：用 calib-import 或 commission 从带真值样本认证这条线",
+      "W-window-untested: @11397 画像没有测过窗口（window），对象长度不核；超窗的语境可能接管读数而无痕",
       "W-untyped-transfer: search 把 unsure(band) 装在返回值里交了出去，但返回类型没提 Exit，调用者从签名上看不出自己收到了一份未决。修法：把返回类型标为含 Exit（如 `-> Exit`、`-> Record<Exit>`）",
       "returned_unsure: unsure(band)"
     ]
@@ -201,7 +200,7 @@
           ],
           "taint": "Trusted"
         },
-        "key": "45ad9f8df1999fcd0424bb82",
+        "key": "958df254c2462445f9a10cc3",
         "pos": 2,
         "q": {
           "calib": "search-fit",

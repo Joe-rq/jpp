@@ -1,20 +1,63 @@
 {
-  "description": "Synthetic fixed observations for search-ground.jpp (construction check only; not model evaluation). Generations are fixed; exec_py runs the code for real only when the seed ledger is recorded (tests/golden/search-ground-seed), and the golden resumes from that seed without executing anything. Round 0: outputs 285 and 302 are rejected, 'about 385' is in band and refined into round 1's context; round 1: 385 is accepted, 55 and 386 are rejected. The calibration record is hand-written to exercise routing.",
+  "description": "Synthetic fixed observations for search-ground.jpp (construction check only; not model evaluation; B184). Generations are fixed; exec_sql runs the SQL for real only when the seed ledger is recorded (see 地基/过程记录/工程-步25e.md), and the golden resumes from that seed without executing anything. Round 0: c0 (no quarter filter, wrong scope) is judged and rejected; c1 (typo'd column name -> SQL error) is code-excluded by opts.keep before any judgment call; c2 (quarter filter off by one day, missing 2026-06-30) lands in-band and is refined into round 1's context together with the code-excluded c1 (both are carried forward under unsure_to: refine). Round 1: c3 (correct quarter + correct grouping) is accepted, reaching width 1 and stopping; c4 (filter on a nonexistent category -> empty result) is code-excluded by opts.keep; c5 (correct quarter but grouped by product, wrong grain) is judged and rejected. The calibration record is hand-written to exercise routing, not a real authentication.",
   "calibrations": [
-    {"key": "ground-correct", "hi": 0.75, "lo": 0.25, "n": 1, "status": "上岗", "delta": 0.05}
+    {
+      "key": "sql-answers-question",
+      "hi": 0.75,
+      "lo": 0.25,
+      "n": 1,
+      "status": "上岗",
+      "delta": 0.05
+    }
   ],
   "generations": [
-    {"prompt": "按下面的需求提出 3 段 Python 代码，每段是一个字符串；需求之后的上下文是上一轮留下的候选（代码与输出）", "retry_seq": 0,
-     "output": ["print(sum(i * i for i in range(10)))", "print(sum(range(1, 11)) ** 2 // 10)", "print('大约', 385)"]},
-    {"prompt": "按下面的需求提出 3 段 Python 代码，每段是一个字符串；需求之后的上下文是上一轮留下的候选（代码与输出）", "retry_seq": 1,
-     "output": ["print(sum(i * i for i in range(1, 11)))", "print(sum(range(1, 11)))", "print(10 * 11 * 21 // 6 + 1)"]}
+    {
+      "prompt": "按下面的需求提出 3 条 SQL 查询，每条是一个字符串；需求之后的上下文是上一轮留下的候选（SQL 与执行结果）",
+      "retry_seq": 0,
+      "output": [
+        "select category, sum(quantity) as total from returns group by category order by total desc limit 1;",
+        "select category, sum(quantiy) as total from returns group by category order by total desc limit 1;",
+        "select category, sum(quantity) as total from returns where return_date >= '2026-04-01' and return_date <= '2026-06-29' group by category order by total desc limit 1;"
+      ]
+    },
+    {
+      "prompt": "按下面的需求提出 3 条 SQL 查询，每条是一个字符串；需求之后的上下文是上一轮留下的候选（SQL 与执行结果）",
+      "retry_seq": 1,
+      "output": [
+        "select category, sum(quantity) as total from returns where return_date >= '2026-04-01' and return_date < '2026-07-01' group by category order by total desc limit 1;",
+        "select category, sum(quantity) as total from returns where category = '玩具' and return_date >= '2026-04-01' and return_date < '2026-07-01' group by category order by total desc limit 1;",
+        "select product_name, sum(quantity) as total from returns where return_date >= '2026-04-01' and return_date < '2026-07-01' group by product_name order by total desc limit 1;"
+      ]
+    }
   ],
   "observations": [
-    {"on": ["代码：print(sum(i * i for i in range(10)))\n输出：285\n"], "op": "test", "text": "这段代码的输出是否等于 1 到 10 的平方和（385）？", "calib": "ground-correct", "answer": {"Noul": 0.05}},
-    {"on": ["代码：print(sum(range(1, 11)) ** 2 // 10)\n输出：302\n"], "op": "test", "text": "这段代码的输出是否等于 1 到 10 的平方和（385）？", "calib": "ground-correct", "answer": {"Noul": 0.05}},
-    {"on": ["代码：print('大约', 385)\n输出：大约 385\n"], "op": "test", "text": "这段代码的输出是否等于 1 到 10 的平方和（385）？", "calib": "ground-correct", "answer": {"Noul": 0.5}},
-    {"on": ["代码：print(sum(i * i for i in range(1, 11)))\n输出：385\n"], "op": "test", "text": "这段代码的输出是否等于 1 到 10 的平方和（385）？", "calib": "ground-correct", "answer": {"Noul": 0.95}},
-    {"on": ["代码：print(sum(range(1, 11)))\n输出：55\n"], "op": "test", "text": "这段代码的输出是否等于 1 到 10 的平方和（385）？", "calib": "ground-correct", "answer": {"Noul": 0.05}},
-    {"on": ["代码：print(10 * 11 * 21 // 6 + 1)\n输出：386\n"], "op": "test", "text": "这段代码的输出是否等于 1 到 10 的平方和（385）？", "calib": "ground-correct", "answer": {"Noul": 0.05}}
+    {
+      "on": [{"error": null, "rows": [["家居", 60]], "sql": "select category, sum(quantity) as total from returns group by category order by total desc limit 1;", "text": "需求：写一条 SQL 查询，回答一个统计问题：需求要求只统计上个季度（2026 年 4 月 1 日到 6 月 30 日）的退货记录，按商品类别汇总数量，找出退货数量最多的一类。假设今天在 2026 年第三季度。数据库表 returns(id, category, product_name, quantity, return_date)\nSQL：select category, sum(quantity) as total from returns group by category order by total desc limit 1;\n结果：家居 共 60 件"}],
+      "op": "test",
+      "text": "这条查询的结果是否回答了需求里的问题？",
+      "calib": "sql-answers-question",
+      "answer": {"Noul": 0.05}
+    },
+    {
+      "on": [{"error": null, "rows": [["数码", 25]], "sql": "select category, sum(quantity) as total from returns where return_date >= '2026-04-01' and return_date <= '2026-06-29' group by category order by total desc limit 1;", "text": "需求：写一条 SQL 查询，回答一个统计问题：需求要求只统计上个季度（2026 年 4 月 1 日到 6 月 30 日）的退货记录，按商品类别汇总数量，找出退货数量最多的一类。假设今天在 2026 年第三季度。数据库表 returns(id, category, product_name, quantity, return_date)\nSQL：select category, sum(quantity) as total from returns where return_date >= '2026-04-01' and return_date <= '2026-06-29' group by category order by total desc limit 1;\n结果：数码 共 25 件"}],
+      "op": "test",
+      "text": "这条查询的结果是否回答了需求里的问题？",
+      "calib": "sql-answers-question",
+      "answer": {"Noul": 0.5}
+    },
+    {
+      "on": [{"error": null, "rows": [["数码", 40]], "sql": "select category, sum(quantity) as total from returns where return_date >= '2026-04-01' and return_date < '2026-07-01' group by category order by total desc limit 1;", "text": "需求：写一条 SQL 查询，回答一个统计问题：需求要求只统计上个季度（2026 年 4 月 1 日到 6 月 30 日）的退货记录，按商品类别汇总数量，找出退货数量最多的一类。假设今天在 2026 年第三季度。数据库表 returns(id, category, product_name, quantity, return_date)\nSQL：select category, sum(quantity) as total from returns where return_date >= '2026-04-01' and return_date < '2026-07-01' group by category order by total desc limit 1;\n结果：数码 共 40 件"}],
+      "op": "test",
+      "text": "这条查询的结果是否回答了需求里的问题？",
+      "calib": "sql-answers-question",
+      "answer": {"Noul": 0.95}
+    },
+    {
+      "on": [{"error": null, "rows": [["耳机", 25]], "sql": "select product_name, sum(quantity) as total from returns where return_date >= '2026-04-01' and return_date < '2026-07-01' group by product_name order by total desc limit 1;", "text": "需求：写一条 SQL 查询，回答一个统计问题：需求要求只统计上个季度（2026 年 4 月 1 日到 6 月 30 日）的退货记录，按商品类别汇总数量，找出退货数量最多的一类。假设今天在 2026 年第三季度。数据库表 returns(id, category, product_name, quantity, return_date)\nSQL：select product_name, sum(quantity) as total from returns where return_date >= '2026-04-01' and return_date < '2026-07-01' group by product_name order by total desc limit 1;\n结果：耳机 共 25 件"}],
+      "op": "test",
+      "text": "这条查询的结果是否回答了需求里的问题？",
+      "calib": "sql-answers-question",
+      "answer": {"Noul": 0.05}
+    }
   ]
 }

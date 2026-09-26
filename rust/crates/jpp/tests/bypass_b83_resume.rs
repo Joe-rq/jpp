@@ -167,8 +167,11 @@ fn a_换线续接_报变化的键_续接后账本复现续接趟() {
         w[0].contains("变化的键") && w[0].contains(K哈希),
         "报文列出 K：{w:?}"
     );
+    // A′ 的改动要在出口上看得见（否则本测试测不出什么）。手改的证书在装载重跑时降为夹具、缺 δ：
+    // 改默认前这让 K 的出口全成 unsure(untested:Delta)，值随之变；B187（批 9 第 12 格）起缺 δ 取画像 δ 照线切，
+    // 夹具的读数都在线外，值不变，变化落在报告 exits 行（等级 Form → Fixture、delta_unknown 置位）
     assert_ne!(
-        resumed["value"], first["value"],
+        resumed["exits"], first["exits"],
         "A′ 的线让出口变了（否则本测试测不出什么）"
     );
     // L2 里 K 的记录（按键取最后一条）= 只用 A′ 首跑时记下的那一条

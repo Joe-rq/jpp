@@ -40,7 +40,8 @@ handle(e, {act: fn() { content(do("发邮件", [], 0)) },
 "#;
 
 fn 跑(calib: &CalibStore) -> Result<(Json, Vec<String>, Vec<String>), String> {
-    let program = lower(&parse(发信).expect("解析")).expect("lower");
+    let mut program = lower(&parse(发信).expect("解析")).expect("lower");
+    program.entry.guard = true; // 测放行把关本身：开 --guard（意图汇编 11a）
     let mut a = ActionRegistry::new();
     a.register("发邮件", 0.0, false, TaintOut::Trusted, |_| {
         Ok(jpp::value::Value::text("已发"))
@@ -138,8 +139,15 @@ handle(e, {act: fn() { "act" }, ignore: fn() { "ig" }, unsure: fn(u) { consume(u
     .expect("可逆路径照常");
     assert_eq!(o.value_json(), Json::from("act"));
     assert_eq!(o.suspend_candidates, vec!["k".to_string()]);
+    // B187（批 9 第 10 格）：停岗候选是记录位，进报告 exits 行；W-suspend-candidate 只在开 --guard 时作告警
+    assert_eq!(
+        o.exits[0]["suspend_candidate"],
+        Json::Bool(true),
+        "{:?}",
+        o.exits
+    );
     assert!(
-        o.trace
+        !o.trace
             .warnings
             .iter()
             .any(|w| w.starts_with("W-suspend-candidate")),

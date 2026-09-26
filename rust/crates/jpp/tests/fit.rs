@@ -355,11 +355,15 @@ consume(e, "drop");
 c
 "#;
     let out = 跑_多态(src, &[0.80, 0.90]);
-    assert!(
-        out.value_json().as_str().unwrap_or("").contains("cold"),
+    // 不借原键的线：n=2 的合并读数没有记录——B187 起没有线按判断器的回答走（合并后 p > 0.5 → act），
+    // 且报告等级是 Answer（没有借原键的线）
+    assert_eq!(
+        out.value_json(),
+        serde_json::json!("act"),
         "n=2 没有记录：{:?}",
         out.value_json()
     );
+    assert_eq!(out.exits[0]["grade"], "Answer", "{:?}", out.exits);
 }
 
 /// 判断向量上**只有这两种操作**（`12`:134「其余运算不存在（J-01）」）。
@@ -857,9 +861,10 @@ consume(e, "drop");
     )
     .unwrap();
     let v = out.value_json();
+    // **fit 的结果不该借裸 noul 那一类的线**：没借到线（线源空），B187 起按判断器的回答走
     assert_eq!(
         v["出口"],
-        serde_json::json!("unsure(cold|untested:calib_line)"),
+        serde_json::json!("act"),
         "**fit 的结果不该借裸 noul 那一类的线**：{v}"
     );
     assert_eq!(v["线源"], serde_json::json!(""), "没借到线就不该留来源");

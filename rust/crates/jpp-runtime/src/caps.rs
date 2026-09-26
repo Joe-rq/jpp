@@ -13,7 +13,7 @@
 //! 地基/过程记录/工程-步25-2.md、工程-步25-2b.md
 
 use super::*;
-use crate::constructs::compose::{self, 分量, 合成请求, 规则};
+use crate::constructs::compose::{self, 合成请求, 规则};
 use crate::constructs::element::元素上下文;
 use std::marker::PhantomData;
 
@@ -172,6 +172,14 @@ impl Cap<ReadAnswer> {
     pub(crate) fn answers<'b>(&self, it: &'b Interp) -> std::cell::Ref<'b, AnswerTable> {
         it.answers.borrow()
     }
+    /// 读数的缺席标记（B32）：判断器缺席或超时时的原因；声明式拟合据此把 `Score` 标为不可用（步 20j-4）
+    pub(crate) fn absent_of(&self, it: &Interp, r: &Reading) -> Option<String> {
+        it.absent_marks.get(&r.ledger_key).cloned()
+    }
+    /// 声明式拟合的数（B153 (2)）：`order` 按它分档；`Score` 不可用时为 `None`
+    pub(crate) fn score_of(&self, it: &Interp, s: &Score) -> Option<f64> {
+        it.拟合表.borrow().get(&s.id).copied()
+    }
 }
 
 impl Cap<IssueReading> {
@@ -180,6 +188,17 @@ impl Cap<IssueReading> {
     }
     pub(crate) fn fill_answer(&self, it: &Interp, r: &Reading, a: Answer) {
         it.fill_answer(r, a)
+    }
+    /// 签发声明式拟合的结果（B153 (2)，步 20j-4）：分配句柄、把数写进私有表（输入不可用时不写）。
+    /// 调用者给 `id` 以外的全部字段。
+    pub(crate) fn issue_score(&self, it: &Interp, mut s: Score, value: Option<f64>) -> Rc<Score> {
+        let id = it.next_score.get();
+        it.next_score.set(id + 1);
+        s.id = id;
+        if let Some(v) = value {
+            it.拟合表.borrow_mut().insert(id, v);
+        }
+        Rc::new(s)
     }
 }
 
@@ -207,27 +226,25 @@ impl Cap<IssueUnsure> {
 }
 
 impl Cap<IssueComposite> {
-    /// 签发合成出口（B131）：种类由封闭规则从分量算出，调用者给不了种类；taint 取有出口的分量之 ∨；
-    /// 分量出口记进 `parts`；等级按冷线记——合成出口的放行派生在步 25-9 落，此前不作放行证据（步 25-1）。
+    /// 签发合成出口（B131）：种类由封闭规则从分量出口的种类算出，调用者给不了种类；taint 取分量之 ∨；
+    /// 分量出口记进 `parts`。等级留空：放行 = 全部分量放行之合取（`Exit::releases`，步 25-9；此前按冷线记）。
     pub(crate) fn issue(
         &self,
         it: &mut Interp,
         r: &规则,
-        分量: &[分量],
+        分量: &[Rc<Exit>],
         op: Op,
         q_hash: &str,
         sp: Span,
     ) -> Result<Value, String> {
-        let 种类: Vec<ExitKind> = 分量.iter().map(|f| f.种类.clone()).collect();
+        let 种类: Vec<ExitKind> = 分量.iter().map(|e| e.kind.clone()).collect();
         let kind = compose::合成种类(r, &种类)?;
-        let parts: Vec<Rc<Exit>> = 分量.iter().filter_map(|f| f.出口.clone()).collect();
-        let taint = parts
+        let taint = 分量
             .iter()
             .fold(Taint::Trusted, |t, e| Taint::join(t, e.taint));
         let x = it.new_exit(kind, None, op, q_hash, "", taint, sp);
         if let Value::Exit(e) = &x {
-            e.grade.set(Some(LineGrade::Cold));
-            *e.parts.borrow_mut() = parts;
+            *e.parts.borrow_mut() = 分量.to_vec();
         }
         Ok(x)
     }
@@ -277,8 +294,9 @@ impl Cap<KeyCollect> {
 }
 
 impl Cap<LedgerRead> {
-    pub(crate) fn ledger<'b>(&self, it: &'b Interp) -> &'b jpp_ledger::Ledger {
-        it.ledger.view()
+    /// 按键读条目：先查开着的层，再查账本（步 15h-3，B160；原 `ledger` 取整本账本只看得见已落账的）
+    pub(crate) fn get<'b>(&self, it: &'b Interp, key: &str) -> Option<&'b Entry> {
+        it.账本查(key)
     }
     /// 缺席账的停发标记（B93，步 22-0：预算停发的读数标 `budget`）
     pub(crate) fn absent_mark<'b>(&self, it: &'b Interp, key: &str) -> Option<&'b str> {
@@ -287,13 +305,14 @@ impl Cap<LedgerRead> {
 }
 
 impl Cap<LedgerWrite> {
-    /// 持写权者读账本（步 18b 起经账本端口的 `view()`）
-    pub(crate) fn ledger<'b>(&self, it: &'b Interp) -> &'b jpp_ledger::Ledger {
-        it.ledger.view()
-    }
-    /// 账本的写入口：条目经账本端口追加、层末落盘（步 18b，B55；原 `ledger_mut` 取可变账本）
+    /// 账本的写入口：条目经账本端口追加、层末落盘（步 18b，B55；原 `ledger_mut` 取可变账本）。
+    /// 步 15h-3：生成的层开着时进层，按登记序入账（B160）
     pub(crate) fn ledger_put(&self, it: &mut Interp, e: Entry) {
-        it.账本追加(e)
+        it.登记记账(e)
+    }
+    /// 这个键有没有条目：先查开着的层，再查账本（步 15h-3）
+    pub(crate) fn has_key(&self, it: &Interp, key: &str) -> bool {
+        it.账本查(key).is_some()
     }
     #[allow(clippy::too_many_arguments)]
     pub(crate) fn trace_event(
@@ -479,11 +498,11 @@ static CONSTRUCTS: &[ConstructSpec] = &[
     // 依据：05 §1 filter；B17；B81；B82；B57（四类能力都用）
     ConstructSpec {
         name: "sieve",
-        params: "sieve(材料, 题 | [题…]) | sieve(材料, 题式, [填法…])",
+        params: "sieve(材料, 题 | [题…], {line?}) | sieve(材料, 题式, [填法…], {line?})",
         returns: "契约值 kind=sieve",
         refresh: &["sieve"],
         privileges: &[P_READ, P_UNSURE, P_DUTY, P_KEYS, P_LREAD],
-        clause: "05 §1；B17；B81；B82；B133",
+        clause: "05 §1；B17；B81；B82；B133；B128",
         run: Some(|it, c, n, a, s| it.b_sieve(c, n, a, s)),
     },
     // 依据：05 §1 pair；B17；B81。待出内核：25-6（B138 (4)；闸门测试暂豁免）
@@ -588,7 +607,7 @@ static CONSTRUCTS: &[ConstructSpec] = &[
     // 依据：12 §5 判断向量（同题同锚跨对象偏序）；J-04；B166（一条 select 读数的候选分档）、B167（stat、tie）
     ConstructSpec {
         name: "order",
-        params: "order(读数们[, {stat?, tie?}])，或 order(一条 select 读数)",
+        params: "order(读数们[, {stat?, tie?}])，或 order(一条 select 读数)，或 order(同一拟合的 Score 们)",
         returns: "分档的下标列表",
         refresh: &["order"],
         privileges: &[P_READ],
@@ -601,8 +620,8 @@ static CONSTRUCTS: &[ConstructSpec] = &[
     // 依据：12 §2.9 fit 桥；J-16
     ConstructSpec {
         name: "fit",
-        params: "fit(名字: Text, [读数…])",
-        returns: "读数（仍要 cut）",
+        params: "fit(名字: Text, [读数…]) 或 fit({declare: fn, tie?}, [读数…], [extra…]?)",
+        returns: "读数（仍要 cut）；声明式为 Score（只进 cut 的声明线或同拟合 order，B153）",
         refresh: &["fit"],
         privileges: &[P_READ, P_READING],
         clause: "12 §2.9；J-16",

@@ -14,10 +14,8 @@
         "$.first1.exit",
         "$.first2.exit",
         "$.pending[0][1].exit",
-        "$.pending[1][1].exit",
-        "$.pending[1][2].exit",
-        "$.pending[2][1].exit",
-        "$.pending[2][2].exit"
+        "$.pending[1][0].exit",
+        "$.pending[2][0].exit"
       ],
       "key": "2bec4bd62f42160a76d6fa54"
     },
@@ -28,9 +26,7 @@
         "$.first2.exit",
         "$.pending[0][0].exit",
         "$.pending[1][0].exit",
-        "$.pending[1][2].exit",
-        "$.pending[2][0].exit",
-        "$.pending[2][2].exit"
+        "$.pending[2][0].exit"
       ],
       "key": "ea53757f011f868e81b933d2"
     }
@@ -102,8 +98,6 @@
   "resumed": false,
   "returned_unsure": [
     "unsure(band)",
-    "unsure(band)",
-    "unsure(band)",
     "unsure(band)"
   ],
   "status": "returned",
@@ -167,9 +161,7 @@
     ],
     "warnings": [
       "W-window-untested: @532 画像没有测过窗口（window），对象长度不核；超窗的语境可能接管读数而无痕",
-      "W-fixture-line: @532 键 price 的线是夹具线（宿主 put 写入或没有认证证书，n=1），出口 Act 照常路由，但按 B29 不算放行不可逆 do 的可信合取项。修法【需接线人】：用 calib-import 或 commission 从带真值样本认证这条线",
-      "W-fixture-line: @532 键 price 的线是夹具线（宿主 put 写入或没有认证证书，n=1），出口 Act 照常路由，但按 B29 不算放行不可逆 do 的可信合取项。修法【需接线人】：用 calib-import 或 commission 从带真值样本认证这条线",
-      "returned_unsure: unsure(band), unsure(band), unsure(band), unsure(band)"
+      "returned_unsure: unsure(band), unsure(band)"
     ]
   },
   "value": {
@@ -260,96 +252,12 @@
           "exit": {
             "consumed": true,
             "exit": "unsure(band)",
-            "id": 0,
-            "q": "78e15a646880a5dfabb72438"
-          },
-          "index": 0,
-          "item": "这款耳机售价三百九十九元。",
-          "key": "ea53757f011f868e81b933d2",
-          "pos": 0,
-          "q": {
-            "calib": "price",
-            "op": "noul",
-            "question": "78e15a646880a5dfabb72438",
-            "text": "这段话给出了具体价格或折扣吗？"
-          },
-          "qi": 0,
-          "trail": []
-        },
-        {
-          "cause": "band",
-          "exit": {
-            "consumed": true,
-            "exit": "unsure(band)",
-            "id": 4,
-            "q": "78e15a646880a5dfabb72438"
-          },
-          "index": 4,
-          "item": "价格还没公布，据说下个月发布。",
-          "key": "2bec4bd62f42160a76d6fa54",
-          "pos": 4,
-          "q": {
-            "calib": "price",
-            "op": "noul",
-            "question": "78e15a646880a5dfabb72438",
-            "text": "这段话给出了具体价格或折扣吗？"
-          },
-          "qi": 0,
-          "trail": []
-        },
-        {
-          "cause": "band",
-          "exit": {
-            "consumed": true,
-            "exit": "unsure(band)",
             "id": 7,
             "q": "first_k"
           }
         }
       ],
       [
-        {
-          "cause": "band",
-          "exit": {
-            "consumed": true,
-            "exit": "unsure(band)",
-            "id": 0,
-            "q": "78e15a646880a5dfabb72438"
-          },
-          "index": 0,
-          "item": "这款耳机售价三百九十九元。",
-          "key": "ea53757f011f868e81b933d2",
-          "pos": 0,
-          "q": {
-            "calib": "price",
-            "op": "noul",
-            "question": "78e15a646880a5dfabb72438",
-            "text": "这段话给出了具体价格或折扣吗？"
-          },
-          "qi": 0,
-          "trail": []
-        },
-        {
-          "cause": "band",
-          "exit": {
-            "consumed": true,
-            "exit": "unsure(band)",
-            "id": 4,
-            "q": "78e15a646880a5dfabb72438"
-          },
-          "index": 4,
-          "item": "价格还没公布，据说下个月发布。",
-          "key": "2bec4bd62f42160a76d6fa54",
-          "pos": 4,
-          "q": {
-            "calib": "price",
-            "op": "noul",
-            "question": "78e15a646880a5dfabb72438",
-            "text": "这段话给出了具体价格或折扣吗？"
-          },
-          "qi": 0,
-          "trail": []
-        },
         {
           "cause": "band",
           "exit": {

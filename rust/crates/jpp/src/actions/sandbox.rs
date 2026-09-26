@@ -124,9 +124,10 @@ fn find_in_path(bin: &str) -> Option<PathBuf> {
         .find(|p| p.is_file())
 }
 
-/// 找不到沙箱工具时统一的拒绝理由：写清缺什么、怎么装。`NoSandbox` 标签跟这个代码库既有的
+/// 找不到沙箱工具时的说明（B187 起不再拒绝执行，文本留作装法说明）：写清缺什么、怎么装。`NoSandbox` 标签跟这个代码库既有的
 /// Fail 报文惯例（`<动作>: <类别>: <细节>`，见 `mat_shape` 的 `ShapeMismatch`）一致，
 /// 供调用方/测试按前缀识别（B164：`Fail(NoSandbox)`）。
+#[allow(dead_code)]
 pub(super) fn missing_message(action: &str) -> String {
     format!(
         "{action}: NoSandbox: 宿主启动时没有探测到操作系统级沙箱，出于安全考虑拒绝在沙箱外执行\
@@ -208,4 +209,26 @@ fn sb_escape(s: &str) -> String {
 /// 供报错信息用：这次实际用了哪个沙箱工具。
 pub(super) fn describe(tool: &Tool) -> &'static str {
     tool_name(tool)
+}
+
+/// 执行器要跑的子进程（意图汇编 11a，B187 批 9 第 8 格）：探测到沙箱就包一层沙箱（同 [`wrap`]）；没有沙箱时直接起
+/// 普通子进程——静态拒绝表、断网补丁与每次新建的临时目录照旧，只是没有系统级隔离（检查期报
+/// `W-action-no-sandbox`，文本写明装法）。不再返回 `Fail(NoSandbox)`。第二个返回值是报错信息里写的沙箱名
+/// （`none` 表示沙箱外）。
+pub(super) fn command(
+    program: &str,
+    args: &[String],
+    writable_dir: &Path,
+) -> Result<(Command, &'static str), String> {
+    match tool() {
+        Some(t) => Ok((wrap(t, program, args, writable_dir)?, describe(t))),
+        None => {
+            // 工作目录与沙箱里一样沿用宿主的（sandbox-exec / bwrap 都不改 cwd，程序里的相对路径照样从宿主
+            // 工作目录解析）；`writable_dir` 仍是每次新建的临时目录，外壳与脚本写在那里，调用结束整目录删掉
+            let _ = writable_dir;
+            let mut cmd = Command::new(program);
+            cmd.args(args);
+            Ok((cmd, SandboxKind::None.as_str()))
+        }
+    }
 }

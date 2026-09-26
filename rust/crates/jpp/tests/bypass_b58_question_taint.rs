@@ -41,7 +41,8 @@ fn 动作表() -> ActionRegistry {
 }
 
 fn 跑在(src: &str, l: &mut Ledger) -> Result<(Json, u64), String> {
-    let program = lower(&parse(src).expect("解析")).expect("lower");
+    let mut program = lower(&parse(src).expect("解析")).expect("lower");
+    program.entry.guard = true; // 测放行把关本身：开 --guard（意图汇编 11a）
     let mut calib = CalibStore::new();
     common::certified(&mut calib, "k", 0.8, 0.2, 50);
     run(&program, 端口(), &calib, &动作表(), l)

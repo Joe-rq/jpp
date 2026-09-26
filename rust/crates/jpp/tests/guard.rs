@@ -44,7 +44,13 @@ fn 定值端口<'a>(p: f64, calls: &'a RefCell<u64>) -> Ports<'a> {
 }
 
 fn 跑(src: &str, p: f64) -> Result<jpp::Outcome, jpp::Error> {
-    let program = lower(&parse(src).expect("解析")).expect("lower");
+    // 测放行把关本身：开 --guard（意图汇编 11a）
+    跑_把关(src, p, true)
+}
+
+fn 跑_把关(src: &str, p: f64, guard: bool) -> Result<jpp::Outcome, jpp::Error> {
+    let mut program = lower(&parse(src).expect("解析")).expect("lower");
+    program.entry.guard = guard;
     let mut calib = CalibStore::new();
     common::certified(&mut calib, "k", 0.65, 0.35, 100);
     let mut actions = ActionRegistry::new();
@@ -83,6 +89,11 @@ let 结果 = if 可以发吗 { content(do("发邮件", [], 0)) } else { "没发"
         t.contains("trusted") || t.contains("可信"),
         "报文要说清缺什么：{t}"
     );
+    // 意图汇编 11a：不开把关（默认）时同一程序照常执行，检查期与运行期都不拦；taint 照常记录
+    // （三次效应调用：取外部数据、判断、发邮件；预算放到 4，否则发邮件因预算得到失败值）
+    let o = 跑_把关(&src.replace("calls: 2", "calls: 4"), 0.9, false)
+        .expect("默认不开把关：不拦任何 do");
+    assert_eq!(o.value_json()["r"], "已发", "{:?}", o.value_json());
 }
 
 /// 守卫里**有一个 trusted 合取项**就放行（`12`:265「至少一个」）。

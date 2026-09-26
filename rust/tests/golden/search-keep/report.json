@@ -1,0 +1,238 @@
+{
+  "backend": "fixed-0",
+  "cost": {
+    "asks": 0,
+    "calls": 5,
+    "replayed": 0,
+    "tokens": 0,
+    "usd": 0.0
+  },
+  "entry": [],
+  "exits": [
+    {
+      "exit": "act",
+      "grade": "Fixture",
+      "index": 0,
+      "item": "07801bb766bb",
+      "key": "search-fit",
+      "pos": 0,
+      "releases": false,
+      "site": 11676
+    },
+    {
+      "exit": "unsure(band)",
+      "grade": "Fixture",
+      "index": 1,
+      "item": "b82a14938cdb",
+      "key": "search-fit",
+      "pos": 1,
+      "releases": false,
+      "site": 11676
+    },
+    {
+      "exit": "act",
+      "grade": "Fixture",
+      "index": 0,
+      "item": "d13c3d0671c5",
+      "key": "search-fit",
+      "pos": 0,
+      "releases": false,
+      "site": 11676
+    }
+  ],
+  "fixture_description": "Synthetic fixed observations for search-keep.jpp (construction check only; not model evaluation). Round 0 proposes three names: one fits and is kept, one exceeds four characters and is excluded by the code predicate `keep` before it ever reaches the judge, one is judged in-band (unsure) and is refined into round 1's context. Round 1's generation fixture is context-locked (`ctx`) to the exact frontier `search` should build: the round-0 accepted name, the still-undecided name, and the keep-excluded name, in that order — if `search` fails to carry the excluded material into the next round's frontier under `unsure_to: \"refine\"`, or carries it in the wrong slot, this fixture lookup misses and the run errors instead of silently passing. Round 1 proposes one more name that fits (reaching width 2, so the search stops) and two more over-length names that are again excluded by code, never judged. The calibration record is hand-written to exercise routing.",
+  "local_checks": [],
+  "mode": "fixed observations; no model API requests",
+  "pending": [],
+  "questions": [
+    {
+      "kind": "attr",
+      "q": "bf77935372f7724b9117f8d3"
+    }
+  ],
+  "replay": false,
+  "resumed": false,
+  "returned_unsure": [
+    "unsure(band)"
+  ],
+  "status": "returned",
+  "trace": {
+    "events": [
+      {
+        "cost": 0.0,
+        "key": "2a87c2e3d8bf3b865cb3b3aa",
+        "kind": "gen",
+        "note": "按下面的需求提出 3 个候选店名，每个候选是一个字符串；需求之后的上下文是上一轮留下的候选",
+        "replayed": false,
+        "site": {
+          "end": 1068,
+          "start": 899
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "3b1d0f72340176554e07833c",
+        "kind": "judge",
+        "note": "「这个名字适合做一家社区咖啡馆的店名吗？」",
+        "replayed": false,
+        "site": {
+          "end": 11697,
+          "start": 11676
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "b682fd032df1c9c8088a44ab",
+        "kind": "judge",
+        "note": "「这个名字适合做一家社区咖啡馆的店名吗？」",
+        "replayed": false,
+        "site": {
+          "end": 11697,
+          "start": 11676
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "22197c9d8ec64dc4b27926f5",
+        "kind": "gen",
+        "note": "按下面的需求提出 3 个候选店名，每个候选是一个字符串；需求之后的上下文是上一轮留下的候选",
+        "replayed": false,
+        "site": {
+          "end": 1068,
+          "start": 899
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "cdf14effe72d66115e66022f",
+        "kind": "judge",
+        "note": "「这个名字适合做一家社区咖啡馆的店名吗？」",
+        "replayed": false,
+        "site": {
+          "end": 11697,
+          "start": 11676
+        }
+      }
+    ],
+    "warnings": [
+      "W-window-untested: @11676 画像没有测过窗口（window），对象长度不核；超窗的语境可能接管读数而无痕",
+      "W-untyped-transfer: search 把 unsure(band) 装在返回值里交了出去，但返回类型没提 Exit，调用者从签名上看不出自己收到了一份未决。修法：把返回类型标为含 Exit（如 `-> Exit`、`-> Record<Exit>`）",
+      "returned_unsure: unsure(band)"
+    ]
+  },
+  "value": {
+    "duplicates": 0,
+    "excluded": [
+      {
+        "item": {
+          "content": "街角慢时光咖啡馆",
+          "mat": "5993de3f04a1247d390d958a",
+          "origin": [
+            "gen:2a87c2e3d8bf3b865cb3b3aa"
+          ],
+          "taint": "Trusted"
+        },
+        "round": 0
+      },
+      {
+        "item": {
+          "content": "慢时光咖啡屋",
+          "mat": "e761a51502137c23304b54d0",
+          "origin": [
+            "gen:22197c9d8ec64dc4b27926f5"
+          ],
+          "taint": "Trusted"
+        },
+        "round": 1
+      },
+      {
+        "item": {
+          "content": "邻里角落慢生活",
+          "mat": "7bf5e9ee3cbc2d732317850d",
+          "origin": [
+            "gen:22197c9d8ec64dc4b27926f5"
+          ],
+          "taint": "Trusted"
+        },
+        "round": 1
+      }
+    ],
+    "found_in": [
+      0,
+      1
+    ],
+    "kept": [
+      {
+        "content": "暖巷",
+        "mat": "2ac0c16ee65fe5eabbbe5f20",
+        "origin": [
+          "gen:2a87c2e3d8bf3b865cb3b3aa"
+        ],
+        "taint": "Trusted"
+      },
+      {
+        "content": "巷里",
+        "mat": "5315776fdeebb11e44cc34a1",
+        "origin": [
+          "gen:22197c9d8ec64dc4b27926f5"
+        ],
+        "taint": "Trusted"
+      }
+    ],
+    "measures": [
+      8,
+      4
+    ],
+    "pending": [
+      {
+        "cause": "band",
+        "exit": {
+          "consumed": true,
+          "exit": "unsure(band)",
+          "id": 1,
+          "q": "bf77935372f7724b9117f8d3"
+        },
+        "index": 1,
+        "item": {
+          "content": "邻里豆",
+          "mat": "47f7334f53ef664a2ce9c328",
+          "origin": [
+            "gen:2a87c2e3d8bf3b865cb3b3aa"
+          ],
+          "taint": "Trusted"
+        },
+        "key": "b682fd032df1c9c8088a44ab",
+        "pos": 1,
+        "q": {
+          "calib": "search-fit",
+          "op": "noul",
+          "question": "bf77935372f7724b9117f8d3",
+          "text": "这个名字适合做一家社区咖啡馆的店名吗？"
+        },
+        "qi": 0,
+        "trail": [],
+        "via": [
+          "search#0"
+        ]
+      }
+    ],
+    "reason": "stop",
+    "rounds": 2,
+    "undecided": [
+      {
+        "cause": "band",
+        "item": {
+          "content": "邻里豆",
+          "mat": "47f7334f53ef664a2ce9c328",
+          "origin": [
+            "gen:2a87c2e3d8bf3b865cb3b3aa"
+          ],
+          "taint": "Trusted"
+        },
+        "via": [
+          "search#0"
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,326 @@
+{
+  "backend": "fixed-0",
+  "cost": {
+    "asks": 0,
+    "calls": 15,
+    "replayed": 0,
+    "tokens": 0,
+    "usd": 0.0
+  },
+  "entry": [],
+  "exits": [
+    {
+      "exit": "act",
+      "grade": "Fixture",
+      "index": 0,
+      "item": "f5986f6e33ec",
+      "key": "search-fit",
+      "pos": 0,
+      "releases": false,
+      "site": 11505
+    },
+    {
+      "exit": "act",
+      "grade": "Fixture",
+      "index": 1,
+      "item": "ad969f2bd10f",
+      "key": "search-fit",
+      "pos": 1,
+      "releases": false,
+      "site": 11505
+    },
+    {
+      "exit": "ignore",
+      "grade": "Fixture",
+      "index": 2,
+      "item": "ab50f61fc48b",
+      "key": "search-fit",
+      "pos": 2,
+      "releases": false,
+      "site": 11505
+    },
+    {
+      "exit": "act",
+      "grade": "Fixture",
+      "index": 0,
+      "item": "ab1579fff24c",
+      "key": "search-fit",
+      "pos": 0,
+      "releases": false,
+      "site": 11505
+    },
+    {
+      "exit": "act",
+      "grade": "Fixture",
+      "index": 1,
+      "item": "aac9cbd98039",
+      "key": "search-fit",
+      "pos": 1,
+      "releases": false,
+      "site": 11505
+    },
+    {
+      "exit": "act",
+      "grade": "Fixture",
+      "index": 0,
+      "item": "8b41c6ad867b",
+      "key": "search-fit",
+      "pos": 0,
+      "releases": false,
+      "site": 11505
+    },
+    {
+      "exit": "ignore",
+      "grade": "Fixture",
+      "index": 1,
+      "item": "35b8f82dca74",
+      "key": "search-fit",
+      "pos": 1,
+      "releases": false,
+      "site": 11505
+    }
+  ],
+  "fixture_description": "Synthetic fixed observations for search-rank.jpp (construction check only; not model evaluation). Feasibility is a yes/no question; memorability is a scored question used only for ranking by expected level. Round 0: two fitting names (expected levels 1.0 and 0.4) and one rejected; round 1: a better name (1.8), a re-proposed name and another fitting one (0.5); round 2: a new name tying the second-best (1.0), a re-proposed name and a rejected one, so the top two do not change and the search ends at noshrink. The calibration record is hand-written to exercise routing.",
+  "local_checks": [],
+  "mode": "fixed observations; no model API requests",
+  "pending": [],
+  "questions": [
+    {
+      "kind": "attr",
+      "q": "bf77935372f7724b9117f8d3"
+    },
+    {
+      "kind": "degree",
+      "q": "7ca889bf716952459b4fbdff"
+    }
+  ],
+  "replay": false,
+  "resumed": false,
+  "returned_unsure": [],
+  "status": "returned",
+  "trace": {
+    "events": [
+      {
+        "cost": 0.0,
+        "key": "7d60333986120e9fa33fdea6",
+        "kind": "gen",
+        "note": "按下面的需求提出 3 个候选店名，每个候选是一个字符串；需求之后的上下文是上一轮排名最前的候选",
+        "replayed": false,
+        "site": {
+          "end": 944,
+          "start": 769
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "db39d9478b0ac589a1adc637",
+        "kind": "judge",
+        "note": "「这个名字适合做一家社区咖啡馆的店名吗？」",
+        "replayed": false,
+        "site": {
+          "end": 11526,
+          "start": 11505
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "19882f9372156f08ecbfe1c1",
+        "kind": "judge",
+        "note": "「这个名字适合做一家社区咖啡馆的店名吗？」",
+        "replayed": false,
+        "site": {
+          "end": 11526,
+          "start": 11505
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "8d834d1a8b439dbd2239445b",
+        "kind": "judge",
+        "note": "「这个名字适合做一家社区咖啡馆的店名吗？」",
+        "replayed": false,
+        "site": {
+          "end": 11526,
+          "start": 11505
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "1a1c1e2c08e43ec44adc008a",
+        "kind": "judge",
+        "note": "「这个名字有多好记？」",
+        "replayed": false,
+        "site": {
+          "end": 12262,
+          "start": 12204
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "b8bf0a76e6afda842bc6558d",
+        "kind": "judge",
+        "note": "「这个名字有多好记？」",
+        "replayed": false,
+        "site": {
+          "end": 12262,
+          "start": 12204
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "eeb15cc146d5c5a6245fb38a",
+        "kind": "gen",
+        "note": "按下面的需求提出 3 个候选店名，每个候选是一个字符串；需求之后的上下文是上一轮排名最前的候选",
+        "replayed": false,
+        "site": {
+          "end": 944,
+          "start": 769
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "c34baa1ab910703fa644ea33",
+        "kind": "judge",
+        "note": "「这个名字适合做一家社区咖啡馆的店名吗？」",
+        "replayed": false,
+        "site": {
+          "end": 11526,
+          "start": 11505
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "cbc322454fdb219357137c8c",
+        "kind": "judge",
+        "note": "「这个名字适合做一家社区咖啡馆的店名吗？」",
+        "replayed": false,
+        "site": {
+          "end": 11526,
+          "start": 11505
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "842c93b0ce2ce321c75c7463",
+        "kind": "judge",
+        "note": "「这个名字有多好记？」",
+        "replayed": false,
+        "site": {
+          "end": 12262,
+          "start": 12204
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "f0429fb09f0bb66791b91c44",
+        "kind": "judge",
+        "note": "「这个名字有多好记？」",
+        "replayed": false,
+        "site": {
+          "end": 12262,
+          "start": 12204
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "977330f6876670f4323d881b",
+        "kind": "gen",
+        "note": "按下面的需求提出 3 个候选店名，每个候选是一个字符串；需求之后的上下文是上一轮排名最前的候选",
+        "replayed": false,
+        "site": {
+          "end": 944,
+          "start": 769
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "af7908ab1b596f3527cb5e24",
+        "kind": "judge",
+        "note": "「这个名字适合做一家社区咖啡馆的店名吗？」",
+        "replayed": false,
+        "site": {
+          "end": 11526,
+          "start": 11505
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "23bdcc73a1e61f40ea011035",
+        "kind": "judge",
+        "note": "「这个名字适合做一家社区咖啡馆的店名吗？」",
+        "replayed": false,
+        "site": {
+          "end": 11526,
+          "start": 11505
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "c899ebab37690afba0446f70",
+        "kind": "judge",
+        "note": "「这个名字有多好记？」",
+        "replayed": false,
+        "site": {
+          "end": 12262,
+          "start": 12204
+        }
+      }
+    ],
+    "warnings": [
+      "W-window-untested: @11505 画像没有测过窗口（window），对象长度不核；超窗的语境可能接管读数而无痕",
+      "W-window-untested: @12204 画像没有测过窗口（window），对象长度不核；超窗的语境可能接管读数而无痕"
+    ]
+  },
+  "value": {
+    "duplicates": 2,
+    "found_in": [
+      1,
+      0
+    ],
+    "kept": [
+      {
+        "content": "巷口豆",
+        "mat": "82bb507f1e182d94581061d9",
+        "origin": [
+          "gen:eeb15cc146d5c5a6245fb38a"
+        ],
+        "taint": "Trusted"
+      },
+      {
+        "content": "暖巷咖啡",
+        "mat": "02836e636cb1726c6442c362",
+        "origin": [
+          "gen:7d60333986120e9fa33fdea6"
+        ],
+        "taint": "Trusted"
+      }
+    ],
+    "measures": [
+      4,
+      3,
+      2,
+      2
+    ],
+    "pending": [],
+    "reason": "noshrink",
+    "rejected": [
+      {
+        "content": "很长很长很长的咖啡馆名字",
+        "mat": "3bf8990de6772f8a39c4a282",
+        "origin": [
+          "gen:7d60333986120e9fa33fdea6"
+        ],
+        "taint": "Trusted"
+      },
+      {
+        "content": "咖啡咖啡咖啡咖啡咖啡",
+        "mat": "fe81218d0c0f34a8a350091f",
+        "origin": [
+          "gen:977330f6876670f4323d881b"
+        ],
+        "taint": "Trusted"
+      }
+    ],
+    "rounds": 3
+  }
+}

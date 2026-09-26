@@ -1,8 +1,24 @@
 {
   "backend": "fixed-0",
+  "cache": {
+    "cross_run": 0,
+    "hits": {
+      "gen": 0,
+      "judge": 12,
+      "transform": 0
+    },
+    "requests": {
+      "ask": 0,
+      "do": 0,
+      "gen": 0,
+      "judge": 12
+    },
+    "same_run": 12,
+    "saved_calls": 12
+  },
   "cost": {
     "asks": 0,
-    "calls": 24,
+    "calls": 12,
     "replayed": 6,
     "tokens": 0,
     "usd": 0.0
@@ -471,7 +487,7 @@
         "key": "437ac22c4e40d7bc3c477630",
         "kind": "judge",
         "note": "「这段话提到价格或优惠吗？」",
-        "replayed": false,
+        "replayed": true,
         "site": {
           "end": 1144,
           "start": 1123
@@ -482,7 +498,7 @@
         "key": "5c31ef230d699cd0e5bf1d47",
         "kind": "judge",
         "note": "「这段话提到价格或优惠吗？」",
-        "replayed": false,
+        "replayed": true,
         "site": {
           "end": 1144,
           "start": 1123
@@ -493,7 +509,7 @@
         "key": "05c1a66fa7836b9d165a0578",
         "kind": "judge",
         "note": "「这段话提到价格或优惠吗？」",
-        "replayed": false,
+        "replayed": true,
         "site": {
           "end": 1144,
           "start": 1123
@@ -504,7 +520,7 @@
         "key": "715df71503c218068afa6d3f",
         "kind": "judge",
         "note": "「这段话提到价格或优惠吗？」",
-        "replayed": false,
+        "replayed": true,
         "site": {
           "end": 1144,
           "start": 1123
@@ -515,7 +531,7 @@
         "key": "4af14d49290930256ebb10ab",
         "kind": "judge",
         "note": "「这段话提到价格或优惠吗？」",
-        "replayed": false,
+        "replayed": true,
         "site": {
           "end": 1144,
           "start": 1123
@@ -526,7 +542,7 @@
         "key": "87b0064c0ebe9856c566674e",
         "kind": "judge",
         "note": "「这段话提到价格或优惠吗？」",
-        "replayed": false,
+        "replayed": true,
         "site": {
           "end": 1144,
           "start": 1123
@@ -537,7 +553,7 @@
         "key": "3fd996a1cd2cd55bbc27883a",
         "kind": "judge",
         "note": "「涉及的金额或优惠是否低于一百元？」",
-        "replayed": false,
+        "replayed": true,
         "site": {
           "end": 1144,
           "start": 1123
@@ -548,7 +564,7 @@
         "key": "712f8d511e94181f68f082e8",
         "kind": "judge",
         "note": "「涉及的金额或优惠是否低于一百元？」",
-        "replayed": false,
+        "replayed": true,
         "site": {
           "end": 1144,
           "start": 1123
@@ -559,7 +575,7 @@
         "key": "871383ecc810554013de6158",
         "kind": "judge",
         "note": "「涉及的金额或优惠是否低于一百元？」",
-        "replayed": false,
+        "replayed": true,
         "site": {
           "end": 1144,
           "start": 1123
@@ -570,7 +586,7 @@
         "key": "6d053030a6b86f74e6a3c0a8",
         "kind": "judge",
         "note": "「涉及的金额或优惠是否低于一百元？」",
-        "replayed": false,
+        "replayed": true,
         "site": {
           "end": 1144,
           "start": 1123
@@ -581,7 +597,7 @@
         "key": "23bbd39c3906f452c539762d",
         "kind": "judge",
         "note": "「这段话提到现金支付吗？」",
-        "replayed": false,
+        "replayed": true,
         "site": {
           "end": 1144,
           "start": 1123
@@ -592,7 +608,7 @@
         "key": "cfd75d6081cfd8d00bbe7ef8",
         "kind": "judge",
         "note": "「这段话提到现金支付吗？」",
-        "replayed": false,
+        "replayed": true,
         "site": {
           "end": 1144,
           "start": 1123
@@ -667,27 +683,7 @@
     ],
     "warnings": [
       "W-window-untested: @871 画像没有测过窗口（window），对象长度不核；超窗的语境可能接管读数而无痕",
-      "W-fixture-line: @871 键 layer 的线是夹具线（宿主 put 写入或没有认证证书，n=1），出口 Act 照常路由，但按 B29 不算放行不可逆 do 的可信合取项。修法【需接线人】：用 calib-import 或 commission 从带真值样本认证这条线",
-      "W-fixture-line: @871 键 layer 的线是夹具线（宿主 put 写入或没有认证证书，n=1），出口 Act 照常路由，但按 B29 不算放行不可逆 do 的可信合取项。修法【需接线人】：用 calib-import 或 commission 从带真值样本认证这条线",
-      "W-fixture-line: @871 键 layer 的线是夹具线（宿主 put 写入或没有认证证书，n=1），出口 Act 照常路由，但按 B29 不算放行不可逆 do 的可信合取项。修法【需接线人】：用 calib-import 或 commission 从带真值样本认证这条线",
-      "W-fixture-line: @871 键 layer 的线是夹具线（宿主 put 写入或没有认证证书，n=1），出口 Act 照常路由，但按 B29 不算放行不可逆 do 的可信合取项。修法【需接线人】：用 calib-import 或 commission 从带真值样本认证这条线",
-      "W-fixture-line: @871 键 layer 的线是夹具线（宿主 put 写入或没有认证证书，n=1），出口 Act 照常路由，但按 B29 不算放行不可逆 do 的可信合取项。修法【需接线人】：用 calib-import 或 commission 从带真值样本认证这条线",
-      "W-fixture-line: @871 键 layer 的线是夹具线（宿主 put 写入或没有认证证书，n=1），出口 Act 照常路由，但按 B29 不算放行不可逆 do 的可信合取项。修法【需接线人】：用 calib-import 或 commission 从带真值样本认证这条线",
-      "W-fixture-line: @871 键 layer 的线是夹具线（宿主 put 写入或没有认证证书，n=1），出口 Act 照常路由，但按 B29 不算放行不可逆 do 的可信合取项。修法【需接线人】：用 calib-import 或 commission 从带真值样本认证这条线",
-      "W-fixture-line: @871 键 layer 的线是夹具线（宿主 put 写入或没有认证证书，n=1），出口 Act 照常路由，但按 B29 不算放行不可逆 do 的可信合取项。修法【需接线人】：用 calib-import 或 commission 从带真值样本认证这条线",
-      "W-window-untested: @1123 画像没有测过窗口（window），对象长度不核；超窗的语境可能接管读数而无痕",
-      "W-fixture-line: @1123 键 layer 的线是夹具线（宿主 put 写入或没有认证证书，n=1），出口 Act 照常路由，但按 B29 不算放行不可逆 do 的可信合取项。修法【需接线人】：用 calib-import 或 commission 从带真值样本认证这条线",
-      "W-fixture-line: @1123 键 layer 的线是夹具线（宿主 put 写入或没有认证证书，n=1），出口 Act 照常路由，但按 B29 不算放行不可逆 do 的可信合取项。修法【需接线人】：用 calib-import 或 commission 从带真值样本认证这条线",
-      "W-fixture-line: @1123 键 layer 的线是夹具线（宿主 put 写入或没有认证证书，n=1），出口 Act 照常路由，但按 B29 不算放行不可逆 do 的可信合取项。修法【需接线人】：用 calib-import 或 commission 从带真值样本认证这条线",
-      "W-fixture-line: @1123 键 layer 的线是夹具线（宿主 put 写入或没有认证证书，n=1），出口 Act 照常路由，但按 B29 不算放行不可逆 do 的可信合取项。修法【需接线人】：用 calib-import 或 commission 从带真值样本认证这条线",
-      "W-fixture-line: @1123 键 layer 的线是夹具线（宿主 put 写入或没有认证证书，n=1），出口 Act 照常路由，但按 B29 不算放行不可逆 do 的可信合取项。修法【需接线人】：用 calib-import 或 commission 从带真值样本认证这条线",
-      "W-fixture-line: @1123 键 layer 的线是夹具线（宿主 put 写入或没有认证证书，n=1），出口 Act 照常路由，但按 B29 不算放行不可逆 do 的可信合取项。修法【需接线人】：用 calib-import 或 commission 从带真值样本认证这条线",
-      "W-fixture-line: @1123 键 layer 的线是夹具线（宿主 put 写入或没有认证证书，n=1），出口 Act 照常路由，但按 B29 不算放行不可逆 do 的可信合取项。修法【需接线人】：用 calib-import 或 commission 从带真值样本认证这条线",
-      "W-fixture-line: @1123 键 layer 的线是夹具线（宿主 put 写入或没有认证证书，n=1），出口 Act 照常路由，但按 B29 不算放行不可逆 do 的可信合取项。修法【需接线人】：用 calib-import 或 commission 从带真值样本认证这条线",
-      "W-fixture-line: @871 键 layer 的线是夹具线（宿主 put 写入或没有认证证书，n=1），出口 Act 照常路由，但按 B29 不算放行不可逆 do 的可信合取项。修法【需接线人】：用 calib-import 或 commission 从带真值样本认证这条线",
-      "W-fixture-line: @871 键 layer 的线是夹具线（宿主 put 写入或没有认证证书，n=1），出口 Act 照常路由，但按 B29 不算放行不可逆 do 的可信合取项。修法【需接线人】：用 calib-import 或 commission 从带真值样本认证这条线",
-      "W-fixture-line: @871 键 layer 的线是夹具线（宿主 put 写入或没有认证证书，n=1），出口 Act 照常路由，但按 B29 不算放行不可逆 do 的可信合取项。修法【需接线人】：用 calib-import 或 commission 从带真值样本认证这条线",
-      "W-fixture-line: @871 键 layer 的线是夹具线（宿主 put 写入或没有认证证书，n=1），出口 Act 照常路由，但按 B29 不算放行不可逆 do 的可信合取项。修法【需接线人】：用 calib-import 或 commission 从带真值样本认证这条线"
+      "W-window-untested: @1123 画像没有测过窗口（window），对象长度不核；超窗的语境可能接管读数而无痕"
     ]
   },
   "value": {

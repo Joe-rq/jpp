@@ -126,9 +126,9 @@ fn 桥按hi加delta出pick与at() {
         decide(&CutInput {
             fail: None,
             absent: None,
-            suspended: false,
             line: Some((0.6, 0.0)),
             cost_requested: false,
+            alpha_requested: false,
             answer: Some(a),
             delta: Some(0.15),
             mode_share: ms,

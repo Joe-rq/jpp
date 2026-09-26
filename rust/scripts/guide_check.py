@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """GUIDE.md「搭配」一章的示例门禁。
 
-逐个用 jpp 二进制对 examples/guide/ 下的每段示例跑 `check`（必要时带 --release-on-declared）、
+逐个用 jpp 二进制对 examples/guide/ 下的每段示例跑 `check`（必要时带 --guard、--release-on-declared）、
 能跑的再跑 `run --fixtures ...`（必要时带 --calib / --resume / --profile / --ledger-out），
 比对退出码与（错误示例）报文里应出现的诊断码，最后报告通过数。
 
@@ -82,6 +82,9 @@ CASES = [
          fixtures="examples/guide/fixtures/comp-compose-cert.json", mode="run", expect="ok"),
     dict(name="comp-element", source="examples/guide/comp-element.jpp",
          fixtures="examples/guide/fixtures/comp-element.json", mode="run", expect="ok"),
+    # 题树（批 8 T6，B185）：与 examples/tree-collab.jpp 同一程序，共用它的夹具
+    dict(name="comp-tree", source="examples/guide/comp-tree.jpp",
+         fixtures="examples/fixtures/tree-collab.json", mode="run", expect="ok"),
     # ---- 嵌套 ----
     dict(name="nest-graph-then-graph", source="examples/guide/nest-graph-then-graph.jpp",
          fixtures="examples/guide/fixtures/nest-graph-then-graph.json", ledger_out=True,
@@ -92,7 +95,8 @@ CASES = [
     dict(name="err-j05", source="examples/guide/err-j05.jpp",
          fixtures="examples/guide/fixtures/err-j05.json", mode="run",
          expect="error", expect_code="J-05", where="run"),
-    dict(name="err-j08", source="examples/guide/err-j08.jpp", mode="check_only",
+    # J-08 只在宿主开 --guard 时生效（意图汇编 11a），这条带 --guard
+    dict(name="err-j08", source="examples/guide/err-j08.jpp", mode="check_only", args=["--guard"],
          expect="error", expect_code="J-08", where="check"),
     dict(name="err-stat-unavailable", source="examples/guide/err-stat-unavailable.jpp",
          fixtures="examples/guide/fixtures/err-stat-unavailable.json",

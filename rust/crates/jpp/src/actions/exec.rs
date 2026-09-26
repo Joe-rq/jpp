@@ -171,7 +171,6 @@ exec(compile(_jpp_src, "<exec_py>", "exec"))
 /// （`timed_out: true`），不是 `Err`——只有静态拒绝命中、或找不到沙箱时才 `Err`
 /// （J++ 侧变失败值，J-12）。
 fn exec_py_core(code: &str, stdin: &str, timeout_s: f64) -> Result<ExecResult, String> {
-    let tool = sandbox::tool().ok_or_else(|| sandbox::missing_message("exec_py"))?;
     if let Some(reason) = static_reject(code) {
         return Err(format!("exec_py 拒绝执行：{reason}"));
     }
@@ -188,7 +187,7 @@ fn exec_py_core(code: &str, stdin: &str, timeout_s: f64) -> Result<ExecResult, S
         "-I".to_string(),
         harness_path.to_string_lossy().into_owned(),
     ];
-    let mut cmd = sandbox::wrap(tool, &python, &sandboxed_args, &call_dir)?;
+    let (mut cmd, 沙箱) = sandbox::command(&python, &sandboxed_args, &call_dir)?;
     cmd.env_clear();
     if let Ok(path) = std::env::var("PATH") {
         cmd.env("PATH", path);
@@ -198,12 +197,7 @@ fn exec_py_core(code: &str, stdin: &str, timeout_s: f64) -> Result<ExecResult, S
     cmd.env("JPP_EXEC_PY_USER_FILE", &user_path);
     let res = run_subprocess(cmd, stdin, timeout);
     let _ = std::fs::remove_dir_all(&call_dir);
-    let r = res.map_err(|e| {
-        format!(
-            "exec_py: {e}（解释器：{python}；沙箱：{}）",
-            sandbox::describe(tool)
-        )
-    })?;
+    let r = res.map_err(|e| format!("exec_py: {e}（解释器：{python}；沙箱：{沙箱}）"))?;
     Ok(ExecResult {
         stdout: r.stdout,
         stderr: r.stderr,
@@ -287,7 +281,6 @@ fn check_tests_core(
     tests: &[String],
     timeout_s: f64,
 ) -> Result<CheckTestsResult, String> {
-    let tool = sandbox::tool().ok_or_else(|| sandbox::missing_message("check_tests"))?;
     let combined = format!("{code}\n{}", tests.join("\n"));
     if let Some(reason) = static_reject(&combined) {
         return Err(format!("check_tests 拒绝执行：{reason}"));
@@ -299,7 +292,7 @@ fn check_tests_core(
         .map_err(|e| format!("check_tests: 写临时脚本失败：{e}"))?;
     let python = exec_python_path();
     let sandboxed_args = vec!["-I".to_string(), script_path.to_string_lossy().into_owned()];
-    let mut cmd = sandbox::wrap(tool, &python, &sandboxed_args, &call_dir)?;
+    let (mut cmd, 沙箱) = sandbox::command(&python, &sandboxed_args, &call_dir)?;
     cmd.env_clear();
     if let Ok(path) = std::env::var("PATH") {
         cmd.env("PATH", path);
@@ -309,12 +302,7 @@ fn check_tests_core(
     let payload = serde_json::json!({"code": code, "tests": tests}).to_string();
     let res = run_subprocess(cmd, &payload, timeout);
     let _ = std::fs::remove_dir_all(&call_dir);
-    let r = res.map_err(|e| {
-        format!(
-            "check_tests: {e}（解释器：{python}；沙箱：{}）",
-            sandbox::describe(tool)
-        )
-    })?;
+    let r = res.map_err(|e| format!("check_tests: {e}（解释器：{python}；沙箱：{沙箱}）"))?;
     if r.timed_out {
         return Err(format!(
             "check_tests: 超过 {:.1} 秒超时",
@@ -451,7 +439,6 @@ struct ExecSqlResult {
 /// 并入 `error`，`columns`/`rows` 为空——与写语句被拒、坏 SQL、库不存在走同一条
 /// 「结构化失败落进 error」的路。
 fn exec_sql_core(db: &str, sql: &str) -> Result<ExecSqlResult, String> {
-    let tool = sandbox::tool().ok_or_else(|| sandbox::missing_message("exec_sql"))?;
     let timeout = Duration::from_secs_f64(EXEC_SQL_TIMEOUT_S);
     let call_dir = sandbox::new_call_dir("exec-sql")?;
     let script_path = call_dir.join("driver.py");
@@ -459,7 +446,7 @@ fn exec_sql_core(db: &str, sql: &str) -> Result<ExecSqlResult, String> {
         .map_err(|e| format!("exec_sql: 写临时脚本失败：{e}"))?;
     let python = exec_python_path();
     let sandboxed_args = vec!["-I".to_string(), script_path.to_string_lossy().into_owned()];
-    let mut cmd = sandbox::wrap(tool, &python, &sandboxed_args, &call_dir)?;
+    let (mut cmd, 沙箱) = sandbox::command(&python, &sandboxed_args, &call_dir)?;
     cmd.env_clear();
     if let Ok(path) = std::env::var("PATH") {
         cmd.env("PATH", path);
@@ -469,12 +456,7 @@ fn exec_sql_core(db: &str, sql: &str) -> Result<ExecSqlResult, String> {
     let payload = serde_json::json!({"db": db, "sql": sql}).to_string();
     let res = run_subprocess(cmd, &payload, timeout);
     let _ = std::fs::remove_dir_all(&call_dir);
-    let r = res.map_err(|e| {
-        format!(
-            "exec_sql: {e}（解释器：{python}；沙箱：{}）",
-            sandbox::describe(tool)
-        )
-    })?;
+    let r = res.map_err(|e| format!("exec_sql: {e}（解释器：{python}；沙箱：{沙箱}）"))?;
     if r.timed_out {
         return Ok(ExecSqlResult {
             columns: Vec::new(),

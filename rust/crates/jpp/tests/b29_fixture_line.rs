@@ -41,7 +41,8 @@ handle(e, {act: fn() { content(do("发邮件", [], 0)) },
 "#;
 
 fn 跑(src: &str, calib: &CalibStore, p: f64) -> Result<(Json, Vec<String>), String> {
-    let program = lower(&parse(src).expect("解析")).expect("lower");
+    let mut program = lower(&parse(src).expect("解析")).expect("lower");
+    program.entry.guard = true; // 测放行把关本身：开 --guard（意图汇编 11a）
     let mut a = ActionRegistry::new();
     a.register("发邮件", 0.0, false, TaintOut::Trusted, |_| {
         Ok(jpp::value::Value::text("已发"))
@@ -89,11 +90,11 @@ budget {calls: 2, cost: 0, depth: 8};
 let e = cut(judge(state(mat("材料")), test("行吗", "k")), {cost: [10, 1]});
 handle(e, {act: fn() { "act" }, ignore: fn() { "ig" }, unsure: fn(u) { let c = unsure_cause(u); consume(u, "drop"); c }})
 "#;
-    // 没有这个代价矩阵的证书 → 冷（不借无代价证书的线）
+    // 没有这个代价矩阵的证书 → 不借无代价证书的线；B187 起按判断器的回答走（0.6 出 act），另报 cost_line 载体
     let mut c = CalibStore::new();
     common::certified(&mut c, "k", 0.5, 0.2, 50);
     let (v, w) = 跑(src, &c, 0.6).expect("跑得完");
-    assert_eq!(v, Json::from("cold"), "{w:?}");
+    assert_eq!(v, Json::from("act"), "{w:?}");
     assert!(w.iter().any(|x| x.contains("cost_line")), "{w:?}");
     // 有 cost(10,1) 的证书：线 0.7，读数 0.6 → 未过线
     let cert = Cert {

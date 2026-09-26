@@ -6,4 +6,4 @@
 
 ## `r1/`：旧渲染版本的账本（步 15i，B155）
 
-`bank-which_named.ledger.json` 与 `bank-which_named.replay-report.json` 取自改动前（`0e076e6f`）的同名金样，渲染版本 `r1`。`crates/jpp/tests/b155_wire_and_batch.rs` 的 `d_r1金样账本经cli重放` 用新二进制只凭它重放：按账本头的渲染版本算判断键，值、出口、未决清单与当时的重放报告相同，多报一条 `W-header … render_version 旧 r1 新 r2`；`m_导入r1账本报渲染版本` 用它核 `calib-import --from-ledger` 的 `W-render-version`。这两份文件不随金样重录更新。
+`bank-which_named.ledger.json` 与 `bank-which_named.replay-report.json` 取自改动前（`0e076e6f`）的同名金样，渲染版本 `r1`。`crates/jpp/tests/b155_wire_and_batch.rs` 的 `d_r1金样账本经cli重放` 用新二进制只凭它重放：按账本头的渲染版本算判断键，值、出口、未决清单与当时的重放报告相同，多报一条 `W-header … render_version 旧 r1 新 r2`；`m_导入r1账本报渲染版本` 用它核 `calib-import --from-ledger` 的 `W-render-version`。这两份文件不随金样重录更新。账本的判断键含站点偏移，所以录它时的源码也原样存着：`src/examples/bank-which_named.jpp` 与 `src/lib/bank/which_named.jpp`（取自 `0e076e6f`，目录结构与仓库相同，`import` 照样解析）；批 8 T3 给仓库里这两份加了头注之后，重放测试改跑这里的旧源码（2026-09-26）。

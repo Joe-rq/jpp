@@ -68,12 +68,12 @@ pub struct CutInput<'a> {
     pub fail: Option<&'a str>,
     /// 判断器缺席或超时的标记（B32）
     pub absent: Option<&'a str>,
-    /// 记录状态是停岗
-    pub suspended: bool,
-    /// 查到的线 `(hi, lo)`；`None` = 冷
+    /// 查到的线 `(hi, lo)`；`None` = 没有线（没有上岗记录、记录停岗、作者要的证书没有），按判断器的回答走（B187）
     pub line: Option<(f64, f64)>,
-    /// 调用者给了代价矩阵（找不到同代价的证书线时，冷的修法不同）
+    /// 调用者给了代价矩阵而没有同代价的证书：出口照回答走，另带 J-15 载体 `cost_line`（记录，B187）
     pub cost_requested: bool,
+    /// 调用者给了 `alpha`（B129）而没有 α ≤ a 的证书：出口照回答走，另带 J-15 载体（运行时改写为 `alpha_line`）
+    pub alpha_requested: bool,
     /// 刷新之后的答案（只在需要比线时读）
     pub answer: Option<Answer>,
     /// 这条线的 δ（线附近 ±δ 为 band）。`None` = 记录没有 δ（`20` §3.9：出口一律 `Unsure(untested)`，
@@ -97,7 +97,31 @@ pub fn argmax(v: &[f64]) -> (usize, f64) {
     best
 }
 
-/// 判序：Fail → 缺席 → 停岗 → 冷 → 按题型过线（是非题带 ±δ 的 band；选择题要求置换众数一致）。
+/// 概率最大的下标，只在它唯一时给出（恰好并列、没有单元时为 `None`）。浮点精确相等：没有记录就没有 δ。
+pub fn unique_argmax(v: &[f64]) -> Option<usize> {
+    let (k, m) = argmax(v);
+    (!v.is_empty() && v.iter().filter(|p| **p == m).count() == 1).then_some(k)
+}
+
+/// **按判断器的回答走**（意图汇编 11a，2026-09-26）：没有记录的线、作者也没写线时的出口。是非题 p > 0.5 为
+/// act、p < 0.5 为 ignore；select 取概率最大的候选，measure 取概率最大的档位；恰好并列（p = 0.5，或最大值
+/// 不唯一）时判断器没有给出回答，出 `Unsure(tie)`。作者在 select 上声明了置换而正逆两序众数不一致
+/// （`mode_share < 1`）同样是 tie（与有线时同口径）；没声明置换不要求置换。等级由运行时记 `Answer`。
+pub fn follow_answer(a: &Answer, mode_share: Option<f64>) -> ExitKind {
+    let tie = || ExitKind::Unsure("tie".into());
+    match a {
+        Answer::Noul(p) if *p > 0.5 => ExitKind::Act,
+        Answer::Noul(p) if *p < 0.5 => ExitKind::Ignore,
+        Answer::Noul(_) => tie(),
+        Answer::Choice(_) if mode_share.is_some_and(|ms| ms < 1.0) => tie(),
+        Answer::Choice(v) => unique_argmax(v).map_or_else(tie, ExitKind::Pick),
+        Answer::Score(v) => unique_argmax(v).map_or_else(tie, ExitKind::At),
+    }
+}
+
+/// 判序：Fail → 缺席 → 没有线（按判断器的回答走，B187）→ 按题型过线（是非题带 ±δ 的 band；选择题要求置换众数一致）。
+/// B187（批 9）：`cause` 删 `cold` 与 `drift`——停岗的记录不供线，与没有记录一样按回答走；作者要的 `cost` / `alpha`
+/// 证书没有时也按回答走，另带 J-15 载体（只是记录，告诉作者没找到他要的证书）。
 pub fn decide(i: &CutInput) -> (ExitKind, Untested) {
     if let Some(f) = i.fail {
         return (ExitKind::Unsure(format!("fail:{f}")), None);
@@ -106,30 +130,22 @@ pub fn decide(i: &CutInput) -> (ExitKind, Untested) {
         // B32：判断器缺席或超时，出口按 J-05 四条去向路由，不加新去向
         return (ExitKind::Unsure(c.to_string()), None);
     }
-    if i.suspended {
-        // `drift` 不是未测：停岗是「测过、而且测出漂了」。停岗在回退之前返回，类级先验放行不了它。
-        return (ExitKind::Unsure("drift".into()), None);
-    }
     let Some((hi, lo)) = i.line else {
-        // 题级没上岗、回退层也没上岗 → 冷
-        return if i.cost_requested {
-            (
-                ExitKind::Unsure("cold".into()),
-                Some((
-                    "cost_line".into(),
-                    "修法【需接线人】：用 commission_costed（或 calib-import）为这个代价矩阵从带真值样本认证一条线；线只来自记录".into(),
-                )),
-            )
+        let a = i.answer.as_ref().expect("回答路径：刷新之后答案必然在");
+        let 载体 = if i.cost_requested {
+            Some((
+                "cost_line".into(),
+                "修法【需接线人】：用 commission_costed（或 calib-import --cost）为这个代价矩阵从带真值样本认证一条线；没有这条线时出口按判断器的回答走".into(),
+            ))
+        } else if i.alpha_requested {
+            Some((
+                "calib_line".into(),
+                "修法【作者可改】：这道题没有认证过的线；认证一条（calib-import），或去掉 alpha 让出口按判断器的回答走".into(),
+            ))
         } else {
-            (
-                ExitKind::Unsure("cold".into()),
-                Some((
-                    "calib_line".into(),
-                    // 依据：B130（冷出口列四条出路；地基/附注/2026-09-25-作者主权与策略表达裁定.md §三）
-                    "修法【作者可改】：这道题没有认证过的线（模式级记录不供线，B44）。四条出路，按成本从低到高：(1) 题库——用 bank/bank.json 里已认证的同题型题式，fill(题式, {…})，作者一条不标；(2) 真值可算——标签由程序算出（source: computed），经 calib-import 导入，零人工；(3) 标注或代标——calib-import 从带真值样本认证一条线（可由强模型代标加复核，B36、B89）；(4) 作者声明线——cut(r, {declare: {hi: …, lo: …}}) 按你写的数切，不作错误率保证，放行不可逆动作须 --release-on-declared（B128）".into(),
-                )),
-            )
+            None
         };
+        return (follow_answer(a, i.mode_share), 载体);
     };
     // 依据：`20` §3.9 数值字段未测行为表「记录的 delta」行（步 15d-2）
     let Some(delta) = i.delta else {
@@ -199,7 +215,8 @@ pub struct DeclaredLine {
     pub lo_given: bool,
     pub closed_hi: bool,
     pub closed_lo: bool,
-    pub closed_cuts: bool,
+    /// 各切点的开闭（B176，步 20j-3 追加 (7)）：长度 = `cuts`，真为闭（`E ≥ cᵢ` 算过该切点）；`{hi, lo}` 线为空
+    pub closed_cuts: Vec<bool>,
 }
 
 /// 缺省两端（与切点）全闭（B165 (2)：与认证线同约定）。手写而不派生：派生的 `bool` 缺省为假，会把端位静默变开。
@@ -212,7 +229,7 @@ impl Default for DeclaredLine {
             lo_given: false,
             closed_hi: true,
             closed_lo: true,
-            closed_cuts: true,
+            closed_cuts: vec![],
         }
     }
 }
@@ -230,6 +247,7 @@ impl DeclaredLine {
     /// `{cuts: [c₁ < c₂ < …]}` 分桶线（B153），切点闭（B165 缺省）；`hi`/`lo` 不用
     pub fn with_cuts(cuts: Vec<f64>) -> DeclaredLine {
         DeclaredLine {
+            closed_cuts: vec![true; cuts.len()],
             cuts,
             ..Default::default()
         }
@@ -240,7 +258,15 @@ impl DeclaredLine {
     /// 端位不是缺省全闭时的 `closed` 记录（B165 (3)）；全闭为 `None`，不写进记录与报告
     pub fn closed_json(&self) -> Option<serde_json::Value> {
         if self.is_cuts() {
-            (!self.closed_cuts).then(|| serde_json::json!({"cuts": false}))
+            // B176：全同写单值（全闭不写，20j-3 的记录哈希不变），不全同写数组
+            let c = &self.closed_cuts;
+            if c.iter().all(|x| *x) {
+                None
+            } else if c.iter().all(|x| !*x) {
+                Some(serde_json::json!({"cuts": false}))
+            } else {
+                Some(serde_json::json!({ "cuts": c }))
+            }
         } else if self.closed_hi && self.closed_lo {
             None
         } else {
@@ -279,11 +305,13 @@ impl DeclaredLine {
 pub fn past_declared(s: f64, l: &DeclaredLine) -> ExitKind {
     use crate::stat::{beyond_down, beyond_up, decided_down, decided_up};
     if l.is_cuts() {
+        // B176：逐切点取开闭（缺省全闭）
         let 档 = l
             .cuts
             .iter()
-            .filter(|c| {
-                if l.closed_cuts {
+            .enumerate()
+            .filter(|(i, c)| {
+                if l.closed_cuts.get(*i).copied().unwrap_or(true) {
                     decided_up(s, **c, crate::stat::DECLARED_DELTA)
                 } else {
                     beyond_up(s, **c)
@@ -311,19 +339,117 @@ pub fn past_declared(s: f64, l: &DeclaredLine) -> ExitKind {
     }
 }
 
-/// `stat` 不是 `max` 而没有 `declare`：冷（B153 (1)「认证在 p_max 上的线对别的统计量无效，不借」）。
+/// `stat` 不是 `max` 而没有 `declare` 的旧冷出口（B153 (1)）。B187 起运行时不再产生：`mass` 按概率和的多数块走，
+/// 其他统计量在 `cut` 解析时报 `E-cut-options`；保留给旧测试与账本说明用。
 pub fn cold_for_stat(stat: &crate::stat::Stat) -> (ExitKind, Untested) {
     (
         ExitKind::Unsure("cold".into()),
         Some((
             "calib_line".into(),
             format!(
-                "修法【作者可改】：认证线在 p_max 上，对 stat: {} 无效（同键记录不借）；要按这个统计量切，写作者声明线 cut(r, {{stat: {}, declare: {{hi: …, lo: …}}}})，按你写的数切，不作错误率保证，放行不可逆动作须 --release-on-declared（B153、B128）",
+                "修法【作者可改】：认证线在 p_max 上，对 stat: {} 无效（同键记录不借）；要按这个统计量切，写作者声明线 cut(r, {{stat: {}, declare: {{hi: …, lo: …}}}})，按你写的数切，不作错误率保证（B153、B128）；不写 stat 的 cut 在没有线时按判断器的回答走",
                 stat.name(),
                 stat.to_json()
             ),
         )),
     )
+}
+
+#[cfg(test)]
+mod answer_route_tests {
+    //! 意图汇编 11a：没有线、作者也没要求证书线时按判断器的回答走；要求了证书线（cost / alpha）照旧冷。
+    use super::*;
+
+    fn 输入(answer: Answer, cost: bool, alpha: bool) -> (ExitKind, Untested) {
+        decide(&CutInput {
+            fail: None,
+            absent: None,
+            line: None,
+            cost_requested: cost,
+            alpha_requested: alpha,
+            answer: Some(answer),
+            delta: None,
+            mode_share: None,
+        })
+    }
+
+    #[test]
+    fn 是非题按_0_5_切_恰好一半为并列() {
+        assert_eq!(输入(Answer::Noul(0.51), false, false).0, ExitKind::Act);
+        assert_eq!(输入(Answer::Noul(0.49), false, false).0, ExitKind::Ignore);
+        assert_eq!(
+            输入(Answer::Noul(0.5), false, false),
+            (ExitKind::Unsure("tie".into()), None)
+        );
+        // 没有 untested：回答路径不是「判据未测」
+        assert_eq!(输入(Answer::Noul(0.9), false, false).1, None);
+    }
+
+    #[test]
+    fn select与measure取最大_并列为tie() {
+        assert_eq!(
+            输入(Answer::Choice(vec![0.2, 0.5, 0.3]), false, false).0,
+            ExitKind::Pick(1)
+        );
+        assert_eq!(
+            输入(Answer::Choice(vec![0.4, 0.4, 0.2]), false, false).0,
+            ExitKind::Unsure("tie".into())
+        );
+        assert_eq!(
+            输入(Answer::Score(vec![0.1, 0.2, 0.7]), false, false).0,
+            ExitKind::At(2)
+        );
+        assert_eq!(
+            输入(Answer::Score(vec![0.5, 0.5]), false, false).0,
+            ExitKind::Unsure("tie".into())
+        );
+        // 声明了置换而两序众数不一致：tie；没测置换不要求
+        assert_eq!(
+            follow_answer(&Answer::Choice(vec![0.2, 0.8]), Some(0.5)),
+            ExitKind::Unsure("tie".into())
+        );
+        assert_eq!(
+            follow_answer(&Answer::Choice(vec![0.2, 0.8]), Some(1.0)),
+            ExitKind::Pick(1)
+        );
+        assert_eq!(
+            follow_answer(&Answer::Choice(vec![]), None),
+            ExitKind::Unsure("tie".into())
+        );
+    }
+
+    /// B187：作者要的证书线没有时也按回答走，出口另带 J-15 载体（记录）
+    #[test]
+    fn 要求证书线而没有证书按回答走并带载体() {
+        let (k, u) = 输入(Answer::Noul(0.9), true, false);
+        assert_eq!(k, ExitKind::Act);
+        assert_eq!(u.map(|x| x.0), Some("cost_line".into()));
+        let (k, u) = 输入(Answer::Noul(0.1), false, true);
+        assert_eq!(k, ExitKind::Ignore);
+        assert_eq!(u.map(|x| x.0), Some("calib_line".into()));
+    }
+
+    #[test]
+    fn 失败_缺席先于回答() {
+        let base = |fail: Option<&'static str>, absent: Option<&'static str>| {
+            decide(&CutInput {
+                fail,
+                absent,
+                line: None,
+                cost_requested: false,
+                alpha_requested: false,
+                answer: None,
+                delta: None,
+                mode_share: None,
+            })
+            .0
+        };
+        assert_eq!(base(Some("x"), None), ExitKind::Unsure("fail:x".into()));
+        assert_eq!(
+            base(None, Some("absent")),
+            ExitKind::Unsure("absent".into())
+        );
+    }
 }
 
 #[cfg(test)]
@@ -363,6 +489,8 @@ mod line_grade_tests {
             (LineGrade::Provisional, "Provisional", false),
             (LineGrade::Form, "Form", true),
             (LineGrade::Certified, "Certified", true),
+            // 意图汇编 11a：判断器自己的回答，不作放行证据（只在开 --guard 时有意义）
+            (LineGrade::Answer, "Answer", false),
         ];
         for (g, name, rel) in all {
             assert_eq!(g.name(), name);
@@ -411,8 +539,11 @@ mod line_grade_tests {
             set(&x);
             assert!(!x.releases());
         }
-        // 不来自 `cut` 的出口没有等级：只看正交位
-        assert!(出口(None, None).releases());
+        // 不来自 `cut` 的出口没有等级：B131（步 25-9）起只有 `ask` 出口放行（此前取真）
+        let n = 出口(None, None);
+        assert!(!n.releases(), "grade None 且不来自 ask：不放行");
+        n.from_ask.set(true);
+        assert!(n.releases(), "ask 出口：人答即真值");
         // taint 由 guard_trusted 合取，不进 releases
         let t = issue(部件(None, Taint::Untrusted));
         t.grade.set(Some(LineGrade::Certified));

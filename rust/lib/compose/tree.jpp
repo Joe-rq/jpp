@@ -1,0 +1,402 @@
+// 题树（B185，批 8 T6）：生成器事先出整棵追问的题树，JEV 沿每一步的出口往下判。
+//
+// 意图汇编 7b：复杂的判断靠结构拆开——两个人适不适合合作；第三个人加入会不会更紧密；会的话金额变大还是
+// 变小、增量从哪来；再加一个人会不会更多。这些追问在循环开始前由生成器一次生成，JEV 只负责沿出口快速验证。
+// 意图汇编 7c：深问题直接问（节点就是普通是非题，作者声明线切）；拿不准时的默认去处是补信息再判——生成器出题树时
+// 为每个节点列好「还可能缺哪类信息」，JEV 用一道 select 选出最缺的一类，fetch 取来补进材料，再判同一节点。
+//
+// walk(tree, material, depth, opts) -> 契约值
+//   tree      题树（先 validate_tree）。叶 {leaf: 任意值}。两种节点，形状与现场模板
+//             （地基/比赛/现场/examples/tree-collab.jpp）相同：
+//               是非题  {kind?: "test", q: Text, act, ignore, unsure?, add?, need? | missing?: [Text]}
+//               K 选一  {kind?: "select", q: Text, over: [候选…], picks: [子节点…], unsure?, add?}，picks 与 over 等长
+//             add：给 opts.grow 看的标记（例如要并入的成员名），walk 自己不解释。need（模板叫 missing）：
+//             这个节点还可能缺哪几类信息
+//   material  根节点看的材料，推荐具名字段记录 mat({a: …, b: …})（一个判断对象，不触发 J-14）
+//   depth     路径上最多走几个节点，loop 的 bound；写字面量或顶层 let 常量（J-06 在调用点核，B111）
+//   opts      {line?: {declare: {hi, lo?}}   是非题节点 cut 用的作者声明线（B128，等级 Declared）；缺省 cut(r) 按题的 calib 查记录
+//              pick_line?: {declare: {hi}}    K 选一节点的线（最大概率门槛）；缺省取 line 的 hi
+//              calib?: Text                   节点题的校准标签，缺省 "tree-node"；给了 question 就不用
+//              question?: fn(node) -> Question 由节点造题，缺省是非题 test(node.q, calib)、K 选一 select(node.q, calib, {permute: true})
+//              grow?: fn(Mat, node) -> Mat    进入节点前把材料变成该节点要看的材料（缺省恒等），子节点沿用变过的材料；
+//                                             材料变了就是新的状态。要是纯的、便宜的（with_member 是）：all 模式分组时
+//                                             对组内每个子节点都调一次
+//              keep?: fn(Mat, node) -> Bool   代码谓词（B184 同名）：假时按 ignore 支走、不发判断，记 detail.decided_by_code
+//                                             （只用于是非题节点）
+//              enrich?: {rounds: Int,                               每个是非题节点最多补几次
+//                        fetch: fn(node, need, m) -> 值 | 材料 | Fail, 取来这一类信息，Fail 即停止补。三个参数。由作者给真实来源：
+//                                                                   查数据，或由宿主动作去问人（ask 返回的是人的是非出口，
+//                                                                   不是信息，不能当 fetch）。拿生成器补内容只是替身——生成器
+//                                                                   编出来的背景不是证据，示例之外不要这样用
+//                        line?: {declare: {hi, lo?}},               「最缺哪一类」这道 select 的线；缺省按 calib 查记录
+//                        calib?: Text,                              这道 select 的校准标签，缺省 "tree-need"
+//                        need?: fn(node) -> [Text],                 候选缺项，缺省 node.need，没有时 node.missing
+//                        merge?: fn(m, need, got) -> Mat}           缺省：记录材料 with_member(m, need, got)，文字材料接「need：got」
+//              eval?: "all" | "path"}         缺省 "all"
+// 两种求值，叶、路径、未决相同，只差调用怎么发：
+//   all   从当前节点起，沿「grow 之后材料不变」的边收集同一材料上的连通子树（keep 为假的不问，按剩余 depth 截断），
+//         整组题一次登记（同一状态的题运行时合成一次调用，K 选一节点带候选、另是一个状态，同一层发出）；然后逐节点
+//         cut、按出口下行，不再发判断；走到材料变了的子节点（grow，或补过信息），对新材料再发下一组。
+//         没走到的同组节点也付了费（只有读数、不 cut，不产生未决责任）
+//   path  每判一个节点一次调用。grow 会调 gen、do 这类贵的效应时用它
+// 每个节点：grow → keep → 取本节点读数（没有就发一组）→ cut → handle 选子节点（K 选一的 pick(k) 走 picks[k]）；
+// 是非题节点判出未决且给了 enrich、候选里还有没补过的、轮数没用完：select 问「最缺哪一类」→ fetch → merge → 在补过的
+// 材料上再判同一节点。上一次的未决出口 consume(u, "drop") 记账（它被重判取代；本该走 J-05 的「细化」，内置
+// literalize 今天不收声明线，赛后 refine 补）。select 未决、fetch 返回 Fail、候选或轮数用完即停止补：select 的
+// 未决出口进 pending（via walk#<步号>:need），节点最后一次的出口照旧。补过的材料一路往下带。补的轮次不占 depth。
+// 返回（B17 契约值）：
+//   value    到叶时一个元素 {item: 到叶时的材料, leaf, path: [{q, exit, branch, enriched}], exit, trail: []}；
+//            item 带路径谱系（Q10，见 tree_lineage）：下游在它上面再判、再守不可逆 do 时，J-08 看得到路径上的声明线
+//            （宿主未接受时谱系放行拦下，B72-4）与不可信题面（叶材料随之不可信，B58）；
+//            branch 为 act / ignore / unsure / pick:<候选>。
+//            exit = compose(路径上是非题的出口, "all")，强 Kleene 合取（B131）。路径上有未决时去掉 ignore 再合成，
+//            叶出口一律未决；没有未决时读作「路径上每个是非题都判了是」：全 act 为 act，走过 ignore 支为 ignore。
+//            后两种之外都不放行不可逆动作（保守），树照样走完、叶结论照样返回。K 选一的 pick 出口不进合成（compose
+//            的 all 只收是非题出口）；代码谓词定的节点在 path 里 exit 为 unit，也不进（B184 (5)）。
+//            「每一步都已决」看 pending 是否为空。节点判出未决而没有 unsure 子节点时停在这里，leaf 为 unit
+//   pending  路径上每个未决出口（element 造的标准元素，via 记 "walk#<步号>"）。沿 unsure 支继续往下不销账（J-05）
+//   evidence 发出的全部判断的账本键（含 all 模式没走到的节点与补信息的 select，花费按它算）
+//   detail   {depth: 走过的节点数, reason: "leaf" | "unsure" | "bound" | "invalid", decided_by_code: [{q, step}],
+//             enriched: [{q, need, step}], eval, batches: 发出的判断批数（即往返数）, asked: 登记的判断数, tree}；
+//             invalid 时另有 failed（形状检查的 Fail），不发判断
+// 产物与 sieve、search 的产物同形：value 元素带 item 与 exit，能再交给 sieve、pair、compose，嵌进 map、search。
+//
+// validate_tree(tree, depth) -> tree | Fail：是非题节点有 q（文字）、act、ignore，K 选一节点有 q、over（列表）、
+// 与 over 等长的 picks，叶有 leaf，need / missing 是列表，最深路径上的节点数不超过 depth；不合返回 fail(路径与原因)，
+// 路径写成「根.act.pick1」；输入是 Fail（parse_json 失败）时原样返回。walk 只查形状、不按 depth 查深：深度的闸门
+// 是作者调的 validate_tree，walk 保留真实的 bound 结局。它同时规范形状：add 收文字或列表（规范成列表），need（或 missing）
+// 收文字或列表（规范成列表写回 need），列表里有非文字项报路径。
+// validate_tree_with(tree, depth, {need?: [可取的信息类别], members?: [可并入的成员名]}) -> {tree, dropped} | Fail：同上，
+// 再按词表筛——add 里不在 members 的名字（包括已经在材料里的当事人）剔除，need 里不在词表的类别剔除（比对忽略空格，
+// 留下的写回词表原文），剔除的逐条记在 dropped（{at, field, value}）。词表就是作者手上能取到的信息类别，写进出题提示，
+// fetch 按它取数（冒烟 3：真机生成器会把 add 写成列表、把当事人写进 add、need 随手写类别，也会省掉空格）。
+// parse_tree(生成结果) -> tree | Fail：生成端口已把 JSON 解析成记录时原样返回；是文字就取第一个 { 到最后一个 } 再解析。
+// add_members(m, names, members)：给 grow 用，把 names（文字或列表）里的成员逐个并入记录材料，已在材料里的、成员表里没有的跳过。
+//
+// with_member(m, name, x) / without_member(m, name)：记录材料加、减一个具名字段（x 是材料时取内容）。
+// 「是谁的加入带来的」是反事实问题：逐个 without_member 去掉一人，问同一道题，比较读数的相对变化（order），
+// 不各自按线切（实测/语义深度-2026-09-26/结果.md：按相对变化 12 组全对，按绝对线只对一半）。
+// 用 mat 而不用 transform：单材料 transform 的产物 taint 只取输入材料，捕获进闭包的成员若不可信会被洗成可信；
+// mat 的计算值按值级 taint 与来源取并（B33、B84）。代价：产物不进账本（过程记录 工程-批8-T6.md §3·4）。
+//
+// 写法提醒：判断的账本键带调用站点，同一（材料, 题）经不同的 judge 调用处不会复用；if 是刷新点，要一批发出的
+// 判断之间不要夹 if（先算齐材料与题，再在不含 if 的 map 里连续登记）。
+//
+// 依据：B185（附注/2026-09-26-批8裁定-字面化与判断分工.md §五）；意图汇编 7b、7c；与裁定的出入（depth 为位置参数、
+// all 模式今晚做且为缺省、enrich、K 选一节点今晚做）与两种模式的调用数对照见过程记录 工程-批8-T6.md。
+import "carry.jpp";
+
+// K 选一节点：有 over，或 kind 写明 select
+fn tree_is_select(n) { has(n, "over") || (has(n, "kind") && n.kind == "select") }
+
+// K 选一节点的子节点列表（模板叫 picks，裁定原文叫 pick）
+fn tree_picks(n) { if has(n, "picks") { n.picks } else { n.pick } }
+
+// 形状检查（递归）：合格返回 unit，否则 Fail。left 为 unit 时不查深度
+fn tree_shape(n, left, at) {
+    if is_fail(n) { n }
+    else if !starts_with(to_json(n), "{") { fail(at + "：不是记录（节点要有 q，叶要有 leaf）") }
+    else if has(n, "leaf") { unit }
+    else if !has(n, "q") || !starts_with(to_json(n.q), "\"") { fail(at + "：节点缺题面 q（文字）") }
+    else if tree_is_select(n) && (!has(n, "over") || !starts_with(to_json(n.over), "[")) { fail(at + "：K 选一节点缺候选列表 over") }
+    else if tree_is_select(n) && (!(has(n, "picks") || has(n, "pick")) || len(tree_picks(n)) != len(n.over)) {
+        fail(at + "：K 选一节点要有与 over 等长的 picks")
+    }
+    else if !tree_is_select(n) && (!has(n, "act") || !has(n, "ignore")) { fail(at + "：节点缺 act 或 ignore") }
+    else if has(n, "need") && !starts_with(to_json(n.need), "[") { fail(at + "：need 要是缺项列表") }
+    else if has(n, "missing") && !starts_with(to_json(n.missing), "[") { fail(at + "：missing 要是缺项列表") }
+    else if left != unit && left <= 0 { fail(at + "：超过深度上限") }
+    else {
+        let rest = if left == unit { unit } else { left - 1 };
+        fold(tree_kids(n), unit, fn(bad, k) { if is_fail(bad) { bad } else { tree_shape(k[1], rest, at + "." + k[0]) } })
+    }
+}
+
+// 节点的子节点：[[支名, 子节点]]；K 选一的支名是 pick0、pick1……
+fn tree_kids(n) {
+    let main = if tree_is_select(n) {
+        let ps = tree_picks(n);
+        map(range(0, len(ps)), fn(k) { ["pick" + text(k), ps[k]] })
+    } else { [["act", n.act], ["ignore", n.ignore]] };
+    concat(main, if has(n, "unsure") { [["unsure", n.unsure]] } else { [] })
+}
+
+// all 模式的一组（递归）：从 node 起，沿 grow 之后材料哈希不变的边可达、剩余深度 left 之内的节点，
+// 每项 {at, q, st: 问在哪个状态上}。keep 为假的是非题节点不问，只沿它的 ignore 边继续
+fn tree_group(node, m, at, left, grown, kept, ask_of, state_of) {
+    if left <= 0 { [] } else {
+        let asked = tree_is_select(node) || kept(m, node);
+        let kids = if asked { tree_kids(node) } else { [["ignore", node.ignore]] };
+        fold(kids, if asked { [{at: at, q: ask_of(node), st: state_of(m, node)}] } else { [] }, fn(acc, k) {
+            if has(k[1], "leaf") { acc } else {
+                let cm = grown(m, k[1]);
+                if cm.hash == m.hash { concat(acc, tree_group(k[1], cm, at + "." + k[0], left - 1, grown, kept, ask_of, state_of)) } else { acc }
+            }
+        })
+    }
+}
+
+fn tree_is_text(x) { starts_with(to_json(x), "\"") }
+fn tree_is_list(x) { starts_with(to_json(x), "[") }
+
+// 文字或文字列表规范成列表；不是这两种、或列表里有非文字项，返回 Fail（报文带路径与字段名）
+fn tree_names(x, at, field) {
+    if !tree_is_text(x) && !tree_is_list(x) { fail(at + "：" + field + " 要是文字或文字列表") } else {
+        let xs = if tree_is_text(x) { [x] } else { x };
+        if len(filter(xs, fn(y) { !tree_is_text(y) })) > 0 { fail(at + "：" + field + " 的每一项都要是文字") } else { xs }
+    }
+}
+
+// 按 opts[key] 的词表筛：词表内的留下，词表外的记进 dropped；没给词表全部留下
+// 比对时去掉半角与全角空格（真机生成器会把「c 的配送覆盖范围」写成「c的配送覆盖范围」）；留下的写回词表里的原文
+fn tree_bare(x) { replace(replace(x, " ", ""), "　", "") }
+fn tree_vet(xs, opts, key, at, field) {
+    if !has(opts, key) { {keep: xs, dropped: []} } else {
+        let voc = opts[key];
+        let hit = fn(x) { filter(voc, fn(v) { tree_bare(v) == tree_bare(x) }) };
+        {keep: map(filter(xs, fn(x) { len(hit(x)) > 0 }), fn(x) { hit(x)[0] }),
+         dropped: map(filter(xs, fn(x) { len(hit(x)) == 0 }), fn(x) { {at: at, field: field, value: x} })}
+    }
+}
+
+// 把规范后的子节点写回：act / ignore / unsure 按名字写回，K 选一的 pick0…pickN 写回 picks
+fn tree_put_kids(n, kids) {
+    let base = fold(filter(kids, fn(k) { !starts_with(k[0], "pick") }), n, fn(acc, k) { with(acc, k[0], k[1]) });
+    if tree_is_select(n) { with(base, "picks", map(filter(kids, fn(k) { starts_with(k[0], "pick") }), fn(k) { k[1] })) } else { base }
+}
+
+// 校验并规范一个节点（递归）：返回 {node, dropped} 或 Fail。left 为 unit 时不查深度
+fn tree_norm(n, left, at, opts) {
+    if is_fail(n) { n }
+    else if !starts_with(to_json(n), "{") { fail(at + "：不是记录（节点要有 q，叶要有 leaf）") }
+    else if has(n, "leaf") { {node: n, dropped: []} }
+    else if !has(n, "q") || !tree_is_text(n.q) { fail(at + "：节点缺题面 q（文字）") }
+    else if has(n, "kind") && n.kind != "test" && n.kind != "select" { fail(at + "：kind 只能是 test 或 select") }
+    else if tree_is_select(n) && (!has(n, "over") || !tree_is_list(n.over)) { fail(at + "：K 选一节点缺候选列表 over") }
+    else if tree_is_select(n) && (!(has(n, "picks") || has(n, "pick")) || len(tree_picks(n)) != len(n.over)) {
+        fail(at + "：K 选一节点要有与 over 等长的 picks")
+    }
+    else if !tree_is_select(n) && (!has(n, "act") || !has(n, "ignore")) { fail(at + "：节点缺 act 或 ignore") }
+    else if left != unit && left <= 0 { fail(at + "：超过深度上限") }
+    else {
+        let has_need = has(n, "need") || has(n, "missing");
+        let adds = if has(n, "add") { tree_names(n.add, at, "add") } else { [] };
+        let needs = if has_need { tree_names(if has(n, "need") { n.need } else { n.missing }, at, "need") } else { [] };
+        if is_fail(adds) { adds } else if is_fail(needs) { needs } else {
+            let a = tree_vet(adds, opts, "members", at, "add");
+            let d = tree_vet(needs, opts, "need", at, "need");
+            let rest = if left == unit { unit } else { left - 1 };
+            let ks = fold(tree_kids(n), {kids: [], dropped: [], bad: unit}, fn(acc, k) {
+                if is_fail(acc.bad) { acc } else {
+                    let r = tree_norm(k[1], rest, at + "." + k[0], opts);
+                    if is_fail(r) { with(acc, "bad", r) }
+                    else { {kids: append(acc.kids, [k[0], r.node]), dropped: concat(acc.dropped, r.dropped), bad: unit} }
+                }
+            });
+            if is_fail(ks.bad) { ks.bad } else {
+                let n1 = if has(n, "add") { with(n, "add", a.keep) } else { n };
+                let n2 = if has_need { with(n1, "need", d.keep) } else { n1 };
+                {node: tree_put_kids(n2, ks.kids), dropped: concat(concat(a.dropped, d.dropped), ks.dropped)}
+            }
+        }
+    }
+}
+
+// 校验并规范题树，可带词表：opts = {need?: [可取的信息类别], members?: [可并入的成员名]}。返回 {tree, dropped} 或 Fail
+fn validate_tree_with(tree, depth, opts) {
+    let r = tree_norm(tree, depth, "根", opts);
+    if is_fail(r) { r } else { {tree: r.node, dropped: r.dropped} }
+}
+
+fn validate_tree(tree, depth) {
+    let r = tree_norm(tree, depth, "根", {});
+    if is_fail(r) { r } else { r.node }
+}
+
+// 从生成器的结果里取出题树：已是记录原样返回；是文字就取第一个 { 到最后一个 } 再解析（生成器有时在 JSON 外包代码块标记或说明）；
+// 输入是 Fail 时原样返回，找不到 JSON 对象返回 Fail
+fn parse_tree(raw) {
+    if is_fail(raw) { raw }
+    // 生成端口已经把 JSON 解析成记录时（真机 claude -p 的输出是合法 JSON 就会这样）原样返回
+    else if starts_with(to_json(raw), "{") { raw }
+    else if !tree_is_text(raw) { fail("生成的结果既不是题树记录也不是文字") }
+    else {
+        let found = regex_find(raw, "(?s)\\{.*\\}");
+        if len(found) == 0 { fail("生成的文字里没有 JSON 对象") } else { parse_json(found[0]) }
+    }
+}
+
+// grow 用：把 names（文字或列表）里的成员逐个并入记录材料；已经在材料里的、members 里没有的跳过
+fn add_members(m, names, members) {
+    let ns = if tree_is_list(names) { names } else { [names] };
+    fold(ns, m, fn(acc, x) { if has(content(acc), x) || !has(members, x) { acc } else { with_member(acc, x, members[x]) } })
+}
+
+// x 是材料时 mat(x) 就是它自己，不是材料时先变材料；content 读出时带着材料的 taint 标签
+fn with_member(m, name, x) { mat(with(content(m), name, content(mat(x)))) }
+
+fn without_member(m, name) {
+    let c = content(m);
+    mat(fold(keys(c), {}, fn(acc, k) { if k == name { acc } else { with(acc, k, c[k]) } }))
+}
+
+// 叶材料带上路径谱系（Q10）。sel 是路径上判过的出口与它的题 [{e, q}]（是非题、K 选一、补信息时选中缺项的 select）。
+// (1) 题面 taint（B58）：各题面文字取空片段（内容为空、带着题面的 taint），接在材料 JSON 后面再解析回来——内容不变，
+//     值级 taint 并上（B33、B157；空片段用 replace(题面, 题面, "") 取）；题面不可信时叶材料不可信，下游在它上面的判断不是 J-08 的可信合取项。
+// (2) 选择边（B92）：element 逐个挂上路径出口的账本键，下游判断的状态 parents 含这些键，J-08 的谱系放行（B72-4）
+//     查到宿主未接受的声明线、试用线、未决等不放行的出口即拦下。选择边不进 derived_from，下游用同一道题再判不撞 J-02。
+// 路径上没有判过的出口（全被代码谓词定）时原样返回。
+fn tree_lineage(m, sel) {
+    if len(sel) == 0 { m } else {
+        let marked = mat(parse_json(to_json(content(m)) + join(map(sel, fn(x) { replace(x.q.text, x.q.text, "") }), "")));
+        fold(sel, marked, fn(acc, x) { element(acc, x.e, {pos: 0, q: x.q}).item })
+    }
+}
+
+fn walk(tree, material, depth, opts) -> Record<Exit> {
+    let how = if has(opts, "eval") { opts.eval } else { "all" };
+    if how != "all" && how != "path" {
+        opts["E-walk-options: eval 只收 \"all\"（缺省，同材料的一组节点一次调用）或 \"path\"（每个节点一次调用）。修法：改成其中一个，或去掉 eval"]
+    } else { unit };
+    let calib = if has(opts, "calib") { opts.calib } else { "tree-node" };
+    let ask_of = fn(node) {
+        if has(opts, "question") { opts.question(node) }
+        else { if tree_is_select(node) { select(node.q, calib, {permute: true}) } else { test(node.q, calib) } }
+    };
+    let state_of = fn(m, node) { if tree_is_select(node) { state(m, {over: map(node.over, fn(c) { mat(c) })}) } else { state(m) } };
+    let grown = fn(m, node) { if has(opts, "grow") { opts.grow(m, node) } else { m } };
+    let kept = fn(m, node) { !has(opts, "keep") || opts.keep(m, node) };
+    let cut_of = fn(node, r) {
+        if !tree_is_select(node) { if has(opts, "line") { cut(r, opts.line) } else { cut(r) } }
+        else { if has(opts, "pick_line") { cut(r, opts.pick_line) }
+               else { if has(opts, "line") { cut(r, {declare: {hi: opts.line.declare.hi}}) } else { cut(r) } } }
+    };
+    let en = if has(opts, "enrich") { opts.enrich } else { {rounds: 0} };
+    let need_of = fn(node) {
+        if tree_is_select(node) { [] }
+        else { if has(en, "need") { en.need(node) } else { if has(node, "need") { node.need } else { if has(node, "missing") { node.missing } else { [] } } } }
+    };
+    let merge = fn(m, need, got) {
+        if has(en, "merge") { en.merge(m, need, got) }
+        else { if starts_with(to_json(content(m)), "{") { with_member(m, need, got) }
+               else { mat(text(content(m)) + "\n" + need + "：" + text(content(mat(got)))) } }
+    };
+    // 「最缺哪一类」是 K 选一：候选正逆两序各问一次（permute，B64），选项顺序的影响测过才给 pick，否则按 J-15 未决
+    let need_q = fn(node) {
+        select("要把这道题判得更明确：「" + node.q + "」。材料里最缺下面哪一类信息？",
+               if has(en, "calib") { en.calib } else { "tree-need" }, {permute: true})
+    };
+    let need_cut = fn(r) { if has(en, "line") { cut(r, en.line) } else { cut(r) } };
+    // 发一批：all 发整组，path 只发当前节点。先算齐题与状态，再在不含 if 的 map 里连续登记（同一次刷新，
+    // 同一状态的题运行时合成一次调用）。返回 [{at, q, st, r: 读数}]
+    let batch = fn(node, m, at, left) {
+        let items = if how == "all" { tree_group(node, m, at, left, grown, kept, ask_of, state_of) }
+                    else { [{at: at, q: ask_of(node), st: state_of(m, node)}] };
+        let rs = map(items, fn(g) { judge(g.st, g.q) });
+        map(range(0, len(items)), fn(k) { with(items[k], "r", rs[k]) })
+    };
+    // 记账：一批读数的账本键进 evidence，批数与登记数各加
+    let tally_in = fn(t, rs) {
+        with(with(with(t, "keys", concat(t.keys, map(rs, fn(r) { key_of(r) }))), "batches", t.batches + 1), "asked", t.asked + len(rs))
+    };
+    // 本节点在材料 m 上的出口：读数已在这一批（同一材料）里就直接用，没有就发一批。返回 {t, e, got, q}
+    let judged = fn(t, node, m, at, left) {
+        let fresh = t.bm != m.hash || len(filter(t.batch, fn(g) { g.at == at })) == 0;
+        let b = if fresh { batch(node, m, at, left) } else { t.batch };
+        let mine = filter(b, fn(g) { g.at == at })[0];
+        let e = cut_of(node, mine.r);
+        // unsure 臂把责任 u 放进臂的返回值（J-05 第四条去向）；同一出口随后进 pending，或被补信息后的重判取代时 drop 记账
+        let got = if tree_is_select(node) {
+            handle(e, {pick: fn(k) { {branch: "pick:" + text(node.over[k]), k: k} },
+                       unsure: fn(u) { {branch: "unsure", duty: u} }})
+        } else {
+            handle(e, {act: fn() { {branch: "act"} },
+                       ignore: fn() { {branch: "ignore"} },
+                       unsure: fn(u) { {branch: "unsure", duty: u} }})
+        };
+        let t2 = if fresh { with(with(tally_in(t, map(b, fn(g) { g.r })), "batch", b), "bm", m.hash) } else { t };
+        {t: t2, e: e, got: got, q: mine.q}
+    };
+    let bad = tree_shape(tree, unit, "根");
+    // 收尾：记下这一步、到叶时的材料、叶结论与原因
+    let finish = fn(s, m, entry, leaf, why) {
+        with(with(with(with(with(s, "path", append(s.path, entry)), "m", m), "leaf", leaf), "reason", why), "done", true)
+    };
+    // 按 got 走到下一个节点：叶就收尾，节点就接着往下
+    let advance = fn(s, m, entry, got) {
+        let kid = if has(got, "k") { ["pick" + text(got.k), tree_picks(s.node)[got.k]] }
+                  else { if got.branch == "act" { ["act", s.node.act] }
+                         else { if got.branch == "ignore" { ["ignore", s.node.ignore] } else { ["unsure", s.node.unsure] } } };
+        let next = kid[1];
+        if has(next, "leaf") { finish(s, m, entry, next.leaf, "leaf") }
+        else { with(with(with(with(s, "path", append(s.path, entry)), "m", m), "node", next), "at", s.at + "." + kid[0]) }
+    };
+    let step = fn(s, i) {
+        if s.done { stop(s) } else {
+            let node = s.node;
+            let m = grown(s.m, node);
+            let next = if !tree_is_select(node) && !kept(m, node) {
+                advance(with(s, "code", append(s.code, {q: node.q, step: i})), m, {q: node.q, exit: unit, branch: "ignore", enriched: []}, {branch: "ignore"})
+            } else {
+                let j0 = judged(s, node, m, s.at, depth - i);
+                // 补信息再判（意图汇编 7c）：每轮 select 最缺的一类 → fetch → merge → 在补过的材料上再判同一节点
+                let r = fold(range(0, en.rounds), {s: j0.t, m: m, e: j0.e, got: j0.got, q: j0.q, done: [], stop: false}, fn(t, k) {
+                    let cands = if t.stop || t.got.branch != "unsure" { [] } else { filter(need_of(node), fn(c) { !contains(t.done, c) }) };
+                    if len(cands) == 0 { t } else {
+                        // 只剩一类候选时不问 JEV 选哪类（代码能定，意图汇编 7a），直接取它
+                        let ch = if len(cands) == 1 { {j: 0, t1: t, sel: []} } else {
+                            let qn = need_q(node);
+                            let rn = judge(state(t.m, {over: map(cands, fn(c) { mat(c) })}), qn);
+                            let en_e = need_cut(rn);
+                            let pk = handle(en_e, {pick: fn(j) { {j: j} }, unsure: fn(u) { {j: -1, duty: u} }});
+                            let t0 = with(t, "s", tally_in(t.s, [rn]));
+                            if pk.j < 0 {
+                                // 选不出最缺哪一类：这道 select 的未决随返回值交出，停止补
+                                let s1 = with(t0.s, "pending", carry(t0.s.pending, [element(t.m, en_e, {pos: i, q: qn})], "walk#" + text(i) + ":need"));
+                                {j: -1, t1: with(t0, "s", s1), sel: []}
+                            } else { {j: pk.j, t1: t0, sel: [{e: en_e, q: qn}]} }
+                        };
+                        let t1 = ch.t1;
+                        if ch.j < 0 { with(t1, "stop", true) } else {
+                            let need = cands[ch.j];
+                            let got = en.fetch(node, need, t.m);
+                            if is_fail(got) { with(t1, "stop", true) } else {
+                                let m2 = merge(t.m, need, got);
+                                let j2 = judged(t1.s, node, m2, s.at, depth - i);
+                                // 上一次的未决被补信息后的重判取代：显式丢弃并记账（J-05）
+                                consume(t.got.duty, "drop");
+                                // 「最缺哪一类」选定了补进材料的内容：它也进叶材料的谱系（Q10）
+                                let j2s = with(j2.t, "sel", concat(j2.t.sel, ch.sel));
+                                {s: with(j2s, "enriched", append(j2s.enriched, {q: node.q, need: need, step: i})),
+                                 m: m2, e: j2.e, got: j2.got, q: j2.q, done: append(t.done, need), stop: false}
+                            }
+                        }
+                    }
+                });
+                let s3 = with(with(r.s, "exits", append(r.s.exits, r.e)), "sel", append(r.s.sel, {e: r.e, q: r.q}));
+                let entry = {q: node.q, exit: r.e, branch: r.got.branch, enriched: r.done};
+                if r.got.branch == "unsure" {
+                    // 未决出口进 pending（J-05：随返回值转交）；有 unsure 子节点就接着往下，没有就停在这里
+                    let s4 = with(s3, "pending", carry(s3.pending, [element(r.m, r.e, {pos: i, q: r.q})], "walk#" + text(i)));
+                    if has(node, "unsure") { advance(s4, r.m, entry, r.got) } else { finish(s4, r.m, entry, unit, "unsure") }
+                } else { advance(s3, r.m, entry, r.got) }
+            };
+            if next.done { stop(next) } else { next }
+        }
+    };
+    let r = loop(depth, {node: tree, at: "根", m: material, path: [], exits: [], pending: [], code: [], enriched: [],
+                         batch: [], bm: "", keys: [], batches: 0, asked: 0, sel: [],
+                         leaf: unit, reason: if is_fail(bad) { "invalid" } else { "bound" }, done: is_fail(bad)}, step);
+    // 叶出口：只合成是非题的出口（pick 不进）；路径上有未决时去掉 ignore，叶出口一律未决
+    let kinds = map(r.exits, fn(e) { exit_kind(e) });
+    let open = len(filter(kinds, fn(k) { starts_with(k, "unsure") })) > 0;
+    let parts = map(filter(range(0, len(kinds)), fn(k) { !starts_with(kinds[k], "pick") && (!open || kinds[k] != "ignore") }),
+                    fn(k) { r.exits[k] });
+    let value = if r.reason == "leaf" || r.reason == "unsure" {
+        [{item: tree_lineage(r.m, r.sel), leaf: r.leaf, path: r.path, exit: compose(parts, "all"), trail: []}]
+    } else { [] };
+    let detail = {depth: len(r.path), reason: r.reason, decided_by_code: r.code, enriched: r.enriched, eval: how,
+                  batches: r.batches, asked: r.asked, tree: if is_fail(bad) { unit } else { tree }};
+    outcome({value: value, pending: r.pending, evidence: r.keys,
+             detail: if is_fail(bad) { with(detail, "failed", bad) } else { detail }})
+}

@@ -303,7 +303,9 @@ fn d_只凭r1账本重放() {
 }
 
 /// (d) 的 CLI 一半：改动前的 `r1` 金样账本（`tests/replay/r1/`，取自 `0e076e6f`）在新二进制上只凭账本重放，
-/// 值与当时的重放报告相同。
+/// 值与当时的重放报告相同。账本的判断键含站点偏移，要配录它时的源码：批 8 T3 给 `examples/bank-which_named.jpp`
+/// 与 `lib/bank/which_named.jpp` 加了头注、偏移变了，所以两份源码按 `0e076e6f` 原样存在 `tests/replay/r1/src/`
+/// （目录结构与仓库同，`import "../lib/…"` 照样解析），这里跑那一份（2026-09-26 修，表示层变化）。
 #[test]
 fn d_r1金样账本经cli重放() {
     let d = std::env::temp_dir().join(format!("jpp-b155-d-{}", std::process::id()));
@@ -315,7 +317,7 @@ fn d_r1金样账本经cli重放() {
         .current_dir(root())
         .args([
             "run",
-            "examples/bank-which_named.jpp",
+            "tests/replay/r1/src/examples/bank-which_named.jpp",
             "--replay",
             "tests/replay/r1/bank-which_named.ledger.json",
             "--ledger-out",
@@ -340,7 +342,7 @@ fn d_r1金样账本经cli重放() {
         .current_dir(root())
         .args([
             "run",
-            "examples/bank-which_named.jpp",
+            "tests/replay/r1/src/examples/bank-which_named.jpp",
             "--replay",
             写出.to_str().unwrap(),
             "--output",

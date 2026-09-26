@@ -1,0 +1,22 @@
+// 搜索的代码谓词槽 keep（B184，判断分工定律谓词半的库落点）：候选是否超过四个汉字是代码能直接判定的
+// 事，不进 JEV——opts.keep 在 ground 之后、feasible 之前把超长的候选排除，不进 sieve、不花调用；
+// 排除记 detail.excluded，不是出口也不是未决。第 0 轮「街角慢时光咖啡馆」被排除、「邻里豆」判 band 未决，
+// unsure_to 为 refine 时，排除的与未决的材料一起并进第 1 轮前沿（生成器该看到这两类反馈）；固定观察的
+// 第 1 轮 gen 夹具带上下文断言（ctx），核对前沿里确实带着这两份材料，不是只带未决的那份。
+import "../lib/compose/search.jpp";
+budget {calls: 12, cost: 0.02, depth: 64};
+
+let brief = mat("为一家社区咖啡馆起名：温暖、好记、不超过四个汉字");
+let propose = fn(frontier, i) {
+    gen("按下面的需求提出 3 个候选店名，每个候选是一个字符串；需求之后的上下文是上一轮留下的候选", concat([brief], frontier), 3, i)
+};
+let fits = test("这个名字适合做一家社区咖啡馆的店名吗？", "search-fit");
+let keep = fn(m) { len(content(m)) <= 4 };
+
+let r = search([], propose, fits, unit, 3, {width: 2, unsure_to: "refine", keep: keep});
+{kept: map(r.value, fn(e) { e.item }), found_in: map(r.value, fn(e) { e.round }),
+ duplicates: r.detail.duplicates,
+ excluded: map(r.detail.excluded, fn(e) { {item: e.item, round: e.round} }),
+ undecided: map(r.pending, fn(p) { {item: p.item, cause: p.cause, via: p.via} }),
+ reason: r.detail.reason, rounds: r.detail.rounds, measures: r.detail.measures,
+ pending: r.pending}

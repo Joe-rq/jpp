@@ -151,7 +151,8 @@ handle(e, {{act: fn() {{ {{来源: taint(e)}} }}, ignore: fn() {{ {{来源: tain
            unsure: fn(u) {{ consume(u, "drop"); {{来源: taint(e)}} }}}})
 "#
         );
-        let program = jpp::lower(&jpp::syntax::parse(&src).expect("解析")).expect("lower");
+        let mut program = jpp::lower(&jpp::syntax::parse(&src).expect("解析")).expect("lower");
+        program.entry.guard = true; // 测放行把关本身：开 --guard（意图汇编 11a）
         let mut calib = CalibStore::new();
         calib.put("k", 0.8, 0.2, 50, "上岗", Some(0.05)).unwrap();
         let mut l = Ledger::new();
@@ -219,7 +220,8 @@ fn 读taint不能替代可信判断() {
                 jpp::value::Taint::Trusted.into(),
             ))
         });
-        let program = jpp::lower(&jpp::syntax::parse(src).expect("解析")).expect("lower");
+        let mut program = jpp::lower(&jpp::syntax::parse(src).expect("解析")).expect("lower");
+        program.entry.guard = true; // 测放行把关本身：开 --guard（意图汇编 11a）
         let mut calib = CalibStore::new();
         common::certified(&mut calib, "k", 0.7, 0.3, 50);
         let mut l = Ledger::new();
@@ -307,7 +309,8 @@ let r = judge(state(mat("被判的")), test("行吗", "k"));
 let g = fn(m) { let _ = r; content(m) };
 {a: content(transform(g, mat("材料")))}
 "#;
-    let program = jpp::lower(&jpp::syntax::parse(src).expect("解析")).expect("lower");
+    let mut program = jpp::lower(&jpp::syntax::parse(src).expect("解析")).expect("lower");
+    program.entry.guard = true; // 测放行把关本身：开 --guard（意图汇编 11a）
     let mut l = Ledger::new();
     let out = run(
         &program,

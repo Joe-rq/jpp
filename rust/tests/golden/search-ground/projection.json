@@ -4,54 +4,54 @@
   "effects": [
     [
       "gen",
-      "按下面的需求提出 3 段 Python 代码，每段是一个字符串；需求之后的上下文是上一轮留下的候选（代码与输出）",
-      "4f07dc26c987e9fbb1ed5dd9",
+      "按下面的需求提出 3 条 SQL 查询，每条是一个字符串；需求之后的上下文是上一轮留下的候选（SQL 与执行结果）",
+      "1f46d9695e1668b5f4b8052f",
       true
     ],
     [
       "do",
-      "exec_py",
-      "cac4fe73a441ec0476d51b90",
+      "exec_sql",
+      "f61c7b2cddbabcfdac6f0b5c",
       true
     ],
     [
       "do",
-      "exec_py",
-      "e2c6fe6a5ff1d32b5c35ca39",
+      "exec_sql",
+      "34a4cddedf502289207b2272",
       true
     ],
     [
       "do",
-      "exec_py",
-      "2ed400935481e78fd6d581ba",
+      "exec_sql",
+      "84ea4818307e73dbda014d58",
       true
     ],
     [
       "gen",
-      "按下面的需求提出 3 段 Python 代码，每段是一个字符串；需求之后的上下文是上一轮留下的候选（代码与输出）",
-      "d0f0879f5b9300f008eaf6f1",
+      "按下面的需求提出 3 条 SQL 查询，每条是一个字符串；需求之后的上下文是上一轮留下的候选（SQL 与执行结果）",
+      "a2d158d5e0f6a769111d8344",
       true
     ],
     [
       "do",
-      "exec_py",
-      "0bd9faba1f843239ae7f1237",
+      "exec_sql",
+      "9e14371b2fdd191bec25d198",
       true
     ],
     [
       "do",
-      "exec_py",
-      "ca4a4d8bc60fac49633cb04a",
+      "exec_sql",
+      "efeb04192db8c21e2f549b4b",
       true
     ],
     [
       "do",
-      "exec_py",
-      "a93bd15d7a5305fb9893caf7",
+      "exec_sql",
+      "350546c65e7b8bc7d8578729",
       true
     ]
   ],
-  "judge_registrations": 6,
+  "judge_registrations": 4,
   "pending": [],
   "returned_unsure": [
     "unsure(band)"
@@ -60,15 +60,59 @@
   "usd": 0.0,
   "value": {
     "duplicates": 0,
+    "excluded": [
+      {
+        "item": {
+          "content": {
+            "error": "OperationalError: no such column: quantiy",
+            "rows": [],
+            "sql": "select category, sum(quantiy) as total from returns group by category order by total desc limit 1;",
+            "text": "需求：写一条 SQL 查询，回答一个统计问题：需求要求只统计上个季度（2026 年 4 月 1 日到 6 月 30 日）的退货记录，按商品类别汇总数量，找出退货数量最多的一类。假设今天在 2026 年第三季度。数据库表 returns(id, category, product_name, quantity, return_date)\nSQL：select category, sum(quantiy) as total from returns group by category order by total desc limit 1;\n报错：OperationalError: no such column: quantiy"
+          },
+          "mat": "56c7de58d8b29ddbf0aeaa55",
+          "origin": [
+            "transform:94a6613e38deb7b0d4e3ae80"
+          ],
+          "taint": "Untrusted"
+        },
+        "round": 0
+      },
+      {
+        "item": {
+          "content": {
+            "error": null,
+            "rows": [],
+            "sql": "select category, sum(quantity) as total from returns where category = '玩具' and return_date >= '2026-04-01' and return_date < '2026-07-01' group by category order by total desc limit 1;",
+            "text": "需求：写一条 SQL 查询，回答一个统计问题：需求要求只统计上个季度（2026 年 4 月 1 日到 6 月 30 日）的退货记录，按商品类别汇总数量，找出退货数量最多的一类。假设今天在 2026 年第三季度。数据库表 returns(id, category, product_name, quantity, return_date)\nSQL：select category, sum(quantity) as total from returns where category = '玩具' and return_date >= '2026-04-01' and return_date < '2026-07-01' group by category order by total desc limit 1;\n结果为空"
+          },
+          "mat": "0019dd255ca066f914473c45",
+          "origin": [
+            "transform:40eef6cea3158b8adc90a761"
+          ],
+          "taint": "Untrusted"
+        },
+        "round": 1
+      }
+    ],
     "found_in": [
       1
     ],
     "kept": [
       {
-        "content": "代码：print(sum(i * i for i in range(1, 11)))\n输出：385\n",
-        "mat": "32df080287acec7aee7c90fd",
+        "content": {
+          "error": null,
+          "rows": [
+            [
+              "数码",
+              40
+            ]
+          ],
+          "sql": "select category, sum(quantity) as total from returns where return_date >= '2026-04-01' and return_date < '2026-07-01' group by category order by total desc limit 1;",
+          "text": "需求：写一条 SQL 查询，回答一个统计问题：需求要求只统计上个季度（2026 年 4 月 1 日到 6 月 30 日）的退货记录，按商品类别汇总数量，找出退货数量最多的一类。假设今天在 2026 年第三季度。数据库表 returns(id, category, product_name, quantity, return_date)\nSQL：select category, sum(quantity) as total from returns where return_date >= '2026-04-01' and return_date < '2026-07-01' group by category order by total desc limit 1;\n结果：数码 共 40 件"
+        },
+        "mat": "0b1ddae91e38bf2fda2f4ea0",
         "origin": [
-          "transform:f5e113f01dd112f484972f5b"
+          "transform:62067d3b5a41b2d64b0c99f2"
         ],
         "taint": "Untrusted"
       }
@@ -83,25 +127,35 @@
         "exit": {
           "consumed": true,
           "exit": "unsure(band)",
-          "id": 2,
-          "q": "91b07311b733ad9db5420e42"
+          "id": 1,
+          "q": "077d9dac661b56ffe31f30a9"
         },
-        "index": 2,
+        "index": 1,
         "item": {
-          "content": "代码：print('大约', 385)\n输出：大约 385\n",
-          "mat": "1864059016d916ee9e44a2fe",
+          "content": {
+            "error": null,
+            "rows": [
+              [
+                "数码",
+                25
+              ]
+            ],
+            "sql": "select category, sum(quantity) as total from returns where return_date >= '2026-04-01' and return_date <= '2026-06-29' group by category order by total desc limit 1;",
+            "text": "需求：写一条 SQL 查询，回答一个统计问题：需求要求只统计上个季度（2026 年 4 月 1 日到 6 月 30 日）的退货记录，按商品类别汇总数量，找出退货数量最多的一类。假设今天在 2026 年第三季度。数据库表 returns(id, category, product_name, quantity, return_date)\nSQL：select category, sum(quantity) as total from returns where return_date >= '2026-04-01' and return_date <= '2026-06-29' group by category order by total desc limit 1;\n结果：数码 共 25 件"
+          },
+          "mat": "2637a1036cf94d0581e5b0f8",
           "origin": [
-            "transform:ae12fed44655e0c01b92ecfa"
+            "transform:607d98deb2b7a52477831ecc"
           ],
           "taint": "Untrusted"
         },
-        "key": "2e77656070c975133a439abe",
-        "pos": 2,
+        "key": "50aaf96f487620e63664310f",
+        "pos": 1,
         "q": {
-          "calib": "ground-correct",
+          "calib": "sql-answers-question",
           "op": "noul",
-          "question": "91b07311b733ad9db5420e42",
-          "text": "这段代码的输出是否等于 1 到 10 的平方和（385）？"
+          "question": "077d9dac661b56ffe31f30a9",
+          "text": "这条查询的结果是否回答了需求里的问题？"
         },
         "qi": 0,
         "trail": [],
@@ -113,34 +167,38 @@
     "reason": "stop",
     "rejected": [
       {
-        "content": "代码：print(sum(i * i for i in range(10)))\n输出：285\n",
-        "mat": "7658d6ca337b7702b01a6770",
+        "content": {
+          "error": null,
+          "rows": [
+            [
+              "家居",
+              60
+            ]
+          ],
+          "sql": "select category, sum(quantity) as total from returns group by category order by total desc limit 1;",
+          "text": "需求：写一条 SQL 查询，回答一个统计问题：需求要求只统计上个季度（2026 年 4 月 1 日到 6 月 30 日）的退货记录，按商品类别汇总数量，找出退货数量最多的一类。假设今天在 2026 年第三季度。数据库表 returns(id, category, product_name, quantity, return_date)\nSQL：select category, sum(quantity) as total from returns group by category order by total desc limit 1;\n结果：家居 共 60 件"
+        },
+        "mat": "c5ea0a2f8c8920abe6e164d3",
         "origin": [
-          "transform:59fb571b6eb25396ced3e185"
+          "transform:67874756da2337a2d1cb789f"
         ],
         "taint": "Untrusted"
       },
       {
-        "content": "代码：print(sum(range(1, 11)) ** 2 // 10)\n输出：302\n",
-        "mat": "83318eb500f2691b363e49d6",
+        "content": {
+          "error": null,
+          "rows": [
+            [
+              "耳机",
+              25
+            ]
+          ],
+          "sql": "select product_name, sum(quantity) as total from returns where return_date >= '2026-04-01' and return_date < '2026-07-01' group by product_name order by total desc limit 1;",
+          "text": "需求：写一条 SQL 查询，回答一个统计问题：需求要求只统计上个季度（2026 年 4 月 1 日到 6 月 30 日）的退货记录，按商品类别汇总数量，找出退货数量最多的一类。假设今天在 2026 年第三季度。数据库表 returns(id, category, product_name, quantity, return_date)\nSQL：select product_name, sum(quantity) as total from returns where return_date >= '2026-04-01' and return_date < '2026-07-01' group by product_name order by total desc limit 1;\n结果：耳机 共 25 件"
+        },
+        "mat": "eb1aa08e2803b7dd219d5006",
         "origin": [
-          "transform:f9feb0ac374412c4396b006c"
-        ],
-        "taint": "Untrusted"
-      },
-      {
-        "content": "代码：print(sum(range(1, 11)))\n输出：55\n",
-        "mat": "a9c2366cd62f961644c12cca",
-        "origin": [
-          "transform:678cf27e8487a5904122beec"
-        ],
-        "taint": "Untrusted"
-      },
-      {
-        "content": "代码：print(10 * 11 * 21 // 6 + 1)\n输出：386\n",
-        "mat": "eb9674b851a5351574f1e989",
-        "origin": [
-          "transform:4affbb8a22e72a2a622ee94b"
+          "transform:e52f7b861abfb3d7366579dd"
         ],
         "taint": "Untrusted"
       }
@@ -150,10 +208,20 @@
       {
         "cause": "band",
         "item": {
-          "content": "代码：print('大约', 385)\n输出：大约 385\n",
-          "mat": "1864059016d916ee9e44a2fe",
+          "content": {
+            "error": null,
+            "rows": [
+              [
+                "数码",
+                25
+              ]
+            ],
+            "sql": "select category, sum(quantity) as total from returns where return_date >= '2026-04-01' and return_date <= '2026-06-29' group by category order by total desc limit 1;",
+            "text": "需求：写一条 SQL 查询，回答一个统计问题：需求要求只统计上个季度（2026 年 4 月 1 日到 6 月 30 日）的退货记录，按商品类别汇总数量，找出退货数量最多的一类。假设今天在 2026 年第三季度。数据库表 returns(id, category, product_name, quantity, return_date)\nSQL：select category, sum(quantity) as total from returns where return_date >= '2026-04-01' and return_date <= '2026-06-29' group by category order by total desc limit 1;\n结果：数码 共 25 件"
+          },
+          "mat": "2637a1036cf94d0581e5b0f8",
           "origin": [
-            "transform:ae12fed44655e0c01b92ecfa"
+            "transform:607d98deb2b7a52477831ecc"
           ],
           "taint": "Untrusted"
         },

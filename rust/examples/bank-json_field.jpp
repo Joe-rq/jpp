@@ -1,4 +1,5 @@
 // 题库条目 json_field 的用法（步 27a）：一道填好的题问一批 JSON，按线分成有、无、未决三份。
+// 状态：认证管道验证件·不作示例·不导出为共享前提（B186）。
 // 题式从 lib/bank/ 取，线从条目目录 bank/entries/ceb097176786d327fe1a0ba3/calib/ 取（金样用例以 --calib 装载）。
 // 材料是认证集里同一字段 order_no 的四条（范围指纹之内）；夹具读数是真机账本里的原读数。
 import "../lib/outcome.jpp";

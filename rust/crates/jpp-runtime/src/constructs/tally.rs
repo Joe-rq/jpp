@@ -3,8 +3,24 @@
 //! 步 25-2b（B131）：聚合出口改经合成构造 `compose` 签发（`any`/`all`/`first`），这两个构造自己不再需要
 //! 任何内核能力；25-1 的「聚合出口不作放行证据」随之移进 `compose`（保持到步 25-9）。
 
-use crate::constructs::compose::{分量, 合成请求, 规则};
+use crate::constructs::compose::{合成请求, 规则};
 use crate::*;
+
+/// 成员的出口；没有就报 `E-tally-no-exit`（B140，步 25-9）：无出口成员算进合取会是放行口子（分量集为空则合取
+/// 为真），丢掉又会把 `all` 放宽到 Act，记成 `Unsure(no_exit)` 则把形状错误藏成未决。依据：B140
+fn 成员出口(e: &Value, 构造: &str, 列: &str, sp: Span) -> R<Rc<Exit>> {
+    match 条目出口(e) {
+        Some(x) => Ok(x),
+        None => err(
+            Some("E-tally-no-exit"),
+            format!(
+                "{构造} 的 {列} 里有一个成员没有出口（{}）：聚合只数判断产物。修法：普通列表用 len、filter 数；要判断先 sieve，把 sieve 的产物交给 {构造}",
+                e.type_name()
+            ),
+            sp,
+        ),
+    }
+}
 
 /// 契约值条目的出口（有则取）：合成的分量出口与被吸收的未决都从这里取
 fn 条目出口(e: &Value) -> Option<Rc<Exit>> {
@@ -81,27 +97,24 @@ impl<'a> Interp<'a> {
         let no = pend.iter().filter(|e| is_budget(e)).count() as i64;
         let nu = pend.len() as i64 - no;
         let (na, ni) = (act.len() as i64, ignore.len() as i64);
-        // B131：分量种类按列表成员定（接受 Act、否定 Ignore、未决 Unsure(原因)），有出口的进 `parts`；
-        // 调用者自造的契约值里没有出口的普通值也照样计数（`过程记录/工程-步25-2b.md` Q14）
-        let 分量们 = || -> Vec<分量> {
-            act.iter()
-                .map(|e| (ExitKind::Act, e))
-                .chain(ignore.iter().map(|e| (ExitKind::Ignore, e)))
-                .chain(pend.iter().map(|e| (ExitKind::Unsure(条目原因(e)), e)))
-                .map(|(种类, e)| 分量 {
-                    种类,
-                    出口: 条目出口(e),
-                })
-                .collect()
-        };
-        // 结论被未决挡住时，元素的未决责任并入聚合出口（B131 (3)，与步 25-2b 前同）
-        let 吸收: Vec<Rc<Exit>> = pend.iter().filter_map(条目出口).collect();
+        // B131：分量是每个成员的出口（种类从出口读），全部进 `parts`；成员没有出口报 `E-tally-no-exit`
+        // （B140，步 25-9；此前按列表成员定种类、无出口的普通值照样计数）
+        let mut 分量们: Vec<Rc<Exit>> = vec![];
+        for (列, 成员) in [
+            ("value", &act),
+            ("detail.ignore", &ignore),
+            ("pending", &pend),
+        ] {
+            for e in 成员.iter() {
+                分量们.push(成员出口(e, "tally", 列, sp)?);
+            }
+        }
+        // 结论被未决挡住时，全部未决分量的责任并入聚合出口（B131 (3)、B141）
         let 合成 = |me: &mut Self, 规则, 题键| {
             me.调合成(
                 合成请求 {
                     规则,
-                    分量: 分量们(),
-                    吸收: &吸收,
+                    分量: 分量们.clone(),
                     op: Op::Test,
                     题键,
                     已决标签: "tally:decided",
@@ -251,23 +264,21 @@ impl<'a> Interp<'a> {
                 }
             }
         }
-        let 分量们: Vec<分量> = all
-            .iter()
-            .map(|(_, tag, e)| 分量 {
-                种类: match tag.as_str() {
-                    "act" => ExitKind::Act,
-                    "ignore" => ExitKind::Ignore,
-                    t => ExitKind::Unsure(t.trim_start_matches("pending:").to_string()),
-                },
-                出口: 条目出口(e),
-            })
-            .collect();
-        // `first_k` 被挡住时不吸收元素的未决（与步 25-2b 前同；B131 (3) 是否适用待定，Q15）
+        // 分量是每个成员的出口，按输入顺序（B140：成员必须有出口）
+        let mut 分量们: Vec<Rc<Exit>> = vec![];
+        for (_, tag, e) in &all {
+            let 列 = match tag.as_str() {
+                "act" => "value",
+                "ignore" => "detail.ignore",
+                _ => "pending",
+            };
+            分量们.push(成员出口(e, "first_k", 列, sp)?);
+        }
+        // `first_k` 被挡住时吸收全部未决分量（B141，步 25-9；此前不吸收，Q15）
         let ex = self.调合成(
             合成请求 {
                 规则: 规则::First(k as usize),
                 分量: 分量们,
-                吸收: &[],
                 op: Op::Test,
                 题键: "first_k",
                 已决标签: "first_k:decided",
@@ -275,12 +286,12 @@ impl<'a> Interp<'a> {
             },
             sp,
         )?;
-        let mut pending = pend.clone();
-        if let Value::Exit(e) = &ex {
-            if e.is_unsure() {
-                pending.push(Self::pending_entry(Value::Unit, &ex));
-            }
-        }
+        // 被挡住：元素的未决已并入 first_k 的出口，未决清单只留这个出口（B141；与 tally 同一责任语义）；
+        // 没被挡住：输入的未决原样带进新契约
+        let pending = match &ex {
+            Value::Exit(e) if e.is_unsure() => vec![Self::pending_entry(Value::Unit, &ex)],
+            _ => pend.clone(),
+        };
         let value = Value::record(vec![
             ("items".into(), Value::list(items)),
             ("exit".into(), ex),

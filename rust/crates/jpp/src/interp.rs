@@ -66,13 +66,18 @@ impl<'a> Interp<'a> {
         }
     }
 
-    /// 生成缓存（步 15h-2）：见运行时同名方法
-    pub fn with_gen_cache(
-        self,
-        cache: std::rc::Rc<std::cell::RefCell<jpp_runtime::GenCache>>,
-    ) -> Self {
+    /// 跨运行缓存（步 19）：见运行时同名方法
+    pub fn with_cache(self, cache: &'a dyn jpp_effects::views::CacheLookup) -> Self {
         Interp {
-            inner: self.inner.with_gen_cache(cache),
+            inner: self.inner.with_cache(cache),
+            passes: self.passes,
+        }
+    }
+
+    /// 生成器身份（步 19）：见运行时同名方法
+    pub fn with_gen(self, model: Option<String>, profile_hash: Option<String>) -> Self {
+        Interp {
+            inner: self.inner.with_gen(model, profile_hash),
             passes: self.passes,
         }
     }

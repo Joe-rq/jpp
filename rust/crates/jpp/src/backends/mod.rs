@@ -108,6 +108,13 @@ impl GenProfile {
                 .and_then(|v| v.as_f64())
                 .ok_or_else(|| format!("生成器画像缺 gen.{k}（必填，不回退代码兜底，B73）"))
         };
+        // 公开 PR #37 评审 P2：超时要放得进 Duration 且不为零，否则建端口时 from_secs_f64 会 panic
+        let timeout_s = need("timeout_s")?;
+        if std::time::Duration::try_from_secs_f64(timeout_s).map_or(true, |d| d.is_zero()) {
+            return Err(format!(
+                "生成器画像 gen.timeout_s = {timeout_s}：要是有限正数（秒）"
+            ));
+        }
         Ok(GenProfile {
             hash: jpp_ir::key::hash_of(&["gen-profile", &String::from_utf8_lossy(bytes)]),
             cost_usd_per_call: need("cost_usd_per_call")?,
@@ -116,7 +123,7 @@ impl GenProfile {
                 .get("concurrency")
                 .and_then(|v| v.as_u64())
                 .map(|v| v as usize),
-            timeout_s: need("timeout_s")?,
+            timeout_s,
             failure_kinds: g
                 .get("failure_kinds")
                 .and_then(|v| v.as_array())

@@ -8,14 +8,16 @@
 //! 步 18-0（R）先建三件：[`blob`]（`Blob` trait 与内存、目录两个后端）、[`calib`]（校准记录的
 //! 装载、夹具合并策略与写回，原在 `cli/run_io.rs`）、[`ProfileLoader`]（画像字节装载；路径解析
 //! 仍在 CLI，B73）。步 18a 加 [`migrations`]（账本 v2 → v3）。步 18b 加 [`LedgerFile`]（逐行落盘的
-//! 账本，B55）。缓存索引随步 19。
+//! 账本，B55）。步 19 加 [`CacheIndex`]（跨运行缓存索引，B40、B151）。
 
 pub mod blob;
+mod cache_index;
 pub mod calib;
 mod ledger_file;
 pub mod migrations;
 mod profile;
 
 pub use blob::{Blob, DirBlob, IoErr, MemBlob};
+pub use cache_index::{CacheIndex, CacheIndexCounts};
 pub use ledger_file::LedgerFile;
 pub use profile::ProfileLoader;

@@ -50,6 +50,11 @@ pub struct EntryDecl {
     /// 为假不序列化，不打印（现有 `ir.txt` 不变）。
     #[serde(default, skip_serializing_if = "is_false")]
     pub accept_declared: bool,
+    /// 宿主开启放行把关（意图汇编 11a，2026-09-26；CLI `--guard`，库宿主 `EntryArgs.guard`）。默认关：J-08 的
+    /// 静态子面与运行期放行、没有沙箱时执行器按不可逆处理、`E-ledger-required` 都只在开时生效。检查器与运行时
+    /// 都只读这一位（唯一来源）。为假不序列化，不打印。
+    #[serde(default, skip_serializing_if = "is_false")]
+    pub guard: bool,
 }
 
 fn is_false(b: &bool) -> bool {
@@ -58,7 +63,7 @@ fn is_false(b: &bool) -> bool {
 
 impl EntryDecl {
     pub fn is_empty(&self) -> bool {
-        self.params.is_empty()
+        self.params.is_empty() && !self.guard
     }
 }
 

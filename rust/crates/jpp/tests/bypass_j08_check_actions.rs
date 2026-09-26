@@ -3,6 +3,8 @@
 //! 两个方向：可逆动作（`record_check`）本不该被 J-08 管，不再误报 `W-guard-untrusted`；
 //! 不可逆动作（`write_json`）在检查期就该报 `J-08`（error），不必等运行期真的拦下。
 //! 依据：24-0 完成记录「已知限制」一节；预注册见 `地基/过程记录/工程-步24c.md`。
+//! 意图汇编 11a（2026-09-26）起 J-08 只在宿主开 `--guard` 时生效：本文件测机制本身，都带 `--guard`；
+//! 默认不报、照常执行的对照是文件末尾的 `默认不开把关_检查不报_运行照常执行`。
 
 use std::{fs, path::PathBuf, process::Command};
 
@@ -40,7 +42,7 @@ fn 守卫程序(动作: &str, 实参: &str) -> String {
 fn check不带input时不可逆动作报j08() {
     let d = scratch("wj");
     fs::write(d.join("p.jpp"), 守卫程序("write_json", "\"y.json\", {}")).unwrap();
-    let (ok, err) = jpp(&d, &["check", "p.jpp"]);
+    let (ok, err) = jpp(&d, &["check", "p.jpp", "--guard"]);
     assert!(!ok && err.contains("J-08"), "{err}");
     let _ = fs::remove_dir_all(&d);
 }
@@ -51,7 +53,7 @@ fn check不带input时不可逆动作报j08() {
 fn check不带input时可逆动作不报() {
     let d = scratch("rc");
     fs::write(d.join("p.jpp"), 守卫程序("record_check", "{a: 1}")).unwrap();
-    let (ok, err) = jpp(&d, &["check", "p.jpp"]);
+    let (ok, err) = jpp(&d, &["check", "p.jpp", "--guard"]);
     assert!(ok, "{err}");
     assert!(
         !err.contains("W-guard-untrusted") && !err.contains("J-08"),
@@ -66,8 +68,22 @@ fn check不带input时可逆动作不报() {
 fn run不带input时不可逆动作在检查期就报() {
     let d = scratch("run-wj");
     fs::write(d.join("p.jpp"), 守卫程序("write_json", "\"y.json\", {}")).unwrap();
-    let (ok, err) = jpp(&d, &["run", "p.jpp"]);
+    let (ok, err) = jpp(&d, &["run", "p.jpp", "--guard"]);
     assert!(!ok && err.contains("J-08"), "{err}");
     assert!(!d.join("y.json").exists(), "不可逆 do 不该被执行");
+    let _ = fs::remove_dir_all(&d);
+}
+
+/// 意图汇编 11a：不开 `--guard`（默认），同一程序检查期不报 J-08，也不报 `W-guard-untrusted`。
+#[test]
+fn 默认不开把关_检查不报() {
+    let d = scratch("default");
+    fs::write(d.join("p.jpp"), 守卫程序("write_json", "\"y.json\", {}")).unwrap();
+    let (ok, err) = jpp(&d, &["check", "p.jpp"]);
+    assert!(ok, "{err}");
+    assert!(
+        !err.contains("J-08") && !err.contains("W-guard-untrusted"),
+        "{err}"
+    );
     let _ = fs::remove_dir_all(&d);
 }

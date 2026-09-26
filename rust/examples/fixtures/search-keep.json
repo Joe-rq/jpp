@@ -1,0 +1,18 @@
+{
+  "description": "Synthetic fixed observations for search-keep.jpp (construction check only; not model evaluation). Round 0 proposes three names: one fits and is kept, one exceeds four characters and is excluded by the code predicate `keep` before it ever reaches the judge, one is judged in-band (unsure) and is refined into round 1's context. Round 1's generation fixture is context-locked (`ctx`) to the exact frontier `search` should build: the round-0 accepted name, the still-undecided name, and the keep-excluded name, in that order — if `search` fails to carry the excluded material into the next round's frontier under `unsure_to: \"refine\"`, or carries it in the wrong slot, this fixture lookup misses and the run errors instead of silently passing. Round 1 proposes one more name that fits (reaching width 2, so the search stops) and two more over-length names that are again excluded by code, never judged. The calibration record is hand-written to exercise routing.",
+  "calibrations": [
+    {"key": "search-fit", "hi": 0.75, "lo": 0.25, "n": 1, "status": "上岗", "delta": 0.05}
+  ],
+  "generations": [
+    {"prompt": "按下面的需求提出 3 个候选店名，每个候选是一个字符串；需求之后的上下文是上一轮留下的候选", "retry_seq": 0,
+     "output": ["暖巷", "街角慢时光咖啡馆", "邻里豆"]},
+    {"prompt": "按下面的需求提出 3 个候选店名，每个候选是一个字符串；需求之后的上下文是上一轮留下的候选", "retry_seq": 1,
+     "ctx": ["为一家社区咖啡馆起名：温暖、好记、不超过四个汉字", "暖巷", "邻里豆", "街角慢时光咖啡馆"],
+     "output": ["巷里", "慢时光咖啡屋", "邻里角落慢生活"]}
+  ],
+  "observations": [
+    {"on": ["暖巷"], "op": "test", "text": "这个名字适合做一家社区咖啡馆的店名吗？", "calib": "search-fit", "answer": {"Noul": 0.9}},
+    {"on": ["邻里豆"], "op": "test", "text": "这个名字适合做一家社区咖啡馆的店名吗？", "calib": "search-fit", "answer": {"Noul": 0.5}},
+    {"on": ["巷里"], "op": "test", "text": "这个名字适合做一家社区咖啡馆的店名吗？", "calib": "search-fit", "answer": {"Noul": 0.85}}
+  ]
+}

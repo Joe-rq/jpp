@@ -89,7 +89,8 @@ fn 类库(指纹: bool) -> CalibStore {
 }
 
 fn 跑(src: &str, calib: &CalibStore) -> Result<(Json, Vec<String>, Ledger), String> {
-    let program = lower(&parse(src).expect("解析")).expect("lower");
+    let mut program = lower(&parse(src).expect("解析")).expect("lower");
+    program.entry.guard = true; // 测放行把关本身：开 --guard（意图汇编 11a）
     let mut a = ActionRegistry::new();
     a.register("发邮件", 0.0, false, TaintOut::Trusted, |_| {
         Ok(Value::Text("已发".into(), Taint::Trusted.into()))
@@ -117,11 +118,11 @@ fn 题键冷时借类线() {
     );
 }
 
-/// 没有类记录 → 冷（现状不变）。
+/// 没有类记录 → 没有线，B187 起按判断器的回答走（不借类线）。
 #[test]
-fn 没有类记录仍然冷() {
+fn 没有类记录按回答走() {
     let (v, w, _) = 跑(&路由(短句, r#"test("该发吗", "k")"#), &CalibStore::new()).unwrap();
-    assert_eq!(v, json!("cold"));
+    assert_eq!(v, json!("act"));
     assert_eq!(有(&w, "W-class-line"), 0);
 }
 
@@ -174,14 +175,14 @@ fn 题式无线时借类线() {
     assert_eq!(有(&w, "W-class-line"), 1, "{w:?}");
 }
 
-/// 题式记录停岗 → 不绕过停岗去借类线，出口冷。
+/// 题式记录停岗 → 不绕过停岗去借类线；B187 起停岗即没有线，按判断器的回答走。
 #[test]
 fn 题式停岗时不借类线() {
     let mut calib = 类库(false);
     common::certified(&mut calib, &题式键(), 0.8, 0.2, 50);
     calib.records.get_mut(&题式键()).unwrap().status = "停岗".into();
     let (v, w, _) = 跑(&路由(短句, 题式), &calib).unwrap();
-    assert_eq!(v, json!("cold"), "{w:?}");
+    assert_eq!(v, json!("act"), "{w:?}");
     assert_eq!(有(&w, "W-class-line"), 0, "{w:?}");
 }
 
@@ -220,7 +221,8 @@ fn 类线出口重放零调用() {
     let src = 路由(短句, r#"test("该发吗", "k")"#);
     let calib = 类库(false);
     let (v, _, mut l) = 跑(&src, &calib).unwrap();
-    let program = lower(&parse(&src).unwrap()).unwrap();
+    let mut program = lower(&parse(&src).unwrap()).unwrap();
+    program.entry.guard = true; // 测放行把关本身：开 --guard（意图汇编 11a）
     let calls = RefCell::new(0);
     let o = run_replay(
         &program,

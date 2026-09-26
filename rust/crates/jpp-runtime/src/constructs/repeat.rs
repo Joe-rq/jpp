@@ -75,7 +75,7 @@ impl<'a> Interp<'a> {
         let n_runs = rs.len();
         let 键 = format!("{}\u{1f}repeat(n={n_runs})", first.calib);
         let lk = format!("repeat(n={n_runs},{method}):{}", first.ledger_key);
-        if caps.ledger_write().ledger(self).get(&lk).is_none() {
+        if !caps.ledger_write().has_key(self, &lk) {
             caps.ledger_write().ledger_put(self, Entry::effect_keyed(lk.clone(), "repeat", serde_json::json!({"n": n_runs, "method": method, "calib": 键.replace('\u{1f}', ":")}), 0.0));
         }
         caps.ledger_write().trace_event(
@@ -186,6 +186,18 @@ impl<'a> Interp<'a> {
             }
         }
         self.flush("order")?;
+        // 同一声明式拟合的 Score（B153 (2)，步 20j-4）：按数分档，并档带宽取 fit 的 tie；不收 stat / tie（B167 (4)）
+        if let Value::List(l) = &args[0]
+            && l.iter().any(|x| matches!(x, Value::Score(_)))
+        {
+            if args.len() == 2 {
+                // 依据：B167 (4)（同拟合 Score 序已是标量）
+                return 选项错(
+                    "order 对声明式拟合的 Score 按数分档，不收 stat / tie：并档带宽写在 fit({declare, tie}) 上（B153、B167 (4)）".into(),
+                );
+            }
+            return self.order_scores(caps, l, sp);
+        }
         // 步 15k（B166）：一条 `select` 读数（不是列表）→ 候选下标按概率分档；不产生出口
         if let Value::Reading(r) = &args[0]
             && r.op == Op::Select
@@ -271,5 +283,80 @@ impl<'a> Interp<'a> {
                 })
                 .collect(),
         )
+    }
+
+    /// `order([Score…])`（B153 (2)）：全部同一 `fit_hash`、同一 `tie`（作者声明的同一把尺子）时，按数降序分档，
+    /// 相邻差 ≤ `tie` 并档（`tie` 不取画像 δ）；输入不可用的排最后一档。尺子不同或与读数混排报 J-04。
+    /// 依据：B153 (2)（地基/附注/2026-09-26-批6裁定.md §一）；J-04 补条（同尺）
+    fn order_scores(&mut self, caps: &Caps, l: &[Value], sp: Span) -> R<Value> {
+        let mut ss: Vec<&Rc<Score>> = vec![];
+        for x in l {
+            match x {
+                Value::Score(s) => ss.push(s),
+                other => {
+                    // 依据：B153 (2)；J-04 补条（同尺）
+                    return err(
+                        Some("J-04"),
+                        format!(
+                            "order 里声明式拟合的结果与 {} 混排：只有同一拟合的 Score 在同一把尺子上（B153）",
+                            other.type_name()
+                        ),
+                        sp,
+                    );
+                }
+            }
+        }
+        let first = ss[0];
+        for s in &ss {
+            if s.fit_hash != first.fit_hash || s.tie != first.tie {
+                // 依据：B153 (2)（同 fit_hash 即作者声明的同一把尺子）；J-04
+                return err(
+                    Some("J-04"),
+                    "order 只排同一声明式拟合（同一闭包、同一组输入题、同一 tie）的 Score：不同拟合是不同的尺子，作者没有声明它们可比（B153）",
+                    sp,
+                );
+            }
+        }
+        let mut ok: Vec<(usize, f64)> = vec![];
+        let mut failed: Vec<usize> = vec![];
+        for (i, s) in ss.iter().enumerate() {
+            match caps.read_answer().score_of(self, s) {
+                Some(v) => ok.push((i, v)),
+                None => failed.push(i),
+            }
+        }
+        ok.sort_by(|a, b| {
+            b.1.partial_cmp(&a.1)
+                .unwrap_or(std::cmp::Ordering::Equal)
+                .then(a.0.cmp(&b.0))
+        });
+        let mut tiers: Vec<Vec<usize>> = vec![];
+        let mut 上一个: Option<f64> = None;
+        for (i, v) in ok {
+            match (tiers.last_mut(), 上一个) {
+                (Some(last), Some(p))
+                    if (p - v).abs() <= first.tie + jpp_value::stat::BOUNDARY_EPS =>
+                {
+                    last.push(i)
+                }
+                _ => tiers.push(vec![i]),
+            }
+            上一个 = Some(v);
+        }
+        if !failed.is_empty() {
+            tiers.push(failed);
+        }
+        Ok(Value::list(
+            tiers
+                .into_iter()
+                .map(|t| {
+                    Value::list(
+                        t.into_iter()
+                            .map(|i| Value::Int(i as i64, Taint::Trusted.into()))
+                            .collect(),
+                    )
+                })
+                .collect(),
+        ))
     }
 }

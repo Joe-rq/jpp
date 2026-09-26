@@ -1,0 +1,81 @@
+{
+  "asks": 0,
+  "calls": 15,
+  "effects": [
+    [
+      "gen",
+      "按下面的需求提出 3 个候选店名，每个候选是一个字符串；需求之后的上下文是上一轮排名最前的候选",
+      "7d60333986120e9fa33fdea6",
+      false
+    ],
+    [
+      "gen",
+      "按下面的需求提出 3 个候选店名，每个候选是一个字符串；需求之后的上下文是上一轮排名最前的候选",
+      "eeb15cc146d5c5a6245fb38a",
+      false
+    ],
+    [
+      "gen",
+      "按下面的需求提出 3 个候选店名，每个候选是一个字符串；需求之后的上下文是上一轮排名最前的候选",
+      "977330f6876670f4323d881b",
+      false
+    ]
+  ],
+  "judge_registrations": 12,
+  "pending": [],
+  "returned_unsure": [],
+  "status": "returned",
+  "usd": 0.0,
+  "value": {
+    "duplicates": 2,
+    "found_in": [
+      1,
+      0
+    ],
+    "kept": [
+      {
+        "content": "巷口豆",
+        "mat": "82bb507f1e182d94581061d9",
+        "origin": [
+          "gen:eeb15cc146d5c5a6245fb38a"
+        ],
+        "taint": "Trusted"
+      },
+      {
+        "content": "暖巷咖啡",
+        "mat": "02836e636cb1726c6442c362",
+        "origin": [
+          "gen:7d60333986120e9fa33fdea6"
+        ],
+        "taint": "Trusted"
+      }
+    ],
+    "measures": [
+      4,
+      3,
+      2,
+      2
+    ],
+    "pending": [],
+    "reason": "noshrink",
+    "rejected": [
+      {
+        "content": "很长很长很长的咖啡馆名字",
+        "mat": "3bf8990de6772f8a39c4a282",
+        "origin": [
+          "gen:7d60333986120e9fa33fdea6"
+        ],
+        "taint": "Trusted"
+      },
+      {
+        "content": "咖啡咖啡咖啡咖啡咖啡",
+        "mat": "fe81218d0c0f34a8a350091f",
+        "origin": [
+          "gen:977330f6876670f4323d881b"
+        ],
+        "taint": "Trusted"
+      }
+    ],
+    "rounds": 3
+  }
+}

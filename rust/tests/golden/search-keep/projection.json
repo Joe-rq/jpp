@@ -1,0 +1,140 @@
+{
+  "asks": 0,
+  "calls": 5,
+  "effects": [
+    [
+      "gen",
+      "按下面的需求提出 3 个候选店名，每个候选是一个字符串；需求之后的上下文是上一轮留下的候选",
+      "2a87c2e3d8bf3b865cb3b3aa",
+      false
+    ],
+    [
+      "gen",
+      "按下面的需求提出 3 个候选店名，每个候选是一个字符串；需求之后的上下文是上一轮留下的候选",
+      "22197c9d8ec64dc4b27926f5",
+      false
+    ]
+  ],
+  "judge_registrations": 3,
+  "pending": [],
+  "returned_unsure": [
+    "unsure(band)"
+  ],
+  "status": "returned",
+  "usd": 0.0,
+  "value": {
+    "duplicates": 0,
+    "excluded": [
+      {
+        "item": {
+          "content": "街角慢时光咖啡馆",
+          "mat": "5993de3f04a1247d390d958a",
+          "origin": [
+            "gen:2a87c2e3d8bf3b865cb3b3aa"
+          ],
+          "taint": "Trusted"
+        },
+        "round": 0
+      },
+      {
+        "item": {
+          "content": "慢时光咖啡屋",
+          "mat": "e761a51502137c23304b54d0",
+          "origin": [
+            "gen:22197c9d8ec64dc4b27926f5"
+          ],
+          "taint": "Trusted"
+        },
+        "round": 1
+      },
+      {
+        "item": {
+          "content": "邻里角落慢生活",
+          "mat": "7bf5e9ee3cbc2d732317850d",
+          "origin": [
+            "gen:22197c9d8ec64dc4b27926f5"
+          ],
+          "taint": "Trusted"
+        },
+        "round": 1
+      }
+    ],
+    "found_in": [
+      0,
+      1
+    ],
+    "kept": [
+      {
+        "content": "暖巷",
+        "mat": "2ac0c16ee65fe5eabbbe5f20",
+        "origin": [
+          "gen:2a87c2e3d8bf3b865cb3b3aa"
+        ],
+        "taint": "Trusted"
+      },
+      {
+        "content": "巷里",
+        "mat": "5315776fdeebb11e44cc34a1",
+        "origin": [
+          "gen:22197c9d8ec64dc4b27926f5"
+        ],
+        "taint": "Trusted"
+      }
+    ],
+    "measures": [
+      8,
+      4
+    ],
+    "pending": [
+      {
+        "cause": "band",
+        "exit": {
+          "consumed": true,
+          "exit": "unsure(band)",
+          "id": 1,
+          "q": "bf77935372f7724b9117f8d3"
+        },
+        "index": 1,
+        "item": {
+          "content": "邻里豆",
+          "mat": "47f7334f53ef664a2ce9c328",
+          "origin": [
+            "gen:2a87c2e3d8bf3b865cb3b3aa"
+          ],
+          "taint": "Trusted"
+        },
+        "key": "b682fd032df1c9c8088a44ab",
+        "pos": 1,
+        "q": {
+          "calib": "search-fit",
+          "op": "noul",
+          "question": "bf77935372f7724b9117f8d3",
+          "text": "这个名字适合做一家社区咖啡馆的店名吗？"
+        },
+        "qi": 0,
+        "trail": [],
+        "via": [
+          "search#0"
+        ]
+      }
+    ],
+    "reason": "stop",
+    "rounds": 2,
+    "undecided": [
+      {
+        "cause": "band",
+        "item": {
+          "content": "邻里豆",
+          "mat": "47f7334f53ef664a2ce9c328",
+          "origin": [
+            "gen:2a87c2e3d8bf3b865cb3b3aa"
+          ],
+          "taint": "Trusted"
+        },
+        "via": [
+          "search#0"
+        ]
+      }
+    ]
+  }
+}

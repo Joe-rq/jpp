@@ -1,6 +1,12 @@
 // 环境循环写法 (a)：纯函数环境（B159 (1)(a)），网格 + 蛇身 + step，进 iterate（步 7t）。
 // 环境是一个值（头、身、食物、是否存活、网格边长），step(env, action) -> env' 是纯 .jpp 函数；
-// 每轮先 judge 三道 test（食物在右边吗、在下边吗、水平距离≥垂直距离吗）决定动作，再纯地移动一步。
+// 每轮先决定动作，再纯地移动一步。
+// 意图汇编 7a（2026-09-26）改法：往哪走只看食物相对头部的 dx、dy 两个已知整数，谁大走谁、
+// 摆明是普通算术，原来在这里问 JEV「食物在右边吗」「水平距离≥垂直距离吗」是让 JEV 判代码
+// 能定的事，现在直接用 if/abs 比较；本文件因此不再需要判断夹具（没有 judge/test 调用）。
+// 「纯函数环境 + iterate」这个写法本身不因此改变——它只是说环境是值、转移是纯函数，不规定
+// 决策必须用判断；真要在环境循环里演示 `!{judge}` 的用法，看 `examples/iterate.jpp`（每层
+// 判断一句话是否提到价格、金额是否低于一百元，这类要读懂自然语言的问题才值得花判断）。
 // 撞墙或撞自己身体 -> 存活位置假、stop；吃到食物 -> 蛇身变长、经种子随机重新放食物、stop
 // （B158 的 rand_int：同 (seed, k) 恒同值，这里 k 取当前轮次 i，换轮次即换一次「随机」食物位置）；
 // 正常移动 -> 头前移一格、尾巴退一格。iterate 的度量是到食物的曼哈顿距离，严格下降；
@@ -9,26 +15,13 @@ budget {calls: 20, cost: 0, depth: 64};
 
 let grid = 5;
 
-fn render(env) {
-    "dx=" + text(env.food.x - env.head.x) + " dy=" + text(env.food.y - env.head.y)
-}
-
-fn cut_bool(r) {
-    handle(cut(r), {act: fn() { true }, ignore: fn() { false },
-                    unsure: fn(u) { consume(u, "drop"); false }})
-}
-
-// 每轮问三道题，按「先比水平垂直哪个更远、再比该方向的正负」两层决定一个动作
-fn decide(env) !{judge} {
-    let s = state(mat(render(env)));
-    let qs = [test("食物在头部右边（x 更大）吗？", "env-snake"),
-              test("食物在头部下边（y 更大）吗？", "env-snake"),
-              test("水平距离是否大于等于垂直距离？", "env-snake")];
-    let rs = judge(s, qs);
-    let right = cut_bool(rs[0]);
-    let down = cut_bool(rs[1]);
-    let horiz = cut_bool(rs[2]);
-    if horiz { if right { "right" } else { "left" } } else { if down { "down" } else { "up" } }
+// 往哪走：食物相对头部的 dx、dy 都是已知整数，谁的绝对值大就先走该方向、按符号定正负——
+// 这是纯算术，不是判断（意图汇编 7a）。
+fn decide(env) {
+    let dx = env.food.x - env.head.x;
+    let dy = env.food.y - env.head.y;
+    if abs(dx) >= abs(dy) { if dx > 0 { "right" } else { "left" } }
+    else { if dy > 0 { "down" } else { "up" } }
 }
 
 fn delta(a) {
@@ -38,7 +31,7 @@ fn delta(a) {
     else { {dx: 0, dy: -1} }
 }
 
-fn step(env, i) !{judge} {
+fn step(env, i) {
     if !env.alive { stop(env) } else {
         let action = decide(env);
         let d = delta(action);

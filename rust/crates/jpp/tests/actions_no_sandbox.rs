@@ -1,17 +1,17 @@
-//! PR #36 复核 P1 + B164：没有操作系统级沙箱时，`exec_py`/`check_tests`/`exec_sql` 一律拒绝
-//! 执行，绝不在沙箱外跑。B164 把这条从「只在运行期报 Fail」升级为「宿主启动时探测，探测不到
-//! 就把该动作的 `reversible` 置 false、`check` 报 `E-action-no-sandbox`」——`jpp run`/`check`
-//! 因此在**执行前**（静态检查阶段）就失败，不会跑到「返回 `Fail(NoSandbox)` 的值」那一步
-//! （实测确认，见过程记录 §六）；运行期那条 `Fail(NoSandbox)` 分支仍然存在（`exec_py_core`等
-//! 的 `sandbox::tool().ok_or_else(...)`），是给绕过静态检查的调用路径（如库 API 的
-//! `Session::run_unchecked`）留的兜底，CLI 的 `run`/`check` 走不到那里，本文件测不到那条分支——
-//! 如实记录这个边界，不假装测过。
+//! 没有操作系统级沙箱时的执行器（B164、B180；B187 批 9 第 8 格改写）。
+//!
+//! PR #36 复核 P1 + B164 原来的规定是「没有沙箱时 `exec_py`/`check_tests`/`exec_sql` 一律拒绝执行，
+//! 检查期报 `E-action-no-sandbox`，运行期 `Fail(NoSandbox)`」。意图汇编 11a 与批 9 裁定 B187 起：沙箱本身保留
+//! （探测到就用），探测不到时执行器在普通子进程里照常跑（静态拒绝表、断网补丁、每次新建的临时工作目录照旧，
+//! 没有系统级隔离），检查期报 `W-action-no-sandbox` 告警（文本写明装法），不再产生 `Fail(NoSandbox)`。
+//! 事实表的 `reversible` 仍照 B164 由 `kind != "none"` 派生：默认只是多写一份账本（缺省路径），开 `--guard`
+//! 时它按不可逆动作算、要守卫（J-08）与 `--ledger-out`（`E-ledger-required`）。
 //!
 //! 用 `JPP_FORCE_NO_SANDBOX` 只作用于**子进程**的环境（`Command::env`，不碰当前测试进程
 //! 自己的环境变量）——不会和同一 `cargo test` 二进制里并发跑的其它测试互相干扰；`sandbox::tool()`
 //! 每个进程只探测一次（`OnceLock`），子进程是全新进程，探测在其中正常发生。
-//! 预注册：`地基/过程记录/工程-执行器动作安全修补.md`；实现：`crates/jpp/src/actions/sandbox.rs`、
-//! `crates/jpp-check/src/rules/e_action_no_sandbox.rs`。
+//! 预注册：`地基/过程记录/工程-执行器动作安全修补.md`、`地基/过程记录/工程-默认相信判断器.md`；实现：
+//! `crates/jpp/src/actions/sandbox.rs`、`crates/jpp-check/src/rules/e_action_no_sandbox.rs`。
 use serde_json::Value;
 use std::{
     fs,
@@ -39,12 +39,12 @@ fn jpp_forced_no_sandbox(cwd: &Path, args: &[&str]) -> (bool, String) {
     )
 }
 
-/// 三个执行器动作，`run` 在检查阶段就该失败、报 `E-action-no-sandbox`，不产生 `--output` 文件
-/// （执行根本没开始）。
+/// 三个执行器动作没有沙箱时照常执行：`run` 成功、出报告，stderr 有 `W-action-no-sandbox`、没有 E 级诊断；
+/// 执行器按不可逆登记，没给 `--ledger-out` 时账本写到缺省路径。
 #[test]
-fn 三个执行器动作没有沙箱时run在检查阶段就失败() {
+fn 三个执行器动作没有沙箱时照常执行并告警() {
     for (name, args_literal) in [
-        ("exec_py", r#"["print(1)", "", 5]"#),
+        ("exec_py", r#"["print(1+1)", "", 5]"#),
         ("check_tests", r#"["x = 1", ["assert x == 1"], 5]"#),
         ("exec_sql", r#"["nonexistent.db", "select 1"]"#),
     ] {
@@ -54,44 +54,94 @@ fn 三个执行器动作没有沙箱时run在检查阶段就失败() {
         );
         fs::write(d.join("p.jpp"), src).unwrap();
         let (ok, err) = jpp_forced_no_sandbox(&d, &["run", "p.jpp", "--output", "r.json"]);
-        assert!(!ok, "{name}: 没有沙箱时 run 应该失败");
-        assert!(err.contains("E-action-no-sandbox"), "{name}: {err}");
-        assert!(err.contains(name), "{name}: 报文应指名动作：{err}");
+        assert!(ok, "{name}: 没有沙箱时照常跑：{err}");
+        assert!(err.contains("W-action-no-sandbox"), "{name}: {err}");
+        assert!(!err.contains("E-action-no-sandbox"), "{name}: {err}");
         assert!(
-            !d.join("r.json").exists(),
-            "{name}: 不该产生输出文件（没执行）"
+            !err.contains("NoSandbox"),
+            "{name}: 不再产生 Fail(NoSandbox)：{err}"
+        );
+        assert!(d.join("r.json").exists(), "{name}: 应出报告");
+        assert!(
+            d.join("p.ledger.jsonl").exists(),
+            "{name}: 不可逆动作的账本写到缺省路径"
         );
         let _ = fs::remove_dir_all(&d);
     }
 }
 
-/// `check`（不只是 `run`）同样在这个阶段报错——B164 (d) 「且 check 报错」。
+/// `check` 在两种模式下都只告警、不报错。
 #[test]
-fn 没有沙箱时check也报错() {
+fn 没有沙箱时check只告警() {
     let d = tmp("check");
     let src = "budget {calls: 2, cost: 0, depth: 8};\ncontent(do(\"exec_py\", [\"print(1)\", \"\", 5], 0))\n";
     fs::write(d.join("p.jpp"), src).unwrap();
-    let (ok, err) = jpp_forced_no_sandbox(&d, &["check", "p.jpp"]);
-    assert!(!ok, "{err}");
-    assert!(err.contains("E-action-no-sandbox"), "{err}");
+    for args in [vec!["check", "p.jpp"], vec!["check", "p.jpp", "--guard"]] {
+        let (ok, err) = jpp_forced_no_sandbox(&d, &args);
+        assert!(ok, "{args:?}: {err}");
+        assert!(
+            err.contains("W-action-no-sandbox") && !err.contains("E-action-no-sandbox"),
+            "{args:?}: {err}"
+        );
+    }
     let _ = fs::remove_dir_all(&d);
 }
 
-/// 不管调用点有没有守卫都报——E-action-no-sandbox 是环境问题，不是放行策略能解决的（B164）。
+/// 开 `--guard` 时没有沙箱的执行器按不可逆算：由不可信材料上的判断单独守它，检查期 J-08；没有守卫的顶层
+/// 调用不给 `--ledger-out` 报 `E-ledger-required`，给了就在沙箱外执行。
 #[test]
-fn 没有沙箱时即使有守卫也报错() {
+fn 开把关时没有沙箱的执行器按不可逆算() {
     let d = tmp("guarded");
-    let src = r#"
+    let 守卫 = r#"
 budget {calls: 2, cost: 1, depth: 8};
-let ok = handle(cut(judge(state(mat("甲")), test("行吗", "k"))), {act: fn() { true }, ignore: fn() { false }, unsure: fn(u) { consume(u, "drop"); false }});
+let raw = do("read_json", ["x.json"], 0);
+let ok = handle(cut(judge(state(raw), test("行吗", "k"))), {act: fn() { true }, ignore: fn() { false }, unsure: fn(u) { consume(u, "drop"); false }});
 if ok { content(do("exec_py", ["print(1)", "", 5], 0)) } else { "没做" }
 "#;
-    fs::write(d.join("p.jpp"), src).unwrap();
+    fs::write(d.join("p.jpp"), 守卫).unwrap();
+    let (ok, err) = jpp_forced_no_sandbox(&d, &["check", "p.jpp", "--guard"]);
+    assert!(!ok && err.contains("J-08"), "{err}");
     let (ok, err) = jpp_forced_no_sandbox(&d, &["check", "p.jpp"]);
-    assert!(!ok, "{err}");
+    assert!(ok && !err.contains("J-08"), "默认不拦：{err}");
+    let 顶层 = "budget {calls: 2, cost: 0, depth: 8};\ncontent(do(\"exec_py\", [\"print(1+1)\", \"\", 5], 0))\n";
+    fs::write(d.join("q.jpp"), 顶层).unwrap();
+    let (ok, err) = jpp_forced_no_sandbox(&d, &["run", "q.jpp", "--guard"]);
+    assert!(!ok && err.contains("E-ledger-required"), "{err}");
+    let (ok, err) = jpp_forced_no_sandbox(
+        &d,
+        &[
+            "run",
+            "q.jpp",
+            "--guard",
+            "--ledger-out",
+            "l.jsonl",
+            "--output",
+            "r.json",
+        ],
+    );
+    assert!(ok, "{err}");
+    let r: Value = serde_json::from_str(&fs::read_to_string(d.join("r.json")).unwrap()).unwrap();
+    assert_eq!(r["value"]["stdout"], "2\n", "{r}");
+    let _ = fs::remove_dir_all(&d);
+}
+
+/// 意图汇编 11a：不开 `--guard`（默认），没有沙箱时 `exec_py` 直接跑出结果，`check` 与 `run` 只报
+/// `W-action-no-sandbox` 告警、不报错；报告顶层 `ledger_path` 记下缺省账本路径。
+#[test]
+fn 默认没有沙箱时直接执行并告警() {
+    let d = tmp("default");
+    let src = "budget {calls: 2, cost: 0, depth: 8};\ncontent(do(\"exec_py\", [\"print(1+1)\", \"\", 5], 0))\n";
+    fs::write(d.join("p.jpp"), src).unwrap();
+    let (ok, err) = jpp_forced_no_sandbox(&d, &["run", "p.jpp", "--output", "r.json"]);
+    assert!(ok, "{err}");
+    assert!(err.contains("W-action-no-sandbox"), "{err}");
+    let r: Value = serde_json::from_str(&fs::read_to_string(d.join("r.json")).unwrap()).unwrap();
+    assert_eq!(r["value"]["stdout"], "2\n", "{r}");
     assert!(
-        err.contains("E-action-no-sandbox"),
-        "有守卫也不该放行，环境问题不是放行策略能解决的：{err}"
+        r["ledger_path"]
+            .as_str()
+            .is_some_and(|p| p.ends_with("p.ledger.jsonl")),
+        "{r}"
     );
     let _ = fs::remove_dir_all(&d);
 }

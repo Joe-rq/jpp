@@ -32,6 +32,7 @@ fn 程序(src: &str) -> jpp::Program {
     lower(&parse(src).expect("解析")).expect("lower")
 }
 
+#[derive(Debug)]
 struct 跑出 {
     kind: String,
     exits: Vec<Json>,
@@ -135,7 +136,8 @@ fn c_cuts分桶() {
     assert!(o.exits[0]["declared"].get("hi").is_none());
 }
 
-/// (d) 同键有 p_max 上的认证记录：不带 `stat` 的 `cut` 用上它，`stat: "expect"` 不带 `declare` 仍冷
+/// (d) 同键有 p_max 上的认证记录：不带 `stat` 的 `cut` 用上它；别的统计量不借（B153），不写线时 `mass` 按回答走、
+/// `expect` / `confidence` 报 `E-cut-options`（B187）
 #[test]
 fn d_别的统计量不借认证线() {
     let mut c = CalibStore::new();
@@ -144,20 +146,24 @@ fn d_别的统计量不借认证线() {
     let 照常 = 跑(&单切(四档, ""), a.clone(), &c).unwrap();
     assert_eq!(照常.kind, "at(2)", "记录能用：{:?}", 照常.exits);
     assert_ne!(照常.exits[0]["grade"], "Cold");
-    let o = 跑(&单切(四档, r#", {stat: "expect"}"#), a, &c).unwrap();
-    assert_eq!(o.kind, "unsure(cold|untested:calib_line)");
-    assert_eq!(o.exits[0]["grade"], "Cold");
-    assert_eq!(o.exits[0]["stat"], "expect");
-    let w: Vec<&String> = o
-        .warnings
-        .iter()
-        .filter(|w| w.starts_with("W-untested"))
-        .collect();
-    assert_eq!(w.len(), 1, "{:?}", o.warnings);
+    // B187（批 9 第 3 格）：`expect` 上没有现成的回答，不写线是缺分档参数（形状错）
+    let e = 跑(&单切(四档, r#", {stat: "expect"}"#), a.clone(), &c)
+        .err()
+        .expect("expect 不写线该报错");
+    assert!(e.contains("E-cut-options") && e.contains("declare"), "{e}");
+    let e = 跑(&单切(四档, r#", {stat: "confidence"}"#), a.clone(), &c)
+        .err()
+        .expect("confidence 不写线该报错");
+    assert!(e.contains("E-cut-options"), "{e}");
+    // B187（批 9 第 2 格）：`mass` 不写线按概率和的多数块走（0.97 + 0.03 = 1.0 > 0.5 → act），等级 Answer，不查记录
+    let o = 跑(&单切(四档, r#", {stat: {mass: [2, 3]}}"#), a, &c).unwrap();
+    assert_eq!(o.kind, "act", "{:?}", o.exits);
+    assert_eq!(o.exits[0]["grade"], "Answer");
+    assert_eq!(o.exits[0]["stat"], json!({"mass": [2, 3]}));
     assert!(
-        w[0].contains("p_max") && w[0].contains("declare"),
-        "{}",
-        w[0]
+        !o.warnings.iter().any(|w| w.starts_with("W-untested")),
+        "{:?}",
+        o.warnings
     );
     // 不查记录：账本不因它记校准命中
     assert!(o.ledger.calib_used.is_empty(), "{:?}", o.ledger.calib_used);
@@ -543,4 +549,70 @@ fn n_声明记录的缺省值不写() {
     )
     .unwrap();
     assert_eq!(记录(&o)["closed"], json!({"hi": true, "lo": false}));
+}
+
+/// (o) 逐界开闭（B176，步 20j-3 追加 (7)）：银行家舍入四切点 `cuts: [0.5, 1.5, 2.5, 3.5]`、
+/// `closed: {cuts: [false, true, false, true]}`：E = 0.5 → at(0)、1.5 → at(2)、2.5 → at(2)、3.5 → at(4)；
+/// 单值 `closed: {cuts: false}` 对照 E = 1.5 → at(1)；全同的数组与单值记录哈希相同；长度不符、元素非布尔报错
+#[test]
+fn o_逐界开闭复刻银行家舍入() {
+    let 五档 = r#"judge(state(mat("甲")), measure("多重", ["零", "一", "二", "三", "四"], "k"))"#;
+    let 档 = |e: f64| {
+        let lo = e.floor() as usize;
+        let mut v = vec![0.0; 5];
+        v[lo] = 0.5;
+        v[lo + 1] = 0.5;
+        Answer::Score(v)
+    };
+    let c = CalibStore::new();
+    let 银行家 = 单切(
+        五档,
+        r#", {stat: "expect", declare: {cuts: [0.5, 1.5, 2.5, 3.5], closed: {cuts: [false, true, false, true]}}}"#,
+    );
+    for (e, 期望) in [
+        (0.5, "at(0)"),
+        (1.5, "at(2)"),
+        (2.5, "at(2)"),
+        (3.5, "at(4)"),
+    ] {
+        let o = 跑(&银行家, 档(e), &c).unwrap();
+        assert_eq!(o.kind, 期望, "E = {e}");
+    }
+    let o = 跑(&银行家, 档(1.5), &c).unwrap();
+    assert_eq!(
+        o.exits[0]["declared"]["closed"],
+        json!({"cuts": [false, true, false, true]})
+    );
+    let 单值 = 单切(
+        五档,
+        r#", {stat: "expect", declare: {cuts: [0.5, 1.5, 2.5, 3.5], closed: {cuts: false}}}"#,
+    );
+    assert_eq!(跑(&单值, 档(1.5), &c).unwrap().kind, "at(1)");
+    // 全同的数组写单值：记录（与哈希）与写单值相同
+    let 全假 = 单切(
+        五档,
+        r#", {stat: "expect", declare: {cuts: [0.5, 1.5, 2.5, 3.5], closed: {cuts: [false, false, false, false]}}}"#,
+    );
+    let 记录 = |o: &跑出| -> Json {
+        o.ledger
+            .calib_used
+            .iter()
+            .find(|(k, _)| k.starts_with("declared:k@"))
+            .map(|(_, v)| v.clone())
+            .expect("声明记录")
+    };
+    let a = 记录(&跑(&全假, 档(1.5), &c).unwrap());
+    let b = 记录(&跑(&单值, 档(1.5), &c).unwrap());
+    assert_eq!(a["hash"], b["hash"]);
+    assert_eq!(a["record"]["closed"], json!({"cuts": false}));
+    for 坏 in [
+        r#", {stat: "expect", declare: {cuts: [0.5, 1.5], closed: {cuts: [false]}}}"#,
+        r#", {stat: "expect", declare: {cuts: [0.5, 1.5], closed: {cuts: [false, 1]}}}"#,
+    ] {
+        let e = 跑(&单切(五档, 坏), 档(1.5), &c).expect_err(坏);
+        assert!(
+            e.contains("E-cut-options") && e.contains("B176"),
+            "{坏}：{e}"
+        );
+    }
 }

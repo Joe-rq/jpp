@@ -24,8 +24,10 @@ pub struct Session<'a> {
     calib: &'a CalibStore,
     actions: &'a ActionRegistry,
     fits: Option<&'a FitRegistry>,
-    /// 生成缓存（`--gen-cache`，步 15h-2，B151 过渡）
-    gen_cache: Option<std::rc::Rc<std::cell::RefCell<crate::interp::GenCache>>>,
+    /// 跨运行缓存（步 19，B151；取代 15h-2 的 `--gen-cache`）
+    cache: Option<&'a dyn crate::effects::CacheLookup>,
+    /// 生成器模型与画像哈希（步 19：进账本头、生成物缓存键带模型）
+    生成器: (Option<String>, Option<String>),
 }
 
 impl<'a> Session<'a> {
@@ -40,17 +42,21 @@ impl<'a> Session<'a> {
             calib,
             actions,
             fits: None,
-            gen_cache: None,
+            cache: None,
+            生成器: (None, None),
         }
     }
 
-    /// 带生成缓存（步 15h-2，B151 过渡）：同账本键、同生成器模型的 `gen` 不再调用；新生成的记进 `fresh`，
-    /// 由宿主写回。只凭账本的审计重放不查缓存。
-    pub fn with_gen_cache(
-        mut self,
-        cache: std::rc::Rc<std::cell::RefCell<crate::interp::GenCache>>,
-    ) -> Self {
-        self.gen_cache = Some(cache);
+    /// 带跨运行缓存（步 19，B151 两段式）：判断、生成、变换按不含调用位置的缓存键命中即不调用，
+    /// 在本账本写复用条目。宿主从缓存目录里的账本建索引（`jpp::store::CacheIndex`）。只凭账本的审计重放不查缓存。
+    pub fn with_cache(mut self, cache: &'a dyn crate::effects::CacheLookup) -> Self {
+        self.cache = Some(cache);
+        self
+    }
+
+    /// 生成器身份（步 19）：模型与画像哈希进账本头，生成物的缓存键带模型。宿主没有真实生成器时不设。
+    pub fn with_gen(mut self, model: Option<String>, profile_hash: Option<String>) -> Self {
+        self.生成器 = (model, profile_hash);
         self
     }
 
@@ -174,6 +180,17 @@ impl<'a> Session<'a> {
         // **整本记录走到检查器**，不只是档案：J-10 的静态那一半要各题的 `unsure_rate`，
         // 而那住在 `CalibRecord` 里。**与 §1.2 那根「档案到不了检查器」的管道是同一种缺结构**，
         // 只是这次缺的是记录不是档案。
+        // 放行把关（意图汇编 11a）：检查器与运行时都只读 `Program.entry.guard`。宿主在 `EntryArgs` 上开了把关、编译时
+        // 却没经 `decl()` 带进 `Program` 的，这里补上——宿主明说要把关就照做，不因少传一次而静默关掉
+        let 补把关;
+        let program = if entry.guard && !program.entry.guard {
+            let mut p = program.clone();
+            p.entry.guard = true;
+            补把关 = p;
+            &补把关
+        } else {
+            program
+        };
         // 入口名在 `Program.entry` 里（B106，`compile` 写入），检查器自己读，这里不再另传名字表
         // 动作表也走到检查器（B108，步 24-0）：J-08 静态子面在不可逆动作上报 error，必然被拦的程序
         // 在花调用之前停下
@@ -218,9 +235,12 @@ impl<'a> Session<'a> {
         if replay {
             it = it.audit_replay();
         }
-        if let Some(c) = &self.gen_cache {
-            it = it.with_gen_cache(c.clone());
+        if let Some(c) = self.cache
+            && !replay
+        {
+            it = it.with_cache(c);
         }
+        it = it.with_gen(self.生成器.0.clone(), self.生成器.1.clone());
         let out = it.run(program).map_err(Error::Runtime)?;
         Ok(带出静态告警(out, &report))
     }

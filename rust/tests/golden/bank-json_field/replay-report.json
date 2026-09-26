@@ -17,7 +17,7 @@
       "key": "\u001fform\u001fceb097176786d327fe1a0ba3",
       "pos": 0,
       "releases": true,
-      "site": 908
+      "site": 995
     },
     {
       "exit": "act",
@@ -27,7 +27,7 @@
       "key": "\u001fform\u001fceb097176786d327fe1a0ba3",
       "pos": 1,
       "releases": true,
-      "site": 908
+      "site": 995
     },
     {
       "exit": "ignore",
@@ -37,7 +37,7 @@
       "key": "\u001fform\u001fceb097176786d327fe1a0ba3",
       "pos": 2,
       "releases": true,
-      "site": 908
+      "site": 995
     },
     {
       "exit": "act",
@@ -47,7 +47,7 @@
       "key": "\u001fform\u001fceb097176786d327fe1a0ba3",
       "pos": 3,
       "releases": true,
-      "site": 908
+      "site": 995
     }
   ],
   "fixture_description": "步 27a 题库条目 json_field 的金样夹具。四条材料取自认证集（地基/评估/27a-准备/F1-JSON字段，材料 j00、j16、j32、j48），读数是该次真机账本的原读数；线不在这里，由条目目录的校准记录给出。",
@@ -73,55 +73,51 @@
     "events": [
       {
         "cost": 0.0,
-        "key": "20ea2913a841656255eee1c2",
+        "key": "0ec65bf58892364284324281",
         "kind": "judge",
         "note": "「这个 JSON 是否有字段 order_no？（字段名必须完全一致）」",
         "replayed": true,
         "site": {
-          "end": 954,
-          "start": 908
+          "end": 1041,
+          "start": 995
         }
       },
       {
         "cost": 0.0,
-        "key": "ba5222f49dabf1f4a1a63027",
+        "key": "9722f7bd481285734dea8a79",
         "kind": "judge",
         "note": "「这个 JSON 是否有字段 order_no？（字段名必须完全一致）」",
         "replayed": true,
         "site": {
-          "end": 954,
-          "start": 908
+          "end": 1041,
+          "start": 995
         }
       },
       {
         "cost": 0.0,
-        "key": "5c2e2ac0a1a03484743256b7",
+        "key": "98e3417884d51a1f4bb9e9d0",
         "kind": "judge",
         "note": "「这个 JSON 是否有字段 order_no？（字段名必须完全一致）」",
         "replayed": true,
         "site": {
-          "end": 954,
-          "start": 908
+          "end": 1041,
+          "start": 995
         }
       },
       {
         "cost": 0.0,
-        "key": "fab0477ee1e1eb5539953024",
+        "key": "d821589567c0a6b7ea615878",
         "kind": "judge",
         "note": "「这个 JSON 是否有字段 order_no？（字段名必须完全一致）」",
         "replayed": true,
         "site": {
-          "end": 954,
-          "start": 908
+          "end": 1041,
+          "start": 995
         }
       }
     ],
     "warnings": [
-      "W-window-untested: @908 画像没有测过窗口（window），对象长度不核；超窗的语境可能接管读数而无痕",
-      "W-form-line: @908 题级校准键 bank-l2-json-field 无上岗记录，用题式级线 form:ceb097176786d327fe1a0ba3（n=64）；出口带 line_source=题式级",
-      "W-form-line: @908 题级校准键 bank-l2-json-field 无上岗记录，用题式级线 form:ceb097176786d327fe1a0ba3（n=64）；出口带 line_source=题式级",
-      "W-form-line: @908 题级校准键 bank-l2-json-field 无上岗记录，用题式级线 form:ceb097176786d327fe1a0ba3（n=64）；出口带 line_source=题式级",
-      "W-form-line: @908 题级校准键 bank-l2-json-field 无上岗记录，用题式级线 form:ceb097176786d327fe1a0ba3（n=64）；出口带 line_source=题式级"
+      "W-window-untested: @995 画像没有测过窗口（window），对象长度不核；超窗的语境可能接管读数而无痕"
     ]
   },
   "value": {

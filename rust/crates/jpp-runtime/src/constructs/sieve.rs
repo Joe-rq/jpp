@@ -14,6 +14,7 @@ impl<'a> Interp<'a> {
         carried_pending: &[Value],
         carried_evidence: &[Value],
         fills: Option<&[Value]>,
+        line: &crate::bridge::CutOpts,
         sp: Span,
     ) -> R<Value> {
         let m0 = caps.key_collect().mark(self);
@@ -70,8 +71,7 @@ impl<'a> Interp<'a> {
             .map(|r| {
                 match caps
                     .ledger_read()
-                    .ledger(self)
-                    .get(&format!("absent:{}", r.ledger_key))
+                    .get(self, &format!("absent:{}", r.ledger_key))
                 {
                     Some(Entry::Absent { detail, .. }) => detail.clone(),
                     _ => String::new(),
@@ -127,7 +127,12 @@ impl<'a> Interp<'a> {
                 {
                     evidence.push(Value::text(&r.ledger_key));
                 }
-                let exit = self.cut(r, None, Default::default(), sp)?;
+                // 作者声明线（B128 补齐）：选项 `{line}` 原样交给 `cut`，与程序里逐个 `cut(r, line)` 同一条路；
+                // 不给线时 `line` 是缺省值，与改前逐字节相同。依据：B128（逐读数核选项与 `cut` 同一套，B153 (1)）
+                if let Err(m) = crate::host_builtins::核选项(r, line) {
+                    return err(Some("E-cut-options"), m, sp);
+                }
+                let exit = self.cut(r, None, line.clone(), sp)?;
                 let Value::Exit(e) = &exit else {
                     return err(Some("E-rt-arg"), "cut 没有给出出口", sp);
                 };
@@ -229,13 +234,25 @@ impl<'a> Interp<'a> {
         // → 三条流 act / ignore / unsure，外加 unobserved（预算提前停止时没问到的）。
         // 直接吃题：全部登记完再一次刷新，同状态的题由融合合成一次调用——
         // 「14 倍」那种绕过批处理的写法在这里没有可写的位置。
-        if n != 2 && n != 3 {
+        // 末位可给选项 `{line}`（作者声明线，B128 补齐）：三参时第三位是列表即填法、否则是选项；四参时第四位是选项。
+        if !(2..=4).contains(&n) {
             return err(
                 Some("E-rt-arg"),
-                "sieve(材料列表, 题 | [题…]) 或 sieve(材料列表, 题式, [填法…])",
+                "sieve(材料列表, 题 | [题…], {line?}) 或 sieve(材料列表, 题式, [填法…], {line?})",
                 sp,
             );
         }
+        let 选项位 = match (n, &args[1]) {
+            (4, _) => Some(3),
+            (3, Value::Form(_)) => None,
+            (3, _) => Some(2),
+            _ => None,
+        };
+        let line = match 选项位 {
+            Some(k) => 解析筛选项("sieve", &args[k], sp)?,
+            None => crate::bridge::CutOpts::default(),
+        };
+        let n = if 选项位.is_some() { n - 1 } else { n };
         // 输入可以是列表，也可以是上一个构造的契约值（取它的产出；它的未决与证据带进新契约）
         let (items, carried_pending, carried_evidence) = self.unpack(&args[0], "sieve", sp)?;
         let mut fill_records: Option<Vec<Value>> = None;
@@ -310,7 +327,71 @@ impl<'a> Interp<'a> {
             &carried_pending,
             &carried_evidence,
             fill_records.as_deref(),
+            &line,
             sp,
         )
+    }
+}
+
+/// `sieve` 与 `literalize` 的选项记录（B128 补齐）：现在只认 `line`，值是 `cut` 的第二参策略记录，经 [`解析策略`] 原样
+/// 解析（字段、取值与报错与 `cut` 相同）。选项位或 `line` 是数字：J-03（线不可字面），修法给出声明线写法。空记录与
+/// 不给相同。`名` 是调用的构造（报文用）。
+pub(crate) fn 解析筛选项(名: &str, v: &Value, sp: Span) -> R<crate::bridge::CutOpts> {
+    let 例 = if 名 == "literalize" {
+        "literalize(u, state, 题, "
+    } else {
+        "sieve(材料, 题, "
+    };
+    let 给谁 = if 名 == "literalize" {
+        "重问那一次的 cut"
+    } else {
+        "每个元素的 cut"
+    };
+    // 依据：B129（裸数字仍是 J-03，修法给出 declare 的写法）
+    let 字面线 = |x: &Value| -> R<crate::bridge::CutOpts> {
+        err(
+            Some("J-03"),
+            format!(
+                "{名} 的线不能是字面量：收到 {}。修法：若这是你要的判定规则，写成作者声明线 {例}{{line: {{declare: {{hi: {}}}}}}})——按这个数切，不作错误率保证；开 --guard 时放行不可逆动作还须 --release-on-declared（B128、B129）；若要语言担保错误率，不给 line、用题的校准键并 calib-import 认证",
+                x.type_name(),
+                x.to_json()
+            ),
+            sp,
+        )
+    };
+    match v {
+        Value::Record(fs) => {
+            if let Some((k, _)) = fs.iter().find(|(k, _)| k != "line") {
+                return err(
+                    Some("E-rt-arg"),
+                    format!(
+                        "{名} 的选项只认 line：{{line: {{declare: {{hi, lo?}}}}}}（line 的值原样交给{给谁}，写法同 cut 的第二参，B128）；收到字段 {k}"
+                    ),
+                    sp,
+                );
+            }
+            match v.get("line") {
+                None => Ok(crate::bridge::CutOpts::default()),
+                Some(l @ Value::Record(_)) => crate::host_builtins::解析策略(&l, sp),
+                Some(l @ (Value::Float(..) | Value::Int(..))) => 字面线(&l),
+                Some(other) => err(
+                    Some("E-rt-arg"),
+                    format!(
+                        "{名} 的 line 要是 cut 的策略记录 {{declare: {{hi, lo?}}}}，收到 {}",
+                        other.type_name()
+                    ),
+                    sp,
+                ),
+            }
+        }
+        Value::Float(..) | Value::Int(..) => 字面线(v),
+        other => err(
+            Some("E-rt-arg"),
+            format!(
+                "{名} 的末位选项要是记录 {{line: {{declare: {{hi, lo?}}}}}}（sieve 题式加填法时填法在第三位、选项在第四位），收到 {}",
+                other.type_name()
+            ),
+            sp,
+        ),
     }
 }

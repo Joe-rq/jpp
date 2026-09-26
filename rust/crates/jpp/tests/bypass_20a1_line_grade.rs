@@ -101,7 +101,8 @@ handle(cut(judge(state(mat("顾客说要退款")), test("该退吗", "k"))), {
 "#;
 
 fn 跑(src: &str, calib: &CalibStore) -> Result<jpp::Outcome, String> {
-    let program = lower(&parse(src).expect("解析")).expect("lower");
+    let mut program = lower(&parse(src).expect("解析")).expect("lower");
+    program.entry.guard = true; // 测放行把关本身：开 --guard（意图汇编 11a）
     let mut a = ActionRegistry::new();
     a.register("退款", 0.0, false, TaintOut::Trusted, |_| {
         Ok(Value::Text("已退".into(), Taint::Trusted.into()))

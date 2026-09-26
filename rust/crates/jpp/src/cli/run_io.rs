@@ -103,6 +103,29 @@ pub fn ledger_migrate(from: &Path, to: &Path) -> Result<(), String> {
     Ok(())
 }
 
+/// 有撤不回动作而没给 `--ledger-out` 时的缺省账本路径（意图汇编 11a；B187 批 9 第 9 格）：源文件同目录的
+/// `<源文件名去后缀>.ledger.jsonl`；`--resume` 读的正是这个文件时改写 `<源文件名>.resumed.ledger.jsonl`，
+/// 不覆盖续接的来源。
+fn default_ledger_path(source: &Path, resume: Option<&Path>) -> std::path::PathBuf {
+    let stem = source
+        .file_stem()
+        .map(|s| s.to_string_lossy().to_string())
+        .unwrap_or_else(|| "program".into());
+    let path = source.with_file_name(format!("{stem}.ledger.jsonl"));
+    let 同一个 = resume.is_some_and(|r| {
+        r == path
+            || matches!(
+                (std::fs::canonicalize(r), std::fs::canonicalize(&path)),
+                (Ok(a), Ok(b)) if a == b
+            )
+    });
+    if 同一个 {
+        source.with_file_name(format!("{stem}.resumed.ledger.jsonl"))
+    } else {
+        path
+    }
+}
+
 /// 读 `--input` 文件（步 14b-0）：合法 JSON、整数在 J++ Int 范围内（与 `read_json` 同一条校验），
 /// 以名字 `input` 作一条值条目交给程序（B105，步 14b）；`trusted` 来自 CLI `--input-trusted`
 /// （步 14b-1，B108），缺省仍是不可信（`EntryValue::new` 的缺省）。依据：规划建议 6（21 步 14b-0）；
@@ -127,17 +150,31 @@ pub fn run_checked(
     画像: Option<Resolved>,
     输入: jpp::EntryArgs,
 ) -> Result<(), String> {
-    // 步 18b（B55；主会话 2026-09-25 裁定）：有不可逆 `do` 的程序，首跑与续接都要 `--ledger-out`，
-    // 否则写前意向不落盘，续接会重做不可逆动作。执行前（任何效应之前）报错；只凭账本重放不要求。
-    if options.replay.is_none()
+    // 步 18b（B55；主会话 2026-09-25 裁定）：有不可逆 `do` 的程序，首跑与续接的账本要落盘，
+    // 否则写前意向不落盘，续接会重做不可逆动作；只凭账本重放不要求。
+    // 意图汇编 11a（2026-09-26）：账本是记录，不是防御。默认不停下，没给 `--ledger-out` 就写到默认路径并提示；
+    // 开放行把关（`--guard`）时照旧 `E-ledger-required`，执行前（任何效应之前）报错。
+    let 默认账本 = if options.replay.is_none()
         && options.ledger_out.is_none()
         && let Some(名) = runner::irreversible_action_in(program)
     {
-        // 依据：B55（20 v2 附录 B55 条）；主会话 2026-09-25 对步 18b 的裁定
-        return Err(format!(
-            "E-ledger-required: 程序里有不可逆动作 do「{名}」，要给 --ledger-out <账本文件>：不可逆动作执行前的写前意向要落盘（B55），否则中断后续接会重做它。只凭账本重放（--replay）不要求"
-        ));
-    }
+        if program.entry.guard {
+            // 依据：B55（20 v2 附录 B55 条）；主会话 2026-09-25 对步 18b 的裁定
+            return Err(format!(
+                "E-ledger-required: 程序里有不可逆动作 do「{名}」，要给 --ledger-out <账本文件>：不可逆动作执行前的写前意向要落盘（B55），否则中断后续接会重做它。只凭账本重放（--replay）不要求（开了 --guard；不开时账本自动写到默认路径）"
+            ));
+        }
+        let path = default_ledger_path(&options.source, options.resume.as_deref());
+        // B187（批 9 第 9 格）：首行打印缺省路径，报告顶层另记 `ledger_path`
+        eprintln!(
+            "账本：{}（程序里有撤不回的动作 do「{名}」，没给 --ledger-out，写到缺省路径；续接用 --resume 这个文件）",
+            path.display()
+        );
+        Some(path)
+    } else {
+        None
+    };
+    let ledger_out = options.ledger_out.clone().or(默认账本);
     // 真机分支一定有画像：`profile_resolve::resolve` 解析不到时已报 `E-profile-missing`。
     let 真机画像 = match (&画像, uses_live_backend(options)) {
         (Some(r), true) => Some(r),
@@ -240,11 +277,10 @@ pub fn run_checked(
     let mut gen_port = 生成器
         .as_ref()
         .map(|g| (g.spec.build)(&g.model, &g.profile));
-    // 生成缓存（`--gen-cache`，步 15h-2，B151 过渡）：运行前读文件（不存在视为空）
-    let 生成缓存 = match &options.gen_cache {
-        Some(path) => Some(std::rc::Rc::new(std::cell::RefCell::new(load_gen_cache(
-            path,
-        )?))),
+    // 跨运行缓存（步 19，B151 两段式；取代 15h-2 的 `--gen-cache`）：运行前从目录里的账本建索引。
+    // 只凭账本的审计重放不用缓存（`Session` 在重放时不交给运行时）。
+    let 缓存 = match &options.cache {
+        Some(dir) => Some(load_cache_dir(dir)?),
         None => None,
     };
     let mut calibrations = 目录记录;
@@ -286,7 +322,7 @@ pub fn run_checked(
     let mut evidence: Vec<(String, jpp::effects::Sample)> = vec![];
     // 步 18b（B55）：`--ledger-out` 的账本逐行落盘——头在运行入口定稿时整份原子写出（续接写的是新文件：
     // 新头、旧条目按新链重串），不可逆 `do` 的意向与结果即刻落盘，其余条目每层末落盘。不给就只在内存里。
-    let mut 文件 = options.ledger_out.as_ref().map(|path| {
+    let mut 文件 = ledger_out.as_ref().map(|path| {
         let dir = match path.parent() {
             Some(d) if !d.as_os_str().is_empty() => d.to_path_buf(),
             _ => std::path::PathBuf::from("."),
@@ -330,16 +366,18 @@ pub fn run_checked(
             false,
             &mut evidence,
             &输入,
-            生成缓存.clone(),
+            runner::CacheArgs {
+                cache: 缓存.as_ref().map(|c| c as &dyn jpp::effects::CacheLookup),
+                // 生成器身份进账本头（步 19）：给了 `--gen-model` 才有
+                gen_model: 生成器.as_ref().map(|g| g.model.clone()),
+                gen_profile_hash: 生成器.as_ref().map(|g| g.profile.hash.clone()),
+            },
+            // 程序文件所在目录（现场稳定性三修 (2)）：`read_json` 与 `import` 一样先按它找
+            options.source.parent(),
         )
     };
-    // 生成缓存写回（步 15h-2）：本趟新生成的成功条目追加到文件
-    let 生成缓存报告 = match (&options.gen_cache, &生成缓存) {
-        (Some(path), Some(c)) => Some(save_gen_cache(path, &c.borrow())?),
-        _ => None,
-    };
     // Preserve any completed effects even when execution ends in a runtime error.
-    if let (Some(f), Some(path)) = (文件, &options.ledger_out) {
+    if let (Some(f), Some(path)) = (文件, &ledger_out) {
         f.finish().map_err(|e| format!("{}: {e}", path.display()))?;
     }
     // **出料那一半**：把这一趟判出来的读数折进记录并落盘。
@@ -401,19 +439,21 @@ pub fn run_checked(
         crate::diag_json::render_all(loaded, items).join("\n")
     })?;
     report["fixture_description"] = serde_json::json!(description);
+    // 缺省账本路径（B187）：只在用了缺省路径时出现，给了 --ledger-out 的报告逐字节不变
+    if options.ledger_out.is_none()
+        && let Some(p) = &ledger_out
+    {
+        report["ledger_path"] = serde_json::json!(p.display().to_string());
+    }
     report["replay"] = serde_json::json!(options.replay.is_some());
     report["resumed"] = serde_json::json!(options.resume.is_some());
     report["mode"] = serde_json::json!(mode_label);
     report["backend"] = serde_json::json!(backend_label);
-    // 用了生成器才出现（步 15h-1）；生成器画像哈希今天只进这里与 stderr（账本头没有这一位，15h-1 Q2）
+    // 用了生成器才出现（步 15h-1）；生成器画像哈希自步 19 起也进账本头（`gen_profile_hash`）
     if let Some(g) = &生成器 {
         report["gen_backend"] = serde_json::json!({
             "name": g.spec.name, "model": g.model, "profile_hash": g.profile.hash,
         });
-    }
-    // 用了 `--gen-cache` 才出现（步 15h-2）
-    if let Some(r) = 生成缓存报告 {
-        report["gen_cache"] = r;
     }
     if let Some(r) = 真机画像.filter(|r| r.profile.price_per_input_token().is_none()) {
         mark_cost_unknown(&mut report, &r.path);
@@ -455,60 +495,62 @@ pub fn run_checked(
     Ok(())
 }
 
-/// 读生成缓存文件（步 15h-2）：JSONL，每行 `{key, model, output, taint, prompt}`，后写的同键覆盖先写的；
-/// 文件不存在视为空。
-fn load_gen_cache(path: &Path) -> Result<jpp::interp::GenCache, String> {
-    let mut c = jpp::interp::GenCache::default();
-    let Ok(text) = fs::read_to_string(path) else {
-        return Ok(c);
+/// `--cache <目录>`（步 19）：目录里（不含子目录）每个能按账本读的文件（v3；v2 在内存迁移）进索引；
+/// 不是账本的文件（解码不成、不是 UTF-8）跳过并计数。目录不存在按空缓存（stderr 说一句）；
+/// 其余读错误（路径不是目录、没有权限、I/O 出错）带路径报 `E-cache`，不悄悄当空缓存重新付费。
+/// 来源名取文件名。依据：B151（`21` 步 19 追加项）；公开 PR #37 评审 P2（读错误不许当空缓存）
+fn load_cache_dir(dir: &Path) -> Result<jpp::store::CacheIndex, String> {
+    let io = |p: &Path, e: std::io::Error| format!("E-cache: --cache {}: {e}", p.display());
+    let rd = match fs::read_dir(dir) {
+        Ok(rd) => rd,
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
+            eprintln!("缓存：{} 不存在，按空缓存", dir.display());
+            return Ok(jpp::store::CacheIndex::default());
+        }
+        Err(e) => return Err(io(dir, e)),
     };
-    for (i, line) in text
-        .lines()
-        .enumerate()
-        .filter(|(_, l)| !l.trim().is_empty())
-    {
-        let v: serde_json::Value = serde_json::from_str(line)
-            .map_err(|e| format!("{}:{}: 生成缓存行不是 JSON：{e}", path.display(), i + 1))?;
-        let (Some(key), Some(model)) = (v["key"].as_str(), v["model"].as_str()) else {
-            return Err(format!(
-                "{}:{}: 生成缓存行缺 key 或 model",
-                path.display(),
-                i + 1
-            ));
-        };
-        let taint = serde_json::from_value(v["taint"].clone()).ok();
-        c.entries.insert(
-            key.to_string(),
-            jpp::interp::GenCacheEntry {
-                model: model.to_string(),
-                output: v["output"].clone(),
-                taint,
-                prompt: v["prompt"].as_str().unwrap_or("").to_string(),
-            },
-        );
-    }
-    Ok(c)
-}
-
-/// 把本趟新生成的条目追加到生成缓存文件，返回报告里的 `gen_cache` 一节。
-fn save_gen_cache(path: &Path, c: &jpp::interp::GenCache) -> Result<serde_json::Value, String> {
-    use std::io::Write;
-    if !c.fresh.is_empty() {
-        let mut f = fs::OpenOptions::new()
-            .create(true)
-            .append(true)
-            .open(path)
-            .map_err(|e| format!("{}: {e}", path.display()))?;
-        for (key, e) in &c.fresh {
-            let line = serde_json::json!({
-                "key": key, "model": e.model, "output": e.output, "taint": e.taint, "prompt": e.prompt,
-            });
-            writeln!(f, "{line}").map_err(|e| format!("{}: {e}", path.display()))?;
+    let mut files: Vec<std::path::PathBuf> = vec![];
+    for e in rd {
+        let p = e.map_err(|e| io(dir, e))?.path();
+        if p.is_file() {
+            files.push(p);
         }
     }
-    Ok(
-        serde_json::json!({"path": path.display().to_string(), "hits": c.hits, "stored": c.fresh.len()}),
-    )
+    files.sort();
+    let mut ledgers = vec![];
+    let mut 跳过 = 0usize;
+    for f in &files {
+        let text = match fs::read_to_string(f) {
+            Ok(t) => t,
+            // 不是 UTF-8：不是账本，跳过
+            Err(e) if e.kind() == std::io::ErrorKind::InvalidData => {
+                跳过 += 1;
+                continue;
+            }
+            Err(e) => return Err(io(f, e)),
+        };
+        match jpp::store::migrations::ledger_v2::read_any(&text) {
+            Ok((l, _, _)) => {
+                let name = f
+                    .file_name()
+                    .map(|n| n.to_string_lossy().to_string())
+                    .unwrap_or_default();
+                ledgers.push((name, l));
+            }
+            Err(_) => 跳过 += 1,
+        }
+    }
+    let ix = jpp::store::CacheIndex::build(&ledgers);
+    let c = ix.counts();
+    eprintln!(
+        "缓存：从 {} 份账本建索引（判断 {} 条、生成 {} 条、变换 {} 条），跳过 {} 个文件",
+        ledgers.len(),
+        c.judge,
+        c.gen_,
+        c.transform,
+        跳过
+    );
+    Ok(ix)
 }
 
 #[cfg(test)]
@@ -606,9 +648,10 @@ mod tests {
             input: None,
             input_trusted: false,
             release_on_declared: false,
+            guard: false,
             gen_model: None,
             gen_profile: None,
-            gen_cache: None,
+            cache: None,
         }
     }
 

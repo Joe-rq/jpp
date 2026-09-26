@@ -83,13 +83,19 @@ impl HostAccept {
     }
 }
 
-/// 宿主交给程序的目的与入口条目（`20` §2.3 `EntryArgs`，B105）；`accept` 为宿主接受声明（B128）
+/// 宿主交给程序的目的与入口条目（`20` §2.3 `EntryArgs`，B105）；`accept` 为宿主接受声明（B128）；
+/// `guard` 为宿主开启放行把关（意图汇编 11a）
 #[derive(Clone, Debug, Default)]
 pub struct EntryArgs {
     pub purpose: Option<String>,
     pub values: Vec<EntryValue>,
     pub materials: Vec<EntryMat>,
     pub accept: HostAccept,
+    /// 宿主开启放行把关（意图汇编 11a，2026-09-26；CLI `--guard`）。默认关：语言相信判断器，不拦任何 `do`、
+    /// 没有沙箱的执行器照常跑、没给账本文件就写默认路径。开了才有 J-08（静态与运行期）、执行器无沙箱即不可逆
+    /// 与 `E-action-no-sandbox`、`E-ledger-required`。经 [`EntryArgs::decl`] 写进 `Program.entry.guard`，
+    /// 检查器与运行时都只读那一位；进 `entry_hash`（只在开时追加，默认哈希不变）。
+    pub guard: bool,
 }
 
 fn taint_word(t: Taint) -> &'static str {
@@ -119,6 +125,7 @@ impl EntryArgs {
             && self.values.is_empty()
             && self.materials.is_empty()
             && !self.accept.any()
+            && !self.guard
     }
     /// 入口声明（B106）：`Session::compile` 把它写进 `Program.entry`。顺序：`purpose`、值条目、材料条目
     /// （与绑定顺序相同）。`purpose` 记作名为 `purpose` 的不可信值条目（B105-3；步 17b 随 B58 绑定），
@@ -149,6 +156,7 @@ impl EntryArgs {
         EntryDecl {
             params,
             accept_declared: self.accept.declared_lines,
+            guard: self.guard,
         }
     }
     /// 账本头 `entry_hash`（B105-2）：`hash_of(["entry", purpose 或 "", 每条目按名字排序依次:
@@ -189,6 +197,10 @@ impl EntryArgs {
         }
         if self.accept.declared_lines {
             parts.extend(["accept", "declared_lines", "true"]);
+        }
+        // 意图汇编 11a：把关位只在开时追加，默认的哈希与改前逐字节相同
+        if self.guard {
+            parts.extend(["guard", "true"]);
         }
         Some(hash_of(&parts))
     }
@@ -251,6 +263,24 @@ mod tests {
         assert!(只有接受.hash().is_some());
         assert!(只有接受.decl().accept_declared);
         assert!(!EntryArgs::default().decl().accept_declared);
+    }
+
+    /// 意图汇编 11a：把关位关时哈希与改前相同；开时不同；只开把关时为 `Some`，且写进入口声明
+    #[test]
+    fn 把关位只在开时进哈希() {
+        let v = EntryArgs::value("input", json!({"x": 1}));
+        let 改前 = v.hash();
+        let mut g = v.clone();
+        g.guard = true;
+        assert_ne!(改前, g.hash());
+        assert!(!v.decl().guard && g.decl().guard);
+        let 只开把关 = EntryArgs {
+            guard: true,
+            ..Default::default()
+        };
+        assert!(!只开把关.is_empty());
+        assert!(只开把关.hash().is_some());
+        assert!(只开把关.decl().guard && !只开把关.decl().is_empty());
     }
 
     #[test]

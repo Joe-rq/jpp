@@ -26,7 +26,12 @@ pub(crate) struct 待发 {
     site: Span,
     pub(crate) items: Vec<(Rc<Question>, Rc<Reading>, String)>,
     同键: Vec<Vec<Rc<Reading>>>,
+    /// 只含推测登记（步 13a-1，B0270）：发出后端口报错就放弃这一组，不中止程序
+    speculative: bool,
 }
+
+/// 推测组被放弃时账本 `Absent` 条目的原因（步 13a-1）。只对只含推测登记的组生效：真站点遇到它当作没有记录
+const 推测放弃: &str = "spec_miss";
 
 impl<'a> Interp<'a> {
     /// **写答案的唯一入口**（`20` §2.3「只有 flush 能填答案」，登记为 CI grep：`scripts/grep_fill.py`）。
@@ -341,6 +346,12 @@ impl<'a> Interp<'a> {
         let 已记: Vec<Option<(String, String, u64)>> = items
             .iter()
             .map(|(_, _, k)| match self.账本查(&format!("absent:{k}")) {
+                // 步 13a-1：推测组被放弃的记录只对只含推测的组生效；真站点走到同一个键（续跑）照常发问
+                Some(Entry::Absent { cause, .. })
+                    if cause.as_str() == 推测放弃 && !only_speculative =>
+                {
+                    None
+                }
                 Some(Entry::Absent {
                     cause,
                     detail,
@@ -369,11 +380,19 @@ impl<'a> Interp<'a> {
                     self.预算停发(&items, site, &首详, 0);
                     return Ok(发出前::跳过);
                 }
-                if 首因 == "absent" && 处置 != "conservative" {
-                    let pol = 策略.expect("刚判过");
+                // 没声明策略的缺席（现场稳定性三修：网络类错误的隐含策略）审计重放照记录给 Unsure(absent)，走下面的循环
+                if 首因 == "absent"
+                    && 处置 != "conservative"
+                    && let Some(pol) = 策略.clone()
+                {
                     return self
                         .缺席处置(&items, &pol, site, 首详, 0)
                         .map(|_| 发出前::结束);
+                }
+                if 首因 == 推测放弃 {
+                    // 步 13a-1：首跑放弃的推测组，重放按记录跳过（调用已照记录计入），补报同一告警
+                    self.推测组放弃告警(&items, site, "重放：首跑时端口报错", &首详);
+                    return Ok(发出前::跳过);
                 }
                 for ((_, _, k), (c, _, _)) in items.iter().zip(记) {
                     self.absent_marks.insert(k.clone(), c);
@@ -441,7 +460,40 @@ impl<'a> Interp<'a> {
             site,
             items,
             同键,
+            speculative: only_speculative,
         }))
+    }
+
+    /// 步 13a-1（B0270）：只含推测登记的组发出后端口报错——放弃这一组，账本记 `spec_miss`（重放据此跳过），
+    /// 告警写明站点、键与错误种类。推测本来就可放弃；真站点走到同一个键时照常发问。
+    fn 放弃推测组(
+        &mut self,
+        items: &[(Rc<Question>, Rc<Reading>, String)],
+        site: Span,
+        种类: &str,
+        原文: &str,
+    ) {
+        self.记缺席账(items, 推测放弃, &format!("{种类}：{原文}"), 1);
+        self.推测组放弃告警(items, site, 种类, 原文);
+    }
+
+    fn 推测组放弃告警(
+        &mut self,
+        items: &[(Rc<Question>, Rc<Reading>, String)],
+        site: Span,
+        种类: &str,
+        原文: &str,
+    ) {
+        let 键: Vec<String> = items.iter().take(3).map(|(_, _, k)| 头(k, 8)).collect();
+        // 依据：B0270（主会话 2026-09-26 定，待 Fable 批 7 追认）；12 §5 推测可放弃
+        self.trace.warn(format!(
+            "W-spec-fixture-miss: @{} 推测登记的 {} 道题（键 {}{}）发出后端口报错（{种类}：{}），放弃这一组，程序照常；真站点走到时照常发问",
+            site.start,
+            items.len(),
+            键.join(", "),
+            if items.len() > 3 { "…" } else { "" },
+            原文.chars().take(120).collect::<String>()
+        ));
     }
 
     /// 一组题首发返回之后的处理（步 15e 从 `flush` 的组循环原样搬出）：计数、重试与退避、缺席处置、
@@ -461,6 +513,7 @@ impl<'a> Interp<'a> {
             site,
             items,
             同键,
+            speculative,
         } = g;
         // **每次发出都计费**（B32，主会话裁定选项 A）：首发已在发出前核过预算，这里记一次；
         // 重试前各核一次预算，每次发出（无论成败）都计入 `cost.calls`。
@@ -468,9 +521,51 @@ impl<'a> Interp<'a> {
         let ask: Vec<&Question> = items.iter().map(|(q, _, _)| q.as_ref()).collect();
         let mut 结果 = 首发;
         self.cost.calls += 1;
+        self.记请求(Self::读数效应());
         let mut 尝试 = 1u64;
-        // **重试与退避**（B32）：只有声明了 absent 策略才重试；没声明沿用旧行为（客户端错误即运行期错误）
-        if let Some(pol) = self.budget.absent.clone() {
+        // 步 13a-1（B0270）：只含推测的组，端口报错、回复题数不对或答案形状不合法就放弃，不重试、不走缺席策略、
+        // 不中止程序。真站点走到同一个键时照常发问，同样的错误由真站点正式报出
+        if speculative {
+            let 坏 = match &结果 {
+                Err(e) => Some((
+                    if e.0.contains("固定观察未命中") {
+                        "fixture-miss"
+                    } else {
+                        "port-error"
+                    },
+                    e.0.clone(),
+                )),
+                Ok(r) if r.answers.len() != ask.len() => Some((
+                    "bad-reply",
+                    format!("答案数 {} 与题数 {} 不符", r.answers.len(), ask.len()),
+                )),
+                Ok(r) => r
+                    .answers
+                    .iter()
+                    .zip(items.iter())
+                    .zip(states.iter())
+                    .find_map(|((a, (q, _, _)), st)| {
+                        self.validate_answer(a, q, st, site).err().map(|f| match f {
+                            Fault::Error(e) => e.message,
+                            Fault::Halt(p) => p.detail,
+                        })
+                    })
+                    .map(|m| ("malformed", m)),
+            };
+            if let Some((种类, 原文)) = 坏 {
+                self.latency_spent += 起.elapsed().as_secs_f64();
+                // 回复已经返回（bad-reply、malformed）：钱已经花了，照记
+                if let Ok(r) = &结果 {
+                    self.cost.tokens += r.tokens;
+                    self.cost.usd += r.cost;
+                }
+                self.放弃推测组(&items, site, 种类, &原文);
+                return Ok(());
+            }
+        }
+        // **重试与退避**（B32）：声明了 absent 策略按声明的；没声明而首发报网络类错误，按隐含策略重试、用尽转
+        // Unsure(absent)、程序照常（现场稳定性三修 (1)）；其余沿用旧行为（客户端错误即运行期错误）
+        if let Some(pol) = self.缺席策略(结果.as_ref().err()) {
             let mut 等 = pol.backoff;
             let mut 次 = 0;
             while 结果.is_err() && 次 < pol.retry {
@@ -488,6 +583,7 @@ impl<'a> Interp<'a> {
                 }
                 结果 = self.call_judge(&states, &ask);
                 self.cost.calls += 1;
+                self.记请求(Self::读数效应());
                 尝试 += 1;
             }
             // 失败路径也计时延：退避睡眠与各次失败请求都占时延预算
@@ -621,6 +717,8 @@ impl<'a> Interp<'a> {
                 },
             ));
             self.fill_from_record(r, a.clone(), perm, confidence);
+            // 步 19（B40）：同一运行里后来登记的同缓存键判断复用这一条
+            self.记可复用判断(key, &a, perm, confidence);
             // 同键的其余读数（提前登记那些）也要填上，否则它们停在「没有答案」；
             // 置换测量一起填，否则它们的出口停在 `untested`
             for other in 同键[idx].iter().skip(1) {

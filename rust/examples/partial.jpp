@@ -98,8 +98,10 @@ let initial = packet(validate([
     {name: "D", cost: 20, skills: ["web"], flag: unit, revision: 0}
 ]), plans, unresolved_items, advance);
 let used = if enough(initial.value) { initial.value.cheapest } else { unit };
-let improved = initial.resume.next(promising);
-let completed = improved.resume.next(everything);
+// 没有未决时续接是空记录（packet 里 resume 取 {}）：判断器都给了回答（B187 默认）就停在原处
+fn step(p, strategy) { if has(p.resume, "next") { p.resume.next(strategy) } else { p } }
+let improved = step(initial, promising);
+let completed = step(improved, everything);
 fn snapshot(p) -> Record {
     {best: p.value.cheapest, pending: map(p.pending, fn(entry) { entry.element.name }),
      evidence: p.evidence}

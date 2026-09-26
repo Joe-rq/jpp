@@ -118,8 +118,7 @@
     ],
     "warnings": [
       "W-window-untested: @1046 画像没有测过窗口（window），对象长度不核；超窗的语境可能接管读数而无痕",
-      "W-drop-vs-escalate: 显式丢弃了未决责任 unsure(band)（题 7392b555）；drop 合法且已记账，但只有 escalate 会把它交给人",
-      "W-declared-line: @1042 键 cs-refund 用作者声明线 hi=0.7 lo=0.3（B128）：同键标注 0 条，无标注可核；本趟线附近 ±0.2 的读数 1/2（0.5）；同键无认证线。出口按你写的数路由，不作错误率保证；放行不可逆动作须宿主接受作者线（CLI：--release-on-declared）"
+      "W-drop-vs-escalate: 显式丢弃了未决责任 unsure(band)（题 7392b555）；drop 合法且已记账，但只有 escalate 会把它交给人"
     ]
   },
   "value": null

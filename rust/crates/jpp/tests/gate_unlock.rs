@@ -216,7 +216,7 @@ fn 收紧不需要凭据放宽才需要() {
 #[test]
 fn 出口分得出手填的线与证书的线() {
     let 跑 = |calib: &CalibStore| {
-        let program = lower(
+        let mut program = lower(
             &parse(
                 r#"
 budget {calls: 4, cost: 1};
@@ -229,6 +229,8 @@ handle(e, {act: fn() { {r: "act", 源: line_source(e)} },
             .expect("解析"),
         )
         .expect("lower");
+        // 线等级告警（W-fixture-line）只在开 --guard 时发（B187 批 9 第 10 格）；这里看的就是这条告警
+        program.entry.guard = true;
         let mut l = Ledger::new();
         let o = run(
             &program,

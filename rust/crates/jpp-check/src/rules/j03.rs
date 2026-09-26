@@ -36,6 +36,14 @@ fn call(cx: &Cx, s: &CallSite) -> Vec<Diagnostic> {
                 h9_confidence(cx, s, &mut out);
             }
         }
+        // B128 补齐（过程记录 工程-sieve声明线.md）：sieve 的选项 `{line}` 原样交给 cut，线的静态面与 cut 同查
+        "sieve" => sieve_line(cx, s, &mut out),
+        // literalize 的第四参与 sieve 的选项同形（B128 补齐，过程记录 工程-sieve声明线.md §四）
+        "literalize" => sieve_line(cx, s, &mut out),
+        // B173 (4)（步 15k-1）：order(rs, {stat: "confidence"}) 与 cut 共用同一检查期 H9 面——
+        // h9_confidence 只看参数位 1 起的字面记录有没有 stat: "confidence"，不依赖 cut 专属的
+        // calib 位/cost 记录/H3，可以原样用于 order。
+        "order" => h9_confidence(cx, s, &mut out),
         "measure" => calib_literal(&mut out, s.name, s.args, 2),
         // 题式上：calib 写在选项记录里，同样不能是数字字面量
         "form" => {
@@ -62,14 +70,18 @@ fn call(cx: &Cx, s: &CallSite) -> Vec<Diagnostic> {
 
 fn calib_literal(out: &mut Vec<Diagnostic>, name: &str, args: &[&Expr], idx: usize) {
     let Some(a) = args.get(idx) else { return };
+    // B188 第 1 条（批 9）：`cut(r, 0.7)` 的裸数字读作作者声明线 `{declare: {hi: 0.7}}`，不是冒充认证结果，不报
+    if name == "cut" && matches!(a.kind(), ExprKind::Decimal | ExprKind::Integer(_)) {
+        return;
+    }
     if matches!(
         a.kind(),
         ExprKind::Decimal | ExprKind::Integer(_) | ExprKind::Bool
     ) {
         // 依据：12 §5 J-03（线不可字面）
         // B129（步 20j-1）：`cut` 上的裸数字多半是作者要的判定规则，修法给出作者声明线的写法与含义
-        let 修法 = if name == "cut" && !matches!(a.kind(), ExprKind::Bool) {
-            "修法：若这是你要的判定规则，写成作者声明线 cut(r, {declare: {hi: <这个数>}})——按这个数切，不作错误率保证，放行不可逆动作须 --release-on-declared（B128、B129）；若要语言担保错误率，写校准键 cut(r, \"校准键\") 并用 calib-import 认证".to_string()
+        let 修法 = if name == "cut" {
+            "修法：写一个数 cut(r, 0.7) 或作者声明线 cut(r, {declare: {hi: …, lo: …}})（按你的数切），或校准键 cut(r, \"校准键\")；不写线的 cut(r) 按判断器的回答走".to_string()
         } else {
             format!("修法：{name}(…, \"校准键\")")
         };
@@ -82,6 +94,60 @@ fn calib_literal(out: &mut Vec<Diagnostic>, name: &str, args: &[&Expr], idx: usi
             a.span,
         ));
     }
+}
+
+/// `sieve` 的选项位（三参的第三位、四参的第四位）与其中的 `line`（B128 补齐）：数字字面量报 J-03，修法给出声明线写法；
+/// `line` 是字面记录时，其中的 `cost` 形状与 `stat: "confidence"`（H9）按 `cut` 同一套查。三参且第三位是列表（填法）、
+/// 选项与 `line` 不是字面量的，判不出来，放过（运行期兜底）。
+fn sieve_line(cx: &Cx, s: &CallSite, out: &mut Vec<Diagnostic>) {
+    // literalize(u, state, 题, {line?}) 只有第四位；sieve 三参的第三位、四参的第四位
+    let 位 = match (s.name, s.args.len()) {
+        ("literalize", 4) => 3,
+        ("literalize", _) => return,
+        (_, 3) => 2,
+        (_, 4) => 3,
+        _ => return,
+    };
+    let 例 = if s.name == "literalize" {
+        "literalize(u, state, 题, "
+    } else {
+        "sieve(材料, 题, "
+    };
+    let Some(a) = s.args.get(位) else { return };
+    let 数 = |e: &Expr| -> Option<String> {
+        match &e.node {
+            jpp_ir::ir::Node::Host(jpp_ir::ir::Host::Decimal(x)) => Some(format!("{x}")),
+            jpp_ir::ir::Node::Host(jpp_ir::ir::Host::Integer(i)) => Some(format!("{i}")),
+            _ => None,
+        }
+    };
+    let 名 = s.name;
+    let 报 = |out: &mut Vec<Diagnostic>, e: &Expr, x: String| {
+        // 依据：12 §5 J-03（线不可字面）；B129（修法给出作者声明线的写法与含义）
+        out.push(Diagnostic::error(
+            "J-03",
+            format!(
+                "{名} 的线不能是数字字面量：线不可字面。修法：若这是你要的判定规则，写成作者声明线 {例}{{line: {{declare: {{hi: {x}}}}}}})——按这个数切，不作错误率保证；开 --guard 时放行不可逆动作还须 --release-on-declared（B128、B129）；若要语言担保错误率，不给 line、用题的校准键并 calib-import 认证"
+            ),
+            e.span,
+        ));
+    };
+    if let Some(x) = 数(a) {
+        报(out, a, x);
+        return;
+    }
+    let ExprKind::Record(fields) = a.kind() else {
+        return;
+    };
+    let Some((_, l)) = fields.iter().find(|(k, _)| k == "line") else {
+        return;
+    };
+    if let Some(x) = 数(l) {
+        报(out, l, x);
+        return;
+    }
+    cost_shape(out, &[a, l]);
+    h9_records(cx, &[l], s.span, out);
 }
 
 /// 代价记录形状预检（步 24h，K-143/B29）：`cut(reading, {cost: [...]})` 或
@@ -115,12 +181,19 @@ fn cost_shape(out: &mut Vec<Diagnostic>, args: &[&Expr]) {
     }
 }
 
-/// H9（B154 (3)，步 20j-3）：`cut` 的字面记录写 `stat: "confidence"`，而加载的画像没有说判断器报自报置信度
-/// （`reports_confidence` 未测按假，B39 守卫侧）——检查期报 `E-stat-unavailable`，不等运行期、不静默退回 p_max。
+/// H9（B154 (3)，步 20j-3；B173 (4)、步 15k-1 扩到 `order`）：`cut`/`order` 的字面记录写
+/// `stat: "confidence"`，而加载的画像没有说判断器报自报置信度（`reports_confidence` 未测按假，
+/// B39 守卫侧）——检查期报 `E-stat-unavailable`，不等运行期、不静默退回 p_max。
 /// 没加载画像不报：运行期按判断器有没有给这个数定（固定观察端口按夹具，缺省 p_max）。
 fn h9_confidence(cx: &Cx, s: &CallSite, out: &mut Vec<Diagnostic>) {
+    h9_records(cx, &s.args[s.args.len().min(1)..], s.span, out);
+}
+
+/// H9 的核心：这几个实参里有字面记录写了 `stat: "confidence"`、而画像没说判断器报自报置信度时报 `E-stat-unavailable`
+/// （`sieve` 的 `line` 记录也走这里，B128 补齐）
+fn h9_records(cx: &Cx, recs: &[&Expr], span: Span, out: &mut Vec<Diagnostic>) {
     let Some(p) = cx.profile else { return };
-    let 写了 = s.args.iter().skip(1).any(|a| match a.kind() {
+    let 写了 = recs.iter().any(|a| match a.kind() {
         ExprKind::Record(fields) => fields.iter().any(|(k, v)| {
             k == "stat" && matches!(v.kind(), ExprKind::Text(t) if t == "confidence")
         }),
@@ -140,7 +213,7 @@ fn h9_confidence(cx: &Cx, s: &CallSite, out: &mut Vec<Diagnostic>) {
         format!(
             "cut 的 stat: \"confidence\" 在这个判断器上取不到：画像 {状态}（H9，判断器是否随答案给出自报置信度）。修法：换一个画像填了 reports_confidence: true 的判断器，或改用 stat: \"max\"（缺省）；固定观察可在夹具观察里给 confidence（B154）"
         ),
-        s.span,
+        span,
     ));
 }
 

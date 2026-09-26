@@ -64,7 +64,8 @@ struct 结果 {
 }
 
 fn 跑(src: &str, lazy: bool, lift: bool) -> 结果 {
-    let program = lower(&parse(src).expect("解析")).expect("lower");
+    let mut program = lower(&parse(src).expect("解析")).expect("lower");
+    program.entry.guard = true; // 测放行把关本身：开 --guard（意图汇编 11a）
     let calib = 库();
     let 每次 = RefCell::new(vec![]);
     let 计数 = Rc::new(Cell::new(0u32));
@@ -290,7 +291,8 @@ type 两跑 = (
 );
 
 fn 首跑再重放(src: &str) -> 两跑 {
-    let program = lower(&parse(src).expect("解析")).expect("lower");
+    let mut program = lower(&parse(src).expect("解析")).expect("lower");
+    program.entry.guard = true; // 测放行把关本身：开 --guard（意图汇编 11a）
     let calib = 库();
     let 计数 = Rc::new(Cell::new(0u32));
     let mut actions = ActionRegistry::new();
@@ -498,7 +500,8 @@ impl 复核结果 {
 }
 
 fn 复核跑(src: &str, passes: Passes) -> 复核结果 {
-    let program = lower(&parse(src).expect("解析")).expect("lower");
+    let mut program = lower(&parse(src).expect("解析")).expect("lower");
+    program.entry.guard = true; // 测放行把关本身：开 --guard（意图汇编 11a）
     let calib = 库();
     let 每次 = RefCell::new(vec![]);
     let 计数 = Rc::new(Cell::new(0u32));

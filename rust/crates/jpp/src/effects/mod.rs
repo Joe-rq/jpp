@@ -13,6 +13,8 @@ pub use jpp_effects::port::{
     Ticket, argmax_index,
 };
 pub use jpp_effects::{EffectId, EffectInstance};
+// 跨运行缓存的查找端口（步 19，B40、B151），`jpp::store::CacheIndex` 实现它
+pub use jpp_effects::views::{CacheLookup, CachedReading};
 // 真机客户端 `JevClient` 步 14a 搬到 `backends/jev`（B74），步 15b 起由 `JevPorts` 接成端口，这里原路径重导出。
 pub use crate::backends::jev::*;
 // 校准记录、校准库与 fit 注册表在步 11 搬进 `jpp-calib`，这里原路径重导出。

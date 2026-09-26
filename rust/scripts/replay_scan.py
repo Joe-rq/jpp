@@ -76,8 +76,12 @@ def groups() -> list:
     return out
 
 
+# 默认相信判断器（意图汇编 11a、B187）之后，`--guard` 是旧语义的回退基线：`--guard` 时首跑与重放都带它
+GUARD = []
+
+
 def run(args, cwd):
-    return subprocess.run([str(JPP), "run", *map(str, args)], cwd=cwd, capture_output=True, text=True)
+    return subprocess.run([str(JPP), "run", *map(str, args), *GUARD], cwd=cwd, capture_output=True, text=True)
 
 
 def codes(report: dict) -> list:
@@ -151,9 +155,12 @@ def scan() -> dict:
 def main():
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--json")
+    ap.add_argument("--guard", action="store_true", help="首跑与重放都带 --guard（放行把关回退基线，B187）")
     a = ap.parse_args()
+    if a.guard:
+        GUARD.append("--guard")
     s = scan()
-    print(f"[replay_scan] {s['groups']} 组；只凭账本重放报 W-header {s['w_header_groups']} 组；差异 {s['diff_groups']} 组；首跑失败 {len(s['errors'])} 组")
+    print(f"[replay_scan{' --guard' if a.guard else ''}] {s['groups']} 组；只凭账本重放报 W-header {s['w_header_groups']} 组；差异 {s['diff_groups']} 组；首跑失败 {len(s['errors'])} 组")
     for r in s["rows"]:
         tag = "失败 " + r["error"] if "error" in r else ("W-header" if r["w_header"] else "")
         if r.get("diff") or tag:

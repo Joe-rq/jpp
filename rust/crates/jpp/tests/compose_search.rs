@@ -580,3 +580,41 @@ let e = r.value[0];
     assert_eq!(v["cert"]["alpha_bound"], json!(1.0));
     assert_eq!(v["last"]["n_unknown"], json!(1), "单个出口：{v}");
 }
+
+/// (l) `opts.keep`（B184，判断分工定律谓词半的库落点）：代码已能判定「太长」的候选在 ground 之后、
+/// feasible 之前被排除，不进 sieve（不出现在 `seen` 里，即便它字面含「好」本会判成 act）、不进 pending，
+/// 只记 `detail.excluded`；`refine` 下下一轮前沿 = 本轮已判好的（在前）++ 未决材料（次之）++ 被排除材料
+/// （最后）（接地失败的材料不进前沿另在 `compose_ground.rs` (h) 测；这里只测普通排除）
+#[test]
+fn l_keep槽排除候选_不进判断_refine并进前沿() {
+    let seen = RefCell::new(vec![]);
+    let ctxs = RefCell::new(vec![]);
+    let t = 逐轮(&[&["好甲", "好长丙丁", "待乙"], &["好戊", "好己", "好庚"]]);
+    let ports = Ports::new().with(判断端口(&seen)).with(生成端口(&ctxs, &t));
+    let keep = "fn(m) { len(content(m)) <= 2 }";
+    let src = format!(
+        "{头}let keep = {keep};
+let r = search([], propose, fits, unit, 3, {{width: 2, unsure_to: \"refine\", keep: keep}});
+{{kept: map(r.value, fn(e) {{ e.item }}), excluded: map(r.detail.excluded, fn(x) {{ x.item }}),
+  reason: r.detail.reason, pending: r.pending}}"
+    );
+    let o = 跑(&src, ports).unwrap();
+    let v = 值(&o);
+    assert_eq!(v["reason"], json!("stop"));
+    assert_eq!(内容(&v["kept"]), ["好甲", "好戊"]);
+    assert_eq!(
+        内容(&v["excluded"]),
+        ["好长丙丁"],
+        "「好长丙丁」超过 2 字，被 keep 代码排除，即便含「好」本会判成 act"
+    );
+    let judged: Vec<String> = seen.borrow().iter().map(|(_, m)| m.clone()).collect();
+    assert!(
+        !judged.contains(&"好长丙丁".to_string()),
+        "被排除的候选不进判断：{judged:?}"
+    );
+    assert_eq!(
+        上下文(&ctxs.borrow()[1]),
+        ["需求", "好甲", "待乙", "好长丙丁"],
+        "已判好的（好甲）在最前；未决材料（待乙）次之、被排除的材料（好长丙丁）最后"
+    );
+}

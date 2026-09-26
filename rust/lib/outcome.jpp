@@ -7,7 +7,7 @@ fn accepted(o) { o.value }
 // sieve 的忽略流（已决信息，在 detail 里）
 fn ignored(o) { o.detail.ignore }
 // 未决原因是不是「没观察到」：预算停机、判断器缺席、超时（B95 缺席类原因，与运行时 E-drop-unobserved 同一集合）。
-// 这一类不能 drop，只能转交或 escalate；其余原因（band、cold、rejected_all……）是判过而拿不准
+// 这一类不能 drop，只能转交或 escalate；其余原因（band、tie、rejected_all……）是判过而拿不准 
 fn unobserved_cause(c) { c == "budget" || c == "absent" || c == "latency" }
 // 未决清单里真正判过、但拿不准的项
 fn undecided(o) { filter(o.pending, fn(p) { !unobserved_cause(p.cause) }) }

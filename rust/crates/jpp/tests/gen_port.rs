@@ -116,7 +116,8 @@ fn b_并发上限来自配置() {
     }
 }
 
-/// (c) 失败四类：非 JSON 与项数不对 → malformed；空 → empty；超时 → timeout；退出码非零与 is_error → failed。
+/// (c) 失败四类：非 JSON（n > 1 时单个值也算）→ malformed；空 → empty；超时 → timeout；退出码非零与 is_error → failed。
+/// 项数不对不再是失败（现场稳定性三修：运行时截断或照返并报 W-gen-count，见 `field_stability.rs` e3、e4）。
 #[test]
 fn c_失败四类() {
     let err_body = {
@@ -125,7 +126,6 @@ fn c_失败四类() {
     };
     let cases: Vec<(PathBuf, f64, &str)> = vec![
         (fake(0.0, &ok_body("你好")), 10.0, "malformed"),
-        (fake(0.0, &ok_body(r#"["只有一项"]"#)), 10.0, "malformed"),
         (fake(0.0, "echo not-json"), 10.0, "malformed"),
         (fake(0.0, &ok_body("[]")), 10.0, "empty"),
         (fake(0.0, &ok_body(r#"["", "  ", ""]"#)), 10.0, "empty"),
@@ -264,4 +264,20 @@ fn 真机_gen_choose() {
     );
     let r: Json = serde_json::from_slice(&out.stdout).unwrap();
     assert_eq!(r["gen_backend"]["name"], "claude-p");
+}
+
+/// 公开 PR #37 评审 P2：画像的 `gen.timeout_s` 要是有限正数，否则加载时报画像错误（不在建端口时 panic）
+#[test]
+fn 画像超时须为有限正数() {
+    let 画像 = |t: &str| {
+        format!(
+            r#"{{"gen": {{"cost_usd_per_call": 0, "timeout_s": {t}, "taint_out": "untrusted"}}}}"#
+        )
+    };
+    for bad in ["-1", "0", "1e300"] {
+        let e = jpp::backends::GenProfile::load(画像(bad).as_bytes()).expect_err(bad);
+        assert!(e.contains("timeout_s"), "{bad}：{e}");
+    }
+    let p = jpp::backends::GenProfile::load(画像("30").as_bytes()).expect("30 秒可用");
+    assert_eq!(p.timeout_s, 30.0);
 }

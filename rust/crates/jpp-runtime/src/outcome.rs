@@ -14,6 +14,8 @@ impl<'a> Interp<'a> {
     ) -> Result<Outcome, RtError> {
         self.plan = plan;
         self.hooks = hooks;
+        // 放行把关只有一个来源：`Program.entry.guard`（意图汇编 11a），检查器读同一位
+        self.guard = program.entry.guard;
         // B155（步 15i）：账本头记的渲染版本与本二进制不同时——只凭账本重放按旧版本算判断键（不发请求，
         // 旧账本照样命中），新头也写旧版本（重放写出的账本头与键一致，能再次重放），另报 `W-header` 说明
         // 本二进制的渲染版本不同；续接会发新请求，同一账本混两种渲染违反 B48，拒绝。依据：B155、B48、B30
@@ -67,7 +69,12 @@ impl<'a> Interp<'a> {
             // 增长只发生在两次运行之间（宿主拿 `Outcome.evidence` 去 `absorb`）。
             .with_calib_hash(Some(self.calib.hash()))
             // 宿主入口参数的哈希（B105-2，整份入口）；无入口时仍为 None（金样不变）
-            .with_entry_hash(self.entry.hash()),
+            .with_entry_hash(self.entry.hash())
+            // 生成器模型与画像哈希（步 19）：宿主给了真实生成器才有，为空不写（金样不变）
+            .with_gen(
+                self.复用.gen_model.clone(),
+                self.复用.gen_profile_hash.clone(),
+            ),
             场合,
             &|k: &str| calib.record_json(k),
         );
@@ -178,6 +185,8 @@ impl<'a> Interp<'a> {
             }
             r => self.层末落盘().and(r),
         };
+        // 步 19：复用计数先取出（下面两臂会把 self 的字段移走）
+        let 复用 = self.复用统计();
         match result {
             Ok(v) => {
                 let frame = self.frames.pop().unwrap();
@@ -259,6 +268,7 @@ impl<'a> Interp<'a> {
                         v
                     },
                     budget: self.预算停.clone(),
+                    cache: 复用,
                 })
             }
             Err(Fault::Halt(p)) => Ok(Outcome {
@@ -282,6 +292,7 @@ impl<'a> Interp<'a> {
                     v
                 },
                 budget: self.预算停.clone(),
+                cache: 复用,
             }),
             Err(Fault::Error(e)) => {
                 // 运行期出错：已交出的生成照样收齐入账（钱已经花了，`13` §5；B160），没交出的不交；收层本身的错不盖过原错
@@ -390,7 +401,8 @@ impl<'a> Interp<'a> {
         let mut calls: Vec<u64> = vec![];
         let mut usd = 0.0;
         for (i, k) in keys.iter().enumerate() {
-            if let Some(Entry::Judge { call, cost, .. }) = self.ledger.view().get(k) {
+            // 步 15h-3：先查开着的层（层里的判断条目同样算进花费；B160）
+            if let Some(Entry::Judge { call, cost, .. }) = self.账本查(k) {
                 // 老账本没有调用号：每个键算一次调用（上界）
                 let id = if *call == 0 {
                     u64::MAX - i as u64

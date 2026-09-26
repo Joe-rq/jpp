@@ -253,6 +253,8 @@ fn taint解析不出来要往保守那边兜底() {
         output: out.clone(),
         output_mat: meta.clone().map(Box::new),
         cost: 0.0,
+        // 步 19：复用来源（这里不是复用条目）
+        reused_from: None,
     });
     let text = l.encode();
     assert!(text.contains("\"taint\":\"Untrusted\""), "{text}");

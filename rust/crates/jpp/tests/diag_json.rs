@@ -105,11 +105,13 @@ fn check_json_降级错也出机读() {
 
 #[test]
 fn run_json_同码同址折叠计数_报告不动() {
+    // 用 W-fixture-line 作同码同址的样本：线等级告警只在开 --guard 时发（B187 批 9 第 10 格）
     let args = [
         "run",
         "examples/question-forms.jpp",
         "--fixtures",
         "examples/fixtures/question-forms.json",
+        "--guard",
     ];
     let (_, out_text, _) = jpp(&args);
     let mut with_json = args.to_vec();

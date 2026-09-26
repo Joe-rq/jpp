@@ -121,6 +121,10 @@ pub enum Entry {
         /// 输出是材料时的元数据（步 18a 起由 `do` 填；`gen`、`transform` 的材料元数据由实参重算，为空）。
         output_mat: Option<Box<MatMeta>>,
         cost: f64,
+        /// 复用来源（步 19，B40、B151）：同一运行里第一次那条的账本键，或跨运行的 `ext:<来源>#<序号>`。
+        /// 复用条目 `cost` 为 0。为空不写，没有复用的账本逐字节不变。
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        reused_from: Option<String>,
     },
     /// 问人。`answer: None` = 已问未答：重放照样以 `Pending` 结束；续跑时再问，答案另起一条。
     Ask {
@@ -190,6 +194,7 @@ impl Entry {
             output,
             output_mat: None,
             cost,
+            reused_from: None,
         }
     }
     /// 账本键另有来历（`repeat`、`absent` 的派生键）的效应记录。
@@ -201,6 +206,7 @@ impl Entry {
             output,
             output_mat: None,
             cost,
+            reused_from: None,
         }
     }
     pub fn key(&self) -> &str {
@@ -251,6 +257,13 @@ pub struct HeaderCompared {
     pub bank_version: Option<String>,
     pub ir_version: Option<String>,
     pub entry_hash: Option<String>,
+    /// 生成器模型（步 19）：宿主给了真实生成器（CLI `--gen-model`）时填；为空时生成物的缓存键按
+    /// `model_id` 算。为空不写，旧账本与金样逐字节不变。依据：B151（生成物缓存键要带生成器）
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub gen_model: Option<String>,
+    /// 生成器画像的哈希（步 19，主会话 2026-09-26：与判断器画像同一套，不同报 `W-header`）。为空不写。
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub gen_profile_hash: Option<String>,
 }
 
 /// 账本头比对的场合（B77，`12` J-18 行）：同一份账本被读回来时是哪种用法。
@@ -320,6 +333,13 @@ impl HeaderCompared {
         s("bank_version", o(&self.bank_version), o(&new.bank_version));
         s("ir_version", o(&self.ir_version), o(&new.ir_version));
         s("entry_hash", o(&self.entry_hash), o(&new.entry_hash));
+        // 步 19：生成器模型与画像两种场合都比（与判断器画像同一套）
+        s("gen_model", o(&self.gen_model), o(&new.gen_model));
+        s(
+            "gen_profile_hash",
+            o(&self.gen_profile_hash),
+            o(&new.gen_profile_hash),
+        );
         d
     }
 }
@@ -356,6 +376,8 @@ impl Header {
                 bank_version: None,
                 ir_version: None,
                 entry_hash: None,
+                gen_model: None,
+                gen_profile_hash: None,
             },
         }
     }
@@ -376,8 +398,21 @@ impl Header {
         self.compared.entry_hash = h;
         self
     }
+    /// 生成器模型与画像哈希（步 19；宿主没给真实生成器时都为 `None`）。
+    pub fn with_gen(mut self, model: Option<String>, profile_hash: Option<String>) -> Header {
+        self.compared.gen_model = model;
+        self.compared.gen_profile_hash = profile_hash;
+        self
+    }
     pub fn model_id(&self) -> &str {
         &self.compared.model_id
+    }
+    /// 生成物缓存键里的生成器模型（步 19）：有 `gen_model` 取它，否则取 `model_id`。
+    pub fn gen_model_or_default(&self) -> &str {
+        self.compared
+            .gen_model
+            .as_deref()
+            .unwrap_or(&self.compared.model_id)
     }
 }
 

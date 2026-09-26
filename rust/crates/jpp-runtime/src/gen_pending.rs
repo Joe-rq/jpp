@@ -11,8 +11,8 @@
 //!
 //! 推测与提升期间不取回生成（[`Interp::推测中不等生成`]）。
 //!
-//! `--gen-cache`（B151 的过渡）：[`GenCache`] 按 `gen` 的账本键（带站点）与生成器模型名查；命中不登记、不交出、
-//! 照写账本条目（费用 0）。步 19 换成不带站点的键与 `CacheLookup` 端口后退役。
+//! 步 15h-2 的 `--gen-cache`（带站点的键，B151 的过渡）已由步 19 的按缓存键复用取代（`reuse.rs`：不含调用位置、
+//! 带生成器模型的键，本运行与跨运行 `CacheLookup`）。
 
 use super::*;
 use jpp_effects::port::{GenResult, Ticket};
@@ -34,26 +34,6 @@ pub(crate) fn 是不等生成<T>(r: &R<T>) -> bool {
     matches!(r, Err(Fault::Error(e)) if e.message == 不等生成报文)
 }
 
-/// 生成缓存里的一条（B151 过渡，步 15h-2）：生成器模型名、输出、声明的 taint、提示（给人看）。
-#[derive(Clone, Debug, PartialEq)]
-pub struct GenCacheEntry {
-    pub model: String,
-    pub output: Json,
-    pub taint: Option<Taint>,
-    pub prompt: String,
-}
-
-/// 生成缓存：宿主装入（读文件），运行时查与记；新条目留在 `fresh` 里由宿主写回。
-#[derive(Clone, Debug, Default)]
-pub struct GenCache {
-    /// 账本键 → 条目
-    pub entries: BTreeMap<String, GenCacheEntry>,
-    /// 本趟新生成、要写回的条目（按取回顺序）
-    pub fresh: Vec<(String, GenCacheEntry)>,
-    /// 本趟命中次数
-    pub hits: u64,
-}
-
 /// 登记了的一次生成（交出前后都在这里，收齐后移走）。
 pub(crate) struct GenJob {
     key: String,
@@ -61,6 +41,8 @@ pub(crate) struct GenJob {
     prompt: String,
     /// 交出前的调用输入；交出后为空
     input: Option<CallInput>,
+    /// 调用要的份数（现场稳定性三修 (3)：取回时按它核项数，多的截断、少的照返，都报 `W-gen-count`）
+    n: usize,
     /// 交出后的票据
     ticket: Option<Ticket>,
     /// ∨ ctx 的 taint（端口不声明时用）
@@ -69,6 +51,8 @@ pub(crate) struct GenJob {
     from: Sources,
     site: Span,
     handle: Rc<PendingGen>,
+    /// 登记计数（步 15h-3）：与同读数号计数的直接写入比先后
+    seq: u64,
 }
 
 /// 开着的层：交出了生成、票据还没收齐。条目带登记序键，收齐时排序写进账本。
@@ -87,7 +71,8 @@ pub(crate) struct GenState {
     /// 推测与提升进行中（大于 0 时不取回生成）
     不等: u32,
     层: Option<开层>,
-    cache: Option<Rc<RefCell<GenCache>>>,
+    /// 登记计数（步 15h-3）：生成登记与层开着时的直接写入各取一个，层内同读数号计数时按它排先后
+    序: u64,
 }
 
 /// 生成输出包成材料（`gen` 的产物，taint 与来源按调用点算好的给）。
@@ -118,12 +103,6 @@ pub(crate) fn 包材料(
 }
 
 impl<'a> Interp<'a> {
-    /// 装入生成缓存（`--gen-cache`，步 15h-2）。
-    pub fn with_gen_cache(mut self, cache: Rc<RefCell<GenCache>>) -> Self {
-        self.生成.cache = Some(cache);
-        self
-    }
-
     /// 推测与提升期间调用：期间遇到未取回的生成，求值以内部报文结束，不取回（写账本时刻不取决于完成先后）。
     pub(crate) fn 推测中不等生成<T>(&mut self, f: impl FnOnce(&mut Self) -> T) -> T {
         self.生成.不等 += 1;
@@ -142,21 +121,6 @@ impl<'a> Interp<'a> {
         self.生成.预留
     }
 
-    /// 查生成缓存：同账本键、同生成器模型才命中。
-    pub(crate) fn 查生成缓存(&mut self, key: &str, model: &str) -> Option<GenCacheEntry> {
-        let c = self.生成.cache.as_ref()?;
-        let hit = c
-            .borrow()
-            .entries
-            .get(key)
-            .filter(|e| e.model == model)
-            .cloned();
-        if hit.is_some() {
-            c.borrow_mut().hits += 1;
-        }
-        hit
-    }
-
     /// 登记一次生成（B160：不交端口，等所在层的刷新点），返回未取回的生成值。
     #[allow(clippy::too_many_arguments)]
     pub(crate) fn 登记生成(
@@ -173,6 +137,12 @@ impl<'a> Interp<'a> {
         let id = self.生成.next;
         self.生成.next += 1;
         self.生成.预留 += 1;
+        let seq = self.生成.序;
+        self.生成.序 += 1;
+        let n = match &input {
+            CallInput::Prompt { n, .. } => *n,
+            _ => 0,
+        };
         let handle = Rc::new(PendingGen {
             id,
             mark: self.next_reading.get(),
@@ -186,15 +156,28 @@ impl<'a> Interp<'a> {
                 spec,
                 prompt: prompt.to_string(),
                 input: Some(input),
+                n,
                 ticket: None,
                 taint,
                 derived,
                 from,
                 site: sp,
                 handle: handle.clone(),
+                seq,
             },
         );
         Ok(Value::Gen(handle))
+    }
+
+    /// 已登记、还没收回的生成里有没有这个账本键的（公开 PR #37 评审 P1）：有就共享它的句柄——同一刷新前同键
+    /// 走到多次只发一次、只计一次，所有位置拿到同一输出，与账本只留一条、重放取那一条一致。
+    /// 依据：B160（账本按键一条）；过程记录 工程-步15h-2.md 三
+    pub(crate) fn 在飞同键(&self, key: &str) -> Option<Rc<PendingGen>> {
+        self.生成
+            .jobs
+            .values()
+            .find(|j| j.key == key)
+            .map(|j| j.handle.clone())
     }
 
     /// 有没有登记了还没交出的生成（刷新点据此决定这一层要不要带生成）。
@@ -248,6 +231,7 @@ impl<'a> Interp<'a> {
             // 调用在交出时计（B38），不再算作预留
             self.生成.预留 -= 1;
             self.cost.calls += 1;
+            self.记请求(spec);
         }
         self.生成.层 = Some(开层 {
             gens: ids,
@@ -293,7 +277,7 @@ impl<'a> Interp<'a> {
                 Ok(res) => {
                     let (v, entry) = self.生成完成(&job, res);
                     *job.handle.resolved.borrow_mut() = Some(v);
-                    layer.entries.push(((2 * job.handle.mark, 0), entry));
+                    layer.entries.push(((2 * job.handle.mark, job.seq), entry));
                 }
                 Err(e) => {
                     failure.get_or_insert(e);
@@ -308,6 +292,22 @@ impl<'a> Interp<'a> {
         match failure {
             Some(e) => Err(e),
             None => Ok(()),
+        }
+    }
+
+    /// 层开着时程序直接写的条目（`do`、`ask`、`transform`、`repeat`、`CalibUsed`，步 15h-3）：进层，键为
+    /// `(2 × 当前读数号计数, 登记计数)`——早于它登记的判断（`2r+1`，r 更小）与生成（`2m`，m 不大于当前、同 m 时
+    /// 登记计数更小）都排在它前面；层没开时直接写账本。
+    /// 依据：B160（按登记序一次写）；过程记录 工程-步15h-3.md 二·1–2
+    pub(crate) fn 登记记账(&mut self, e: Entry) {
+        if self.生成.层.is_some() {
+            let k = (2 * self.next_reading.get(), self.生成.序);
+            self.生成.序 += 1;
+            if let Some(l) = &mut self.生成.层 {
+                l.entries.push((k, e));
+            }
+        } else {
+            self.账本追加(e);
         }
     }
 
@@ -356,6 +356,11 @@ impl<'a> Interp<'a> {
                 "gen 失败：生成端口返回的不是材料",
                 job.site,
             ))),
+            // 现场稳定性三修 (1)：网络类错误转成这一次生成的失败（值为 Fail、照记账本），不中止程序
+            Err(e) if e.is_network() => Ok(GenResult {
+                failure: Some(e.0),
+                ..Default::default()
+            }),
             // 依据：B149（端口报错）
             Err(e) => Err(Fault::Error(RtError::new(
                 Some("E-rt-client"),
@@ -366,10 +371,26 @@ impl<'a> Interp<'a> {
     }
 
     /// 生成结果落账（`13` §5：后端已经返回 = 钱已经花了，先记事实）：费用、trace、缓存新条目；返回值与账本条目。
-    fn 生成完成(&mut self, job: &GenJob, res: GenResult) -> (Value, Entry) {
+    fn 生成完成(&mut self, job: &GenJob, mut res: GenResult) -> (Value, Entry) {
         // 调用数已在交出时计；这里记 token 与费用
         self.cost.tokens += res.tokens;
         self.cost.usd += res.cost;
+        // 现场稳定性三修 (3)：项数与要的份数不同不算失败——报告警，多的截到 n 项（账本记截断后的输出，重放同值），
+        // 少的照返
+        let k = res.outputs.len();
+        if res.failure.is_none() && job.n > 0 && k != job.n {
+            let 处置 = if k > job.n {
+                res.outputs.truncate(job.n);
+                format!("截到前 {} 项", job.n)
+            } else {
+                format!("按实际的 {k} 项返回")
+            };
+            // 依据：地基/过程记录/工程-现场稳定性三修.md (3)（主会话 2026-09-26 派单，放宽 B149 的「恰好 n 项」）
+            self.trace.warn(format!(
+                "W-gen-count: @{} gen 要 {} 项，生成器给了 {k} 项，{处置}",
+                job.site.start, job.n
+            ));
+        }
         let taint = res.taint_out.unwrap_or(job.taint);
         // 生成器报的失败（超时、非 JSON、空……）产出 `Fail` 值、照记账本，程序照常往下（步 15h-1，形状同 B93）
         let (value, output, output_mat) = match &res.failure {
@@ -401,23 +422,10 @@ impl<'a> Interp<'a> {
                 }),
             ),
         };
-        if res.failure.is_none()
-            && let Some(c) = &self.生成.cache
-        {
-            let model = self
-                .ports
-                .instance_of(job.spec.id)
-                .map(|i| i.model)
-                .unwrap_or_default();
-            c.borrow_mut().fresh.push((
-                job.key.clone(),
-                GenCacheEntry {
-                    model,
-                    output: output.clone(),
-                    taint: res.taint_out,
-                    prompt: job.prompt.clone(),
-                },
-            ));
+        // 步 19（B151）：取回成功的生成按不含调用位置的缓存键记进本运行表，后来的同键生成复用它
+        if res.failure.is_none() {
+            let model = self.生成模型();
+            self.记可复用效应(&job.key, &model);
         }
         self.trace.push(
             job.spec.name,
@@ -434,6 +442,7 @@ impl<'a> Interp<'a> {
             kind: job.spec.name.into(),
             output,
             cost: res.cost,
+            reused_from: None,
         };
         (value, entry)
     }

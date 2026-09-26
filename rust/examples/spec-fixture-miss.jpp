@@ -1,0 +1,16 @@
+// 推测组发出后端口报错（步 13a-1，B0270）：r1 登记时，下一句 if 两侧分支体里的 judge 被一起推测登记。
+// b 的 cond 为假，程序本不会问 b 的 q2，夹具里也就没有这一行；推测组发出后夹具未命中，放弃这一组、
+// 报 W-spec-fixture-miss，程序照常。形状取自 地基/比赛/改写套件/实测/if-branch-speculation/repro.jpp（输入写成字面量）。
+budget {calls: 10, cost: 1.0, depth: 64};
+
+let input = {items: [{id: "a", cond: true}, {id: "b", cond: false}]};
+let q1 = test("q1 on the item?", "c1");
+let q2 = test("q2 on the item, only relevant when cond is true", "c2");
+
+fn one(it) !{judge} {
+    let r1 = judge(state(mat(it)), q1);
+    let r2 = if it.cond { judge(state(mat(it)), q2) } else { unit };
+    {id: it.id, r1: r1, r2: r2}
+}
+
+map(input.items, fn(it) !{judge} { one(it) })

@@ -112,7 +112,8 @@ handle(cut(judge(state(mat({:?})), test("该退吗", "k"))), {{
 "#,
         长()
     );
-    let program = lower(&parse(&src).expect("解析")).expect("lower");
+    let mut program = lower(&parse(&src).expect("解析")).expect("lower");
+    program.entry.guard = true; // 测放行把关本身：开 --guard（意图汇编 11a）
     let mut a = ActionRegistry::new();
     a.register("退款", 0.0, false, TaintOut::Trusted, |_| {
         Ok(Value::Text("已退".into(), Taint::Trusted.into()))
@@ -140,7 +141,8 @@ fn trial_extension_routes_but_does_not_release() {
         "budget {{calls: 4, cost: 1, depth: 8}};\nlet e = cut(judge(state(mat({:?})), test(\"该退吗\", \"k\")));\nlet r = exit_kind(e);\nconsume(e, \"drop\");\nr\n",
         长()
     );
-    let program = lower(&parse(&src).unwrap()).unwrap();
+    let mut program = lower(&parse(&src).unwrap()).unwrap();
+    program.entry.guard = true; // 测放行把关本身：开 --guard（意图汇编 11a）
     let o = run(
         &program,
         桩端口(),

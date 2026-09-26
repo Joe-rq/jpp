@@ -1,0 +1,28 @@
+{
+  "description": "Synthetic fixed observations for search-rank.jpp (construction check only; not model evaluation). Feasibility is a yes/no question; memorability is a scored question used only for ranking by expected level. Round 0: two fitting names (expected levels 1.0 and 0.4) and one rejected; round 1: a better name (1.8), a re-proposed name and another fitting one (0.5); round 2: a new name tying the second-best (1.0), a re-proposed name and a rejected one, so the top two do not change and the search ends at noshrink. The calibration record is hand-written to exercise routing.",
+  "calibrations": [
+    {"key": "search-fit", "hi": 0.75, "lo": 0.25, "n": 1, "status": "上岗", "delta": 0.05}
+  ],
+  "generations": [
+    {"prompt": "按下面的需求提出 3 个候选店名，每个候选是一个字符串；需求之后的上下文是上一轮排名最前的候选", "retry_seq": 0,
+     "output": ["暖巷咖啡", "街角咖啡", "很长很长很长的咖啡馆名字"]},
+    {"prompt": "按下面的需求提出 3 个候选店名，每个候选是一个字符串；需求之后的上下文是上一轮排名最前的候选", "retry_seq": 1,
+     "output": ["巷口豆", "暖巷咖啡", "邻里"]},
+    {"prompt": "按下面的需求提出 3 个候选店名，每个候选是一个字符串；需求之后的上下文是上一轮排名最前的候选", "retry_seq": 2,
+     "output": ["豆巷", "巷口豆", "咖啡咖啡咖啡咖啡咖啡"]}
+  ],
+  "observations": [
+    {"on": ["暖巷咖啡"], "op": "test", "text": "这个名字适合做一家社区咖啡馆的店名吗？", "calib": "search-fit", "answer": {"Noul": 0.9}},
+    {"on": ["街角咖啡"], "op": "test", "text": "这个名字适合做一家社区咖啡馆的店名吗？", "calib": "search-fit", "answer": {"Noul": 0.9}},
+    {"on": ["很长很长很长的咖啡馆名字"], "op": "test", "text": "这个名字适合做一家社区咖啡馆的店名吗？", "calib": "search-fit", "answer": {"Noul": 0.05}},
+    {"on": ["巷口豆"], "op": "test", "text": "这个名字适合做一家社区咖啡馆的店名吗？", "calib": "search-fit", "answer": {"Noul": 0.9}},
+    {"on": ["邻里"], "op": "test", "text": "这个名字适合做一家社区咖啡馆的店名吗？", "calib": "search-fit", "answer": {"Noul": 0.9}},
+    {"on": ["豆巷"], "op": "test", "text": "这个名字适合做一家社区咖啡馆的店名吗？", "calib": "search-fit", "answer": {"Noul": 0.9}},
+    {"on": ["咖啡咖啡咖啡咖啡咖啡"], "op": "test", "text": "这个名字适合做一家社区咖啡馆的店名吗？", "calib": "search-fit", "answer": {"Noul": 0.05}},
+    {"on": ["暖巷咖啡"], "op": "measure", "text": "这个名字有多好记？", "calib": "search-memo-score", "scale": ["难记", "一般", "好记"], "answer": {"Score": [0.1, 0.8, 0.1]}},
+    {"on": ["街角咖啡"], "op": "measure", "text": "这个名字有多好记？", "calib": "search-memo-score", "scale": ["难记", "一般", "好记"], "answer": {"Score": [0.7, 0.2, 0.1]}},
+    {"on": ["巷口豆"], "op": "measure", "text": "这个名字有多好记？", "calib": "search-memo-score", "scale": ["难记", "一般", "好记"], "answer": {"Score": [0.0, 0.2, 0.8]}},
+    {"on": ["邻里"], "op": "measure", "text": "这个名字有多好记？", "calib": "search-memo-score", "scale": ["难记", "一般", "好记"], "answer": {"Score": [0.6, 0.3, 0.1]}},
+    {"on": ["豆巷"], "op": "measure", "text": "这个名字有多好记？", "calib": "search-memo-score", "scale": ["难记", "一般", "好记"], "answer": {"Score": [0.1, 0.8, 0.1]}}
+  ]
+}

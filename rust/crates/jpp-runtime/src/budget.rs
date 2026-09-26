@@ -3,7 +3,30 @@
 
 use super::*;
 
+/// 网络类错误的隐含缺席策略（现场稳定性三修 (1)，`地基/过程记录/工程-现场稳定性三修.md`）：重试次数与首次退避秒数
+const 隐含重试: u32 = 2;
+const 隐含退避秒: u32 = 1;
+
 impl<'a> Interp<'a> {
+    /// 一组判断首发之后用哪条缺席策略：程序声明了 `budget.absent` 用声明的；没声明而首发报的是网络类错误
+    /// （[`EffectError::is_network`]），用隐含策略——重试 2 次、退避 1 秒起翻倍、用尽转 `Unsure(absent)`、程序
+    /// 照常，不熔断（熔断只看声明的策略）；其余返回 `None`，客户端错误照旧是运行期错误。
+    pub(crate) fn 缺席策略(
+        &self,
+        首发错: Option<&EffectError>,
+    ) -> Option<jpp_ir::ir::AbsentPolicy> {
+        self.budget.absent.clone().or_else(|| {
+            首发错
+                .filter(|e| e.is_network())
+                .map(|_| jpp_ir::ir::AbsentPolicy {
+                    retry: 隐含重试,
+                    backoff: f64::from(隐含退避秒),
+                    then: "conservative".into(),
+                    breaker: u32::MAX,
+                })
+        })
+    }
+
     /// 开启审计重放（B35）：只凭账本重现首跑，缺记录即 `E-replay`。CLI 的 `--replay` 用它；`--resume` 不用。
     pub fn audit_replay(mut self) -> Self {
         self.audit.on = true;

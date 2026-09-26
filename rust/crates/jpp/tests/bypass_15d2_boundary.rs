@@ -39,9 +39,9 @@ fn cut的出口(hi: f64, lo: f64, delta: f64, p: f64) -> ExitKind {
     decide(&CutInput {
         fail: None,
         absent: None,
-        suspended: false,
         line: Some((hi, lo)),
         cost_requested: false,
+        alpha_requested: false,
         answer: Some(Answer::Noul(p)),
         delta: Some(delta),
         mode_share: None,

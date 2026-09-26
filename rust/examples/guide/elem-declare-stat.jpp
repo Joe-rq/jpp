@@ -2,7 +2,7 @@
 // 一道四档 measure（工单影响）：期望档位 expect 配 {hi: 2.0} 出 act / ignore（期望档位到 2 就升级），配
 // {cuts: [0.5, 1.5, 2.5]} 分桶出 at（期望档位就近归档）。一道四候选 select（工单归哪个组）：前两个候选（前端、
 // 客户端）的概率之和 mass 配 {hi: 0.5, lo: 0.2} 出 act / ignore / unsure（端侧、服务侧、待定）。
-// 统计量线只接 declare：认证线在 p_max 上，对别的统计量无效。等级 Declared，不放行不可逆动作；
+// 统计量线只接 declare：认证线在 p_max 上，对别的统计量无效，统计量上也没有现成的回答。等级 Declared；
 // 报告 exits 行带 stat，账本每个站点一条 declared: 记录。
 budget {calls: 4, cost: 0.01, depth: 16};
 let levels = ["无", "轻", "中", "重"];

@@ -55,7 +55,8 @@ fn 动作表() -> ActionRegistry {
 
 /// `k`：正式线（放行等级）；`f`：`put` 写的夹具线（不放行，B29）
 fn 跑p(src: &str, p: f64) -> Result<Json, String> {
-    let program = lower(&parse(src).expect("解析")).expect("lower");
+    let mut program = lower(&parse(src).expect("解析")).expect("lower");
+    program.entry.guard = true; // 测放行把关本身：开 --guard（意图汇编 11a）
     let mut calib = CalibStore::new();
     common::certified(&mut calib, "k", 0.8, 0.2, 50);
     calib.put("f", 0.8, 0.2, 50, "上岗", Some(0.05)).unwrap(); // 步 15d-2：夹具线显式给 δ（步 15d-2 前的代码兜底值）
@@ -320,7 +321,8 @@ fn j08_19_运行期放行的形状静态面不报() {
     for g in 形状 {
         let src = 程序(&g);
         放行(&src);
-        let p = lower(&parse(&src).expect("解析")).expect("lower");
+        let mut p = lower(&parse(&src).expect("解析")).expect("lower");
+        p.entry.guard = true; // 测放行把关本身：开 --guard（意图汇编 11a）
         let r = check_with_calib_actions(&p, &CalibStore::new(), &t);
         assert!(
             !r.diagnostics

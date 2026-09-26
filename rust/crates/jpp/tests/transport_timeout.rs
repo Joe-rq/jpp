@@ -1,6 +1,7 @@
 //! 真机传输超时（`地基/过程记录/工程-传输超时.md` §四第 9 条）：假传输层注入挂起。
 //! 超时属 absent（`12` B35），之后走 `budget.absent` 的既有路由：重试逐次计费，全部失败按 `then`；
-//! 不声明 `absent` 即 `E-rt-client`。传输层不重试、不给兜底读数。
+//! 不声明 `absent` 时超时是网络类错误，按隐含策略重试 2 次、用尽转 `Unsure(absent)`、程序照常（现场稳定性三修，
+//! 改前是 `E-rt-client`）。传输层不重试、不给兜底读数。
 use std::sync::{
     Arc,
     atomic::{AtomicU64, Ordering},
@@ -94,14 +95,18 @@ fn 一直挂起_fail策略报e_rt_absent() {
     assert!(e.contains("E-rt-absent") && e.contains("E-timeout"), "{e}");
 }
 
-/// (d) 不声明 absent：客户端错误即 E-rt-client（既有语义），报文带 E-timeout，超时后很快返回。
+/// (d) 不声明 absent：超时是网络类错误（现场稳定性三修，改前即 E-rt-client），按隐含策略重试 2 次（退避 1 秒、
+/// 2 秒）、每次计费，用尽转 Unsure(absent)，程序照常；缺席账记下 E-timeout；只凭账本（续跑式）不再发时出口相同。
 #[test]
-fn 不声明absent_超时即e_rt_client() {
-    let (o, 请求, 用时) = 跑(&源(""), 100, 3000, 超时, &mut Ledger::new());
-    let e = o.expect_err("没有 absent 策略");
-    assert!(e.contains("E-rt-client") && e.contains("E-timeout"), "{e}");
-    assert_eq!(请求, 1, "传输层不自己重试超时");
-    assert!(用时 < Duration::from_millis(2500), "{用时:?}");
+fn 不声明absent_超时按隐含策略转absent() {
+    let mut l = Ledger::new();
+    let (o, 请求, 用时) = 跑(&源(""), 100, 3000, 超时, &mut l);
+    let o = o.expect("网络类错误不中止程序");
+    assert_eq!(o.value_json()["c"], json!("absent"));
+    assert_eq!(请求, 3, "传输层不自己重试超时；运行时首发 + 重试 2 次");
+    assert_eq!(o.cost.calls, 3);
+    assert!(用时 >= Duration::from_secs(3), "退避 1 + 2 秒：{用时:?}");
+    assert!(l.encode().contains("E-timeout"), "缺席账记下超时原因");
 }
 
 /// (e) 画像没给超时（None）：不设超时，慢响应照常返回，行为同接线前。

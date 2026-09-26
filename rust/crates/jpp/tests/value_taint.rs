@@ -39,7 +39,8 @@ fn c端口(p: f64, log: Rc<RefCell<Vec<String>>>) -> Ports<'static> {
 
 /// 跑一次；返回 (结果, 日志里是否出现 do:发邮件)
 fn run(src: &str, page: Json) -> (Result<jpp::Outcome, String>, bool) {
-    let program = lower(&parse(src).expect("parse")).expect("lower");
+    let mut program = lower(&parse(src).expect("parse")).expect("lower");
+    program.entry.guard = true; // 测放行把关本身：开 --guard（意图汇编 11a）
     let log = Rc::new(RefCell::new(vec![]));
     let mut calib = CalibStore::new();
     // B29 之后夹具线不算放行不可逆 do 的可信合取项：用认证线
@@ -183,7 +184,8 @@ let ok = handle(cut(judge(state(洗), test("该发吗", "k"))), {
     unsure: fn(u) { consume(u, "drop"); false }});
 {r: if ok { content(do("发邮件", [], 0)) } else { "没发" }, t: 洗.taint}
 "#;
-    let program = lower(&parse(src).expect("parse")).expect("lower");
+    let mut program = lower(&parse(src).expect("parse")).expect("lower");
+    program.entry.guard = true; // 测放行把关本身：开 --guard（意图汇编 11a）
     let log = Rc::new(RefCell::new(vec![]));
     let mut calib = CalibStore::new();
     common::certified(&mut calib, "k", 0.65, 0.35, 100);

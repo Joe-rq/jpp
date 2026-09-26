@@ -9,7 +9,7 @@ impl Checker<'_> {
         let mut scopes = vec![];
         // 宿主入口参数（B106：读 `Program.entry`，由 `Session::compile` 写入）：最外层之外的一层，
         // 已定义、类别 Other。依据：B106（地基/附注/2026-09-25-B105-B106裁定.md §三）
-        if !p.entry.is_empty() {
+        if !p.entry.params.is_empty() {
             let mut host = Scope::new();
             for e in &p.entry.params {
                 host.declared.insert(e.name.clone(), Kind::Other);
@@ -345,13 +345,23 @@ impl Checker<'_> {
                         match n.as_str() {
                             _ if effect_kind.is_some() => effect_kind.expect("刚判过"),
                             "cut" | "unsure" => Kind::Exit,
+                            // `fit` 的结果：注册表拟合是读数，声明式拟合是 Score（B153：同样不能读出为数，J-01 型面）
+                            "fit" => Kind::Reading,
                             "test" | "select" | "measure" | "fill" => Kind::Question,
                             "form" => Kind::Form,
                             "pair" | "tally" | "first_k" | "iterate" | "outcome" => Kind::Outcome,
-                            // 单道题返回一个契约值；题列表、题式 + 填法返回契约值的列表
+                            // 单道题返回一个契约值；题列表、题式 + 填法返回契约值的列表。末位字面选项记录
+                            // `{line}`（B128 补齐）不改变种类：去掉它再按原形状判
                             "sieve"
-                                if arguments.len() == 2
-                                    && !matches!(arguments[1].kind(), ExprKind::List(_)) =>
+                                if {
+                                    let n = match arguments.last().map(|a| a.kind()) {
+                                        Some(ExprKind::Record(_)) if arguments.len() >= 3 => {
+                                            arguments.len() - 1
+                                        }
+                                        _ => arguments.len(),
+                                    };
+                                    n == 2 && !matches!(arguments[1].kind(), ExprKind::List(_))
+                                } =>
                             {
                                 Kind::Outcome
                             }
