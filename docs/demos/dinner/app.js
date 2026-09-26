@@ -835,7 +835,7 @@ window.__audit = function () {
   const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
   let n; while ((n = walker.nextNode())) { const el = n.parentElement; if (!el || el.closest("script,style,#pop,#gmenu[hidden]")) continue; const t = n.textContent; const c = hanLen(t); if (!c) continue; const r = el.getBoundingClientRect(); if (r.width === 0 || r.bottom < 0 || r.top > VH || r.right < 0 || r.left > VW) continue; if (vis(el) > .05) { dom += c; parts.push(t.trim()); } }
   let can = 0, minFont = 99; FR.texts.forEach(t => { if (t.a > .05 && t.x >= 0 && t.x <= VW && t.y >= 0 && t.y <= VH) { can += hanLen(t.s); parts.push(t.s); minFont = Math.min(minFont, t.size); } });
-  document.querySelectorAll('#top *, #ctrl *, #credit, #poster *').forEach(el => { if (![...el.childNodes].some(n => n.nodeType === 3 && n.textContent.trim())) return; const r = el.getBoundingClientRect(); if (!r.width || vis(el) <= .05) return; minFont = Math.min(minFont, parseFloat(getComputedStyle(el).fontSize)); });
+  document.querySelectorAll('#top *, #ctrl *, #credit, #rec-note, #poster *').forEach(el => { if (![...el.childNodes].some(n => n.nodeType === 3 && n.textContent.trim())) return; const r = el.getBoundingClientRect(); if (!r.width || vis(el) <= .05) return; minFont = Math.min(minFont, parseFloat(getComputedStyle(el).fontSize)); });
   const b = FR.bb, pb = $("poster").classList.contains("show") ? $("poster").getBoundingClientRect() : null;
   const box = pb ? {x0: pb.left, y0: pb.top, x1: pb.right, y1: pb.bottom} : b;
   const de = document.documentElement;
