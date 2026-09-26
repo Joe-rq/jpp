@@ -1,0 +1,10 @@
+{"description": "Declarative fit golden (step 20j-4, B153): two companies, three four-level fit questions and one hiring yes/no each. Company A expected levels 2.4 / 1.8 / 2.0 and hiring 0.9 give (0.96 + 0.63 + 0.5) / 3 x 0.9 = 0.627 (act on hi 0.6); company B 1.0 / 1.2 / 0.8 and 0.7 give 0.238 (ignore).", "observations": [
+  {"on": ["甲公司：后端工程师，Rust 与分布式系统，远程协作，正在扩招。"], "op": "measure", "text": "候选人的技能与这家公司的岗位要求匹配到什么程度？", "calib": "fit-skill", "scale": ["不匹配", "略有", "较匹配", "很匹配"], "answer": {"Score": [0.0, 0.1, 0.4, 0.5]}},
+  {"on": ["甲公司：后端工程师，Rust 与分布式系统，远程协作，正在扩招。"], "op": "measure", "text": "候选人的经历与这家公司的岗位要求匹配到什么程度？", "calib": "fit-exp", "scale": ["不匹配", "略有", "较匹配", "很匹配"], "answer": {"Score": [0.1, 0.2, 0.5, 0.2]}},
+  {"on": ["甲公司：后端工程师，Rust 与分布式系统，远程协作，正在扩招。"], "op": "measure", "text": "候选人的做事方式与这家公司的文化匹配到什么程度？", "calib": "fit-culture", "scale": ["不匹配", "略有", "较匹配", "很匹配"], "answer": {"Score": [0.0, 0.2, 0.6, 0.2]}},
+  {"on": ["甲公司：后端工程师，Rust 与分布式系统，远程协作，正在扩招。"], "op": "test", "text": "这家公司现在是否在招这个岗位？", "calib": "hiring", "answer": {"Noul": 0.9}},
+  {"on": ["乙公司：前端实习，偏设计与动效，坐班，岗位是否开放不明。"], "op": "measure", "text": "候选人的技能与这家公司的岗位要求匹配到什么程度？", "calib": "fit-skill", "scale": ["不匹配", "略有", "较匹配", "很匹配"], "answer": {"Score": [0.3, 0.4, 0.3, 0.0]}},
+  {"on": ["乙公司：前端实习，偏设计与动效，坐班，岗位是否开放不明。"], "op": "measure", "text": "候选人的经历与这家公司的岗位要求匹配到什么程度？", "calib": "fit-exp", "scale": ["不匹配", "略有", "较匹配", "很匹配"], "answer": {"Score": [0.2, 0.5, 0.2, 0.1]}},
+  {"on": ["乙公司：前端实习，偏设计与动效，坐班，岗位是否开放不明。"], "op": "measure", "text": "候选人的做事方式与这家公司的文化匹配到什么程度？", "calib": "fit-culture", "scale": ["不匹配", "略有", "较匹配", "很匹配"], "answer": {"Score": [0.4, 0.4, 0.2, 0.0]}},
+  {"on": ["乙公司：前端实习，偏设计与动效，坐班，岗位是否开放不明。"], "op": "test", "text": "这家公司现在是否在招这个岗位？", "calib": "hiring", "answer": {"Noul": 0.7}}
+]}

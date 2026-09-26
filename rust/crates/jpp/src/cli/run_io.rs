@@ -240,11 +240,10 @@ pub fn run_checked(
     let mut gen_port = 生成器
         .as_ref()
         .map(|g| (g.spec.build)(&g.model, &g.profile));
-    // 生成缓存（`--gen-cache`，步 15h-2，B151 过渡）：运行前读文件（不存在视为空）
-    let 生成缓存 = match &options.gen_cache {
-        Some(path) => Some(std::rc::Rc::new(std::cell::RefCell::new(load_gen_cache(
-            path,
-        )?))),
+    // 跨运行缓存（步 19，B151 两段式；取代 15h-2 的 `--gen-cache`）：运行前从目录里的账本建索引。
+    // 只凭账本的审计重放不用缓存（`Session` 在重放时不交给运行时）。
+    let 缓存 = match &options.cache {
+        Some(dir) => Some(load_cache_dir(dir)?),
         None => None,
     };
     let mut calibrations = 目录记录;
@@ -330,13 +329,13 @@ pub fn run_checked(
             false,
             &mut evidence,
             &输入,
-            生成缓存.clone(),
+            runner::CacheArgs {
+                cache: 缓存.as_ref().map(|c| c as &dyn jpp::effects::CacheLookup),
+                // 生成器身份进账本头（步 19）：给了 `--gen-model` 才有
+                gen_model: 生成器.as_ref().map(|g| g.model.clone()),
+                gen_profile_hash: 生成器.as_ref().map(|g| g.profile.hash.clone()),
+            },
         )
-    };
-    // 生成缓存写回（步 15h-2）：本趟新生成的成功条目追加到文件
-    let 生成缓存报告 = match (&options.gen_cache, &生成缓存) {
-        (Some(path), Some(c)) => Some(save_gen_cache(path, &c.borrow())?),
-        _ => None,
     };
     // Preserve any completed effects even when execution ends in a runtime error.
     if let (Some(f), Some(path)) = (文件, &options.ledger_out) {
@@ -405,15 +404,11 @@ pub fn run_checked(
     report["resumed"] = serde_json::json!(options.resume.is_some());
     report["mode"] = serde_json::json!(mode_label);
     report["backend"] = serde_json::json!(backend_label);
-    // 用了生成器才出现（步 15h-1）；生成器画像哈希今天只进这里与 stderr（账本头没有这一位，15h-1 Q2）
+    // 用了生成器才出现（步 15h-1）；生成器画像哈希自步 19 起也进账本头（`gen_profile_hash`）
     if let Some(g) = &生成器 {
         report["gen_backend"] = serde_json::json!({
             "name": g.spec.name, "model": g.model, "profile_hash": g.profile.hash,
         });
-    }
-    // 用了 `--gen-cache` 才出现（步 15h-2）
-    if let Some(r) = 生成缓存报告 {
-        report["gen_cache"] = r;
     }
     if let Some(r) = 真机画像.filter(|r| r.profile.price_per_input_token().is_none()) {
         mark_cost_unknown(&mut report, &r.path);
@@ -455,60 +450,44 @@ pub fn run_checked(
     Ok(())
 }
 
-/// 读生成缓存文件（步 15h-2）：JSONL，每行 `{key, model, output, taint, prompt}`，后写的同键覆盖先写的；
-/// 文件不存在视为空。
-fn load_gen_cache(path: &Path) -> Result<jpp::interp::GenCache, String> {
-    let mut c = jpp::interp::GenCache::default();
-    let Ok(text) = fs::read_to_string(path) else {
-        return Ok(c);
-    };
-    for (i, line) in text
-        .lines()
-        .enumerate()
-        .filter(|(_, l)| !l.trim().is_empty())
-    {
-        let v: serde_json::Value = serde_json::from_str(line)
-            .map_err(|e| format!("{}:{}: 生成缓存行不是 JSON：{e}", path.display(), i + 1))?;
-        let (Some(key), Some(model)) = (v["key"].as_str(), v["model"].as_str()) else {
-            return Err(format!(
-                "{}:{}: 生成缓存行缺 key 或 model",
-                path.display(),
-                i + 1
-            ));
+/// `--cache <目录>`（步 19）：目录里（不含子目录）每个能按账本读的文件（v3；v2 在内存迁移）进索引，
+/// 读不成的跳过；来源名取文件名。stderr 报一行建了多少、跳过多少。
+fn load_cache_dir(dir: &Path) -> Result<jpp::store::CacheIndex, String> {
+    let rd = fs::read_dir(dir).map_err(|e| format!("--cache {}: {e}", dir.display()))?;
+    let mut files: Vec<std::path::PathBuf> = rd
+        .filter_map(|e| e.ok().map(|e| e.path()))
+        .filter(|p| p.is_file())
+        .collect();
+    files.sort();
+    let mut ledgers = vec![];
+    let mut 跳过 = 0usize;
+    for f in &files {
+        let Ok(text) = fs::read_to_string(f) else {
+            跳过 += 1;
+            continue;
         };
-        let taint = serde_json::from_value(v["taint"].clone()).ok();
-        c.entries.insert(
-            key.to_string(),
-            jpp::interp::GenCacheEntry {
-                model: model.to_string(),
-                output: v["output"].clone(),
-                taint,
-                prompt: v["prompt"].as_str().unwrap_or("").to_string(),
-            },
-        );
-    }
-    Ok(c)
-}
-
-/// 把本趟新生成的条目追加到生成缓存文件，返回报告里的 `gen_cache` 一节。
-fn save_gen_cache(path: &Path, c: &jpp::interp::GenCache) -> Result<serde_json::Value, String> {
-    use std::io::Write;
-    if !c.fresh.is_empty() {
-        let mut f = fs::OpenOptions::new()
-            .create(true)
-            .append(true)
-            .open(path)
-            .map_err(|e| format!("{}: {e}", path.display()))?;
-        for (key, e) in &c.fresh {
-            let line = serde_json::json!({
-                "key": key, "model": e.model, "output": e.output, "taint": e.taint, "prompt": e.prompt,
-            });
-            writeln!(f, "{line}").map_err(|e| format!("{}: {e}", path.display()))?;
+        match jpp::store::migrations::ledger_v2::read_any(&text) {
+            Ok((l, _, _)) => {
+                let name = f
+                    .file_name()
+                    .map(|n| n.to_string_lossy().to_string())
+                    .unwrap_or_default();
+                ledgers.push((name, l));
+            }
+            Err(_) => 跳过 += 1,
         }
     }
-    Ok(
-        serde_json::json!({"path": path.display().to_string(), "hits": c.hits, "stored": c.fresh.len()}),
-    )
+    let ix = jpp::store::CacheIndex::build(&ledgers);
+    let c = ix.counts();
+    eprintln!(
+        "缓存：从 {} 份账本建索引（判断 {} 条、生成 {} 条、变换 {} 条），跳过 {} 个文件",
+        ledgers.len(),
+        c.judge,
+        c.gen_,
+        c.transform,
+        跳过
+    );
+    Ok(ix)
 }
 
 #[cfg(test)]
@@ -608,7 +587,7 @@ mod tests {
             release_on_declared: false,
             gen_model: None,
             gen_profile: None,
-            gen_cache: None,
+            cache: None,
         }
     }
 

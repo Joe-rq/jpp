@@ -1,0 +1,157 @@
+ir v1
+budget calls=8 cost=0.01 depth=16 escalate=- unsure=- latency_p95=- absent=-
+block 559..1809
+  let levels : -
+    #0 list 614..663
+      #1 text "不匹配"
+      #2 text "略有"
+      #3 text "较匹配"
+      #4 text "很匹配"
+  let 技能 : -
+    #5 construct measure @0 678..782
+      #6 text "候选人的技能与这家公司的岗位要求匹配到什么程度？"
+      #7 name levels
+      #8 text "fit-skill"
+  let 经历 : -
+    #9 construct measure @1 797..899
+      #10 text "候选人的经历与这家公司的岗位要求匹配到什么程度？"
+      #11 name levels
+      #12 text "fit-exp"
+  let 文化 : -
+    #13 construct measure @2 914..1020
+      #14 text "候选人的做事方式与这家公司的文化匹配到什么程度？"
+      #15 name levels
+      #16 text "fit-culture"
+  let 在招 : -
+    #17 construct test @3 1035..1098
+      #18 text "这家公司现在是否在招这个岗位？"
+      #19 text "hiring"
+  let 匹配 : -
+    #21 fn (a:-, b:-, c:-, d:-) -> - effects=- ; {"effect":{"known":[],"open":false},"summary":{"may_touch_world":false,"may_refresh":false},"duty_kind":null,"refresh_point":false}
+      block 1128..1196
+        result
+          #22 binary *
+            #23 binary /
+              #24 binary +
+                #25 binary +
+                  #26 binary *
+                    #27 dec 0.4
+                    #28 field .expect
+                      #29 name a
+                  #30 binary *
+                    #31 dec 0.35
+                    #32 field .expect
+                      #33 name b
+                #34 binary *
+                  #35 dec 0.25
+                  #36 field .expect
+                    #37 name c
+              #38 dec 3.0
+            #39 field .p
+              #40 name d
+  fn-stmt 评
+    #41 fn (公司:-) -> - effects=[judge] ; {"effect":{"known":["judge"],"open":false},"summary":{"may_touch_world":false,"may_refresh":false},"duty_kind":null,"refresh_point":false}
+      block 1223..1359
+        let s : -
+          #42 state @4 1237..1255
+            on:
+              #43 call 1243..1254
+                callee:
+                  #44 name mat
+                #45 name 公司
+        result
+          #46 fit @5 1261..1357
+            #47 record 1265..1282
+              declare:
+                #48 name 匹配
+            #49 list 1284..1356
+              #50 effect judge @6 1285..1301 ; {"effect":{"known":["judge"],"open":false},"summary":null,"duty_kind":null,"refresh_point":false}
+                state:
+                  #51 name s
+                questions:
+                  #52 name 技能
+              #53 effect judge @7 1303..1319 ; {"effect":{"known":["judge"],"open":false},"summary":null,"duty_kind":null,"refresh_point":false}
+                state:
+                  #54 name s
+                questions:
+                  #55 name 经历
+              #56 effect judge @8 1321..1337 ; {"effect":{"known":["judge"],"open":false},"summary":null,"duty_kind":null,"refresh_point":false}
+                state:
+                  #57 name s
+                questions:
+                  #58 name 文化
+              #59 effect judge @9 1339..1355 ; {"effect":{"known":["judge"],"open":false},"summary":null,"duty_kind":null,"refresh_point":false}
+                state:
+                  #60 name s
+                questions:
+                  #61 name 在招
+  let 分 : -
+    #62 call @10 1371..1573
+      callee:
+        #63 name map
+      #64 list 1375..1567
+        #65 text "甲公司：后端工程师，Rust 与分布式系统，远程协作，正在扩招。"
+        #66 text "乙公司：前端实习，偏设计与动效，坐班，岗位是否开放不明。"
+      #67 name 评
+  let 结论 : -
+    #68 call @11 1588..1771
+      callee:
+        #69 name map
+      #70 name 分
+      #72 fn (s:-) -> - effects=-
+        block 1603..1770
+          result
+            #73 handle @12 1609..1768
+              exit:
+                #74 cut @13 1616..1644
+                  reading:
+                    #75 name s
+                  #76 record 1623..1643
+                    declare:
+                      #77 record 1633..1642
+                        hi:
+                          #78 dec 0.6
+              arms:
+                #79 record 1646..1767
+                  act:
+                    #81 fn () -> - effects=-
+                      block 1666..1675
+                        result
+                          #82 text "投"
+                  ignore:
+                    #84 fn () -> - effects=-
+                      block 1698..1710
+                        result
+                          #85 text "不投"
+                  unsure:
+                    #87 fn (u:-) -> - effects=-
+                      block 1734..1766
+                        #88 consume @14 1736..1754
+                          #89 name u
+                          #90 text "drop"
+                        result
+                          #91 text "待定"
+  result
+    #92 record 1773..1809
+      结论:
+        #93 name 结论
+      排序:
+        #94 construct order @15 1798..1808
+          #95 name 分
+sites 16
+  @0 #5 construct:measure 678..782 fn=- in=-
+  @1 #9 construct:measure 797..899 fn=- in=-
+  @2 #13 construct:measure 914..1020 fn=- in=-
+  @3 #17 construct:test 1035..1098 fn=- in=-
+  @4 #42 state 1237..1255 fn=#41 in=-
+  @5 #46 fit 1261..1357 fn=#41 in=-
+  @6 #50 effect:judge 1285..1301 fn=#41 in=-
+  @7 #53 effect:judge 1303..1319 fn=#41 in=-
+  @8 #56 effect:judge 1321..1337 fn=#41 in=-
+  @9 #59 effect:judge 1339..1355 fn=#41 in=-
+  @10 #62 hof:map 1371..1573 fn=- in=-
+  @11 #68 hof:map 1588..1771 fn=- in=-
+  @12 #73 handle 1609..1768 fn=#72 in=@11
+  @13 #74 cut 1616..1644 fn=#72 in=@11
+  @14 #88 consume:consume 1736..1754 fn=#87 in=@11
+  @15 #94 construct:order 1798..1808 fn=- in=-

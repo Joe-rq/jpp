@@ -82,6 +82,9 @@ CASES = [
          fixtures="examples/guide/fixtures/comp-compose-cert.json", mode="run", expect="ok"),
     dict(name="comp-element", source="examples/guide/comp-element.jpp",
          fixtures="examples/guide/fixtures/comp-element.json", mode="run", expect="ok"),
+    # 题树（批 8 T6，B185）：与 examples/tree-collab.jpp 同一程序，共用它的夹具
+    dict(name="comp-tree", source="examples/guide/comp-tree.jpp",
+         fixtures="examples/fixtures/tree-collab.json", mode="run", expect="ok"),
     # ---- 嵌套 ----
     dict(name="nest-graph-then-graph", source="examples/guide/nest-graph-then-graph.jpp",
          fixtures="examples/guide/fixtures/nest-graph-then-graph.json", ledger_out=True,

@@ -198,7 +198,7 @@ fn a_verify_执行后再判() {
     let acts = 动作表(e.clone(), c.clone());
     let ports = Ports::new().with(判断端口(&seen));
     let src = format!(
-        "{头}let r = verify([mat(\"print(385)\"), mat(\"print(285)\"), mat(\"print('大约', 385)\")], runner, correct);
+        "{头}let r = verify([mat(\"print(385)\"), mat(\"print(285)\"), mat(\"print('大约', 385)\")], runner, correct, {{}});
 {{ok: map(accepted(r), fn(x) {{ x.item }}), bad: map(ignored(r), fn(x) {{ x.item }}),
   causes: map(r.pending, fn(p) {{ p.cause }}), pending: r.pending}}"
     );
@@ -226,7 +226,7 @@ fn b_执行失败成为未决() {
     let acts = 动作表(e.clone(), c.clone());
     let ports = Ports::new().with(判断端口(&seen));
     let src = format!(
-        "{头}let r = verify([mat(\"print(385)\"), mat(\"boom\"), mat(\"sleep\")], runner, correct);
+        "{头}let r = verify([mat(\"print(385)\"), mat(\"boom\"), mat(\"sleep\")], runner, correct, {{}});
 {{ok: len(accepted(r)), bad: len(ignored(r)), causes: map(r.pending, fn(p) {{ p.cause }}),
   failed: map(r.pending, fn(p) {{ is_fail(p.item) }}), pending: r.pending}}"
     );
@@ -261,7 +261,7 @@ fn c_check_tests_接地() {
         "{头}let tester = ground(\"check_tests\", fn(x) {{ [content(x), [\"f(1) == 1\"], 5] }},
                     fn(x, out) {{ \"通过 \" + text(content(out).passed) + \"，失败 \" + text(content(out).failed) }});
 let passes = test(\"测试全部通过了吗？\", \"k\");
-let r = verify([mat(\"good\"), mat(\"bad\")], tester, passes);
+let r = verify([mat(\"good\"), mat(\"bad\")], tester, passes, {{}});
 {{ok: map(accepted(r), fn(x) {{ x.item }}), bad: map(ignored(r), fn(x) {{ x.item }}), pending: r.pending}}"
     );
     let o = 跑(&src, ports, &acts).unwrap();
@@ -282,7 +282,7 @@ fn d_map_里的两次核验_carry_到外层() {
     let src = format!(
         "{头}let groups = [{{cands: [mat(\"print(385)\"), mat(\"print('大约', 385)\")], q: correct}},
               {{cands: [mat(\"print(285)\"), mat(\"print(1)\")], q: test(\"这段代码的输出等于 285 吗？\", \"k\")}}];
-let rs = map(groups, fn(g) {{ verify(g.cands, runner, g.q) }});
+let rs = map(groups, fn(g) {{ verify(g.cands, runner, g.q, {{}}) }});
 let all = carry(carry([], rs[0].pending, \"组#0\"), rs[1].pending, \"组#1\");
 {{ok: map(rs, fn(r) {{ map(accepted(r), fn(x) {{ x.item }}) }}), via: map(all, fn(p) {{ p.via }}), pending: all}}"
     );
@@ -339,7 +339,7 @@ fn f_同一实参只执行一次() {
     let acts = 动作表(e.clone(), c.clone());
     let ports = Ports::new().with(判断端口(&seen));
     let src = format!(
-        "{头}let r = verify([mat(\"print(385)\"), mat(\"print(385)\")], runner, correct);
+        "{头}let r = verify([mat(\"print(385)\"), mat(\"print(385)\")], runner, correct, {{}});
 {{ok: len(accepted(r)), pending: r.pending}}"
     );
     let o = 跑(&src, ports, &acts).unwrap();
@@ -357,7 +357,7 @@ fn g_接地产物的_taint_与来源() {
     let ports = Ports::new().with(判断端口(&seen));
     let src = format!(
         "{头}let m = runner(mat(\"print(385)\"));
-let r = verify([mat(\"print(385)\")], runner, correct);
+let r = verify([mat(\"print(385)\")], runner, correct, {{}});
 {{item: accepted(r)[0].item, taint: taint(accepted(r)[0].exit), pending: r.pending}}"
     );
     let o = 跑(&src, ports, &acts).unwrap();
@@ -369,5 +369,89 @@ let r = verify([mat(\"print(385)\")], runner, correct);
         e.get(),
         1,
         "runner 直接调用与 verify 里同一实参，只执行一次"
+    );
+}
+
+/// (h) `opts.keep`（B184，判断分工定律谓词半的库落点）：`verify` 与 `search` 都接一个代码谓词，
+/// 在接地之后、判断之前把代码已能判定的候选排除——不进判断（不出现在 `seen` 里）、不进 `pending`，
+/// 只记 `detail.excluded`。同时验证与接地失败（`Fail`）的交互：`keep` 靠 `&&`/`||` 短路，永远看不到
+/// `Fail` 材料（`!is_fail(c) && !keep(c)`、`is_fail(c) || keep(c)`）；`Fail` 元素照样进 `sieve`
+/// 变成 `Unsure(fail)`，`refine` 把它留在 `pending`，但不再把它并进下一轮前沿（B184 (2)：前沿只收
+/// 材料，这是 HEAD 曾有的缺陷）——被 keep 排除的普通材料则照样并进前沿。
+#[test]
+fn h_keep槽排除候选_不进判断_接地失败不进前沿() {
+    let seen = RefCell::new(vec![]);
+    let (e, c) = 计数();
+    let acts = 动作表(e.clone(), c.clone());
+    let ports = Ports::new().with(判断端口(&seen));
+    let keep = "fn(m) { index_of(content(m), \"输出：285\") < 0 }";
+    let src = format!(
+        "{头}let keep = {keep};
+let r = verify([mat(\"print(285)\"), mat(\"boom\"), mat(\"print('大约', 385)\")], runner, correct, {{keep: keep}});
+{{ok: len(accepted(r)), causes: map(r.pending, fn(p) {{ p.cause }}),
+  excluded: map(r.detail.excluded, fn(x) {{ x }}), pending: r.pending}}"
+    );
+    let o = 跑(&src, ports, &acts).unwrap();
+    let v = 值(&o);
+    assert_eq!(
+        v["ok"],
+        json!(0),
+        "唯一没被排除、没失败的候选判成 band，不是 act"
+    );
+    assert_eq!(
+        内容(&v["excluded"]),
+        ["代码：print(285)\n输出：285\n"],
+        "print(285) 被 keep 代码排除，不进判断"
+    );
+    assert_eq!(
+        v["causes"],
+        json!(["fail:状态含 Fail 材料", "band"]),
+        "boom 的 Fail 与 大约385 的 band 都在 pending 里；被排除的 print(285) 不在"
+    );
+    assert_eq!(
+        *seen.borrow(),
+        ["代码：print('大约', 385)\n输出：大约 385\n"],
+        "keep 只挡 print(285)；Fail 材料靠 && 短路，keep 从未被调用在它身上，原样进判断变成 Unsure(fail)"
+    );
+    assert_eq!(
+        e.get(),
+        3,
+        "三段代码都先接地（keep 在接地之后判），执行次数不受 keep 影响"
+    );
+
+    // search 里同一把 keep：第 0 轮无好候选（285 被排除、boom 失败、大约385 未决），refine 宽限一轮；
+    // 第 2 轮的上下文里，未决材料在前、被排除的材料在后，Fail（boom）两者都不进（只留在 pending 里）
+    let seen2 = RefCell::new(vec![]);
+    let ctxs = RefCell::new(vec![]);
+    let (e2, c2) = 计数();
+    let acts2 = 动作表(e2.clone(), c2.clone());
+    let ports2 = Ports::new().with(判断端口(&seen2)).with(生成端口(
+        &ctxs,
+        &[
+            &["print(285)", "boom", "print('大约', 385)"],
+            &["print(385)"],
+        ],
+    ));
+    let src2 = format!(
+        "{头}let keep = {keep};
+let brief = mat(\"需求\");
+let propose = fn(frontier, i) {{ gen(\"提代码\", concat([brief], frontier), 1, i) }};
+let r = search([], propose, correct, unit, 3, {{width: 1, unsure_to: \"refine\", ground: runner, keep: keep}});
+{{kept: map(r.value, fn(x) {{ x.item }}), reason: r.detail.reason,
+  excluded: map(r.detail.excluded, fn(x) {{ x.item }}), pending: r.pending}}"
+    );
+    let o2 = 跑(&src2, ports2, &acts2).unwrap();
+    let v2 = 值(&o2);
+    assert_eq!(v2["reason"], json!("stop"));
+    assert_eq!(内容(&v2["kept"]), ["代码：print(385)\n输出：385\n"]);
+    assert_eq!(内容(&v2["excluded"]), ["代码：print(285)\n输出：285\n"]);
+    assert_eq!(
+        ctxs.borrow()[1],
+        [
+            "需求",
+            "代码：print('大约', 385)\n输出：大约 385\n",
+            "代码：print(285)\n输出：285\n"
+        ],
+        "未决材料（大约385）在前、被排除的材料（285）在后；boom 的 Fail 两者都不在，只在 pending 里"
     );
 }

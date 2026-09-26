@@ -132,9 +132,12 @@ if is_fail(v) { "格式不对" } else { v.field }
 游戏、交互类程序的「环境」（棋盘、蛇身、agent 位置……）不需要语言加新构造（B159）：
 
 1. **纯函数环境**：环境是一个值（列表/记录），转移函数 `step(env, action) → env'` 是纯
-   `.jpp` 函数，配合 `iterate(bound, init, step, measure)` 或 `loop` 跑循环；每轮的判断以
-   渲染后的环境为材料（`mat(render(env))`）。小环境、不依赖外部模拟器时用这条——
-   参见 `examples/env-snake.jpp`。
+   `.jpp` 函数，配合 `iterate(bound, init, step, measure)` 或 `loop` 跑循环；这条只规定环境是值、
+   转移是纯函数，不规定每轮必须判断——动作能由代码直接算出时（如 `examples/env-snake.jpp`：
+   往哪走只看食物相对头部的 dx、dy 两个已知整数，谁大走谁，属于代码能定的事，意图汇编 7a）就
+   不必花判断；真要在环境循环里判断，才把渲染后的环境当材料（`mat(render(env))`）问 JEV，
+   `examples/iterate.jpp` 的 `step` 就是这样，每层判一句话是否提到价格、涉及金额是否低于一百
+   元——这类要读懂自然语言的问题才值得花判断。小环境、不依赖外部模拟器时用这条。
 2. **宿主动作**：环境状态留在宿主，登记一个动作 `env:step(env_json, action) → env_json'`
    （`reversible: true`、成本 0），结果进账本、重放不重算；物理引擎、第三方模拟器这类
    宿主已有的东西走这条，不必在 `.jpp` 里重写一遍它的转移规则。
@@ -156,6 +159,16 @@ if is_fail(v) { "格式不对" } else { v.field }
 `cut` 的第二、三位还有三种写法：`{cost: [fp, fn]}` 按两种错的代价在已有证书里选线，`{alpha: a}` 在 α ≤ a 的证书里选已决最多的一张，二者的线都来自记录。声明线另有两个选项：`stat` 指定线切在读数的哪个统计量上（`"expect"` 期望档位、`{mass: [0, 1]}` 几个候选的概率和、`"confidence"` 判断器自报的置信度；`expect` 还可写 `{cuts: [0.5, 1.5, 2.5]}` 分桶出 `at`），`closed: {lo: false}` 让下端变开（读数等于 lo 归中间带，复刻 `elif p >= lo`）。
 
 **声明线放行不可逆动作要宿主接受。** 不带开关时，声明线的出口能路由、不能单独放行不可逆 `do`：`check` 在守卫全来自声明线时报 J-08，运行期同样拒绝，报文写出开关名。宿主确认这些线由自己担责后带 `--release-on-declared`（`run` 与 `check` 都收；库宿主用 `EntryArgs.accept.declared_lines`）：出口的 `releases` 变为真，报告多一个 `accept: {declared_lines: true}`，开关进账本头 `entry_hash`，换开关状态重放报 `W-header: entry_hash`。这个开关的意思是「这些线由我担责」，不是「这些线是对的」；它也不改材料的可信与否，不可信材料上的判断带了开关照样不放行。
+
+**几道题的读数按自己的换算率合成一个分，再在分上写线**（声明式拟合，B153）：
+
+```jpp
+let 匹配 = fn(a, b, c, d) { (0.4 * a.expect + 0.35 * b.expect + 0.25 * c.expect) / 3.0 * d.p };
+let s = fit({declare: 匹配}, [judge(st, 技能), judge(st, 经历), judge(st, 文化), judge(st, 在招)]);
+handle(cut(s, {declare: {hi: 0.6}}), {…})
+```
+
+闭包按位收每条读数的统计量记录：是非题 `{p}`，选择题 `{probs, max, argmax}`，打分题再加 `expect`；判断器报了自报置信度时另有 `confidence`。外部的数（价格、权重）放进第三个参数 `extra`，按位接在读数后面：`fit({declare: fn(a, price) { a.p - price }}, [r], [0.65])`。单读数也可以：同一道选择题两个候选的概率差设门写 `fit({declare: fn(a) { a.probs[0] - a.probs[1] }}, [r])` 配 `cut(…, {declare: {hi: 0.10}})`（`probs` 按 `over` 序，B174）。闭包只见参数与内置（`max`、`min`、`if`、下标等），看不见外层的名字，里面不能发判断、不能调效应或构造。结果是 `Score`：它不是数，不能算、不能读，只能进 `cut` 的声明线（`{hi, lo?}` 或 `{cuts: […]}`，数的范围不限）或同一拟合的 `order`（`fit({declare: f, tie: 0.05}, …)` 的 `tie` 是并档带宽）。出口等级 `Declared`，放行不可逆动作同样要 `--release-on-declared`。
 
 推荐写法是两侧线加 unsure 臂转人工，读数落在两线之间的由人拍板：
 
@@ -253,6 +266,31 @@ J++ 的底层，不是可选功能：判断是唯一产出读数的效应，别�
 仍然唯一。这正是「换判断器程序不改一个字」「一句顶一百句」这两条验收在搭配层的落点：写一次
 `search`，判断器从固定观察换成真机、生成器从占位换成 `claude -p`，程序不用动。
 
+**JEV 判什么、代码判什么（判断分工定律，B181/B182）。** 一道题满足下面三条才交给 JEV，缺一条按
+对应修法处理：
+
+1. **无确定算法**——从材料到结论没有代码能写出的确定规则（相等、包含、字段存在、计数、排序、
+   算术都有）。不满足：改用 `.jpp` 内置确定性函数，或在 `search`/`verify` 里用 `opts.keep`（下面
+   「ground / verify」一节）。
+2. **证据已在材料里**——不需要再运行、取、算、渲染。不满足：先用 `do`/`transform`/`gen` 把证据
+   摆到材料里（接地），再判。
+3. **一跳一命题**——题问一个命题，答案是划分上的一块；命题可以任意深，但不能是「且/或」拼起来的
+   复合题。不满足：拆成题树，每层一跳，由上一层的出口选下一层问哪道题。
+
+反例（示例、文档、题库不得再出现这类题面）：
+
+| 题面 | 为什么不该交 JEV | 改成 |
+|---|---|---|
+| 这段代码的输出是否等于 385 | 预期值已知，相等比较 | `trim(stdout) == "385"` |
+| 这个 JSON 是否有字段 F（字段名必须完全一致） | `has(parse_json(t), F)` | 代码 `has(...)` |
+| 这段话里直接写出了下列哪个城市的名字 | `index_of`/`contains` 能算 | 代码 `index_of` |
+| target < 500 这类数值比较 | 数值比较 | 代码 `<` |
+| 这条待办是否写了「今天/马上/尽快」 | 词表匹配 | `regex_match` |
+| 这条评论是否包含「退款」这个词 | 字符串包含 | `contains` |
+
+三条判据全满足的题，即使语义很深也该交给 JEV，不必先拆浅（意图汇编 7b/7c）：「这两个人适不适合
+合作」「透露这条信息会不会推进合作」都是无确定算法、证据已在材料里、一跳一命题的语义判断。
+
 本节的每个签名以 `lib/compose/*.jpp` 源码为准。**`地基/比赛/搭配用法手册.md`（施工前写的草稿）
 里的部分签名已经过时**——最常见的两处：`ground` 手册写成两个参数 `ground(action, render)`，
 源码是三个参数 `ground(action, args_of, render)`（执行器要三个实参：代码、标准输入、超时秒数）；
@@ -271,15 +309,17 @@ J++ 的底层，不是可选功能：判断是唯一产出读数的效应，别�
 **一次判断（judge + cut）。** 一道题（`test`/`select`/`measure`）问在一份材料（`state(mat(...))`）
 上，`judge` 拿到读数（概率分布），`cut` 按线把读数切成三值出口（act / ignore / unsure），`handle`
 把三个出口分派到三段代码。线从哪里来、`declare`/`stat`/`closed`/`--release-on-declared` 怎么用，
-本文件前面「线从哪里来」「用判断守卫不可逆动作」两节已经讲透，这里不重复，只给最小可运行的样子：
+本文件前面「线从哪里来」「用判断守卫不可逆动作」两节已经讲透，这里不重复，只给最小可运行的样子。
+这道题要理解语义才能判——客户在抱怨、还是在明确要求退款，材料把两者混在一起，不是关键词匹配能
+分的事（意图汇编 7a：相等、数值比较、格式、是否为空这类字面可算的事不该占这个位置）：
 
 ```jpp
 budget {calls: 4, cost: 0.01, depth: 8};
-let overdue = test("这条工单是否已经超过约定的响应时限？", "ticket-overdue");
-let r = judge(state(mat("工单 #391：约定 4 小时响应，已过去 9 小时，客户尚未收到回复。")), overdue);
+let refund_ask = test("这条客户留言是不是在明确要求退款？", "customer-refund-request");
+let r = judge(state(mat("这台空气净化器用了不到一周就一直报警，联系客服说要寄回厂家检测，我等不及了，东西你们拿回去，钱退给我就行。")), refund_ask);
 handle(cut(r), {
-    act: fn() { "超时：升级" },
-    ignore: fn() { "未超时" },
+    act: fn() { "退款：升级处理" },
+    ignore: fn() { "非退款请求" },
     unsure: fn(u) { consume(u, "drop"); "线附近，转人工" }})
 ```
 （`examples/guide/elem-judge.jpp`）统计量线（`stat: "expect"`/`{mass: […]}`/`"confidence"`）与
@@ -432,48 +472,82 @@ let r = search([], propose, fits, unit, 3, {width: 2});
 轮数用尽、一轮不再有新候选的两种收尾分别见 `examples/search-bound.jpp`、`examples/search-noshrink.jpp`
 （未收进 `examples/guide/`，行为与上面同一族，读法一样）。
 
-**ground / verify（执行 → 判）。** 要判的东西不是字面的：代码对不对、查询答没答对。
+**ground / verify（执行 → 判）。** 要判的东西不是字面的：代码对不对、查询答没答对。**能否运行、
+数值相不相等、格式对不对、结果是不是空这类代码自己就能算的事，先用普通代码筛掉，不进 JEV、不花
+一次调用；JEV 只判筛剩下的那些没有标准答案、要理解语义的问题**（意图汇编 7a——早先这一节的例子
+让 JEV 判「代码输出是否等于 385」，这正是代码能定的事，已改成下面这条）。代码核的：跑得通、有
+结果；JEV 判的：口径对不对（B181 判断分工定律的 E9 重述）。
 
 ```
 ground(action, args_of, render) -> fn(候选材料) -> 材料 | Fail
-verify(cands, grounder, q) = sieve(map(cands, grounder), q)
+  opts.keep?   fn(材料) -> Bool。代码谓词（B184）：ground 之后、feasible 之前对每个新候选求值，
+               假即排除——不进 sieve、不花调用、不进 pending，记 detail.excluded: [{item, round}]。
+verify(cands, grounder, q, opts) = sieve(kept, q)   -- kept 按 opts.keep 过滤，语义同 search 的 opts.keep
 ```
 `ground` 返回一个函数值：对每个候选跑 `do(action, args_of(候选), 0)`，失败（含没有沙箱的
-`NoSandbox`）原样返回失败值，否则把候选与执行输出一起渲染成字面材料（`render(候选, 输出)`），
-taint 承接执行输出（执行器为 `untrusted`）。`ground` 的返回值可以直接放进 `search` 的
-`opts.ground`——这就是「提出 → 执行 → 判 → 再提出」的闭环，不是第四个原语：
+`NoSandbox`）原样返回失败值，否则把候选与执行输出一起渲染成材料（`render(候选, 输出)`）。
+`render` 可以返回文字，也可以返回记录——推荐返回记录：结构化字段（`error`、`rows`、`exit_code`
+之类）供 `opts.keep` 读，渲染文字供 JEV 读，同一份材料两路用。taint 承接执行输出（执行器为
+`untrusted`）。`ground` 的返回值可以直接放进 `search` 的 `opts.ground`——这就是「提出 → 执行 →
+判 → 再提出」的闭环，不是第四个原语。`opts.keep` 在接地之后代码判定「不可行」的候选，是判断分工
+定律谓词半在库里的落点（B181/B184）：代码已经能确定的结论不必再花一次判断调用、不必再背一条未决
+责任。
 
 ```jpp
-import "../../lib/compose/ground.jpp";
 import "../../lib/compose/search.jpp";
+import "../../lib/compose/ground.jpp";
 budget {calls: 20, cost: 0.01, depth: 64};
 
-let brief = mat("写一段 Python 代码，打印 1 到 10 的平方和");
+let db = "examples/fixtures/returns.db";
+let brief = mat("写一条 SQL 查询，回答：假设今天在 2026 年第三季度，上个季度（2026 年 4 月到 6 月）哪一类商品退货数量最多。数据库表 returns(id, category, product_name, quantity, return_date)");
 let propose = fn(frontier, i) {
-    gen("按下面的需求提出 3 段 Python 代码，每段是一个字符串；需求之后的上下文是上一轮留下的候选（代码与输出）", concat([brief], frontier), 3, i)
+    gen("按下面的需求提出 3 条 SQL 查询，每条是一个字符串；需求之后的上下文是上一轮留下的候选（SQL 与执行结果）", concat([brief], frontier), 3, i)
 };
-let runner = ground("exec_py", fn(c) { [content(c), "", 5] },
-                    fn(c, out) { "代码：" + content(c) + "\n输出：" + content(out).stdout });
-let correct = test("这段代码的输出是否等于 1 到 10 的平方和（385）？", "ground-correct");
+// 接地：库函数 ground()（B148/B184）。render 返回记录：结构化字段（error、rows）供下面的 keep
+// 读，渲染文字（text）供 JEV 读——同一份材料两路用（B184 §3·(3)）。
+let run_sql = ground("exec_sql", fn(c) { [db, content(c)] }, fn(c, o) {
+    let r = content(o);
+    let rendered = "SQL：" + content(c) + "\n" +
+        (if r.error != unit { "报错：" + r.error }
+         else if len(r.rows) == 0 { "结果为空" }
+         else { "结果：" + text(r.rows[0][0]) + " 共 " + text(r.rows[0][1]) + " 件" });
+    {sql: content(c), error: r.error, rows: r.rows, text: rendered}
+});
+// 代码谓词（B184）：SQL 报错或查不出行的候选在这里排除，不进 sieve、不花一次判断调用。
+let keep = fn(m) { let r = content(m); r.error == unit && len(r.rows) > 0 };
+let scope_correct = test("这条查询是否按需求的口径统计：只算上个季度（4 月 1 日到 6 月 30 日）、按商品类别汇总、取退货数量最多的一类？", "sql-scope-correct");
 
-let r = search([], propose, correct, unit, 3, {width: 1, unsure_to: "refine", ground: runner});
+let r = search([], propose, scope_correct, unit, 3, {width: 1, unsure_to: "refine", ground: run_sql, keep: keep});
 {kept: map(r.value, fn(e) { e.item }), found_in: map(r.value, fn(e) { e.round }),
  rejected: map(r.detail.ignore, fn(e) { e.item }),
+ excluded: map(r.detail.excluded, fn(e) { {item: e.item, round: e.round} }),
  undecided: map(r.pending, fn(p) { {item: p.item, cause: p.cause, via: p.via} }),
  reason: r.detail.reason, rounds: r.detail.rounds, measures: r.detail.measures, duplicates: r.detail.duplicates,
  pending: r.pending}
 ```
-（`examples/guide/comp-ground-verify.jpp`：第一轮三段代码都不对，`refine` 宽限一轮，第二轮凑够
-`width = 1` 停止。金样不在检查期执行代码——本例的 `guide_check.py` 从已经在有 `sandbox-exec` 的
-机器上真跑一次录下的种子账本 `tests/golden/search-ground/seed.ledger.jsonl` 用 `--resume` 续跑，
-什么都不需要重新执行——种子账本里已经带着两轮全部的 `gen`/`exec_py`/`transform` 记录（`judge`
-不在种子里，固定观察下始终从 `--fixtures` 取，不进种子）。种子是在有 `sandbox-exec` 的机器上把
-整个程序跑一遍录下的，`--resume` 只是把这些记录接上。**这一条只在本机（有 `sandbox-exec`）验证过：
-续跑不再执行任何一次。没有沙箱的机器上是否能跑通没有验证过**——`ground` 里的 `do` 处在由判断
-出口决定要不要走的分支里（`search` 每一轮），没有沙箱时执行器登记为不可逆，运行期能不能走到、
-是先按账本键取历史结果还是先经 J-08 拦下，这条路径本文没有在无沙箱环境实测，不写成结论。
-`ground` 内部的 `do(action, …)` 里 `action` 是形参、不是字面量，CLI 因此把它当作可能不可逆而
-要求 `--ledger-out`——库外自己直接 `do(变量, …)` 时也是同一条规则，下面「常见报错」有专门一条。
+（`examples/guide/comp-ground-verify.jpp`，与 `examples/search-ground.jpp` 同一份程序：第 1 轮
+3 条候选——不限定季度（错范围，家居 60 件，`keep` 通过，JEV 判否）、列名打错的 SQL（跑不通，
+`keep` 排除，不进 JEV）、限定到上季度但漏了 6 月 30 日一天（边界，数码 25 件，`keep` 通过，JEV
+判不确定，落带内）。`keep` 排除的候选与判过拿不准的候选一起，经 `unsure_to: "refine"` 并进第 2
+轮的生成器上下文——它们是接地成功、代码判定不可行的正常记录材料，不是 `Fail` 值，可以放心进前沿
+（B184 §3.2）。第 2 轮 3 条——补全边界后的正确查询（数码 40 件，JEV 判对，凑够 `width = 1`，
+`stop`）、限定季度但按商品分组（错颗粒度，耳机 25 件，`keep` 通过，JEV 判否）、查一个不存在类别
+的 SQL（查不出行，`keep` 排除，不进 JEV）。6 次 `exec_sql` 只换来 4 次 JEV 判断，且这 4 次问的都
+是「口径对不对」这种要理解语义的问题，没有一次在问字面可算的事。金样不在检查期执行 SQL——本例的
+`guide_check.py` 从已经在有 `sandbox-exec` 的机器上真跑一次录下的种子账本
+`tests/golden/search-ground/seed.ledger.jsonl` 用 `--resume` 续跑，什么都不需要重新执行——种子
+账本里已经带着两轮全部的 `gen`/`exec_sql`/`transform` 记录（`judge` 不在种子里，固定观察下始终从
+`--fixtures` 取，不进种子）。种子是在有 `sandbox-exec` 的机器上把整个程序跑一遍录下的，`--resume`
+只是把这些记录接上。**这一条只在本机（有 `sandbox-exec`）验证过：续跑不再执行任何一次。没有沙箱
+的机器上是否能跑通没有验证过**——`run_sql` 内部的 `do` 处在由判断出口决定要不要走的分支里
+（`search` 每一轮），没有沙箱时执行器登记为不可逆，运行期能不能走到、是先按账本键取历史结果还是
+先经 J-08 拦下，这条路径本文没有在无沙箱环境实测，不写成结论。这里的 `do("exec_sql", ...)` 现在
+经由库函数 `ground()` 调用，动作名不是字面量（`ground.jpp` 内部把它当形参 `action` 用），CLI 按
+可能不可逆处理，要求 `--ledger-out`——旧版自己写接地闭包时动作名是字面量、不要求 `--ledger-out`，
+换成库函数后这点额外好处不再有，见下面「常见报错」专门一条。**排除放在第 1 轮（不是最后一轮）**：
+旧版把会被代码筛掉的候选特意安排到最后一轮，是为了绕开「`fail(...)` 构造的真 `Fail` 值不能喂给
+`gen`」；`opts.keep` 排除的材料从未变成 `Fail`，本例特意把它放进第 1 轮，验证它确实经 `refine`
+进入第 2 轮的生成器上下文。
 
 **judged_graph / judged_bipartite / on_graph / interval（判出来的图）。** 决策是全局的、不是逐条
 的：配对、分组、找路时用图算法；但边要判断给出。边有三种状态：已决有、已决无、未决。算法只在
@@ -561,9 +635,10 @@ let el = element(mat("样品 A"), e, {pos: 0, q: q, key: "elem-ok"});
 
 三条已经跑通的嵌套写法，对应 `00-Nature意图汇编` 第 5 条「元素之间继续组合，组合的组合再组合」：
 
-**search 接 ground 的闭环。** 上一节 `comp-ground-verify.jpp` 本身就是这条：`ground` 的返回值是
-一个普通函数值，直接填进 `search` 的 `opts.ground`，外层看不出内层在执行代码——闭环不是新增的
-第三个原语，是「组合能当参数传」这条规则的直接结果。
+**search 接 ground 的闭环。** 上一节 `comp-ground-verify.jpp` 本身就是这条：接地闭包（不论是库
+函数 `ground()`，还是照它的形状另写的 `run_sql`）的返回值是一个普通函数值，直接填进 `search` 的
+`opts.ground`，外层看不出内层在执行代码——闭环不是新增的第三个原语，是「组合能当参数传」这条
+规则的直接结果。
 
 **图上分工的产物再判、或再建一张图。** `judged_bipartite`/`judged_graph` 的产物元素带 `item`，
 和 `sieve`/`pair` 的产物是同一种形状，能原样再交给下一层：
@@ -623,6 +698,108 @@ let plans = map(briefs, fn(b) { search([], propose(b), fits, unit, 1, {width: 1}
 `retry_seq`」匹配生成记录，题面相同时后一条会覆盖前一条，返回同一个生成结果（本例的
 `examples/guide/fixtures/nest-map-search.json` 就是按这条改过一次才对上）；真机运行没有这个
 限制，因为真实生成器会按完整上下文各自生成。
+
+### 题树
+
+复杂的判断靠结构拆开，不靠把题问成显而易见（意图汇编 7b）。「两个人适不适合合作；第三个人加入会不会让合作更紧密；会的话金额会不会变大、增量从哪来；再加一个人会不会更多」——这一串追问在循环开始前由生成器一次写成一棵题树，JEV 沿每一步的出口往下判。节点是普通的是非题或 K 选一题，深问题照原样问，用作者声明线切（7c）；树的形状、往哪支走、拿不准时怎么办，由 `lib/compose/tree.jpp` 的 `walk` 管。树的 JSON 形状与现场模板 `地基/比赛/现场/examples/tree-collab.jpp` 相同，模板里手写的 `loop` + `handle` 可以直接换成 `walk`。
+
+```
+walk(tree, material, depth, opts) -> 契约值
+  tree      是非题节点 {kind?: "test", q, act, ignore, unsure?, add?, need? 或 missing?}
+            K 选一节点 {kind?: "select", q, over: [候选…], picks: [子节点…], unsure?, add?}
+            叶 {leaf}；先 validate_tree(tree, depth)
+  material  根节点看的材料，推荐具名字段记录 mat({a: …, b: …})
+  depth     路径上最多走几个节点；写字面量或顶层 let 常量（J-06 在调用点核）
+  opts      {line?, pick_line?, calib?, question?, grow?, keep?, enrich?, eval?}
+            enrich = {rounds, fetch: fn(节点, 缺项, 当前材料) -> 值 | 材料 | Fail, line?, calib?, need?, merge?}
+validate_tree(tree, depth) -> tree | Fail      查形状并规范 add、need 为文字列表；报文带路径，如「根.act.pick1：节点缺 act 或 ignore」
+validate_tree_with(tree, depth, {need?: [信息类别词表], members?: [成员名]}) -> {tree, dropped} | Fail
+                                               同上，再按词表剔除 add、need 里写错的，逐条记在 dropped
+parse_tree(生成结果) -> tree | Fail             已是记录原样返回；是文字就取出 JSON 再解析
+add_members(m, names, members)                 grow 用：逐个并入成员，已在材料里的、成员表里没有的跳过
+with_member(m, name, x) / without_member(m, name)   记录材料加、减一个具名字段
+```
+
+每个节点按顺序做五件事：`grow` 把材料变成这个节点要看的材料（例如按节点的 `add` 把第三个人并进来，子节点沿用变过的材料）；`keep` 是代码谓词，代码能定的节点不发判断、直接走 ignore 支（B184）；取本节点的读数；`cut`（是非题按 `line`，K 选一按 `pick_line`，缺省取 `line` 的 `hi` 作最大概率门槛）；`handle` 按出口选子节点，K 选一的 `pick(k)` 走 `picks[k]`。K 选一题按正逆两序各问一次（`permute`），真机上「变大 / 变小 / 不变」这类三选一可靠，最大概率低于 0.7 当拿不准（`实测/语义深度-2026-09-26/结果.md`）。落到叶，`value` 里就有一个元素：`leaf` 是叶结论，`path` 是一路的题面、出口与支，`item` 是到叶时的材料。节点判出未决时，出口进 `pending` 随返回值交出；节点有 `unsure` 子节点就接着往下走，没有就停在这里（`leaf` 为 `unit`）。
+
+**拿不准时补信息再判（7c）。** 生成器出题树时，给是非题节点列好「还可能缺哪几类信息」（`need`，模板里叫 `missing`，两个名字都认）。给了 `opts.enrich = {rounds, fetch, line?}`，节点判出未决后，JEV 先用一道 select 选出最缺的一类，程序调 `fetch(节点, 缺项, 当前材料)`——三个参数——取来，补进材料（记录材料用 `with_member` 加一个字段，文字材料接在末尾），再判同一节点；最多补 `rounds` 次，仍未决的照常进 `pending`。补过的材料一路往下带。上一次的未决被重判取代，记一次显式丢弃（报告里有一条 `W-drop-vs-escalate`）。「最缺哪一类」这道 select 按正逆两序各问一次（`permute`），选项顺序的影响测过才给 `pick`。`fetch` 由作者给真实来源：查数据，或由宿主动作去问人；`ask` 返回的是人的是非出口，不是信息，不能当 `fetch`。拿生成器补内容只是替身，生成器编出来的背景不是证据。
+
+**两种求值。** 缺省 `eval: "all"`：从当前节点起，同一份材料上的整组节点题一次发出（运行时按状态合成一次调用），之后逐节点 `cut`、按出口下行，不再发判断；材料变了（`grow` 或补过信息）再对新材料发下一组。没走到的同组节点也付了费，但它们只有读数、不 `cut`，不产生未决责任。`eval: "path"` 每判一个节点一次调用，`grow` 会调 `gen`、`do` 这类贵的效应时用它。两种求值的叶、路径、未决相同。
+
+```jpp
+import "../../lib/compose/tree.jpp";
+budget {calls: 30, cost: 0.02, depth: 64};
+
+let pair_ab = mat({a: "甲：社区团购团长，做了三年，手上有两千户固定下单的家庭，一直缺稳定的蔬菜货源",
+                   b: "乙：城郊蔬菜基地负责人，产量常年过剩，想找稳定的线上销售渠道"});
+let members = {c: "丙：冷链配送公司老板，能做城区当日达，正在找新的货源客户",
+               d: "丁：连锁餐饮的采购经理，每月固定采购大量蔬菜，看重稳定供货"};
+// 作者手上的信息来源：键就是可取的信息类别（need 的词表）。这里是一张查得到的表；真实程序里是查数据库，或由宿主
+// 动作去问人（ask 返回的是人的是非出口，不是信息）。拿生成器补内容只是替身——生成器编出来的背景不是证据。
+let known = {"c 的配送覆盖范围": "丙的车队已经覆盖城西 30 个小区，甲的下单家庭有八成住在城西",
+             "a 的下单家庭分布": "甲的两千户下单家庭八成住在城西，两成在城东",
+             "b 的日供货能力": "乙的基地每天能稳定供应约 3 吨叶菜",
+             "d 的采购规模": "丁每月固定采购约 40 吨蔬菜，要求每天早上 6 点前到货",
+             "双方过往合作记录": "甲和乙去年合作过一次社区团购试单，交付准时"};
+let vocab = keys(known);
+let names = keys(members);
+let skeleton = "{\"q\": \"题面，字符串，一道是非题\", \"add\": [\"进入这道题前要并入材料的成员名，字符串；不需要就省掉这个字段\"], \"need\": [\"判这道题时材料里最可能缺的信息类别，字符串\"], \"act\": 下一个节点或叶, \"ignore\": 下一个节点或叶, \"unsure\": 下一个节点或叶（可省）}；叶写成 {\"leaf\": \"结论，字符串\"}";
+let brief = mat("判断 a、b 两人适不适合合作；适合的话，c 加入会不会更紧密、金额会不会变大、增量从哪来，再加入 d 会不会更多；不适合的话，透露一条信息能不能推进合作");
+let made = gen("按下面的需求生成一棵合作判断题树。只输出一个 JSON 对象，不要代码块标记，不要解释。每个节点都照这个骨架写，字段名不能改：" + skeleton + "。a、b 是两位当事人，已经在材料里，不要写进 add；add 只能从这些成员名里选：" + join(names, "、") + "。need 只能从下面这些信息类别里原样照抄，一个节点写一到三个：" + join(vocab, "；") + "。从根到叶最多 5 道题。", [brief], 1, 0);
+let v = if is_fail(made) { made } else { validate_tree_with(parse_tree(content(made[0])), 6, {need: vocab, members: names}) };
+let grow = fn(m, node) { if has(node, "add") { add_members(m, node.add, members) } else { m } };
+let amount = measure("这几个人一起做，这次合作能做成的生意金额有多大？", ["小", "中", "大"], "collab-tree");
+
+if is_fail(v) { {failed: text(v)} } else {
+    let r = walk(v.tree, pair_ab, 6, {line: {declare: {hi: 0.7, lo: 0.3}}, calib: "collab-tree", grow: grow,
+                                     enrich: {rounds: 2, line: {declare: {hi: 0.4}},
+                                              fetch: fn(node, need, m) { if has(known, need) { known[need] } else { fail("没有这一类信息：" + need) } }}});
+    // 归因：叶材料本身作基线，再加上去掉每个加入者后的材料；先算齐材料，再连续登记判断（中间不夹 if，同一层发出）。
+    // 按期望档位排序：去掉后金额落到最低一档、且低于基线的那位是关键成员；基线也在最低一档，说明去掉谁都不减少
+    let item = if len(r.value) == 0 { pair_ab } else { r.value[0].item };
+    let joined = filter(names, fn(x) { has(content(item), x) });
+    let reads = map(concat([item], map(joined, fn(x) { without_member(item, x) })), fn(m) { judge(state(m), amount) });
+    let tiers = order(reads, {stat: "expect"});
+    let low = tiers[len(tiers) - 1];
+    let key = if len(r.value) == 0 || contains(low, 0) { [] } else { map(low, fn(k) { joined[k - 1] }) };
+    {leaf: map(r.value, fn(e) { e.leaf }),
+     path: map(r.value, fn(e) { map(e.path, fn(p) { p.q + " → " + p.branch }) }),
+     enriched: map(r.detail.enriched, fn(x) { x.need }),
+     leaf_exit: map(r.value, fn(e) { exit_kind(e.exit) }),
+     reason: r.detail.reason,
+     key_member: key,
+     dropped: v.dropped,
+     pending: r.pending}
+}
+```
+（`examples/guide/comp-tree.jpp`，与金样 `examples/tree-collab.jpp` 同一程序，共用夹具 `examples/fixtures/tree-collab.json`。）
+**生成器的输出要先规范再用。** 真机上 `claude -p` 写的题树常常不合示例的假定（`地基/比赛/现场/预注册-冒烟.md` 冒烟 3）：`add` 写成列表，还把已经在材料里的当事人写进去；`need` 随手写「双方目标与诉求」这类类别，和作者手上能取到的信息对不上；有时省掉空格，有时在 JSON 外面包说明文字。示例的做法是三步：出题提示里给出节点骨架（字段名、类型、哪些可省）、成员名和信息类别词表——词表就是 `known` 表的键，也就是 `fetch` 真能取到的东西；`parse_tree` 取出 JSON；`validate_tree_with(…, {need: 词表, members: 成员名})` 规范形状、剔除写错的并记在 `dropped`。这样补信息时选中的类别一定在 `known` 表里。
+
+这一趟（夹具仿真机输出的形状：根节点 `add: ["a", "b"]`、各节点 `need` 混有词表外的类别，`dropped` 记下 8 条）：N1、N2、N3 走 act；N4「金额变大主要来自 c 把配送扩到更多小区吗？」首判 0.52 落在线之间，select 在词表内的两类里选中「c 的配送覆盖范围」，从 `known` 表取来补进材料后判 act；N5 落在线之间，它的 `need` 全在词表外、规范后为空，不补，沿 `unsure` 支到叶「先按三方推进，再和 d 谈一次试单」，N5 的未决在 `pending` 里；归因以叶材料为基线，去掉 c 后金额最低，关键成员是 c。调用：1 次生成 + 8 次判断（{a, b} 上 N1、N6 一次；{a, b, c} 上 N2、N3、N4 一次；select 一次；补过的材料上重判 N4 一次；并入 d 后 N5 一次；归因三份材料同一层三次）。同一程序用现场二进制对真实 JEV 与 `claude -p` 跑过三趟，记录在冒烟 3 的重跑段。
+
+**叶出口怎么读。** `value` 元素的 `exit` 是路径上是非题出口的 `compose(…, "all")`（强 Kleene 合取，B131；K 选一的 `pick` 不进合成）。路径上有未决时，合成里去掉 ignore，叶出口一律未决；路径上没有未决时读作「路径上每个是非题都判了是」：全 act 为 act，走过 ignore 支为 ignore。只有全 act 可能放行不可逆动作（还要看线的等级与 taint）。「每一步都已决」看 `pending` 是否为空。
+
+**「是谁的加入带来的」用相对变化。** 这是反事实问题：逐个 `without_member` 去掉一个加入者，问同一道题，用 `order` 比较几份材料上的读数，去掉后读数掉得最多的那位是关键成员；不要各自按线切。依据是 `实测/语义深度-2026-09-26/结果.md`：逐人去掉后按绝对线判只对了一半，按读数的相对变化 12 组全部找对关键人。上面示例的最后几行就是这个写法。
+
+**节点的线从哪来，叶结论能不能放行动作（B183 (2)）。** 生成器写的题没有认证记录，节点的线三条路：作者声明线 `line: {declare: {hi, lo}}`（最常用，等级 `Declared`）、试用线（`calib-import --alpha-trial`，只路由）、类键。题面来自生成器，出口随之不可信（B58、B149），所以题树的叶结论只能路由、不能单独放行不可逆 `do`；要放行，叶结论交 `ask`，或生成器画像声明 `taint_out: trusted`。题树节点不入题库；按整棵树认证是赛后的方向。
+
+**再组合。** `walk` 的产物与 `sieve`、`search` 的产物同形，能接着组合：
+
+<!-- 片段 -->
+```jpp
+// 对几组人各走一遍同一棵树，未决经 carry 并进外层
+let rs = map(groups, fn(g) { walk(tree, g, 4, opts) });
+let all = carry(carry([], rs[0].pending, "组#0"), rs[1].pending, "组#1");
+// 叶元素的 item 是到叶时的材料，可以再判一道题；walk 的 pending 随契约值并进来
+let s = sieve(walk(tree, m, 4, opts), 复核题);
+// 几次 walk 的叶出口再合成
+let joint = compose(map(rs, fn(r) { r.value[0].exit }), "all");
+// search 选出的每个候选各走一遍
+let ws = map(search(…).value, fn(e) { walk(tree, e.item, 4, opts) });
+```
+这四种写法在 `crates/jpp/tests/compose_tree.rs` 的 (i1)–(i4) 里都跑过。叶元素的 `item` 带着路径谱系：路径上每个判过的出口都挂成它的选择依赖边，路径题面的 taint 也并进了它。所以在叶材料上再判一道题、拿那道题的出口去守不可逆 `do` 时，J-08 看得到整条路径——路径用了宿主没接受的作者声明线，报「该材料由 Declared 线的出口选出（谱系放行，B72-4）」；题树来自生成器（题面不可信），叶材料随之不可信，下游判断不是可信合取项。测试 (L1)–(L4) 核了这四种情形（拦下两种、照发两种）。
+
+**写法提醒。** 判断的账本键带调用站点：同一（材料, 题）经不同的 `judge` 调用处不会按键复用。`if` 是刷新点：想让几次判断在同一层发出，先算齐材料与题，再在不含 `if` 的 `map` 里连续登记（示例的归因就是先算齐去掉每个人后的材料，再登记判断）。
 
 ### 什么时候用哪个
 

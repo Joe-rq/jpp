@@ -134,15 +134,26 @@ impl<'a> Interp<'a> {
                 call,
                 perm,
                 confidence,
+                reused_from,
                 ..
             }) = self.账本查(k)
             {
-                let (answer, cost, call, perm, confidence) =
-                    (answer.clone(), *cost, *call, *perm, *confidence);
+                let (answer, cost, call, perm, confidence, 复用来的) = (
+                    answer.clone(),
+                    *cost,
+                    *call,
+                    *perm,
+                    *confidence,
+                    reused_from.is_some(),
+                );
                 // 账本命中当场填：写答案只经 flush.rs 的 fill_answer（grep_fill 核）；
                 // 置换测量随答案一起取回，否则 K 选一出口在重放处变成 `untested`；自报置信度同理（B154）
-                self.fill_from_record(&readings[i], answer, perm, confidence);
-                self.audit_account(call, cost, sp);
+                self.fill_from_record(&readings[i], answer.clone(), perm, confidence);
+                // 步 19：记进本运行的缓存键表（同运行复用的来源）；复用条目本来没有调用，不计入审计重放
+                self.记可复用判断(k, &answer, perm, confidence);
+                if !复用来的 {
+                    self.audit_account(call, cost, sp);
+                }
                 self.cost.replayed += 1;
                 self.trace
                     .push("judge", k, true, 0.0, sp, format!("「{}」", qs[i].text));
@@ -151,6 +162,8 @@ impl<'a> Interp<'a> {
                 // 去向是调生成器补候选，不同于 tie / insufficient。
                 self.absent_marks.insert(k.clone(), "no_candidate".into());
                 self.trace.warn(format!("W-no-candidate: @{} 选择题「{}」没有候选（over 为空），出口 Unsure(no_candidate)", sp.start, qs[i].text));
+            } else if self.判断复用(k, &readings[i], sp, format!("「{}」", qs[i].text)) {
+                // 步 19（B40、B151）：按缓存键复用了本运行已答的或跨运行缓存里的读数，不进待发
             } else {
                 missing.push(i);
             }

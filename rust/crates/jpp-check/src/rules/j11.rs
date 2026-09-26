@@ -50,15 +50,28 @@ fn call(cx: &Cx, s: &CallSite) -> Vec<Diagnostic> {
     let Some(name_arg) = s.args.get(pos) else {
         return out;
     };
-    let ExprKind::Text(name) = name_arg.kind() else {
-        // 动作名不是字面量：静态判不了，交运行期
-        return out;
-    };
+    match name_arg.kind() {
+        ExprKind::Text(name) => report(cx, &mut out, name, name_arg.span, None),
+        // 动作名不是字面量：查是不是「形参经全程序调用点都同一字面量」（B179 (b)，步 24e-4）；
+        // 追不到就静态判不了，交运行期
+        _ => {
+            if let Some(v) = cx.via_param.get(&(*name_arg as *const Expr)) {
+                let via = format!("经 `{}` 的形参 `{}` 传入", v.fn_name, v.param);
+                for span in &v.call_sites {
+                    report(cx, &mut out, &v.action, *span, Some(&via));
+                }
+            }
+        }
+    }
+    out
+}
+
+fn report(cx: &Cx, out: &mut Vec<Diagnostic>, name: &str, span: Span, via: Option<&str>) {
     // 没有动作表：检查期不知道注册了什么，不报（同 J-08 静态子面的口径，避免库调用方被误报）
     let Some(actions) = cx.actions else {
-        return out;
+        return;
     };
-    if !actions.actions.contains_key(name.as_str()) {
+    if !actions.actions.contains_key(name) {
         let mut 表: Vec<String> = actions
             .actions
             .iter()
@@ -74,15 +87,15 @@ fn call(cx: &Cx, s: &CallSite) -> Vec<Diagnostic> {
             })
             .collect();
         表.sort();
+        let 来源 = via.map(|v| format!("（{v}）")).unwrap_or_default();
         // 依据：12 §5 J-11（材料来源限制；do 只能触发登记过的动作）
         out.push(Diagnostic::error(
             "J-11",
             format!(
-                "动作 {name} 未登记：do 只能触发登记过的动作（register）。本次登记了：{}",
+                "动作 {name} 未登记：do 只能触发登记过的动作（register）{来源}。本次登记了：{}",
                 表.join("、")
             ),
-            name_arg.span,
+            span,
         ));
     }
-    out
 }

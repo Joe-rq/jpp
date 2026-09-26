@@ -1,0 +1,27 @@
+// 声明式拟合（B153，步 20j-4）：作者把几道题的读数按自己的换算率合成一个分，再在这个分上写线。
+// 求职匹配：每家公司问三道四档题（技能、经历、文化）与一道是非题（是否在招），
+// 匹配分 = (0.4 × 技能期望档位 + 0.35 × 经历 + 0.25 × 文化) / 3 × 在招的 p。
+// 闭包在桥内求值，只见参数（各题的统计量记录）与内置；结果是 Score，程序读不出它的数，
+// 只能进 cut 的声明线（等级 Declared）或同一拟合的 order。
+budget {calls: 8, cost: 0.01, depth: 16};
+let levels = ["不匹配", "略有", "较匹配", "很匹配"];
+let 技能 = measure("候选人的技能与这家公司的岗位要求匹配到什么程度？", levels, "fit-skill");
+let 经历 = measure("候选人的经历与这家公司的岗位要求匹配到什么程度？", levels, "fit-exp");
+let 文化 = measure("候选人的做事方式与这家公司的文化匹配到什么程度？", levels, "fit-culture");
+let 在招 = test("这家公司现在是否在招这个岗位？", "hiring");
+let 匹配 = fn(a, b, c, d) { (0.4 * a.expect + 0.35 * b.expect + 0.25 * c.expect) / 3.0 * d.p };
+
+fn 评(公司) !{judge} {
+    let s = state(mat(公司));
+    fit({declare: 匹配}, [judge(s, 技能), judge(s, 经历), judge(s, 文化), judge(s, 在招)])
+}
+
+let 分 = map(["甲公司：后端工程师，Rust 与分布式系统，远程协作，正在扩招。",
+              "乙公司：前端实习，偏设计与动效，坐班，岗位是否开放不明。"], 评);
+let 结论 = map(分, fn(s) {
+    handle(cut(s, {declare: {hi: 0.6}}), {
+        act: fn() { "投" },
+        ignore: fn() { "不投" },
+        unsure: fn(u) { consume(u, "drop"); "待定" }})
+});
+{结论: 结论, 排序: order(分)}

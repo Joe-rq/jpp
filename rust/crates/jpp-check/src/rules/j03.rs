@@ -36,6 +36,10 @@ fn call(cx: &Cx, s: &CallSite) -> Vec<Diagnostic> {
                 h9_confidence(cx, s, &mut out);
             }
         }
+        // B173 (4)（步 15k-1）：order(rs, {stat: "confidence"}) 与 cut 共用同一检查期 H9 面——
+        // h9_confidence 只看参数位 1 起的字面记录有没有 stat: "confidence"，不依赖 cut 专属的
+        // calib 位/cost 记录/H3，可以原样用于 order。
+        "order" => h9_confidence(cx, s, &mut out),
         "measure" => calib_literal(&mut out, s.name, s.args, 2),
         // 题式上：calib 写在选项记录里，同样不能是数字字面量
         "form" => {
@@ -115,8 +119,9 @@ fn cost_shape(out: &mut Vec<Diagnostic>, args: &[&Expr]) {
     }
 }
 
-/// H9（B154 (3)，步 20j-3）：`cut` 的字面记录写 `stat: "confidence"`，而加载的画像没有说判断器报自报置信度
-/// （`reports_confidence` 未测按假，B39 守卫侧）——检查期报 `E-stat-unavailable`，不等运行期、不静默退回 p_max。
+/// H9（B154 (3)，步 20j-3；B173 (4)、步 15k-1 扩到 `order`）：`cut`/`order` 的字面记录写
+/// `stat: "confidence"`，而加载的画像没有说判断器报自报置信度（`reports_confidence` 未测按假，
+/// B39 守卫侧）——检查期报 `E-stat-unavailable`，不等运行期、不静默退回 p_max。
 /// 没加载画像不报：运行期按判断器有没有给这个数定（固定观察端口按夹具，缺省 p_max）。
 fn h9_confidence(cx: &Cx, s: &CallSite, out: &mut Vec<Diagnostic>) {
     let Some(p) = cx.profile else { return };

@@ -46,19 +46,11 @@ impl 规则 {
     }
 }
 
-/// 一个分量：它的出口种类，与（若有）它的出口。`tally` 数的元素不一定带出口（调用者用 `outcome()` 造的
-/// 契约值），种类照 `tally` 的列表成员定；有出口的进 `parts`（`过程记录/工程-步25-2b.md` Q14）。
-pub(crate) struct 分量 {
-    pub 种类: ExitKind,
-    pub 出口: Option<Rc<Exit>>,
-}
-
-/// 一次合成的请求（内部入口 `调合成` 收它）。
+/// 一次合成的请求（内部入口 `调合成` 收它）。分量一律是出口，种类从出口读（B140，步 25-9：撤「种类 +
+/// 可选出口」）；结果未决时吸收全部未决分量（B141：撤「吸收集合」参数）。
 pub(crate) struct 合成请求<'r> {
     pub 规则: 规则,
-    pub 分量: Vec<分量>,
-    /// 结果未决时并入合成出口的未决责任（B131 (3)；调用者给，`first_k` 现行不吸收，见 Q15）
-    pub 吸收: &'r [Rc<Exit>],
+    pub 分量: Vec<Rc<Exit>>,
     pub op: Op,
     /// 合成出口的题键（报告里出口的 `q`）
     pub 题键: &'r str,
@@ -210,13 +202,13 @@ pub(crate) fn 合成种类(r: &规则, 分量: &[ExitKind]) -> Result<ExitKind, 
 /// 合成出口的联合界（B161）：`(min(1, Σ α_i), n_unknown)`。分量是合成出口的取其界与未知数；单个出口取 `alpha`，
 /// 没有（或分量不带出口）的按 1 计、未知数加一。`{first: k}` 只计读到的分量：凑够 k 个 Act 或读到挡路的未决为止。
 /// 这是联合界：任一规则下结果错只能因某个分量错，P(错) ≤ Σ α_i，不依赖分量独立。依据：B161
-pub(crate) fn 联合界(r: &规则, 分量: &[分量]) -> (f64, u32) {
+pub(crate) fn 联合界(r: &规则, 分量: &[Rc<Exit>]) -> (f64, u32) {
     let 读到 = match r {
         规则::First(k) => {
             let mut n = 0;
             let mut 止 = 分量.len();
             for (i, x) in 分量.iter().enumerate() {
-                match x.种类 {
+                match x.kind {
                     ExitKind::Act => {
                         n += 1;
                         if n == *k {
@@ -236,20 +228,14 @@ pub(crate) fn 联合界(r: &规则, 分量: &[分量]) -> (f64, u32) {
         _ => 分量.len(),
     };
     let (mut 和, mut 未知) = (0.0f64, 0u32);
-    for x in &分量[..读到] {
-        match x.出口.as_ref() {
-            Some(e) => match (e.bound.get(), e.alpha.get()) {
-                (Some((b, n)), _) => {
-                    和 += b;
-                    未知 += n;
-                }
-                (None, Some(a)) => 和 += a,
-                (None, None) => {
-                    和 += jpp_value::stat::ALPHA_UNKNOWN;
-                    未知 += 1;
-                }
-            },
-            None => {
+    for e in &分量[..读到] {
+        match (e.bound.get(), e.alpha.get()) {
+            (Some((b, n)), _) => {
+                和 += b;
+                未知 += n;
+            }
+            (None, Some(a)) => 和 += a,
+            (None, None) => {
                 和 += jpp_value::stat::ALPHA_UNKNOWN;
                 未知 += 1;
             }
@@ -385,24 +371,11 @@ impl<'a> Interp<'a> {
                 );
             }
         };
-        let 分量: Vec<分量> = 出口们
-            .iter()
-            .map(|e| 分量 {
-                种类: e.kind.clone(),
-                出口: Some(e.clone()),
-            })
-            .collect();
-        let 吸收: Vec<Rc<Exit>> = 出口们
-            .iter()
-            .filter(|e| e.is_unsure() && !e.consumed.get())
-            .cloned()
-            .collect();
         self.合成(
             caps,
             合成请求 {
                 规则,
-                分量,
-                吸收: &吸收,
+                分量: 出口们,
                 op,
                 题键: "compose",
                 已决标签: "compose:decided",
@@ -425,8 +398,13 @@ impl<'a> Interp<'a> {
         if let Value::Exit(e) = &x {
             e.bound.set(Some(联合界(&请求.规则, &请求.分量)));
             if e.is_unsure() {
-                // 分量的未决责任并入合成出口；合成出口自己进调用者的未决清单
-                for p in 请求.吸收 {
+                // 全部未决分量的责任并入合成出口（B131 (3)、B141）；合成出口自己进调用者的未决清单。
+                // 已消费的分量（别处已处置）不再并入
+                for p in 请求
+                    .分量
+                    .iter()
+                    .filter(|p| p.is_unsure() && !p.consumed.get())
+                {
                     caps.duty().settle(p, 请求.吸收标签);
                 }
             } else {

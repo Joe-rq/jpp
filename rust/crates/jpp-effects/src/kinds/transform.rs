@@ -3,7 +3,8 @@
 use jpp_ir::key::EffectId;
 
 use crate::spec::{
-    EffectSpec, KeyPart as K, OutputShape, ProfileSchema, SchedClass, SlotDecl, SlotKind, TaintRule,
+    EffectSpec, KeyPart as K, OutputShape, ProfileSchema, ReuseRule, SchedClass, SlotDecl,
+    SlotKind, TaintRule,
 };
 
 pub(super) const SPEC: EffectSpec = EffectSpec {
@@ -32,4 +33,6 @@ pub(super) const SPEC: EffectSpec = EffectSpec {
     taint_rule: TaintRule::Declared,
     batchable: false,
     profile_schema: ProfileSchema::Scheduling,
+    // 步 19：按缓存键复用的规则（B40、B151）
+    reuse: ReuseRule::Method,
 };

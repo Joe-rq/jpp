@@ -5,12 +5,16 @@
 //!
 //! 依据：B166、B167（地基/附注/2026-09-26-批6裁定.md §十四、§十五）；B63；B64；B154 (3)；
 //! 预注册 `地基/过程记录/工程-步15k.md` 一·2·8 (a)–(h)。
+//!
+//! (i) B173 (4)（步 15k-1）：`j03.rs::h9_confidence` 调用名从 `cut` 扩到 `order`，
+//! `order(rs, {stat: "confidence"})` 在画像 H9 为假或未测时检查期报 `E-stat-unavailable`。
+//! 预注册 `地基/过程记录/工程-步15k-1.md`。
 
-use jpp::effects::{CalibStore, EffectError, FnPort, JudgeResult, Ports};
+use jpp::effects::{CalibStore, EffectError, FnPort, JudgeResult, Ports, Profile};
 use jpp::ledger::Ledger;
 use jpp::value::Answer;
 use jpp::{ActionRegistry, EntryArgs, Outcome, Session, lower, syntax::parse};
-use serde_json::json;
+use serde_json::{Value as Json, json};
 
 fn 库() -> CalibStore {
     let mut c = CalibStore::new();
@@ -169,6 +173,38 @@ let ts = judge([state(mat("好")), state(mat("坏"))], t);
     )
     .expect_err("判断器没报 confidence");
     assert!(e.contains("E-stat-unavailable"), "{e}");
+}
+
+fn 真画像(reports: Option<bool>) -> Profile {
+    let p = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../../../src/foundation/profile/profiles/jev-1.13.0.json");
+    let mut j: Json =
+        serde_json::from_str(&std::fs::read_to_string(p).expect("真画像在")).expect("合法 JSON");
+    match reports {
+        Some(b) => j["reports_confidence"] = json!(b),
+        None => {
+            j.as_object_mut().unwrap().remove("reports_confidence");
+        }
+    }
+    Profile::from_json(&j).expect("画像读得动")
+}
+
+/// (i) B173 (4)：`order` 上 `stat: "confidence"` 与 `cut` 共用检查期 H9 面——画像未测或为假报
+/// `E-stat-unavailable`，填 true 不报；不加载画像不报（同 `b153_stat.rs::i_画像未测报取不到`
+/// 对 `cut` 的测试结构）
+#[test]
+fn i_order_confidence检查期() {
+    let src = format!("{打分}order(rs, {{stat: \"confidence\"}})");
+    let p = lower(&parse(&src).expect("parse")).expect("lower");
+    for (画像, 报) in [(None, true), (Some(false), true), (Some(true), false)] {
+        let r = jpp::check_with_profile(&p, &真画像(画像));
+        let d = r.find("E-stat-unavailable");
+        assert_eq!(d.is_some(), 报, "reports_confidence = {画像:?}");
+        if let Some(d) = d {
+            assert!(d.message.contains("reports_confidence"), "{}", d.message);
+        }
+    }
+    assert!(jpp::check(&p).find("E-stat-unavailable").is_none());
 }
 
 /// (g) 两层嵌套：map 里每组各排一次；sieve 的接受流读数排序后取第一档

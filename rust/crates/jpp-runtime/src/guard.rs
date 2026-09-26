@@ -118,6 +118,16 @@ impl<'a> Interp<'a> {
     /// 祖先的等级从本趟出口表按账本键取（续接与重放从头重跑，祖先都在本趟重新切，B83）。
     /// 表里查不到的祖先键算「无法证明」：谱系断，并报 `W-lineage-unknown`（17b 解释登记 (b)，主会话改保守读法）。
     pub(crate) fn 谱系(&mut self, e: &Exit) -> R<Option<String>> {
+        // 合成出口（B131，步 25-9）：谱系穿过 `parts` 到每个分量，任一分量谱系断即不放行。依据：B131、B72-4
+        let parts: Vec<Rc<Exit>> = e.parts.borrow().clone();
+        if !parts.is_empty() {
+            for p in &parts {
+                if let Some(说明) = self.谱系(p)? {
+                    return Ok(Some(说明));
+                }
+            }
+            return Ok(None);
+        }
         let start = e.ledger_key.borrow().clone();
         let mut 待查: Vec<String> = self.parents_of(&start);
         let mut 见过: HashSet<String> = HashSet::new();
@@ -151,6 +161,11 @@ impl<'a> Interp<'a> {
     }
 
     fn parents_of(&self, key: &str) -> Vec<String> {
+        // 声明式拟合出口的合成键（步 20j-4）：来源 = 各输入读数的来源之并，谱系因此穿过 `Score` 到输入材料。
+        // 依据：B72（附注 2026-09-24-评估①裁定.md，B72-4 谱系放行）；B153 (3)（来源穿过 Score）
+        if let Some(输入) = self.拟合谱系.borrow().get(key) {
+            return 输入.iter().flat_map(|k| self.parents_of(k)).collect();
+        }
         match self.ledger.view().get(key) {
             Some(Entry::Judge { parents, .. }) => parents.clone(),
             _ => vec![],

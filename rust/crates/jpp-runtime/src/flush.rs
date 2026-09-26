@@ -518,6 +518,7 @@ impl<'a> Interp<'a> {
         let ask: Vec<&Question> = items.iter().map(|(q, _, _)| q.as_ref()).collect();
         let mut 结果 = 首发;
         self.cost.calls += 1;
+        self.记请求(Self::读数效应());
         let mut 尝试 = 1u64;
         // 步 13a-1（B0270）：只含推测的组，端口报错、回复题数不对或答案形状不合法就放弃，不重试、不走缺席策略、
         // 不中止程序。真站点走到同一个键时照常发问，同样的错误由真站点正式报出
@@ -578,6 +579,7 @@ impl<'a> Interp<'a> {
                 }
                 结果 = self.call_judge(&states, &ask);
                 self.cost.calls += 1;
+                self.记请求(Self::读数效应());
                 尝试 += 1;
             }
             // 失败路径也计时延：退避睡眠与各次失败请求都占时延预算
@@ -711,6 +713,8 @@ impl<'a> Interp<'a> {
                 },
             ));
             self.fill_from_record(r, a.clone(), perm, confidence);
+            // 步 19（B40）：同一运行里后来登记的同缓存键判断复用这一条
+            self.记可复用判断(key, &a, perm, confidence);
             // 同键的其余读数（提前登记那些）也要填上，否则它们停在「没有答案」；
             // 置换测量一起填，否则它们的出口停在 `untested`
             for other in 同键[idx].iter().skip(1) {

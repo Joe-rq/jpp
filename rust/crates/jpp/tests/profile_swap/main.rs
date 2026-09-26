@@ -675,7 +675,8 @@ fn d1_替身判断器跑全部示例() {
     // 预注册预测停 4 个（三个调 gen、pair-team 下标越界）；实测多一个 `partial`：全部冷出口时它有一条
     // 未消费的 unsure，运行期 J-05（程序自身对冷出口的处理，不是替身的问题；过程记录 §三）。
     // 步 15h-1 新增金样用例 `gen-choose` 也调 gen，替身不生成，同 lifecycle 一类停下；
-    // 步 25c 的三个 `search-*` 用例与步 25c-2 的 `search-rank` 的 propose 包 gen，同一类
+    // 步 25c 的三个 `search-*` 用例与步 25c-2 的 `search-rank` 的 propose 包 gen，同一类；
+    // 批 8 T6 的 `tree-collab` 由 gen 生成题树，同一类；批 8 T1 的 `search-keep` 的 propose 包 gen，同一类
     assert_eq!(
         停名,
         vec![
@@ -684,10 +685,12 @@ fn d1_替身判断器跑全部示例() {
             "pair-team",
             "partial",
             "search-bound",
+            "search-keep",
             "search-noshrink",
             "search-rank",
             "search-stop",
             "sieve-review",
+            "tree-collab",
             "unsure-causes"
         ],
         "跑完 {}：{跑完:?}；停：{停:#?}",
@@ -697,10 +700,12 @@ fn d1_替身判断器跑全部示例() {
         "gen-choose",
         "lifecycle",
         "search-bound",
+        "search-keep",
         "search-noshrink",
         "search-rank",
         "search-stop",
         "sieve-review",
+        "tree-collab",
         "unsure-causes",
     ] {
         assert!(停[g].contains("stub 判断器不生成"), "{g}：{}", 停[g]);
@@ -715,11 +720,15 @@ fn d1_替身判断器跑全部示例() {
     // 替身上都跑得完：23 → 26。步 7t 新增 env-snake（B159 (1)(a) 纯函数环境示例）：全部出口在替身上
     // 都是未测 Unsure，decide() 里三处 cut_bool 各自 consume(u, "drop") 就地消费，没有未消费的 unsure
     // 带出顶层，程序正常跑完（不是本条断言原先漏列——预注册 `地基/过程记录/工程-步7t.md` 没有覆盖到
-    // profile_swap 这一处，属预注册漏列，在此补记）：26 → 27。步 25d 加 graph-interval、graph-nested：27 → 29。
+    // profile_swap 这一处，属预注册漏列，在此补记）：26 → 27。〔2026-09-26 意图汇编 7a 修订：往哪走
+    // 是纯算术（dx/dy 都是已知整数），改用 if/abs 决定方向，decide() 不再调 judge；env-snake 在替身上
+    // 跑得完变得更直接——它现在完全没有判断效应，不再依赖 cut_bool 就地消费未决，上面这条历史记录
+    // 留档说明当年为什么把它算进「跑得完」，不是当前行为。〕步 25d 加 graph-interval、graph-nested：27 → 29。
     // 步 20j-3 加 declare-stat（统计量上的声明线，mass / expect 不要置换），替身上跑得完：29 → 30
     // 步 20j-2 加 declare-refund-accept（同一源码带 --release-on-declared），替身上跑得完：30 → 31
     // 步 13a-1 加 spec-fixture-miss（替身判断器对全部题都答，推测组不报错）：31 → 32。
-    assert_eq!(跑完.len(), 32);
+    // 步 20j-4 加 declare-fit（声明式拟合，不靠校准记录），替身上跑得完：32 → 33
+    assert_eq!(跑完.len(), 33);
 }
 
 /// (D2) 校准不跨判断器（`12` B60：校准键含 `model`）：带 jev 校准记录的用例在替身判断器上跑，

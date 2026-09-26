@@ -86,3 +86,57 @@ fn 动作名不是字面量按不可逆处理() {
     assert!(!ok && err.contains("E-ledger-required"), "{err}");
     let _ = std::fs::remove_dir_all(&d);
 }
+
+/// B179 (b)（步 24e-4）：动作名经**形参**转发（`ground(action, ...) { fn(cand) { do(action, …) } }`
+/// 这类库函数的真实结构，`lib/compose/ground.jpp` 同形）时，若全程序调用点都给了同一个字面量，
+/// 检查器与 CLI 沿这层实参把它当字面量处理——引用它、只传可逆动作名的程序不再被当作「可能不可逆」，
+/// 不必要求 `--ledger-out`。
+#[test]
+fn 引ground同形结构_动作名可逆时不要求账本() {
+    let d = 目录("ground-rev");
+    std::fs::write(
+        d.join("p.jpp"),
+        "budget {calls: 2, cost: 0};\n\
+         fn ground(action, args_of, render) {\n\
+         \x20\x20fn(cand) {\n\
+         \x20\x20\x20\x20let out = do(action, args_of(cand), 0);\n\
+         \x20\x20\x20\x20if is_fail(out) { out } else { render(cand, out) }\n\
+         \x20\x20}\n\
+         }\n\
+         let runner = ground(\"record_check\", fn(c) { [{a: c}] }, fn(c, o) { content(o) });\n\
+         runner(1)\n",
+    )
+    .unwrap();
+    let (ok, err) = jpp(&d, &["run", "p.jpp"]);
+    assert!(ok, "{err}");
+    let _ = std::fs::remove_dir_all(&d);
+}
+
+/// 同一个 `ground` 结构换成不可逆动作名（`write_json`）：仍然要求 `--ledger-out`——沿形参追到的
+/// 字面量与直接写字面量受同一条 J-08/`E-ledger-required` 判据。
+#[test]
+fn 引ground同形结构_动作名不可逆时仍要求账本() {
+    let d = 目录("ground-irrev");
+    std::fs::write(
+        d.join("p.jpp"),
+        "budget {calls: 2, cost: 0};\n\
+         fn ground(action, args_of, render) {\n\
+         \x20\x20fn(cand) {\n\
+         \x20\x20\x20\x20let out = do(action, args_of(cand), 0);\n\
+         \x20\x20\x20\x20if is_fail(out) { out } else { render(cand, out) }\n\
+         \x20\x20}\n\
+         }\n\
+         let runner = ground(\"write_json\", fn(c) { [\"out.json\", c] }, fn(c, o) { o });\n\
+         runner(1)\n",
+    )
+    .unwrap();
+    let (ok, err) = jpp(&d, &["run", "p.jpp"]);
+    assert!(
+        !ok && err.contains("E-ledger-required") && err.contains("write_json"),
+        "{err}"
+    );
+    let (ok, err) = jpp(&d, &["run", "p.jpp", "--ledger-out", "l.jsonl"]);
+    assert!(ok, "{err}");
+    assert!(d.join("out.json").exists());
+    let _ = std::fs::remove_dir_all(&d);
+}

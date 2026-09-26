@@ -738,6 +738,29 @@ pub enum ExitKind {
     Unsure(String),
 }
 
+/// 声明式拟合的结果（B153 (2)，步 20j-4）：句柄。数在运行时的私有表里，按 `id` 取；这里只有身份与来源。
+#[derive(Debug)]
+pub struct Score {
+    /// 同一次运行内唯一（运行时分配）
+    pub id: u64,
+    /// `hash(闭包结构哈希, 各输入校准键)`：同一 `fit_hash` 即作者声明的同一把尺子（`order` 据此）
+    pub fit_hash: String,
+    /// 各输入读数的校准键（按位）
+    pub inputs: Vec<String>,
+    /// 各输入读数的账本键（按位；谱系放行经它追到输入材料的来源，B72-4）
+    pub input_keys: Vec<String>,
+    /// ∨ 各输入读数的状态 taint ∨ `extra` 的 taint
+    pub taint: Taint,
+    /// 并列带宽（`fit({declare, tie})`，缺省 0；`order` 用，不取画像 δ）
+    pub tie: f64,
+    /// 各输入状态哈希的合成（报告 `exits` 行的 `item`）
+    pub state_hash: String,
+    /// 输入读数不可用时的未决原因（`fail:…`、缺席原因、`insufficient:…`）；为 `Some` 时没有数
+    pub fail: Option<String>,
+    /// 造它的 `fit` 站点
+    pub site: Span,
+}
+
 /// 未解析的出口（B94，步 23c）。出口号在 `cut` 时分配（与改前同序），解析出的出口挂回登记它的那一帧。
 #[derive(Debug)]
 pub struct PendingCut {
@@ -864,8 +887,18 @@ impl Exit {
     /// 声明线放行），其余等级照 `LineGrade::releases`。`None` 仍为真——`None ⇒ 假` 与合成出口的分量合取是 B131
     /// （库轨 25-9）的改动，按 COORDINATION 先合入者写。
     pub fn releases(&self) -> bool {
+        // 合成出口（B131，步 25-9）：全部分量放行之合取；分量来自 `ask`（人答即真值，B31）也算放行。
+        // 分量的正交位与谱系各由分量自己的 `releases()` 与 `guard.rs::谱系` 穿 `parts` 核
+        {
+            let parts = self.parts.borrow();
+            if !parts.is_empty() {
+                return parts.iter().all(|p| p.from_ask.get() || p.releases());
+            }
+        }
         let 等级 = match self.grade.get() {
-            None => true,
+            // B131：`grade: None` 的已决出口不再等于放行——只剩 `ask` 出口（经 `via_ask` 放行）；
+            // 没有分量的合成出口（`compose([], …)`）落在这里，不放行（B140：空分量集合不取真）
+            None => self.from_ask.get(),
             Some(LineGrade::Declared) => self.host_accepts_declared.get(),
             Some(g) => g.releases(),
         };
@@ -1052,6 +1085,9 @@ pub enum Value {
     /// 题式（带槽的题模板）
     Form(Rc<Form>),
     Reading(Rc<Reading>),
+    /// 声明式拟合的结果（B153 (2)，步 20j-4）：不透明句柄，只能进 `cut`（声明线）或同拟合的 `order`。
+    /// 拟合出的数不在值上，在运行时的私有表里（与读数的答案同一结构）；程序读不出它（J-01 型面不变）。
+    Score(Rc<Score>),
     Exit(Rc<Exit>),
     /// 惰性过桥（B94，步 23c）：`cut` 只把读数与线绑定，出口在第一次被检视时才解析。
     /// 运行时在检视点（内置与构造的实参、`if` 条件、运算、取字段、函数与程序返回）把它换成 `Exit`；
@@ -1119,6 +1155,8 @@ impl Value {
                 .map_or(Provenance::from(Taint::Untrusted), |v| v.prov()),
             // B58（步 17b）：题带题面 taint
             Value::Question(q) => Provenance::new(q.taint, Sources::from_set(q.from_key.clone())),
+            // B153 (2)：拟合的 taint = ∨ 各输入读数的状态 taint ∨ extra 的 taint
+            Value::Score(s) => Provenance::from(s.taint),
             Value::Form(f) => Provenance::from(f.taint),
             Value::Stop(x) => x.prov(),
             _ => Provenance::trusted(),
@@ -1247,6 +1285,7 @@ impl Value {
             Value::Question(_) => "Question",
             Value::Form(_) => "Form",
             Value::Reading(_) => "Reading",
+            Value::Score(_) => "Score",
             Value::Exit(_) | Value::Cut(_) => "Exit",
             Value::Gen(_) => "List",
             Value::Duty(_) => "Unsure",
@@ -1293,6 +1332,8 @@ impl Value {
             Value::Reading(r) => {
                 json!({"reading": r.ledger_key, "q": r.q_hash, "state": r.state_hash, "op": r.op.phys()})
             }
+            // 只露拟合的身份，不露数（B153：Score 不能读出为数）
+            Value::Score(s) => json!({"score": s.fit_hash, "inputs": s.inputs}),
             Value::Exit(e) => {
                 json!({"exit": e.label(), "id": e.id, "consumed": e.consumed.get(), "q": e.q_hash})
             }

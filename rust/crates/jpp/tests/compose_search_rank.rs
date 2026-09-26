@@ -246,3 +246,17 @@ fn h_是非题目标照旧() {
     assert_eq!(v["reason"], json!("stop"));
     assert_eq!(内容(&v["kept"]), ["好记甲", "好记丙"]);
 }
+
+/// (i) 是非题或 unit 目标上给了 rank 报错，不静默忽略（Q3）；报文带 E-search-options 与修法
+#[test]
+fn i_是非题目标给_rank_报错() {
+    const 表: &[&[&str]] = &[&["好记甲", "好乙"]];
+    for objective in ["memo", "unit"] {
+        let src = format!(
+            "{头}let memo = test(\"这个候选好记吗？\", \"k\");\nlet r = search([], propose, fits, {objective}, 1, {{width: 1, rank: {{stat: \"expect\"}}}});\n{读}"
+        );
+        let e = 跑(&src, 表, 表).expect_err("rank 给错要报错");
+        assert!(e.contains("E-search-options"), "{objective}：{e}");
+        assert!(e.contains("只对打分题目标有效"), "{objective}：{e}");
+    }
+}

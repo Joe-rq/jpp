@@ -41,28 +41,41 @@ fn call(cx: &Cx, s: &CallSite) -> Vec<Diagnostic> {
     let Some(name_arg) = s.args.get(pos) else {
         return out;
     };
-    let ExprKind::Text(name) = name_arg.kind() else {
-        // 动作名不是字面量：静态判不了，交运行期（同 J-11 的口径）
-        return out;
-    };
+    match name_arg.kind() {
+        ExprKind::Text(name) => report(cx, &mut out, name, name_arg.span, None),
+        // 动作名不是字面量：查是不是「形参经全程序调用点都同一字面量」（B179 (b)，步 24e-4）；
+        // 追不到就静态判不了，交运行期（同 J-11 的口径）
+        _ => {
+            if let Some(v) = cx.via_param.get(&(*name_arg as *const Expr)) {
+                let via = format!("经 `{}` 的形参 `{}` 传入", v.fn_name, v.param);
+                for span in &v.call_sites {
+                    report(cx, &mut out, &v.action, *span, Some(&via));
+                }
+            }
+        }
+    }
+    out
+}
+
+fn report(cx: &Cx, out: &mut Vec<Diagnostic>, name: &str, span: Span, via: Option<&str>) {
     // 没有动作表：检查期不知道注册了什么，不报（同 J-08/J-11 静态子面的口径）
     let Some(actions) = cx.actions else {
-        return out;
+        return;
     };
-    let Some(facts) = actions.actions.get(name.as_str()) else {
-        return out; // 未登记的名字交给 J-11
+    let Some(facts) = actions.actions.get(name) else {
+        return; // 未登记的名字交给 J-11
     };
     if facts.no_sandbox {
+        let 来源 = via.map(|v| format!("（{v}）")).unwrap_or_default();
         out.push(Diagnostic::error(
             "E-action-no-sandbox",
             format!(
                 "动作 {name} 需要操作系统级沙箱（macOS sandbox-exec 或 Linux bwrap）才能执行，\
                  本机启动时没有探测到——不是放行策略能解决的问题，不管这里有没有守卫都会在\
-                 运行期返回失败值（NoSandbox）。装上 sandbox-exec（macOS 自带）或 bubblewrap \
+                 运行期返回失败值（NoSandbox）{来源}。装上 sandbox-exec（macOS 自带）或 bubblewrap \
                  的 bwrap（Linux，`apt install bubblewrap`/`dnf install bubblewrap`）后重跑。"
             ),
-            name_arg.span,
+            span,
         ));
     }
-    out
 }

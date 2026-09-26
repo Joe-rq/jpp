@@ -131,6 +131,14 @@ mod tests {
         assert_eq!(t, vec![Inherit, Inherit, Declared, Trusted, Declared]);
     }
 
+    /// 步 19：复用规则（B40、B151；`do` 不复用，主会话 2026-09-26）
+    #[test]
+    fn 复用规则按步19() {
+        use crate::spec::ReuseRule::*;
+        let r: Vec<_> = ALL.into_iter().map(|i| spec(i).reuse).collect();
+        assert_eq!(r, vec![Reading, Generator, Never, Never, Method]);
+    }
+
     /// 判断键的分量逐项对应 `JudgeKey` 的字段（除去 digest 不含的无）
     #[test]
     fn 判断键分量对应judge_key字段() {

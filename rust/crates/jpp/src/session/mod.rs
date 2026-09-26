@@ -24,8 +24,10 @@ pub struct Session<'a> {
     calib: &'a CalibStore,
     actions: &'a ActionRegistry,
     fits: Option<&'a FitRegistry>,
-    /// 生成缓存（`--gen-cache`，步 15h-2，B151 过渡）
-    gen_cache: Option<std::rc::Rc<std::cell::RefCell<crate::interp::GenCache>>>,
+    /// 跨运行缓存（步 19，B151；取代 15h-2 的 `--gen-cache`）
+    cache: Option<&'a dyn crate::effects::CacheLookup>,
+    /// 生成器模型与画像哈希（步 19：进账本头、生成物缓存键带模型）
+    生成器: (Option<String>, Option<String>),
 }
 
 impl<'a> Session<'a> {
@@ -40,17 +42,21 @@ impl<'a> Session<'a> {
             calib,
             actions,
             fits: None,
-            gen_cache: None,
+            cache: None,
+            生成器: (None, None),
         }
     }
 
-    /// 带生成缓存（步 15h-2，B151 过渡）：同账本键、同生成器模型的 `gen` 不再调用；新生成的记进 `fresh`，
-    /// 由宿主写回。只凭账本的审计重放不查缓存。
-    pub fn with_gen_cache(
-        mut self,
-        cache: std::rc::Rc<std::cell::RefCell<crate::interp::GenCache>>,
-    ) -> Self {
-        self.gen_cache = Some(cache);
+    /// 带跨运行缓存（步 19，B151 两段式）：判断、生成、变换按不含调用位置的缓存键命中即不调用，
+    /// 在本账本写复用条目。宿主从缓存目录里的账本建索引（`jpp::store::CacheIndex`）。只凭账本的审计重放不查缓存。
+    pub fn with_cache(mut self, cache: &'a dyn crate::effects::CacheLookup) -> Self {
+        self.cache = Some(cache);
+        self
+    }
+
+    /// 生成器身份（步 19）：模型与画像哈希进账本头，生成物的缓存键带模型。宿主没有真实生成器时不设。
+    pub fn with_gen(mut self, model: Option<String>, profile_hash: Option<String>) -> Self {
+        self.生成器 = (model, profile_hash);
         self
     }
 
@@ -218,9 +224,12 @@ impl<'a> Session<'a> {
         if replay {
             it = it.audit_replay();
         }
-        if let Some(c) = &self.gen_cache {
-            it = it.with_gen_cache(c.clone());
+        if let Some(c) = self.cache
+            && !replay
+        {
+            it = it.with_cache(c);
         }
+        it = it.with_gen(self.生成器.0.clone(), self.生成器.1.clone());
         let out = it.run(program).map_err(Error::Runtime)?;
         Ok(带出静态告警(out, &report))
     }

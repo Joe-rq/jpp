@@ -225,6 +225,8 @@ pub struct Outcome {
     /// 预算停机（B93，步 22-0）：预算耗尽后未发的判断与效应数、首个未发站点。没耗尽为 `None`
     /// （报告不出 `budget` 段，默认输出逐字节不变）。
     pub budget: Option<BudgetStop>,
+    /// 按缓存键复用的计数（步 19，B40、B151）：给了跨运行缓存或本趟有命中时才有（报告 `cache` 一节）。
+    pub cache: Option<CacheStats>,
 }
 
 /// 预算停机的记账（B93）：停发，不停程序。
@@ -272,6 +274,14 @@ pub struct Interp<'a> {
     /// 读数 id → 判断器随答案报的自报置信度（B154，步 20j-3）。与答案同处写（`flush.rs::fill_from_record`），
     /// 没报的读数不在表里。`Reading` 不带它：读数是句柄，读数的内容只在持有者的表里。
     置信表: std::cell::RefCell<HashMap<u64, f64>>,
+    /// 声明式拟合的数（B153 (2)，步 20j-4）：`Score` 的 id → 拟合出的数。只由拟合分支写（经 `IssueReading`），
+    /// 只由 `cut`、`order` 读（经 `ReadAnswer` / 桥）；程序读不出它（J-01 型面不变）。
+    拟合表: std::cell::RefCell<HashMap<u64, f64>>,
+    next_score: std::cell::Cell<u64>,
+    /// 正在求值声明式拟合的闭包（>0）：此时效应、内核构造、出口与责任形式、读答案的刷新点一律拒绝（B153 (2)）
+    pub(crate) 拟合中: u32,
+    /// 谱系放行（B72-4，步 20j-4）：`Score` 出口的合成账本键 → 各输入读数的账本键
+    拟合谱系: std::cell::RefCell<HashMap<String, Vec<String>>>,
     next_reading: std::cell::Cell<u64>,
     actions: &'a ActionRegistry,
     fits: Fits<'a>,
@@ -362,6 +372,8 @@ pub struct Interp<'a> {
     本趟已记校准: HashSet<String>,
     /// 层末条目追加时账本端口报的错（B55，步 18b）：先记下，下一次层末落盘时报 `E-ledger-io`
     账本错: Option<LedgerError>,
+    /// 按缓存键复用（步 19）：本运行的缓存键表、跨运行缓存、生成器身份、计数
+    复用: reuse::ReuseState<'a>,
     /// 谱系放行（B72-4，步 17b）：本趟切过的出口，按账本键记「是否全部已决且放行」与第一个不放行者的说明。
     /// 同一键切多次时须全部放行（17b 解释登记 (c)）。
     出口放行表: HashMap<String, (bool, String)>,
@@ -585,13 +597,14 @@ mod outcome;
 mod plan_view;
 mod readings;
 mod register;
+mod reuse;
 mod schedule;
 pub mod strength;
 pub use builtins_text::RAND_VERSION;
 use caps::Caps;
 pub use caps::{ConstructSpec, Privilege, construct_specs};
 pub use entry::{EntryArgs, EntryMat, EntryValue, HostAccept};
-pub use gen_pending::{GenCache, GenCacheEntry};
+pub use reuse::CacheStats;
 
 use readings::refresh_point;
 
@@ -630,6 +643,10 @@ impl<'a> Interp<'a> {
             calib,
             answers: Default::default(),
             置信表: Default::default(),
+            拟合表: Default::default(),
+            next_score: Default::default(),
+            拟合中: 0,
+            拟合谱系: Default::default(),
             next_reading: Default::default(),
             actions,
             fits,
@@ -655,6 +672,7 @@ impl<'a> Interp<'a> {
             input_untrusted_states: std::cell::RefCell::new(HashMap::new()),
             本趟已记校准: HashSet::new(),
             账本错: None,
+            复用: Default::default(),
             出口放行表: HashMap::new(),
             谱系断: std::cell::RefCell::new(HashMap::new()),
             fn1_of: HashMap::new(),

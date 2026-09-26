@@ -306,6 +306,7 @@ impl<'a> Interp<'a> {
         };
         self.cost.usd += action.cost;
         self.cost.calls += 1;
+        self.记请求(s);
         let (output, output_mat) = effect_value_to_entry(&out);
         let 结果 = Entry::Effect {
             key: key.clone(),
@@ -314,6 +315,7 @@ impl<'a> Interp<'a> {
             kind: s.name.into(),
             output,
             cost: action.cost,
+            reused_from: None,
         };
         // B55：不可逆动作的结果即刻落盘；可逆动作层末落盘
         if 要意向 {
@@ -374,22 +376,31 @@ impl<'a> Interp<'a> {
         let wrap = |outs: &[Json], taint: Taint| {
             crate::gen_pending::包材料(outs, prompt, &key, taint, &derived, &from)
         };
+        let model = self.生成模型();
         if let Some(Entry::Effect {
             output,
             output_mat,
             cost,
+            reused_from,
             ..
         }) = self.ledger.view().get(&key)
         {
             // 步 15h-1：失败照记录给回 `Fail`；声明的 taint 记在 `output_mat`（旧条目为空，照旧 ∨ ctx）
-            let v = if output.get("__fail").is_some() {
+            let 失败 = output.get("__fail").is_some();
+            let v = if 失败 {
                 entry_to_effect_value(output, None)
             } else {
                 let outs: Vec<Json> = output.as_array().cloned().unwrap_or_default();
                 wrap(&outs, output_mat.as_ref().map_or(taint, |m| m.taint))
             };
-            let cost = *cost;
-            self.audit_account(0, cost, sp);
+            let (cost, 复用来的) = (*cost, reused_from.is_some());
+            // 步 19：复用条目本来没有调用，不计入审计重放；成功的记进本运行表
+            if !复用来的 {
+                self.audit_account(0, cost, sp);
+            }
+            if !失败 {
+                self.记可复用效应(&key, &model);
+            }
             self.cost.replayed += 1;
             self.trace.push(s.name, &key, true, 0.0, sp, prompt.into());
             return Ok(v);
@@ -401,35 +412,27 @@ impl<'a> Interp<'a> {
             self.trace.push(s.name, &key, true, 0.0, sp, prompt.into());
             return Ok(Value::Gen(h));
         }
-        // `--gen-cache`（步 15h-2，B151 过渡）：同账本键、同生成器模型命中即不调用、不计预算调用；
-        // 照写一条账本条目（费用 0），这一趟的账本仍可只凭账本重放。审计重放只凭账本，不查缓存。
-        let model = self
-            .ports
-            .instance_of(s.id)
-            .map(|i| i.model)
-            .unwrap_or_default();
-        if !self.audit.on
-            && let Some(hit) = self.查生成缓存(&key, &model)
-        {
-            let outs: Vec<Json> = hit.output.as_array().cloned().unwrap_or_default();
-            let v = wrap(&outs, hit.taint.unwrap_or(taint));
+        // 步 19（B151 两段式，取代 15h-2 的 `--gen-cache`）：按不含调用位置、带生成器模型的缓存键复用本运行
+        // 已取回的生成或跨运行缓存里的产物；命中不登记、不交端口、不计调用，照写一条复用条目（费用 0），
+        // 这一趟的账本仍可只凭账本重放。审计重放只凭账本，不查缓存。依据：B151（`21` 步 19 追加项）
+        if let Some(hit) = self.效应复用(&key, &model) {
+            let v = if hit.output.get("__fail").is_some() {
+                entry_to_effect_value(&hit.output, None)
+            } else {
+                let outs: Vec<Json> = hit.output.as_array().cloned().unwrap_or_default();
+                wrap(&outs, hit.output_mat.as_ref().map_or(taint, |m| m.taint))
+            };
             self.账本追加(Entry::Effect {
                 key: key.clone(),
                 ekey: self.effect_keys.get(&key).cloned(),
-                output_mat: hit.taint.map(|t| {
-                    Box::new(MatMeta {
-                        addr: format!("gen:{prompt}"),
-                        origin: vec![format!("gen:{key}")],
-                        taint: t,
-                        sources: vec![],
-                    })
-                }),
+                output_mat: hit.output_mat,
                 kind: s.name.into(),
                 output: hit.output,
-                cost: 0.0,
+                cost: reuse::零费用,
+                reused_from: Some(hit.reused_from),
             });
-            self.cost.replayed += 1;
-            self.trace.push(s.name, &key, true, 0.0, sp, prompt.into());
+            self.trace
+                .push(s.name, &key, true, reuse::零费用, sp, prompt.into());
             return Ok(v);
         }
         // B93（步 22-0）：超预算不发，产出失败值（J-12），程序照常往下
@@ -502,6 +505,7 @@ impl<'a> Interp<'a> {
             }
             self.cost.asks += 1;
             self.cost.calls += 1;
+            self.记请求(s);
             let input = CallInput::StateQuestion {
                 state: (**state).clone(),
                 question: (**q).clone(),
@@ -655,12 +659,39 @@ impl<'a> Interp<'a> {
             s.name,
             &[&sp.start.to_string(), &f.hash, &captured, &hashes.join(",")],
         );
+        // 变换的缓存键不含模型（方法身份在方法哈希与捕获指纹里）
         if let Some(Entry::Effect { output, .. }) = self.ledger.view().get(&key) {
+            let output = output.clone();
+            self.记可复用效应(&key, "");
             self.cost.replayed += 1;
             self.trace.push(s.name, &key, true, 0.0, sp, String::new());
             return Ok(Value::Mat(Rc::new(
                 Mat::new(
-                    output.clone(),
+                    output,
+                    s.name,
+                    vec![format!("transform:{key}")],
+                    taint,
+                    derived,
+                )
+                .with_sources(&from),
+            )));
+        }
+        // 步 19（B20、jev-ca 提醒 1）：按不含调用位置的缓存键复用本运行或跨运行的变换结果
+        if let Some(hit) = self.效应复用(&key, "") {
+            self.账本追加(Entry::Effect {
+                key: key.clone(),
+                ekey: self.effect_keys.get(&key).cloned(),
+                output_mat: None,
+                kind: s.name.into(),
+                output: hit.output.clone(),
+                cost: reuse::零费用,
+                reused_from: Some(hit.reused_from),
+            });
+            self.trace
+                .push(s.name, &key, true, reuse::零费用, sp, String::new());
+            return Ok(Value::Mat(Rc::new(
+                Mat::new(
+                    hit.output,
                     s.name,
                     vec![format!("transform:{key}")],
                     taint,
@@ -699,7 +730,9 @@ impl<'a> Interp<'a> {
             kind: s.name.into(),
             output: content.clone(),
             cost: 0.0,
+            reused_from: None,
         });
+        self.记可复用效应(&key, "");
         self.trace.push(s.name, &key, false, 0.0, sp, String::new());
         Ok(Value::Mat(Rc::new(
             Mat::new(

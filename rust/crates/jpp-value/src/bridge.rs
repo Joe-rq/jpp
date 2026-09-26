@@ -411,8 +411,11 @@ mod line_grade_tests {
             set(&x);
             assert!(!x.releases());
         }
-        // 不来自 `cut` 的出口没有等级：只看正交位
-        assert!(出口(None, None).releases());
+        // 不来自 `cut` 的出口没有等级：B131（步 25-9）起只有 `ask` 出口放行（此前取真）
+        let n = 出口(None, None);
+        assert!(!n.releases(), "grade None 且不来自 ask：不放行");
+        n.from_ask.set(true);
+        assert!(n.releases(), "ask 出口：人答即真值");
         // taint 由 guard_trusted 合取，不进 releases
         let t = issue(部件(None, Taint::Untrusted));
         t.grade.set(Some(LineGrade::Certified));

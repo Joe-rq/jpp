@@ -1,0 +1,46 @@
+// GUIDE「搭配」一章「题树」小节的示例：与 examples/tree-collab.jpp 同一程序（只差 import 路径），
+// 共用夹具 examples/fixtures/tree-collab.json。说明见那份文件的头注与 GUIDE。
+import "../../lib/compose/tree.jpp";
+budget {calls: 30, cost: 0.02, depth: 64};
+
+let pair_ab = mat({a: "甲：社区团购团长，做了三年，手上有两千户固定下单的家庭，一直缺稳定的蔬菜货源",
+                   b: "乙：城郊蔬菜基地负责人，产量常年过剩，想找稳定的线上销售渠道"});
+let members = {c: "丙：冷链配送公司老板，能做城区当日达，正在找新的货源客户",
+               d: "丁：连锁餐饮的采购经理，每月固定采购大量蔬菜，看重稳定供货"};
+// 作者手上的信息来源：键就是可取的信息类别（need 的词表）。这里是一张查得到的表；真实程序里是查数据库，或由宿主
+// 动作去问人（ask 返回的是人的是非出口，不是信息）。拿生成器补内容只是替身——生成器编出来的背景不是证据。
+let known = {"c 的配送覆盖范围": "丙的车队已经覆盖城西 30 个小区，甲的下单家庭有八成住在城西",
+             "a 的下单家庭分布": "甲的两千户下单家庭八成住在城西，两成在城东",
+             "b 的日供货能力": "乙的基地每天能稳定供应约 3 吨叶菜",
+             "d 的采购规模": "丁每月固定采购约 40 吨蔬菜，要求每天早上 6 点前到货",
+             "双方过往合作记录": "甲和乙去年合作过一次社区团购试单，交付准时"};
+let vocab = keys(known);
+let names = keys(members);
+let skeleton = "{\"q\": \"题面，字符串，一道是非题\", \"add\": [\"进入这道题前要并入材料的成员名，字符串；不需要就省掉这个字段\"], \"need\": [\"判这道题时材料里最可能缺的信息类别，字符串\"], \"act\": 下一个节点或叶, \"ignore\": 下一个节点或叶, \"unsure\": 下一个节点或叶（可省）}；叶写成 {\"leaf\": \"结论，字符串\"}";
+let brief = mat("判断 a、b 两人适不适合合作；适合的话，c 加入会不会更紧密、金额会不会变大、增量从哪来，再加入 d 会不会更多；不适合的话，透露一条信息能不能推进合作");
+let made = gen("按下面的需求生成一棵合作判断题树。只输出一个 JSON 对象，不要代码块标记，不要解释。每个节点都照这个骨架写，字段名不能改：" + skeleton + "。a、b 是两位当事人，已经在材料里，不要写进 add；add 只能从这些成员名里选：" + join(names, "、") + "。need 只能从下面这些信息类别里原样照抄，一个节点写一到三个：" + join(vocab, "；") + "。从根到叶最多 5 道题。", [brief], 1, 0);
+let v = if is_fail(made) { made } else { validate_tree_with(parse_tree(content(made[0])), 6, {need: vocab, members: names}) };
+let grow = fn(m, node) { if has(node, "add") { add_members(m, node.add, members) } else { m } };
+let amount = measure("这几个人一起做，这次合作能做成的生意金额有多大？", ["小", "中", "大"], "collab-tree");
+
+if is_fail(v) { {failed: text(v)} } else {
+    let r = walk(v.tree, pair_ab, 6, {line: {declare: {hi: 0.7, lo: 0.3}}, calib: "collab-tree", grow: grow,
+                                     enrich: {rounds: 2, line: {declare: {hi: 0.4}},
+                                              fetch: fn(node, need, m) { if has(known, need) { known[need] } else { fail("没有这一类信息：" + need) } }}});
+    // 归因：叶材料本身作基线，再加上去掉每个加入者后的材料；先算齐材料，再连续登记判断（中间不夹 if，同一层发出）。
+    // 按期望档位排序：去掉后金额落到最低一档、且低于基线的那位是关键成员；基线也在最低一档，说明去掉谁都不减少
+    let item = if len(r.value) == 0 { pair_ab } else { r.value[0].item };
+    let joined = filter(names, fn(x) { has(content(item), x) });
+    let reads = map(concat([item], map(joined, fn(x) { without_member(item, x) })), fn(m) { judge(state(m), amount) });
+    let tiers = order(reads, {stat: "expect"});
+    let low = tiers[len(tiers) - 1];
+    let key = if len(r.value) == 0 || contains(low, 0) { [] } else { map(low, fn(k) { joined[k - 1] }) };
+    {leaf: map(r.value, fn(e) { e.leaf }),
+     path: map(r.value, fn(e) { map(e.path, fn(p) { p.q + " → " + p.branch }) }),
+     enriched: map(r.detail.enriched, fn(x) { x.need }),
+     leaf_exit: map(r.value, fn(e) { exit_kind(e.exit) }),
+     reason: r.detail.reason,
+     key_member: key,
+     dropped: v.dropped,
+     pending: r.pending}
+}

@@ -90,6 +90,20 @@ pub enum ProfileSchema {
     Action,
 }
 
+/// 结果能否按不含调用位置的缓存键复用（步 19；B40、B20 与 jev-ca 提醒 1、B151）。复用规则只在注册表里定，
+/// 注册表外的代码按这一位分派，不按效应名分支（`20` A2）。
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum ReuseRule {
+    /// 读数：按判断缓存键（`JudgeKey::cache_key`）复用（`judge`）
+    Reading,
+    /// 生成物：按去掉调用位置、加生成器模型的键复用（`gen`）
+    Generator,
+    /// 方法结果：按去掉调用位置的方法身份与输入复用，不看模型（`transform`）
+    Method,
+    /// 不复用（`do`：要等动作能声明「纯」，主会话 2026-09-26；`ask`）
+    Never,
+}
+
 /// 一种效应「是什么」。字段缺值是编译错（S2 的漏改检测）。
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct EffectSpec {
@@ -109,6 +123,8 @@ pub struct EffectSpec {
     /// 同一刷新点的多个调用能否并成一次（P5：一状态多题一次问完）
     pub batchable: bool,
     pub profile_schema: ProfileSchema,
+    /// 按缓存键复用的规则（步 19）
+    pub reuse: ReuseRule,
 }
 
 impl EffectSpec {

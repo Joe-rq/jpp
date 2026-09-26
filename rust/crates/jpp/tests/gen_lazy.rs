@@ -1,18 +1,18 @@
 //! 惰性生成值与生成缓存（步 15h-2，B149、B160）：`gen` 随所在层在刷新点交出，读值才等；账本按层、按登记序
-//! 一次写；推测不等生成；`--gen-cache` 的运行时一半。默认构建下用假脚本生成端口（不发任何请求）。
+//! 一次写；推测不等生成；跨运行生成缓存的运行时一半（15h-2 的 `--gen-cache` 自步 19 起由 `--cache` 与
+//! `CacheIndex` 取代，键不含调用位置、带生成器模型）。默认构建下用假脚本生成端口（不发任何请求）。
 //!
 //! 依据：B149（`12` §2.4）、B160；B94/B145（23c 检视点）；B151；预注册 `地基/过程记录/工程-步15h-2.md` 一·订正 (a)–(h)。
 
 use jpp::backends::claude_p::{ClaudePConfig, ClaudePPort};
 use jpp::effects::{CalibStore, EffectError, FnPort, JudgeResult, NoCallPorts, Ports, ReplayPorts};
-use jpp::interp::{GenCache, GenCacheEntry};
 use jpp::ledger::Ledger;
+use jpp::store::CacheIndex;
 use jpp::value::Answer;
 use jpp::{ActionRegistry, EntryArgs, Session, lower, run_replay, syntax::parse};
 use serde_json::{Value as Json, json};
 use std::cell::RefCell;
 use std::path::PathBuf;
-use std::rc::Rc;
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::time::{Duration, Instant};
 
@@ -86,13 +86,14 @@ fn 跑(
     src: &str,
     ports: Ports<'_>,
     ledger: &mut Ledger,
-    cache: Option<Rc<RefCell<GenCache>>>,
+    cache: Option<(&CacheIndex, &str)>,
 ) -> Result<Json, String> {
     let calib = 库();
     let acts = ActionRegistry::new();
     let mut s = Session::new(ports, &calib, &acts);
-    if let Some(c) = cache {
-        s = s.with_gen_cache(c);
+    // 步 19：跨运行缓存与生成器模型（缓存键带模型）
+    if let Some((c, model)) = cache {
+        s = s.with_cache(c).with_gen(Some(model.to_string()), None);
     }
     s.run(&程序(src), &EntryArgs::default(), ledger)
         .map(|o| o.value_json())
@@ -311,22 +312,20 @@ const 缓存程序: &str = r#"budget {calls: 2, cost: 0, depth: 64};
 let g = gen("提 3 个候选名字", [mat("需求")], 3, 0);
 if is_fail(g) { "fail" } else { map(g, fn(m) { content(m) }) }"#;
 
-/// (g) 生成缓存：第二次运行不调用（假脚本换成会失败的也照样取到），换模型不命中，失败不进缓存。
+/// (g) 生成缓存（步 19 改写：15h-2 的 `GenCache` 由账本建的 `CacheIndex` 取代）：第二次运行不调用（假脚本换成
+/// 会失败的也照样取到），换模型不命中，失败不进缓存。
 #[test]
 fn g_生成缓存() {
-    let cache = Rc::new(RefCell::new(GenCache::default()));
     let mut gp = 生成端口(脚本(0.0, r#"["甲","乙","丙"]"#), "sonnet");
     let mut ports = NoCallPorts::ports();
     ports.replace(Box::new(&mut gp));
-    let v1 = 跑(缓存程序, ports, &mut Ledger::new(), Some(cache.clone())).unwrap();
+    let mut l1 = Ledger::new();
+    let 空 = CacheIndex::default();
+    let v1 = 跑(缓存程序, ports, &mut l1, Some((&空, "sonnet"))).unwrap();
     assert_eq!(v1, json!(["甲", "乙", "丙"]));
-    // 宿主写回再读入（与 CLI 同一件事）
-    let fresh: Vec<(String, GenCacheEntry)> = std::mem::take(&mut cache.borrow_mut().fresh);
-    assert_eq!(fresh.len(), 1);
-    let reload = Rc::new(RefCell::new(GenCache {
-        entries: fresh.into_iter().collect(),
-        ..Default::default()
-    }));
+    // 宿主从账本建索引（与 CLI `--cache` 同一件事）
+    let ix = CacheIndex::build(&[("l1.jsonl".to_string(), l1)]);
+    assert_eq!(ix.counts().gen_, 1);
 
     // 同模型：命中，不调用（脚本会失败，被调用就会得到 fail）
     let mut bad = 生成端口(脚本(0.0, "不是 JSON"), "sonnet");
@@ -336,20 +335,32 @@ fn g_生成缓存() {
     let calib = 库();
     let acts = ActionRegistry::new();
     let o = Session::new(ports, &calib, &acts)
-        .with_gen_cache(reload.clone())
+        .with_cache(&ix)
+        .with_gen(Some("sonnet".into()), None)
         .run(&程序(缓存程序), &EntryArgs::default(), &mut ledger)
         .unwrap_or_else(|e| panic!("{}", e.render()));
     assert_eq!(o.value_json(), v1);
     assert_eq!(o.cost.calls, 0);
-    assert_eq!(o.cost.replayed, 1);
-    assert_eq!(reload.borrow().hits, 1);
+    let c = o.cache.expect("给了缓存就有 cache 一节");
+    assert_eq!((c.hits["gen"], c.cross_run), (1, 1));
     assert_eq!(条目序(&ledger), ["gen"], "命中也写账本条目");
+    assert!(
+        ledger.encode().contains(r#""reused_from":"ext:l1.jsonl#"#),
+        "复用条目记来源"
+    );
 
     // 换模型：不命中，调用（这里的脚本失败 → fail），失败不进缓存
     let mut other = 生成端口(脚本(0.0, "不是 JSON"), "haiku");
     let mut ports = NoCallPorts::ports();
     ports.replace(Box::new(&mut other));
-    let v3 = 跑(缓存程序, ports, &mut Ledger::new(), Some(reload.clone())).unwrap();
+    let mut l3 = Ledger::new();
+    let v3 = 跑(缓存程序, ports, &mut l3, Some((&ix, "haiku"))).unwrap();
     assert_eq!(v3, json!("fail"));
-    assert!(reload.borrow().fresh.is_empty(), "失败不进缓存");
+    assert_eq!(
+        CacheIndex::build(&[("l3.jsonl".to_string(), l3)])
+            .counts()
+            .gen_,
+        0,
+        "失败不进缓存"
+    );
 }

@@ -1,0 +1,212 @@
+{
+  "backend": "fixed-0",
+  "cost": {
+    "asks": 0,
+    "calls": 0,
+    "replayed": 8,
+    "tokens": 0,
+    "usd": 0.0
+  },
+  "entry": [],
+  "exits": [
+    {
+      "declared": {
+        "hi": 0.6,
+        "lo": 0.6,
+        "site": 1616
+      },
+      "evidence": {
+        "certified": null,
+        "errors_at_line": null,
+        "labelled": 0,
+        "near_line": {
+          "count": 1,
+          "share": 0.5,
+          "window": 0.2
+        }
+      },
+      "exit": "act",
+      "fit": "c0690a5debe1e0cd6648896c",
+      "grade": "Declared",
+      "inputs": [
+        "fit-skill",
+        "fit-exp",
+        "fit-culture",
+        "hiring"
+      ],
+      "item": "a7cf78803272",
+      "key": "fit:c0690a5debe1e0cd6648896c",
+      "releases": false,
+      "site": 1616
+    },
+    {
+      "declared": {
+        "hi": 0.6,
+        "lo": 0.6,
+        "site": 1616
+      },
+      "evidence": {
+        "certified": null,
+        "errors_at_line": null,
+        "labelled": 0,
+        "near_line": {
+          "count": 1,
+          "share": 0.5,
+          "window": 0.2
+        }
+      },
+      "exit": "ignore",
+      "fit": "c0690a5debe1e0cd6648896c",
+      "grade": "Declared",
+      "inputs": [
+        "fit-skill",
+        "fit-exp",
+        "fit-culture",
+        "hiring"
+      ],
+      "item": "4d28be50ebfa",
+      "key": "fit:c0690a5debe1e0cd6648896c",
+      "releases": false,
+      "site": 1616
+    }
+  ],
+  "fixture_description": "Declarative fit golden (step 20j-4, B153): two companies, three four-level fit questions and one hiring yes/no each. Company A expected levels 2.4 / 1.8 / 2.0 and hiring 0.9 give (0.96 + 0.63 + 0.5) / 3 x 0.9 = 0.627 (act on hi 0.6); company B 1.0 / 1.2 / 0.8 and 0.7 give 0.238 (ignore).",
+  "local_checks": [],
+  "mode": "replay; no model API requests",
+  "pending": [],
+  "questions": [
+    {
+      "kind": "degree",
+      "q": "26980de7bf5f94f6d130ba43"
+    },
+    {
+      "kind": "degree",
+      "q": "c16617899cbfd687533e01d9"
+    },
+    {
+      "kind": "degree",
+      "q": "399af654e1e2a8438544875c"
+    },
+    {
+      "kind": "attr",
+      "q": "41c1de156f0fd844f65a5797"
+    }
+  ],
+  "replay": true,
+  "resumed": false,
+  "returned_unsure": [],
+  "status": "returned",
+  "trace": {
+    "events": [
+      {
+        "cost": 0.0,
+        "key": "4334f3a8c9628527aae04a9e",
+        "kind": "judge",
+        "note": "「候选人的技能与这家公司的岗位要求匹配到什么程度？」",
+        "replayed": true,
+        "site": {
+          "end": 1301,
+          "start": 1285
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "0fe2841779127702aa721674",
+        "kind": "judge",
+        "note": "「候选人的经历与这家公司的岗位要求匹配到什么程度？」",
+        "replayed": true,
+        "site": {
+          "end": 1319,
+          "start": 1303
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "1fbce74a9bceef4920bdaf98",
+        "kind": "judge",
+        "note": "「候选人的做事方式与这家公司的文化匹配到什么程度？」",
+        "replayed": true,
+        "site": {
+          "end": 1337,
+          "start": 1321
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "ad5e491b6af987ef2dd97b6b",
+        "kind": "judge",
+        "note": "「这家公司现在是否在招这个岗位？」",
+        "replayed": true,
+        "site": {
+          "end": 1355,
+          "start": 1339
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "f5fe385f22dfc417f956e0e5",
+        "kind": "judge",
+        "note": "「候选人的技能与这家公司的岗位要求匹配到什么程度？」",
+        "replayed": true,
+        "site": {
+          "end": 1301,
+          "start": 1285
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "bd5a68301167157564e111db",
+        "kind": "judge",
+        "note": "「候选人的经历与这家公司的岗位要求匹配到什么程度？」",
+        "replayed": true,
+        "site": {
+          "end": 1319,
+          "start": 1303
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "bd395d88907a134cf4d0657e",
+        "kind": "judge",
+        "note": "「候选人的做事方式与这家公司的文化匹配到什么程度？」",
+        "replayed": true,
+        "site": {
+          "end": 1337,
+          "start": 1321
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "62e2deb02ea18f829358f893",
+        "kind": "judge",
+        "note": "「这家公司现在是否在招这个岗位？」",
+        "replayed": true,
+        "site": {
+          "end": 1355,
+          "start": 1339
+        }
+      }
+    ],
+    "warnings": [
+      "W-window-untested: @1285 画像没有测过窗口（window），对象长度不核；超窗的语境可能接管读数而无痕",
+      "W-window-untested: @1303 画像没有测过窗口（window），对象长度不核；超窗的语境可能接管读数而无痕",
+      "W-window-untested: @1321 画像没有测过窗口（window），对象长度不核；超窗的语境可能接管读数而无痕",
+      "W-window-untested: @1339 画像没有测过窗口（window），对象长度不核；超窗的语境可能接管读数而无痕",
+      "W-declared-line: @1616 键 fit:c0690a5debe1e0cd6648896c 用作者声明线 hi=0.6 lo=0.6 fit=c0690a5debe1e0cd6648896c（B128）：同键标注 0 条，无标注可核；本趟线附近 ±0.2 的读数 1/2（0.5）；同键无认证线。出口按你写的数路由，不作错误率保证；放行不可逆动作须宿主接受作者线（CLI：--release-on-declared）"
+    ]
+  },
+  "value": {
+    "排序": [
+      [
+        0
+      ],
+      [
+        1
+      ]
+    ],
+    "结论": [
+      "投",
+      "不投"
+    ]
+  }
+}

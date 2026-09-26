@@ -17,7 +17,7 @@
       "key": "search-fit",
       "pos": 0,
       "releases": false,
-      "site": 7681
+      "site": 10035
     },
     {
       "exit": "ignore",
@@ -27,7 +27,7 @@
       "key": "search-fit",
       "pos": 1,
       "releases": false,
-      "site": 7681
+      "site": 10035
     },
     {
       "exit": "act",
@@ -37,7 +37,7 @@
       "key": "search-fit",
       "pos": 2,
       "releases": false,
-      "site": 7681
+      "site": 10035
     }
   ],
   "fixture_description": "Synthetic fixed observations for search-stop.jpp (construction check only; not model evaluation). One round of generation; two of the three names are judged fitting, which reaches width 2, so the search stops after round 0. The calibration record is hand-written to exercise routing.",
@@ -69,42 +69,42 @@
       },
       {
         "cost": 0.0,
-        "key": "ecfdb0682fc9f3043cfffdc1",
+        "key": "ed80a2db57018155fcab4228",
         "kind": "judge",
         "note": "「这个名字适合做一家社区咖啡馆的店名吗？」",
         "replayed": true,
         "site": {
-          "end": 7715,
-          "start": 7681
+          "end": 10056,
+          "start": 10035
         }
       },
       {
         "cost": 0.0,
-        "key": "e075571c3250c277932c7507",
+        "key": "30a77313a0c2d975aab96a31",
         "kind": "judge",
         "note": "「这个名字适合做一家社区咖啡馆的店名吗？」",
         "replayed": true,
         "site": {
-          "end": 7715,
-          "start": 7681
+          "end": 10056,
+          "start": 10035
         }
       },
       {
         "cost": 0.0,
-        "key": "aa8087537e95f6b37a719879",
+        "key": "7dc7d25d4ed7b9d0c12e9d9b",
         "kind": "judge",
         "note": "「这个名字适合做一家社区咖啡馆的店名吗？」",
         "replayed": true,
         "site": {
-          "end": 7715,
-          "start": 7681
+          "end": 10056,
+          "start": 10035
         }
       }
     ],
     "warnings": [
-      "W-window-untested: @7681 画像没有测过窗口（window），对象长度不核；超窗的语境可能接管读数而无痕",
-      "W-fixture-line: @7681 键 search-fit 的线是夹具线（宿主 put 写入或没有认证证书，n=1），出口 Act 照常路由，但按 B29 不算放行不可逆 do 的可信合取项。修法【需接线人】：用 calib-import 或 commission 从带真值样本认证这条线",
-      "W-fixture-line: @7681 键 search-fit 的线是夹具线（宿主 put 写入或没有认证证书，n=1），出口 Act 照常路由，但按 B29 不算放行不可逆 do 的可信合取项。修法【需接线人】：用 calib-import 或 commission 从带真值样本认证这条线"
+      "W-window-untested: @10035 画像没有测过窗口（window），对象长度不核；超窗的语境可能接管读数而无痕",
+      "W-fixture-line: @10035 键 search-fit 的线是夹具线（宿主 put 写入或没有认证证书，n=1），出口 Act 照常路由，但按 B29 不算放行不可逆 do 的可信合取项。修法【需接线人】：用 calib-import 或 commission 从带真值样本认证这条线",
+      "W-fixture-line: @10035 键 search-fit 的线是夹具线（宿主 put 写入或没有认证证书，n=1），出口 Act 照常路由，但按 B29 不算放行不可逆 do 的可信合取项。修法【需接线人】：用 calib-import 或 commission 从带真值样本认证这条线"
     ]
   },
   "value": {

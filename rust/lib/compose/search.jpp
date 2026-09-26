@@ -8,9 +8,15 @@
 //   objective 是非题（候选够好吗）、打分题（measure：候选有多好，只排序，见下文「打分路径」）或 unit（只按可行域筛）
 //   rounds    轮数上限（iterate 的 bound；写字面量，静态检查在调用点核，B111）
 //   opts      {width: Int, unsure_to?: "carry" | "refine" | fn([未决元素], 题) -> [未决元素], ground?: fn(Mat) -> Mat,
-//              rank?: {stat?, tie?}}
-//             ground 要返回材料（mat）；返回记录会被 sieve 当成元素；rank 原样交给 order（只在打分路径起作用）
+//              rank?: {stat?, tie?}, keep?: fn(Mat) -> Bool}
+//             ground 要返回材料（mat）；返回记录会被 sieve 当成元素；rank 原样交给 order，只对打分题目标有效，
+//             是非题或 unit 目标上给了即报错（报文带 E-search-options）
 //
+// opts.keep（判断分工定律谓词半的库落点，B181/B184）：代码谓词，在 ground 之后、feasible 之前对每个
+// 新候选求值，假即排除——不是出口也不是未决，不进 sieve、不花调用、不进 pending；接地失败的材料（Fail）
+// 不受 keep 拦截，原样交给 sieve（sieve 自己把 Fail 转成 Unsure(fail)）。排除记 detail.excluded：
+// [{item: 材料, round: 轮次}]，跨轮累积。unsure_to 为 refine 时，本轮排除的材料并进下一轮前沿——它们和
+// 判过拿不准的材料一样是生成器该看到的反馈（未决在前、排除在后）；carry 下排除只记录，不进前沿。
 // 好候选按轮累积（主会话 2026-09-26，Q10）：pool 是至今判好的元素（按材料哈希去重、按第一次判好的先后排，
 // 每个元素的 round 是它第一次判好的轮次）。每轮：候选去重 → ground（给了才接）→ sieve(可行域) →
 // sieve(目标，给了才判) → 新判好的追加进 pool → 下一轮前沿 = pool 的前 width 个的材料。判过的候选
@@ -44,6 +50,7 @@ fn search(seed, propose, feasible, objective, rounds, opts) {
     let width = opts.width;
     let how = if has(opts, "unsure_to") { opts.unsure_to } else { "carry" };
     let grounded = fn(cands) { if has(opts, "ground") { map(cands, opts.ground) } else { cands } };
+    let keep = if has(opts, "keep") { opts.keep } else { fn(m) { true } };
     // 去重：判过的与本轮前面出现过的不再判；返回 {seen, fresh, dups}
     let dedupe = fn(acc, raw) {
         fold(raw, {seen: acc.seen, fresh: [], dups: 0}, fn(st, m) {
@@ -52,12 +59,16 @@ fn search(seed, propose, feasible, objective, rounds, opts) {
             }
         })
     };
-    // 本轮未决的去向；返回 {extra: 并进下一轮前沿的材料, pending}
-    let settle = fn(acc, from_ok, from_obj, i) {
+    // 本轮未决与本轮被 keep 排除的去向；返回 {extra: 并进下一轮前沿的材料, pending}
+    let settle = fn(acc, from_ok, from_obj, i, excluded) {
         let label = "search#" + text(i);
         if how == "carry" || how == "refine" {
             let now = concat(from_ok, from_obj);
-            {extra: if how == "refine" { map(now, fn(p) { p.item }) } else { [] },
+            // 前沿只收材料：未决元素里 item 本身是 Fail（接地失败、无渲染）的不进前沿，仍留在 pending
+            // 里（Unsure(fail)，J-05 未决转交，不因不进前沿而销账）。未决材料在前、代码排除的材料在后
+            // （未决是判断器已经看过的反馈，排除是纯代码结构判定，B184）
+            let refine_now = filter(now, fn(p) { !is_fail(p.item) });
+            {extra: if how == "refine" { concat(map(refine_now, fn(p) { p.item }), excluded) } else { [] },
              pending: carry(acc.pending, now, label)}
         } else {
             {extra: [],
@@ -67,6 +78,11 @@ fn search(seed, propose, feasible, objective, rounds, opts) {
     let front = fn(pool) { slice(pool, 0, min(width, len(pool))) };
     // 打分路径（步 25c-2）：objective 是打分题时只排序
     let scored = if objective == unit { false } else { objective.op == "measure" };
+    // rank 只对打分题目标有效，给错不静默忽略（Q3）。.jpp 没有作者可抛的带编号错误，取一个以原因命名的
+    // 不存在字段，运行期报 E-rt-field，原因与修法原样在报文里（过程记录 工程-步25c-2.md 三、Q4）
+    if has(opts, "rank") && !scored {
+        opts["E-search-options: rank 只对打分题目标有效（objective 是是非题或 unit 时没有可排序的读数）。修法：去掉 rank，或把 objective 换成 measure 题"]
+    } else { unit };
     // 读数们排名后的前 width 个下标（逐档展开，档内按下标升序）
     let rank_top = fn(scores) {
         let tiers = if has(opts, "rank") { order(scores, opts.rank) } else { order(scores) };
@@ -81,7 +97,12 @@ fn search(seed, propose, feasible, objective, rounds, opts) {
             with(with(acc, "pending", carry(acc.pending, [lost], "search#" + text(i))), "fails", acc.fails + 1)
         } else {
             let d = dedupe(acc, raw);
-            let ok = sieve(grounded(d.fresh), feasible);
+            let gd = grounded(d.fresh);
+            // 判断分工定律谓词半（B181/B184）：代码已能判定「不可行」的候选在这里排除，不进 sieve。
+            // 接地失败的（is_fail）不受 keep 拦截，原样交给 sieve——sieve 已有的机制把它转成 Unsure(fail)
+            let excluded = filter(gd, fn(c) { !is_fail(c) && !keep(c) });
+            let kept = filter(gd, fn(c) { is_fail(c) || keep(c) });
+            let ok = sieve(kept, feasible);
             let has_obj = objective != unit && !scored;
             let by_obj = if has_obj { sieve(accepted(ok), objective) } else { ok };
             let fresh_good = map(accepted(by_obj), fn(e) { with(e, "round", i) });
@@ -94,14 +115,15 @@ fn search(seed, propose, feasible, objective, rounds, opts) {
             let gained = scored && len(filter(top, fn(k) { k >= len(acc.pool) })) > 0;
             let chosen = if scored { map(top, fn(k) { pool[k] }) } else { front(pool) };
             let dropped = if has_obj { concat(ignored(ok), ignored(by_obj)) } else { ignored(ok) };
-            let s = settle(acc, ok.pending, if has_obj { by_obj.pending } else { [] }, i);
+            let s = settle(acc, ok.pending, if has_obj { by_obj.pending } else { [] }, i, excluded);
             // refine 的第一个没失败的轮次结束时 pool 仍为空：不算停滞（主会话 2026-09-26，Q4）
             let grace = if how == "refine" && acc.judged == 0 && len(pool) == 0 { 1 } else { acc.grace };
             let next = {frontier: concat(map(chosen, fn(e) { e.item }), s.extra), pool: pool,
                         ignored: concat(acc.ignored, dropped), pending: s.pending,
                         fails: acc.fails, grace: grace, judged: acc.judged + 1,
                         seen: d.seen, dups: acc.dups + d.dups,
-                        scores: scores, chosen: chosen, gains: if gained { acc.gains + 1 } else { acc.gains }};
+                        scores: scores, chosen: chosen, gains: if gained { acc.gains + 1 } else { acc.gains },
+                        excluded: concat(acc.excluded, map(excluded, fn(c) { {item: c, round: i} }))};
             if !scored && len(pool) >= width { stop(next) } else { next }
         }
     };
@@ -112,12 +134,13 @@ fn search(seed, propose, feasible, objective, rounds, opts) {
     let r = iterate(rounds,
                     {frontier: seed, pool: [], ignored: [], pending: [],
                      fails: 0, grace: 0, judged: 0, seen: [], dups: 0,
-                     scores: [], chosen: [], gains: 0},
+                     scores: [], chosen: [], gains: 0, excluded: []},
                     step, stall);
     let last = r.value;
     // 元素出口 = trail 上全部出口的 compose(…, "all")（B148；25d 开放 compose）；未决元素保留自己的出口
     let value = map(last.chosen, fn(e) { with(e, "exit", compose(append(e.trail, e.exit), "all")) });
     outcome({value: value, pending: last.pending, evidence: r.evidence, resume: r.resume,
              detail: {ignore: last.ignored, rounds: r.resume.rounds, reason: r.resume.reason,
-                      measures: r.resume.measures, fails: last.fails, duplicates: last.dups}})
+                      measures: r.resume.measures, fails: last.fails, duplicates: last.dups,
+                      excluded: last.excluded}})
 }

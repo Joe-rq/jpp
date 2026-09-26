@@ -189,6 +189,8 @@ fn c_output_mat往返来源边与种类() {
         output: json!({"x": 1}),
         output_mat: Some(Box::new(meta.clone())),
         cost: 0.0,
+        // 步 19：复用来源（这里不是复用条目）
+        reused_from: None,
     });
     let text = l.encode();
     assert!(

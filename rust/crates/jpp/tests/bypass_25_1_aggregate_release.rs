@@ -5,11 +5,11 @@
 //! 为空。于是元素出口用的是夹具线（或试用线、类线、范围外等不放行等级）时，聚合出口在 `handle`
 //! 分派处仍给出放行证据，不可逆 `do` 被执行。库轨步 25 开工时在 main `f48a855f` 上复现。
 //!
-//! 何时被什么堵上：步 25-1 把 `tally`、`first_k` 签发的聚合出口的等级置为 `Cold`（聚合出口本身没有
-//! 用上任何一条线），`releases()` 为假，`GuardEv::from_exit` 不给判断证据。这是最保守的读法：
-//! (e) 记下它的代价——元素全部来自正式线时聚合出口也不放行；更宽的「按分量派生放行」待 Fable 裁定。
-//! (f)(g) 是对照。依据：B121（地基/附注/2026-09-25-B121守卫证据裁定.md）、`12` §3 J-08；
-//! 预注册 `地基/过程记录/工程-步25-1.md`。
+//! 何时被什么堵上：步 25-1 把聚合出口的等级置为 `Cold`，一律不作放行证据。步 25-9 按 B131 改为派生：
+//! 合成出口 `releases()` ≡ 全部分量放行之合取，`handle` 处谱系穿过 `parts`。于是 (a)–(d) 仍被拒
+//! （夹具线分量不放行），(e) 反转为正例（分量全是正式线、可信材料时放行），(h)(i) 是新的两条拒绝：
+//! 一个分量是试用线、谱系断于某个分量。(f)(g) 是对照。依据：B121、B131、B72-4、`12` §3 J-08；
+//! 预注册 `地基/过程记录/工程-步25-1.md`、`工程-步25-9.md`。
 
 mod common;
 
@@ -114,12 +114,64 @@ let ok = handle(t.value.exists, {act: fn() { true }, ignore: fn() { false }, uns
     assert!(e.contains("J-08"), "{e}");
 }
 
-/// 本步的保守代价：元素全部来自正式线、可信材料，聚合出口也不放行（待 Fable 裁定派生规则）。
+/// 步 25-9 反转为正例：元素全部来自正式线、可信材料，聚合出口放行（全部分量放行之合取，B131）。
 #[test]
-fn e_正式线上的聚合出口也不放行_保守代价() {
-    let e = 跑(&程序("tally(r)", "a.value.exists"), 线::正式)
-        .expect_err("25-1 最保守读法：聚合出口一律不作放行证据");
+fn e_正式线上的聚合出口放行_分量合取() {
+    for 守卫 in ["a.value.exists", "a.value.all"] {
+        let v = 跑(&程序("tally(r)", 守卫), 线::正式).expect("分量全是正式线：放行");
+        assert_eq!(v["sent"], Json::from("已发"), "{守卫}");
+    }
+    let v = 跑(&程序("first_k(r, 1)", "a.value.exit"), 线::正式).expect("同上");
+    assert_eq!(v["sent"], Json::from("已发"));
+}
+
+/// 正式线 k 与试用线 t 都在库里（(h)(i) 用）
+fn 跑两线(src: &str) -> Result<Json, String> {
+    let program = lower(&parse(src).expect("解析")).expect("lower");
+    let mut calib = CalibStore::new();
+    common::certified(&mut calib, "k", 0.8, 0.2, 50);
+    common::certified(&mut calib, "t", 0.8, 0.2, 50);
+    for cert in calib.records.get_mut("t").unwrap().certs.values_mut() {
+        cert.grade = jpp::effects::CertGrade::Trial;
+    }
+    let mut l = Ledger::new();
+    run(&program, 端口(0.95), &calib, &动作表(), &mut l)
+        .map(|o| o.value_json())
+        .map_err(|e| e.render())
+}
+
+const 发臂: &str =
+    r#"{act: fn() { content(do("发邮件", [], 0)) }, ignore: fn() { "不发" }, unsure: fn(u) { u }}"#;
+
+/// (h) 一个分量是试用线：合取为假，整体不放行。
+#[test]
+fn h_一个分量是试用线则整体不放行() {
+    let e = 跑两线(&format!(
+        r#"budget {{calls: 4, cost: 1, depth: 8}};
+let a = cut(judge(state(mat("一段程序自己写的材料")), test("该发吗", "k")));
+let b = cut(judge(state(mat("另一段程序自己写的材料")), test("该发吗", "t")));
+handle(compose([a, b], "all"), {发臂})
+"#
+    ))
+    .expect_err("试用线分量不放行（B72）");
     assert!(e.contains("J-08"), "{e}");
+}
+
+/// (i) 谱系断于某个分量：分量本身是正式线，但它的材料由试用线的出口选出（B72-4）；合成出口的谱系穿过
+/// `parts` 查到它，整体不放行。
+#[test]
+fn i_谱系断于某分量则不放行() {
+    let e = 跑两线(&format!(
+        r#"budget {{calls: 4, cost: 1, depth: 8}};
+let r = judge(state(mat("甲")), test("选吗", "t"));
+let pick = cut(r);
+let x = cut(judge(state(mat(pick)), test("该发吗", "k")));
+let y = cut(judge(state(mat("一段程序自己写的材料")), test("该发吗", "k")));
+handle(compose([y, x], "all"), {发臂})
+"#
+    ))
+    .expect_err("谱系断于分量 x");
+    assert!(e.contains("J-08") && e.contains("谱系放行"), "{e}");
 }
 
 /// 对照：(e) 的同一条正式线、同一份材料，直接切出的出口放行。证明 (e) 的夹具确是放行等级。

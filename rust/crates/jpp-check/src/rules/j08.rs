@@ -355,6 +355,24 @@ impl W<'_, '_> {
                 }
                 found.map(|s| (Class::State, s))
             }
+            // 声明式拟合（B153 (3)，步 20j-4）：`Score` 的来源穿过它取各输入读数的状态——输入里有确定不可信的读数，
+            // 结果就按带该来源的读数计；否则看不透（之后的 `cut` 按声明线根处理）
+            Node::Fit { args, .. } => {
+                let 声明式 = matches!(
+                    args.first().map(|a| &a.node),
+                    Some(Node::Host(Host::Record(fs))) if fs.iter().any(|(k, _)| k == "declare")
+                );
+                let Some(Node::Host(Host::List(xs))) = args.get(1).map(|a| &a.node) else {
+                    return None;
+                };
+                if !声明式 {
+                    return None;
+                }
+                xs.iter().find_map(|x| match self.val(x) {
+                    Some((Class::Reading, s)) => Some((Class::Reading, s)),
+                    _ => None,
+                })
+            }
             Node::Cut { reading, rest, .. } => match self.val(reading) {
                 Some((Class::Reading, s)) => Some((Class::Exit, s)),
                 // 依据：B128（宿主未接受的作者声明线不放行；步 20j-2）
@@ -603,7 +621,25 @@ impl W<'_, '_> {
                 .collect(),
         };
         let name = action_name(inputs);
-        // 依据：B108（有动作表且不可逆 → J-08；没有动作表 → W-guard-untrusted）
+        // 动作名不是字面量时，查是不是「形参经全程序调用点都同一字面量」（B179 (b)，步 24e-4）；
+        // 追到就把诊断落在各个用户调用点，不是 do 自己在库文件里的位置
+        let via = name
+            .is_none()
+            .then(|| action_name_expr(inputs))
+            .flatten()
+            .and_then(|arg| self.cx.via_param.get(&(arg as *const Expr)));
+        match via {
+            Some(v) => {
+                for span in &v.call_sites {
+                    self.report_do(Some(v.action.as_str()), &src, *span);
+                }
+            }
+            None => self.report_do(name, &src, e.span),
+        }
+    }
+
+    /// 依据：B108（有动作表且不可逆 → J-08；没有动作表 → W-guard-untrusted）
+    fn report_do(&mut self, name: Option<&str>, src: &Why, span: Span) {
         match self.cx.actions {
             Some(table) => {
                 let Some(n) = name else { return };
@@ -615,13 +651,13 @@ impl W<'_, '_> {
                 }
                 // 依据：B108（知道动作表且动作不可逆）
                 self.out
-                    .push(Diagnostic::error("J-08", message(n, &src, true), e.span));
+                    .push(Diagnostic::error("J-08", message(n, src, true), span));
             }
             // 依据：B108（检查时不知动作表，可逆动作不受 J-08，所以只报 warn）
             None => self.out.push(Diagnostic::warning(
                 "W-guard-untrusted",
-                message(name.unwrap_or("?"), &src, false),
-                e.span,
+                message(name.unwrap_or("?"), src, false),
+                span,
             )),
         }
     }
@@ -649,6 +685,22 @@ pub(crate) fn action_name(inputs: &[(String, Expr)]) -> Option<&str> {
         Node::Host(Host::Text(t)) if k == slot => Some(t.as_str()),
         _ => None,
     })
+}
+
+/// `action_name` 的姊妹函数（B179 (b)，步 24e-4）：不要求字面量，返回名字槽位置上的原始表达式——
+/// `do_sites`、检查器与 CLI 用它定位「动作名实参」，再查 [`crate::analysis::action_via_param`]
+/// 的解析表（键是这个表达式的指针，`&Expr` 与 `CallSite.args` 里的引用来自同一棵树，两遍遍历
+/// 能用指针对上，不用另建 `NodeId` 对照表）。
+pub(crate) fn action_name_expr(inputs: &[(String, Expr)]) -> Option<&Expr> {
+    let slot = jpp_effects::ALL
+        .iter()
+        .map(|id| spec(*id))
+        .find(|s| s.profile_schema == ProfileSchema::Action)?
+        .input_schema
+        .iter()
+        .find(|d| d.kind == SlotKind::Name)?
+        .name;
+    inputs.iter().find_map(|(k, x)| (k == slot).then_some(x))
 }
 
 /// `cut` 的实参里有字面记录且带 `declare` 字段（作者声明线，B128；`stat` 线同样要 `declare`，B153）时，给出线的

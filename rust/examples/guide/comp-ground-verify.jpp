@@ -1,23 +1,54 @@
-// 搜索加接地的闭环（步 25e，B148）：生成器提 3 段 Python 代码，执行器 exec_py 把每段跑出来，候选与输出一起
-// 渲染成字面材料，JEV 判输出对不对，再让生成器看着上一轮的结果重提。第 1 轮三段都不对（一段落在带内），
-// refine 宽限一轮，带内那段（代码加输出）进第 2 轮上下文；第 2 轮有一段输出 385，凑够 width 1，stop。
-// 金样不在检查时执行代码：tests/golden/search-ground 从种子账本 tests/golden/search-ground-seed 续跑，
-// 种子是在有 sandbox-exec 的机器上真跑一次录下的（重录命令见 地基/过程记录/工程-步25e.md）。
-import "../../lib/compose/ground.jpp";
+// 执行 → 判的闭环（意图汇编 7a：代码能定的用代码，JEV 只判代码判不了的；B181 判断分工定律）。
+// 生成器写 SQL 回答一个统计问题，exec_sql 在一个很小的只读样例库（examples/fixtures/returns.db，
+// 建库脚本见同目录 build-returns-db.py）上执行。代码核的：跑得通、有结果；JEV 判的：口径对不对
+// （B181 §一·2 的 E9 重述）。两种代码能定的事——SQL 报错跑不通、查询结果为空——不再用手写的
+// fail(...) 绕过库，改用库函数 ground()（B148）把执行结果渲染成记录材料 {sql, error, rows, text}，
+// 交给 search 的 opts.keep（B184）在接地之后、判断之前用代码排除：keep 为假就排除，不进 sieve、
+// 不花一次判断调用，记进 detail.excluded。筛剩下的才把 SQL 与结果一起交给 JEV 判「这个查询是否
+// 按需求的口径统计」——是不是只统计了上个季度、是不是按商品类别而不是按单个商品汇总，这类没有
+// 标准答案、要理解语义的问题才值得花判断。
+//
+// 候选设计（examples/fixtures/search-ground.json 给的固定生成，不真的调用生成器）：
+// 第 1 轮 3 条——不限定季度（错范围，家居 60 件，keep 通过，JEV 判否）、列名打错的 SQL（跑不通，
+// keep 排除，不进 JEV）、限定到上季度但漏了 6 月 30 日一天（边界，数码 25 件，keep 通过，JEV 判
+// 不确定，落带内）。keep 排除的候选与判过拿不准的候选一起，经 unsure_to: "refine" 并进第 2 轮的
+// 生成器上下文（B184 §3.2：代码筛掉的候选带着错误信息，是生成器最该看到的反馈）。
+// 第 2 轮 3 条——补全边界后的正确查询（数码 40 件，JEV 判对，凑够 width 1，stop）、限定季度但按
+// 商品分组（错颗粒度，耳机 25 件，keep 通过，JEV 判否）、查一个不存在类别的 SQL（查不出行，keep
+// 排除，不进 JEV）。本例特意把会被 keep 排除的候选放进第 1 轮（不是最后一轮）：验证它确实经
+// refine 进入第 2 轮的生成器上下文——keep 排除的材料是正常渲染出的记录，不是 Fail 值，可以放心
+// 进前沿；旧版把这类候选特意安排到最后一轮是为了绕开「Fail 材料喂给 gen」，那条顾虑只对 fail(...)
+// 构造的真 Fail 值成立，对 keep 排除的记录不成立。
+//
+// 金样不在检查时执行 SQL：tests/golden/search-ground 从种子账本续跑，种子是在有 sandbox-exec 的
+// 机器上真跑一次录下的（重录命令见 地基/过程记录/工程-步25e.md §二·4）。
 import "../../lib/compose/search.jpp";
+import "../../lib/compose/ground.jpp";
 budget {calls: 20, cost: 0.01, depth: 64};
 
-let brief = mat("写一段 Python 代码，打印 1 到 10 的平方和");
+let db = "examples/fixtures/returns.db";
+let brief = mat("写一条 SQL 查询，回答：假设今天在 2026 年第三季度，上个季度（2026 年 4 月到 6 月）哪一类商品退货数量最多。数据库表 returns(id, category, product_name, quantity, return_date)");
 let propose = fn(frontier, i) {
-    gen("按下面的需求提出 3 段 Python 代码，每段是一个字符串；需求之后的上下文是上一轮留下的候选（代码与输出）", concat([brief], frontier), 3, i)
+    gen("按下面的需求提出 3 条 SQL 查询，每条是一个字符串；需求之后的上下文是上一轮留下的候选（SQL 与执行结果）", concat([brief], frontier), 3, i)
 };
-let runner = ground("exec_py", fn(c) { [content(c), "", 5] },
-                    fn(c, out) { "代码：" + content(c) + "\n输出：" + content(out).stdout });
-let correct = test("这段代码的输出是否等于 1 到 10 的平方和（385）？", "ground-correct");
+// 接地：库函数 ground()（B148/B184）。render 返回记录：结构化字段（error、rows）供下面的 keep
+// 读，渲染文字（text）供 JEV 读——同一份材料两路用（B184 §3·(3)）。
+let run_sql = ground("exec_sql", fn(c) { [db, content(c)] }, fn(c, o) {
+    let r = content(o);
+    let rendered = "SQL：" + content(c) + "\n" +
+        (if r.error != unit { "报错：" + r.error }
+         else if len(r.rows) == 0 { "结果为空" }
+         else { "结果：" + text(r.rows[0][0]) + " 共 " + text(r.rows[0][1]) + " 件" });
+    {sql: content(c), error: r.error, rows: r.rows, text: rendered}
+});
+// 代码谓词（B184）：SQL 报错或查不出行的候选在这里排除，不进 sieve、不花一次判断调用。
+let keep = fn(m) { let r = content(m); r.error == unit && len(r.rows) > 0 };
+let scope_correct = test("这条查询是否按需求的口径统计：只算上个季度（4 月 1 日到 6 月 30 日）、按商品类别汇总、取退货数量最多的一类？", "sql-scope-correct");
 
-let r = search([], propose, correct, unit, 3, {width: 1, unsure_to: "refine", ground: runner});
+let r = search([], propose, scope_correct, unit, 3, {width: 1, unsure_to: "refine", ground: run_sql, keep: keep});
 {kept: map(r.value, fn(e) { e.item }), found_in: map(r.value, fn(e) { e.round }),
  rejected: map(r.detail.ignore, fn(e) { e.item }),
+ excluded: map(r.detail.excluded, fn(e) { {item: e.item, round: e.round} }),
  undecided: map(r.pending, fn(p) { {item: p.item, cause: p.cause, via: p.via} }),
  reason: r.detail.reason, rounds: r.detail.rounds, measures: r.detail.measures, duplicates: r.detail.duplicates,
  pending: r.pending}

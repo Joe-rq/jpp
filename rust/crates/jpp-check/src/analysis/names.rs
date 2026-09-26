@@ -345,6 +345,8 @@ impl Checker<'_> {
                         match n.as_str() {
                             _ if effect_kind.is_some() => effect_kind.expect("刚判过"),
                             "cut" | "unsure" => Kind::Exit,
+                            // `fit` 的结果：注册表拟合是读数，声明式拟合是 Score（B153：同样不能读出为数，J-01 型面）
+                            "fit" => Kind::Reading,
                             "test" | "select" | "measure" | "fill" => Kind::Question,
                             "form" => Kind::Form,
                             "pair" | "tally" | "first_k" | "iterate" | "outcome" => Kind::Outcome,

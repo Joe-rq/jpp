@@ -166,9 +166,12 @@ pub struct CachedReading {
     pub source: String,
 }
 
-/// 跨运行读数查找（步 19 由 `jpp-store` 实现）。
+/// 跨运行缓存查找（B40、B151；步 19 由 `jpp::store::CacheIndex` 实现）。
 pub trait CacheLookup {
+    /// 判断：按缓存键（不含调用位置与运行序号；选择题含 `perm_seed`）取一条判断条目
     fn get(&self, k: &CacheKey) -> Option<CachedReading>;
+    /// 生成与变换：按 `EffectKey::cache_digest` 取一条效应条目
+    fn get_effect(&self, digest: &str) -> Option<CachedReading>;
 }
 
 // 步 14a 自 `jpp-calib::calib::record` 原样搬来：运行时产出、校准侧吸收的样本（`Outcome.evidence`）。

@@ -155,13 +155,22 @@ impl<'a> Interp<'a> {
                     v
                 };
                 match &v {
-                    Value::Record(_) => v.get(field).ok_or_else(|| {
-                        Fault::Error(RtError::new(
-                            Some("E-rt-field"),
-                            format!("记录没有字段 {field}"),
-                            sp,
-                        ))
-                    }),
+                    Value::Record(_) => {
+                        let 拟合中 = self.拟合中 > 0;
+                        v.get(field).ok_or_else(|| {
+                            // 声明式拟合的统计量记录（B154，步 20j-4）：没有 confidence 是判断器没报，报文说出来
+                            let 说明 = if 拟合中 && field == "confidence" {
+                                "：这条读数的判断器没有随答案报 confidence（画像 H9；固定观察按夹具给或缺省 p_max，B154）".to_string()
+                            } else {
+                                String::new()
+                            };
+                            Fault::Error(RtError::new(
+                                Some("E-rt-field"),
+                                format!("记录没有字段 {field}{说明}"),
+                                sp,
+                            ))
+                        })
+                    }
                     Value::Mat(m) => match field {
                         "content" => {
                             // 刷新点：宿主读内容
@@ -366,6 +375,16 @@ impl<'a> Interp<'a> {
                 sp,
             );
         }
+        // 依据：B153 (2)（Score 不能读出为数；J-01 型面不变）
+        if matches!(l, Value::Score(_)) || matches!(r, Value::Score(_)) {
+            return err(
+                Some("J-01"),
+                format!(
+                    "声明式拟合的结果（Score）不能做 {op}：它不是数，只能进 cut 的声明线或同一拟合的 order（B153）。要换算，把换算写进 declare 的闭包"
+                ),
+                sp,
+            );
+        }
         use Value::*;
         Ok(match (op, &l, &r) {
             // 13 §6：整数行为不随 Rust 构建模式改变。溢出与除零一律是**指向 .jpp 源码的运行错误**，
@@ -507,6 +526,44 @@ impl<'a> Interp<'a> {
             other => err(
                 Some("E-rt-name"),
                 format!("{} 不可调用", other.type_name()),
+                sp,
+            ),
+        }
+    }
+
+    /// 声明式拟合的闭包在桥内求值（B153 (2)，步 20j-4）：只见参数与内置——以一份只含内置的新根环境调它，
+    /// 不接它自己捕获的环境；求值期间效应、内核构造、出口与责任形式、读答案的刷新点一律拒绝
+    /// （`host_builtins.rs::builtin` 入口，`E-fit-declare-effect`）。返回值须是有限的数。
+    /// 依据：B153 (2)（地基/附注/2026-09-26-批6裁定.md §一）
+    pub(crate) fn 拟合闭包求值(
+        &mut self,
+        c: &Rc<Closure>,
+        args: Vec<Value>,
+        sp: Span,
+    ) -> R<f64> {
+        let 隔离 = Rc::new(Closure {
+            function: c.function.clone(),
+            env: root_env(),
+            name: c.name.clone(),
+            span: c.span,
+            hash: c.hash.clone(),
+            captures: vec![],
+            linear: std::cell::RefCell::new(vec![]),
+            linear_called: std::cell::Cell::new(false),
+        });
+        self.拟合中 += 1;
+        let r = self.call_closure(&隔离, args, sp);
+        self.拟合中 -= 1;
+        match r? {
+            Value::Int(i, _) => Ok(i as f64),
+            Value::Float(f, _) if f.is_finite() => Ok(f),
+            other => err(
+                Some("E-rt-type"),
+                format!(
+                    "声明式拟合的闭包要返回一个有限的数，收到 {}（{}）",
+                    other.type_name(),
+                    other.to_json()
+                ),
                 sp,
             ),
         }
@@ -747,6 +804,14 @@ impl<'a> Interp<'a> {
             Value::Reading(_) => err(
                 Some("J-01"),
                 format!("读数不能放进 {slot} 槽：读数只能经 cut 离开，不是材料"),
+                sp,
+            ),
+            // 依据：B153 (2)（Score 不是材料）
+            Value::Score(_) => err(
+                Some("J-01"),
+                format!(
+                    "声明式拟合的结果（Score）不能放进 {slot} 槽：它只能经 cut 的声明线离开（B153）"
+                ),
                 sp,
             ),
             Value::Exit(e) => {

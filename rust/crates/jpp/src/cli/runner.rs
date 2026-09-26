@@ -4,8 +4,14 @@
 use jpp::{Program, effects::CalibStore, interp::ActionRegistry, ledger::LedgerPort};
 use serde_json::{Value, json};
 
-/// 生成缓存（`--gen-cache`，步 15h-2）
-pub type GenCacheRef = std::rc::Rc<std::cell::RefCell<jpp::interp::GenCache>>;
+/// 跨运行缓存与生成器身份（步 19，B151）：`--cache` 目录建的索引、`--gen-model` 的模型与生成器画像哈希。
+#[derive(Default)]
+pub struct CacheArgs<'c> {
+    pub cache: Option<&'c dyn jpp::effects::CacheLookup>,
+    pub gen_model: Option<String>,
+    pub gen_profile_hash: Option<String>,
+}
+
 /// 程序里第一个可能不可逆的 `do` 的动作名（步 18b，`E-ledger-required` 用）：动作名是字面量且在
 /// 宿主动作表（lib 目标 `jpp::actions`，比赛块 C-1、C-1b）里登记为不可逆；动作名不是字面量的 `do` 按可能不可逆处理
 /// （表里有不可逆动作时）。没登记的字面名不算（运行到那里是 J-11）。
@@ -42,11 +48,11 @@ pub fn execute(
         replay_only,
         evidence_out,
         entry,
-        None,
+        CacheArgs::default(),
     )
 }
 
-/// 同 [`execute`]，另可带生成缓存（步 15h-2）。
+/// 同 [`execute`]，另可带跨运行缓存与生成器身份（步 19）。
 #[allow(clippy::too_many_arguments)]
 pub fn execute_with(
     program: &Program,
@@ -61,15 +67,16 @@ pub fn execute_with(
     evidence_out: &mut Vec<(String, jpp::effects::Sample)>,
     // 宿主入口（B105；步 14b-0 起 `--input` 产一条值条目）；空入口与不设相同，逐字节不变
     entry: &jpp::EntryArgs,
-    gen_cache: Option<GenCacheRef>,
+    cache: CacheArgs<'_>,
 ) -> Result<Value, jpp::Error> {
     let ctx = jpp::actions::Ctx::default();
     let mut actions = ActionRegistry::new();
     jpp::actions::register_all(&mut actions, &ctx, replay_only);
     // 重放是审计重现（B35）：账本记过的调用照记录计预算，缺记录即 E-replay；续跑与首跑走 run
-    let mut session = jpp::Session::new(ports, calibrations, &actions);
-    if let Some(c) = gen_cache {
-        session = session.with_gen_cache(c);
+    let mut session = jpp::Session::new(ports, calibrations, &actions)
+        .with_gen(cache.gen_model, cache.gen_profile_hash);
+    if let Some(c) = cache.cache {
+        session = session.with_cache(c);
     }
     let outcome = if replay_only {
         session.replay(program, entry, ledger)?
@@ -120,6 +127,10 @@ pub fn execute_with(
     if let Some(b) = &outcome.budget {
         report["budget"] =
             json!({"exhausted": b.exhausted, "unsent": b.unsent, "first_site": b.first_site});
+    }
+    // 按缓存键复用（步 19，B40、B151）：给了 `--cache` 或本趟有命中时出现，没用缓存的运行输出逐字节不变
+    if let Some(c) = &outcome.cache {
+        report["cache"] = json!(c);
     }
     // 宿主入口段（步 14b-1，B108）：直接复用 `Program.entry.params` 的既有序列化（`EntryParam`
     // 的 name/kind/taint），无入口为空数组；`purpose`（若给）已经是 params[0]（B58/17b）。

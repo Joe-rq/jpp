@@ -67,7 +67,12 @@ impl<'a> Interp<'a> {
             // 增长只发生在两次运行之间（宿主拿 `Outcome.evidence` 去 `absorb`）。
             .with_calib_hash(Some(self.calib.hash()))
             // 宿主入口参数的哈希（B105-2，整份入口）；无入口时仍为 None（金样不变）
-            .with_entry_hash(self.entry.hash()),
+            .with_entry_hash(self.entry.hash())
+            // 生成器模型与画像哈希（步 19）：宿主给了真实生成器才有，为空不写（金样不变）
+            .with_gen(
+                self.复用.gen_model.clone(),
+                self.复用.gen_profile_hash.clone(),
+            ),
             场合,
             &|k: &str| calib.record_json(k),
         );
@@ -178,6 +183,8 @@ impl<'a> Interp<'a> {
             }
             r => self.层末落盘().and(r),
         };
+        // 步 19：复用计数先取出（下面两臂会把 self 的字段移走）
+        let 复用 = self.复用统计();
         match result {
             Ok(v) => {
                 let frame = self.frames.pop().unwrap();
@@ -259,6 +266,7 @@ impl<'a> Interp<'a> {
                         v
                     },
                     budget: self.预算停.clone(),
+                    cache: 复用,
                 })
             }
             Err(Fault::Halt(p)) => Ok(Outcome {
@@ -282,6 +290,7 @@ impl<'a> Interp<'a> {
                     v
                 },
                 budget: self.预算停.clone(),
+                cache: 复用,
             }),
             Err(Fault::Error(e)) => {
                 // 运行期出错：已交出的生成照样收齐入账（钱已经花了，`13` §5；B160），没交出的不交；收层本身的错不盖过原错

@@ -2,14 +2,14 @@ ir v1
 budget calls=3 cost=0.01 depth=16 escalate=- unsure=- latency_p95=- absent=-
 block 430..1135
   let amount_left : -
-    #0 construct form @0 1351..1498
+    #0 construct form @0 1387..1534
       #1 text "measure"
       #2 text "这段话里说的{thing}还剩多少？"
-      #3 record 1411..1497
+      #3 record 1447..1533
         calib:
           #4 text "deg-amount-left"
         scale:
-          #5 list 1445..1496
+          #5 list 1481..1532
             #6 text "已经没有了"
             #7 text "只剩一点"
             #8 text "还有很多"
@@ -117,7 +117,7 @@ block 430..1135
                   #73 field .open
                     #74 name r
 sites 9
-  @0 #0 construct:form 1351..1498 fn=- in=-
+  @0 #0 construct:form 1387..1534 fn=- in=-
   @1 #18 handle 762..961 fn=#17 in=-
   @2 #19 cut 769..832 fn=#17 in=-
   @3 #20 effect:judge 773..831 fn=#17 in=-

@@ -11,8 +11,8 @@
 //!
 //! 推测与提升期间不取回生成（[`Interp::推测中不等生成`]）。
 //!
-//! `--gen-cache`（B151 的过渡）：[`GenCache`] 按 `gen` 的账本键（带站点）与生成器模型名查；命中不登记、不交出、
-//! 照写账本条目（费用 0）。步 19 换成不带站点的键与 `CacheLookup` 端口后退役。
+//! 步 15h-2 的 `--gen-cache`（带站点的键，B151 的过渡）已由步 19 的按缓存键复用取代（`reuse.rs`：不含调用位置、
+//! 带生成器模型的键，本运行与跨运行 `CacheLookup`）。
 
 use super::*;
 use jpp_effects::port::{GenResult, Ticket};
@@ -32,26 +32,6 @@ pub(crate) fn 不等生成(site: Span) -> Fault {
 /// 求值结果是不是「推测与提升不等生成」（调用方据此放弃，不外露）。
 pub(crate) fn 是不等生成<T>(r: &R<T>) -> bool {
     matches!(r, Err(Fault::Error(e)) if e.message == 不等生成报文)
-}
-
-/// 生成缓存里的一条（B151 过渡，步 15h-2）：生成器模型名、输出、声明的 taint、提示（给人看）。
-#[derive(Clone, Debug, PartialEq)]
-pub struct GenCacheEntry {
-    pub model: String,
-    pub output: Json,
-    pub taint: Option<Taint>,
-    pub prompt: String,
-}
-
-/// 生成缓存：宿主装入（读文件），运行时查与记；新条目留在 `fresh` 里由宿主写回。
-#[derive(Clone, Debug, Default)]
-pub struct GenCache {
-    /// 账本键 → 条目
-    pub entries: BTreeMap<String, GenCacheEntry>,
-    /// 本趟新生成、要写回的条目（按取回顺序）
-    pub fresh: Vec<(String, GenCacheEntry)>,
-    /// 本趟命中次数
-    pub hits: u64,
 }
 
 /// 登记了的一次生成（交出前后都在这里，收齐后移走）。
@@ -87,7 +67,6 @@ pub(crate) struct GenState {
     /// 推测与提升进行中（大于 0 时不取回生成）
     不等: u32,
     层: Option<开层>,
-    cache: Option<Rc<RefCell<GenCache>>>,
 }
 
 /// 生成输出包成材料（`gen` 的产物，taint 与来源按调用点算好的给）。
@@ -118,12 +97,6 @@ pub(crate) fn 包材料(
 }
 
 impl<'a> Interp<'a> {
-    /// 装入生成缓存（`--gen-cache`，步 15h-2）。
-    pub fn with_gen_cache(mut self, cache: Rc<RefCell<GenCache>>) -> Self {
-        self.生成.cache = Some(cache);
-        self
-    }
-
     /// 推测与提升期间调用：期间遇到未取回的生成，求值以内部报文结束，不取回（写账本时刻不取决于完成先后）。
     pub(crate) fn 推测中不等生成<T>(&mut self, f: impl FnOnce(&mut Self) -> T) -> T {
         self.生成.不等 += 1;
@@ -140,21 +113,6 @@ impl<'a> Interp<'a> {
     /// 登记了还没交出的生成数（`budget.rs::charge` 把它算进已用调用）。
     pub(crate) fn 生成预留(&self) -> u64 {
         self.生成.预留
-    }
-
-    /// 查生成缓存：同账本键、同生成器模型才命中。
-    pub(crate) fn 查生成缓存(&mut self, key: &str, model: &str) -> Option<GenCacheEntry> {
-        let c = self.生成.cache.as_ref()?;
-        let hit = c
-            .borrow()
-            .entries
-            .get(key)
-            .filter(|e| e.model == model)
-            .cloned();
-        if hit.is_some() {
-            c.borrow_mut().hits += 1;
-        }
-        hit
     }
 
     /// 登记一次生成（B160：不交端口，等所在层的刷新点），返回未取回的生成值。
@@ -259,6 +217,7 @@ impl<'a> Interp<'a> {
             // 调用在交出时计（B38），不再算作预留
             self.生成.预留 -= 1;
             self.cost.calls += 1;
+            self.记请求(spec);
         }
         self.生成.层 = Some(开层 {
             gens: ids,
@@ -412,23 +371,10 @@ impl<'a> Interp<'a> {
                 }),
             ),
         };
-        if res.failure.is_none()
-            && let Some(c) = &self.生成.cache
-        {
-            let model = self
-                .ports
-                .instance_of(job.spec.id)
-                .map(|i| i.model)
-                .unwrap_or_default();
-            c.borrow_mut().fresh.push((
-                job.key.clone(),
-                GenCacheEntry {
-                    model,
-                    output: output.clone(),
-                    taint: res.taint_out,
-                    prompt: job.prompt.clone(),
-                },
-            ));
+        // 步 19（B151）：取回成功的生成按不含调用位置的缓存键记进本运行表，后来的同键生成复用它
+        if res.failure.is_none() {
+            let model = self.生成模型();
+            self.记可复用效应(&job.key, &model);
         }
         self.trace.push(
             job.spec.name,
@@ -445,6 +391,7 @@ impl<'a> Interp<'a> {
             kind: job.spec.name.into(),
             output,
             cost: res.cost,
+            reused_from: None,
         };
         (value, entry)
     }

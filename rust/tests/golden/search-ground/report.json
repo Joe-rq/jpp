@@ -3,7 +3,7 @@
   "cost": {
     "asks": 0,
     "calls": 0,
-    "replayed": 20,
+    "replayed": 18,
     "tokens": 0,
     "usd": 0.0
   },
@@ -13,71 +13,51 @@
       "exit": "ignore",
       "grade": "Fixture",
       "index": 0,
-      "item": "310b3eabcbec",
-      "key": "ground-correct",
+      "item": "3b6b456d5ab3",
+      "key": "sql-scope-correct",
       "pos": 0,
       "releases": false,
-      "site": 12643
-    },
-    {
-      "exit": "ignore",
-      "grade": "Fixture",
-      "index": 1,
-      "item": "1419dbdb0bb9",
-      "key": "ground-correct",
-      "pos": 1,
-      "releases": false,
-      "site": 12643
+      "site": 13774
     },
     {
       "exit": "unsure(band)",
       "grade": "Fixture",
-      "index": 2,
-      "item": "4d5009ee1f46",
-      "key": "ground-correct",
-      "pos": 2,
+      "index": 1,
+      "item": "d76f269ce7f3",
+      "key": "sql-scope-correct",
+      "pos": 1,
       "releases": false,
-      "site": 12643
+      "site": 13774
     },
     {
       "exit": "act",
       "grade": "Fixture",
       "index": 0,
-      "item": "0b2285860786",
-      "key": "ground-correct",
+      "item": "6150579b7657",
+      "key": "sql-scope-correct",
       "pos": 0,
       "releases": false,
-      "site": 12643
+      "site": 13774
     },
     {
       "exit": "ignore",
       "grade": "Fixture",
       "index": 1,
-      "item": "cf1b9fb31fcf",
-      "key": "ground-correct",
+      "item": "a532f468214b",
+      "key": "sql-scope-correct",
       "pos": 1,
       "releases": false,
-      "site": 12643
-    },
-    {
-      "exit": "ignore",
-      "grade": "Fixture",
-      "index": 2,
-      "item": "4677d08ae2c4",
-      "key": "ground-correct",
-      "pos": 2,
-      "releases": false,
-      "site": 12643
+      "site": 13774
     }
   ],
-  "fixture_description": "Synthetic fixed observations for search-ground.jpp (construction check only; not model evaluation). Generations are fixed; exec_py runs the code for real only when the seed ledger is recorded (tests/golden/search-ground-seed), and the golden resumes from that seed without executing anything. Round 0: outputs 285 and 302 are rejected, 'about 385' is in band and refined into round 1's context; round 1: 385 is accepted, 55 and 386 are rejected. The calibration record is hand-written to exercise routing.",
+  "fixture_description": "Synthetic fixed observations for search-ground.jpp (construction check only; not model evaluation; B184). Generations are fixed; exec_sql runs the SQL for real only when the seed ledger is recorded (see 地基/过程记录/工程-步25e.md), and the golden resumes from that seed without executing anything. Round 0: c0 (no quarter filter, wrong scope) is judged and rejected; c1 (typo'd column name -> SQL error) is code-excluded by opts.keep before any judgment call; c2 (quarter filter off by one day, missing 2026-06-30) lands in-band and is refined into round 1's context together with the code-excluded c1 (both are carried forward under unsure_to: refine). Round 1: c3 (correct quarter + correct grouping) is accepted, reaching width 1 and stopping; c4 (filter on a nonexistent category -> empty result) is code-excluded by opts.keep; c5 (correct quarter but grouped by product, wrong grain) is judged and rejected. The calibration record is hand-written to exercise routing, not a real authentication.",
   "local_checks": [],
   "mode": "fixed observations; no model API requests",
   "pending": [],
   "questions": [
     {
       "kind": "attr",
-      "q": "91b07311b733ad9db5420e42"
+      "q": "ad05e233287c514463ea7c12"
     }
   ],
   "replay": false,
@@ -90,243 +70,265 @@
     "events": [
       {
         "cost": 0.0,
-        "key": "4f07dc26c987e9fbb1ed5dd9",
+        "key": "1a508c782de92e2d1fc8b43a",
         "kind": "gen",
-        "note": "按下面的需求提出 3 段 Python 代码，每段是一个字符串；需求之后的上下文是上一轮留下的候选（代码与输出）",
+        "note": "按下面的需求提出 3 条 SQL 查询，每条是一个字符串；需求之后的上下文是上一轮留下的候选（SQL 与执行结果）",
         "replayed": true,
         "site": {
-          "end": 1100,
-          "start": 914
+          "end": 3315,
+          "start": 3128
         }
       },
       {
         "cost": 0.0,
-        "key": "cac4fe73a441ec0476d51b90",
+        "key": "a51a7e9299c1a844967d3379",
         "kind": "do",
-        "note": "exec_py",
+        "note": "exec_sql",
         "replayed": true,
         "site": {
-          "end": 3649,
-          "start": 3621
+          "end": 22233,
+          "start": 22205
         }
       },
       {
         "cost": 0.0,
-        "key": "59fb571b6eb25396ced3e185",
+        "key": "311082c2161bfcc6f5ebd8c7",
         "kind": "transform",
         "note": "",
         "replayed": true,
         "site": {
-          "end": 3731,
-          "start": 3690
+          "end": 22315,
+          "start": 22274
         }
       },
       {
         "cost": 0.0,
-        "key": "e2c6fe6a5ff1d32b5c35ca39",
+        "key": "2e838c5caf99b4cc08f905d2",
         "kind": "do",
-        "note": "exec_py",
+        "note": "exec_sql",
         "replayed": true,
         "site": {
-          "end": 3649,
-          "start": 3621
+          "end": 22233,
+          "start": 22205
         }
       },
       {
         "cost": 0.0,
-        "key": "f9feb0ac374412c4396b006c",
+        "key": "31b853fcfe2c3a03645370d0",
         "kind": "transform",
         "note": "",
         "replayed": true,
         "site": {
-          "end": 3731,
-          "start": 3690
+          "end": 22315,
+          "start": 22274
         }
       },
       {
         "cost": 0.0,
-        "key": "2ed400935481e78fd6d581ba",
+        "key": "f5c6cf278e8446c62eec14ba",
         "kind": "do",
-        "note": "exec_py",
+        "note": "exec_sql",
         "replayed": true,
         "site": {
-          "end": 3649,
-          "start": 3621
+          "end": 22233,
+          "start": 22205
         }
       },
       {
         "cost": 0.0,
-        "key": "ae12fed44655e0c01b92ecfa",
+        "key": "b7c08bb61ea63a6452d2c5ee",
         "kind": "transform",
         "note": "",
         "replayed": true,
         "site": {
-          "end": 3731,
-          "start": 3690
+          "end": 22315,
+          "start": 22274
         }
       },
       {
         "cost": 0.0,
-        "key": "f83c2fe5f5eba1ab81e06cca",
+        "key": "a6f2a9c2096ac4a4f7dc6f35",
         "kind": "judge",
-        "note": "「这段代码的输出是否等于 1 到 10 的平方和（385）？」",
+        "note": "「这条查询是否按需求的口径统计：只算上个季度（4 月 1 日到 6 月 30 日）、按商品类别汇总、取退货数量最多的一类？」",
         "replayed": true,
         "site": {
-          "end": 12677,
-          "start": 12643
+          "end": 13795,
+          "start": 13774
         }
       },
       {
         "cost": 0.0,
-        "key": "699768f427c3358c06245eba",
+        "key": "ef1bf1c026731e412cb21573",
         "kind": "judge",
-        "note": "「这段代码的输出是否等于 1 到 10 的平方和（385）？」",
+        "note": "「这条查询是否按需求的口径统计：只算上个季度（4 月 1 日到 6 月 30 日）、按商品类别汇总、取退货数量最多的一类？」",
         "replayed": true,
         "site": {
-          "end": 12677,
-          "start": 12643
+          "end": 13795,
+          "start": 13774
         }
       },
       {
         "cost": 0.0,
-        "key": "a54aa6e52968865a5fbf3114",
-        "kind": "judge",
-        "note": "「这段代码的输出是否等于 1 到 10 的平方和（385）？」",
-        "replayed": true,
-        "site": {
-          "end": 12677,
-          "start": 12643
-        }
-      },
-      {
-        "cost": 0.0,
-        "key": "d0f0879f5b9300f008eaf6f1",
+        "key": "906264effa16501c6087964a",
         "kind": "gen",
-        "note": "按下面的需求提出 3 段 Python 代码，每段是一个字符串；需求之后的上下文是上一轮留下的候选（代码与输出）",
+        "note": "按下面的需求提出 3 条 SQL 查询，每条是一个字符串；需求之后的上下文是上一轮留下的候选（SQL 与执行结果）",
         "replayed": true,
         "site": {
-          "end": 1100,
-          "start": 914
+          "end": 3315,
+          "start": 3128
         }
       },
       {
         "cost": 0.0,
-        "key": "0bd9faba1f843239ae7f1237",
+        "key": "065184431c398074ce94c381",
         "kind": "do",
-        "note": "exec_py",
+        "note": "exec_sql",
         "replayed": true,
         "site": {
-          "end": 3649,
-          "start": 3621
+          "end": 22233,
+          "start": 22205
         }
       },
       {
         "cost": 0.0,
-        "key": "f5e113f01dd112f484972f5b",
+        "key": "507b13d6884810319277fd3a",
         "kind": "transform",
         "note": "",
         "replayed": true,
         "site": {
-          "end": 3731,
-          "start": 3690
+          "end": 22315,
+          "start": 22274
         }
       },
       {
         "cost": 0.0,
-        "key": "ca4a4d8bc60fac49633cb04a",
+        "key": "fa277661e0a32ad2c4f9c435",
         "kind": "do",
-        "note": "exec_py",
+        "note": "exec_sql",
         "replayed": true,
         "site": {
-          "end": 3649,
-          "start": 3621
+          "end": 22233,
+          "start": 22205
         }
       },
       {
         "cost": 0.0,
-        "key": "678cf27e8487a5904122beec",
+        "key": "c08c7dfb6269c8c978487aef",
         "kind": "transform",
         "note": "",
         "replayed": true,
         "site": {
-          "end": 3731,
-          "start": 3690
+          "end": 22315,
+          "start": 22274
         }
       },
       {
         "cost": 0.0,
-        "key": "a93bd15d7a5305fb9893caf7",
+        "key": "acf5a045da4b398586262fb1",
         "kind": "do",
-        "note": "exec_py",
+        "note": "exec_sql",
         "replayed": true,
         "site": {
-          "end": 3649,
-          "start": 3621
+          "end": 22233,
+          "start": 22205
         }
       },
       {
         "cost": 0.0,
-        "key": "4affbb8a22e72a2a622ee94b",
+        "key": "88bc99bbd399950de085019d",
         "kind": "transform",
         "note": "",
         "replayed": true,
         "site": {
-          "end": 3731,
-          "start": 3690
+          "end": 22315,
+          "start": 22274
         }
       },
       {
         "cost": 0.0,
-        "key": "01b1682551af06dc886dc148",
+        "key": "3275020f659c2f12f280f78f",
         "kind": "judge",
-        "note": "「这段代码的输出是否等于 1 到 10 的平方和（385）？」",
+        "note": "「这条查询是否按需求的口径统计：只算上个季度（4 月 1 日到 6 月 30 日）、按商品类别汇总、取退货数量最多的一类？」",
         "replayed": true,
         "site": {
-          "end": 12677,
-          "start": 12643
+          "end": 13795,
+          "start": 13774
         }
       },
       {
         "cost": 0.0,
-        "key": "265dc99e69aaf0c97620f4ab",
+        "key": "e3b6b41a6105c46bae0855b9",
         "kind": "judge",
-        "note": "「这段代码的输出是否等于 1 到 10 的平方和（385）？」",
+        "note": "「这条查询是否按需求的口径统计：只算上个季度（4 月 1 日到 6 月 30 日）、按商品类别汇总、取退货数量最多的一类？」",
         "replayed": true,
         "site": {
-          "end": 12677,
-          "start": 12643
-        }
-      },
-      {
-        "cost": 0.0,
-        "key": "d854526d2e1973654d85aff6",
-        "kind": "judge",
-        "note": "「这段代码的输出是否等于 1 到 10 的平方和（385）？」",
-        "replayed": true,
-        "site": {
-          "end": 12677,
-          "start": 12643
+          "end": 13795,
+          "start": 13774
         }
       }
     ],
     "warnings": [
-      "W-window-untested: @12643 画像没有测过窗口（window），对象长度不核；超窗的语境可能接管读数而无痕",
-      "W-fixture-line: @12643 键 ground-correct 的线是夹具线（宿主 put 写入或没有认证证书，n=1），出口 Act 照常路由，但按 B29 不算放行不可逆 do 的可信合取项。修法【需接线人】：用 calib-import 或 commission 从带真值样本认证这条线",
+      "W-window-untested: @13774 画像没有测过窗口（window），对象长度不核；超窗的语境可能接管读数而无痕",
+      "W-fixture-line: @13774 键 sql-scope-correct 的线是夹具线（宿主 put 写入或没有认证证书，n=1），出口 Act 照常路由，但按 B29 不算放行不可逆 do 的可信合取项。修法【需接线人】：用 calib-import 或 commission 从带真值样本认证这条线",
       "W-untyped-transfer: search 把 unsure(band) 装在返回值里交了出去，但返回类型没提 Exit，调用者从签名上看不出自己收到了一份未决。修法：把返回类型标为含 Exit（如 `-> Exit`、`-> Record<Exit>`）",
       "returned_unsure: unsure(band)"
     ]
   },
   "value": {
     "duplicates": 0,
+    "excluded": [
+      {
+        "item": {
+          "content": {
+            "error": "OperationalError: no such column: quantiy",
+            "rows": [],
+            "sql": "select category, sum(quantiy) as total from returns group by category order by total desc limit 1;",
+            "text": "SQL：select category, sum(quantiy) as total from returns group by category order by total desc limit 1;\n报错：OperationalError: no such column: quantiy"
+          },
+          "mat": "decb38f16b40fa1f02b4e208",
+          "origin": [
+            "transform:31b853fcfe2c3a03645370d0"
+          ],
+          "taint": "Untrusted"
+        },
+        "round": 0
+      },
+      {
+        "item": {
+          "content": {
+            "error": null,
+            "rows": [],
+            "sql": "select category, sum(quantity) as total from returns where category = '玩具' and return_date >= '2026-04-01' and return_date < '2026-07-01' group by category order by total desc limit 1;",
+            "text": "SQL：select category, sum(quantity) as total from returns where category = '玩具' and return_date >= '2026-04-01' and return_date < '2026-07-01' group by category order by total desc limit 1;\n结果为空"
+          },
+          "mat": "747d882f6bebdb1690e43fe2",
+          "origin": [
+            "transform:c08c7dfb6269c8c978487aef"
+          ],
+          "taint": "Untrusted"
+        },
+        "round": 1
+      }
+    ],
     "found_in": [
       1
     ],
     "kept": [
       {
-        "content": "代码：print(sum(i * i for i in range(1, 11)))\n输出：385\n",
-        "mat": "32df080287acec7aee7c90fd",
+        "content": {
+          "error": null,
+          "rows": [
+            [
+              "数码",
+              40
+            ]
+          ],
+          "sql": "select category, sum(quantity) as total from returns where return_date >= '2026-04-01' and return_date < '2026-07-01' group by category order by total desc limit 1;",
+          "text": "SQL：select category, sum(quantity) as total from returns where return_date >= '2026-04-01' and return_date < '2026-07-01' group by category order by total desc limit 1;\n结果：数码 共 40 件"
+        },
+        "mat": "82cbb65754f83543a7c7e1f6",
         "origin": [
-          "transform:f5e113f01dd112f484972f5b"
+          "transform:507b13d6884810319277fd3a"
         ],
         "taint": "Untrusted"
       }
@@ -341,25 +343,35 @@
         "exit": {
           "consumed": true,
           "exit": "unsure(band)",
-          "id": 2,
-          "q": "91b07311b733ad9db5420e42"
+          "id": 1,
+          "q": "ad05e233287c514463ea7c12"
         },
-        "index": 2,
+        "index": 1,
         "item": {
-          "content": "代码：print('大约', 385)\n输出：大约 385\n",
-          "mat": "1864059016d916ee9e44a2fe",
+          "content": {
+            "error": null,
+            "rows": [
+              [
+                "数码",
+                25
+              ]
+            ],
+            "sql": "select category, sum(quantity) as total from returns where return_date >= '2026-04-01' and return_date <= '2026-06-29' group by category order by total desc limit 1;",
+            "text": "SQL：select category, sum(quantity) as total from returns where return_date >= '2026-04-01' and return_date <= '2026-06-29' group by category order by total desc limit 1;\n结果：数码 共 25 件"
+          },
+          "mat": "4b2f763f68986b6e436d9757",
           "origin": [
-            "transform:ae12fed44655e0c01b92ecfa"
+            "transform:b7c08bb61ea63a6452d2c5ee"
           ],
           "taint": "Untrusted"
         },
-        "key": "a54aa6e52968865a5fbf3114",
-        "pos": 2,
+        "key": "ef1bf1c026731e412cb21573",
+        "pos": 1,
         "q": {
-          "calib": "ground-correct",
+          "calib": "sql-scope-correct",
           "op": "noul",
-          "question": "91b07311b733ad9db5420e42",
-          "text": "这段代码的输出是否等于 1 到 10 的平方和（385）？"
+          "question": "ad05e233287c514463ea7c12",
+          "text": "这条查询是否按需求的口径统计：只算上个季度（4 月 1 日到 6 月 30 日）、按商品类别汇总、取退货数量最多的一类？"
         },
         "qi": 0,
         "trail": [],
@@ -371,34 +383,38 @@
     "reason": "stop",
     "rejected": [
       {
-        "content": "代码：print(sum(i * i for i in range(10)))\n输出：285\n",
-        "mat": "7658d6ca337b7702b01a6770",
+        "content": {
+          "error": null,
+          "rows": [
+            [
+              "家居",
+              60
+            ]
+          ],
+          "sql": "select category, sum(quantity) as total from returns group by category order by total desc limit 1;",
+          "text": "SQL：select category, sum(quantity) as total from returns group by category order by total desc limit 1;\n结果：家居 共 60 件"
+        },
+        "mat": "15a59401f3619d27e5e57bb8",
         "origin": [
-          "transform:59fb571b6eb25396ced3e185"
+          "transform:311082c2161bfcc6f5ebd8c7"
         ],
         "taint": "Untrusted"
       },
       {
-        "content": "代码：print(sum(range(1, 11)) ** 2 // 10)\n输出：302\n",
-        "mat": "83318eb500f2691b363e49d6",
+        "content": {
+          "error": null,
+          "rows": [
+            [
+              "耳机",
+              25
+            ]
+          ],
+          "sql": "select product_name, sum(quantity) as total from returns where return_date >= '2026-04-01' and return_date < '2026-07-01' group by product_name order by total desc limit 1;",
+          "text": "SQL：select product_name, sum(quantity) as total from returns where return_date >= '2026-04-01' and return_date < '2026-07-01' group by product_name order by total desc limit 1;\n结果：耳机 共 25 件"
+        },
+        "mat": "b706761ff934395f13f8f56d",
         "origin": [
-          "transform:f9feb0ac374412c4396b006c"
-        ],
-        "taint": "Untrusted"
-      },
-      {
-        "content": "代码：print(sum(range(1, 11)))\n输出：55\n",
-        "mat": "a9c2366cd62f961644c12cca",
-        "origin": [
-          "transform:678cf27e8487a5904122beec"
-        ],
-        "taint": "Untrusted"
-      },
-      {
-        "content": "代码：print(10 * 11 * 21 // 6 + 1)\n输出：386\n",
-        "mat": "eb9674b851a5351574f1e989",
-        "origin": [
-          "transform:4affbb8a22e72a2a622ee94b"
+          "transform:88bc99bbd399950de085019d"
         ],
         "taint": "Untrusted"
       }
@@ -408,10 +424,20 @@
       {
         "cause": "band",
         "item": {
-          "content": "代码：print('大约', 385)\n输出：大约 385\n",
-          "mat": "1864059016d916ee9e44a2fe",
+          "content": {
+            "error": null,
+            "rows": [
+              [
+                "数码",
+                25
+              ]
+            ],
+            "sql": "select category, sum(quantity) as total from returns where return_date >= '2026-04-01' and return_date <= '2026-06-29' group by category order by total desc limit 1;",
+            "text": "SQL：select category, sum(quantity) as total from returns where return_date >= '2026-04-01' and return_date <= '2026-06-29' group by category order by total desc limit 1;\n结果：数码 共 25 件"
+          },
+          "mat": "4b2f763f68986b6e436d9757",
           "origin": [
-            "transform:ae12fed44655e0c01b92ecfa"
+            "transform:b7c08bb61ea63a6452d2c5ee"
           ],
           "taint": "Untrusted"
         },

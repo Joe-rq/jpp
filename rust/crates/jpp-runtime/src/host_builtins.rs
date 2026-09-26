@@ -10,6 +10,17 @@ impl<'a> Interp<'a> {
     // ---------- 内置 ----------
 
     pub(crate) fn builtin(&mut self, name: &'static str, args: Vec<Value>, sp: Span) -> R<Value> {
+        // 声明式拟合的闭包体内（B153 (2)，步 20j-4）：效应、内核构造、出口与责任形式、读答案的刷新点一律拒绝。
+        // 依据：B153 (2)（地基/附注/2026-09-26-批6裁定.md §一：体内不得出现效应、构造或刷新点）
+        if self.拟合中 > 0 && 拟合内禁(name) {
+            return err(
+                Some("E-fit-declare-effect"),
+                format!(
+                    "声明式拟合的闭包里不能调用 {name}：闭包在桥内对统计量求值，只做计算（算术、比较、if、max / min 等纯内置），不发判断、不调效应、不跑构造、不造出口（B153）。修法：把 {name} 移到 fit 之外，结果经 extra 传入"
+                ),
+                sp,
+            );
+        }
         // 效应经注册表取 `EffectSpec`，按字段分派（步 15a，`20` A2），不在本表按效应名分支
         if let Some(s) = jpp_effects::by_name(name) {
             return self.effect_builtin(s, name, args, sp);
@@ -308,8 +319,18 @@ impl<'a> Interp<'a> {
                 return 选项错(m);
             }
         }
+        // 声明式拟合的结果（B153 (2)，步 20j-4）：只走声明分支
+        let 有拟合 = match &args[0] {
+            Value::Score(_) => true,
+            Value::List(l) => l.iter().any(|x| matches!(x, Value::Score(_))),
+            _ => false,
+        };
+        if 有拟合 && let Err(m) = 核拟合选项(&opts) {
+            return 选项错(m);
+        }
         match &args[0] {
             Value::Reading(r) => self.过桥(r, calib.as_deref(), opts, sp),
+            Value::Score(s) => self.cut_score(s, opts, sp),
             Value::List(l) => {
                 let mut out = vec![];
                 for r in l.iter() {
@@ -317,6 +338,7 @@ impl<'a> Interp<'a> {
                         Value::Reading(r) => {
                             out.push(self.过桥(r, calib.as_deref(), opts.clone(), sp)?)
                         }
+                        Value::Score(s) => out.push(self.cut_score(s, opts.clone(), sp)?),
                         _ => return err(Some("E-rt-arg"), "cut 的列表里有非读数", sp),
                     }
                 }
@@ -594,6 +616,12 @@ impl<'a> Interp<'a> {
             // B84：读出的叶子同时带材料的来源读数
             Value::Mat(m) => Ok(json_to_value(&m.content).with_prov(&m.prov())),
             Value::Reading(_) => err(Some("J-01"), "读数没有内容可读；只能经 cut 离开", sp),
+            // 依据：B153 (2)（Score 不能读出为数）
+            Value::Score(_) => err(
+                Some("J-01"),
+                "声明式拟合的结果（Score）没有内容可读：它不是数，只能进 cut 的声明线或同一拟合的 order（B153）",
+                sp,
+            ),
             other => err(
                 Some("E-rt-arg"),
                 format!("content 只收材料，收到 {}", other.type_name()),
@@ -1230,13 +1258,26 @@ impl<'a> Interp<'a> {
             }
         };
         arity(2)?;
-        let (Value::Int(a, _), Value::Int(b, _)) = (&args[0], &args[1]) else {
-            return err(Some("E-rt-arg"), format!("{name}(Int, Int)"), sp);
+        // 步 20j-4：声明式拟合的闭包要在概率与期望档位上取大取小（B153 (2) 的 `max(a.p, b.p)`），
+        // 所以收 Float；Int 与 Float 混用提升为 Float，与算术同一条规则（B70）。两个 Int 照旧是 Int
+        let 取 = |v: &Value| match v {
+            Value::Int(i, _) => Some(*i as f64),
+            Value::Float(f, _) => Some(*f),
+            _ => None,
         };
-        Ok(Value::Int(
-            if name == "min" { *a.min(b) } else { *a.max(b) },
-            Taint::Trusted.into(),
-        ))
+        match (&args[0], &args[1]) {
+            (Value::Int(a, _), Value::Int(b, _)) => Ok(Value::Int(
+                if name == "min" { *a.min(b) } else { *a.max(b) },
+                Taint::Trusted.into(),
+            )),
+            (x, y) => match (取(x), 取(y)) {
+                (Some(a), Some(b)) => Ok(Value::Float(
+                    if name == "min" { a.min(b) } else { a.max(b) },
+                    Taint::Trusted.into(),
+                )),
+                _ => err(Some("E-rt-arg"), format!("{name}(数, 数)"), sp),
+            },
+        }
     }
     #[allow(unused_variables)]
     pub(crate) fn b_abs(&mut self, name: &'static str, args: Vec<Value>, sp: Span) -> R<Value> {
@@ -1635,6 +1676,49 @@ fn 核选项(r: &Reading, opts: &super::bridge::CutOpts) -> Result<(), String> {
         ));
     }
     Ok(())
+}
+
+/// `cut(Score, …)` 的选项（B153 (2)；步 20j-4 预注册第 0 节第 7 条与补记）：只收 `declare`（`{hi, lo?, closed?}`
+/// 或 `{cuts, closed?}`）；数的范围不限，只要 `lo ≤ hi`。`stat`、`cost`、`alpha` 报错（`Score` 已是标量、没有证书）。
+fn 核拟合选项(opts: &super::bridge::CutOpts) -> Result<(), String> {
+    if !opts.stat.is_max() {
+        return Err("声明式拟合的结果已是一个数，cut 不收 stat（B153）".into());
+    }
+    if opts.cost.is_some() || opts.alpha.is_some() {
+        return Err(
+            "声明式拟合没有证书，cut 不收 cost / alpha；按你的数切写 declare（B153）".into(),
+        );
+    }
+    if let Some(l) = &opts.declare
+        && !l.is_cuts()
+        && l.lo > l.hi
+    {
+        return Err(format!(
+            "declare 要 lo ≤ hi；收到 hi={}、lo={}（B128）",
+            l.hi, l.lo
+        ));
+    }
+    Ok(())
+}
+
+/// 声明式拟合的闭包体内不许调用的名字（B153 (2)）：效应、内核构造、出口与责任形式、读答案的刷新点内置。
+/// `if`、`loop` 与纯内置放行（步 20j-4 预注册第 0 节第 4 条）。
+fn 拟合内禁(name: &str) -> bool {
+    jpp_effects::by_name(name).is_some()
+        || crate::caps::construct(name).is_some()
+        || matches!(
+            name,
+            "state"
+                | "cut"
+                | "handle"
+                | "consume"
+                | "escalate"
+                | "literalize"
+                | "unsure"
+                | "pending"
+                | "content"
+                | "mat"
+        )
 }
 
 fn 数值(v: &Value) -> Option<f64> {

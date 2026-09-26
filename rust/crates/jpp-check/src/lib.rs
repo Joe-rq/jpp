@@ -211,18 +211,27 @@ pub fn explain_with_actions(
     check_annotated_with(program, profile, None, Some(actions)).0
 }
 
-/// 程序里每个动作效应（`do`）站点的字面动作名（按源顺序，含库函数体；动作名不是字面量时为 `None`）。
-/// 查询函数，不是规则，不出诊断。CLI 用它判定程序有没有不可逆 `do`：有就要求 `--ledger-out`
-/// （`E-ledger-required`，步 18b）。取名与 J-08 静态面是同一个函数。
-/// 依据：B55（20 v2 附录 B55 条）；主会话 2026-09-25 对步 18b 的裁定（写前意向不落盘就等于没有）
+/// 程序里每个动作效应（`do`）站点的字面动作名（按源顺序，含库函数体；动作名不是字面量、且追不到
+/// B179 (b) 的形参转发时为 `None`）。查询函数，不是规则，不出诊断。CLI 用它判定程序有没有不可逆
+/// `do`：有就要求 `--ledger-out`（`E-ledger-required`，步 18b）。取名与 J-08 静态面是同一个函数。
+/// 依据：B55（20 v2 附录 B55 条）；主会话 2026-09-25 对步 18b 的裁定（写前意向不落盘就等于没有）；
+/// B179 (b)（步 24e-4，形参经全程序调用点都同一字面量时视为该字面量）。
 pub fn do_sites(program: &Program) -> Vec<Option<String>> {
+    let via_param = analysis::action_via_param::resolve(program);
     let mut out = vec![];
     jpp_ir::ir::walk(&program.body, &mut |e| {
         if let jpp_ir::ir::Node::Effect { effect, inputs, .. } = &e.node
             && jpp_effects::kinds::spec(*effect).profile_schema
                 == jpp_effects::spec::ProfileSchema::Action
         {
-            out.push(rules::j08_action_name(inputs).map(str::to_string));
+            let resolved = rules::j08_action_name(inputs)
+                .map(str::to_string)
+                .or_else(|| {
+                    rules::j08_action_name_expr(inputs)
+                        .and_then(|arg| via_param.get(&(arg as *const Expr)))
+                        .map(|v| v.action.clone())
+                });
+            out.push(resolved);
         }
     });
     out
@@ -264,12 +273,14 @@ fn check_annotated_with(
     actions: Option<&ActionTable>,
 ) -> (Report, jpp_ir::ir::AnnotTable) {
     let sites = &rules::SiteFacts::of(&program.body, &program.sites);
+    let via_param = analysis::action_via_param::resolve(program);
     let cx = rules::Cx {
         p: program,
         sites,
         profile,
         calib,
         actions,
+        via_param: &via_param,
         names: None,
     };
     let mut c = Checker::new(cx);

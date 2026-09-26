@@ -283,8 +283,9 @@ fn date_add_第二参数不是记录报错() {
 
 #[test]
 fn date_add_溢出报错不panic() {
-    let rule =
-        跑期望错(r#"budget {calls: 0, cost: 0}; date_add(9223372036854775000, {days: 1000000})"#);
+    let rule = 跑期望错(
+        r#"budget {calls: 0, cost: 0}; date_add(9223372036854775000, {days: 1000000})"#,
+    );
     assert_eq!(rule.as_deref(), Some("E-rt-int"));
 }
 

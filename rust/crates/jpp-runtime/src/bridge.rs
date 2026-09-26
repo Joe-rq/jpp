@@ -1314,6 +1314,113 @@ impl<'a> Interp<'a> {
         Ok(出口)
     }
 
+    /// `cut(Score, …)`（B153 (2)，步 20j-4）：声明式拟合的结果只走声明分支，按作者写的数切，等级 `Declared`
+    /// （放行经 `--release-on-declared`）；不带 `declare` 即冷（本版不查记录）。输入不可用时出对应的未决。
+    /// 出口的账本键是合成键 `fit:<fit_hash>#<id>`，谱系放行经旁表追到各输入读数（B72-4）。
+    /// 依据：B153 (2)（地基/附注/2026-09-26-批6裁定.md §一）；B128；B142
+    pub(crate) fn cut_score(&mut self, s: &Rc<Score>, opts: CutOpts, sp: Span) -> R<Value> {
+        let key = format!("fit:{}", s.fit_hash);
+        let 合成键 = format!("fit:{}#{}", s.fit_hash, s.id);
+        self.拟合谱系
+            .borrow_mut()
+            .insert(合成键.clone(), s.input_keys.clone());
+        let 值 = self.拟合表.borrow().get(&s.id).copied();
+        let line = opts.declare.clone();
+        let 族 = if line.as_ref().is_some_and(|l| l.is_cuts()) {
+            Op::Measure
+        } else {
+            Op::Test
+        };
+        let (kind, untested) = match (&s.fail, &line, 值) {
+            (Some(f), _, _) => (ExitKind::Unsure(f.clone()), None),
+            (None, Some(l), Some(v)) => (jpp_value::bridge::past_declared(v, l), None),
+            _ => (
+                ExitKind::Unsure("cold".into()),
+                Some((
+                    "calib_line".to_string(),
+                    "修法【作者可改】：声明式拟合没有认证通道（本版不查记录，B153）；按你的数切写 cut(s, {declare: {hi: …, lo: …}})，放行不可逆动作须 --release-on-declared（B128）".to_string(),
+                )),
+            ),
+        };
+        // 依据：J-15（未测取保守并带修法）；B130（冷出口告警一趟一键一条）
+        let 报 = untested.is_some()
+            && self
+                .unknown_reported
+                .insert(format!("W-untested-calib_line\u{1f}{key}"));
+        if let Some((carrier, 修法)) = untested.as_ref().filter(|_| 报) {
+            // 依据：J-15；B153 (2)（声明式拟合不查记录）
+            self.trace.warn(format!(
+                "W-untested: @{} {carrier} 在本次路径上没有被测量，按 J-15 取保守项（出口 cold）。{修法}",
+                sp.start
+            ));
+        }
+        let 用线 = s.fail.is_none() && line.is_some() && 值.is_some();
+        let 线源 = match (&line, 用线) {
+            (Some(l), true) => format!("作者声明·fit={}·{}", s.fit_hash, l.describe()),
+            _ => String::new(),
+        };
+        let 出口 = self.new_exit_from(
+            kind,
+            untested.map(|(carrier, _)| carrier),
+            族,
+            &format!("fit:{}", s.fit_hash),
+            &s.state_hash,
+            s.taint,
+            线源,
+            sp,
+        );
+        let Value::Exit(e) = &出口 else {
+            return Ok(出口);
+        };
+        *e.ledger_key.borrow_mut() = 合成键;
+        let 已记 = self.exit_grades.len();
+        let 基本 = json!({
+            "site": sp.start, "item": 材料摘要(&s.state_hash), "key": key,
+            "fit": s.fit_hash, "inputs": s.inputs,
+        });
+        let mut row = 基本;
+        if let (true, Some(l), Some(v)) = (用线, &line, 值) {
+            self.note_declared_with(
+                &key,
+                sp.start,
+                l,
+                &Stat::Max,
+                Some((&s.fit_hash, &s.inputs)),
+            );
+            e.grade.set(Some(LineGrade::Declared));
+            let 接受 = self.entry.accept.declared_lines;
+            e.host_accepts_declared.set(接受);
+            if !接受 {
+                self.声明出口.insert(
+                    e.id,
+                    format!("@{} fit={} {}", sp.start, s.fit_hash, l.describe()),
+                );
+            }
+            let mut declared = l.numbers_json();
+            declared.insert("site".into(), json!(sp.start));
+            if let Some(c) = l.closed_json() {
+                declared.insert("closed".into(), c);
+            }
+            row["declared"] = Json::Object(declared);
+            // 声明式拟合没有标注与认证线：`near_line` 在运行结束时按本趟同拟合的数算
+            row["evidence"] = json!({
+                "labelled": 0, "errors_at_line": Json::Null,
+                "near_line": {"window": 声明窗口, "count": 0, "share": 0.0},
+                "certified": Json::Null,
+            });
+            self.键读数.entry(key.clone()).or_default().push(v);
+        } else {
+            e.grade.set(Some(LineGrade::Cold));
+        }
+        row["exit"] = json!(e.label());
+        row["grade"] = json!(e.grade.get().map(|g| g.name()).unwrap_or("Cold"));
+        row["releases"] = json!(e.releases());
+        self.exit_grades.push(row);
+        self.exit_rows.insert(e.id, 已记);
+        self.登记出口放行(e);
+        Ok(出口)
+    }
+
     /// 读数的自报置信度（B154）：判断器随答案报了（本趟发出或从账本取回）就用它；没报而判断实例是固定观察
     /// 端口时取夹具缺省 p_max（B154 (1)「缺省 = p_max」；只凭账本重放用账本头的 model_id，同为固定端口）；
     /// 其他判断器没报即没有（不退回 p_max，B154 (3)）。
@@ -1339,12 +1446,28 @@ impl<'a> Interp<'a> {
         line: &DeclaredLine,
         stat: &Stat,
     ) {
+        self.note_declared_with(key, site, line, stat, None)
+    }
+
+    /// 同 [`Self::note_declared`]；声明式拟合（B153 (2)，步 20j-4）另写 `fit` 与 `inputs`，键为 `declared:fit:<fit_hash>@<站点>`
+    pub(crate) fn note_declared_with(
+        &mut self,
+        key: &str,
+        site: usize,
+        line: &DeclaredLine,
+        stat: &Stat,
+        拟合: Option<(&str, &[String])>,
+    ) {
         let k = format!("{}{key}@{site}", jpp_ledger::DECLARED_PREFIX);
         if !self.本趟已记校准.insert(k.clone()) {
             return;
         }
         let mut m = serde_json::Map::new();
         m.insert("line".into(), json!("declared"));
+        if let Some((fit, inputs)) = 拟合 {
+            m.insert("fit".into(), json!(fit));
+            m.insert("inputs".into(), json!(inputs));
+        }
         m.extend(line.numbers_json());
         m.insert("site".into(), json!(site));
         if !stat.is_max() {
@@ -1525,6 +1648,11 @@ impl<'a> Interp<'a> {
                 };
                 let 线文 = match &统计量 {
                     Some(s) => format!("{线文} stat={s}"),
+                    None => 线文,
+                };
+                // 声明式拟合（B153 (3)，步 20j-4）：告警写拟合的身份
+                let 线文 = match row.get("fit").and_then(|f| f.as_str()) {
+                    Some(f) => format!("{线文} fit={f}"),
                     None => 线文,
                 };
                 let 认证 = match ev["certified"].as_object() {
