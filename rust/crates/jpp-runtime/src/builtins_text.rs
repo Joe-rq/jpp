@@ -408,6 +408,15 @@ impl<'a> Interp<'a> {
                 sp,
             );
         };
+        // 第二参数必须是记录：`Value::get` 对非 Record 一律返回 None，若不在这里挡住，
+        // 每个字段都会被当成 0，整个调用悄悄退化成 date_add(secs, {}) 而不报错。
+        if !matches!(&args[1], Value::Record(_)) {
+            return err(
+                Some("E-rt-arg"),
+                "date_add(Int, {days?, hours?, minutes?})",
+                sp,
+            );
+        }
         let field = |k: &str| -> R<i64> {
             match args[1].get(k) {
                 None => Ok(0),
@@ -419,8 +428,30 @@ impl<'a> Interp<'a> {
                 ),
             }
         };
-        let delta = field("days")? * 86_400 + field("hours")? * 3_600 + field("minutes")? * 60;
-        Ok(Value::int(secs + delta).with_prov(&join_args(&args)))
+        let days = field("days")?;
+        let hours = field("hours")?;
+        let minutes = field("minutes")?;
+        // 13 §6：溢出是运行错误，不是回绕（与 eval.rs 的 binop_raw 同一纪律），
+        // 换算与累加全程用 checked_*，任何一步溢出都指回 date_add 本身。
+        let days_secs = days
+            .checked_mul(86_400)
+            .ok_or_else(|| overflow("date_add 的 days 换算秒", days, 86_400, sp))?;
+        let hours_secs = hours
+            .checked_mul(3_600)
+            .ok_or_else(|| overflow("date_add 的 hours 换算秒", hours, 3_600, sp))?;
+        let minutes_secs = minutes
+            .checked_mul(60)
+            .ok_or_else(|| overflow("date_add 的 minutes 换算秒", minutes, 60, sp))?;
+        let days_hours_secs = days_secs
+            .checked_add(hours_secs)
+            .ok_or_else(|| overflow("date_add 的偏移量累加", days_secs, hours_secs, sp))?;
+        let delta = days_hours_secs
+            .checked_add(minutes_secs)
+            .ok_or_else(|| overflow("date_add 的偏移量累加", days_hours_secs, minutes_secs, sp))?;
+        let result = secs
+            .checked_add(delta)
+            .ok_or_else(|| overflow("date_add 结果", *secs, delta, sp))?;
+        Ok(Value::int(result).with_prov(&join_args(&args)))
     }
 
     fn b_rand(&mut self, args: Vec<Value>, sp: Span) -> R<Value> {

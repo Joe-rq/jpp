@@ -275,6 +275,19 @@ budget {calls: 0, cost: 0};
     );
 }
 
+#[test]
+fn date_add_第二参数不是记录报错() {
+    let rule = 跑期望错(r#"budget {calls: 0, cost: 0}; date_add(100, 5)"#);
+    assert_eq!(rule.as_deref(), Some("E-rt-arg"));
+}
+
+#[test]
+fn date_add_溢出报错不panic() {
+    let rule =
+        跑期望错(r#"budget {calls: 0, cost: 0}; date_add(9223372036854775000, {days: 1000000})"#);
+    assert_eq!(rule.as_deref(), Some("E-rt-int"));
+}
+
 // ---------- taint 传播（B33 第 3 条：∨ 输入） ----------
 
 #[test]
