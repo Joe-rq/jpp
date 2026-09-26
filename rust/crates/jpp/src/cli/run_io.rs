@@ -450,21 +450,39 @@ pub fn run_checked(
     Ok(())
 }
 
-/// `--cache <目录>`（步 19）：目录里（不含子目录）每个能按账本读的文件（v3；v2 在内存迁移）进索引，
-/// 读不成的跳过；来源名取文件名。stderr 报一行建了多少、跳过多少。
+/// `--cache <目录>`（步 19）：目录里（不含子目录）每个能按账本读的文件（v3；v2 在内存迁移）进索引；
+/// 不是账本的文件（解码不成、不是 UTF-8）跳过并计数。目录不存在按空缓存（stderr 说一句）；
+/// 其余读错误（路径不是目录、没有权限、I/O 出错）带路径报 `E-cache`，不悄悄当空缓存重新付费。
+/// 来源名取文件名。依据：B151（`21` 步 19 追加项）；公开 PR #37 评审 P2（读错误不许当空缓存）
 fn load_cache_dir(dir: &Path) -> Result<jpp::store::CacheIndex, String> {
-    let rd = fs::read_dir(dir).map_err(|e| format!("--cache {}: {e}", dir.display()))?;
-    let mut files: Vec<std::path::PathBuf> = rd
-        .filter_map(|e| e.ok().map(|e| e.path()))
-        .filter(|p| p.is_file())
-        .collect();
+    let io = |p: &Path, e: std::io::Error| format!("E-cache: --cache {}: {e}", p.display());
+    let rd = match fs::read_dir(dir) {
+        Ok(rd) => rd,
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
+            eprintln!("缓存：{} 不存在，按空缓存", dir.display());
+            return Ok(jpp::store::CacheIndex::default());
+        }
+        Err(e) => return Err(io(dir, e)),
+    };
+    let mut files: Vec<std::path::PathBuf> = vec![];
+    for e in rd {
+        let p = e.map_err(|e| io(dir, e))?.path();
+        if p.is_file() {
+            files.push(p);
+        }
+    }
     files.sort();
     let mut ledgers = vec![];
     let mut 跳过 = 0usize;
     for f in &files {
-        let Ok(text) = fs::read_to_string(f) else {
-            跳过 += 1;
-            continue;
+        let text = match fs::read_to_string(f) {
+            Ok(t) => t,
+            // 不是 UTF-8：不是账本，跳过
+            Err(e) if e.kind() == std::io::ErrorKind::InvalidData => {
+                跳过 += 1;
+                continue;
+            }
+            Err(e) => return Err(io(f, e)),
         };
         match jpp::store::migrations::ledger_v2::read_any(&text) {
             Ok((l, _, _)) => {

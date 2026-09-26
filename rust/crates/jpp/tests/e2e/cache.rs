@@ -357,3 +357,75 @@ fn f_cli_cache() {
     assert!(!ok && err.contains("E-replay"), "{err}");
     let _ = std::fs::remove_dir_all(&d);
 }
+
+/// (g) 公开 PR #37 评审 P2：缓存读不成要报错，不许悄悄当空缓存、重新付费。`--cache` 指向文件（不是目录）、
+/// 目录里有读不了的文件，都报 `E-cache` 并带路径，程序不运行（夹具里没有观察，一发请求就会是别的错）；
+/// 目录不存在按空缓存。
+#[test]
+fn g_cli_cache_读错误报错() {
+    let d = 目录("err");
+    std::fs::write(d.join("p1.jpp"), format!("{预算}{一题}")).unwrap();
+    std::fs::write(
+        d.join("empty.json"),
+        json!({"observations": []}).to_string(),
+    )
+    .unwrap();
+    std::fs::write(d.join("not-a-dir"), "x").unwrap();
+    let (ok, err) = jpp(
+        &d,
+        &[
+            "run",
+            "p1.jpp",
+            "--fixtures",
+            "empty.json",
+            "--cache",
+            "not-a-dir",
+        ],
+    );
+    assert!(
+        !ok && err.contains("E-cache") && err.contains("not-a-dir"),
+        "{err}"
+    );
+    assert!(!err.contains("固定观察未命中"), "报错在运行之前：{err}");
+    // 读不了的文件（去掉读权限）
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        let f = d.join("cache/locked.jsonl");
+        std::fs::write(&f, "{}").unwrap();
+        std::fs::set_permissions(&f, std::fs::Permissions::from_mode(0o000)).unwrap();
+        if std::fs::read(&f).is_err() {
+            let (ok, err) = jpp(
+                &d,
+                &[
+                    "run",
+                    "p1.jpp",
+                    "--fixtures",
+                    "empty.json",
+                    "--cache",
+                    "cache",
+                ],
+            );
+            assert!(
+                !ok && err.contains("E-cache") && err.contains("locked.jsonl"),
+                "{err}"
+            );
+            assert!(!err.contains("固定观察未命中"), "报错在运行之前：{err}");
+        }
+        std::fs::set_permissions(&f, std::fs::Permissions::from_mode(0o644)).unwrap();
+    }
+    // 目录不存在：按空缓存，程序照常运行（这里因为夹具没有观察而在运行里失败，说明走到了运行）
+    let (_, err) = jpp(
+        &d,
+        &[
+            "run",
+            "p1.jpp",
+            "--fixtures",
+            "empty.json",
+            "--cache",
+            "no-such-dir",
+        ],
+    );
+    assert!(err.contains("不存在，按空缓存"), "{err}");
+    let _ = std::fs::remove_dir_all(&d);
+}
