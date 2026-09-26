@@ -77,3 +77,5 @@ Rust 内核现在是 10 个 crate：`jpp`（lib 目标加 `jpp` 二进制——�
 项目三条验收标准的如实数字：表达量在孤立对照上是 2–5 倍，还没到 9–20 倍的文献参考带。最近一次多实现测量（步 31-1b，B96 裁定）把 T1 的逐点打分改成留出集、按性质验收，并对每个实现重新跑了第二套基线（十份新基线九份第一次验收就过）：T1 读数是只计通过新验收方法的实现 3.69×，计入全部实现 4.48×，按旧冻结打分法（留作对照的 `t1-strict`）4.97×——都远低于 9–20× 参考带，也不能直接拿来跟本文件昨天写的 `约 4.1×`/`约 3.4×` 比，因为两者背后的验收方法本身变了。深度证据是固定观察下的跳数分布：一、二、三跳的判断数为 22、12、4；逐跳未决率与真机深度曲线还没测。换后端可用性按黑板记录的最近一次仪表读数，验证了追踪的八类能力假设中的一类（见上——后续步骤对另外四组摘掉 ignore，还没有重新跑仪表确认）。
 
 公开仓库不包含凭据、私人对话或模型权重。`jpp run` 默认用固定 JSON 观察做零成本机制测试；`--backend live` 接真实 JEV 服务。每次真机运行都必须带能力画像（B73）；不带时内核用代码里的缺省线与 δ，并打印「未加载画像」。两种情况下，题都只能凭认证过的校准记录得到已决出口，没有记录时明确返回未决。夹具校准记录只用于机制测试，不得用于真实决策。
+
+**Known issues (2026-09-27) / 已知问题：** `cargo clippy --workspace --all-targets --keep-going` reports 76 style warnings (previous recorded baseline 72), and `rust/scripts/ci_public.sh` in report mode lists 19 documentation snippets with non-zero exits (90 passed, 6 skipped); neither blocks CI and neither is fixed yet. clippy 告警从 72 条升到 76 条（风格提示），`ci_public.sh` 报告模式有 19 个文档片段退出码非零（90 通过、6 跳过）；都不阻断 CI，尚未修。
