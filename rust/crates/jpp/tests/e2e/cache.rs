@@ -47,6 +47,7 @@ fn 端口<'a>(判: &'a Cell<u32>, 生: &'a Cell<u32>, 模型: &str) -> Ports<'a>
                 cost: 0.0,
                 mode_share: vec![],
                 perms: vec![],
+                confidence: vec![],
             })
         }))
         .with(FnPort::generate(模型, move |_p, _c, _n, _r| {
@@ -244,8 +245,8 @@ let b = handle(e2, {act: fn() { "act" }, ignore: fn() { "ignore" }, unsure: fn(u
         false,
     );
     assert_eq!(判.get(), 1, "同缓存键只发一次");
-    // 键 k 没有校准记录，两处都是冷出口；要核的是两处走同一条路
-    assert_eq!(r.value, json!({"a": "unsure", "b": "unsure"}));
+    // 键 k 没有校准记录，两处都按判断器的回答走（意图汇编 11a）；要核的是两处走同一条路
+    assert_eq!(r.value, json!({"a": "act", "b": "act"}));
     let 判断条目: Vec<&Entry> = r
         .ledger
         .entries

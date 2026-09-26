@@ -8,9 +8,14 @@
 //   objective 是非题（候选够好吗）、打分题（measure：候选有多好，只排序，见下文「打分路径」）或 unit（只按可行域筛）
 //   rounds    轮数上限（iterate 的 bound；写字面量，静态检查在调用点核，B111）
 //   opts      {width: Int, unsure_to?: "carry" | "refine" | fn([未决元素], 题) -> [未决元素], ground?: fn(Mat) -> Mat,
-//              rank?: {stat?, tie?}, keep?: fn(Mat) -> Bool}
+//              rank?: {stat?, tie?}, keep?: fn(Mat) -> Bool, line?, objective_line?}
 //             ground 要返回材料（mat）；返回记录会被 sieve 当成元素；rank 原样交给 order，只对打分题目标有效，
 //             是非题或 unit 目标上给了即报错（报文带 E-search-options）
+//
+// opts.line / opts.objective_line（B128 补齐，过程记录 工程-sieve声明线.md）：线的写法同 cut 的第二参，原样交给
+// sieve(…, {line})。line 给可行域那道题，也是是非题目标的缺省线；objective_line 只给目标题另写一条，打分题或
+// unit 目标上给了即报错（E-search-options）。不给线时 sieve 逐元素 cut(r)，走 cut 的缺省规则。
+// 只在给了线时才把选项交给 sieve：不给线的程序与改前逐字相同，旧二进制照样能跑。
 //
 // opts.keep（判断分工定律谓词半的库落点，B181/B184）：代码谓词，在 ground 之后、feasible 之前对每个
 // 新候选求值，假即排除——不是出口也不是未决，不进 sieve、不花调用、不进 pending；接地失败的材料（Fail）
@@ -83,6 +88,12 @@ fn search(seed, propose, feasible, objective, rounds, opts) {
     if has(opts, "rank") && !scored {
         opts["E-search-options: rank 只对打分题目标有效（objective 是是非题或 unit 时没有可排序的读数）。修法：去掉 rank，或把 objective 换成 measure 题"]
     } else { unit };
+    if has(opts, "objective_line") && (objective == unit || scored) {
+        opts["E-search-options: objective_line 只对是非题目标有效（objective 是打分题时只排序、不 cut，是 unit 时没有目标题）。修法：去掉 objective_line，可行域的线写在 line 里"]
+    } else { unit };
+    // 线（B128）：unit 即没给，sieve 按题的校准键查记录
+    let feas_line = if has(opts, "line") { opts.line } else { unit };
+    let obj_line = if has(opts, "objective_line") { opts.objective_line } else { feas_line };
     // 读数们排名后的前 width 个下标（逐档展开，档内按下标升序）
     let rank_top = fn(scores) {
         let tiers = if has(opts, "rank") { order(scores, opts.rank) } else { order(scores) };
@@ -102,9 +113,11 @@ fn search(seed, propose, feasible, objective, rounds, opts) {
             // 接地失败的（is_fail）不受 keep 拦截，原样交给 sieve——sieve 已有的机制把它转成 Unsure(fail)
             let excluded = filter(gd, fn(c) { !is_fail(c) && !keep(c) });
             let kept = filter(gd, fn(c) { is_fail(c) || keep(c) });
-            let ok = sieve(kept, feasible);
+            let ok = if feas_line == unit { sieve(kept, feasible) } else { sieve(kept, feasible, {line: feas_line}) };
             let has_obj = objective != unit && !scored;
-            let by_obj = if has_obj { sieve(accepted(ok), objective) } else { ok };
+            let by_obj = if !has_obj { ok }
+                         else { if obj_line == unit { sieve(accepted(ok), objective) }
+                                else { sieve(accepted(ok), objective, {line: obj_line}) } };
             let fresh_good = map(accepted(by_obj), fn(e) { with(e, "round", i) });
             let pool = concat(acc.pool, fresh_good);
             // 打分路径：新进池的各判一次打分题，读数与 pool 平行；排名取前 width 个

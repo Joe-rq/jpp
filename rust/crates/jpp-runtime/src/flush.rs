@@ -380,8 +380,11 @@ impl<'a> Interp<'a> {
                     self.预算停发(&items, site, &首详, 0);
                     return Ok(发出前::跳过);
                 }
-                if 首因 == "absent" && 处置 != "conservative" {
-                    let pol = 策略.expect("刚判过");
+                // 没声明策略的缺席（现场稳定性三修：网络类错误的隐含策略）审计重放照记录给 Unsure(absent)，走下面的循环
+                if 首因 == "absent"
+                    && 处置 != "conservative"
+                    && let Some(pol) = 策略.clone()
+                {
                     return self
                         .缺席处置(&items, &pol, site, 首详, 0)
                         .map(|_| 发出前::结束);
@@ -560,8 +563,9 @@ impl<'a> Interp<'a> {
                 return Ok(());
             }
         }
-        // **重试与退避**（B32）：只有声明了 absent 策略才重试；没声明沿用旧行为（客户端错误即运行期错误）
-        if let Some(pol) = self.budget.absent.clone() {
+        // **重试与退避**（B32）：声明了 absent 策略按声明的；没声明而首发报网络类错误，按隐含策略重试、用尽转
+        // Unsure(absent)、程序照常（现场稳定性三修 (1)）；其余沿用旧行为（客户端错误即运行期错误）
+        if let Some(pol) = self.缺席策略(结果.as_ref().err()) {
             let mut 等 = pol.backoff;
             let mut 次 = 0;
             while 结果.is_err() && 次 < pol.retry {

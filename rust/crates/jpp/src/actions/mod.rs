@@ -31,10 +31,13 @@ use serde_json::Value as Json;
 use std::sync::OnceLock;
 use std::{cell::RefCell, rc::Rc};
 
-/// 动作运行时能碰到的宿主状态。今天只有 `record_check` 的检查记录（进报告 `local_checks`）。
+/// 动作运行时能碰到的宿主状态：`record_check` 的检查记录（进报告 `local_checks`），与程序文件所在目录。
 #[derive(Clone, Default)]
 pub struct Ctx {
     pub checks: Rc<RefCell<Vec<Json>>>,
+    /// 程序文件所在目录（现场稳定性三修 (2)）：`read_json` 的相对路径先按它找，找不到再按当前目录。
+    /// CLI 从程序路径填；库调用方不填时只按当前目录（与改前相同）。
+    pub program_dir: Option<std::path::PathBuf>,
 }
 
 /// 画像 `actions` 分表里执行器动作的 `sandbox` 描述（B164）：`kind` 是
@@ -242,7 +245,7 @@ pub fn register_all(registry: &mut ActionRegistry, ctx: &Ctx, replay_only: bool)
 /// 已知动作的事实表（步 24c）：不依赖用户输入或实际 `ActionRegistry`（`check` 不构造它），
 /// `check` 与 `run` 的预跑诊断都能随时拿到——J-08 静态子面据此对可逆动作不报、
 /// 对不可逆动作报 error，而不是没有表时一律降成 `W-guard-untrusted`；`no_sandbox`
-/// （B164）供 `E-action-no-sandbox` 用，与调用点有没有守卫无关。
+/// （B164）供 `W-action-no-sandbox` 用，与调用点有没有守卫无关（B187：没有沙箱只告警，执行器照跑）。
 pub fn check_table() -> crate::check::ActionTable {
     let mut t = crate::check::ActionTable::default();
     for a in builtin_actions() {
@@ -330,7 +333,8 @@ mod tests {
     }
 
     /// `no_sandbox` 与 `reversible` 的一致性：探测到沙箱时两者都该是「正常」（可逆、不报无沙箱）；
-    /// 探测不到时两者都该翻转（不可逆、报无沙箱）——不管本机实际探测结果是哪种，这条关系恒成立。
+    /// 探测不到时两者都该翻转（不可逆、告警无沙箱）——不管本机实际探测结果是哪种，这条关系恒成立。
+    /// B187：不可逆只在 `--guard` 下有后果（须守卫）；默认执行器照跑，只多写一份账本。
     #[test]
     fn no_sandbox与reversible互为反面() {
         let t = check_table();

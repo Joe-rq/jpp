@@ -66,6 +66,12 @@ fn execute(command: Command, questions_out: Option<std::path::PathBuf>) -> Resul
             _ => false,
         },
     };
+    // 意图汇编 11a：宿主开启放行把关，与接受位同路进 `Program.entry`（检查器与运行时都只读那一位）
+    let guard = match &command {
+        Command::Run(r) => r.guard,
+        Command::Check { guard, .. } => *guard,
+        _ => false,
+    };
     let 入口声明 = if 给了输入 {
         let taint = if 输入可信 {
             jpp::Taint::Trusted
@@ -75,12 +81,14 @@ fn execute(command: Command, questions_out: Option<std::path::PathBuf>) -> Resul
         jpp::EntryArgs {
             values: vec![jpp::EntryValue::new("input", serde_json::Value::Null).with_taint(taint)],
             accept: 接受,
+            guard,
             ..Default::default()
         }
         .decl()
     } else {
         jpp::EntryArgs {
             accept: 接受,
+            guard,
             ..Default::default()
         }
         .decl()
@@ -136,6 +144,7 @@ fn execute(command: Command, questions_out: Option<std::path::PathBuf>) -> Resul
     .unwrap_or_default();
     let 输入 = jpp::EntryArgs {
         accept: 接受,
+        guard,
         ..输入
     };
     // 步 24c（B108 已知限制收口）：`check` 与 `run` 共用这一次预检查，都带上 CLI 唯一注册的

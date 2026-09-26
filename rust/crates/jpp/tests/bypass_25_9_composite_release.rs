@@ -61,7 +61,8 @@ fn 动作表() -> ActionRegistry {
 }
 
 fn 跑(src: &str) -> Result<Json, String> {
-    let program = lower(&parse(src).unwrap_or_else(|e| panic!("解析：{e:?}"))).expect("lower");
+    let mut program = lower(&parse(src).unwrap_or_else(|e| panic!("解析：{e:?}"))).expect("lower");
+    program.entry.guard = true; // 测放行把关本身：开 --guard（意图汇编 11a）
     let mut l = Ledger::new();
     jpp::run(&program, 端口(), &库(), &动作表(), &mut l)
         .map(|o| o.value_json())
@@ -73,6 +74,8 @@ fn 会话跑(src: &str, 接受: bool) -> Result<Json, String> {
         accept: jpp::HostAccept {
             declared_lines: 接受,
         },
+        // 测合成出口的放行代数本身：开 --guard（意图汇编 11a）
+        guard: true,
         ..Default::default()
     };
     let program = jpp::Session::compile(&parse(src).expect("解析"), &entry.decl())

@@ -157,7 +157,8 @@ handle(cut(judge(state(mat("一段话")), test("该发吗", "c"))), {
     ignore: fn() { "没发" },
     unsure: fn(u) { consume(u, "drop"); "没发" }})
 "#;
-    let program = lower(&parse(放行).unwrap()).unwrap();
+    let mut program = lower(&parse(放行).unwrap()).unwrap();
+    program.entry.guard = true; // 测放行把关本身：开 --guard（意图汇编 11a）
     let e = run(&program, 桩端口(), &store, &a, &mut Ledger::new()).expect_err("类线不放行");
     assert!(e.render().contains("J-08"), "{}", e.render());
     let 路由 = r#"
@@ -166,7 +167,8 @@ handle(cut(judge(state(mat("一段话")), test("该发吗", "c"))), {
     act: fn() { "act" }, ignore: fn() { "ignore" },
     unsure: fn(u) { consume(u, "drop"); "unsure" }})
 "#;
-    let program = lower(&parse(路由).unwrap()).unwrap();
+    let mut program = lower(&parse(路由).unwrap()).unwrap();
+    program.entry.guard = true; // 测放行把关本身：开 --guard（意图汇编 11a）
     let o = run(&program, 桩端口(), &store, &a, &mut Ledger::new()).unwrap();
     assert_eq!(o.value_json(), json!("act"));
     assert_eq!(o.exits[0]["grade"], json!("Class"));

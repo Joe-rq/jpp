@@ -10,6 +10,11 @@ impl<'a> Interp<'a> {
     /// 不可逆 `do` 的唯一放行点（J-08；`20` v2 §2.3 `guard.rs::release`，步 16）。
     /// 读守卫栈上的 `GuardEv`：任一层守卫有放行证据即放行；栈空（无条件执行）不受管。
     pub(crate) fn release(&self, name: &str, reversible: bool, sp: Span) -> R<()> {
+        // 意图汇编 11a（2026-09-26）：放行把关是宿主可选开启的工具（`--guard`），默认相信判断器，不拦任何 `do`。
+        // 下面整段只在开把关时生效；守卫证据与谱系照常计算（惰性出口的解析次序不因开关而变）
+        if !self.guard {
+            return Ok(());
+        }
         // J-08（12:265）：放行**不可逆** do 的守卫表达式中，至少一个合取项来自 taint=trusted
         // 的状态；untrusted 项的数量不改变这一要求；或经 ask。
         //
@@ -144,7 +149,8 @@ impl<'a> Interp<'a> {
                 Some((false, 说明)) => return Ok(Some(说明.clone())),
                 None => {
                     // 依据：B72（地基/附注/2026-09-24-评估①裁定.md，B72-4 谱系放行）；缺键按不放行是主会话 2026-09-25 的保守读法
-                    if self.谱系缺键已报.insert(k.clone()) {
+                    // 意图汇编 11a：这条告警只对放行把关有意义，不开把关不报
+                    if self.guard && self.谱系缺键已报.insert(k.clone()) {
                         self.trace.warn(format!(
                             "W-lineage-unknown: 读数 {} 是被判断材料的来源，但本趟没有从它切出出口，谱系放行无法证明，按不放行处理（B72-4；17b 解释登记 (b)）",
                             k
@@ -166,7 +172,9 @@ impl<'a> Interp<'a> {
         if let Some(输入) = self.拟合谱系.borrow().get(key) {
             return 输入.iter().flat_map(|k| self.parents_of(k)).collect();
         }
-        match self.ledger.view().get(key) {
+        // 步 15h-3：先查开着的层——层开着时刷新写出的判断条目还在层里，只查账本会把谱系在这里截断、
+        // 按「没有祖先」放行（依据：B72-4、B160；过程记录 工程-步15h-3.md 二·1 出入 4）
+        match self.账本查(key) {
             Some(Entry::Judge { parents, .. }) => parents.clone(),
             _ => vec![],
         }

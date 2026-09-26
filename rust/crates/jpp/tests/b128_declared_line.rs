@@ -8,7 +8,7 @@ mod common;
 
 use jpp::effects::{CalibStore, FnPort, JudgeResult, Ports};
 use jpp::interp::{ActionRegistry, TaintOut};
-use jpp::ledger::Ledger;
+use jpp::ledger::{Entry, Ledger};
 use jpp::run;
 use jpp::value::{Answer, State, Taint, Value};
 use jpp::{lower, syntax::parse};
@@ -53,7 +53,9 @@ struct 跑出 {
 }
 
 fn 跑(src: &str, 表: Vec<(&'static str, Answer)>, calib: &CalibStore) -> Result<跑出, String> {
-    let program = lower(&parse(src).expect("解析")).expect("lower");
+    let mut program = lower(&parse(src).expect("解析")).expect("lower");
+    // 本文件测声明线与放行把关本身：开 --guard（意图汇编 11a；不开时 J-08 不拦、W-declared-line 不说放行）
+    program.entry.guard = true;
     let mut l = Ledger::new();
     run(&program, 端口(表), calib, &动作表(), &mut l)
         .map(|o| 跑出 {
@@ -266,10 +268,11 @@ fn f_alpha选证书() {
     assert_eq!(选(0.3, 0.65).0, "act");
     assert_eq!(选(0.3, 0.25).0, "ignore");
     assert_eq!(选(0.3, 0.45).0, "unsure(band)");
-    // alpha 0.05：没有合格证书 → 冷，修法说明「选不到证书」
+    // alpha 0.05：没有合格证书 → B187 起按判断器的回答走（0.99 出 act，等级 Answer），另报 J-15 载体 alpha_line，
+    // 修法说明「选不到证书」
     let (k, row, w) = 选(0.05, 0.99);
-    assert_eq!(k, "unsure(cold|untested:alpha_line)", "{row}");
-    assert_eq!(row["grade"], "Cold");
+    assert_eq!(k, "act", "{row}");
+    assert_eq!(row["grade"], "Answer");
     assert!(
         w.iter()
             .any(|x| x.contains("alpha_line") && x.contains("α ≤ 0.05")),
@@ -307,13 +310,14 @@ k
     assert_eq!(出口种类(&o), "unsure(band)");
 }
 
-/// (h) 不带 `declare` 的 `cut` 判序与等级不变（同一程序同一库，`c_` 里已对照一次；这里对照冷键）
+/// (h) 不带 `declare` 的 `cut` 判序与等级不变（同一程序同一库，`c_` 里已对照一次；这里对照冷键）。
+/// 意图汇编 11a 起冷键按判断器的回答走：0.99 出 act，等级 `Answer`
 #[test]
 fn h_不带declare照旧() {
     let c = CalibStore::new();
     let o = 跑(&单切(""), vec![("甲", Answer::Noul(0.99))], &c).unwrap();
-    assert_eq!(出口种类(&o), "unsure(cold|untested:calib_line)");
-    assert_eq!(o.exits[0]["grade"], "Cold");
+    assert_eq!(出口种类(&o), "act");
+    assert_eq!(o.exits[0]["grade"], "Answer");
     assert!(o.exits[0].get("declared").is_none());
     assert!(o.exits[0].get("evidence").is_none());
 }
@@ -355,9 +359,10 @@ fn 判(t) {
     );
 }
 
-/// 冷出口（B130）：四条出路；同键一趟只报一条
+/// 冷键（B130 原为「冷出口列四条出路」）：意图汇编 11a 起没有线就按判断器的回答走，不报 calib_line 未测；
+/// 读数恰好 0.5（端口对没登记的材料给 0.5）时判断器没有给出回答，出 `unsure(tie)`，等级仍是 `Answer`
 #[test]
-fn 冷出口列四条出路且一趟一键一条() {
+fn 冷键按回答走_恰好一半为并列() {
     let c = CalibStore::new();
     let src = r#"
 budget {calls: 8, cost: 0, depth: 16};
@@ -369,17 +374,25 @@ fn 判(t) {
 }
 [判("一"), 判("二")]
 "#;
-    let o = 跑(src, vec![], &c).unwrap();
-    let w: Vec<&String> = o
-        .warnings
-        .iter()
-        .filter(|w| w.starts_with("W-untested") && w.contains("calib_line"))
-        .collect();
-    assert_eq!(w.len(), 1, "{w:?}");
-    for 出路 in ["bank/bank.json", "computed", "calib-import", "declare"] {
-        assert!(w[0].contains(出路), "缺「{出路}」：{}", w[0]);
-    }
-    assert!(w[0].contains("【作者可改】"));
+    let o = 跑(src, vec![("一", Answer::Noul(0.2))], &c).unwrap();
+    assert!(
+        !o.warnings.iter().any(|w| w.contains("calib_line")),
+        "{:?}",
+        o.warnings
+    );
+    assert_eq!(
+        o.value,
+        serde_json::json!(["ignore", "unsure(tie)"]),
+        "{}",
+        o.value
+    );
+    assert_eq!(o.exits[0]["exit"], "ignore");
+    assert_eq!(o.exits[1]["exit"], "unsure(tie)");
+    assert!(
+        o.exits.iter().all(|e| e["grade"] == "Answer"),
+        "{:?}",
+        o.exits
+    );
 }
 
 // ---------- 声明线入账（B142）：`CalibUsed` 键 `declared:<键>@<站点>` ----------
@@ -515,6 +528,8 @@ fn 接受入口(接受: bool) -> jpp::EntryArgs {
         accept: jpp::HostAccept {
             declared_lines: 接受,
         },
+        // `--release-on-declared` 只在放行把关下有意义（意图汇编 11a）：这一节都开 --guard
+        guard: true,
         ..Default::default()
     }
 }
@@ -607,8 +622,9 @@ fn i_宿主接受后放行不可逆动作() {
     assert_eq!(带.value["content"], "已退", "动作执行了：{}", 带.value);
     assert_eq!(带.exits[0]["grade"], "Declared");
     assert_eq!(带.exits[0]["releases"], true);
-    assert_eq!(入口哈希(&l0), None);
-    assert!(入口哈希(&l1).is_some());
+    // 本节都开 --guard，两本账的入口哈希都有；接受位不同即哈希不同
+    assert!(入口哈希(&l0).is_some() && 入口哈希(&l1).is_some());
+    assert_ne!(入口哈希(&l0), 入口哈希(&l1));
     let w: Vec<&String> = 带
         .warnings
         .iter()
@@ -790,4 +806,110 @@ handle(外, {
     );
     // 带开关：声明线那层成了可放行（静态按可放行计），外层仍不可信，但有一层不确定即不报（零假拒绝）
     assert!(查(true).is_empty(), "{:?}", 查(true));
+}
+
+// ---------- 声明线取运行期值（B175 (3)，步 20j-3 追加 (8)）：声明记录按记录哈希去重 ----------
+
+fn 随机线程序(线: &str) -> jpp::Program {
+    let src = format!(
+        r#"
+budget {{calls: 8, cost: 0, depth: 16}};
+fn 切(料, k) !{{judge}} {{
+    let e = cut(judge(state(mat(料)), test("行吗", "k")), {{declare: {{hi: {线}}}}});
+    let v = exit_kind(e);
+    consume(e, "drop");
+    v
+}}
+[切("甲", 0), 切("乙", 1), 切("丙", 2)]
+"#
+    );
+    lower(&parse(&src).expect("解析")).expect("lower")
+}
+
+fn 声明条数(l: &Ledger) -> usize {
+    l.entries
+        .iter()
+        .filter(|e| matches!(e, Entry::CalibUsed { key, .. } if key.starts_with("declared:k@")))
+        .count()
+}
+
+/// (n) `hi: rand(seed, k)`：同一站点三个不同的线各记一条；只凭账本重放 0 调用、不报 W-header、出口相同；
+/// 换种子重放报 W-header。A、B、A 只记两条
+#[test]
+fn n_随机线按哈希去重() {
+    let c = CalibStore::new();
+    let 表 = || {
+        端口(vec![
+            ("甲", Answer::Noul(0.5)),
+            ("乙", Answer::Noul(0.5)),
+            ("丙", Answer::Noul(0.5)),
+        ])
+    };
+    let mut l = Ledger::new();
+    let o = run(&随机线程序("rand(7, k)"), 表(), &c, &动作表(), &mut l).unwrap();
+    assert_eq!(
+        声明条数(&l),
+        3,
+        "{:?}",
+        l.calib_used.keys().collect::<Vec<_>>()
+    );
+    let his: Vec<f64> = o
+        .exits
+        .iter()
+        .filter_map(|e| e["declared"]["hi"].as_f64())
+        .collect();
+    assert_eq!(his.len(), 3);
+    assert!(his[0] != his[1] && his[1] != his[2], "{his:?}");
+    // 首跑：同一站点后两条不同的线不是「账本头不同」（本趟自己写的条目不作旧记录）
+    assert!(
+        !o.trace.warnings.iter().any(|w| w.starts_with("W-header")),
+        "{:?}",
+        o.trace.warnings
+    );
+    let mut 重 = l.clone();
+    let r = jpp::run_replay(
+        &随机线程序("rand(7, k)"),
+        端口(vec![]),
+        &c,
+        &动作表(),
+        &mut 重,
+    )
+    .unwrap();
+    assert_eq!(r.cost.calls, 0);
+    assert_eq!(r.value_json(), o.value_json());
+    assert!(
+        !r.trace.warnings.iter().any(|w| w.starts_with("W-header")),
+        "{:?}",
+        r.trace.warnings
+    );
+    // 重放不再追加已有的同哈希记录（B124 按键取最后一条只够单线；多线按哈希查全部条目）
+    assert_eq!(声明条数(&重), 3, "重放后账本里的声明记录");
+    let mut 换 = l.clone();
+    let r = jpp::run_replay(
+        &随机线程序("rand(8, k)"),
+        端口(vec![]),
+        &c,
+        &动作表(),
+        &mut 换,
+    )
+    .unwrap();
+    assert!(
+        r.trace
+            .warnings
+            .iter()
+            .any(|w| w.starts_with("W-header") && w.contains("declared")),
+        "{:?}",
+        r.trace.warnings
+    );
+    // A、B、A：同一个线只记一次
+    let mut l = Ledger::new();
+    run(
+        &随机线程序("if k == 1 { 0.6 } else { 0.4 }"),
+        表(),
+        &c,
+        &动作表(),
+        &mut l,
+    )
+    .unwrap();
+    assert_eq!(声明条数(&l), 2);
 }

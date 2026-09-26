@@ -14,6 +14,8 @@ impl<'a> Interp<'a> {
     ) -> Result<Outcome, RtError> {
         self.plan = plan;
         self.hooks = hooks;
+        // 放行把关只有一个来源：`Program.entry.guard`（意图汇编 11a），检查器读同一位
+        self.guard = program.entry.guard;
         // B155（步 15i）：账本头记的渲染版本与本二进制不同时——只凭账本重放按旧版本算判断键（不发请求，
         // 旧账本照样命中），新头也写旧版本（重放写出的账本头与键一致，能再次重放），另报 `W-header` 说明
         // 本二进制的渲染版本不同；续接会发新请求，同一账本混两种渲染违反 B48，拒绝。依据：B155、B48、B30
@@ -399,7 +401,8 @@ impl<'a> Interp<'a> {
         let mut calls: Vec<u64> = vec![];
         let mut usd = 0.0;
         for (i, k) in keys.iter().enumerate() {
-            if let Some(Entry::Judge { call, cost, .. }) = self.ledger.view().get(k) {
+            // 步 15h-3：先查开着的层（层里的判断条目同样算进花费；B160）
+            if let Some(Entry::Judge { call, cost, .. }) = self.账本查(k) {
                 // 老账本没有调用号：每个键算一次调用（上界）
                 let id = if *call == 0 {
                     u64::MAX - i as u64

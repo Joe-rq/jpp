@@ -206,7 +206,8 @@ fn 旧证书不放行() {
         jpp::effects::CertGrade::Formal,
     )
     .unwrap();
-    let program = lower(&parse(路由).unwrap()).unwrap();
+    let mut program = lower(&parse(路由).unwrap()).unwrap();
+    program.entry.guard = true; // 测放行把关本身：开 --guard（意图汇编 11a）
     let o = run(
         &program,
         桩端口(0.97),
@@ -252,10 +253,10 @@ fn 证书带宽与线同源() {
     assert_eq!((重跑.records["k"].hi, 重跑.records["k"].lo), (r.hi, r.lo));
 }
 
-/// (i) 步 15d-2：线的记录没有 δ（非 certify、非代价线、没有 δ 的夹具线）→ 出口 `Unsure(untested)`，
-/// 载体 `Delta`，报 `W-untested`（`20` §3.9「记录的 delta 未测」行）。
+/// (i) 步 15d-2：线的记录没有 δ（非 certify、非代价线、没有 δ 的夹具线）。原来出 `Unsure(untested)`（载体 `Delta`）；
+/// B187（批 9 第 12 格）起取画像 δ（没有画像取 0）按线正常切，出口记录位 `delta_unknown` 置真，不报 `W-untested(Delta)`。
 #[test]
-fn 记录没有带宽出未测() {
+fn 记录没有带宽按线切并记位() {
     let mut c = CalibStore::new();
     c.put("k", 0.8, 0.2, 50, "上岗", None).unwrap();
     let program = lower(&parse(路由).unwrap()).unwrap();
@@ -267,9 +268,15 @@ fn 记录没有带宽出未测() {
         &mut Ledger::new(),
     )
     .unwrap();
-    assert_eq!(o.value_json(), Json::String("unsure".into()));
+    assert_eq!(o.value_json(), Json::String("act".into()));
+    assert_eq!(
+        o.exits[0]["delta_unknown"],
+        Json::Bool(true),
+        "{:?}",
+        o.exits
+    );
     assert!(
-        o.trace
+        !o.trace
             .warnings
             .iter()
             .any(|w| w.starts_with("W-untested") && w.contains("Delta")),

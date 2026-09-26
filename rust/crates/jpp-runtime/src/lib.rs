@@ -370,6 +370,8 @@ pub struct Interp<'a> {
     /// 本趟已记下命中的校准键（`note_calib` 去重；账本 v3 起 `calib_used` 是账本条目的派生视图，
     /// 跨趟保留，不再在入口清空）
     本趟已记校准: HashSet<String>,
+    /// 本趟已记的声明线记录（键 + 记录哈希；B175 (3)，步 20j-3 追加 (8)）：同一站点每个不同的线各记一条
+    本趟已记声明: HashSet<(String, String)>,
     /// 层末条目追加时账本端口报的错（B55，步 18b）：先记下，下一次层末落盘时报 `E-ledger-io`
     账本错: Option<LedgerError>,
     /// 按缓存键复用（步 19）：本运行的缓存键表、跨运行缓存、生成器身份、计数
@@ -397,6 +399,9 @@ pub struct Interp<'a> {
     键读数: HashMap<String, Vec<f64>>,
     /// 声明线出口的说明（出口 id → 「@站点 hi lo，标注 n 条」），J-08 拒绝报文用（B128）
     声明出口: HashMap<usize, String>,
+    /// 宿主开启放行把关（意图汇编 11a；`Program.entry.guard`，在 [`Interp::run`] 入口取）。默认关：`release`
+    /// 不拦任何 `do`，`W-lineage-unknown` 不报，`W-declared-line` 不说放行
+    pub(crate) guard: bool,
     evidence: Vec<(String, jpp_effects::views::Sample)>,
     /// 逐 `cut` 出口的线等级（步 20f，报告 `exits`；出口不进账本，重放时重算）
     exit_grades: Vec<Json>,
@@ -671,6 +676,7 @@ impl<'a> Interp<'a> {
             computed_untrusted_states: std::cell::RefCell::new(HashSet::new()),
             input_untrusted_states: std::cell::RefCell::new(HashMap::new()),
             本趟已记校准: HashSet::new(),
+            本趟已记声明: HashSet::new(),
             账本错: None,
             复用: Default::default(),
             出口放行表: HashMap::new(),
@@ -701,6 +707,7 @@ impl<'a> Interp<'a> {
             audit: ReplayAudit::default(),
             entry: EntryArgs::default(),
             entry_mat_names: HashMap::new(),
+            guard: false,
         }
     }
 }
@@ -759,16 +766,6 @@ fn referenced_names(f: &Function) -> BTreeSet<String> {
     let mut out = BTreeSet::new();
     go_block(&f.body, &mut out);
     out
-}
-
-/// 读数的 p（`test`）或 p_max（K 元题），`fit` 的特征值；`None` = 失败或没答（J-12）
-fn rank_value(ans: &dyn Answers, r: &Reading) -> Option<f64> {
-    if r.fail.is_some() {
-        return None;
-    }
-    // 步 15k（B167 (1)）：统计量全仓只在 `stat_of` 算。`fit` 要的是特征概率（p、p_max），取 `max`，
-    // 值与改前逐位相同；`order` 的排序键不再经这里（`bridge.rs::order_tiers`）
-    jpp_value::stat::stat_of(&ans.answer_of(r)?, &jpp_value::stat::Stat::Max, None).ok()
 }
 
 /// 同题跨运行合并：noul / score 取均值，choice 取众数（`12`:134）

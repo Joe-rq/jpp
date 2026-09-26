@@ -49,6 +49,7 @@ pub fn execute(
         evidence_out,
         entry,
         CacheArgs::default(),
+        None,
     )
 }
 
@@ -68,8 +69,13 @@ pub fn execute_with(
     // 宿主入口（B105；步 14b-0 起 `--input` 产一条值条目）；空入口与不设相同，逐字节不变
     entry: &jpp::EntryArgs,
     cache: CacheArgs<'_>,
+    // 程序文件所在目录（现场稳定性三修 (2)）：`read_json` 的相对路径先按它找
+    program_dir: Option<&std::path::Path>,
 ) -> Result<Value, jpp::Error> {
-    let ctx = jpp::actions::Ctx::default();
+    let ctx = jpp::actions::Ctx {
+        program_dir: program_dir.map(std::path::Path::to_path_buf),
+        ..Default::default()
+    };
     let mut actions = ActionRegistry::new();
     jpp::actions::register_all(&mut actions, &ctx, replay_only);
     // 重放是审计重现（B35）：账本记过的调用照记录计预算，缺记录即 E-replay；续跑与首跑走 run
@@ -138,6 +144,10 @@ pub fn execute_with(
     // 宿主接受声明（B128，步 20j-2）：只在任一接受位为真时出现，不带开关的报告逐字节不变
     if entry.accept.any() {
         report["accept"] = json!({"declared_lines": entry.accept.declared_lines});
+    }
+    // 宿主开启放行把关（意图汇编 11a，`--guard`）：只在开时出现，默认的报告逐字节不变
+    if program.entry.guard {
+        report["guard"] = json!(true);
     }
     Ok(report)
 }

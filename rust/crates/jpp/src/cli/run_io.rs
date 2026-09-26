@@ -103,6 +103,29 @@ pub fn ledger_migrate(from: &Path, to: &Path) -> Result<(), String> {
     Ok(())
 }
 
+/// 有撤不回动作而没给 `--ledger-out` 时的缺省账本路径（意图汇编 11a；B187 批 9 第 9 格）：源文件同目录的
+/// `<源文件名去后缀>.ledger.jsonl`；`--resume` 读的正是这个文件时改写 `<源文件名>.resumed.ledger.jsonl`，
+/// 不覆盖续接的来源。
+fn default_ledger_path(source: &Path, resume: Option<&Path>) -> std::path::PathBuf {
+    let stem = source
+        .file_stem()
+        .map(|s| s.to_string_lossy().to_string())
+        .unwrap_or_else(|| "program".into());
+    let path = source.with_file_name(format!("{stem}.ledger.jsonl"));
+    let 同一个 = resume.is_some_and(|r| {
+        r == path
+            || matches!(
+                (std::fs::canonicalize(r), std::fs::canonicalize(&path)),
+                (Ok(a), Ok(b)) if a == b
+            )
+    });
+    if 同一个 {
+        source.with_file_name(format!("{stem}.resumed.ledger.jsonl"))
+    } else {
+        path
+    }
+}
+
 /// 读 `--input` 文件（步 14b-0）：合法 JSON、整数在 J++ Int 范围内（与 `read_json` 同一条校验），
 /// 以名字 `input` 作一条值条目交给程序（B105，步 14b）；`trusted` 来自 CLI `--input-trusted`
 /// （步 14b-1，B108），缺省仍是不可信（`EntryValue::new` 的缺省）。依据：规划建议 6（21 步 14b-0）；
@@ -127,17 +150,31 @@ pub fn run_checked(
     画像: Option<Resolved>,
     输入: jpp::EntryArgs,
 ) -> Result<(), String> {
-    // 步 18b（B55；主会话 2026-09-25 裁定）：有不可逆 `do` 的程序，首跑与续接都要 `--ledger-out`，
-    // 否则写前意向不落盘，续接会重做不可逆动作。执行前（任何效应之前）报错；只凭账本重放不要求。
-    if options.replay.is_none()
+    // 步 18b（B55；主会话 2026-09-25 裁定）：有不可逆 `do` 的程序，首跑与续接的账本要落盘，
+    // 否则写前意向不落盘，续接会重做不可逆动作；只凭账本重放不要求。
+    // 意图汇编 11a（2026-09-26）：账本是记录，不是防御。默认不停下，没给 `--ledger-out` 就写到默认路径并提示；
+    // 开放行把关（`--guard`）时照旧 `E-ledger-required`，执行前（任何效应之前）报错。
+    let 默认账本 = if options.replay.is_none()
         && options.ledger_out.is_none()
         && let Some(名) = runner::irreversible_action_in(program)
     {
-        // 依据：B55（20 v2 附录 B55 条）；主会话 2026-09-25 对步 18b 的裁定
-        return Err(format!(
-            "E-ledger-required: 程序里有不可逆动作 do「{名}」，要给 --ledger-out <账本文件>：不可逆动作执行前的写前意向要落盘（B55），否则中断后续接会重做它。只凭账本重放（--replay）不要求"
-        ));
-    }
+        if program.entry.guard {
+            // 依据：B55（20 v2 附录 B55 条）；主会话 2026-09-25 对步 18b 的裁定
+            return Err(format!(
+                "E-ledger-required: 程序里有不可逆动作 do「{名}」，要给 --ledger-out <账本文件>：不可逆动作执行前的写前意向要落盘（B55），否则中断后续接会重做它。只凭账本重放（--replay）不要求（开了 --guard；不开时账本自动写到默认路径）"
+            ));
+        }
+        let path = default_ledger_path(&options.source, options.resume.as_deref());
+        // B187（批 9 第 9 格）：首行打印缺省路径，报告顶层另记 `ledger_path`
+        eprintln!(
+            "账本：{}（程序里有撤不回的动作 do「{名}」，没给 --ledger-out，写到缺省路径；续接用 --resume 这个文件）",
+            path.display()
+        );
+        Some(path)
+    } else {
+        None
+    };
+    let ledger_out = options.ledger_out.clone().or(默认账本);
     // 真机分支一定有画像：`profile_resolve::resolve` 解析不到时已报 `E-profile-missing`。
     let 真机画像 = match (&画像, uses_live_backend(options)) {
         (Some(r), true) => Some(r),
@@ -285,7 +322,7 @@ pub fn run_checked(
     let mut evidence: Vec<(String, jpp::effects::Sample)> = vec![];
     // 步 18b（B55）：`--ledger-out` 的账本逐行落盘——头在运行入口定稿时整份原子写出（续接写的是新文件：
     // 新头、旧条目按新链重串），不可逆 `do` 的意向与结果即刻落盘，其余条目每层末落盘。不给就只在内存里。
-    let mut 文件 = options.ledger_out.as_ref().map(|path| {
+    let mut 文件 = ledger_out.as_ref().map(|path| {
         let dir = match path.parent() {
             Some(d) if !d.as_os_str().is_empty() => d.to_path_buf(),
             _ => std::path::PathBuf::from("."),
@@ -335,10 +372,12 @@ pub fn run_checked(
                 gen_model: 生成器.as_ref().map(|g| g.model.clone()),
                 gen_profile_hash: 生成器.as_ref().map(|g| g.profile.hash.clone()),
             },
+            // 程序文件所在目录（现场稳定性三修 (2)）：`read_json` 与 `import` 一样先按它找
+            options.source.parent(),
         )
     };
     // Preserve any completed effects even when execution ends in a runtime error.
-    if let (Some(f), Some(path)) = (文件, &options.ledger_out) {
+    if let (Some(f), Some(path)) = (文件, &ledger_out) {
         f.finish().map_err(|e| format!("{}: {e}", path.display()))?;
     }
     // **出料那一半**：把这一趟判出来的读数折进记录并落盘。
@@ -400,6 +439,12 @@ pub fn run_checked(
         crate::diag_json::render_all(loaded, items).join("\n")
     })?;
     report["fixture_description"] = serde_json::json!(description);
+    // 缺省账本路径（B187）：只在用了缺省路径时出现，给了 --ledger-out 的报告逐字节不变
+    if options.ledger_out.is_none()
+        && let Some(p) = &ledger_out
+    {
+        report["ledger_path"] = serde_json::json!(p.display().to_string());
+    }
     report["replay"] = serde_json::json!(options.replay.is_some());
     report["resumed"] = serde_json::json!(options.resume.is_some());
     report["mode"] = serde_json::json!(mode_label);
@@ -603,6 +648,7 @@ mod tests {
             input: None,
             input_trusted: false,
             release_on_declared: false,
+            guard: false,
             gen_model: None,
             gen_profile: None,
             cache: None,

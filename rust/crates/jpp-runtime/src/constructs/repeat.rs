@@ -75,7 +75,7 @@ impl<'a> Interp<'a> {
         let n_runs = rs.len();
         let 键 = format!("{}\u{1f}repeat(n={n_runs})", first.calib);
         let lk = format!("repeat(n={n_runs},{method}):{}", first.ledger_key);
-        if caps.ledger_write().ledger(self).get(&lk).is_none() {
+        if !caps.ledger_write().has_key(self, &lk) {
             caps.ledger_write().ledger_put(self, Entry::effect_keyed(lk.clone(), "repeat", serde_json::json!({"n": n_runs, "method": method, "calib": 键.replace('\u{1f}', ":")}), 0.0));
         }
         caps.ledger_write().trace_event(

@@ -1,6 +1,6 @@
 # 公开快照说明 / About this public snapshot
 
-`rust/` 是研究树 `地基/rust-jpp` 的公开快照。本次同步取研究区提交 `85e28bfc`（2026-09-25）；上一次同步到研究区提交 `9716e61b`（2026-09-24）。目录一一对应：研究树里的 `X` 就是这里的 `rust/X`。同步用 `tools/sync-rust-from-research.sh`，它只取已提交的内容。
+`rust/` 是研究树 `地基/rust-jpp` 的公开快照。最近一次同步（2026-09-27）取研究区提交 `418cbebd`，分三段提交（PR #37 的评审修复各自单独成提交）；此前的同步取过 `85e28bfc`（2026-09-25）。目录一一对应：研究树里的 `X` 就是这里的 `rust/X`。同步用 `tools/sync-rust-from-research.sh`，它只取已提交的内容。
 
 **本次同步里的一次重命名（研究树步 14a，B74）**：`crates/jpp-core`（AST、检查器、解释器、效应、账本、保形）与 `crates/jpp-cli`（`jpp` 二进制）合并改名为单个 crate `crates/jpp`（lib 目标 + bin 目标）。原 `crates/jpp-core/tests/fixtures/calib_legacy/` 与 `crates/jpp-core/tests/known_defects.rs` 这两个只在公开侧的文件随之手工搬到 `crates/jpp/tests/`（见下节），`tools/sync-rust-from-research.sh` 的 KEEP 列表与两处路径改写已同步更新；README、ROADMAP、CI 工作流与文档里 `-p jpp-cli` 的调用改为 `-p jpp`，`crates/jpp-core/INTERFACE.md` 等链接改指向 `crates/jpp/INTERFACE.md`。历史文档（`rust/前端需求-来自核实.md` 等标了具体研究区提交号的稽核记录）保留旧路径原样，不追溯改写。
 

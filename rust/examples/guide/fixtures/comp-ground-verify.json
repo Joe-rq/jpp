@@ -2,7 +2,7 @@
   "description": "Synthetic fixed observations for search-ground.jpp (construction check only; not model evaluation; B184). Generations are fixed; exec_sql runs the SQL for real only when the seed ledger is recorded (see 地基/过程记录/工程-步25e.md), and the golden resumes from that seed without executing anything. Round 0: c0 (no quarter filter, wrong scope) is judged and rejected; c1 (typo'd column name -> SQL error) is code-excluded by opts.keep before any judgment call; c2 (quarter filter off by one day, missing 2026-06-30) lands in-band and is refined into round 1's context together with the code-excluded c1 (both are carried forward under unsure_to: refine). Round 1: c3 (correct quarter + correct grouping) is accepted, reaching width 1 and stopping; c4 (filter on a nonexistent category -> empty result) is code-excluded by opts.keep; c5 (correct quarter but grouped by product, wrong grain) is judged and rejected. The calibration record is hand-written to exercise routing, not a real authentication.",
   "calibrations": [
     {
-      "key": "sql-scope-correct",
+      "key": "sql-answers-question",
       "hi": 0.75,
       "lo": 0.25,
       "n": 1,
@@ -32,31 +32,31 @@
   ],
   "observations": [
     {
-      "on": [{"error": null, "rows": [["家居", 60]], "sql": "select category, sum(quantity) as total from returns group by category order by total desc limit 1;", "text": "SQL：select category, sum(quantity) as total from returns group by category order by total desc limit 1;\n结果：家居 共 60 件"}],
+      "on": [{"error": null, "rows": [["家居", 60]], "sql": "select category, sum(quantity) as total from returns group by category order by total desc limit 1;", "text": "需求：写一条 SQL 查询，回答一个统计问题：需求要求只统计上个季度（2026 年 4 月 1 日到 6 月 30 日）的退货记录，按商品类别汇总数量，找出退货数量最多的一类。假设今天在 2026 年第三季度。数据库表 returns(id, category, product_name, quantity, return_date)\nSQL：select category, sum(quantity) as total from returns group by category order by total desc limit 1;\n结果：家居 共 60 件"}],
       "op": "test",
-      "text": "这条查询是否按需求的口径统计：只算上个季度（4 月 1 日到 6 月 30 日）、按商品类别汇总、取退货数量最多的一类？",
-      "calib": "sql-scope-correct",
+      "text": "这条查询的结果是否回答了需求里的问题？",
+      "calib": "sql-answers-question",
       "answer": {"Noul": 0.05}
     },
     {
-      "on": [{"error": null, "rows": [["数码", 25]], "sql": "select category, sum(quantity) as total from returns where return_date >= '2026-04-01' and return_date <= '2026-06-29' group by category order by total desc limit 1;", "text": "SQL：select category, sum(quantity) as total from returns where return_date >= '2026-04-01' and return_date <= '2026-06-29' group by category order by total desc limit 1;\n结果：数码 共 25 件"}],
+      "on": [{"error": null, "rows": [["数码", 25]], "sql": "select category, sum(quantity) as total from returns where return_date >= '2026-04-01' and return_date <= '2026-06-29' group by category order by total desc limit 1;", "text": "需求：写一条 SQL 查询，回答一个统计问题：需求要求只统计上个季度（2026 年 4 月 1 日到 6 月 30 日）的退货记录，按商品类别汇总数量，找出退货数量最多的一类。假设今天在 2026 年第三季度。数据库表 returns(id, category, product_name, quantity, return_date)\nSQL：select category, sum(quantity) as total from returns where return_date >= '2026-04-01' and return_date <= '2026-06-29' group by category order by total desc limit 1;\n结果：数码 共 25 件"}],
       "op": "test",
-      "text": "这条查询是否按需求的口径统计：只算上个季度（4 月 1 日到 6 月 30 日）、按商品类别汇总、取退货数量最多的一类？",
-      "calib": "sql-scope-correct",
+      "text": "这条查询的结果是否回答了需求里的问题？",
+      "calib": "sql-answers-question",
       "answer": {"Noul": 0.5}
     },
     {
-      "on": [{"error": null, "rows": [["数码", 40]], "sql": "select category, sum(quantity) as total from returns where return_date >= '2026-04-01' and return_date < '2026-07-01' group by category order by total desc limit 1;", "text": "SQL：select category, sum(quantity) as total from returns where return_date >= '2026-04-01' and return_date < '2026-07-01' group by category order by total desc limit 1;\n结果：数码 共 40 件"}],
+      "on": [{"error": null, "rows": [["数码", 40]], "sql": "select category, sum(quantity) as total from returns where return_date >= '2026-04-01' and return_date < '2026-07-01' group by category order by total desc limit 1;", "text": "需求：写一条 SQL 查询，回答一个统计问题：需求要求只统计上个季度（2026 年 4 月 1 日到 6 月 30 日）的退货记录，按商品类别汇总数量，找出退货数量最多的一类。假设今天在 2026 年第三季度。数据库表 returns(id, category, product_name, quantity, return_date)\nSQL：select category, sum(quantity) as total from returns where return_date >= '2026-04-01' and return_date < '2026-07-01' group by category order by total desc limit 1;\n结果：数码 共 40 件"}],
       "op": "test",
-      "text": "这条查询是否按需求的口径统计：只算上个季度（4 月 1 日到 6 月 30 日）、按商品类别汇总、取退货数量最多的一类？",
-      "calib": "sql-scope-correct",
+      "text": "这条查询的结果是否回答了需求里的问题？",
+      "calib": "sql-answers-question",
       "answer": {"Noul": 0.95}
     },
     {
-      "on": [{"error": null, "rows": [["耳机", 25]], "sql": "select product_name, sum(quantity) as total from returns where return_date >= '2026-04-01' and return_date < '2026-07-01' group by product_name order by total desc limit 1;", "text": "SQL：select product_name, sum(quantity) as total from returns where return_date >= '2026-04-01' and return_date < '2026-07-01' group by product_name order by total desc limit 1;\n结果：耳机 共 25 件"}],
+      "on": [{"error": null, "rows": [["耳机", 25]], "sql": "select product_name, sum(quantity) as total from returns where return_date >= '2026-04-01' and return_date < '2026-07-01' group by product_name order by total desc limit 1;", "text": "需求：写一条 SQL 查询，回答一个统计问题：需求要求只统计上个季度（2026 年 4 月 1 日到 6 月 30 日）的退货记录，按商品类别汇总数量，找出退货数量最多的一类。假设今天在 2026 年第三季度。数据库表 returns(id, category, product_name, quantity, return_date)\nSQL：select product_name, sum(quantity) as total from returns where return_date >= '2026-04-01' and return_date < '2026-07-01' group by product_name order by total desc limit 1;\n结果：耳机 共 25 件"}],
       "op": "test",
-      "text": "这条查询是否按需求的口径统计：只算上个季度（4 月 1 日到 6 月 30 日）、按商品类别汇总、取退货数量最多的一类？",
-      "calib": "sql-scope-correct",
+      "text": "这条查询的结果是否回答了需求里的问题？",
+      "calib": "sql-answers-question",
       "answer": {"Noul": 0.05}
     }
   ]

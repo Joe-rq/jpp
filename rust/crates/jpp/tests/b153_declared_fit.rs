@@ -52,6 +52,8 @@ fn 入口(接受: bool) -> jpp::EntryArgs {
         accept: jpp::HostAccept {
             declared_lines: 接受,
         },
+        // 本文件测声明式拟合的放行与告警：开 --guard（意图汇编 11a；W-declared-line 与放行只在把关下出现）
+        guard: true,
         ..Default::default()
     }
 }
@@ -91,7 +93,8 @@ fn 跑(
 
 /// 跳过静态检查，只看运行期
 fn 直跑(src: &str, 表: Vec<(&'static str, &'static str, Answer)>) -> Result<Json, String> {
-    let program = lower(&parse(src).expect("解析")).expect("lower");
+    let mut program = lower(&parse(src).expect("解析")).expect("lower");
+    program.entry.guard = true; // 测放行把关本身：开 --guard（意图汇编 11a）
     let c = CalibStore::new();
     let a = 动作表();
     let mut l = Ledger::new();
@@ -465,19 +468,14 @@ k
     };
     let 表 = || vec![("甲", "行吗", Answer::Noul(0.8))];
     let c = CalibStore::new();
-    let o = 跑(&src(""), 表(), &c, false).unwrap();
-    assert_eq!(o.value, "unsure(cold|untested:calib_line)");
+    // B187（批 9 第 3 格）：拟合分数不是判断器的回答，不写线是缺分档参数（形状错）
+    let e = 跑(&src(""), 表(), &c, false).unwrap_err();
     assert!(
-        o.warnings
-            .iter()
-            .any(|w| w.starts_with("W-untested") && w.contains("声明式拟合没有认证通道")),
-        "{:?}",
-        o.warnings
+        e.contains("E-cut-options") && e.contains("声明式拟合的结果是一个分"),
+        "{e}"
     );
-    assert_eq!(
-        跑(&src(r#", "k""#), 表(), &c, false).unwrap().value,
-        "unsure(cold|untested:calib_line)"
-    );
+    let e = 跑(&src(r#", "k""#), 表(), &c, false).unwrap_err();
+    assert!(e.contains("E-cut-options"), "{e}");
     for 选项 in [
         r#", {stat: "confidence", declare: {hi: 0.5}}"#,
         r#", {cost: [1, 2]}"#,

@@ -31,7 +31,7 @@ pub fn print(p: &Program, annot: Option<&AnnotTable>) -> String {
             .unwrap_or_else(|| "-".into())
     );
     // 入口声明（B106）：空时不打印，无入口程序的 `ir.txt` 不变
-    if !p.entry.is_empty() {
+    if !p.entry.params.is_empty() {
         let ps: Vec<String> = p
             .entry
             .params
@@ -46,6 +46,10 @@ pub fn print(p: &Program, annot: Option<&AnnotTable>) -> String {
     // 宿主接受声明（B128，步 20j-2）：只在接受时打印
     if p.entry.accept_declared {
         let _ = writeln!(w.out, "accept declared_lines");
+    }
+    // 宿主开启放行把关（意图汇编 11a）：只在开时打印，不开的 `ir.txt` 不变
+    if p.entry.guard {
+        let _ = writeln!(w.out, "guard");
     }
     w.block(&p.body, 0);
     let _ = writeln!(w.out, "sites {}", p.sites.sites.len());

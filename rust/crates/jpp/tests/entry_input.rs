@@ -306,6 +306,8 @@ fn input派生的守卫放行不了不可逆do() {
             // 步 18b：有不可逆 do 的程序要给 --ledger-out（E-ledger-required）
             "--ledger-out",
             "l.jsonl",
+            // 测 J-08 本身：开 --guard（意图汇编 11a）
+            "--guard",
             "--output",
             "r.json",
         ],
@@ -329,6 +331,8 @@ fn input派生的守卫放行不了不可逆do() {
             // 步 18b：有不可逆 do 的程序要给 --ledger-out（E-ledger-required）
             "--ledger-out",
             "l.jsonl",
+            // 测 J-08 本身：开 --guard（意图汇编 11a）
+            "--guard",
             "--output",
             "r.json",
         ],
@@ -387,6 +391,8 @@ fn m_input_trusted让静态j08也放行() {
             // 步 18b：有不可逆 do 的程序要给 --ledger-out（E-ledger-required）
             "--ledger-out",
             "l.jsonl",
+            // 测 J-08 本身：开 --guard（意图汇编 11a）
+            "--guard",
             "--output",
             "r.json",
         ],
@@ -409,6 +415,8 @@ fn m_input_trusted让静态j08也放行() {
             // 步 18b：有不可逆 do 的程序要给 --ledger-out（E-ledger-required）
             "--ledger-out",
             "l.jsonl",
+            // 测 J-08 本身：开 --guard（意图汇编 11a）
+            "--guard",
             "--output",
             "r.json",
         ],

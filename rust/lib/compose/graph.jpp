@@ -17,11 +17,13 @@ fn graph_materials(xs) { map(pair(map(xs, fn(x) { [x, x] })).value, fn(r) { r.it
 // 未决里「没观察到」的那一类（与 lib/outcome.jpp 的 unobserved_cause 同一集合，B95）
 fn graph_unobserved(c) { c == "budget" || c == "absent" || c == "latency" }
 
-// 候选下标对判边，组成图。ij 是 [[i, j]]，left/right 是两端的节点列表，off 是右端节点号的偏移
-fn graph_judge(nodes, n_left, left, right, ij, off, edge_q) -> Record<Exit> {
+// 候选下标对判边，组成图。ij 是 [[i, j]]，left/right 是两端的节点列表，off 是右端节点号的偏移；
+// opts.line（B128 补齐）原样交给判边的 sieve，只在给了时才传选项（不给线的程序与改前相同，旧二进制照样能跑）
+fn graph_judge(nodes, n_left, left, right, ij, off, edge_q, opts) -> Record<Exit> {
     let rels = pair(map(ij, fn(p) { [left[p[0]], right[p[1]]] })).value;
     // ends：两端节点号；eid：候选序号（判后 value 与 pending 各自重排位置，用 eid 认边）
-    let o = sieve(map(rels, fn(r) { with(with(r, "ends", [ij[r.pos][0], off + ij[r.pos][1]]), "eid", r.pos) }), edge_q);
+    let cands = map(rels, fn(r) { with(with(r, "ends", [ij[r.pos][0], off + ij[r.pos][1]]), "eid", r.pos) });
+    let o = if has(opts, "line") { sieve(cands, edge_q, {line: opts.line}) } else { sieve(cands, edge_q) };
     {kind: "graph", nodes: nodes, n_left: n_left,
      edges: o.value, rejected: o.detail.ignore, pending: o.pending,
      unobserved: filter(o.pending, fn(p) { graph_unobserved(p.cause) }),
@@ -38,7 +40,7 @@ fn judged_graph(nodes, edge_q, opts) -> Record<Exit> {
             }), fn(j) { [i, j] }))
         })
     };
-    graph_judge(nodes, unit, nodes, nodes, ij, 0, edge_q)
+    graph_judge(nodes, unit, nodes, nodes, ij, 0, edge_q, opts)
 }
 
 // 二部图：左右两组节点，右侧节点号从 len(left) 起；opts.prune(left, right) 给 [[i, j]]（i 在左、j 在右）
@@ -51,7 +53,7 @@ fn judged_bipartite(left, right, edge_q, opts) -> Record<Exit> {
             }), fn(j) { [i, j] }))
         })
     };
-    graph_judge(concat(left, right), nl, left, right, ij, nl, edge_q)
+    graph_judge(concat(left, right), nl, left, right, ij, nl, edge_q, opts)
 }
 
 // 节点号的文字形（动作把节点号一律转成文字）还原成节点号

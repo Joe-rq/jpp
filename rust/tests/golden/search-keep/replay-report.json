@@ -17,7 +17,7 @@
       "key": "search-fit",
       "pos": 0,
       "releases": false,
-      "site": 10545
+      "site": 11676
     },
     {
       "exit": "unsure(band)",
@@ -27,7 +27,7 @@
       "key": "search-fit",
       "pos": 1,
       "releases": false,
-      "site": 10545
+      "site": 11676
     },
     {
       "exit": "act",
@@ -37,7 +37,7 @@
       "key": "search-fit",
       "pos": 0,
       "releases": false,
-      "site": 10545
+      "site": 11676
     }
   ],
   "fixture_description": "Synthetic fixed observations for search-keep.jpp (construction check only; not model evaluation). Round 0 proposes three names: one fits and is kept, one exceeds four characters and is excluded by the code predicate `keep` before it ever reaches the judge, one is judged in-band (unsure) and is refined into round 1's context. Round 1's generation fixture is context-locked (`ctx`) to the exact frontier `search` should build: the round-0 accepted name, the still-undecided name, and the keep-excluded name, in that order — if `search` fails to carry the excluded material into the next round's frontier under `unsure_to: \"refine\"`, or carries it in the wrong slot, this fixture lookup misses and the run errors instead of silently passing. Round 1 proposes one more name that fits (reaching width 2, so the search stops) and two more over-length names that are again excluded by code, never judged. The calibration record is hand-written to exercise routing.",
@@ -71,24 +71,24 @@
       },
       {
         "cost": 0.0,
-        "key": "d47ada6b26cdb6ff7530af5e",
+        "key": "3b1d0f72340176554e07833c",
         "kind": "judge",
         "note": "「这个名字适合做一家社区咖啡馆的店名吗？」",
         "replayed": true,
         "site": {
-          "end": 10566,
-          "start": 10545
+          "end": 11697,
+          "start": 11676
         }
       },
       {
         "cost": 0.0,
-        "key": "854f3970ed2f1b85b37f66cf",
+        "key": "b682fd032df1c9c8088a44ab",
         "kind": "judge",
         "note": "「这个名字适合做一家社区咖啡馆的店名吗？」",
         "replayed": true,
         "site": {
-          "end": 10566,
-          "start": 10545
+          "end": 11697,
+          "start": 11676
         }
       },
       {
@@ -104,20 +104,18 @@
       },
       {
         "cost": 0.0,
-        "key": "fd3404af700271dee3df86e4",
+        "key": "cdf14effe72d66115e66022f",
         "kind": "judge",
         "note": "「这个名字适合做一家社区咖啡馆的店名吗？」",
         "replayed": true,
         "site": {
-          "end": 10566,
-          "start": 10545
+          "end": 11697,
+          "start": 11676
         }
       }
     ],
     "warnings": [
-      "W-window-untested: @10545 画像没有测过窗口（window），对象长度不核；超窗的语境可能接管读数而无痕",
-      "W-fixture-line: @10545 键 search-fit 的线是夹具线（宿主 put 写入或没有认证证书，n=1），出口 Act 照常路由，但按 B29 不算放行不可逆 do 的可信合取项。修法【需接线人】：用 calib-import 或 commission 从带真值样本认证这条线",
-      "W-fixture-line: @10545 键 search-fit 的线是夹具线（宿主 put 写入或没有认证证书，n=1），出口 Act 照常路由，但按 B29 不算放行不可逆 do 的可信合取项。修法【需接线人】：用 calib-import 或 commission 从带真值样本认证这条线",
+      "W-window-untested: @11676 画像没有测过窗口（window），对象长度不核；超窗的语境可能接管读数而无痕",
       "W-untyped-transfer: search 把 unsure(band) 装在返回值里交了出去，但返回类型没提 Exit，调用者从签名上看不出自己收到了一份未决。修法：把返回类型标为含 Exit（如 `-> Exit`、`-> Record<Exit>`）",
       "returned_unsure: unsure(band)"
     ]
@@ -203,7 +201,7 @@
           ],
           "taint": "Trusted"
         },
-        "key": "854f3970ed2f1b85b37f66cf",
+        "key": "b682fd032df1c9c8088a44ab",
         "pos": 1,
         "q": {
           "calib": "search-fit",

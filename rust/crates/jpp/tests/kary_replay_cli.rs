@@ -52,7 +52,7 @@ fn 取(report: &Value) -> Value {
 
 /// 首跑（带夹具）→ 只凭账本重放；返回 (首跑报告, 重放报告)。
 fn 首跑与重放(name: &str, src: &Path, fixtures: &Path) -> (Value, Value) {
-    首跑与重放_带输入(name, src, fixtures, None)
+    首跑与重放_带输入(name, src, fixtures, None, None)
 }
 
 /// 步 14b-0：探针的材料经 `--input` 交给程序，首跑与重放给同一份。
@@ -61,12 +61,16 @@ fn 首跑与重放_带输入(
     src: &Path,
     fixtures: &Path,
     input: Option<&Path>,
+    calib: Option<&Path>,
 ) -> (Value, Value) {
     let d = tmp(name);
     let (src, fx) = (src.display().to_string(), fixtures.display().to_string());
-    let inp: Vec<String> = input
+    let mut inp: Vec<String> = input
         .map(|p| vec!["--input".to_string(), p.display().to_string()])
         .unwrap_or_default();
+    if let Some(c) = calib {
+        inp.extend(["--calib".to_string(), c.display().to_string()]);
+    }
     let inp: Vec<&str> = inp.iter().map(String::as_str).collect();
     let first: Vec<&str> = [
         "run",
@@ -96,15 +100,17 @@ fn 首跑与重放_带输入(
 #[test]
 fn folio_只凭账本重放与首跑相同() {
     let r = root();
-    for fx in [
-        "probes/folio/fixture.json",
-        "probes/scope/fixture-folio.json",
-    ] {
+    // 原来还跑一份范围探针的夹具（probes/scope/fixture-folio.json）：它只录了 form-topic 没有线、sieve 一条不收
+    // 时走到的题。B187（批 9）起没有线按判断器的回答走，程序会往下走到夹具没录的题（固定观察缺记录即错），
+    // 这份夹具不再能单独驱动 folio；K 元出口 band 的重放由下面这份自带线的夹具覆盖。
+    for (fx, calib) in [("probes/folio/fixture.json", None::<&str>)] {
+        let calib = calib.map(|c| r.join(c));
         let (r1, r2) = 首跑与重放_带输入(
             "folio",
             &r.join("probes/folio/folio.jpp"),
             &r.join(fx),
             Some(&r.join("probes/folio/baseline/materials.json")),
+            calib.as_deref(),
         );
         assert_eq!(r2["cost"]["calls"], 0, "{fx}：重放新增了调用");
         assert_eq!(取(&r2), 取(&r1), "{fx}：重放与首跑不同");

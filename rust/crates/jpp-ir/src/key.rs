@@ -384,7 +384,8 @@ impl LiteralMode {
 /// `Certified`。这个优先序步 20f 起已在报告 `exits` 表里用，本步不改。
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 pub enum LineGrade {
-    /// 没用上线（冷、停岗、缺席、失败、证据不足）
+    /// 没用上线、也没有判断器的回答可走（停岗、缺席、失败、证据不足；作者要求证书线而没有证书；
+    /// 非 `max` 统计量或拟合分数上没写声明线）
     Cold,
     /// 夹具线：宿主 `put` 写入，或没有认证证书（B29）
     Fixture,
@@ -402,6 +403,10 @@ pub enum LineGrade {
     /// 路由可用；放行不可逆 `do` 须宿主另作接受（`Exit::host_accepts_declared`，20j-2 置位）。
     /// 与上面七档不在同一条优先序上：它不来自记录，只由声明分支给出。
     Declared,
+    /// 判断器自己的回答（意图汇编 11a，2026-09-26）：没有记录的线、作者也没写线时，`cut` 按判断器的回答走——
+    /// 是非题 p > 0.5 为 act、p < 0.5 为 ignore，select / measure 取概率最大的候选或档位，恰好并列出
+    /// `Unsure(tie)`。与声明线一样不来自记录，不在上面七档的优先序上。不作放行证据：只在宿主开 `--guard` 时有意义。
+    Answer,
 }
 
 impl LineGrade {
@@ -416,6 +421,7 @@ impl LineGrade {
             LineGrade::Form => "Form",
             LineGrade::Certified => "Certified",
             LineGrade::Declared => "Declared",
+            LineGrade::Answer => "Answer",
         }
     }
     /// 等级这一项放不放行不可逆 `do`：只有主键记录（题键、题式键）经正式 α 认证才放行（B75 放行原则）。

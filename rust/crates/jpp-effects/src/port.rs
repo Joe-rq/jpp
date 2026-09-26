@@ -21,6 +21,24 @@ use jpp_value::value::{Answer, Question, State};
 #[derive(Debug, Clone)]
 pub struct EffectError(pub String);
 
+/// 网络类端口错误的前缀（现场稳定性三修 (1)，`地基/过程记录/工程-现场稳定性三修.md`）：传输失败、超时、
+/// 服务端 429/5xx 在端口自己的退避之后仍失败。宿主端口用 [`EffectError::network`] 标出这一类；运行时在程序
+/// 没声明 `budget.absent` 时对这一类默认重试、用尽落失败值（判断 `Unsure(absent)`、生成 `Fail`），不中止。
+/// 其余端口错误（固定观察未命中、没有端口、回复形状不对、4xx）照旧是运行期错误。
+pub const 网络错误前缀: &str = "network: ";
+
+impl EffectError {
+    /// 标成网络类的端口错误（见 [`网络错误前缀`]）。
+    pub fn network(detail: impl Into<String>) -> EffectError {
+        EffectError(format!("{网络错误前缀}{}", detail.into()))
+    }
+
+    /// 是不是网络类错误。
+    pub fn is_network(&self) -> bool {
+        self.0.starts_with(网络错误前缀)
+    }
+}
+
 /// 概率向量里最大的那一档的下标
 pub fn argmax_index(v: &[f64]) -> usize {
     v.iter()

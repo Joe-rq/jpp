@@ -55,7 +55,8 @@ fn 库() -> CalibStore {
 }
 
 fn 跑在(src: &str, l: &mut Ledger) -> Result<Json, String> {
-    let program = lower(&parse(src).expect("解析")).expect("lower");
+    let mut program = lower(&parse(src).expect("解析")).expect("lower");
+    program.entry.guard = true; // 测放行把关本身：开 --guard（意图汇编 11a）
     run(&program, 端口(), &库(), &动作表(), l)
         .map(|o| o.value_json())
         .map_err(|e| e.render())
@@ -101,7 +102,8 @@ fn d_谱系只收紧判断证据_经ask照常放行() {
     let src = format!(
         "budget {{calls: 8, cost: 1, depth: 8, escalate: 1}};\nlet r = sieve([mat(\"甲\"), mat(\"乙\")], test(\"选哪个\", \"t\"));\nhandle(ask(state(r.value[0].item), test(\"该发吗\", \"human\")), {{act: fn() {{ {发} }}, ignore: fn() {{ \"不发\" }}, unsure: fn(u) {{ consume(u, \"drop\"); \"不发\" }}}})\n"
     );
-    let program = lower(&parse(&src).expect("解析")).expect("lower");
+    let mut program = lower(&parse(&src).expect("解析")).expect("lower");
+    program.entry.guard = true; // 测放行把关本身：开 --guard（意图汇编 11a）
     let ports = 端口().with(FnPort::ask("h", |_s: &State, _q: &Question| {
         Ok(Some(Answer::Noul(1.0)))
     }));

@@ -182,14 +182,14 @@ fn 去键(v: &mut Json, ks: &[&str]) {
     }
 }
 
-/// 报告里用记录的线判成已决的出口（不是 `unsure…` 的）。作者声明线（`grade: Declared`，B128，步 20j-1）
-/// 不来自记录，不算借线、也不算「无校准却已决」，不计入
+/// 报告里用记录的线判成已决的出口（不是 `unsure…` 的）。作者声明线（`grade: Declared`，B128，步 20j-1）与
+/// 判断器自己的回答（`grade: Answer`，意图汇编 11a、B187）不来自记录，不算借线，不计入
 fn 已决出口(rep: &Json) -> Vec<String> {
     rep["exits"]
         .as_array()
         .into_iter()
         .flatten()
-        .filter(|e| e["grade"] != "Declared")
+        .filter(|e| e["grade"] != "Declared" && e["grade"] != "Answer")
         .filter_map(|e| e["exit"].as_str())
         .filter(|x| !x.starts_with("unsure"))
         .map(String::from)
@@ -506,9 +506,10 @@ strip_assertions(mat("材料"))
 
 // ---------- (C) 数值字段各未测一次（不计入八条） ----------
 
-/// δ：记录没有 δ 的上岗线，出口 `Unsure(untested)`（步 15d-2）
+/// δ：记录没有 δ 的上岗线。步 15d-2 时出口 `Unsure(untested)`；B187（批 9 第 12 格）起取画像 δ（没有取 0）
+/// 按线切，出口记录位 `delta_unknown` 置真
 #[test]
-fn c_delta未测出口未决() {
+fn c_delta未测出口记位() {
     use jpp::effects::{CalibStore, FnPort, JudgeResult, Ports};
     use jpp::ledger::Ledger;
     use jpp::value::Answer;
@@ -528,7 +529,9 @@ fn c_delta未测出口未决() {
     let mut l = Ledger::new();
     let o = jpp::run(&program, ports, &calib, &jpp::ActionRegistry::new(), &mut l).unwrap();
     let ex = serde_json::to_string(&o.exits).unwrap();
-    assert!(ex.contains("untested"), "{ex}");
+    assert!(!ex.contains("untested"), "{ex}");
+    assert_eq!(o.exits[0]["delta_unknown"], Json::Bool(true), "{ex}");
+    assert_eq!(o.exits[0]["exit"], "act", "{ex}");
 }
 
 fn 用例名(n: &str) -> Json {
@@ -646,7 +649,8 @@ consume(e, "drop");
 
 // ---------- (D) 第二判断器 ----------
 
-/// (D1) 程序不改在替身判断器上跑：不带夹具、不带校准，全部出口未决（重认前全部冷出口是预期）
+/// (D1) 程序不改在替身判断器上跑：不带夹具、不带校准，没有一个出口用记录的线（重认前没有线；B187 起按替身的
+/// 回答走，出口等级 `Answer`）
 #[test]
 fn d1_替身判断器跑全部示例() {
     let d = 临时("d1");
@@ -663,7 +667,7 @@ fn d1_替身判断器跑全部示例() {
             assert_eq!(r.报告["backend"], "stub-0", "{name}");
             assert!(
                 已决出口(&r.报告).is_empty(),
-                "{name}：没有校准，出口应全部未决：{:?}",
+                "{name}：没有校准，出口不该用上记录的线：{:?}",
                 已决出口(&r.报告)
             );
             跑完.push(name);
@@ -682,8 +686,6 @@ fn d1_替身判断器跑全部示例() {
         vec![
             "gen-choose",
             "lifecycle",
-            "pair-team",
-            "partial",
             "search-bound",
             "search-keep",
             "search-noshrink",
@@ -710,12 +712,11 @@ fn d1_替身判断器跑全部示例() {
     ] {
         assert!(停[g].contains("stub 判断器不生成"), "{g}：{}", 停[g]);
     }
-    assert!(
-        停["pair-team"].contains("E-rt-index"),
-        "{}",
-        停["pair-team"]
-    );
-    assert!(停["partial"].contains("J-05"), "{}", 停["partial"]);
+    // 意图汇编 11a、B187（默认相信判断器）：没有线时按替身的回答走，不再全部未决。程序走的路因此变了：
+    // pair-team 原来因全部未决而下标越界（E-rt-index），现在跑得完；partial 与 tally 起初走进夹具下没走过的
+    // 臂，读到那一臂的记录里没有的字段（E-rt-field `next` / `at`）。两个示例随后改成取续接字段前先 has(…)
+    // 看有没有（没有未决时续接是空记录），各条臂都走得通，也跑得完（partial 原先的运行期 J-05 同时消失：
+    // 替身的回答不再全部未决）。跑完的个数 33 → 35（pair-team、partial、tally 进）。
     // 步 23c 新增两个金样用例（seq-wrapped-old/new），步 20j-1 加 declare-refund（作者声明线，不靠校准记录），
     // 替身上都跑得完：23 → 26。步 7t 新增 env-snake（B159 (1)(a) 纯函数环境示例）：全部出口在替身上
     // 都是未测 Unsure，decide() 里三处 cut_bool 各自 consume(u, "drop") 就地消费，没有未消费的 unsure
@@ -728,7 +729,8 @@ fn d1_替身判断器跑全部示例() {
     // 步 20j-2 加 declare-refund-accept（同一源码带 --release-on-declared），替身上跑得完：30 → 31
     // 步 13a-1 加 spec-fixture-miss（替身判断器对全部题都答，推测组不报错）：31 → 32。
     // 步 20j-4 加 declare-fit（声明式拟合，不靠校准记录），替身上跑得完：32 → 33
-    assert_eq!(跑完.len(), 33);
+    // B187 默认相信判断器：pair-team 跑得完，partial、tally 改成各臂都走得通后也跑得完：33 → 35
+    assert_eq!(跑完.len(), 35);
 }
 
 /// (D2) 校准不跨判断器（`12` B60：校准键含 `model`）：带 jev 校准记录的用例在替身判断器上跑，

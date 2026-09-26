@@ -66,7 +66,8 @@ fn 动作表(日志: &Rc<RefCell<Vec<String>>>) -> ActionRegistry {
 }
 
 fn 跑(src: &str, p: f64, passes: Passes) -> (Result<jpp::Outcome, String>, Vec<String>) {
-    let program = lower(&parse(src).expect("解析")).expect("lower");
+    let mut program = lower(&parse(src).expect("解析")).expect("lower");
+    program.entry.guard = true; // 测放行把关本身：开 --guard（意图汇编 11a）
     let 日志 = Rc::new(RefCell::new(vec![]));
     let mut calib = CalibStore::new();
     common::certified(&mut calib, "k", 0.65, 0.35, 100);

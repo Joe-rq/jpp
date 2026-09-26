@@ -77,6 +77,10 @@ cargo install --locked --path crates/jpp --root /tmp/jpp-native
 - **多题与多填法**：`sieve(items, [q1, …])`、`sieve(items, form, [fill1, …])` 返回**一个**契约值，
   元素 = 材料 × 题（材料主序、题次序），元素带 `q`、`qi`（填法另带整条 `fill` 记录，槽以外的键也在）；
   `by_q(o, k)`（`lib/outcome.jpp`，别名 `by_fill`）取第 k 道题的子契约值。
+- **线**：末位可以给选项 `{line: 线}`——`sieve(items, q, {line: {declare: {hi: 0.7, lo: 0.3}}})`、
+  `sieve(items, form, [fill1, …], {line: …})`。`line` 的值就是 `cut` 的第二参，原样交给每个元素的 `cut`
+  （作者声明线，见「线从哪里来」）。不给时逐元素 `cut(r)`，走 `cut` 的缺省规则；要按自己的判定规则切（多少分算是），
+  就给 `line`。
 - 程序构造的契约值 `outcome({…})` 不收 `spent`，花费由运行时按 `evidence` 的账本键算（A-2）。
 
 ## 内置函数名单
@@ -149,16 +153,17 @@ if is_fail(v) { "格式不对" } else { v.field }
 
 ## 线从哪里来
 
-`cut` 把读数（概率）变成出口，要一条线。线有四个来路，按作者要花的功夫从少到多：
+`cut` 把读数（概率）变成出口。**默认不需要线**（意图汇编 11a）：没有记录的线、作者也没写线时，`cut` 按判断器自己的回答走——是非题 p > 0.5 出 `act`、p < 0.5 出 `ignore`；`select` 取概率最大的候选出 `pick`；`measure` 取概率最大的档位出 `at`；恰好并列（p = 0.5，或最大值不止一个）时判断器没有给出回答，出 `unsure(tie)`。报告 `exits` 行的等级是 `Answer`。`sieve`、`search`、`judged_graph`、题树这些组合里没传线的地方都一样，所以新题第一次跑就有结论，不用先标注。
+
+作者想按自己的策略切，就写**作者声明线**：`cut(r, {declare: {hi: 0.7, lo: 0.3}})`。按写的数切（读数 ≥ hi 为 act，≤ lo 为 ignore，其间 `unsure(band)`），不平移、不被同键记录替换，也不作错误率保证。等级 `Declared`，报告 `exits` 行给出同键标注里按这条线切错几条、本趟有多少读数落在线 ±0.2 内。作者写了线就按作者的线切，校准记录里有认证线时也按认证线切。
+
+要语言担保错误率时，用**认证线**（可选工具）。按要花的功夫从少到多有三个来路：
 
 1. **题库**：`bank/bank.json` 里已认证的同题型题式，`fill(题式, {…})` 填上就用，作者一条不标。
 2. **真值可算**：标签由程序算出（`source: computed`），经 `calib-import` 导入认证，零人工。
-3. **标注或代标**：带真值样本经 `calib-import` 认证（可由强模型代标加人工复核）。前三种是**认证线**：语言对它担保错误率，出口可以放行不可逆动作。
-4. **作者声明线**：作者自己写数，`cut(r, {declare: {hi: 0.7, lo: 0.3}})`。按写的数切（读数 ≥ hi 为 act，≤ lo 为 ignore，其间 `unsure(band)`），不平移、不被同键记录替换，也不作错误率保证。等级 `Declared`，路由照常，报告 `exits` 行给出同键标注里按这条线切错几条、本趟有多少读数落在线 ±0.2 内。
+3. **标注或代标**：带真值样本经 `calib-import` 认证（可由强模型代标加人工复核）。
 
-`cut` 的第二、三位还有三种写法：`{cost: [fp, fn]}` 按两种错的代价在已有证书里选线，`{alpha: a}` 在 α ≤ a 的证书里选已决最多的一张，二者的线都来自记录。声明线另有两个选项：`stat` 指定线切在读数的哪个统计量上（`"expect"` 期望档位、`{mass: [0, 1]}` 几个候选的概率和、`"confidence"` 判断器自报的置信度；`expect` 还可写 `{cuts: [0.5, 1.5, 2.5]}` 分桶出 `at`），`closed: {lo: false}` 让下端变开（读数等于 lo 归中间带，复刻 `elif p >= lo`）。
-
-**声明线放行不可逆动作要宿主接受。** 不带开关时，声明线的出口能路由、不能单独放行不可逆 `do`：`check` 在守卫全来自声明线时报 J-08，运行期同样拒绝，报文写出开关名。宿主确认这些线由自己担责后带 `--release-on-declared`（`run` 与 `check` 都收；库宿主用 `EntryArgs.accept.declared_lines`）：出口的 `releases` 变为真，报告多一个 `accept: {declared_lines: true}`，开关进账本头 `entry_hash`，换开关状态重放报 `W-header: entry_hash`。这个开关的意思是「这些线由我担责」，不是「这些线是对的」；它也不改材料的可信与否，不可信材料上的判断带了开关照样不放行。
+`cut` 的第二、三位还有三种写法：`{cost: [fp, fn]}` 按两种错的代价在已有证书里选线，`{alpha: a}` 在 α ≤ a 的证书里选已决最多的一张，二者的线都来自记录；作者写了这两种而没有对应证书时没有线，按判断器的回答走，另报一条 `W-untested`（载体 `cost_line` / `alpha_line`）告诉你要的证书没找到。停岗的记录同样不供线（B187：`unsure` 的原因里不再有 `cold` 与 `drift`）。直接写一个数 `cut(r, 0.7)` 等于 `cut(r, {declare: {hi: 0.7}})`。声明线另有两个选项：`stat` 指定线切在读数的哪个统计量上（`"expect"` 期望档位、`{mass: [0, 1]}` 几个候选的概率和、`"confidence"` 判断器自报的置信度；`expect` 还可写 `{cuts: [0.5, 1.5, 2.5]}` 分桶出 `at`），`closed: {lo: false}` 让下端变开（读数等于 lo 归中间带，复刻 `elif p >= lo`）。`cuts` 线的端位可以逐个切点写：`closed: {cuts: [false, true, false, true]}` 配 `cuts: [0.5, 1.5, 2.5, 3.5]` 复刻 Python `round()` 的银行家舍入（B176）。线的数也可以是运行期算出来的：`{declare: {hi: rand(seed, k)}}` 按读数比例抽样（B175 (3)），种子只来自字面量或入口，重放同值；同一站点每个不同的线各记一条账本条目。`stat: {mass: […]}` 不写线时按概率和的多数块走（> 0.5 为 act、< 0.5 为 ignore、恰好 0.5 为 `unsure(tie)`）；`expect` 与 `confidence` 上没有现成的回答，不写线报 `E-cut-options`。
 
 **几道题的读数按自己的换算率合成一个分，再在分上写线**（声明式拟合，B153）：
 
@@ -168,7 +173,7 @@ let s = fit({declare: 匹配}, [judge(st, 技能), judge(st, 经历), judge(st, 
 handle(cut(s, {declare: {hi: 0.6}}), {…})
 ```
 
-闭包按位收每条读数的统计量记录：是非题 `{p}`，选择题 `{probs, max, argmax}`，打分题再加 `expect`；判断器报了自报置信度时另有 `confidence`。外部的数（价格、权重）放进第三个参数 `extra`，按位接在读数后面：`fit({declare: fn(a, price) { a.p - price }}, [r], [0.65])`。单读数也可以：同一道选择题两个候选的概率差设门写 `fit({declare: fn(a) { a.probs[0] - a.probs[1] }}, [r])` 配 `cut(…, {declare: {hi: 0.10}})`（`probs` 按 `over` 序，B174）。闭包只见参数与内置（`max`、`min`、`if`、下标等），看不见外层的名字，里面不能发判断、不能调效应或构造。结果是 `Score`：它不是数，不能算、不能读，只能进 `cut` 的声明线（`{hi, lo?}` 或 `{cuts: […]}`，数的范围不限）或同一拟合的 `order`（`fit({declare: f, tie: 0.05}, …)` 的 `tie` 是并档带宽）。出口等级 `Declared`，放行不可逆动作同样要 `--release-on-declared`。
+闭包按位收每条读数的统计量记录：是非题 `{p}`，选择题 `{probs, max, argmax}`，打分题再加 `expect`；判断器报了自报置信度时另有 `confidence`。外部的数（价格、权重）放进第三个参数 `extra`，按位接在读数后面：`fit({declare: fn(a, price) { a.p - price }}, [r], [0.65])`。单读数也可以：同一道选择题两个候选的概率差设门写 `fit({declare: fn(a) { a.probs[0] - a.probs[1] }}, [r])` 配 `cut(…, {declare: {hi: 0.10}})`（`probs` 按 `over` 序，B174）。闭包只见参数与内置（`max`、`min`、`if`、下标等），看不见外层的名字，里面不能发判断、不能调效应或构造。结果是 `Score`：它不是数，不能算、不能读，只能进 `cut` 的声明线（`{hi, lo?}` 或 `{cuts: […]}`，数的范围不限）或同一拟合的 `order`（`fit({declare: f, tie: 0.05}, …)` 的 `tie` 是并档带宽）。出口等级 `Declared`；`Score` 不写 `declare` 报 `E-cut-options`（拟合分数不是判断器的回答）。
 
 推荐写法是两侧线加 unsure 臂转人工，读数落在两线之间的由人拍板：
 
@@ -179,9 +184,13 @@ handle(cut(judge(state(m), refund), {declare: {hi: 0.7, lo: 0.3}}), {
     unsure: fn(u) { consume(u, "drop"); handle(ask(state(m), refund), {…}) }})
 ```
 
-## 用判断守卫不可逆动作（J-08）
+## 可选工具：放行把关（`--guard`）
 
-登记为不可逆的动作（CLI 的 `write_json`）只有在守卫里至少有一项来自**可信材料上、线放行的已决判断**，或来自 `ask` 时才执行。这份证据只在 `handle` 分派出口时产生：所选臂的守卫栈压上它，臂返回值里的每个 `Bool` 也带上它，经 `let`、字段、下标、函数返回原样带走；`&&` 保留两侧的证据，`||`、`!`、比较（`==`、`>` 等）和其他运算都不带；`if` 不把条件的证据传给分支里造出来的值；未决出口不给证据（B121）。三种写法：
+默认 J++ 相信判断器（B187）：不拦任何 `do`（包括 `write_json` 这类撤不回的动作），不可信标记（taint）照常记录但不拦东西；线等级的说明（`W-fixture-line`、`W-trial-line`、`W-declared-line` 等）不打印，同样的信息在报告 `exits` 行（`grade`、`line_source`、各正交位）；执行器（`exec_py`、`check_tests`、`exec_sql`）有操作系统沙箱就在沙箱里跑，没有就在普通子进程里跑，检查期告警 `W-action-no-sandbox`；有撤不回动作的程序没给 `--ledger-out` 时，账本写到源文件旁的 `<源文件名>.ledger.jsonl`，第一行打出路径，报告另记 `ledger_path`。账本是记录，照常写。
+
+宿主要把关时带 `--guard`（`run` 与 `check` 都收；库宿主用 `EntryArgs.guard`）。开了之后：J-08 在检查期与运行期生效（本节下文，含谱系与题面 taint）；线等级的说明照旧打印；没有沙箱的执行器按不可逆算（B164），要有守卫；有撤不回动作的程序必须给 `--ledger-out`（`E-ledger-required`）。开关进账本头 `entry_hash`（不开时哈希不变），报告多一个 `guard: true`。`scripts/guard_baseline.py` 核对带 `--guard` 跑的金样与翻转前一致。
+
+开 `--guard` 时，登记为不可逆的动作（CLI 的 `write_json`）只有在守卫里至少有一项来自**可信材料上、线放行的已决判断**，或来自 `ask` 时才执行。这份证据只在 `handle` 分派出口时产生：所选臂的守卫栈压上它，臂返回值里的每个 `Bool` 也带上它，经 `let`、字段、下标、函数返回原样带走；`&&` 保留两侧的证据，`||`、`!`、比较（`==`、`>` 等）和其他运算都不带；`if` 不把条件的证据传给分支里造出来的值；未决出口不给证据（B121）。三种写法：
 
 ```jpp
 // 逐项：do 写进臂里，每个动作由选出它的那次判断放行
@@ -200,7 +209,7 @@ if len(xs) > 0 { do("write_json", ["out.json", xs], 0) } else { unit }
 
 两条会让可信材料上的判断也不放行（步 17b）：题面里填进了不可信文本（`fill` 的槽值、拼出来的题面、`purpose`、`gen` 或入口给的模板），出口随题面不可信（B58）；被判断的材料是由试用线、夹具线等不放行的线或未决出口一路选出来的，出口也不算证据，报文写「该材料由 {等级} 线的出口选出」（谱系放行，B72-4）。
 
-作者声明线（`declare`）的出口要宿主带 `--release-on-declared` 才算放行（见上节「线从哪里来」）。
+判断器回答（等级 `Answer`）与作者声明线（`Declared`）的出口在把关下默认不算放行证据。宿主确认声明线由自己担责后带 `--release-on-declared`（只在 `--guard` 下有意义；库宿主用 `EntryArgs.accept.declared_lines`）：声明线出口的 `releases` 变为真，报告多一个 `accept: {declared_lines: true}`，开关进账本头 `entry_hash`，换开关状态重放报 `W-header: entry_hash`。这个开关的意思是「这些线由我担责」，不是「这些线是对的」；它也不改材料的可信与否，不可信材料上的判断带了开关照样不放行。
 
 `--input-trusted`（步 14b-1，B108）让 CLI `--input` 材料上的判断也能作可信合取项；它只是说「这份材料来自我信任的来源」，不是说「内容正确」——出口仍要经认证过的线放行才算证据。这个声明进 `entry_hash`（像其他入口条目的 taint 一样），换一次 `--input-trusted` 状态重放会报 `W-header: entry_hash`。
 
@@ -215,11 +224,11 @@ cargo build -p jpp --features live --release
 ./target/release/jpp run examples/sieve.jpp --replay ledger.json   # 事后离线重放，逐字节一致
 ```
 
-真机运行必须带能力画像（B73）：`--profile <文件>`，否则 `--profiles-dir <目录>/<model>.json`，再否则 `jpp` 可执行文件旁的 `profiles/`；找不到报 `E-profile-missing`。仓库附带 `profiles/jev-1.13.0.json`，价格与 δ 都从它读，它的哈希进账本头。重放不发调用。证书记下认证时的 δ（B104）：带画像时判区按证书 δ 与画像 δ 中更严者取，不带画像时按证书的 δ 取，线不会因 δ 不一致而放宽；两者不同时报 `W-delta-mismatch`。要逐字节复现真机运行，重放时给同一份画像。没有记下 δ 的旧证书、没有范围指纹的记录（认证集没有材料文本），出口照常路由但不放行不可逆 `do`（`W-delta-unknown`、`W-scope-unknown`），重新导入（标注行带 `text`）即可。
+真机运行必须带能力画像（B73）：`--profile <文件>`，否则 `--profiles-dir <目录>/<model>.json`，再否则 `jpp` 可执行文件旁的 `profiles/`；找不到报 `E-profile-missing`。仓库附带 `profiles/jev-1.13.0.json`，价格与 δ 都从它读，它的哈希进账本头。重放不发调用。证书记下认证时的 δ（B104），判区按证书的 δ 取（B187：旧的「取更严者」与 `W-delta-mismatch` 已退役）；记录没有 δ 时取画像 δ（没有取 0），出口记 `delta_unknown`。要逐字节复现真机运行，重放时给同一份画像。没有记下 δ 的旧证书、没有范围指纹的记录（认证集没有材料文本），出口照常路由，开 `--guard` 时不放行不可逆 `do`（`W-delta-unknown`、`W-scope-unknown`），重新导入（标注行带 `text`）即可。
 
-真机只给读数（概率），不给出口：`cut` 要把读数变成 act/ignore/pick/at 必须有一条
-**认证过的线**（J-03 禁止程序自己写线），新题第一次跑一律 `Unsure(cold)`。上线的
-唯一路径是标真值再导入：
+真机只给读数（概率）。新题第一次跑，`cut` 就按判断器的回答把读数变成 act/ignore/pick/at
+（等级 `Answer`，见「线从哪里来」）。要语言担保错误率时（可选），标真值再导入认证线
+（J-03 禁止程序自己写线，线只从记录来）：
 
 ```sh
 # labels.jsonl 每行：{"key": "cs-refund", "item": "c1", "p": 0.99,
@@ -247,7 +256,7 @@ cargo build -p jpp --features live --release
 清单的状态哈希满足这一条；手工出包要用不透明编号并打乱顺序，否则整批作废重标（`地基/题库/规范.md` §1.3）。
 回填时带 `--report`，记录的题类取运行时算出的精化类（例如一对材料上的题是关系类）。
 
-样本不足时该题的出口仍会路由（按冷键处理），但不能放行不可逆的 `do`。只有模型自己
+样本不足时该题没有认证线，出口按判断器的回答走（开 `--guard` 时不放行不可逆的 `do`）。只有模型自己
 标注、没有人工真值时，还需要同一题式的人工抽检一致率过 `--spot-check-min`（默认
 0.9）才准临时上岗（`W-provisional`），否则线停在「待真值」。
 
@@ -308,8 +317,8 @@ J++ 的底层，不是可选功能：判断是唯一产出读数的效应，别�
 
 **一次判断（judge + cut）。** 一道题（`test`/`select`/`measure`）问在一份材料（`state(mat(...))`）
 上，`judge` 拿到读数（概率分布），`cut` 按线把读数切成三值出口（act / ignore / unsure），`handle`
-把三个出口分派到三段代码。线从哪里来、`declare`/`stat`/`closed`/`--release-on-declared` 怎么用，
-本文件前面「线从哪里来」「用判断守卫不可逆动作」两节已经讲透，这里不重复，只给最小可运行的样子。
+把三个出口分派到三段代码。线从哪里来（默认按判断器回答走）、`declare`/`stat`/`closed`/`--guard` 怎么用，
+本文件前面「线从哪里来」「可选工具：放行把关」两节已经讲透，这里不重复，只给最小可运行的样子。
 这道题要理解语义才能判——客户在抱怨、还是在明确要求退款，材料把两者混在一起，不是关键词匹配能
 分的事（意图汇编 7a：相等、数值比较、格式、是否为空这类字面可算的事不该占这个位置）：
 
@@ -323,9 +332,9 @@ handle(cut(r), {
     unsure: fn(u) { consume(u, "drop"); "线附近，转人工" }})
 ```
 （`examples/guide/elem-judge.jpp`）统计量线（`stat: "expect"`/`{mass: […]}`/`"confidence"`）与
-两端开闭（`closed`）见 `examples/guide/elem-declare-stat.jpp`；作者声明线与宿主接受见
-`examples/guide/elem-declare-accept.jpp`（两份夹具：不带 `--release-on-declared` 时声明线出口
-只路由不放行 `write_json`，带上之后才放行）。
+两端开闭（`closed`）见 `examples/guide/elem-declare-stat.jpp`；作者声明线守不可逆动作见
+`examples/guide/elem-declare-accept.jpp`（默认不开把关，act 臂的 `write_json` 照常执行；开 `--guard`
+时不带 `--release-on-declared` 的声明线出口只路由不放行，带上之后才放行）。
 
 **生成（gen）。** 需要解空间里本来没有的东西（候选、模板、测试、分类）时才调，已有的东西里挑
 用判断，不调生成器（`00-Nature意图汇编` 第 6 条）。`gen(题面, ctx, n, retry_seq)` 是非阻塞的：
@@ -357,11 +366,11 @@ if is_fail(names) {
 §六（未过时的部分）。
 
 **执行（exec_py / check_tests / exec_sql）。** 判断只看字面（〇.1）：代码本身不是字面材料，只有
-跑出来的输出才是。三个执行动作都在操作系统沙箱里跑（B164）：临时目录是唯一可写处、断网、有
-超时。没有沙箱时，顶层直接调用（本节的写法）得到 `Fail(NoSandbox)`，不是运行期错误，`is_fail`
-分流；但如果这个 `do` 处在由不可信判断的出口决定要不要走的分支里（例如放进 `search` 每一轮的
-`opts.ground`），执行器登记为不可逆，会先撞上 J-08（不可信材料不能单独放行不可逆动作），不是
-直接拿到 `Fail`——两条路径不同，写「组合：ground / verify」那种闭环时要分清。`exec_sql` 只放行
+跑出来的输出才是。三个执行动作有操作系统沙箱时在沙箱里跑（B164）：临时目录是唯一可写处、断网、有
+超时。没有沙箱时直接在普通子进程里跑（同一个临时工作目录、静态拒绝表与断网补丁照旧，没有系统级隔离），
+检查期报 `W-action-no-sandbox` 告警，照常出结果（B187，不再有 `Fail(NoSandbox)`）。没有沙箱的执行器
+按不可逆算：默认只是多写一份账本；开 `--guard` 时处在由不可信判断的出口决定要不要走的分支里（例如放进
+`search` 每一轮的 `opts.ground`）会撞上 J-08。`exec_sql` 只放行
 只读语句（`query_only`），要 `SELECT` 一个已经建好的库，不能建表；写数据、改库不属于这三个动作。
 
 ```jpp
@@ -423,6 +432,21 @@ let m = regex_find(trimmed, "订单号=[A-Z0-9]+");
 `map`/`filter`，能嵌进另一个组合。每个组合把「元素怎么循环、未决怎么去向、出口怎么合成」收进一个
 函数，调用者只管给判断题、给候选来源、给要跑的算法。
 
+**组合里的线由作者写。** 组合里的判断都经 `sieve` 切出口。不给线时每个元素走 `cut` 的缺省规则（「线从哪里来」
+一节）；你要自己定「多少分算是、多少分算否、中间拿不准的交给谁」，就在组合的 `opts.line` 里写，写法与 `cut`
+的第二参相同，组合把它原样交给每一次判断：
+
+```
+search(seed, propose, feasible, objective, 3, {width: 2, line: {declare: {hi: 0.7, lo: 0.3}}})
+verify(cands, grounder, q, {line: {declare: {hi: 0.7, lo: 0.3}}})
+judged_graph(nodes, edge_q, {line: {declare: {hi: 0.7, lo: 0.3}}})
+sieve(items, q, {line: {declare: {hi: 0.7, lo: 0.3}}})
+walk(tree, material, 4, {line: {declare: {hi: 0.7, lo: 0.3}}})     // 题树同一个写法
+```
+出口等级 `Declared`，报告 `exits` 行有每个出口的证据量（开 `--guard` 时另打印 `W-declared-line`）；这些出口
+默认直接驱动撤不回的动作，开 `--guard` 时按「可选工具：放行把关」一节的规则。`search` 另有 `objective_line`，给目标题单写一条。本节下面的
+示例在固定观察下跑，夹具里带了校准记录，没写 `line`；换成真机、要按自己的策略切时补上。
+
 **search（提出 → 判 → 再提出）。** 解空间列不完，但能从好的部分解长出更好的解时用：写方案、写
 代码、起名字。生成器负责提，判断器负责判，有界迭代负责收敛。
 
@@ -434,7 +458,10 @@ search(seed, propose, feasible, objective, rounds, opts) -> 契约值
   objective 是非题、打分题（measure，只排序，见下），或 unit（只按可行域筛）
   rounds    轮数上限，写字面量或顶层 let 常量（调用点核，B111）；喂一个不可判定的表达式
             （函数参数、`len(...)` 之类）不是硬错误，是 `W-bound` 警告：静态估不出上界
-  opts      {width, unsure_to?: "carry"|"refine"|fn, ground?: fn(Mat) -> Mat, rank?: {stat?, tie?}}
+  opts      {width, unsure_to?: "carry"|"refine"|fn, ground?: fn(Mat) -> Mat, rank?: {stat?, tie?},
+             keep?: fn(Mat) -> Bool, line?, objective_line?}
+            line：可行域题的线，也是是非题目标的缺省线；objective_line：目标题另给的线（打分题或 unit
+            目标上给了报 E-search-options）。写法同 cut 的第二参；不给走 cut 的缺省规则
 ```
 好候选按轮累积：每轮的新候选去重（按材料哈希，判过的不再判、不花钱）、`opts.ground` 给了就先接地、
 `sieve(可行域)`、`objective` 不是 `unit` 再 `sieve(目标)`，新判好的并进累积池，下一轮前沿取池的前
@@ -476,16 +503,19 @@ let r = search([], propose, fits, unit, 3, {width: 2});
 数值相不相等、格式对不对、结果是不是空这类代码自己就能算的事，先用普通代码筛掉，不进 JEV、不花
 一次调用；JEV 只判筛剩下的那些没有标准答案、要理解语义的问题**（意图汇编 7a——早先这一节的例子
 让 JEV 判「代码输出是否等于 385」，这正是代码能定的事，已改成下面这条）。代码核的：跑得通、有
-结果；JEV 判的：口径对不对（B181 判断分工定律的 E9 重述）。
+结果；JEV 判的：结果是否真的回答了需求（B181 判断分工定律的 E9 重述）。需求的口径（时间范围、
+统计维度、取舍规则……）写进需求材料本身，题面只问一句「这个结果回答了需求里的问题吗」——不拆成
+几道子命题让判断逐条核对（B182 (3) 一跳一命题，B0366）。
 
 ```
 ground(action, args_of, render) -> fn(候选材料) -> 材料 | Fail
   opts.keep?   fn(材料) -> Bool。代码谓词（B184）：ground 之后、feasible 之前对每个新候选求值，
                假即排除——不进 sieve、不花调用、不进 pending，记 detail.excluded: [{item, round}]。
-verify(cands, grounder, q, opts) = sieve(kept, q)   -- kept 按 opts.keep 过滤，语义同 search 的 opts.keep
+verify(cands, grounder, q, opts) = sieve(kept, q, {line: opts.line})
+  opts.keep?   kept 按它过滤，语义同 search 的 opts.keep
+  opts.line?   判断的线，写法同 cut 的第二参；不给走 cut 的缺省规则
 ```
-`ground` 返回一个函数值：对每个候选跑 `do(action, args_of(候选), 0)`，失败（含没有沙箱的
-`NoSandbox`）原样返回失败值，否则把候选与执行输出一起渲染成材料（`render(候选, 输出)`）。
+`ground` 返回一个函数值：对每个候选跑 `do(action, args_of(候选), 0)`，失败原样返回失败值，否则把候选与执行输出一起渲染成材料（`render(候选, 输出)`）。
 `render` 可以返回文字，也可以返回记录——推荐返回记录：结构化字段（`error`、`rows`、`exit_code`
 之类）供 `opts.keep` 读，渲染文字供 JEV 读，同一份材料两路用。taint 承接执行输出（执行器为
 `untrusted`）。`ground` 的返回值可以直接放进 `search` 的 `opts.ground`——这就是「提出 → 执行 →
@@ -499,15 +529,16 @@ import "../../lib/compose/ground.jpp";
 budget {calls: 20, cost: 0.01, depth: 64};
 
 let db = "examples/fixtures/returns.db";
-let brief = mat("写一条 SQL 查询，回答：假设今天在 2026 年第三季度，上个季度（2026 年 4 月到 6 月）哪一类商品退货数量最多。数据库表 returns(id, category, product_name, quantity, return_date)");
+let brief = mat("写一条 SQL 查询，回答一个统计问题：需求要求只统计上个季度（2026 年 4 月 1 日到 6 月 30 日）的退货记录，按商品类别汇总数量，找出退货数量最多的一类。假设今天在 2026 年第三季度。数据库表 returns(id, category, product_name, quantity, return_date)");
 let propose = fn(frontier, i) {
     gen("按下面的需求提出 3 条 SQL 查询，每条是一个字符串；需求之后的上下文是上一轮留下的候选（SQL 与执行结果）", concat([brief], frontier), 3, i)
 };
 // 接地：库函数 ground()（B148/B184）。render 返回记录：结构化字段（error、rows）供下面的 keep
-// 读，渲染文字（text）供 JEV 读——同一份材料两路用（B184 §3·(3)）。
+// 读，渲染文字（text）供 JEV 读，且把需求原文（含口径）一起摆进这份材料——JEV 判的是「结果对不对
+// 上需求」这一句，不必自己记住口径也不必被拆成三道子命题（B184 §3·(3)；B0366）。
 let run_sql = ground("exec_sql", fn(c) { [db, content(c)] }, fn(c, o) {
     let r = content(o);
-    let rendered = "SQL：" + content(c) + "\n" +
+    let rendered = "需求：" + content(brief) + "\nSQL：" + content(c) + "\n" +
         (if r.error != unit { "报错：" + r.error }
          else if len(r.rows) == 0 { "结果为空" }
          else { "结果：" + text(r.rows[0][0]) + " 共 " + text(r.rows[0][1]) + " 件" });
@@ -515,9 +546,9 @@ let run_sql = ground("exec_sql", fn(c) { [db, content(c)] }, fn(c, o) {
 });
 // 代码谓词（B184）：SQL 报错或查不出行的候选在这里排除，不进 sieve、不花一次判断调用。
 let keep = fn(m) { let r = content(m); r.error == unit && len(r.rows) > 0 };
-let scope_correct = test("这条查询是否按需求的口径统计：只算上个季度（4 月 1 日到 6 月 30 日）、按商品类别汇总、取退货数量最多的一类？", "sql-scope-correct");
+let answers_question = test("这条查询的结果是否回答了需求里的问题？", "sql-answers-question");
 
-let r = search([], propose, scope_correct, unit, 3, {width: 1, unsure_to: "refine", ground: run_sql, keep: keep});
+let r = search([], propose, answers_question, unit, 3, {width: 1, unsure_to: "refine", ground: run_sql, keep: keep});
 {kept: map(r.value, fn(e) { e.item }), found_in: map(r.value, fn(e) { e.round }),
  rejected: map(r.detail.ignore, fn(e) { e.item }),
  excluded: map(r.detail.excluded, fn(e) { {item: e.item, round: e.round} }),
@@ -526,25 +557,28 @@ let r = search([], propose, scope_correct, unit, 3, {width: 1, unsure_to: "refin
  pending: r.pending}
 ```
 （`examples/guide/comp-ground-verify.jpp`，与 `examples/search-ground.jpp` 同一份程序：第 1 轮
-3 条候选——不限定季度（错范围，家居 60 件，`keep` 通过，JEV 判否）、列名打错的 SQL（跑不通，
-`keep` 排除，不进 JEV）、限定到上季度但漏了 6 月 30 日一天（边界，数码 25 件，`keep` 通过，JEV
-判不确定，落带内）。`keep` 排除的候选与判过拿不准的候选一起，经 `unsure_to: "refine"` 并进第 2
-轮的生成器上下文——它们是接地成功、代码判定不可行的正常记录材料，不是 `Fail` 值，可以放心进前沿
-（B184 §3.2）。第 2 轮 3 条——补全边界后的正确查询（数码 40 件，JEV 判对，凑够 `width = 1`，
-`stop`）、限定季度但按商品分组（错颗粒度，耳机 25 件，`keep` 通过，JEV 判否）、查一个不存在类别
-的 SQL（查不出行，`keep` 排除，不进 JEV）。6 次 `exec_sql` 只换来 4 次 JEV 判断，且这 4 次问的都
-是「口径对不对」这种要理解语义的问题，没有一次在问字面可算的事。金样不在检查期执行 SQL——本例的
+3 条候选——不限定季度（错范围，家居 60 件，`keep` 通过，JEV 判否：没答上「只算上个季度」这条口径）、
+列名打错的 SQL（跑不通，`keep` 排除，不进 JEV）、限定到上季度但漏了 6 月 30 日一天（边界，数码 25
+件，`keep` 通过，JEV 判不确定，落带内）。`keep` 排除的候选与判过拿不准的候选一起，经
+`unsure_to: "refine"` 并进第 2 轮的生成器上下文——它们是接地成功、代码判定不可行的正常记录材料，
+不是 `Fail` 值，可以放心进前沿（B184 §3.2）。第 2 轮 3 条——补全边界后的正确查询（数码 40 件，
+JEV 判对，凑够 `width = 1`，`stop`）、限定季度但按商品分组（错颗粒度，耳机 25 件，`keep` 通过，
+JEV 判否：答的是哪个商品而不是哪个类别）、查一个不存在类别的 SQL（查不出行，`keep` 排除，不进
+JEV）。6 次 `exec_sql` 只换来 4 次 JEV 判断，且这 4 次问的都是同一句「结果回答了需求吗」，需求的
+口径（时间范围、汇总维度、取最多）已经写在渲染进材料的需求原文里，判断不用再逐条核对三个条件
+（B182 (3) 一跳一命题，B0366），也没有一次在问字面可算的事。金样不在检查期执行 SQL——本例的
 `guide_check.py` 从已经在有 `sandbox-exec` 的机器上真跑一次录下的种子账本
 `tests/golden/search-ground/seed.ledger.jsonl` 用 `--resume` 续跑，什么都不需要重新执行——种子
-账本里已经带着两轮全部的 `gen`/`exec_sql`/`transform` 记录（`judge` 不在种子里，固定观察下始终从
-`--fixtures` 取，不进种子）。种子是在有 `sandbox-exec` 的机器上把整个程序跑一遍录下的，`--resume`
-只是把这些记录接上。**这一条只在本机（有 `sandbox-exec`）验证过：续跑不再执行任何一次。没有沙箱
-的机器上是否能跑通没有验证过**——`run_sql` 内部的 `do` 处在由判断出口决定要不要走的分支里
-（`search` 每一轮），没有沙箱时执行器登记为不可逆，运行期能不能走到、是先按账本键取历史结果还是
-先经 J-08 拦下，这条路径本文没有在无沙箱环境实测，不写成结论。这里的 `do("exec_sql", ...)` 现在
-经由库函数 `ground()` 调用，动作名不是字面量（`ground.jpp` 内部把它当形参 `action` 用），CLI 按
-可能不可逆处理，要求 `--ledger-out`——旧版自己写接地闭包时动作名是字面量、不要求 `--ledger-out`，
-换成库函数后这点额外好处不再有，见下面「常见报错」专门一条。**排除放在第 1 轮（不是最后一轮）**：
+账本里已经带着两轮全部的 `gen`/`exec_sql`/`transform` 记录，也带着 4 条 `judge` 记录（判断在固定
+观察下按键从 `--fixtures` 的 `observations` 取，但同一次真实运行会把取到的答案连同其余效应一起
+写进账本；`--resume` 续跑时判断键若命中账本就直接读账本，不必再命中夹具，两条路径都能到，种子录制
+时两条一起落盘）。种子是在有 `sandbox-exec` 的机器上把整个程序跑一遍录下的，`--resume` 只是把这些
+记录接上。没有沙箱的机器上默认也能跑：执行器没有沙箱时直接在普通子进程里跑，检查期只报
+`W-action-no-sandbox`（B187；`工程-步25e.md` §二·4「没有沙箱时照样逐字节通过」这条断言因此重新成立，
+在 `JPP_FORCE_NO_SANDBOX=1` 下的核对见过程记录 `工程-默认相信判断器.md`）。这里的
+`do("exec_sql", ...)` 现在经由库函数 `ground()` 调用，动作名不是字面量（`ground.jpp` 内部把它当
+形参 `action` 用），CLI 按可能不可逆处理：没给 `--ledger-out` 时账本写到缺省路径，开 `--guard` 时
+要求 `--ledger-out`。**排除放在第 1 轮（不是最后一轮）**：
 旧版把会被代码筛掉的候选特意安排到最后一轮，是为了绕开「`fail(...)` 构造的真 `Fail` 值不能喂给
 `gen`」；`opts.keep` 排除的材料从未变成 `Fail`，本例特意把它放进第 1 轮，验证它确实经 `refine`
 进入第 2 轮的生成器上下文。
@@ -554,8 +588,9 @@ let r = search([], propose, scope_correct, unit, 3, {width: 1, unsure_to: "refin
 已决边上跑；未决边另跑一次「乐观图」（已决 ∪ 未决），两次产物之差（`differs`）就是该先问人的边。
 
 ```
-judged_graph(nodes, edge_q, {over?, prune?})        单集合、无向：候选取 i < j
-judged_bipartite(left, right, edge_q, {over?, prune?})  两组节点，右侧节点号从 len(left) 起
+judged_graph(nodes, edge_q, {over?, prune?, line?})        单集合、无向：候选取 i < j
+judged_bipartite(left, right, edge_q, {over?, prune?, line?})  两组节点，右侧节点号从 len(left) 起
+  line：判边的线，写法同 cut 的第二参；不给走 cut 的缺省规则
 on_graph(g, algo, args, mode)   mode: "decided"（只用已决边）| "optimistic"（已决 ∪ 未决）
 interval(g, algo, args) -> {lo, hi, exit, differs, complete, same, alpha_bound, n_unknown}
 ```
@@ -591,7 +626,7 @@ let t = interval(g, "matching", {});
 `alpha_bound` 读作「这组结果里至少一条边判错的概率上界」：未经认证的线（夹具线、声明线、试用线、
 类线、冷线）一律按 1 计，`n_unknown` 就是有几条这样的边，`alpha_bound = 1` 说明还没有能担保的线。
 六个 `do("graph:*")` 动作名是拼出来的（`join(["graph:", algo], "")`），CLI 按可能不可逆处理，
-运行要带 `--ledger-out`。
+没给 `--ledger-out` 时账本写到源文件旁的 `<源文件名>.ledger.jsonl`（开 `--guard` 时要求 `--ledger-out`）。
 
 **compose 与 cert（出口合成的原语）。** `search`、`graph.jpp` 内部都靠这两个原语把多个出口合成
 一个、读出联合的误差界；直接用它们，是搭一个新组合（不是套现成的 `search`/`graph`）时才需要的
@@ -781,7 +816,7 @@ if is_fail(v) { {failed: text(v)} } else {
 
 **「是谁的加入带来的」用相对变化。** 这是反事实问题：逐个 `without_member` 去掉一个加入者，问同一道题，用 `order` 比较几份材料上的读数，去掉后读数掉得最多的那位是关键成员；不要各自按线切。依据是 `实测/语义深度-2026-09-26/结果.md`：逐人去掉后按绝对线判只对了一半，按读数的相对变化 12 组全部找对关键人。上面示例的最后几行就是这个写法。
 
-**节点的线从哪来，叶结论能不能放行动作（B183 (2)）。** 生成器写的题没有认证记录，节点的线三条路：作者声明线 `line: {declare: {hi, lo}}`（最常用，等级 `Declared`）、试用线（`calib-import --alpha-trial`，只路由）、类键。题面来自生成器，出口随之不可信（B58、B149），所以题树的叶结论只能路由、不能单独放行不可逆 `do`；要放行，叶结论交 `ask`，或生成器画像声明 `taint_out: trusted`。题树节点不入题库；按整棵树认证是赛后的方向。
+**节点的线从哪来，叶结论能不能放行动作（B183 (2)）。** 生成器写的题没有认证记录，节点的线三条路：作者声明线 `line: {declare: {hi, lo}}`（最常用，等级 `Declared`）、试用线（`calib-import --alpha-trial`，只路由）、类键。题面来自生成器，出口随之不可信（B58、B149），所以开 `--guard` 时题树的叶结论只能路由、不能单独放行不可逆 `do`；要放行，叶结论交 `ask`，或生成器画像声明 `taint_out: trusted`。默认不开把关，叶结论直接驱动动作。题树节点不入题库；按整棵树认证是赛后的方向。
 
 **再组合。** `walk` 的产物与 `sieve`、`search` 的产物同形，能接着组合：
 
@@ -825,11 +860,11 @@ let ws = map(search(…).value, fn(e) { walk(tree, e.item, 4, opts) });
 | 诊断码 | 触发场景 | 修法 |
 |---|---|---|
 | `J-05`（运行期） | `sieve`/契约值的 `pending` 被悄悄丢弃：只返回 `accepted(r)`，没提到 `undecided(r)`/`unobserved(r)`/`r.pending` | 把 `r.pending` 放进返回值，或 `consume(u, "drop")` 显式丢弃并记账；检查期会先给一条 `W-pending-unreturned` 警告，运行期真的丢了才是错误（`examples/guide/err-j05.jpp`） |
-| `J-08`（静态子面） | 不可逆动作（如 `write_json`）的每一层守卫都只来自作者声明线，且宿主没带 `--release-on-declared` | 带 `--release-on-declared`（确认这些线由自己担责），或在条件里再合取一个认证线上的判断，或改走 `ask`，或把动作登记成可逆（`examples/guide/err-j08.jpp`） |
+| `J-08`（静态子面，只在 `--guard` 下） | 宿主开了 `--guard`，不可逆动作（如 `write_json`）的每一层守卫都只来自作者声明线，且宿主没带 `--release-on-declared` | 带 `--release-on-declared`（确认这些线由自己担责），或在条件里再合取一个认证线上的判断，或改走 `ask`，或把动作登记成可逆；不需要把关就不带 `--guard`（`examples/guide/err-j08.jpp`，`guide_check.py` 带 `--guard` 跑） |
 | `E-stat-unavailable` | `cut` 的 `stat: "confidence"` 用在没有声明 `reports_confidence` 的画像上 | 换一个声明了 `reports_confidence: true` 的画像，或改用缺省的 `stat: "max"`；固定观察下可以在夹具观察里直接给 `confidence` 字段（`examples/guide/err-stat-unavailable.jpp`，用 `--profile profiles/jev-1.13.0.json` 触发，这份发行画像没有该字段） |
-| `E-ledger-required` | 程序里出现登记为不可逆的 `do`（字面动作名，如 `write_json`），或动作名不是字面量的 `do`（如 `graph.jpp` 内部 `join(["graph:", algo], "")` 拼出来的名字，或 `ground.jpp` 里的形参 `action`）——两种情况 CLI 都一律按可能不可逆处理 | 加 `--ledger-out <文件>`；即使该动作实际可逆也要加，这是 CLI 的保守判定，不是逐个动作核实后才要求（`examples/guide/comp-graph-interval.jpp`、`nest-graph-then-graph.jpp`、`elem-declare-accept.jpp` 都要带） |
-| `J-03` | 程序里手写了数字线（`if p > 0.7`） | 校准键 + `calib-import`（正式线）；临时线用 `--alpha-trial`（只路由）或作者声明线 `declare` |
-| `W-untested`（J-15，未测按保守项） | 校准记录 `delta` 缺失时，δ 这一位没测过，读数一律 `unsure(untested:Delta)`，不会到 `act`/`ignore`；报文原文：`W-untested: Delta 在本次路径上没有被测量，按 J-15 取保守项（出口 untested）` | 测试夹具的 `calibrations` 必须给 `delta` 字段，缺了不是报错而是全部出口卡在未决态，容易被误当成「判断器判不出来」；正式线经 `calib-import` 认证自带 δ |
+| `E-ledger-required`（只在 `--guard` 下） | 宿主开了 `--guard`，程序里出现登记为不可逆的 `do`（字面动作名，如 `write_json`），或动作名不是字面量的 `do`（如 `graph.jpp` 内部 `join(["graph:", algo], "")` 拼出来的名字，或 `ground.jpp` 里的形参 `action`），又没给 `--ledger-out` | 加 `--ledger-out <文件>`。不开 `--guard` 时不报，账本自动写到源文件旁的 `<源文件名>.ledger.jsonl` 并打出路径 |
+| `J-03` | 程序里拿读数当数算（`if p > 0.7`），或在 `test`/`select`/`form` 的校准位写数字 | 要按自己的数切，写 `cut(r, 0.7)` 或 `cut(r, {declare: {hi: …, lo: …}})`；要语言担保错误率，写校准键加 `calib-import`（可选工具） |
+| `W-untested`（J-15） | 画像字段没测过（窗口、固定输出结构、校准等），或 `select` 声明了要置换却没测置换 | 按报文补画像或改写法；校准记录缺 `delta` 不再卡住出口（B187：取画像 δ，没有取 0，出口记 `delta_unknown`） |
 | `E-render-version` | `--resume` 一份用旧渲染版本（`r1`）记的账本；15i 把线上材料形状升到 `r2` 后键分量变了 | 换一份同渲染版本的账本，或重新从 `r2` 起跑；**未在本机复现**——本仓库现存账本都已是 `r2`，没有 `r1` 账本可以拿来触发（引自 `crates/jpp-runtime/src/outcome.rs:36`） |
-| `E-action-no-sandbox` | 检查期发现字面动作名（`exec_py`/`check_tests`/`exec_sql`）在没有沙箱工具的机器上 | 装 `sandbox-exec`（macOS 自带）或对应的沙箱工具；**未在本机复现**——这台机器有 `sandbox-exec`，触发条件本身碰不到（引自 `crates/jpp-check/src/rules/e_action_no_sandbox.rs`） |
+| `W-action-no-sandbox` | 检查期发现字面动作名（`exec_py`/`check_tests`/`exec_sql`）在没有沙箱工具的机器上。执行器直接在沙箱外跑（B187 起 `E-action-no-sandbox` 退役）；开 `--guard` 时它按不可逆动作算，要有守卫 | 要隔离就装 `sandbox-exec`（macOS 自带）或 Linux 的 `bwrap`；本机有 `sandbox-exec`，用 `JPP_FORCE_NO_SANDBOX=1` 在 `crates/jpp/tests/actions_no_sandbox.rs` 里跑过 |
 | `E-list-ambiguous` / `W-no-candidate` / `E-kind-conflict` | `calib-import`/标注流程相关，与「真机运行」一节「待标清单与标注包」同一批 | 见本文件前面「真机运行」一节，不在搭配层重复 |

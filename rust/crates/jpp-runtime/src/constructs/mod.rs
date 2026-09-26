@@ -9,5 +9,5 @@ mod iterate;
 mod pair;
 mod questions;
 mod repeat;
-mod sieve;
+pub(crate) mod sieve;
 mod tally;

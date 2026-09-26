@@ -71,7 +71,7 @@ fn 固定观察未命中要给出状态与题() {
 fn 修法要标明谁能执行() {
     // 步 15c：原 `impl Client` 的桩改为三个闭包端口；`calls` 用 `RefCell` 记调用数（未被断言，保留计数是为了与原桩同纪律）
     let 跑 = |calib: &CalibStore| {
-        let program = lower(
+        let mut program = lower(
             &parse(
                 r#"
 budget {calls: 4, cost: 1};
@@ -83,6 +83,8 @@ handle(cut(judge(state(mat("材料")), test("行吗", "k"))), {
             .expect("解析"),
         )
         .expect("lower");
+        // 线等级告警（W-fixture-line 等）只在开 --guard 时发（B187 批 9 第 10 格）；这里看的是告警里的修法标注
+        program.entry.guard = true;
         let mut l = Ledger::new();
         let calls = RefCell::new(0u64);
         run(
@@ -113,12 +115,12 @@ handle(cut(judge(state(mat("材料")), test("行吗", "k"))), {
         .clone()
     };
 
-    // 冷键 → 作者做得到（写一条上岗记录）
+    // 冷键 → 意图汇编 11a 起按判断器的回答走，不再是「未测的线」，没有 calib_line 告警可修
+    // （作者要求证书线而没有时的冷出口仍带【作者可改】，见 b128_declared_line.rs 的 alpha 用例）
     let w = 跑(&CalibStore::new());
-    let cold = w.iter().find(|x| x.contains("calib_line")).expect("有这条");
     assert!(
-        cold.contains("【作者可改】"),
-        "**这一条作者做得到，要说出来**：{cold}"
+        !w.iter().any(|x| x.contains("calib_line")),
+        "没有线时按回答走，不报未测：{w:?}"
     );
 
     // 手填的线 + 强出口 → 接线人才做得到

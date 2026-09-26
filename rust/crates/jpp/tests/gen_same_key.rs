@@ -107,7 +107,8 @@ map(gs, fn(g) { content(g[0]) })"#;
     assert_eq!(again.cost.calls, 0);
 }
 
-/// (b) 同键出现在两层：第一次读取、收层之后再走到同键，走账本命中，不再调用
+/// (b) 同键出现在两层：第一次读取、收层之后再走到同键，走账本命中，不再调用。
+/// 两个站点同输入：账本键不同，缓存键相同（步 19，B40），第一个取回之后第二个按缓存键复用
 #[test]
 fn b_收层之后同键走账本() {
     let src = r#"budget {calls: 8, cost: 0, depth: 64};
@@ -115,7 +116,7 @@ let a = gen("提候选", [mat("甲")], 1, 0);
 let x = content(a[0]);
 let b = gen("提候选", [mat("甲")], 1, 0);
 [x, content(b[0])]"#;
-    // 两次 gen 是两个站点，键不同；同一站点跨层要靠 map
+    // 两次 gen 是两个站点，账本键不同；同一站点跨层要靠 map
     let src_same_site = r#"budget {calls: 8, cost: 0, depth: 64};
 let f = fn(t) { gen("提候选", [mat(t)], 1, 0) };
 let a = f("甲");
@@ -127,10 +128,30 @@ let b = f("甲");
     let v = o.value_json();
     assert_eq!(调用次数(&script), 1);
     assert_eq!(v[0], v[1]);
+    // 步 19（B40）：生成的缓存键不含调用位置（生成器模型、提示、上下文哈希、n、retry_seq）。`content(a[0])`
+    // 先把第一个站点的生成取回，第二个站点同输入按缓存键复用：不调用，值相同，账本写一条复用条目
     let script2 = 计数脚本();
-    let o2 = 首跑(src, &script2, &mut Ledger::new());
-    assert_eq!(调用次数(&script2), 2, "两个站点，键不同，各发一次");
-    assert_ne!(o2.value_json()[0], o2.value_json()[1]);
+    let mut l2 = Ledger::new();
+    let o2 = 首跑(src, &script2, &mut l2);
+    assert_eq!(
+        调用次数(&script2),
+        1,
+        "两个站点缓存键相同，第二个复用第一个"
+    );
+    assert_eq!(o2.value_json()[0], o2.value_json()[1]);
+    let reused = l2
+        .encode()
+        .lines()
+        .filter(|l| l.contains(r#""kind":"gen""#) && l.contains(r#""reused_from""#))
+        .count();
+    assert_eq!(reused, 1, "第二个站点记一条复用条目");
+    let again = 重放(src, &mut l2);
+    assert_eq!(
+        again.value_json(),
+        o2.value_json(),
+        "只凭账本重放逐字段相同"
+    );
+    assert_eq!(again.cost.calls, 0);
 }
 
 /// (c) 不同 retry_seq 不合并（键不同）

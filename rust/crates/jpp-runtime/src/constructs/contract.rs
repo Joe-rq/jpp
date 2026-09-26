@@ -156,7 +156,7 @@ impl<'a> Interp<'a> {
         let mut calls: std::collections::BTreeMap<u64, f64> = Default::default();
         for k in evidence {
             if let Value::Text(t, _) = k {
-                if let Some(Entry::Judge { call, cost, .. }) = cap.ledger(self).get(t) {
+                if let Some(Entry::Judge { call, cost, .. }) = cap.get(self, t) {
                     if *call > 0 {
                         calls.entry(*call).or_insert(*cost);
                     }

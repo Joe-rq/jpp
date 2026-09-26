@@ -105,8 +105,10 @@ const 守卫: &str = "budget {calls: 2, cost: 1};\nlet ok = handle(cut(judge(sta
 fn h_材料条目整份判() {
     let calib = certified_calib("h");
     let obs = [(json!("hello"), "行吗", "k", 0.95)];
+    // 测 J-08 本身：开 --guard（意图汇编 11a）；不开时同一程序照常执行（见本测试末尾）
     let untrusted = EntryArgs {
         materials: vec![EntryMat::untrusted("doc", json!("hello"))],
+        guard: true,
         ..Default::default()
     };
     let r = run(守卫, &untrusted, &calib, &obs);
@@ -123,10 +125,19 @@ fn h_材料条目整份判() {
     m.taint = Taint::Trusted;
     let trusted = EntryArgs {
         materials: vec![EntryMat::new("doc", m)],
+        guard: true,
         ..Default::default()
     };
     let r = run(守卫, &trusted, &calib, &obs);
     let v = r.result.expect("宿主声明可信、线经认证：放行");
+    // 意图汇编 11a：不开 --guard 时不可信入口材料上的判断照常驱动不可逆 do
+    let 默认 = EntryArgs {
+        materials: vec![EntryMat::untrusted("doc", json!("hello"))],
+        ..Default::default()
+    };
+    let r0 = run(守卫, &默认, &calib, &obs);
+    r0.result.expect("默认不拦");
+    assert!(r0.wrote);
     assert!(r.wrote);
     assert_eq!(v["doc"]["origin"], json!(["input"]), "{v}");
     assert_eq!(v["doc"]["taint"], json!("Trusted"), "{v}");
@@ -252,4 +263,47 @@ fn l_空入口不改ir() {
     let text = jpp::ir::print(&with, None);
     assert!(text.contains("entry input:value:untrusted"), "{text}");
     assert!(serde_json::to_string(&with).unwrap().contains("\"entry\""));
+}
+
+/// 意图汇编 11a：宿主在 `EntryArgs` 上开了把关、编译时却没经 `decl()` 带进 `Program`，`Session::run` 照样把关
+/// （宿主明说要把关就照做，不因少传一次而静默关掉）。
+#[test]
+fn 入口开把关而编译时没带_运行照样把关() {
+    let calib = certified_calib("guard-late");
+    let src = "budget {calls: 2, cost: 1};\nlet ok = handle(cut(judge(state(doc), test(\"行吗\", \"k\"))), {\n    act: fn() { true }, ignore: fn() { false }, unsure: fn(u) { consume(u, \"drop\"); false }});\nlet w = if ok { content(do(\"write\", [\"x\"], 0)) } else { \"没写\" };\n{w: w}\n";
+    let entry = EntryArgs {
+        materials: vec![EntryMat::untrusted("doc", json!("hello"))],
+        guard: true,
+        ..Default::default()
+    };
+    // 编译只带条目、不带把关位
+    let decl = EntryArgs {
+        guard: false,
+        ..entry.clone()
+    }
+    .decl();
+    let ast = jpp::syntax::parse(src).expect("语法");
+    let prog = Session::compile(&ast, &decl).expect("compile");
+    assert!(!prog.entry.guard);
+    let mut fp = FixedPorts::new();
+    fp.observe(
+        &State::new(
+            vec![Mat::literal(json!("hello"))],
+            vec![],
+            vec![],
+            vec![],
+            false,
+        ),
+        &Question::new(Op::Test, "行吗", "k", vec![]),
+        Answer::Noul(0.95),
+    );
+    let mut actions = ActionRegistry::new();
+    actions.register("write", 0.0, false, TaintOut::Inherit, |args| {
+        Ok(args[0].clone())
+    });
+    let e = Session::new(fp.ports(), &calib, &actions)
+        .run(&prog, &entry, &mut Ledger::new())
+        .map(|_| ())
+        .expect_err("宿主开了把关：不可信入口材料上的判断不放行不可逆 do");
+    assert!(e.render().contains("J-08"), "{}", e.render());
 }

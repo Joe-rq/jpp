@@ -94,10 +94,16 @@ fn computed_truth_certifies_both_sides_and_replay_needs_only_the_ledger() {
         first.to_str().unwrap(),
     ]);
     let first: Value = serde_json::from_slice(&fs::read(&first).unwrap()).unwrap();
-    let warnings = first["trace"]["warnings"].to_string();
+    // 用了题式级线就要说出来：B187（批 9 第 10 格）起写在报告 exits 行（等级 Form），W-form-line 只在开 --guard 时作告警
+    let grades: Vec<&str> = first["exits"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .filter_map(|e| e["grade"].as_str())
+        .collect();
     assert!(
-        warnings.contains("W-form-line"),
-        "用了题式级线就要说出来：{warnings}"
+        !grades.is_empty() && grades.iter().all(|g| *g == "Form"),
+        "用了题式级线就要说出来：{grades:?}"
     );
     assert_eq!(first["value"]["streams"][0]["act"], json!([0, 3, 8, 9]));
 

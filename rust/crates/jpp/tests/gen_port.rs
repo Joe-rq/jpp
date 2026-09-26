@@ -116,7 +116,8 @@ fn b_并发上限来自配置() {
     }
 }
 
-/// (c) 失败四类：非 JSON 与项数不对 → malformed；空 → empty；超时 → timeout；退出码非零与 is_error → failed。
+/// (c) 失败四类：非 JSON（n > 1 时单个值也算）→ malformed；空 → empty；超时 → timeout；退出码非零与 is_error → failed。
+/// 项数不对不再是失败（现场稳定性三修：运行时截断或照返并报 W-gen-count，见 `field_stability.rs` e3、e4）。
 #[test]
 fn c_失败四类() {
     let err_body = {
@@ -125,7 +126,6 @@ fn c_失败四类() {
     };
     let cases: Vec<(PathBuf, f64, &str)> = vec![
         (fake(0.0, &ok_body("你好")), 10.0, "malformed"),
-        (fake(0.0, &ok_body(r#"["只有一项"]"#)), 10.0, "malformed"),
         (fake(0.0, "echo not-json"), 10.0, "malformed"),
         (fake(0.0, &ok_body("[]")), 10.0, "empty"),
         (fake(0.0, &ok_body(r#"["", "  ", ""]"#)), 10.0, "empty"),

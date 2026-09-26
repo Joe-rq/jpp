@@ -19,6 +19,11 @@ fn 入口(taint: Taint) -> EntryArgs {
 
 fn compile(src: &str, entry: &EntryArgs) -> Program {
     let ast = jpp::syntax::parse(src).expect("语法");
+    // 测放行把关本身：开 --guard（意图汇编 11a；宿主入口的 `guard` 位经 decl 写进 Program.entry）
+    let entry = EntryArgs {
+        guard: true,
+        ..entry.clone()
+    };
     Session::compile(&ast, &entry.decl()).expect("compile")
 }
 

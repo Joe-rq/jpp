@@ -15,6 +15,7 @@ use jpp::effects::CalibStore;
 use jpp::{lower, syntax::parse};
 
 fn compile(src: &str) -> jpp::Program {
+    // 本文件拿沙箱诊断当探针看追名结果：B187（批 9）起 `E-action-no-sandbox` 退役，同一规则报 `W-action-no-sandbox`
     lower(&parse(src).expect("解析")).expect("降级")
 }
 
@@ -44,7 +45,7 @@ fn a_单调用点追到() {
     assert_eq!(do_sites(&p), vec![Some("danger_action".to_string())]);
     let r = check_with_calib_actions(&p, &CalibStore::new(), &动作表());
     let d = r
-        .find("E-action-no-sandbox")
+        .find("W-action-no-sandbox")
         .unwrap_or_else(|| panic!("{}", r.render()));
     assert!(
         d.message.contains("经 `f` 的形参 `action` 传入"),
@@ -64,7 +65,7 @@ fn b_两个调用点不同字面量不追() {
     let p = compile(src);
     assert_eq!(do_sites(&p), vec![None]);
     let r = check_with_calib_actions(&p, &CalibStore::new(), &动作表());
-    assert!(r.find("E-action-no-sandbox").is_none(), "{}", r.render());
+    assert!(r.find("W-action-no-sandbox").is_none(), "{}", r.render());
 }
 
 /// (c) 形参再传给另一函数（两层）：`wrapper` 的调用点是字面量，但 `f` 的调用点实参是 `wrapper`
@@ -79,7 +80,7 @@ fn c_两层转发不追() {
     let p = compile(src);
     assert_eq!(do_sites(&p), vec![None]);
     let r = check_with_calib_actions(&p, &CalibStore::new(), &动作表());
-    assert!(r.find("E-action-no-sandbox").is_none(), "{}", r.render());
+    assert!(r.find("W-action-no-sandbox").is_none(), "{}", r.render());
 }
 
 /// (d) `ground`（`lib/compose/ground.jpp` 同形结构：动作名是 `ground` 自己的形参，`do` 站点在

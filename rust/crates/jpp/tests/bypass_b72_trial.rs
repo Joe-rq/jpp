@@ -105,7 +105,8 @@ fn 动作() -> ActionRegistry {
 }
 
 fn 跑(src: &str, calib: &CalibStore, l: &mut Ledger) -> Result<jpp::Outcome, String> {
-    let program = lower(&parse(src).expect("解析")).expect("lower");
+    let mut program = lower(&parse(src).expect("解析")).expect("lower");
+    program.entry.guard = true; // 测放行把关本身：开 --guard（意图汇编 11a）
     let calls = Cell::new(0u64);
     run(&program, 桩端口(&calls), calib, &动作(), l).map_err(|e| e.render())
 }
@@ -161,7 +162,8 @@ fn 试用线不放行不可逆do() {
 fn 只凭账本重放逐出口等级相同() {
     let mut l = Ledger::new();
     let first = 跑(路由, &库(80), &mut l).unwrap();
-    let program = lower(&parse(路由).unwrap()).unwrap();
+    let mut program = lower(&parse(路由).unwrap()).unwrap();
+    program.entry.guard = true; // 测放行把关本身：开 --guard（意图汇编 11a）
     // 与 CLI `--replay` 同一做法（run_io.rs）：校准记录只从账本头 calib_used 补回
     let mut 补回 = CalibStore::new();
     for (k, v) in &l.calib_used {

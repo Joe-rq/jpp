@@ -180,6 +180,17 @@ impl<'a> Session<'a> {
         // **整本记录走到检查器**，不只是档案：J-10 的静态那一半要各题的 `unsure_rate`，
         // 而那住在 `CalibRecord` 里。**与 §1.2 那根「档案到不了检查器」的管道是同一种缺结构**，
         // 只是这次缺的是记录不是档案。
+        // 放行把关（意图汇编 11a）：检查器与运行时都只读 `Program.entry.guard`。宿主在 `EntryArgs` 上开了把关、编译时
+        // 却没经 `decl()` 带进 `Program` 的，这里补上——宿主明说要把关就照做，不因少传一次而静默关掉
+        let 补把关;
+        let program = if entry.guard && !program.entry.guard {
+            let mut p = program.clone();
+            p.entry.guard = true;
+            补把关 = p;
+            &补把关
+        } else {
+            program
+        };
         // 入口名在 `Program.entry` 里（B106，`compile` 写入），检查器自己读，这里不再另传名字表
         // 动作表也走到检查器（B108，步 24-0）：J-08 静态子面在不可逆动作上报 error，必然被拦的程序
         // 在花调用之前停下

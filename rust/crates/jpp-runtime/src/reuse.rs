@@ -265,7 +265,9 @@ impl<'a> Interp<'a> {
 }
 
 /// 跨运行缓存给回的判断条目里的答案、置换测量与自报置信度（B154）。
-fn 判断记录的答案(hit: &CachedReading) -> Option<(Answer, Option<PermMeasure>, Option<f64>)> {
+fn 判断记录的答案(
+    hit: &CachedReading,
+) -> Option<(Answer, Option<PermMeasure>, Option<f64>)> {
     let e: Entry = serde_json::from_value(hit.record.clone()).ok()?;
     match e {
         Entry::Judge {

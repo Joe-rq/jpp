@@ -36,8 +36,8 @@ fn 跑(args: &[&str]) -> (String, String) {
 fn 同一个程序两份档案两种严重度() {
     let d = 临时("g3");
     fs::write(d.join("p.jpp"), "budget {calls: 2, cost: 0};\nlet r = judge(state(mat(\"材料\")), test(\"行吗\", \"k\"));\nr + 1\n").unwrap();
-    let 真档 =
-        fs::read_to_string(根().join("../src/foundation/profile/profiles/jev-1.13.0.json")).unwrap();
+    let 真档 = fs::read_to_string(根().join("../src/foundation/profile/profiles/jev-1.13.0.json"))
+        .unwrap();
     let mut j: serde_json::Value = serde_json::from_str(&真档).unwrap();
     for (名, 值) in [("成立", false), ("不成立", true)] {
         j["arithmetic_capable"] = serde_json::json!(值);
@@ -187,7 +187,7 @@ fn 校准环闭合() {
     fs::write(d.join("f.json"), r#"{"observations":[{"on":["材料"],"op":"test","text":"行吗","calib":"k","answer":{"Noul":0.9}}]}"#).unwrap();
     let (p, f) = (d.join("p.jpp"), d.join("f.json"));
 
-    // 第一趟：没有线 → 冷；同时把证据写出去
+    // 第一趟：没有线 → 按回答走；同时把证据写出去
     let (一, _) = 跑(&[
         "run",
         p.to_str().unwrap(),
@@ -197,7 +197,9 @@ fn 校准环闭合() {
         cd.to_str().unwrap(),
     ]);
     let v1: serde_json::Value = serde_json::from_str(&一).unwrap();
-    assert_eq!(v1["value"]["r"], "cold", "没有线就是冷：{一}");
+    // B187（批 9）：没有线按判断器的回答走（0.9 → act），线源为空
+    assert_eq!(v1["value"]["r"], "act", "没有线按回答走：{一}");
+    assert_eq!(v1["value"]["源"], "", "没有线就不留来源：{一}");
     assert!(cd.join("k.json").exists(), "**证据要落盘**");
     let rec: serde_json::Value =
         serde_json::from_str(&fs::read_to_string(cd.join("k.json")).unwrap()).unwrap();

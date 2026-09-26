@@ -41,6 +41,8 @@ pub(crate) struct GenJob {
     prompt: String,
     /// 交出前的调用输入；交出后为空
     input: Option<CallInput>,
+    /// 调用要的份数（现场稳定性三修 (3)：取回时按它核项数，多的截断、少的照返，都报 `W-gen-count`）
+    n: usize,
     /// 交出后的票据
     ticket: Option<Ticket>,
     /// ∨ ctx 的 taint（端口不声明时用）
@@ -49,6 +51,8 @@ pub(crate) struct GenJob {
     from: Sources,
     site: Span,
     handle: Rc<PendingGen>,
+    /// 登记计数（步 15h-3）：与同读数号计数的直接写入比先后
+    seq: u64,
 }
 
 /// 开着的层：交出了生成、票据还没收齐。条目带登记序键，收齐时排序写进账本。
@@ -67,6 +71,8 @@ pub(crate) struct GenState {
     /// 推测与提升进行中（大于 0 时不取回生成）
     不等: u32,
     层: Option<开层>,
+    /// 登记计数（步 15h-3）：生成登记与层开着时的直接写入各取一个，层内同读数号计数时按它排先后
+    序: u64,
 }
 
 /// 生成输出包成材料（`gen` 的产物，taint 与来源按调用点算好的给）。
@@ -131,6 +137,12 @@ impl<'a> Interp<'a> {
         let id = self.生成.next;
         self.生成.next += 1;
         self.生成.预留 += 1;
+        let seq = self.生成.序;
+        self.生成.序 += 1;
+        let n = match &input {
+            CallInput::Prompt { n, .. } => *n,
+            _ => 0,
+        };
         let handle = Rc::new(PendingGen {
             id,
             mark: self.next_reading.get(),
@@ -144,12 +156,14 @@ impl<'a> Interp<'a> {
                 spec,
                 prompt: prompt.to_string(),
                 input: Some(input),
+                n,
                 ticket: None,
                 taint,
                 derived,
                 from,
                 site: sp,
                 handle: handle.clone(),
+                seq,
             },
         );
         Ok(Value::Gen(handle))
@@ -263,7 +277,7 @@ impl<'a> Interp<'a> {
                 Ok(res) => {
                     let (v, entry) = self.生成完成(&job, res);
                     *job.handle.resolved.borrow_mut() = Some(v);
-                    layer.entries.push(((2 * job.handle.mark, 0), entry));
+                    layer.entries.push(((2 * job.handle.mark, job.seq), entry));
                 }
                 Err(e) => {
                     failure.get_or_insert(e);
@@ -278,6 +292,22 @@ impl<'a> Interp<'a> {
         match failure {
             Some(e) => Err(e),
             None => Ok(()),
+        }
+    }
+
+    /// 层开着时程序直接写的条目（`do`、`ask`、`transform`、`repeat`、`CalibUsed`，步 15h-3）：进层，键为
+    /// `(2 × 当前读数号计数, 登记计数)`——早于它登记的判断（`2r+1`，r 更小）与生成（`2m`，m 不大于当前、同 m 时
+    /// 登记计数更小）都排在它前面；层没开时直接写账本。
+    /// 依据：B160（按登记序一次写）；过程记录 工程-步15h-3.md 二·1–2
+    pub(crate) fn 登记记账(&mut self, e: Entry) {
+        if self.生成.层.is_some() {
+            let k = (2 * self.next_reading.get(), self.生成.序);
+            self.生成.序 += 1;
+            if let Some(l) = &mut self.生成.层 {
+                l.entries.push((k, e));
+            }
+        } else {
+            self.账本追加(e);
         }
     }
 
@@ -326,6 +356,11 @@ impl<'a> Interp<'a> {
                 "gen 失败：生成端口返回的不是材料",
                 job.site,
             ))),
+            // 现场稳定性三修 (1)：网络类错误转成这一次生成的失败（值为 Fail、照记账本），不中止程序
+            Err(e) if e.is_network() => Ok(GenResult {
+                failure: Some(e.0),
+                ..Default::default()
+            }),
             // 依据：B149（端口报错）
             Err(e) => Err(Fault::Error(RtError::new(
                 Some("E-rt-client"),
@@ -336,10 +371,26 @@ impl<'a> Interp<'a> {
     }
 
     /// 生成结果落账（`13` §5：后端已经返回 = 钱已经花了，先记事实）：费用、trace、缓存新条目；返回值与账本条目。
-    fn 生成完成(&mut self, job: &GenJob, res: GenResult) -> (Value, Entry) {
+    fn 生成完成(&mut self, job: &GenJob, mut res: GenResult) -> (Value, Entry) {
         // 调用数已在交出时计；这里记 token 与费用
         self.cost.tokens += res.tokens;
         self.cost.usd += res.cost;
+        // 现场稳定性三修 (3)：项数与要的份数不同不算失败——报告警，多的截到 n 项（账本记截断后的输出，重放同值），
+        // 少的照返
+        let k = res.outputs.len();
+        if res.failure.is_none() && job.n > 0 && k != job.n {
+            let 处置 = if k > job.n {
+                res.outputs.truncate(job.n);
+                format!("截到前 {} 项", job.n)
+            } else {
+                format!("按实际的 {k} 项返回")
+            };
+            // 依据：地基/过程记录/工程-现场稳定性三修.md (3)（主会话 2026-09-26 派单，放宽 B149 的「恰好 n 项」）
+            self.trace.warn(format!(
+                "W-gen-count: @{} gen 要 {} 项，生成器给了 {k} 项，{处置}",
+                job.site.start, job.n
+            ));
+        }
         let taint = res.taint_out.unwrap_or(job.taint);
         // 生成器报的失败（超时、非 JSON、空……）产出 `Fail` 值、照记账本，程序照常往下（步 15h-1，形状同 B93）
         let (value, output, output_mat) = match &res.failure {

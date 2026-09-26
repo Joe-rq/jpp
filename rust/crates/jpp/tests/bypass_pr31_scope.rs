@@ -166,7 +166,8 @@ fn 全无文本范围未知不放行() {
     assert_eq!(store.get("k").status, "上岗");
     assert!(指纹(&store).is_none());
     let 跑 = |src: &str| {
-        let program = jpp::lower(&jpp::syntax::parse(src).unwrap()).unwrap();
+        let mut program = jpp::lower(&jpp::syntax::parse(src).unwrap()).unwrap();
+        program.entry.guard = true; // 测放行把关本身：开 --guard（意图汇编 11a）
         let mut a = jpp::interp::ActionRegistry::new();
         a.register("发", 0.0, false, jpp::interp::TaintOut::Trusted, |_| {
             Ok(jpp::value::Value::Text(

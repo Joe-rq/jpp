@@ -103,7 +103,8 @@ fn 跑(src: &str, ports: Ports<'_>) -> Result<Outcome, String> {
     std::fs::write(&path, src).unwrap();
     let loaded = jpp::syntax::loader::load(&path);
     let _ = std::fs::remove_dir_all(&dir);
-    let program = jpp::lower(&loaded.expect("装载").program).expect("lower");
+    let mut program = jpp::lower(&loaded.expect("装载").program).expect("lower");
+    program.entry.guard = true; // 测放行把关本身：开 --guard（意图汇编 11a）
     let calib = 库();
     let acts = ActionRegistry::new();
     Session::new(ports, &calib, &acts)
@@ -821,7 +822,8 @@ fn 会话跑(src: &str, ports: Ports<'_>, 接受: bool) -> Result<Outcome, Strin
     std::fs::write(&path, src).unwrap();
     let loaded = jpp::syntax::loader::load(&path);
     let _ = std::fs::remove_dir_all(&dir);
-    let program = jpp::lower(&loaded.expect("装载").program).expect("lower");
+    let mut program = jpp::lower(&loaded.expect("装载").program).expect("lower");
+    program.entry.guard = true; // 测放行把关本身：开 --guard（意图汇编 11a）
     let mut calib = CalibStore::new();
     common::certified(&mut calib, "k2", 0.8, 0.2, 50);
     let mut acts = ActionRegistry::new();

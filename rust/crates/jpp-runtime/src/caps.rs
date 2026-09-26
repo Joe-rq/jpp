@@ -294,8 +294,9 @@ impl Cap<KeyCollect> {
 }
 
 impl Cap<LedgerRead> {
-    pub(crate) fn ledger<'b>(&self, it: &'b Interp) -> &'b jpp_ledger::Ledger {
-        it.ledger.view()
+    /// 按键读条目：先查开着的层，再查账本（步 15h-3，B160；原 `ledger` 取整本账本只看得见已落账的）
+    pub(crate) fn get<'b>(&self, it: &'b Interp, key: &str) -> Option<&'b Entry> {
+        it.账本查(key)
     }
     /// 缺席账的停发标记（B93，步 22-0：预算停发的读数标 `budget`）
     pub(crate) fn absent_mark<'b>(&self, it: &'b Interp, key: &str) -> Option<&'b str> {
@@ -304,13 +305,14 @@ impl Cap<LedgerRead> {
 }
 
 impl Cap<LedgerWrite> {
-    /// 持写权者读账本（步 18b 起经账本端口的 `view()`）
-    pub(crate) fn ledger<'b>(&self, it: &'b Interp) -> &'b jpp_ledger::Ledger {
-        it.ledger.view()
-    }
-    /// 账本的写入口：条目经账本端口追加、层末落盘（步 18b，B55；原 `ledger_mut` 取可变账本）
+    /// 账本的写入口：条目经账本端口追加、层末落盘（步 18b，B55；原 `ledger_mut` 取可变账本）。
+    /// 步 15h-3：生成的层开着时进层，按登记序入账（B160）
     pub(crate) fn ledger_put(&self, it: &mut Interp, e: Entry) {
-        it.账本追加(e)
+        it.登记记账(e)
+    }
+    /// 这个键有没有条目：先查开着的层，再查账本（步 15h-3）
+    pub(crate) fn has_key(&self, it: &Interp, key: &str) -> bool {
+        it.账本查(key).is_some()
     }
     #[allow(clippy::too_many_arguments)]
     pub(crate) fn trace_event(
@@ -496,11 +498,11 @@ static CONSTRUCTS: &[ConstructSpec] = &[
     // 依据：05 §1 filter；B17；B81；B82；B57（四类能力都用）
     ConstructSpec {
         name: "sieve",
-        params: "sieve(材料, 题 | [题…]) | sieve(材料, 题式, [填法…])",
+        params: "sieve(材料, 题 | [题…], {line?}) | sieve(材料, 题式, [填法…], {line?})",
         returns: "契约值 kind=sieve",
         refresh: &["sieve"],
         privileges: &[P_READ, P_UNSURE, P_DUTY, P_KEYS, P_LREAD],
-        clause: "05 §1；B17；B81；B82；B133",
+        clause: "05 §1；B17；B81；B82；B133；B128",
         run: Some(|it, c, n, a, s| it.b_sieve(c, n, a, s)),
     },
     // 依据：05 §1 pair；B17；B81。待出内核：25-6（B138 (4)；闸门测试暂豁免）

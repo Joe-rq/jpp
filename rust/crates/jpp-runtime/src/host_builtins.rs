@@ -209,7 +209,7 @@ impl<'a> Interp<'a> {
         }
         // 第二、三位：校准键（Text）与策略记录（B129 三式：`declare` 作者声明线、`cost` 代价、`alpha` 可接受
         // 假放行率；步 20j-3 加 `stat` 统计量，B153、B154）。`cost`/`alpha` 的线仍只来自记录；`declare` 按作者
-        // 写的数切（B128）。
+        // 写的数切（B128）。策略记录的解析在 `解析策略`（`sieve` 的 `{line}` 同用）。依据：B128、B129
         let mut calib: Option<String> = None;
         let mut opts = super::bridge::CutOpts::default();
         let mut 有记录 = false;
@@ -217,84 +217,21 @@ impl<'a> Interp<'a> {
         for a in args.iter().skip(1) {
             match a {
                 Value::Text(k, _) if calib.is_none() && !有记录 => calib = Some(k.to_string()),
-                Value::Record(fields) if !有记录 => {
+                Value::Record(_) if !有记录 => {
                     有记录 = true;
-                    if let Some((k, _)) = fields
-                        .iter()
-                        .find(|(k, _)| !matches!(k.as_str(), "declare" | "cost" | "alpha" | "stat"))
-                    {
-                        return err(
-                            Some("E-rt-arg"),
-                            format!(
-                                "cut 的记录参数只认 declare / cost / alpha / stat：{{declare: {{hi, lo?}}}}、{{cost: [fp, fn]}}、{{alpha: a}}、{{stat: \"expect\", declare: {{…}}}}；收到字段 {k}"
-                            ),
-                            sp,
-                        );
-                    }
-                    if let Some(c) = a.get("cost") {
-                        let nums: Vec<f64> = match &c {
-                            Value::List(l) => l.iter().filter_map(数值).collect(),
-                            _ => vec![],
-                        };
-                        if nums.len() != 2 || nums.iter().any(|x| !(*x > 0.0)) {
-                            return err(
-                                Some("E-rt-arg"),
-                                "cost 要是两个正数 [fp, fn]：放错一条（假放行）与漏掉一条（假拒绝）的代价",
-                                sp,
-                            );
-                        }
-                        opts.cost = Some((nums[0], nums[1]));
-                    }
-                    if let Some(x) = a.get("alpha") {
-                        match 数值(&x) {
-                            Some(v) if v > 0.0 && v < 1.0 => opts.alpha = Some(v),
-                            _ => {
-                                return 选项错(
-                                    "alpha 要是 (0, 1) 之间的数：可接受的假放行率上界，cut 按它在同键证书里选 α ≤ alpha 的一张（B129）".into(),
-                                );
-                            }
-                        }
-                    }
-                    if let Some(s) = a.get("stat") {
-                        // 依据：B153 (1)、B154 (2)（地基/附注/2026-09-26-批6裁定.md §一、§二）
-                        opts.stat = match 解析统计量(&s) {
-                            Ok(s) => s,
-                            Err(m) => return 选项错(m),
-                        };
-                    }
-                    if let Some(d) = a.get("declare") {
-                        // 依据：B128、B129（地基/附注/2026-09-25-作者主权与策略表达裁定.md §一、§二）
-                        if opts.cost.is_some() || opts.alpha.is_some() {
-                            return 选项错(
-                                "declare 不能与 cost / alpha 同给：声明线没有错误率保证，cost / alpha 无消费者（B129）".into(),
-                            );
-                        }
-                        opts.declare = match 解析声明(&d) {
-                            Ok(l) => Some(l),
-                            Err(m) => return 选项错(m),
-                        };
-                    }
-                    if !opts.stat.is_max() && (opts.cost.is_some() || opts.alpha.is_some()) {
-                        return 选项错(format!(
-                            "stat: {} 不收 cost / alpha：二者在 p_max 上的证书里选线，对别的统计量无效；按这个统计量切写 declare（B153）",
-                            opts.stat.to_json()
-                        ));
-                    }
+                    opts = 解析策略(a, sp)?;
+                }
+                // 裸数字读作作者声明线 `{declare: {hi: 数}}`（B188 第 1 条、B129 推翻条件 (2) 提前触发；批 9）
+                Value::Float(..) | Value::Int(..) if !有记录 => {
+                    有记录 = true;
+                    let hi = 数值(a).unwrap_or_default();
+                    opts.declare = Some(jpp_value::bridge::DeclaredLine::two_sided(hi, hi, false));
                 }
                 other => {
-                    // 依据：B129（裸数字仍是 J-03，修法给出 declare 的写法）
-                    let 修法 = if matches!(other, Value::Float(..) | Value::Int(..)) {
-                        format!(
-                            "。修法：若这是你要的判定规则，写成作者声明线 cut(r, {{declare: {{hi: {}}}}})——按这个数切，不作错误率保证，放行不可逆动作须 --release-on-declared（B128、B129）",
-                            other.to_json()
-                        )
-                    } else {
-                        String::new()
-                    };
                     return err(
                         Some("J-03"),
                         format!(
-                            "cut 的校准参数必须是校准记录的键（Text）或策略记录 {{declare | cost | alpha}}，不能是字面量线；收到 {}{修法}",
+                            "cut 的校准参数是校准记录的键（Text）、策略记录 {{declare | cost | alpha | stat}} 或一个数（读作声明线 {{declare: {{hi: 数}}}}）；收到 {}",
                             other.type_name()
                         ),
                         sp,
@@ -854,12 +791,20 @@ impl<'a> Interp<'a> {
                 )
             }
         };
-        arity(3)?;
+        // 第四参可选：与 `sieve` 同形的选项 `{line}`，原样交给重问那一次的 `cut`（B128 补齐，过程记录
+        // 工程-sieve声明线.md §四）。先解析选项，再销旧责任：选项错时旧责任不被动过
+        if n != 3 {
+            arity(4)?;
+        }
+        let line = match args.get(3) {
+            Some(o) => crate::constructs::sieve::解析筛选项(name, o, sp)?,
+            None => super::bridge::CutOpts::default(),
+        };
         let (Value::Duty(u), Value::State(s), Value::Question(q)) = (&args[0], &args[1], &args[2])
         else {
             return err(
                 Some("J-05"),
-                "literalize(未决责任, state, 更字面的题)：第一个参数要是 unsure 臂收到的那份责任",
+                "literalize(未决责任, state, 更字面的题, {line?})：第一个参数要是 unsure 臂收到的那份责任",
                 sp,
             );
         };
@@ -874,7 +819,13 @@ impl<'a> Interp<'a> {
         *u.consumed_by.borrow_mut() = "literalize".into();
         let reading = self.judge(&s, &[q], sp)?.remove(0);
         match reading {
-            Value::Reading(r) => self.cut(&r, None, Default::default(), sp),
+            Value::Reading(r) => {
+                // 依据：B128（逐读数核选项与 cut 同一套，B153 (1)）
+                if let Err(m) = 核选项(&r, &line) {
+                    return err(Some("E-cut-options"), m, sp);
+                }
+                self.cut(&r, None, line, sp)
+            }
             other => Ok(other),
         }
     }
@@ -1581,6 +1532,35 @@ fn 解析声明(d: &Value) -> Result<DeclaredLine, String> {
             return Err("closed 要写成 {hi: Bool, lo: Bool} 或 {cuts: Bool}（B165）".into());
         };
         for (k, v) in cf.iter() {
+            // B176（步 20j-3 追加 (7)）：cuts 线的 closed.cuts 收 Bool 或与 cuts 等长的 [Bool]，逐切点定开闭
+            if k == "cuts" && line.is_cuts() {
+                line.closed_cuts = match v {
+                    Value::Bool(b, ..) => vec![*b; line.cuts.len()],
+                    Value::List(xs) => {
+                        let bs: Vec<bool> = xs
+                            .iter()
+                            .filter_map(|x| match x {
+                                Value::Bool(b, ..) => Some(*b),
+                                _ => None,
+                            })
+                            .collect();
+                        if bs.len() != xs.len() || bs.len() != line.cuts.len() {
+                            return Err(format!(
+                                "closed.cuts 要是 true / false，或与 cuts 等长（{} 个）的布尔列表，逐切点定开闭（B176）",
+                                line.cuts.len()
+                            ));
+                        }
+                        bs
+                    }
+                    _ => {
+                        return Err(
+                            "closed.cuts 要是 true / false，或与 cuts 等长的布尔列表（B176）"
+                                .into(),
+                        );
+                    }
+                };
+                continue;
+            }
             let Value::Bool(b, ..) = v else {
                 return Err(format!("closed.{k} 要是 true 或 false（B165）"));
             };
@@ -1593,7 +1573,7 @@ fn 解析声明(d: &Value) -> Result<DeclaredLine, String> {
                             .into(),
                     );
                 }
-                ("cuts", true) => line.closed_cuts = *b,
+                ("cuts", true) => unreachable!("上面已处理"),
                 ("cuts", false) => return Err("closed.cuts 只配 cuts 线（B165）".into()),
                 ("hi" | "lo", true) => {
                     return Err(
@@ -1611,9 +1591,97 @@ fn 解析声明(d: &Value) -> Result<DeclaredLine, String> {
     Ok(line)
 }
 
+/// `cut` 的策略记录（第二或第三位的记录参数）解析成 [`CutOpts`](super::bridge::CutOpts)：B129 三式 `declare` /
+/// `cost` / `alpha` 与 20j-3 的 `stat`。`sieve` 的 `{line: …}` 原样走这里，字段、取值与报错与 `cut` 相同
+/// （B128 补齐，过程记录 `地基/过程记录/工程-sieve声明线.md`）。逐读数的搭配另由 [`核选项`] 核。
+pub(crate) fn 解析策略(a: &Value, sp: Span) -> R<super::bridge::CutOpts> {
+    // 依据：B128、B129（策略三式都在 cut 上；sieve 的 line 原样走这里）
+    let mut opts = super::bridge::CutOpts::default();
+    let 选项错 = |msg: String| -> R<super::bridge::CutOpts> { err(Some("E-cut-options"), msg, sp) };
+    let Value::Record(fields) = a else {
+        return err(
+            Some("E-rt-arg"),
+            format!("cut 的策略参数要是记录，收到 {}", a.type_name()),
+            sp,
+        );
+    };
+    if let Some((k, _)) = fields
+        .iter()
+        .find(|(k, _)| !matches!(k.as_str(), "declare" | "cost" | "alpha" | "stat"))
+    {
+        return err(
+            Some("E-rt-arg"),
+            format!(
+                "cut 的记录参数只认 declare / cost / alpha / stat：{{declare: {{hi, lo?}}}}、{{cost: [fp, fn]}}、{{alpha: a}}、{{stat: \"expect\", declare: {{…}}}}；收到字段 {k}"
+            ),
+            sp,
+        );
+    }
+    if let Some(c) = a.get("cost") {
+        let nums: Vec<f64> = match &c {
+            Value::List(l) => l.iter().filter_map(数值).collect(),
+            _ => vec![],
+        };
+        if nums.len() != 2 || nums.iter().any(|x| !(*x > 0.0)) {
+            return err(
+                Some("E-rt-arg"),
+                "cost 要是两个正数 [fp, fn]：放错一条（假放行）与漏掉一条（假拒绝）的代价",
+                sp,
+            );
+        }
+        opts.cost = Some((nums[0], nums[1]));
+    }
+    if let Some(x) = a.get("alpha") {
+        match 数值(&x) {
+            Some(v) if v > 0.0 && v < 1.0 => opts.alpha = Some(v),
+            _ => {
+                return 选项错(
+                    "alpha 要是 (0, 1) 之间的数：可接受的假放行率上界，cut 按它在同键证书里选 α ≤ alpha 的一张（B129）".into(),
+                );
+            }
+        }
+    }
+    if let Some(s) = a.get("stat") {
+        // 依据：B153 (1)、B154 (2)（地基/附注/2026-09-26-批6裁定.md §一、§二）
+        opts.stat = match 解析统计量(&s) {
+            Ok(s) => s,
+            Err(m) => return 选项错(m),
+        };
+    }
+    if let Some(d) = a.get("declare") {
+        // 依据：B128、B129（地基/附注/2026-09-25-作者主权与策略表达裁定.md §一、§二）
+        if opts.cost.is_some() || opts.alpha.is_some() {
+            return 选项错(
+                "declare 不能与 cost / alpha 同给：声明线没有错误率保证，cost / alpha 无消费者（B129）"
+                    .into(),
+            );
+        }
+        opts.declare = match 解析声明(&d) {
+            Ok(l) => Some(l),
+            Err(m) => return 选项错(m),
+        };
+    }
+    if !opts.stat.is_max() && (opts.cost.is_some() || opts.alpha.is_some()) {
+        return 选项错(format!(
+            "stat: {} 不收 cost / alpha：二者在 p_max 上的证书里选线，对别的统计量无效；按这个统计量切写 declare（B153）",
+            opts.stat.to_json()
+        ));
+    }
+    // B187（批 9 第 3 格）：统计量上没有现成的回答——`mass` 以外的统计量不写线是缺分档参数（形状错）。
+    // 放在共用解析里，`cut`、`sieve` 与 `literalize` 的 `{line}` 同一口径
+    if opts.declare.is_none() && !opts.stat.is_max() && !matches!(opts.stat, Stat::Mass(_)) {
+        return 选项错(format!(
+            "cut 的 stat: {} 没有写线：这个统计量上没有现成的回答，要给分档参数——{{stat: {}, declare: {{hi: …, lo: …}}}} 或 {{declare: {{cuts: […]}}}}（B153、B187）",
+            opts.stat.to_json(),
+            opts.stat.to_json()
+        ));
+    }
+    Ok(opts)
+}
+
 /// 逐条读数核 `stat` 与 `declare` 的搭配（B153 (1)、B165 (3)；步 20j-3）：统计量与题型、`mass` 下标、`cuts` 只配
 /// `expect`、数的范围（`expect` 为 [0, K−1]，其余 [0, 1]）、K 元 `max` 线不收下侧。违者 `E-cut-options`。
-fn 核选项(r: &Reading, opts: &super::bridge::CutOpts) -> Result<(), String> {
+pub(crate) fn 核选项(r: &Reading, opts: &super::bridge::CutOpts) -> Result<(), String> {
     let 档数 = match r.op {
         Op::Test => 0,
         Op::Select => r.over_len,
@@ -1687,6 +1755,12 @@ fn 核拟合选项(opts: &super::bridge::CutOpts) -> Result<(), String> {
     if opts.cost.is_some() || opts.alpha.is_some() {
         return Err(
             "声明式拟合没有证书，cut 不收 cost / alpha；按你的数切写 declare（B153）".into(),
+        );
+    }
+    // B187（批 9 第 3 格）：拟合分数不是判断器的回答，不写线是缺分档参数
+    if opts.declare.is_none() {
+        return Err(
+            "声明式拟合的结果是一个分，没有现成的回答：要写线 cut(s, {declare: {hi: …, lo: …}}) 或 {declare: {cuts: […]}}（B153、B187）".into(),
         );
     }
     if let Some(l) = &opts.declare

@@ -179,11 +179,12 @@ fn 首跑与重放(src: &str) -> (Json, Json, Vec<String>, Vec<String>, u64, Led
 #[test]
 fn 每种k元出口重放与首跑相同() {
     let (v1, v2, u1, u2, calls, _) = 首跑与重放(程序);
-    // 首跑确实走到了每一种出口，否则下面的相等是空的
+    // 首跑确实走到了每一种出口，否则下面的相等是空的。B187（批 9）起 `cause` 删 `cold` 与 `drift`：
+    // 没有线（k-none）与停岗（k-drift）都按判断器的回答走，select 出 pick、measure 出 at
     assert_eq!(
         v1,
-        json!({"pick": "pick", "tie": "tie", "band": "band", "untested": "untested", "cold": "cold",
-               "drift": "drift", "no_candidate": "no_candidate", "at": "at", "mband": "band", "mcold": "cold"}),
+        json!({"pick": "pick", "tie": "tie", "band": "band", "untested": "untested", "cold": "pick",
+               "drift": "pick", "no_candidate": "no_candidate", "at": "at", "mband": "band", "mcold": "at"}),
     );
     assert_eq!(v2, v1, "重放的出口与首跑不同");
     assert_eq!(u2, u1);

@@ -181,7 +181,7 @@ fn 测了不一致才是tie而且不带那一位() {
 /// 只接置换那一个载体，这个机制就只是给 select 开的一个特例——而 J-15 加宽的全部理由
 /// 就是「五个载体一条规则管完」。**拿刚做完的一半去描述整件事**是上一位留下的教训。
 #[test]
-fn 线未测是同一位而且cause不动() {
+fn 线未测载体随冷出口删除_按回答走() {
     let src = r#"
 budget {calls: 4, cost: 1, depth: 8};
 let s = state(mat("对象"));
@@ -212,27 +212,16 @@ handle(e, {
     let v = out.value_json();
     println!("【线未测】{v}");
     println!("【告警】{:?}", out.trace.warnings);
-    assert_eq!(
-        v["原因"],
-        json!("cold"),
-        "路由键不动：cold 是 §5 已有的路由（保守线 + 标记）"
-    );
-    assert_eq!(
-        v["未测"],
-        json!("calib_line"),
-        "线未测是 J-15 的同一位，只是载体不同"
-    );
-    assert_eq!(
-        v["出口"],
-        json!("unsure(cold|untested:calib_line)"),
-        "路由键在前，那一位挂后面"
-    );
+    // B187（批 9）：`calib_line` 载体与 `cold` 路由一起删除——没有线就按判断器的回答走（0.9 → act），
+    // 不挂未测位、不报 W-untested(calib_line)；J-15 的其余载体（置换、画像字段）不变
+    assert_eq!(v["原因"], json!("act"), "没有线按回答走");
+    assert_eq!(v["出口"], json!("act"));
     assert!(
-        out.trace
+        !out.trace
             .warnings
             .iter()
             .any(|w| w.starts_with("W-untested") && w.contains("calib_line")),
-        "「每条既有路由各加一句：若该量未测，取保守项并**告警**」——没有告警，「用了保守线」与「线本来就这么宽」在痕迹上分不开。实际告警：{:?}",
+        "{:?}",
         out.trace.warnings
     );
 }

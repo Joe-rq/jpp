@@ -197,12 +197,13 @@ impl<'a> Interp<'a> {
                 &iter_seq.to_string(),
             ],
         );
+        // 步 15h-3：先查开着的层（层里已有的不重复执行），再查账本
         if let Some(Entry::Effect {
             output,
             output_mat,
             cost,
             ..
-        }) = self.ledger.view().get(&key)
+        }) = self.账本查(&key)
         {
             // 账本 v3 记下了首跑的来源边（B84、B92）；重放时再并上由实参重算的边（同一程序同一结果）
             let v = match entry_to_effect_value(output, output_mat.as_deref()) {
@@ -270,6 +271,11 @@ impl<'a> Interp<'a> {
         // B55（步 18b）：不可逆动作执行前写意向并落盘，写不进去即停（动作不执行）。键加 `intent:` 前缀：
         // 与结果同键的话，`put` 会因同键已有丢掉后来的 `Effect`。`at` = 追加时账本已有的条目数。
         // 依据：B55（20 v2 附录 B55 条）
+        // 步 15h-3：层开着时先收层——写前意向仍先于动作落盘（B55），并排在它之前登记的条目之后
+        // 依据：B55、B160（过程记录 工程-步15h-3.md 二·3）
+        if 要意向 {
+            self.收层()?;
+        }
         if 要意向 && self.ledger.view().get(&意向键).is_none() {
             let at = self.ledger.view().len() as u64;
             self.即刻记账(Entry::Intent { key: 意向键, at }, sp)?;
@@ -321,7 +327,8 @@ impl<'a> Interp<'a> {
         if 要意向 {
             self.即刻记账(结果, sp)?;
         } else {
-            self.账本追加(结果);
+            // 步 15h-3：层开着时进层，按登记序入账（B160）
+            self.登记记账(结果);
         }
         self.trace
             .push(s.name, &key, false, action.cost, sp, name.into());
@@ -377,13 +384,15 @@ impl<'a> Interp<'a> {
             crate::gen_pending::包材料(outs, prompt, &key, taint, &derived, &from)
         };
         let model = self.生成模型();
+        // 步 15h-3：先查开着的层——复用命中的条目层开着时进层（下面），同一站点再调一次要在层里查到它，
+        // 否则会再命中一次复用、层里出现两条同键条目
         if let Some(Entry::Effect {
             output,
             output_mat,
             cost,
             reused_from,
             ..
-        }) = self.ledger.view().get(&key)
+        }) = self.账本查(&key)
         {
             // 步 15h-1：失败照记录给回 `Fail`；声明的 taint 记在 `output_mat`（旧条目为空，照旧 ∨ ctx）
             let 失败 = output.get("__fail").is_some();
@@ -422,7 +431,8 @@ impl<'a> Interp<'a> {
                 let outs: Vec<Json> = hit.output.as_array().cloned().unwrap_or_default();
                 wrap(&outs, hit.output_mat.as_ref().map_or(taint, |m| m.taint))
             };
-            self.账本追加(Entry::Effect {
+            // 步 15h-3（Q3，B171）：层开着时复用条目进层，按登记序入账（B160）
+            self.登记记账(Entry::Effect {
                 key: key.clone(),
                 ekey: self.effect_keys.get(&key).cloned(),
                 output_mat: hit.output_mat,
@@ -466,7 +476,8 @@ impl<'a> Interp<'a> {
         self.解析全部帧()?;
         let key = self.effect_key_of(s.name, &[&state.hash, &q.hash]);
         // 已答的照答；已问未答的：重放照记的给出（Pending），续跑再问一次
-        let recorded = match self.ledger.view().get(&key) {
+        // 步 15h-3：先查开着的层
+        let recorded = match self.账本查(&key) {
             Some(Entry::Ask {
                 answer: Some(a), ..
             }) => Some(Some(a.clone())),
@@ -523,7 +534,8 @@ impl<'a> Interp<'a> {
                 ))
             })?;
             // 已问未答也入账（步 7）：重放照样以 Pending 结束；续跑得到答案时另起一条（只增）
-            self.账本追加(Entry::Ask {
+            // 步 15h-3：层开着时进层，按登记序入账（B160）
+            self.登记记账(Entry::Ask {
                 key: key.clone(),
                 ekey: self.effect_keys.get(&key).cloned(),
                 answer: a.clone(),
@@ -659,9 +671,13 @@ impl<'a> Interp<'a> {
             s.name,
             &[&sp.start.to_string(), &f.hash, &captured, &hashes.join(",")],
         );
+        // 步 15h-3：先查开着的层，再查账本
         // 变换的缓存键不含模型（方法身份在方法哈希与捕获指纹里）
-        if let Some(Entry::Effect { output, .. }) = self.ledger.view().get(&key) {
-            let output = output.clone();
+        let 已有 = match self.账本查(&key) {
+            Some(Entry::Effect { output, .. }) => Some(output.clone()),
+            _ => None,
+        };
+        if let Some(output) = 已有 {
             self.记可复用效应(&key, "");
             self.cost.replayed += 1;
             self.trace.push(s.name, &key, true, 0.0, sp, String::new());
@@ -678,7 +694,8 @@ impl<'a> Interp<'a> {
         }
         // 步 19（B20、jev-ca 提醒 1）：按不含调用位置的缓存键复用本运行或跨运行的变换结果
         if let Some(hit) = self.效应复用(&key, "") {
-            self.账本追加(Entry::Effect {
+            // 步 15h-3（Q3，B171）：层开着时复用条目进层，按登记序入账（B160）
+            self.登记记账(Entry::Effect {
                 key: key.clone(),
                 ekey: self.effect_keys.get(&key).cloned(),
                 output_mat: None,
@@ -723,7 +740,8 @@ impl<'a> Interp<'a> {
             Value::Mat(m) => m.content.clone(),
             other => other.to_json(),
         };
-        self.账本追加(Entry::Effect {
+        // 步 15h-3：层开着时进层，按登记序入账（B160）
+        self.登记记账(Entry::Effect {
             key: key.clone(),
             ekey: self.effect_keys.get(&key).cloned(),
             output_mat: None,

@@ -420,6 +420,8 @@ let r = verify([mat(\"print(285)\"), mat(\"boom\"), mat(\"print('大约', 385)\"
     );
 
     // search 里同一把 keep：第 0 轮无好候选（285 被排除、boom 失败、大约385 未决），refine 宽限一轮；
+    // propose 要 3 项（第 0 轮生成端口给 3 项）：现场稳定性三修起，项数多于 n 的生成截到 n 项，原先写 n = 1
+    // 却给 3 项只在不核项数的测试端口上成立，真机端口当时就会报 malformed。第 1 轮只给 1 项，按实际个数返回、报 W-gen-count
     // 第 2 轮的上下文里，未决材料在前、被排除的材料在后，Fail（boom）两者都不进（只留在 pending 里）
     let seen2 = RefCell::new(vec![]);
     let ctxs = RefCell::new(vec![]);
@@ -435,7 +437,7 @@ let r = verify([mat(\"print(285)\"), mat(\"boom\"), mat(\"print('大约', 385)\"
     let src2 = format!(
         "{头}let keep = {keep};
 let brief = mat(\"需求\");
-let propose = fn(frontier, i) {{ gen(\"提代码\", concat([brief], frontier), 1, i) }};
+let propose = fn(frontier, i) {{ gen(\"提代码\", concat([brief], frontier), 3, i) }};
 let r = search([], propose, correct, unit, 3, {{width: 1, unsure_to: \"refine\", ground: runner, keep: keep}});
 {{kept: map(r.value, fn(x) {{ x.item }}), reason: r.detail.reason,
   excluded: map(r.detail.excluded, fn(x) {{ x.item }}), pending: r.pending}}"

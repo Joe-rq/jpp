@@ -88,11 +88,12 @@ impl JevClient {
                 .set("Authorization", &format!("Bearer {key}"))
                 .send_json(body.clone())
             {
+                // 现场稳定性三修 (1)：读响应体失败与传输错误（连接、TLS、DNS、读写）是网络类；状态码交给下面
                 Ok(resp) => resp
                     .into_json::<Json>()
-                    .map_err(|e| EffectError(e.to_string())),
+                    .map_err(|e| EffectError::network(e.to_string())),
                 Err(ureq::Error::Status(code, _)) => Err(EffectError(format!("HTTP {code}"))),
-                Err(e) => Err(EffectError(e.to_string())),
+                Err(e) => Err(EffectError::network(e.to_string())),
             }
         };
         let one = timed_attempt(timeout, std::sync::Arc::new(one));
@@ -111,7 +112,8 @@ impl JevClient {
                     r => return r,
                 }
             }
-            Err(EffectError(format!("Jev 调用失败：{last}")))
+            // 429/5xx 退避用尽：网络类（服务端暂时不可用）；4xx 等其他状态码上面原样返回，不标
+            Err(EffectError::network(format!("Jev 调用失败：{last}")))
         };
         Ok(
             JevClient::with_shared_transport(model, std::sync::Arc::new(t))
@@ -314,8 +316,9 @@ pub type Attempt = std::sync::Arc<dyn Fn(&Json) -> Result<Json, EffectError> + S
 /// 传输层：客户端每次发请求调它一次。
 pub type Transport = Box<dyn FnMut(&Json) -> Result<Json, EffectError>>;
 
-/// 单次请求加超时（真机传输超时；依据：地基/过程记录/工程-传输超时.md）。超时即返回 `E-timeout` 错误，
-/// 不重试、不兜底：之后按 `budget.absent` 路由（`12` B35：超时属 absent），重试由 `flush.rs` 逐次计费。
+/// 单次请求加超时（真机传输超时；依据：地基/过程记录/工程-传输超时.md）。超时即返回 `E-timeout` 错误（网络类，
+/// `EffectError::network`），不重试、不兜底：之后按 `budget.absent` 路由（`12` B35：超时属 absent），没声明时按
+/// 网络类的隐含策略（现场稳定性三修），重试由 `flush.rs` 逐次计费。
 pub fn timed(timeout: Option<std::time::Duration>, attempt: Attempt) -> Transport {
     let a = timed_attempt(timeout, attempt);
     Box::new(move |body: &Json| a(body))
@@ -334,7 +337,8 @@ pub fn timed_attempt(timeout: Option<std::time::Duration>, attempt: Attempt) -> 
             });
             match rx.recv_timeout(t) {
                 Ok(r) => r,
-                Err(_) => Err(EffectError(format!(
+                // 超时是网络类（现场稳定性三修 (1)）：没声明 absent 时运行时按隐含策略重试、用尽转 Unsure(absent)
+                Err(_) => Err(EffectError::network(format!(
                     // 依据：地基/过程记录/工程-传输超时.md（画像 transport.timeout_s）
                     "E-timeout: 传输层 {}s 内没有返回（画像 transport.timeout_s）",
                     t.as_secs_f64()

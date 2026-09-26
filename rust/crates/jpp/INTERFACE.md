@@ -7,6 +7,27 @@ core 负责共同程序表示、值与环境、静态检查、解释执行、效
 检查器与解释器只读 IR。语义依据是 `12-IR与类契约-v0.1.md` 的六种效应形式与 J-01…J-18，诊断编号
 依据 `11-语言规范-v1.md` §诊断；Rust 自己的类型系统不替代 J++ 的检查器，纪律由检查器与解释器两处把关。
 
+## 〇、默认值：相信判断器（意图汇编 11a、批 9 裁定 B187–B190，2026-09-26）
+
+语言不内置防御。默认的程序照判断器的回答走，不拦 `do`，账本照记。本文件后面各节是逐步施工时写下的记录，凡写到「冷出口」「不放行不可逆动作」「必须 `--release-on-declared`」「必须 `--ledger-out`」「没有沙箱即拒绝」的地方，今天的读法以本节为准：它们要么已经换成下面的默认，要么只在宿主开 `--guard` 时成立。
+
+- **没有线的 `cut` 按判断器的回答走。** 没有可用的线（题键、题式键、类键都没有上岗记录；记录停岗；作者写了 `cost` / `alpha` 而没有对应证书）时：是非题 p > 0.5 出 `act`、p < 0.5 出 `ignore`；`select` 取概率最大的候选出 `pick(k)`；`measure` 取概率最大的档位出 `at(ℓ)`；恰好并列（p = 0.5，或最大值不唯一）时判断器没有给出回答，出 `Unsure(tie)`。作者在 `select` 上声明了置换而正逆两序不一致，同样是 `tie`。报告 `exits` 行的等级是 `Answer`（判断器自己的回答），不带线源。`cost` / `alpha` 缺证书时出口另带 J-15 载体（`cost_line` / `alpha_line`）并报 `W-untested`，告诉作者要的证书没找到。`unsure` 的原因里不再有 `cold` 与 `drift`（B187）。判序仍是 J-09 证据不足 → Fail → 缺席在先，这几种出口不变、等级 `Cold`（`Cold` 只剩这三种没有回答的出口用）。
+- **作者写了线就按作者的线切。** 声明线（B128，`Declared`）、校准线（`Certified` / `Form` / `Class` / `Trial` / `Provisional` / `Fixture`）与改前相同。裸数字 `cut(r, 0.7)` 读作 `cut(r, {declare: {hi: 0.7}})`，J-03 不再对它报错。`stat: {mass: […]}` 不写线按概率和的多数块走；`stat: "expect"` / `"confidence"` 与 `cut(Score)` 不写线报 `E-cut-options`（那把尺子上没有现成的回答，要给分档参数）。线的记录没有 δ 时取画像 δ（没有取 0），出口记位 `delta_unknown`，照线切。
+- **组合自动得到同样的行为。** `sieve`、`search`、`judged_graph`、`tree` 等没传线的地方都经 `cut`，没有线时照回答分进 `accepted` / `ignored`，只有并列、失败、缺席进 `pending`。
+- **撤不回的动作默认执行。** 运行期放行（J-08，含谱系 B72-4 与题面 taint）与检查期 J-08 静态子面（字面 `declare`、`sieve` 的 `line`、`literalize` 的线三处根都在内）、`W-guard-untrusted` 都只在开 `--guard` 时出现。不可信标记（taint）照常计算、传递、写进账本与报告，默认不拦任何东西。报告 `exits` 表的 `releases` 列照旧计算，意思是「开把关时这个出口放不放行」。
+- **线等级的说明默认不打印。** `W-fixture-line`、`W-form-line`、`W-class-line`、`W-trial-line`、`W-provisional`、`W-declared-line`、`W-calib-scope`、`W-scope-unknown`、`W-delta-unknown`、`W-suspend-candidate`、`W-lineage-unknown` 只在 `--guard` 下打印（它们解释为什么不放行）；同样的事实在报告 `exits` 行。`W-drift`、`W-form-pending` 与导入期告警照打。
+- **没有沙箱时执行器直接跑。** `exec_py` / `check_tests` / `exec_sql` 有操作系统沙箱就在沙箱里跑；没有就在普通子进程里跑（静态拒绝表、断网补丁、每次新建的临时工作目录照旧，没有系统级隔离），检查期报 `W-action-no-sandbox` 告警，不再产生 `Fail(NoSandbox)`；`E-action-no-sandbox` 退役。事实表的 `reversible` 照 B164 由沙箱探测派生：没有沙箱的执行器按不可逆算，默认只是多写一份账本，开 `--guard` 时要守卫。
+- **账本默认写到文件。** 有撤不回动作的程序没给 `--ledger-out` 时，账本写到源文件旁的 `<源文件名>.ledger.jsonl`（`--resume` 读的正是这个文件时写 `<源文件名>.resumed.ledger.jsonl`），stderr 第一行打出路径，报告顶层记 `ledger_path`；写前意向照旧即刻落盘（B55）。
+- **不动的。** 账本与重放、J-05（未决要有去处）、预算、校准与认证工具。
+
+## 〇·一、可选工具：标注、认证、放行把关
+
+这些工具照旧可用，由作者或宿主自己开，默认路径上没有一步依赖它们。
+
+- **标注与认证**：`calib-import`、`commission`、证书、漂移与停岗（`calib-confirm`）。认证过的线进 `cut` 的查找链，出口等级随之是 `Certified` / `Form` 等；要语言担保错误率时用它（`alpha`、`cost` 是「只用认证线」的写法）。
+- **放行把关 `--guard`**（CLI `run` 与 `check`；库宿主 `EntryArgs.guard`，经 `decl()` 写进 `Program.entry.guard`，检查器与运行时都只读这一位）：开了之后 J-08 在检查期与运行期都生效（只有 `Certified` / `Form` 等级、正交位全清、材料可信的出口或 `ask` 才放行不可逆 `do`；`Answer`、`Declared` 未接受、`Fixture`、`Trial` 等都不放行）；线等级的说明照旧打印；有不可逆动作的程序必须给 `--ledger-out`（`E-ledger-required`）。`scripts/guard_baseline.py` 核对带 `--guard` 跑的金样与翻转前一致，`scripts/replay_scan.py --guard` 核对这种模式下只凭账本重放。开关只在为真时进 `entry_hash`、IR（`guard` 一行）与报告（`guard: true`），不开的哈希、`ir.txt`、报告与改前逐字节相同。
+- **`--release-on-declared`**：宿主接受作者声明线放行不可逆动作，只在 `--guard` 下有意义；不开把关时照旧可收、照旧进 `entry_hash` 与报告 `accept`，不改变任何行为。`W-declared-line` 只在开把关时说放行的那半句。
+
 ## 一、程序表示（步 12d 起是 IR）
 
 ```rust
@@ -121,8 +142,8 @@ pub type Env = Rc<EnvNode>;
 | `cut(reading) -> Exit` / `cut(reading, calib_key: Text) -> Exit` | 过线。`calib` 位只收校准记录的**键**，字面量线是 J-03 错 |
 | `ask(state, question) -> Exit` | 问人。没答就是程序级 Pending；次数受 `budget.escalate` 管（J-07） |
 
-`calib` 是校准记录的键，不是线。线只从 `CalibStore` 里的记录来；记录状态是「冷」或「停岗」时
-`cut` 直接给 `Unsure(cold)` / `Unsure(drift)`，不看概率。
+`calib` 是校准记录的键，不是线。线只从 `CalibStore` 里的记录来；记录状态是「停岗」时
+`cut` 直接给 `Unsure(drift)`，不看概率；没有上岗记录（冷、待真值）时按判断器的回答走（§〇，等级 `Answer`）。
 
 **出口**
 
@@ -151,7 +172,7 @@ pub type Env = Rc<EnvNode>;
 | `cert(出口) -> Record` | 步 25d（B161）读法：`{grade, alpha, alpha_bound, n_unknown, line}`——线等级、单个出口自己的证书 α（合成出口或无证书为 `unit`）、联合界、按 1 计的分量数、`line_source`。只读不销账 |
 | `compose(出口们, 规则) -> Exit` | 步 25d 开放（B131、B148）：封闭规则集 `"any"` / `"all"` / `"min"` / `{first: k}` / `{sup: 格}`，种类由内核算；结果未决时吸收未决分量的责任；带联合界（B161） |
 | `escalate(u, state, question) -> Exit` | 把责任交给明确关联的人工请求，效应 `ask`。未答即程序级 Pending |
-| `literalize(u, state, question) -> Exit` | 接走旧责任，按更字面的题重问，效应 `judge`。换来的新出口仍要自己处理 |
+| `literalize(u, state, question, {line?}) -> Exit` | 接走旧责任，按更字面的题重问，效应 `judge`。换来的新出口仍要自己处理。第四参可选（2026-09-26，B128 补齐），与 `sieve` 的选项同形：`line` 就是 `cut` 的第二参，原样交给重问那一次的 `cut`（作者声明线等级 `Declared`）；不给按 `cut` 的缺省规则。报错同 `sieve` 的选项。重问的题带旧未决出口的键（B84），谱系放行（B72-4）因此把重问出口当作由未决出口选出，它不单独放行不可逆动作，与线无关 |
 | `unsure(u) -> Exit` | 重新包装成出口，继续由调用者负责（`unsure(原因: Text)` 仍是新造一个） |
 | `consume(u, "drop")` | 显式丢弃并记账。`12` §6 允许这条路，core 留一条 `W-drop-vs-escalate` 提示。步 21（B95）起：不收契约值（J-05，逐项丢或转交）；缺席类原因（`budget`、`absent`、`latency`）的出口报 `E-drop-unobserved`；丢了又出现在程序返回值里报 `W-drop-then-return` |
 
@@ -228,8 +249,10 @@ uncertainty}`，直接收 `&[Rc<Reading>]`，不必起解释器。
   价格只从画像 `cost.price_usd_per_input_token` 读，没有价格时费用记 `Unknown` 并报
   `W-cost-unknown`。重放不发调用，不要求画像。
   单次真机请求的超时只从画像 `transport.timeout_s` 读（发行画像里是宿主策略值 30 s，非实测）；
-  超时即 `E-timeout` 传输错误，属 absent，按 `budget.absent` 逐次计费重试与路由，没声明 `absent`
-  即 `E-rt-client`；画像没有这个字段时不设超时、报 `W-untested: transport.timeout_s`
+  超时即 `E-timeout` 传输错误，属 absent，按 `budget.absent` 逐次计费重试与路由。没声明 `absent` 时，
+  网络类错误（超时、连接与 TLS 失败、429/5xx 退避用尽，`EffectError::network`）按隐含策略重试 2 次（退避 1 秒起翻倍、
+  每次计费），用尽转 `Unsure(absent)`、记缺席条目、程序照常，续跑时重新发问；其余客户端错误（4xx、固定观察未命中、
+  回复形状不对）仍是 `E-rt-client`（现场稳定性三修，`地基/过程记录/工程-现场稳定性三修.md`）；画像没有这个字段时不设超时、报 `W-untested: transport.timeout_s`
   （`JevClient::with_timed_transport`、`effects::timed`；过程记录 `工程-传输超时.md`）。
 - **固定观察可以无画像运行**（步 15d-2 起画像字段全部未测：窗口不核并报 `W-window-untested`，线与 δ 只从
   校准记录取），「档案：未加载，画像字段全部未测」这行提示**无条件打印**。「读不到就报错」管的是给了路径而读不到；
@@ -293,7 +316,11 @@ uncertainty}`，直接收 `&[Rc<Reading>]`，不必起解释器。
 sieve(items, q)                 → 契约值（§三·四·四）：value = 接受流，detail = {question, ignore}，pending = 未决（含 Unsure(budget)）
 sieve(items, [q1, q2, …])       → 一个契约值（B82，步 25-0）：元素 = 材料 × 题（材料主序、题次序），detail = {questions, ignore}
 sieve(items, form, [fill1, …])  → 同上；元素另带整条填法记录 `fill`，交给 `fill()` 的只有槽键
+sieve(items, q | [q…], {line?})           → 同上，每个元素按 line 切（2026-09-26，B128 补齐）
+sieve(items, form, [fill1, …], {line?})
 ```
+
+- **选项 `{line}`（作者声明线，B128）**：末位的记录是选项（三参时第三位是列表即填法，是记录即选项）。现在只认 `line` 一个键，值就是 `cut` 的第二参策略记录，**原样交给每个元素的 `cut`**：`{line: {declare: {hi, lo?}}}` 走作者声明线（按写的数切、不平移、等级 `Declared`、报告行带 `declared` 与 `evidence`、`W-declared-line` 一趟一键一条、放行不可逆 `do` 须宿主接受 `--release-on-declared`）；`cost` / `alpha` / `stat` / `closed` 也认，含义与报错与 `cut` 相同。多题与题式加填法时同一条线用在全部题上。不给或给空记录 `{}`：逐元素 `cut(r)`，走 `cut` 的缺省规则，与改前相同。作者要按自己的判定规则切时给 `line`（过程记录 `地基/过程记录/工程-sieve声明线.md`）。报错：选项里有 `line` 以外的键 `E-rt-arg`；选项位或 `line` 是数字 `J-03`（检查期与运行期都报，修法给 `{line: {declare: {hi: …}}}`）；`line` 里的未知字段 `E-rt-arg`、互斥与越界 `E-cut-options`。检查器：三参形状（题 + 选项）推为契约值；字面 `line` 里的 `cost` 形状与 `stat: "confidence"` 与 `cut` 同查；J-08 静态子面认得字面声明线的 `sieve`：宿主未接受时它的 `o.value[i].exit`（经 `let` 也算）直接守不可逆 `do` 报 `J-08`，经函数、`map` 闭包、非字面选项看不透、不报，运行期兜底。
 
 - `items`：材料、状态或任意可成材料的值；**也可以是上一次 sieve 的元素**（带 `item` / `exit` / `trail` 的记录），此时取它的 `item` 当材料、`trail` 接上上一次的出口——产物与输入同形，可再过滤。
 - 每个元素（B81 (a)，步 25-0）：输入元素记录的全部字段再补或更新 `{item, pos, trail, exit, cause, q, qi, key}`；`index` 只在输入不是元素记录时赋为输入位置、此后不变；`pos` 是本次调用里的位置；`key` 是该读数的账本键（预算未观察的元素记它本该有的键，不进 `evidence`）；`source` 已撤。
@@ -333,7 +360,7 @@ S 库 `lib/materials.jpp` 的 `review_material(opinion, about)`：把评审意�
 | 真值选择 | 同一 `item` 有人工或构造的真值时用它，否则用模型的；`ambiguous` 不进线，计入 `truth.abstain_rate`，超过 `--abstain-warn` 报 `W-abstain` |
 | 上岗门 | 有只靠模型标注撑起的真值时，要求同键有人工抽检且一致率 ≥ `--spot-check-min`；否则记录停在 `待真值`，`truth.gate` 写「待核：原因」。门槛是参数，不写死在规则里 |
 | 认证 | `CalibStore::commission_two_sided_split`（真值通道所用，B24）：带标注样本先按 `(p, 真值)` 排成规范序，再按 `splitmix64(seed ^ 规范序下标)` 最低位分成选线半与认证半（与行序无关）；选线半上按 `cut` 实际判区（`p ≥ hi + δ` 给 Act、`p ≤ lo − δ` 给 Ignore）联合选线，取两区二项上界各 ≤ α 且已决条数最多的一对；认证半上对该对两侧各检验一次。任一半每侧不足零错误所需条数时停在待核（原因以「待核」开头）。证书新增可选字段 `selection {method, seed, n_select, n_certify, candidates}`，有值时进地址。`calib-import --seed`（默认 20260923）。〔步 20g（B86、B85）：`calib-import` 缺省改为 `commission_two_sided_fixed_sequence_graded`（固定序、不拆分；候选由读数按计数生成，从严到宽逐个检验，第一次不过即停；证书 `selection` 多 `rule`、`step`、`delta`、`generated`、`stop_index`，有 `rule` 时进地址）；`--certify split` 走 `commission_two_sided_split_stratified_graded`（分层交替分半，方法 `split-stratified`）；本行所述的种子分半保留给旧证书重跑；同批选线的 `commission_two_sided` 已删除；K 元单侧同形。原 `commission` 保留不删。〕〔步 20a-2b（主会话定 Q12）：种子分半的四个公开入口收窄——`commission_two_sided_split`、`commission_upper_split` 删去，两个 `_graded` 版改为 crate 内部（只供 `load` 重跑旧证书）；测试造旧证书用 `commission_legacy_seed_split_test_only`（`#[doc(hidden)]`，名字标明只供测试，`crates/*/src` 不得调用）。〕 |
-| 查找顺序 | `cut`：题键上岗 → 用题键；否则题上有 `form_hash` 且题式键 `\u{1f}form\u{1f}<哈希>` 上岗 → 用题式线，报 `W-form-line`，出口 `line_source=题式级·…`；否则模式级；再否则冷。题式记录经真值通道导入但未上岗时报 `W-form-pending`（写明待核原因），按冷键处理。停岗仍提前返回，回退够不着它 |
+| 查找顺序 | `cut`：题键上岗 → 用题键；否则题上有 `form_hash` 且题式键 `\u{1f}form\u{1f}<哈希>` 上岗 → 用题式线，报 `W-form-line`，出口 `line_source=题式级·…`；否则模式级；再否则冷。题式记录经真值通道导入但未上岗时报 `W-form-pending`（写明待核原因），本题没有线、按判断器的回答走（§〇）。停岗仍提前返回，回退够不着它 |
 | 账本 | 新字段 `Ledger.calib_used`（键 → `{hash, record}`）：`cut` 实际查到的记录，**本趟命中集合，每趟改写**（B83，步 7c：入口比对后清空，本趟按当前视图重填；续接后只凭账本重放复现续接趟）。`--replay` / `--resume` 时，本次没有另给的键从这里补回（stderr 列出补回的键），**只凭账本重放出口逐字节一致**。老账本无此字段，行为不变；头上的整库 `calib_hash` 因为库是子集必然不同，步 7b（B77）起只凭账本重放不比它，改比 `calib_used_hash`（命中记录集合的哈希），不再报假 `W-header`。〔账本 v3（步 18a）：载体改为 `CalibUsed` 条目，`Ledger.calib_used` 是按键取最后一条的派生视图，不再入口清空；`calib_used_hash` 移出头，改逐键比，见三·四·六〕 |
 
 新字段：`CalibRecord.truth`（`TruthSummary`：来源计数、弃权、抽检、门、批次）、`CalibRecord.lower`（下侧证书）、`Reading.form_hash`。
@@ -371,9 +398,9 @@ S 库 `lib/materials.jpp` 的 `review_material(opinion, about)`：把评审意�
 
 **元素构造 `element(输入, 出口, {pos, q, qi?, fill?, key?})`（步 25-8a 开放，B133、B148）**：造一个与 `sieve` 内部造的同形元素记录（`item`、`pos`、`index`、`trail`、`exit`、`cause`、`q`、`qi`、`key`、可选 `fill`），库里的原语（25c `search`、25e `ground`）用它产元素。内核做 `.jpp` 做不到的两件事：`item` 只加出口账本键的**选择依赖边**（B92：读数只选中了它，内容不派生自题；`element` 因此在分派处不做「输出 ∨ 输入」），报告 `exits` 里该出口那一行写 `index` 与 `pos`（B120 (b)）。输入是元素记录时沿用它的 `index`、保留其余字段、`trail` 追加上一层出口（B81 (a)）。`qi` 缺省 0；`key` 缺省取出口的账本键（预算未观察的出口没有键，由调用者给）。出口位要是 `cut` 的结果（惰性出口在实参处已解析），实参不合报 `E-rt-arg`。
 
-**搭配层：`search`、`carry`（步 25c，B148；库函数，不是内置）**：`lib/compose/search.jpp` 的 `search(seed, propose, feasible, objective, rounds, opts)` 返回契约值。好候选按轮累积（主会话 2026-09-26，Q10）。每轮 `propose(前沿, 轮次)` 提候选（通常包 `gen`）→ 判过的候选（按材料哈希，生成的候选即内容哈希；本轮内的重复同样）不再判、不花钱，按原出口计，计入 `detail.duplicates` → `opts.ground` 给了就逐个接地（要返回材料）→ `sieve(候选, feasible)` → `objective` 不是 `unit` 时再 `sieve(接受流, objective)`（是非题；打分排序等 15k、B167）→ 新判好的并进至今好候选的并集 → 下一轮前沿 = 并集的前 `opts.width` 个（好候选之间没有高下，按判好的先后取）。`value` 就是这个累积前沿，每个元素带 `round`（它第一次判好的轮次），出口是 `trail` 上全部出口与它自己出口的 `compose(…, "all")`，误差界用 `cert(出口)` 读。**打分路径**（步 25c-2，B167）：`objective` 是打分题（`measure`）时只排序、不过滤、不 `cut`——可行的候选都进并集，新进的各判一次打分题，每轮按 `order(读数们, opts.rank)` 排（`rank` 即 `order` 的 `{stat?, tie?}`，缺省按档位），逐档展开、档内先进的在前，取前 width 个为前沿与 `value`（最好的在前）；前 width 个里进了新候选才算进展，与末位并列的新候选挤不掉旧的；打分路径不走 `stop`，只有 `noshrink` 与 `bound`（停滞度 `(rounds + 1) − gains − fails − grace`）；打分题不产生出口，`value` 元素的出口只合成可行域那道题。`select` 题不能当 `objective`（交给 `sieve`，报只收是非题）；`rank` 只对打分题目标有效，是非题或 `unit` 目标上给了即报错（`.jpp` 没有作者可抛的带编号错误，编号是 `E-rt-field`，报文以 `E-search-options: rank 只对打分题目标有效` 开头并给修法）。`detail = {ignore, rounds, reason, measures, fails, duplicates}`，`resume` 是 `iterate` 的续接。终止用 `iterate` 的线：并集凑够 `width` 即 `stop`；一轮没有新的好候选（只有重提的旧候选也算）即 `noshrink`；轮数用尽即 `bound`。失败的一轮不算停滞；`unsure_to` 为 `"refine"` 时，第一个没失败的轮次结束时并集仍为空也不算，给细化一轮机会（只一次）。`rounds` 是单独的位置参数，调用点写字面量，静态检查按 B111 在调用点核。未决按 `opts.unsure_to` 处置，都不静默丢：`"carry"`（缺省）并进 `pending`；`"refine"` 另把未决的材料并进下一轮前沿，出口照样进 `pending`；给一个函数 `fn([未决元素], 题) -> [未决元素]` 就逐轮交给它，交人用 `lib/compose/ask.jpp` 的 `ask_human`（单独成文件：J-07 按全程序静态查 `escalate`，引了它的程序要写 `budget {escalate: N}`）。`propose` 返回 `Fail` 的一轮 = 零候选 + 一条 `{item: Fail, exit: unsure("fail"), cause: "fail", round, trail: []}` 进 `pending`，前沿不变，这一轮不算停滞；重提时 `gen` 的 `retry_seq` 要随轮次变（传轮次即可），否则同键重放同一个 `Fail`。`lib/compose/carry.jpp` 的 `carry(外层未决, 内层未决, 层名)` 把内层未决并进外层，每个元素的 `via`（列表）追加层名，`trail` 不动；`search` 每轮记 `"search#<轮次>"`。已知限制：`map` 里的几次独立搜索按构造串行生成（每轮读生成值即等），跨循环调度交 Fable。示例：`examples/search-stop.jpp`、`search-bound.jpp`、`search-noshrink.jpp`、`search-rank.jpp`（打分路径）；测试：`tests/compose_search.rs`、`tests/compose_search_rank.rs`。
+**搭配层：`search`、`carry`（步 25c，B148；库函数，不是内置）**：`lib/compose/search.jpp` 的 `search(seed, propose, feasible, objective, rounds, opts)` 返回契约值。好候选按轮累积（主会话 2026-09-26，Q10）。每轮 `propose(前沿, 轮次)` 提候选（通常包 `gen`）→ 判过的候选（按材料哈希，生成的候选即内容哈希；本轮内的重复同样）不再判、不花钱，按原出口计，计入 `detail.duplicates` → `opts.ground` 给了就逐个接地（要返回材料）→ `sieve(候选, feasible)` → `objective` 不是 `unit` 时再 `sieve(接受流, objective)`（是非题；打分排序等 15k、B167）→ 新判好的并进至今好候选的并集 → 下一轮前沿 = 并集的前 `opts.width` 个（好候选之间没有高下，按判好的先后取）。`value` 就是这个累积前沿，每个元素带 `round`（它第一次判好的轮次），出口是 `trail` 上全部出口与它自己出口的 `compose(…, "all")`，误差界用 `cert(出口)` 读。**打分路径**（步 25c-2，B167）：`objective` 是打分题（`measure`）时只排序、不过滤、不 `cut`——可行的候选都进并集，新进的各判一次打分题，每轮按 `order(读数们, opts.rank)` 排（`rank` 即 `order` 的 `{stat?, tie?}`，缺省按档位），逐档展开、档内先进的在前，取前 width 个为前沿与 `value`（最好的在前）；前 width 个里进了新候选才算进展，与末位并列的新候选挤不掉旧的；打分路径不走 `stop`，只有 `noshrink` 与 `bound`（停滞度 `(rounds + 1) − gains − fails − grace`）；打分题不产生出口，`value` 元素的出口只合成可行域那道题。`select` 题不能当 `objective`（交给 `sieve`，报只收是非题）；`rank` 只对打分题目标有效，是非题或 `unit` 目标上给了即报错（`.jpp` 没有作者可抛的带编号错误，编号是 `E-rt-field`，报文以 `E-search-options: rank 只对打分题目标有效` 开头并给修法）。`detail = {ignore, rounds, reason, measures, fails, duplicates}`，`resume` 是 `iterate` 的续接。**线（2026-09-26，B128 补齐）**：`opts.line` 是可行域那道题的线，也是是非题目标的缺省线，原样交给 `sieve(…, {line})`；`opts.objective_line` 只给目标题（是非题）另写一条。写法与 `cut` 的第二参相同，作者声明线写 `{declare: {hi, lo?}}`；不给线时走 `cut` 的缺省规则。打分题目标不 `cut`，`line` 只作用于可行域；`objective_line` 配打分题或 `unit` 目标报错（报文以 `E-search-options: objective_line 只对是非题目标有效` 开头，编号同 `rank`）。终止用 `iterate` 的线：并集凑够 `width` 即 `stop`；一轮没有新的好候选（只有重提的旧候选也算）即 `noshrink`；轮数用尽即 `bound`。失败的一轮不算停滞；`unsure_to` 为 `"refine"` 时，第一个没失败的轮次结束时并集仍为空也不算，给细化一轮机会（只一次）。`rounds` 是单独的位置参数，调用点写字面量，静态检查按 B111 在调用点核。未决按 `opts.unsure_to` 处置，都不静默丢：`"carry"`（缺省）并进 `pending`；`"refine"` 另把未决的材料并进下一轮前沿，出口照样进 `pending`；给一个函数 `fn([未决元素], 题) -> [未决元素]` 就逐轮交给它，交人用 `lib/compose/ask.jpp` 的 `ask_human`（单独成文件：J-07 按全程序静态查 `escalate`，引了它的程序要写 `budget {escalate: N}`）。`propose` 返回 `Fail` 的一轮 = 零候选 + 一条 `{item: Fail, exit: unsure("fail"), cause: "fail", round, trail: []}` 进 `pending`，前沿不变，这一轮不算停滞；重提时 `gen` 的 `retry_seq` 要随轮次变（传轮次即可），否则同键重放同一个 `Fail`。`lib/compose/carry.jpp` 的 `carry(外层未决, 内层未决, 层名)` 把内层未决并进外层，每个元素的 `via`（列表）追加层名，`trail` 不动；`search` 每轮记 `"search#<轮次>"`。已知限制：`map` 里的几次独立搜索按构造串行生成（每轮读生成值即等），跨循环调度交 Fable。示例：`examples/search-stop.jpp`、`search-bound.jpp`、`search-noshrink.jpp`、`search-rank.jpp`（打分路径）；测试：`tests/compose_search.rs`、`tests/compose_search_rank.rs`。
 
-**搭配层：`ground`、`verify`（步 25e，B148；库函数，不是内置）**：`lib/compose/ground.jpp`。`ground(action, args_of, render)` 返回 `fn(候选材料) -> 材料 | Fail`：`do(action, args_of(候选), 0)` 跑执行器，失败（包括没有沙箱时的 `NoSandbox`）原样返回失败值，否则 `transform(fn(o) { render(候选, o) }, 输出)` 把候选与执行输出渲染成字面材料（taint 承接执行输出，执行器为 `untrusted`）。`args_of: fn(Mat) -> [实参]` 给实参列表（`exec_py` 是 `[代码, stdin, timeout_s]`，`check_tests` 是 `[代码, 测试, timeout_s]`）；`render: fn(候选, 输出材料) -> Text`。`iter_seq` 恒为 0，同一实参第二次按账本键取，不再执行。`verify(cands, grounder, q) = sieve(map(cands, grounder), q)`：失败的候选成为未决元素（原因 `fail:状态含 Fail 材料`），不中断程序。`ground` 可以直接放进 `search` 的 `opts.ground`（闭环：提出 → 执行 → 判 → 再提出）。与 B148 写法 `ground(action, render)` 的出入：多一个 `args_of`（执行器收三个实参），`render` 同时看候选与输出。注意：库里的 `do` 动作名不是字面量，检查期不报 `E-action-no-sandbox`；CLI 把它算作可能不可逆，运行要给 `--ledger-out`；没有沙箱时执行器登记为不可逆，`do` 若处在由不可信判断或值决定的条件里（例如 `search` 的每一轮），运行期报 J-08，否则得到 `Fail(NoSandbox)`，两种情况都不会在沙箱外执行。库函数本身的示例见测试 `tests/compose_ground.rs`（假执行器，不起子进程）。`examples/search-ground.jpp`（金样从 `tests/golden/search-ground/seed.ledger.jsonl`——在有沙箱的机器上真跑一次录下——续跑，清单字段 `resume_ledger`）改为**不调库函数 `ground()`**，另写一个同形状（`fn(候选) -> 材料 | Fail`）的接地闭包：`render` 只能返回 Text、自己决定不了「这条要不要筛掉」，而意图汇编 7a 要求「跑不通 / 查不出行」这类代码能定的事在进 JEV 之前就用普通代码筛掉、不进 JEV、不花调用，所以示例改成先执行、代码判 `error`/空结果直接 `fail(理由)`，其余才 `transform` 渲染交判断——`fail()` 构造的 `Fail` 值与 `do` 失败时给的同一种，`sieve` 一样把它当未决处理，语言原语不用改。
+**搭配层：`ground`、`verify`（步 25e，B148；库函数，不是内置）**：`lib/compose/ground.jpp`。`ground(action, args_of, render)` 返回 `fn(候选材料) -> 材料 | Fail`：`do(action, args_of(候选), 0)` 跑执行器，失败原样返回失败值，否则 `transform(fn(o) { render(候选, o) }, 输出)` 把候选与执行输出渲染成字面材料（taint 承接执行输出，执行器为 `untrusted`）。`args_of: fn(Mat) -> [实参]` 给实参列表（`exec_py` 是 `[代码, stdin, timeout_s]`，`check_tests` 是 `[代码, 测试, timeout_s]`）；`render: fn(候选, 输出材料) -> Text`。`iter_seq` 恒为 0，同一实参第二次按账本键取，不再执行。`verify(cands, grounder, q, opts) = sieve(map(cands, grounder), q, {line: opts.line})`：失败的候选成为未决元素（原因 `fail:状态含 Fail 材料`），不中断程序；`opts.line`（2026-09-26）原样交给 `sieve`，不给走 `cut` 的缺省规则。`ground` 可以直接放进 `search` 的 `opts.ground`（闭环：提出 → 执行 → 判 → 再提出）。与 B148 写法 `ground(action, render)` 的出入：多一个 `args_of`（执行器收三个实参），`render` 同时看候选与输出。注意：库里的 `do` 动作名不是字面量，检查期不报沙箱诊断；CLI 把它算作可能不可逆，没给 `--ledger-out` 时账本写到缺省路径（开 `--guard` 时要求 `--ledger-out`）。没有沙箱时执行器直接在普通子进程里跑（B187，§〇）；开 `--guard` 时执行器登记为不可逆，`do` 若处在由不可信判断或值决定的条件里（例如 `search` 的每一轮），运行期报 J-08。库函数本身的示例见测试 `tests/compose_ground.rs`（假执行器，不起子进程）。`examples/search-ground.jpp`（金样从 `tests/golden/search-ground/seed.ledger.jsonl`——在有沙箱的机器上真跑一次录下——续跑，清单字段 `resume_ledger`）改为**不调库函数 `ground()`**，另写一个同形状（`fn(候选) -> 材料 | Fail`）的接地闭包：`render` 只能返回 Text、自己决定不了「这条要不要筛掉」，而意图汇编 7a 要求「跑不通 / 查不出行」这类代码能定的事在进 JEV 之前就用普通代码筛掉、不进 JEV、不花调用，所以示例改成先执行、代码判 `error`/空结果直接 `fail(理由)`，其余才 `transform` 渲染交判断——`fail()` 构造的 `Fail` 值与 `do` 失败时给的同一种，`sieve` 一样把它当未决处理，语言原语不用改。
 
 **校准进料补充（B19 修正、B24 补充）**：`calib-import` 的上岗门按一致率的单侧置信下界判（`--spot-check-min 0.9`、`--spot-check-conf 0.95`）。点估计不过 → 待核；点估计过、下界不过 → 线照常认证，`truth.gate` 为「临时上岗：…再追加 m 条全一致即转正」，`cut` 用到时报 `W-provisional`。`SpotCheck` 新增可选 `lower`、`conf`；`CalibRecord` 新增可选 `scope`（认证集的标注批次与来源计数；材料风格指纹与 `W-calib-scope` 未做）。
 
@@ -383,8 +410,8 @@ S 库 `lib/materials.jpp` 的 `review_material(opinion, about)`：把评审意�
 
 | 名字 | 做什么 | 返回 |
 |---|---|---|
-| `judged_graph(nodes, edge_q, {over?, prune?})` | 单集合、无向：候选取 i < j（`prune(nodes)` 给 `[[i, j]]`，或 `over(a, b)` 筛原节点），一次 `sieve` 判边 | 图 `{kind: "graph", nodes, n_left: unit, edges, rejected, pending, unobserved, judged, spent}`；边元素保留 `pair`/`sieve` 字段，另带 `ends`（节点号）、`eid`（候选序号） |
-| `judged_bipartite(left, right, edge_q, {over?, prune?})` | 两组节点，右侧节点号从 `len(left)` 起 | 同上，`n_left = len(left)` |
+| `judged_graph(nodes, edge_q, {over?, prune?, line?})` | 单集合、无向：候选取 i < j（`prune(nodes)` 给 `[[i, j]]`，或 `over(a, b)` 筛原节点），一次 `sieve` 判边；`line` 原样交给判边的 `sieve`（2026-09-26；不给走 `cut` 的缺省规则） | 图 `{kind: "graph", nodes, n_left: unit, edges, rejected, pending, unobserved, judged, spent}`；边元素保留 `pair`/`sieve` 字段，另带 `ends`（节点号）、`eid`（候选序号） |
+| `judged_bipartite(left, right, edge_q, {over?, prune?, line?})` | 两组节点，右侧节点号从 `len(left)` 起；`line` 同上 | 同上，`n_left = len(left)` |
 | `on_graph(g, algo, args, mode)` | `algo` ∈ `matching`、`shortest_path`、`max_clique`、`components`；`mode` 为 `"decided"` 时只用已决边，为 `"optimistic"` 时用已决 ∪ 未决；`args.weight: fn(边) -> 数` 只能是非判断来源的权（缺省 1） | 契约值：只用已决边的产物在 `value`，用到未决边的在 `pending`；产物 `{item, trail, members, nodes, edges, exit}`，`exit = compose(所用边出口, "all")`；没跑成（不支持的算法、预算不够时 `do` 的失败值，B93）时 `value` 为空，原因在 `detail.failed`，不中止程序 |
 | `interval(g, algo, args)` | 两次 `on_graph` | `{lo, hi, exit, differs, complete, same, alpha_bound, n_unknown}`：`exit` 是乐观产物出口的 `compose(…, "all")`，`alpha_bound`、`n_unknown` 取 `cert(exit)`（B161）；`differs` 是乐观产物用到的未决边；`same` = 两次都跑成且 `differs` 为空 |
 
@@ -474,7 +501,7 @@ S 库 `lib/materials.jpp` 的 `review_material(opinion, about)`：把评审意�
 | 意向 | 不可逆 `do` 在 J-08 放行、预算核对、审计缺记录核对之后、执行之前追加 `Intent {key: "intent:<效应键>", at: 当时的条目数}`（`Now`），写不进去即 `E-ledger-io`、动作不执行；结果 `Effect` 也用 `Now`。可逆动作不写意向，结果 `Layer`。预算停发的 `do` 不执行、不写意向 |
 | 未知结果 | 续接或审计重放时，不可逆 `do` 没有 `Effect` 而有 `intent:<效应键>`：不放行、不核预算、不执行，给失败值 `unknown_outcome: …`（来源与 taint 同执行失败时），判断它走 `unsure(fail…)`；报 `W-unknown-outcome`；不补写 `Effect`（有 `Effect` 即动作返回过）。画像 `actions.<名>.idempotent: true` 的动作照常重执行（缺失按不幂等） |
 | 错误 | `E-ledger-io`：账本写不进存储（头定稿、即刻条目、层末落盘），致命；`Layer` 追加时端口报的错先记下，下一次层末报 |
-| CLI | `--ledger-out` 用 `LedgerFile<DirBlob>` 逐行写（续接写新文件）。`E-ledger-required`：不是 `--replay`、程序里有不可逆 `do`（字面动作名在 CLI 动作表里登记为不可逆，或动作名不是字面量）、又没给 `--ledger-out`，执行前停下；站点清单来自 `jpp::check::do_sites(program)` |
+| CLI | `--ledger-out` 用 `LedgerFile<DirBlob>` 逐行写（续接写新文件）。不是 `--replay`、程序里有不可逆 `do`（字面动作名在 CLI 动作表里登记为不可逆，或动作名不是字面量）、又没给 `--ledger-out` 时：默认把账本写到 `<源文件名>.ledger.json` 并打出路径（意图汇编 11a）；开 `--guard` 时报 `E-ledger-required`，执行前停下。站点清单来自 `jpp::check::do_sites(program)` |
 
 ## 三·四·八、按缓存键复用与跨运行缓存（工程步 19，B40、B151，2026-09-26）
 
@@ -484,7 +511,7 @@ S 库 `lib/materials.jpp` 的 `review_material(opinion, about)`：把评审意�
 |---|---|
 | 缓存键 | 判断：`JudgeKey::cache_key()`（模型、状态、题、物理形式、渲染版本；选择题另含 `perm_seed`），不含调用位置与运行序号。`gen`：`EffectKey::cache_digest(模型)`，去掉调用位置、加生成器模型。`transform`：去掉调用位置，不加模型。`do`、`ask` 不复用（返回 `None`）。账本键不变 |
 | 同运行 | 一条判断有了答案（刷新落账、账本命中）即按缓存键记进本运行表；后来登记、账本键没命中的同缓存键判断直接取它。生成与变换同理（取回成功的才记）。同一次刷新里两个都还没回答的同键判断各发一次（本步不做） |
-| 跨运行 | `Session::with_cache(&dyn CacheLookup)` / `Interp::with_cache`；`jpp::store::CacheIndex::build(&[(来源名, Ledger)])` 从账本建索引（跳过复用条目与失败值，同键先到先得）。CLI `--cache <目录>`。只凭账本的审计重放不查缓存 |
+| 跨运行 | `Session::with_cache(&dyn CacheLookup)` / `Interp::with_cache`；`jpp::store::CacheIndex::build(&[(来源名, Ledger)])` 从账本建索引（跳过复用条目与失败值，同键先到先得）。CLI `--cache <目录>`：目录不存在按空缓存，其余读错误带路径报 `E-cache`，不是账本的文件跳过。只凭账本的审计重放不查缓存 |
 | 复用条目 | 写进本账本：判断条目 `reused_from`（本运行第一次那条的账本键，或 `ext:<来源>#<序号>`）、`cost` 0、`tokens` 0、`call` 0、`layer` 0；效应条目 `reused_from`、`cost` 0。账本自足：只凭它重放照样命中；审计重放不把复用条目计入调用与费用；`observations` 剔除它 |
 | 生成器身份 | `Session::with_gen(模型, 画像哈希)`：账本头 `gen_model`、`gen_profile_hash`（为空不写，两种场合都比，不同报 `W-header`）；生成物缓存键里的模型取 `gen_model`，为空取 `model_id`。CLI 给了 `--gen-model` 才设 |
 | 报告 | `Outcome.cache: Option<CacheStats>`，给了跨运行缓存或本趟有命中时为 `Some`：`{hits {judge, gen, transform}, same_run, cross_run, saved_calls, requests {judge, gen, do, ask}}`；CLI 报告出 `cache` 一节 |
@@ -632,7 +659,7 @@ actions.register("record_check", 0.0, true, TaintOut::Inherit, |args| Ok(args[0]
 `trusted` 是**显式标记**，语言保证它可见可追，不设审核方。
 
 **校准记录**：`CalibStore::put(键, hi, lo, n, 状态)`，状态是 `上岗` / `冷` / `停岗` / `待真值`；
-`上岗` 必须 `n > 0`。没有记录的键回退成「冷」，`cut` 给 `Unsure(cold)`——这是最容易静默走偏的地方，
+`上岗` 必须 `n > 0`。没有记录的键回退成「冷」，`cut` 按判断器的回答走（§〇，意图汇编 11a 起；此前给 `Unsure(cold)`）——这是最容易静默走偏的地方，
 接线时 `put` 的返回值要 unwrap，别吞掉。
 
 **`gen` 的费用要报**：`GenResult { outputs, tokens, cost }`，与 `JudgeResult` 同形。
@@ -640,11 +667,11 @@ actions.register("record_check", 0.0, true, TaintOut::Inherit, |args| Ok(args[0]
 ——一个只 gen 不 judge 的程序花多少钱都不会被拦住。现在费用进 `cost.usd`、进账本条目、
 参与预算核（顺序照 `13` §5：后端返回即记事实，再决定下一步）。
 
-**生成器端口（步 15h-1，B149）**：`GenResult` 另有 `failure`（生成器报的失败类型与说明）与 `taint_out`（端口声明的输出 taint）两位，缺省为空。`failure` 非空时 `gen` 返回一个 `Fail` 值（形状同预算失败），照记账本、重放取回，程序照常往下；端口报错（占位端口、没有端口）仍是运行期错误 `E-rt-client`。`taint_out` 非空时生成的材料取声明值、记进账本条目的 `output_mat`，否则照旧 ∨ ctx（夹具与枚举器）。真机生成器 `jpp::backends::claude_p::ClaudePPort`（注册表 `backends::GENERATORS` 一行 `claude-p`）：`submit` 把每个调用交端口自己的线程池（并发取生成器画像 `gen.concurrency`，缺省 4）立即返回票据，`poll` 只查完成；每个调用起一次子进程 `claude -p --model <m> --output-format json`，回答须是恰好 `n` 项的 JSON 数组；失败四类 `timeout`、`failed`、`malformed`、`empty`；输出 taint 取画像 `gen.taint_out`，缺省 `untrusted`。CLI 用 `--gen-model <m>`（配 `--backend live|stub`，`live` 构建）启用，生成器画像 `gen-claude-p.json`（`gen.timeout_s`、`gen.cost_usd_per_call` 必填）按 `--gen-profile`、`--profiles-dir`、可执行文件旁 `profiles/` 的顺序找；报告加 `gen_backend {name, model, profile_hash}`。
+**生成器端口（步 15h-1，B149）**：`GenResult` 另有 `failure`（生成器报的失败类型与说明）与 `taint_out`（端口声明的输出 taint）两位，缺省为空。`failure` 非空时 `gen` 返回一个 `Fail` 值（形状同预算失败），照记账本、重放取回，程序照常往下；端口报错（占位端口、没有端口）仍是运行期错误 `E-rt-client`；取回时报网络类错误（`EffectError::network`）的，这一次 `gen` 的值是 `Fail("gen network: …")`、照记账本，不中止（现场稳定性三修）。`taint_out` 非空时生成的材料取声明值、记进账本条目的 `output_mat`，否则照旧 ∨ ctx（夹具与枚举器）。真机生成器 `jpp::backends::claude_p::ClaudePPort`（注册表 `backends::GENERATORS` 一行 `claude-p`）：`submit` 把每个调用交端口自己的线程池（并发取生成器画像 `gen.concurrency`，缺省 4）立即返回票据，`poll` 只查完成；每个调用起一次子进程 `claude -p --model <m> --output-format json`，回答是 JSON 数组；回复里有代码块（前后可带说明文字）先取第一个代码块的内容，`n = 1` 时单个 JSON 值也收、当一项；项数与 `n` 不同不算失败，运行时报 `W-gen-count`，多的截到 `n` 项（账本记截断后的输出）、少的照返（现场稳定性三修）；失败四类 `timeout`、`failed`、`malformed`、`empty`；输出 taint 取画像 `gen.taint_out`，缺省 `untrusted`。CLI 用 `--gen-model <m>`（配 `--backend live|stub`，`live` 构建）启用，生成器画像 `gen-claude-p.json`（`gen.timeout_s`、`gen.cost_usd_per_call` 必填）按 `--gen-profile`、`--profiles-dir`、可执行文件旁 `profiles/` 的顺序找；报告加 `gen_backend {name, model, profile_hash}`。
 
 **惰性生成值（步 15h-2，B149、B160）**：`gen` 在调用点只登记，返回 `Value::Gen`（`type_name` 为 `List`）；下一个刷新点（与判断同一套：`if`、检视点、程序结束等）把登记以来的全部生成连同待发判断作为一层交出（生成 `submit` 非阻塞），程序继续；读值是检视点（内置与构造的实参、`if` 条件、运算、取字段与下标、程序返回），读未交出的先刷新交出，再等它那一层收齐。`map` 收集闭包返回值时不检视，所以 `map` 里互不依赖的多个 `gen` 在同一层一起交出。账本按层、按登记序一次写：交出生成的那次刷新开一个层，这一层的判断与缺席条目先记在层里，层内生成全部收齐时按登记序（读数号与生成登记时的读数号计数）写进账本；下一层开始前、层内生成被读取时、程序结束时收层，至多一个开着的层；层开着时按键查判断条目先查层。调用数在交出时计入，登记未交出的算进预算核；token 与费用在收齐时计入。推测与提升期间不取回生成。程序结束的刷新交出剩下的生成并收齐入账；运行期出错与挂起时收齐已交出的，没走到刷新点的生成不交出、不花钱。`do`、`ask`、`transform`、`CalibUsed` 在层开着时照旧直接写账本（排在该层条目之前）。
 
-**生成缓存（`--gen-cache <file.jsonl>`，步 15h-2，B151 过渡）**：`Session::with_gen_cache(Rc<RefCell<GenCache>>)`。`gen` 的账本键（站点、提示、上下文哈希、`n`、`retry_seq`）与生成器模型名都相同才命中；命中不调用、不计预算调用、`cost.replayed` 计 1，照写一条 `gen` 账本条目（费用 0），这一趟仍可只凭账本重放；审计重放不查缓存。成功的新生成记进 `GenCache.fresh`，CLI 追加写回文件（每行 `{key, model, output, taint, prompt}`），失败不缓存；报告加 `gen_cache {path, hits, stored}`。带站点的键是过渡，步 19 换成不带站点的键与 `CacheLookup` 端口。
+**生成缓存（`--gen-cache <file.jsonl>`，步 15h-2，B151 过渡；步 19 起已退役，由 `--cache <目录>` 与 `CacheIndex` 取代，见跨运行缓存一节，下面只留作历史）**：`Session::with_gen_cache(Rc<RefCell<GenCache>>)`。`gen` 的账本键（站点、提示、上下文哈希、`n`、`retry_seq`）与生成器模型名都相同才命中；命中不调用、不计预算调用、`cost.replayed` 计 1，照写一条 `gen` 账本条目（费用 0），这一趟仍可只凭账本重放；审计重放不查缓存。成功的新生成记进 `GenCache.fresh`，CLI 追加写回文件（每行 `{key, model, output, taint, prompt}`），失败不缓存；报告加 `gen_cache {path, hits, stored}`。带站点的键是过渡，步 19 换成不带站点的键与 `CacheLookup` 端口。
 
 **账本键带调用点**：`judge_key(…, site)`，`site` 是 `.jpp` 里的字节偏移。与 Python
 `foundation/jv/store.py:26` 同一组成分。缺了它，**同状态同题的两个不同站点会撞键**——
@@ -832,6 +859,8 @@ K=2 的 1.0 与 K=15 的 1.0 是两个不同的测量。裸记的话改 K 会把
 撞上「读不到该报错还是该算未测」——那正是这三条今天不做的理由。
 
 ## 四·二·八、J-08 拦什么、不拦什么
+
+意图汇编 11a（2026-09-26）起本节整条规则只在宿主开 `--guard` 时生效（§〇·一）；默认不拦任何 `do`。
 
 宪法 IFC 那行的纪律只有一句：**不可信材料上的判断不得单独放行不可逆 `do`**（`12`:265 给形式：
 守卫表达式中至少一个合取项来自 taint=trusted 的状态；untrusted 项的数量不改变这一要求；或经 `ask`）。
@@ -2552,7 +2581,7 @@ transform 1 / stop 1 / loop 1`（+1 个低频）。
 - `CalibStore::put` 只写夹具记录（`CalibRecord.fixture = true`，为 `false` 时不序列化）。认证程序（`commission*`、`calib-import`）上岗时清掉这一位。
 - 夹具线 = `fixture` 位为真，或记录没有一张证书（`CalibRecord::fixture_line()`）。凭夹具线得到的出口 `Exit.fixture_line` 为真；强出口时报 `W-fixture-line`（取代原 `W-uncertified`）。
 - J-08：夹具线出口不算放行不可逆 `do` 的可信合取项（`Exit::guard_trusted()`）。
-- `cut(r, {cost: [fp, fn]})`、`cut(r, key, {cost: [fp, fn]})`：只取该记录（先题级、后题式级）上按这个代价矩阵认证的证书的线；没有 → `Unsure(cold)`，J-15 载体 `cost_line`。线仍只来自记录。
+- `cut(r, {cost: [fp, fn]})`、`cut(r, key, {cost: [fp, fn]})`：只取该记录（先题级、后题式级）上按这个代价矩阵认证的证书的线；没有 → 按判断器的回答走（B187，此前为 `Unsure(cold)`），另带 J-15 载体 `cost_line`。线仍只来自记录。
 - 测试若要走 J-08 放行路径，用 `tests/common::certified` 附一张明写为「测试合成证书」的证书；语言与 CLI 没有这条路。
 
 ### B25 停岗候选

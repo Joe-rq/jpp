@@ -167,7 +167,7 @@ pub struct ActionFacts {
     /// 登记的输出 taint 为不可信（`TaintOut::Untrusted`，例如 CLI 的 `read_json`）
     pub output_untrusted: bool,
     /// 这个动作需要操作系统级沙箱才能跑，宿主启动时探测不到（B164）：不管调用点有没有守卫，
-    /// `do` 到这个名字就无条件报 `E-action-no-sandbox`——这是环境问题，不是放行策略问题。
+    /// `do` 到这个名字就报 `W-action-no-sandbox`（B187 起只告警，执行器照跑；原 `E-action-no-sandbox` 退役）。
     pub no_sandbox: bool,
 }
 

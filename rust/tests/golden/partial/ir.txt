@@ -1,6 +1,6 @@
 ir v1
 budget calls=9 cost=0 depth=256 escalate=- unsure=- latency_p95=- absent=-
-block 78..5687
+block 78..5890
   fn-stmt observe
     #0 fn (m:{"Named":"Mat"}, q:{"Named":"Question"}) -> {"Named":"Record"} effects=[judge]
       block 169..561
@@ -756,72 +756,93 @@ block 78..5687
       block 5282..5290
         result
           #482 unit
-  let improved : -
-    #483 call 5307..5337
-      callee:
-        #484 field .next
-          #485 field .resume
-            #486 name initial
-      #487 name promising
-  let completed : -
-    #488 call 5355..5387
-      callee:
-        #489 field .next
-          #490 field .resume
-            #491 name improved
-      #492 name everything
-  fn-stmt snapshot
-    #493 fn (p:-) -> {"Named":"Record"} effects=-
-      block 5414..5532
+  fn-stmt step
+    #483 fn (p:-, strategy:-) -> - effects=-
+      block 5439..5506
         result
-          #494 record 5420..5530
-            best:
-              #495 field .cheapest
-                #496 field .value
-                  #497 name p
-            pending:
-              #498 call @39 5454..5502
+          #484 if @39 5441..5504
+            cond:
+              #485 call 5444..5465
                 callee:
-                  #499 name map
-                #500 field .pending
-                  #501 name p
-                #503 fn (entry:-) -> - effects=-
-                  block 5479..5501
+                  #486 name has
+                #487 field .resume
+                  #488 name p
+                #489 text "next"
+            block 5466..5493
+              result
+                #490 call 5468..5491
+                  callee:
+                    #491 field .next
+                      #492 field .resume
+                        #493 name p
+                  #494 name strategy
+            block 5499..5504
+              result
+                #495 name p
+  let improved : -
+    #496 call 5522..5546
+      callee:
+        #497 name step
+      #498 name initial
+      #499 name promising
+  let completed : -
+    #500 call 5564..5590
+      callee:
+        #501 name step
+      #502 name improved
+      #503 name everything
+  fn-stmt snapshot
+    #504 fn (p:-) -> {"Named":"Record"} effects=-
+      block 5617..5735
+        result
+          #505 record 5623..5733
+            best:
+              #506 field .cheapest
+                #507 field .value
+                  #508 name p
+            pending:
+              #509 call @40 5657..5705
+                callee:
+                  #510 name map
+                #511 field .pending
+                  #512 name p
+                #514 fn (entry:-) -> - effects=-
+                  block 5682..5704
                     result
-                      #504 field .name
-                        #505 field .element
-                          #506 name entry
+                      #515 field .name
+                        #516 field .element
+                          #517 name entry
             evidence:
-              #507 field .evidence
-                #508 name p
+              #518 field .evidence
+                #519 name p
   result
-    #509 record 5533..5687
+    #520 record 5736..5890
       used_before_complete:
-        #510 name used
+        #521 name used
       initial:
-        #511 call 5571..5588
+        #522 call 5774..5791
           callee:
-            #512 name snapshot
-          #513 name initial
+            #523 name snapshot
+          #524 name initial
       improved:
-        #514 call 5600..5618
+        #525 call 5803..5821
           callee:
-            #515 name snapshot
-          #516 name improved
+            #526 name snapshot
+          #527 name improved
       final:
-        #517 call 5628..5647
+        #528 call 5831..5850
           callee:
-            #518 name snapshot
-          #519 name completed
+            #529 name snapshot
+          #530 name completed
       terminal:
-        #520 binary ==
-          #521 call 5659..5681
+        #531 binary ==
+          #532 call 5862..5884
             callee:
-              #522 name len
-            #523 field .pending
-              #524 name completed
-          #525 int 0
-sites 40
+              #533 name len
+            #534 field .pending
+              #535 name completed
+          #536 int 0
+sites 41
   @0 #1 cut 186..209 fn=#0 in=-
   @1 #2 effect:judge 190..208 fn=#0 in=-
   @2 #3 state 196..204 fn=#0 in=-
@@ -861,4 +882,5 @@ sites 40
   @36 #399 construct:key_of 4511..4525 fn=#398 in=@35
   @37 #402 if 4551..4703 fn=#374 in=@33
   @38 #474 if 5225..5290 fn=- in=-
-  @39 #498 hof:map 5454..5502 fn=#493 in=-
+  @39 #484 if 5441..5504 fn=#483 in=-
+  @40 #509 hof:map 5657..5705 fn=#504 in=-

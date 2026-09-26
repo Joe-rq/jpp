@@ -15,6 +15,8 @@
 //! 等级：拿到宿主动作表且动作名是字面量、登记为不可逆时报 `J-08`（error）；可逆不报；没有动作表时
 //! 报 `W-guard-untrusted`（warn）。
 //!
+//! 意图汇编 11a（2026-09-26）起整条规则只在宿主开放行把关（`Program.entry.guard`，CLI `--guard`）时运行。
+//!
 //! 依据：B108（地基/附注/2026-09-25-批量裁定.md §二）；`12` §3 J-08 行静态子面；B33 第 3、4、8 条与
 //! B105 补（报文按来源分情形）；过程记录 `地基/过程记录/工程-步24-0.md`。
 //!
@@ -22,6 +24,10 @@
 //! 而宿主没有接受作者线放行（`Program.entry.accept_declared` 为假，CLI `--release-on-declared`）——这个出口的
 //! `releases()` 恒假，运行期不作可信合取项。读数确定不可信时仍记不可信根（开关救不了材料）。传播与上面同一套；
 //! 声明记录不是字面量的一律按可放行计。过程记录 `地基/过程记录/工程-步20j-2.md`。
+//!
+//! 2026-09-26（B128 补齐）：`sieve(…, {line: {declare: …}})` 的选项是字面记录时，契约值记同一种声明线根（材料
+//! 确定不可信时记材料根），沿 `o.value` → `o.value[i]` → `.exit` 传到出口；经函数、闭包、非字面选项一律看不透。
+//! 没写字面声明线的 `sieve` 不进这条路。过程记录 `地基/过程记录/工程-sieve声明线.md`。
 
 use std::collections::HashMap;
 
@@ -71,6 +77,12 @@ enum Class {
     Reading,
     Exit,
     Guard,
+    /// `sieve(…, {line: {declare: …}})` 的契约值（B128 补齐）：`.value` 是元素列表
+    Outcome,
+    /// 契约值的 `.value`：下标取元素
+    Elems,
+    /// 一个元素：`.exit` 是出口
+    Elem,
 }
 
 #[derive(Clone, Debug)]
@@ -84,6 +96,11 @@ enum Binding {
 }
 
 fn after(cx: &Cx) -> Vec<Diagnostic> {
+    // 意图汇编 11a（2026-09-26）：放行把关是宿主可选开启的工具（`Program.entry.guard`，CLI `--guard`），
+    // 默认不开，静态子面（`J-08` 与 `W-guard-untrusted`）一条都不报
+    if !cx.p.entry.guard {
+        return vec![];
+    }
     let mut counts: HashMap<String, usize> = HashMap::new();
     count_block(&cx.p.body, &mut counts);
     let mut w = W {
@@ -283,12 +300,48 @@ impl W<'_, '_> {
                 if field == "taint" || field == "hash" {
                     return None;
                 }
-                self.data(value)
-                    .map(|s| (Class::Data, Src { direct: false, ..s }))
+                // `sieve` 声明线的契约值（B128 补齐）：`o.value` → 元素列表，元素的 `.exit` → 出口
+                match (self.val(value), field.as_str()) {
+                    (Some((Class::Outcome, s)), "value") => Some((Class::Elems, s)),
+                    (Some((Class::Elem, s)), "exit") => Some((Class::Exit, s)),
+                    (Some((Class::Data, s)), _) => Some((Class::Data, Src { direct: false, ..s })),
+                    _ => None,
+                }
             }
-            Node::Host(Host::Index { value, .. }) => self
-                .data(value)
-                .map(|s| (Class::Data, Src { direct: false, ..s })),
+            Node::Host(Host::Index { value, .. }) => match self.val(value) {
+                Some((Class::Elems, s)) => Some((Class::Elem, s)),
+                Some((Class::Data, s)) => Some((Class::Data, Src { direct: false, ..s })),
+                _ => None,
+            },
+            // `sieve` 的字面声明线（B128 补齐，过程记录 工程-sieve声明线.md）：宿主没接受时，这个契约值里选出的出口
+            // 确定不作放行证据；材料确定不可信时根记材料（与 `cut` 同一优先）。没写字面声明线的 `sieve` 不进这一支
+            Node::Construct { name, args, .. } if name == "sieve" => {
+                let 线 = sieve_字面声明(args)?;
+                // `sieve` 每个元素一个状态（不同于 `state([…])` 把列表并成一个状态）：列表字面量要**每个**元素都确定
+                // 不可信才记材料根，否则可信的那个元素在宿主接受时照样放行，按材料根报就是假拒绝
+                let 材料 = args.first().and_then(|m| match &m.node {
+                    Node::Host(Host::List(xs)) => {
+                        let srcs: Vec<Src> = xs.iter().filter_map(|x| self.data(x)).collect();
+                        (!xs.is_empty() && srcs.len() == xs.len())
+                            .then(|| srcs.into_iter().next())
+                            .flatten()
+                    }
+                    _ => self.data(m),
+                });
+                if let Some(s) = 材料 {
+                    return Some((Class::Outcome, s));
+                }
+                if self.cx.p.entry.accept_declared {
+                    return None;
+                }
+                Some((
+                    Class::Outcome,
+                    Src {
+                        root: Root::Declared(format!("@{} {线}", e.span.start)),
+                        direct: false,
+                    },
+                ))
+            }
             Node::Host(Host::Call {
                 callee,
                 args,
@@ -372,6 +425,28 @@ impl W<'_, '_> {
                     Some((Class::Reading, s)) => Some((Class::Reading, s)),
                     _ => None,
                 })
+            }
+            // `literalize(u, state, 题, {line: {declare: …}})` 的重问出口（B128 补齐，过程记录 工程-sieve声明线.md §四）：
+            // 字面声明线、宿主未接受时记声明线根；状态确定不可信时记材料根。没写字面声明线不进这一支
+            Node::Consume {
+                how: jpp_ir::ir::ConsumeHow::Literalize,
+                args,
+                ..
+            } if args.len() == 4 => {
+                let 线 = sieve_字面声明(args)?;
+                if let Some((Class::State, s)) = args.get(1).and_then(|x| self.val(x)) {
+                    return Some((Class::Exit, s));
+                }
+                if self.cx.p.entry.accept_declared {
+                    return None;
+                }
+                Some((
+                    Class::Exit,
+                    Src {
+                        root: Root::Declared(format!("@{} {线}", e.span.start)),
+                        direct: false,
+                    },
+                ))
             }
             Node::Cut { reading, rest, .. } => match self.val(reading) {
                 Some((Class::Reading, s)) => Some((Class::Exit, s)),
@@ -462,6 +537,13 @@ impl W<'_, '_> {
     /// 守卫布尔：值里只有白名单节点，没有 `ask`、构造、用户函数；收集判断来源（`cut` 与引用的出口 /
     /// 守卫布尔）。返回 `false` 表示看不透。
     fn scan_guard(&mut self, e: &Expr, srcs: &mut Vec<Src>) -> bool {
+        // `sieve` 声明线契约值里取出的出口（`o.value[i].exit`，B128 补齐）是判断来源
+        if matches!(e.node, Node::Host(Host::Field { .. }))
+            && let Some((Class::Exit, s)) = self.val(e)
+        {
+            srcs.push(s);
+            return true;
+        }
         match &e.node {
             Node::Host(h) => match h {
                 Host::Integer(_)
@@ -740,6 +822,17 @@ fn 字面声明(rest: &[Expr]) -> Option<String> {
         }
         Some(线)
     })
+}
+
+/// `sieve` / `literalize` 的末位字面选项记录里 `line` 是带 `declare` 的字面记录（B128 补齐）时，给出线的文字（同 [`字面声明`]）。
+/// 选项在第三位（题或题列表）或第四位（题式加填法）；只认字面量。
+fn sieve_字面声明(args: &[Expr]) -> Option<String> {
+    let opts = args.get(2..)?.last()?;
+    let Node::Host(Host::Record(fs)) = &opts.node else {
+        return None;
+    };
+    let (_, line) = fs.iter().find(|(k, _)| k == "line")?;
+    字面声明(std::slice::from_ref(line))
 }
 
 /// 报文用的守卫来源：最内层一个不可信材料根（若有），与各层宿主未接受的声明线（站点与线）

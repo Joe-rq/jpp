@@ -274,3 +274,13 @@ fn 非数据(v: &Value) -> Option<&'static str> {
         other => Some(other.type_name()),
     }
 }
+
+/// 读数的 p（`test`）或 p_max（K 元题），`fit` 的特征值；`None` = 失败或没答（J-12）
+fn rank_value(ans: &dyn Answers, r: &Reading) -> Option<f64> {
+    if r.fail.is_some() {
+        return None;
+    }
+    // 步 15k（B167 (1)）：统计量全仓只在 `stat_of` 算。`fit` 要的是特征概率（p、p_max），取 `max`，
+    // 值与改前逐位相同；`order` 的排序键不再经这里（`bridge.rs::order_tiers`）
+    jpp_value::stat::stat_of(&ans.answer_of(r)?, &jpp_value::stat::Stat::Max, None).ok()
+}

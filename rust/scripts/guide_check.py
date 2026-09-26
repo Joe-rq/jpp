@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """GUIDE.md「搭配」一章的示例门禁。
 
-逐个用 jpp 二进制对 examples/guide/ 下的每段示例跑 `check`（必要时带 --release-on-declared）、
+逐个用 jpp 二进制对 examples/guide/ 下的每段示例跑 `check`（必要时带 --guard、--release-on-declared）、
 能跑的再跑 `run --fixtures ...`（必要时带 --calib / --resume / --profile / --ledger-out），
 比对退出码与（错误示例）报文里应出现的诊断码，最后报告通过数。
 
@@ -95,7 +95,8 @@ CASES = [
     dict(name="err-j05", source="examples/guide/err-j05.jpp",
          fixtures="examples/guide/fixtures/err-j05.json", mode="run",
          expect="error", expect_code="J-05", where="run"),
-    dict(name="err-j08", source="examples/guide/err-j08.jpp", mode="check_only",
+    # J-08 只在宿主开 --guard 时生效（意图汇编 11a），这条带 --guard
+    dict(name="err-j08", source="examples/guide/err-j08.jpp", mode="check_only", args=["--guard"],
          expect="error", expect_code="J-08", where="check"),
     dict(name="err-stat-unavailable", source="examples/guide/err-stat-unavailable.jpp",
          fixtures="examples/guide/fixtures/err-stat-unavailable.json",

@@ -310,6 +310,24 @@ fn run_one(cfg: &ClaudePConfig, prompt: &str, ctx: &[Json], n: usize) -> GenResu
     parse(&stdout, n, cfg)
 }
 
+/// 回复里第一个代码块的内容：```` ``` ```` 之后可带语言标记（如 `json`），前后可有说明文字，没有收尾的取到末尾。
+/// 没有代码块为 `None`。
+fn 代码块(text: &str) -> Option<&str> {
+    let rest = &text[text.find("```")? + 3..];
+    // 语言标记：紧跟在 ``` 后的一个 ASCII 词，后面是空白才算（```true``` 这类直接跟内容的不剥）
+    let tag = rest
+        .chars()
+        .take_while(|c| c.is_ascii_alphanumeric())
+        .count();
+    let rest = if tag > 0 && rest[tag..].starts_with(char::is_whitespace) {
+        &rest[tag..]
+    } else {
+        rest
+    };
+    let end = rest.find("```").unwrap_or(rest.len());
+    Some(rest[..end].trim())
+}
+
 /// 解析 `claude -p --output-format json` 的输出。
 fn parse(stdout: &str, n: usize, cfg: &ClaudePConfig) -> GenResult {
     let Ok(outer) = serde_json::from_str::<Json>(stdout.trim()) else {
@@ -327,13 +345,12 @@ fn parse(stdout: &str, n: usize, cfg: &ClaudePConfig) -> GenResult {
         };
     }
     let text = outer["result"].as_str().unwrap_or("").trim();
-    let body = text
-        .strip_prefix("```json")
-        .or_else(|| text.strip_prefix("```"))
-        .map(|t| t.trim_end().trim_end_matches("```").trim())
-        .unwrap_or(text);
+    // 现场稳定性三修 (3)：回复里有代码块（前后可带说明文字）就取第一个代码块的内容
+    let body = 代码块(text).unwrap_or(text);
     let items = match serde_json::from_str::<Json>(body) {
         Ok(Json::Array(a)) => a,
+        // n = 1 时单个值（对象、字符串、数、布尔）当一项，不必套数组
+        Ok(v) if n == 1 && !v.is_null() => vec![v],
         _ => {
             return GenResult {
                 tokens,
@@ -349,12 +366,7 @@ fn parse(stdout: &str, n: usize, cfg: &ClaudePConfig) -> GenResult {
             ..failure("empty", "没有候选", cfg)
         };
     }
-    if items.len() != n {
-        return GenResult {
-            tokens,
-            ..failure("malformed", format!("要 {n} 项，给了 {}", items.len()), cfg)
-        };
-    }
+    // 项数不在这里判（现场稳定性三修 (3)）：运行时按调用的 n 截断或照返，并报 W-gen-count
     GenResult {
         outputs: items,
         tokens,

@@ -1,5 +1,8 @@
 //! `E-ledger-required`（步 18b，主会话 2026-09-25 裁定）：CLI 跑有不可逆 `do` 的程序，首跑与续接都要
 //! `--ledger-out`，否则执行前报错、一个效应都不做；只凭账本重放不要求；没有不可逆 `do` 的程序不受影响。
+//!
+//! 意图汇编 11a（2026-09-26）起这条只在宿主开 `--guard` 时生效（账本是记录，不是防御）：测机制本身的用例都带
+//! `--guard`；默认不停下、账本写到 `<源文件名>.ledger.jsonl` 的对照见 `默认_不给账本文件照常执行_写到默认路径`。
 
 use std::path::{Path, PathBuf};
 use std::process::Command;
@@ -30,18 +33,18 @@ const 写文件: &str =
 fn 不可逆动作_不给账本文件即停_给了照常() {
     let d = 目录("wj");
     std::fs::write(d.join("p.jpp"), 写文件).unwrap();
-    let (ok, err) = jpp(&d, &["run", "p.jpp"]);
+    let (ok, err) = jpp(&d, &["run", "p.jpp", "--guard"]);
     assert!(
         !ok && err.contains("E-ledger-required") && err.contains("--ledger-out"),
         "{err}"
     );
     assert!(err.contains("write_json"), "报文写出动作名：{err}");
     assert!(!d.join("out.json").exists(), "执行前停下，动作没做");
-    let (ok, err) = jpp(&d, &["run", "p.jpp", "--ledger-out", "l.jsonl"]);
+    let (ok, err) = jpp(&d, &["run", "p.jpp", "--ledger-out", "l.jsonl", "--guard"]);
     assert!(ok, "{err}");
     assert!(d.join("out.json").exists());
     // 续接同样要求
-    let (ok, err) = jpp(&d, &["run", "p.jpp", "--resume", "l.jsonl"]);
+    let (ok, err) = jpp(&d, &["run", "p.jpp", "--resume", "l.jsonl", "--guard"]);
     assert!(!ok && err.contains("E-ledger-required"), "{err}");
     let (ok, err) = jpp(
         &d,
@@ -52,12 +55,39 @@ fn 不可逆动作_不给账本文件即停_给了照常() {
             "l.jsonl",
             "--ledger-out",
             "l2.jsonl",
+            "--guard",
         ],
     );
     assert!(ok, "{err}");
     // 只凭账本重放不要求
-    let (ok, err) = jpp(&d, &["run", "p.jpp", "--replay", "l.jsonl"]);
+    let (ok, err) = jpp(&d, &["run", "p.jpp", "--replay", "l.jsonl", "--guard"]);
     assert!(ok, "{err}");
+    let _ = std::fs::remove_dir_all(&d);
+}
+
+/// 意图汇编 11a、B187：不开 `--guard`（默认），有不可逆动作的程序不给 `--ledger-out` 照常执行，账本写到源文件同目录的
+/// `p.ledger.jsonl`，stderr 说出路径；这份账本能只凭账本重放，续接从它读、写到 `p.resumed.ledger.jsonl`，不覆盖它。
+#[test]
+fn 默认_不给账本文件照常执行_写到默认路径() {
+    let d = 目录("default");
+    std::fs::write(d.join("p.jpp"), 写文件).unwrap();
+    let (ok, err) = jpp(&d, &["run", "p.jpp"]);
+    assert!(ok, "{err}");
+    assert!(!err.contains("E-ledger-required"), "{err}");
+    assert!(d.join("out.json").exists(), "动作照常执行");
+    assert!(d.join("p.ledger.jsonl").exists(), "账本写到默认路径");
+    assert!(err.contains("p.ledger.jsonl"), "提示路径：{err}");
+    let (ok, err) = jpp(&d, &["run", "p.jpp", "--replay", "p.ledger.jsonl"]);
+    assert!(ok, "{err}");
+    let 原账本 = std::fs::read_to_string(d.join("p.ledger.jsonl")).unwrap();
+    let (ok, err) = jpp(&d, &["run", "p.jpp", "--resume", "p.ledger.jsonl"]);
+    assert!(ok, "{err}");
+    assert!(d.join("p.resumed.ledger.jsonl").exists(), "{err}");
+    assert_eq!(
+        std::fs::read_to_string(d.join("p.ledger.jsonl")).unwrap(),
+        原账本,
+        "续接的来源不被覆盖"
+    );
     let _ = std::fs::remove_dir_all(&d);
 }
 
@@ -82,7 +112,7 @@ fn 动作名不是字面量按不可逆处理() {
         "budget {calls: 2, cost: 0};\nlet n = \"record_check\";\ncontent(do(n, [{a: 1}], 0))\n",
     )
     .unwrap();
-    let (ok, err) = jpp(&d, &["run", "p.jpp"]);
+    let (ok, err) = jpp(&d, &["run", "p.jpp", "--guard"]);
     assert!(!ok && err.contains("E-ledger-required"), "{err}");
     let _ = std::fs::remove_dir_all(&d);
 }
@@ -130,12 +160,12 @@ fn 引ground同形结构_动作名不可逆时仍要求账本() {
          runner(1)\n",
     )
     .unwrap();
-    let (ok, err) = jpp(&d, &["run", "p.jpp"]);
+    let (ok, err) = jpp(&d, &["run", "p.jpp", "--guard"]);
     assert!(
         !ok && err.contains("E-ledger-required") && err.contains("write_json"),
         "{err}"
     );
-    let (ok, err) = jpp(&d, &["run", "p.jpp", "--ledger-out", "l.jsonl"]);
+    let (ok, err) = jpp(&d, &["run", "p.jpp", "--ledger-out", "l.jsonl", "--guard"]);
     assert!(ok, "{err}");
     assert!(d.join("out.json").exists());
     let _ = std::fs::remove_dir_all(&d);

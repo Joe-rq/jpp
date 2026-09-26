@@ -49,7 +49,8 @@ enum 线 {
 }
 
 fn 跑(src: &str, 线: 线) -> Result<Json, String> {
-    let program = lower(&parse(src).expect("解析")).expect("lower");
+    let mut program = lower(&parse(src).expect("解析")).expect("lower");
+    program.entry.guard = true; // 测放行把关本身：开 --guard（意图汇编 11a）
     let mut calib = CalibStore::new();
     match 线 {
         线::夹具 => {
@@ -127,7 +128,8 @@ fn e_正式线上的聚合出口放行_分量合取() {
 
 /// 正式线 k 与试用线 t 都在库里（(h)(i) 用）
 fn 跑两线(src: &str) -> Result<Json, String> {
-    let program = lower(&parse(src).expect("解析")).expect("lower");
+    let mut program = lower(&parse(src).expect("解析")).expect("lower");
+    program.entry.guard = true; // 测放行把关本身：开 --guard（意图汇编 11a）
     let mut calib = CalibStore::new();
     common::certified(&mut calib, "k", 0.8, 0.2, 50);
     common::certified(&mut calib, "t", 0.8, 0.2, 50);

@@ -4,6 +4,8 @@
 
 **J++ 已经有独立源码、可运行的 Rust 内核、接通真实判断后端的校准流程，而且拆解 9 月 24 日发现的"校准门槛"这项工作，今天已经落地：固定序认证方法把正式档门槛从约 160 条标注压到远小得多的标注集，已经真机上线。** 剩下的门槛不是"能不能便宜认证"，而是"表达量比、深度、换后端"这三条验收标准本身还没有到参考带——这是当前设计与工程工作的重点，不是从头再造一次语言。
 
+**2026-09-27 更新（第三次每日同步）：** 判断器的默认信任翻了过来——没写线的 `cut` 按判断器自己的回答走，不可逆动作默认不被拦，原来的放行把关要传 `--guard` 才有（意图汇编 11a、批 9）。设计上多了三块：判断分工定律（代码能定的用代码，`search`/`verify` 加 `opts.keep`；题树 `lib/compose/tree.jpp` 让 JEV 沿事先生成好的追问树快速往下判）、作者声明线接进 `sieve`/`search`/`verify`/判出来的图/`literalize`、调用结果复用（`--cache <目录>`）。`cargo test --locked --workspace`：**1369 通过、0 失败、10 忽略**。详见 [progress.md](progress.md)。
+
 下一段的具体代码起点、里程碑挂点见 [实施任务](implementation-handoff-2026-09-23.zh-CN.md)（仍是 09-23 定的起点，尚未按本文更新）。
 
 ## 1. 我们最终要交付什么
@@ -125,3 +127,6 @@ J++ now has independent `.jpp` source, a working Rust interpreter, a real JEV ba
 None of this moves the project's three acceptance numbers into their reference bands yet. A re-measurement of the expressiveness ratio (step 31-1b, ruling B96) replaced point-based grading with a held-out property check and reads T1 at 3.69x counting only implementations that pass the new check, 4.48x counting all implementations, and 4.97x under the old frozen grading kept for comparison -- all well below the 9x-20x literature band, and not directly comparable to the previous map's ~4.1x/~3.4x because the acceptance method itself changed. Depth evidence is still a fixed-observation hop distribution only (22/12/4 judgments at hops one/two/three). Backend interchangeability last read 1 of 8 tracked hypotheses fully passing, with 4 more hypothesis groups un-ignored since but not yet re-run through the dashboard. One design decision from today has no code anywhere: author-declared policy lines (`declare:{hi, lo?}` on a `cut`, ruling B128-B130) are ruled but not built; the construction step, 20j-1, is an active work-in-progress branch.
 
 The next steps are: build the author-declared-line construction step (20j-1); keep re-measuring the expressiveness ratio, depth curve and backend-swap fraction under the corrected/current methods and publish every dashboard reading as it lands; and continue growing the shared question-bank and method library toward a real-scenario application.
+
+
+**2026-09-27 update (third daily sync):** the default flipped to trusting the judge -- a `cut` with no author-written line follows the judge's own answer, irreversible actions are not blocked by default, and the former release gate now needs `--guard`. New design pieces: the judgment-division law (code decides what code can; `opts.keep` on `search`/`verify`; the question-tree walk `lib/compose/tree.jpp`), declared lines accepted across `sieve`, `search`, `verify`, judged graphs and `literalize`, and call-result reuse (`--cache <dir>`). `cargo test --locked --workspace`: 1369 passed, 0 failed, 10 ignored. See [progress.md](progress.md).
