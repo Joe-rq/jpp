@@ -265,3 +265,19 @@ fn 真机_gen_choose() {
     let r: Json = serde_json::from_slice(&out.stdout).unwrap();
     assert_eq!(r["gen_backend"]["name"], "claude-p");
 }
+
+/// 公开 PR #37 评审 P2：画像的 `gen.timeout_s` 要是有限正数，否则加载时报画像错误（不在建端口时 panic）
+#[test]
+fn 画像超时须为有限正数() {
+    let 画像 = |t: &str| {
+        format!(
+            r#"{{"gen": {{"cost_usd_per_call": 0, "timeout_s": {t}, "taint_out": "untrusted"}}}}"#
+        )
+    };
+    for bad in ["-1", "0", "1e300"] {
+        let e = jpp::backends::GenProfile::load(画像(bad).as_bytes()).expect_err(bad);
+        assert!(e.contains("timeout_s"), "{bad}：{e}");
+    }
+    let p = jpp::backends::GenProfile::load(画像("30").as_bytes()).expect("30 秒可用");
+    assert_eq!(p.timeout_s, 30.0);
+}
