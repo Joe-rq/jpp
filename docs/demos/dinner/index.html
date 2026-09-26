@@ -54,7 +54,8 @@ button{font:inherit;color:inherit;cursor:pointer}
 #fill{position:absolute;left:0;top:0;bottom:0;border-radius:2px;background:linear-gradient(90deg,#3ef0b0,#57d4ff);box-shadow:0 0 12px rgba(87,212,255,.6)}
 .tick{position:absolute;top:-4px;width:2px;height:12px;background:rgba(255,255,255,.28);border-radius:1px}
 #knob{position:absolute;top:6px;width:16px;height:16px;margin-left:-8px;border-radius:50%;background:#fff;box-shadow:0 0 14px rgba(87,212,255,.9)}
-#credit{position:fixed;right:28px;bottom:62px;max-width:calc(100% - 56px);text-align:right;font-size:14px;color:var(--fg3);font-family:var(--mono);pointer-events:none;transition:opacity .4s}
+#foot{position:fixed;right:28px;bottom:62px;max-width:calc(100% - 56px);text-align:right;font-size:14px;color:var(--fg3);font-family:var(--mono);pointer-events:none}
+#credit{transition:opacity .4s}
 #pop{position:fixed;z-index:50;max-width:min(460px,calc(100vw - 24px));max-height:calc(100vh - 24px);overflow:auto;background:rgba(10,15,28,.96);border:1px solid var(--line2);border-radius:14px;padding:16px 18px 14px;font-size:15px;line-height:1.6;box-shadow:0 20px 60px rgba(0,0,0,.6),0 0 40px rgba(87,212,255,.08);display:none;pointer-events:auto}
 #pop.show{display:block;animation:tin .25s ease-out}
 #pop h4{margin:0 30px 8px 0;font-size:17px}
@@ -105,7 +106,7 @@ button{font:inherit;color:inherit;cursor:pointer}
   .num.small b{font-size:20px}
   .num span{font-size:14px;margin-top:3px}
   #ctrl{padding:6px 16px 12px;gap:12px}
-  #credit{right:16px;bottom:56px;font-size:14px}
+  #foot{right:16px;bottom:56px;font-size:14px}
   .pgrid{inset:0 16px 6px;grid-template-columns:1fr;grid-template-rows:auto 1fr auto auto;gap:10px}
   .pact{flex-direction:row;gap:14px}
   .pact div{flex:1}
@@ -143,7 +144,8 @@ button{font:inherit;color:inherit;cursor:pointer}
     <div id="track" role="slider" aria-label="播放进度" tabindex="0"><div class="rail"><div id="fill"></div><div id="ticks"></div></div><div id="knob"></div></div>
   </footer>
 </div>
-<div id="credit">© OpenStreetMap contributors<br>录于 2026-09-26，旧默认：没写线即拿不准；新默认下的重录在赛后 / Recorded 2026-09-26 under the old default (no line = unsure); re-recording under the new default comes after the contest.</div>
+<div id="foot"><div id="credit">© OpenStreetMap contributors</div>
+<div id="rec-note">录于 2026-09-26，旧默认：没写线即拿不准；新默认下的重录在赛后 / Recorded 2026-09-26 under the old default (no line = unsure); re-recording under the new default comes after the contest.</div></div>
 <div id="pop" role="dialog"></div>
 <script>window.__errs=[];addEventListener("error",e=>window.__errs.push(String(e.message||e)));addEventListener("unhandledrejection",e=>window.__errs.push("promise: "+String(e.reason)));</script>
 <script src="data.js"></script>
