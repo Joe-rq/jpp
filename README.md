@@ -16,11 +16,13 @@ All demos live on one page: **[towow-ai.github.io/jpp/demos/](https://towow-ai.g
 
 所有演示都在这一页：**[towow-ai.github.io/jpp/demos/](https://towow-ai.github.io/jpp/demos/)**。01–04 回放真机运行，数字来自该次运行的报告与账本；05 同为真机录制回放（含负结果）。没有一个案子完全定案，页面照实写出。
 
+<sub>01–04：录于 2026-09-26，旧默认：没写线即拿不准；新默认下的重录在赛后 / Recorded 2026-09-26 under the old default (no line = unsure); re-recording under the new default comes after the contest.</sub>
+
 - **01 Who is lying / 谁在说谎**: eight testimonies compared pair by pair. Cases A and B circle two people that include the culprit; in case C the program names Zhou Lin while the case design says Han Mei; some pairs stay uncertain in all three. / 八份证词两两对质。A、B 两案圈出的两人含真凶，C 案程序认定周琳而出题设定是韩梅，三案都仍有拿不准的证词对。
 - **02 Hangzhou dinner / 杭州聚餐**: five people, 576 real OpenStreetMap restaurants; the program filters venues, seats guests and splits groups, about 270–305 judgments and $0.006–0.007 per group. After the relations are filled in, one pair turns red in groups A (Lin Lan–Shen Yi) and C (Gao Lei–Zheng Zhe) while group B stays uncertain. / 五个人、576 家 OpenStreetMap 真实餐厅，程序筛店、排座、分组，每组约 270–305 次判断、$0.006–0.007。关系补完信息后，甲组（林岚–沈一）、丙组（高磊–郑哲）各有一对变红，乙组仍拿不准。
 - **03 Shortest reading list / 最短书单**: 30 Wikipedia articles reduced to a list of 6, with 5 concepts still unexplained by any of them. / 30 篇维基百科条目收成 6 篇书单，仍有 5 个概念没有一篇讲清。
 - **04 Flat-share matching / 合租分配**: 12 people matched; 8 tie-break orderings give 4 different stable matchings. / 12 人配对，同分时换 8 种排序，得到 4 种稳定匹配。
-- **05 Towow network / 通爻网络**: 307 agents; a vague sentence spreads, receivers judge relations and multi-party plans grow (recorded live run). Cost is about 1/74 of one model reading everyone; in blind review its plan quality fell short of that baseline (21/22 vs 3/2 valuable plans). / 307 个主体，一句模糊的话在网里传开，由接收方各自判出关系、长出多方方案（真机录制回放）。结论照实：花费约为大模型一次读完全体的 1/74；方案质量在盲评里不如大模型一次读完（有价值方案 21/22 对 3/2）。
+- **05 Towow network / 通爻网络**: 307 agents; a vague sentence spreads, receivers judge relations and multi-party plans grow (recorded live run, negative results included). Cost is about 1/74 of one model reading everyone (converted at subscription list price, not actually paid), but in blind review that model produced 21/22 valuable plans against 3/2 for the network. On the preregistered whole-wave measure, "faster with every run" did not hold; 68 of 97 ring settlements did not close, and the planted structure was recovered only 7 of 64 times. / 307 个主体，一句模糊的话在网里传开，由接收方各自判出关系、长出多方方案（真机录制回放，含负结果）。花费约为大模型一次读完全体的 1/74（按订阅标价折算，不是实付），但盲评里大模型的有价值方案是 21/22，网络是 3/2。按预注册的整波口径，“越算越快”不成立；97 次环清算里 68 次没有闭合；预埋结构只找回 7/64。
 
 ## Why we are doing this
 
