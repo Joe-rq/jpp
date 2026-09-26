@@ -394,6 +394,13 @@ impl<'a> Interp<'a> {
             self.trace.push(s.name, &key, true, 0.0, sp, prompt.into());
             return Ok(v);
         }
+        // 公开 PR #37 评审 P1：同键的生成已登记、还没收回——共享它，不再登记、不交出、不计调用与预算
+        // （账本按键只留一条，只凭账本重放时这一位置走上面的账本命中，拿到同一输出）
+        if let Some(h) = self.在飞同键(&key) {
+            self.cost.replayed += 1;
+            self.trace.push(s.name, &key, true, 0.0, sp, prompt.into());
+            return Ok(Value::Gen(h));
+        }
         // `--gen-cache`（步 15h-2，B151 过渡）：同账本键、同生成器模型命中即不调用、不计预算调用；
         // 照写一条账本条目（费用 0），这一趟的账本仍可只凭账本重放。审计重放只凭账本，不查缓存。
         let model = self

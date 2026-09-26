@@ -197,6 +197,17 @@ impl<'a> Interp<'a> {
         Ok(Value::Gen(handle))
     }
 
+    /// 已登记、还没收回的生成里有没有这个账本键的（公开 PR #37 评审 P1）：有就共享它的句柄——同一刷新前同键
+    /// 走到多次只发一次、只计一次，所有位置拿到同一输出，与账本只留一条、重放取那一条一致。
+    /// 依据：B160（账本按键一条）；过程记录 工程-步15h-2.md 三
+    pub(crate) fn 在飞同键(&self, key: &str) -> Option<Rc<PendingGen>> {
+        self.生成
+            .jobs
+            .values()
+            .find(|j| j.key == key)
+            .map(|j| j.handle.clone())
+    }
+
     /// 有没有登记了还没交出的生成（刷新点据此决定这一层要不要带生成）。
     pub(crate) fn 有未交生成(&self) -> bool {
         self.生成.jobs.values().any(|j| j.ticket.is_none())
