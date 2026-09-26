@@ -675,7 +675,7 @@ fn d1_替身判断器跑全部示例() {
     // 预注册预测停 4 个（三个调 gen、pair-team 下标越界）；实测多一个 `partial`：全部冷出口时它有一条
     // 未消费的 unsure，运行期 J-05（程序自身对冷出口的处理，不是替身的问题；过程记录 §三）。
     // 步 15h-1 新增金样用例 `gen-choose` 也调 gen，替身不生成，同 lifecycle 一类停下；
-    // 步 25c 的三个 `search-*` 用例的 propose 包 gen，同一类
+    // 步 25c 的三个 `search-*` 用例与步 25c-2 的 `search-rank` 的 propose 包 gen，同一类
     assert_eq!(
         停名,
         vec![
@@ -685,6 +685,7 @@ fn d1_替身判断器跑全部示例() {
             "partial",
             "search-bound",
             "search-noshrink",
+            "search-rank",
             "search-stop",
             "sieve-review",
             "unsure-causes"
@@ -697,6 +698,7 @@ fn d1_替身判断器跑全部示例() {
         "lifecycle",
         "search-bound",
         "search-noshrink",
+        "search-rank",
         "search-stop",
         "sieve-review",
         "unsure-causes",
@@ -716,7 +718,8 @@ fn d1_替身判断器跑全部示例() {
     // profile_swap 这一处，属预注册漏列，在此补记）：26 → 27。步 25d 加 graph-interval、graph-nested：27 → 29。
     // 步 20j-3 加 declare-stat（统计量上的声明线，mass / expect 不要置换），替身上跑得完：29 → 30
     // 步 20j-2 加 declare-refund-accept（同一源码带 --release-on-declared），替身上跑得完：30 → 31
-    assert_eq!(跑完.len(), 31);
+    // 步 13a-1 加 spec-fixture-miss（替身判断器对全部题都答，推测组不报错）：31 → 32。
+    assert_eq!(跑完.len(), 32);
 }
 
 /// (D2) 校准不跨判断器（`12` B60：校准键含 `model`）：带 jev 校准记录的用例在替身判断器上跑，

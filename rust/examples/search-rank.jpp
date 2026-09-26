@@ -1,0 +1,19 @@
+// 搜索加打分排序（步 25c-2，B148、B167）：可行域题筛掉不合适的店名，打分题「有多好记」只排序。可行的候选都进
+// 累积池，每轮按期望档位（rank: {stat: "expect"}）排，取前 width = 2 个作下一轮前沿。第 2 轮进了更好记的
+// 「巷口豆」，算进展；第 3 轮新来的「豆巷」与「暖巷咖啡」期望相同、并档，挤不掉先进池的，没有进展，noshrink。
+// value 按排名（最好的在前），found_in 是各自进池的轮次；打分题不产生出口。
+import "../lib/compose/search.jpp";
+budget {calls: 20, cost: 0.02, depth: 64};
+
+let brief = mat("为一家社区咖啡馆起名：温暖、好记、不超过四个汉字");
+let propose = fn(frontier, i) {
+    gen("按下面的需求提出 3 个候选店名，每个候选是一个字符串；需求之后的上下文是上一轮排名最前的候选", concat([brief], frontier), 3, i)
+};
+let fits = test("这个名字适合做一家社区咖啡馆的店名吗？", "search-fit");
+let memorable = measure("这个名字有多好记？", ["难记", "一般", "好记"], "search-memo-score");
+
+let r = search([], propose, fits, memorable, 3, {width: 2, rank: {stat: "expect"}});
+{kept: map(r.value, fn(e) { e.item }), found_in: map(r.value, fn(e) { e.round }),
+ rejected: map(r.detail.ignore, fn(e) { e.item }), duplicates: r.detail.duplicates,
+ reason: r.detail.reason, rounds: r.detail.rounds, measures: r.detail.measures,
+ pending: r.pending}

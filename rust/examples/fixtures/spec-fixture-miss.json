@@ -1,0 +1,12 @@
+{
+  "description": "Fixed observations for spec-fixture-miss.jpp (step 13a-1, B0270): item b has no q2 row on purpose; the speculative group for it is dropped.",
+  "calibrations": [
+    {"key": "c1", "hi": 0.5, "lo": 0.5, "delta": 0, "n": 1, "status": "上岗"},
+    {"key": "c2", "hi": 0.5, "lo": 0.5, "delta": 0, "n": 1, "status": "上岗"}
+  ],
+  "observations": [
+    {"on": [{"cond": true, "id": "a"}], "op": "test", "text": "q1 on the item?", "calib": "c1", "answer": {"Noul": 0.9}},
+    {"on": [{"cond": true, "id": "a"}], "op": "test", "text": "q2 on the item, only relevant when cond is true", "calib": "c2", "answer": {"Noul": 0.9}},
+    {"on": [{"cond": false, "id": "b"}], "op": "test", "text": "q1 on the item?", "calib": "c1", "answer": {"Noul": 0.1}}
+  ]
+}

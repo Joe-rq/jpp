@@ -17,7 +17,7 @@
       "key": "ground-correct",
       "pos": 0,
       "releases": false,
-      "site": 11062
+      "site": 12643
     },
     {
       "exit": "ignore",
@@ -27,7 +27,7 @@
       "key": "ground-correct",
       "pos": 1,
       "releases": false,
-      "site": 11062
+      "site": 12643
     },
     {
       "exit": "unsure(band)",
@@ -37,7 +37,7 @@
       "key": "ground-correct",
       "pos": 2,
       "releases": false,
-      "site": 11062
+      "site": 12643
     },
     {
       "exit": "act",
@@ -47,7 +47,7 @@
       "key": "ground-correct",
       "pos": 0,
       "releases": false,
-      "site": 11062
+      "site": 12643
     },
     {
       "exit": "ignore",
@@ -57,7 +57,7 @@
       "key": "ground-correct",
       "pos": 1,
       "releases": false,
-      "site": 11062
+      "site": 12643
     },
     {
       "exit": "ignore",
@@ -67,7 +67,7 @@
       "key": "ground-correct",
       "pos": 2,
       "releases": false,
-      "site": 11062
+      "site": 12643
     }
   ],
   "fixture_description": "Synthetic fixed observations for search-ground.jpp (construction check only; not model evaluation). Generations are fixed; exec_py runs the code for real only when the seed ledger is recorded (tests/golden/search-ground-seed), and the golden resumes from that seed without executing anything. Round 0: outputs 285 and 302 are rejected, 'about 385' is in band and refined into round 1's context; round 1: 385 is accepted, 55 and 386 are rejected. The calibration record is hand-written to exercise routing.",
@@ -167,35 +167,35 @@
       },
       {
         "cost": 0.0,
-        "key": "1d9888294ba9fcd750760f2f",
+        "key": "f83c2fe5f5eba1ab81e06cca",
         "kind": "judge",
         "note": "「这段代码的输出是否等于 1 到 10 的平方和（385）？」",
         "replayed": true,
         "site": {
-          "end": 11096,
-          "start": 11062
+          "end": 12677,
+          "start": 12643
         }
       },
       {
         "cost": 0.0,
-        "key": "8395785b8526f7f8f41505a3",
+        "key": "699768f427c3358c06245eba",
         "kind": "judge",
         "note": "「这段代码的输出是否等于 1 到 10 的平方和（385）？」",
         "replayed": true,
         "site": {
-          "end": 11096,
-          "start": 11062
+          "end": 12677,
+          "start": 12643
         }
       },
       {
         "cost": 0.0,
-        "key": "2e77656070c975133a439abe",
+        "key": "a54aa6e52968865a5fbf3114",
         "kind": "judge",
         "note": "「这段代码的输出是否等于 1 到 10 的平方和（385）？」",
         "replayed": true,
         "site": {
-          "end": 11096,
-          "start": 11062
+          "end": 12677,
+          "start": 12643
         }
       },
       {
@@ -277,41 +277,41 @@
       },
       {
         "cost": 0.0,
-        "key": "77842ddb917ef48b35955d4d",
+        "key": "01b1682551af06dc886dc148",
         "kind": "judge",
         "note": "「这段代码的输出是否等于 1 到 10 的平方和（385）？」",
         "replayed": true,
         "site": {
-          "end": 11096,
-          "start": 11062
+          "end": 12677,
+          "start": 12643
         }
       },
       {
         "cost": 0.0,
-        "key": "057443a510222a5b95069988",
+        "key": "265dc99e69aaf0c97620f4ab",
         "kind": "judge",
         "note": "「这段代码的输出是否等于 1 到 10 的平方和（385）？」",
         "replayed": true,
         "site": {
-          "end": 11096,
-          "start": 11062
+          "end": 12677,
+          "start": 12643
         }
       },
       {
         "cost": 0.0,
-        "key": "14ba59b3bce1c16b871ec1f3",
+        "key": "d854526d2e1973654d85aff6",
         "kind": "judge",
         "note": "「这段代码的输出是否等于 1 到 10 的平方和（385）？」",
         "replayed": true,
         "site": {
-          "end": 11096,
-          "start": 11062
+          "end": 12677,
+          "start": 12643
         }
       }
     ],
     "warnings": [
-      "W-window-untested: @11062 画像没有测过窗口（window），对象长度不核；超窗的语境可能接管读数而无痕",
-      "W-fixture-line: @11062 键 ground-correct 的线是夹具线（宿主 put 写入或没有认证证书，n=1），出口 Act 照常路由，但按 B29 不算放行不可逆 do 的可信合取项。修法【需接线人】：用 calib-import 或 commission 从带真值样本认证这条线",
+      "W-window-untested: @12643 画像没有测过窗口（window），对象长度不核；超窗的语境可能接管读数而无痕",
+      "W-fixture-line: @12643 键 ground-correct 的线是夹具线（宿主 put 写入或没有认证证书，n=1），出口 Act 照常路由，但按 B29 不算放行不可逆 do 的可信合取项。修法【需接线人】：用 calib-import 或 commission 从带真值样本认证这条线",
       "W-untyped-transfer: search 把 unsure(band) 装在返回值里交了出去，但返回类型没提 Exit，调用者从签名上看不出自己收到了一份未决。修法：把返回类型标为含 Exit（如 `-> Exit`、`-> Record<Exit>`）",
       "returned_unsure: unsure(band)"
     ]
@@ -353,7 +353,7 @@
           ],
           "taint": "Untrusted"
         },
-        "key": "2e77656070c975133a439abe",
+        "key": "a54aa6e52968865a5fbf3114",
         "pos": 2,
         "q": {
           "calib": "ground-correct",

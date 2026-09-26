@@ -1,0 +1,90 @@
+ir v1
+budget calls=10 cost=1 depth=64 escalate=- unsure=- latency_p95=- absent=-
+block 434..871
+  let input : -
+    #0 record 489..545
+      items:
+        #1 list 497..544
+          #2 record 498..519
+            id:
+              #3 text "a"
+            cond:
+              #4 bool true
+          #5 record 521..543
+            id:
+              #6 text "b"
+            cond:
+              #7 bool false
+  let q1 : -
+    #8 construct test @0 556..585
+      #9 text "q1 on the item?"
+      #10 text "c1"
+  let q2 : -
+    #11 construct test @1 596..657
+      #12 text "q2 on the item, only relevant when cond is true"
+      #13 text "c2"
+  fn-stmt one
+    #14 fn (it:-) -> - effects=[judge]
+      block 680..824
+        let r1 : -
+          #15 effect judge @2 695..720
+            state:
+              #16 state @3 701..715
+                on:
+                  #17 call 707..714
+                    callee:
+                      #18 name mat
+                    #19 name it
+            questions:
+              #20 name q1
+        let r2 : -
+          #21 if @4 735..789
+            cond:
+              #22 field .cond
+                #23 name it
+            block 746..775
+              result
+                #24 effect judge @5 748..773
+                  state:
+                    #25 state @6 754..768
+                      on:
+                        #26 call 760..767
+                          callee:
+                            #27 name mat
+                          #28 name it
+                  questions:
+                    #29 name q2
+            block 781..789
+              result
+                #30 unit
+        result
+          #31 record 795..822
+            id:
+              #32 field .id
+                #33 name it
+            r1:
+              #34 name r1
+            r2:
+              #35 name r2
+  result
+    #36 call @7 826..871
+      callee:
+        #37 name map
+      #38 field .items
+        #39 name input
+      #41 fn (it:-) -> - effects=[judge]
+        block 859..870
+          result
+            #42 call 861..868
+              callee:
+                #43 name one
+              #44 name it
+sites 8
+  @0 #8 construct:test 556..585 fn=- in=-
+  @1 #11 construct:test 596..657 fn=- in=-
+  @2 #15 effect:judge 695..720 fn=#14 in=-
+  @3 #16 state 701..715 fn=#14 in=-
+  @4 #21 if 735..789 fn=#14 in=-
+  @5 #24 effect:judge 748..773 fn=#14 in=-
+  @6 #25 state 754..768 fn=#14 in=-
+  @7 #36 hof:map 826..871 fn=- in=-

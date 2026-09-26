@@ -391,10 +391,10 @@ search(seed, propose, feasible, objective, rounds, opts) -> 契约值
   seed      第一轮前沿（材料列表）
   propose   fn(前沿, 轮次) -> [Mat]，通常包 gen；返回 Fail 时这一轮零候选，记一条 Unsure(fail)
   feasible  是非题：候选在可行域里吗
-  objective 是非题，或 unit（只按可行域筛；打分排序要等 15k/B167，现在只能是非题）
+  objective 是非题、打分题（measure，只排序，见下），或 unit（只按可行域筛）
   rounds    轮数上限，写字面量或顶层 let 常量（调用点核，B111）；喂一个不可判定的表达式
             （函数参数、`len(...)` 之类）不是硬错误，是 `W-bound` 警告：静态估不出上界
-  opts      {width, unsure_to?: "carry"|"refine"|fn, ground?: fn(Mat) -> Mat}
+  opts      {width, unsure_to?: "carry"|"refine"|fn, ground?: fn(Mat) -> Mat, rank?: {stat?, tie?}}
 ```
 好候选按轮累积：每轮的新候选去重（按材料哈希，判过的不再判、不花钱）、`opts.ground` 给了就先接地、
 `sieve(可行域)`、`objective` 不是 `unit` 再 `sieve(目标)`，新判好的并进累积池，下一轮前沿取池的前
@@ -405,6 +405,12 @@ search(seed, propose, feasible, objective, rounds, opts) -> 契约值
 J-07 会静态查）。返回值 `value` 是累积前沿（每个元素带 `round`：第一次判好的轮次），出口是
 `trail` 上全部出口与自己出口的 `compose(…, "all")`；`detail = {ignore, rounds, reason, measures,
 fails, duplicates}`。
+
+`objective` 是打分题（`measure`）时它只排序、不过滤：可行的候选都进累积池，新进的各判一次打分题，
+每轮按 `order(读数们, opts.rank)` 排（缺省按档位，`rank: {stat: "expect"}` 按期望档位），取前
+`width` 个作前沿与 `value`（最好的在前）。前 `width` 个里进了新候选才算进展，与末位并列的新候选挤不掉
+旧的；打分题没有「凑够」，所以只有 `noshrink` 与 `bound` 两条终止线。打分题不产生出口，`value` 元素的
+出口只合成可行域那道题。示例 `examples/search-rank.jpp`。
 
 ```jpp
 import "../../lib/compose/search.jpp";

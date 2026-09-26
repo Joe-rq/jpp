@@ -416,3 +416,56 @@ fn differs_非空时乐观产物与区间出口不放行() {
     assert_eq!(v["sent_all"], "不发");
     assert_eq!(x.发送, 0, "未决的合成出口不放行不可逆动作");
 }
+
+// ── 嵌套：图上分工的结果交给 search（25d 欠的一条，L1 合入后补；主会话指定）──────────────
+
+#[test]
+fn 两层嵌套_图上分工交给搜索() {
+    // 第一层：二部图匹配出 4 组已决分工。第二层：每组分工作搜索的种子，生成器（确定性枚举）提两种做法，
+    // 判「这个方案可行吗」，宽 1、两轮。搜索的产物带 round、出口可用 cert 读；两层的未决都交回
+    let lib_search = include_str!("../../../lib/compose/search.jpp");
+    let lib_carry = include_str!("../../../lib/compose/carry.jpp");
+    let lib_outcome = include_str!("../../../lib/outcome.jpp");
+    let 去import = |s: &str| -> String {
+        s.lines()
+            .filter(|l| !l.starts_with("import "))
+            .collect::<Vec<_>>()
+            .join("\n")
+    };
+    let 前置 = format!(
+        "{}\n{}\n{}\n",
+        去import(lib_outcome),
+        去import(lib_carry),
+        去import(lib_search)
+    );
+    let src = 二部程序
+        .replacen(
+            "\n",
+            &format!("\n{前置}\n"),
+            1,
+        )
+        .replace(
+            "{lo: map(t.lo.value",
+            "let propose = fn(front, i) { map([\"方案甲\", \"方案乙\"], fn(k) { mat(join([content(front[0]), \"：\", k], \"\")) }) };\n\
+             let plans = map(t.lo.value, fn(p) { search([mat(join(map(p.nodes, content), \"+\"))], propose, test(\"这个方案可行吗？\", \"team\"), unit, 2, {width: 1}) });\n\
+             {plans: map(plans, fn(o) { map(o.value, fn(e) { [content(e.item), e.round, cert(e.exit).grade] }) }),\n\
+              reasons: map(plans, fn(o) { o.detail.reason }),\n\
+              plan_pending: len(fold(plans, [], fn(acc, o) { concat(acc, o.pending) })),\n\
+              lo: map(t.lo.value",
+        );
+    let x = 跑(&src, 二部边);
+    let v = 值(&x);
+    // 每组分工一个搜索，各在第 0 轮凑够宽 1 即停
+    assert_eq!(v["plans"].as_array().unwrap().len(), 4, "{}", v["plans"]);
+    for (i, p) in v["plans"].as_array().unwrap().iter().enumerate() {
+        let p = p.as_array().unwrap();
+        assert_eq!(p.len(), 1, "第 {i} 组：{p:?}");
+        let 文 = p[0][0].as_str().unwrap();
+        assert!(文.ends_with("：方案甲"), "第 {i} 组：{文}");
+        assert_eq!(p[0][1], 0, "第 {i} 组在第 0 轮判好");
+    }
+    assert_eq!(v["reasons"], j(r#"["stop", "stop", "stop", "stop"]"#));
+    assert_eq!(v["plan_pending"], j("0"));
+    // 第一层的区间照旧
+    assert_eq!(v["differs"], j("[[4, 10], [5, 11]]"));
+}
