@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Harness 的世界 · J++ 案例</title>
+<meta name="description" content="把一个真实运行了三个月的 Agent 系统（Harness，约 89 万条事件）的账本，用 J++ 编译成可看的三维世界。三页真机演示：一个夏天的 48 座、五座在建的东西、一次修复。">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<style>
+:root {
+  --paper: #f5f3ee;
+  --card: #fffdf8;
+  --ink: #1c1e23;
+  --ink-2: #4a4e57;
+  --muted: #8a8d95;
+  --line: #d9d5cc;
+  --line-2: #ebe7de;
+  --ok: #2e9b6b;
+  --bad: #d4483a;
+  --unsure: #e0a232;
+  --accent: #2f6be0;
+  --shadow: 0 10px 30px rgba(28, 30, 35, .14);
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #121419; --card: #1b1e25; --ink: #eceef2; --ink-2: #b9bdc6; --muted: #7d828d;
+    --line: #353a45; --line-2: #262a33; --ok: #3fbf86; --bad: #f0634f; --unsure: #f2b64b; --accent: #5b8ff5;
+    --shadow: 0 10px 30px rgba(0, 0, 0, .5); color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #121419; --card: #1b1e25; --ink: #eceef2; --ink-2: #b9bdc6; --muted: #7d828d;
+  --line: #353a45; --line-2: #262a33; --ok: #3fbf86; --bad: #f0634f; --unsure: #f2b64b; --accent: #5b8ff5;
+  --shadow: 0 10px 30px rgba(0, 0, 0, .5); color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  background: var(--paper); color: var(--ink);
+  font: 15px/1.65 -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Noto Sans SC", "Microsoft YaHei", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+a { color: var(--accent); }
+.num { font-variant-numeric: tabular-nums; }
+.wrap { max-width: 860px; margin: 0 auto; padding: 0 24px 80px; }
+.top { display: flex; align-items: center; gap: 16px; padding: 18px 24px; }
+.top a.back { color: var(--muted); text-decoration: none; font-size: 14px; white-space: nowrap; }
+.top a.back:hover { color: var(--ink); }
+.icon-btn { margin-left: auto; width: 32px; height: 32px; border: 0; border-radius: 50%; background: transparent; cursor: pointer; display: grid; place-items: center; color: var(--muted); }
+.icon-btn:hover { background: var(--line-2); color: var(--ink); }
+header.hero { padding: 12px 0 28px; border-bottom: 1px solid var(--line-2); }
+h1 { font-size: clamp(28px, 3.4vw, 42px); line-height: 1.2; margin: 0 0 6px; font-weight: 700; letter-spacing: .01em; }
+h1 .en { display: block; font-size: clamp(15px, 1.6vw, 19px); font-weight: 500; color: var(--muted); margin-top: 6px; }
+.intro { margin-top: 18px; font-size: 16px; color: var(--ink-2); }
+.intro p { margin: 0 0 14px; }
+.intro p.en { color: var(--muted); }
+h2 { font-size: 20px; margin: 46px 0 14px; letter-spacing: .01em; }
+h2 .en { display: block; font-size: 14px; font-weight: 500; color: var(--muted); margin-top: 3px; }
+.cards { display: grid; gap: 16px; margin-top: 16px; }
+.card {
+  background: var(--card); border: 1px solid var(--line-2); border-radius: 14px;
+  padding: 20px 22px; transition: box-shadow .2s, transform .2s;
+}
+.card:hover { box-shadow: var(--shadow); transform: translateY(-1px); }
+.card .cno { color: var(--muted); font-weight: 700; font-size: 13px; letter-spacing: .08em; }
+.card h3 { margin: 4px 0 2px; font-size: 20px; }
+.card h3 .en { display: block; font-size: 14px; font-weight: 500; color: var(--muted); margin-top: 2px; }
+.card .verdict { margin: 10px 0 12px; color: var(--ink-2); font-size: 14.5px; }
+.card .verdict .en { display: block; color: var(--muted); margin-top: 4px; }
+.card ul { margin: 0 0 14px; padding-left: 20px; color: var(--ink-2); font-size: 14px; }
+.card ul li { margin: 3px 0; }
+.card .open {
+  display: inline-flex; align-items: center; gap: 6px; text-decoration: none;
+  background: var(--ink); color: var(--paper); font-weight: 600; font-size: 14px;
+  padding: 8px 16px; border-radius: 999px;
+}
+.card .open:hover { opacity: .85; }
+.section p { margin: 0 0 12px; color: var(--ink-2); font-size: 15px; }
+.section p.en { color: var(--muted); }
+.section .sub { font-weight: 700; color: var(--ink); }
+.hint {
+  margin-top: 44px; padding: 14px 18px; background: var(--line-2); border-radius: 10px;
+  font-size: 13.5px; color: var(--ink-2);
+}
+.hint .en { color: var(--muted); margin-top: 4px; }
+.foot {
+  margin-top: 36px; padding-top: 18px; border-top: 1px solid var(--line-2);
+  font-size: 13px; color: var(--muted);
+}
+.foot p { margin: 0 0 4px; }
+@media (min-width: 720px) { .cards { grid-template-columns: repeat(3, 1fr); } }
+</style>
+</head>
+<body>
+<div class="top">
+  <a class="back" href="../">← J++ 案例 / J++ cases</a>
+  <button class="icon-btn" id="theme" type="button" aria-label="切换深浅色" title="切换深浅色">
+    <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 1.5a6.5 6.5 0 0 1 0 13z" fill="currentColor"/></svg>
+  </button>
+</div>
+<div class="wrap">
+  <header class="hero">
+    <h1>Harness 的世界<span class="en">A world compiled from the Harness ledger</span></h1>
+    <div class="intro">
+      <p>这是把一个真实运行了三个月的 Agent 系统——Harness，约 89 万条事件——的账本，用 J++ 编译成可看的三维世界的第一批骨架。J++ 在里面做的事：生成器为每类对象提候选，JEV 逐个对象挑身体；为每个任务挑结构、材料、颜色、顶；为每一步挑工序。数量（规模、层数、开窗）由代码照实算，物理先决条件由世界强制。三页都是真机运行：判断次数与费用在页面右下角。</p>
+      <p class="en">This compiles the ledger of a real Agent system that ran for three months — Harness, about 890,000 events — into a viewable three-dimensional world with J++. What J++ does inside it: a generator proposes candidates for each object class, and JEV picks a body for each object, then picks structure, material, color and roof for each task, then picks a procedure for each step. Quantities (scale, floor count, window openings) are computed by code as recorded; physical preconditions are enforced by the world itself. All three pages are live runs: judgment counts and cost sit in the bottom-right corner of each page.</p>
+    </div>
+  </header>
+
+  <div class="cards">
+    <div class="card">
+      <div class="cno">01</div>
+      <h3>一个夏天的 48 座<span class="en">48 buildings across one summer</span></h3>
+      <p class="verdict">建设链最长的 48 个真实任务，跨 7–9 月；账本里只有 1 座被判成封顶，其余 47 座没有封顶记录，照实呈现。<span class="en">The 48 real tasks with the longest build chains, spanning July–September; the ledger records only 1 building as topped out, the other 47 have no topping-out record, shown as recorded.</span></p>
+      <ul>
+        <li>2,045 次判断、82 次生成，约 $0.07 / 2,045 judgments, 82 generations, about $0.07</li>
+        <li>251 次顺序纠正 / 251 sequence corrections</li>
+        <li>账本里 1 座判成封顶，47 座没有封顶记录 / the ledger records 1 building topped out, 47 with no record of it</li>
+      </ul>
+      <a class="open" href="summer-48.html">打开 · Open ↗</a>
+    </div>
+    <div class="card">
+      <div class="cno">02</div>
+      <h3>五座在建的东西<span class="en">Five structures under construction</span></h3>
+      <p class="verdict">2026-09-07 一天里 5 个任务、258 条事件合成 53 道工序，JEV 从候选里挑结构与工序：三联塔判到 1.00，判据桥判到 0.98。<span class="en">One day, 2026-09-07: 5 tasks and 258 events compiled into 53 procedure steps, with JEV picking structure and procedure from candidates — 三联塔 (a triple-tower structure) scored 1.00, 判据桥 (a criterion-bridge structure) scored 0.98.</span></p>
+      <ul>
+        <li>JEV 选结构：三联塔 1.00、判据桥 0.98… / JEV picked structures: 三联塔 (triple tower) 1.00, 判据桥 (criterion bridge) 0.98…</li>
+        <li>53 道工序 / 53 procedure steps</li>
+        <li>20 次顺序纠正 / 20 sequence corrections</li>
+      </ul>
+      <a class="open" href="five-structures.html">打开 · Open ↗</a>
+    </div>
+    <div class="card">
+      <div class="cno">03</div>
+      <h3>一次修复<span class="en">One fix</span></h3>
+      <p class="verdict">一个修复席 15:45–15:54 的真实事件链，60 秒里 6 次判断，5 次命中缓存，只有 1 次真花钱：$0.0000481。<span class="en">A real event chain from one fix session, 15:45–15:54: 6 judgments in 60 seconds, 5 served from cache, only 1 actually cost money — $0.0000481.</span></p>
+      <ul>
+        <li>60 秒，6 次判断 / 60 seconds, 6 judgments</li>
+        <li>5 次命中缓存 / 5 cache hits</li>
+        <li>1 次真调用：$0.0000481 / 1 live call: $0.0000481</li>
+      </ul>
+      <a class="open" href="one-fix.html">打开 · Open ↗</a>
+    </div>
+  </div>
+
+  <section class="section">
+    <h2>判断分工的两次实证<span class="en">Two tests of what should be judged versus decided by code</span></h2>
+    <p><span class="sub">把只有闸门检查项的 CommitAccepted 交给 JEV</span> 判「修根因还是绕过」，1,460 条里 1,379 条给出同一个答案。这批材料本身只有闸门检查字段，没有给判断留下可区分的证据。</p>
+    <p class="en">Handing CommitAccepted events that only carry gate-check fields to JEV, asking it to judge "fixed the root cause or worked around it": 1,379 of 1,460 came back with the same answer. The material handed to JEV carried only gate-check fields — no evidence that could tell the two answers apart.</p>
+    <p><span class="sub">把颜色、顶当抽象选项直接问 JEV</span>，48 座里 41 座选了青灰。修法：代码能定的用代码判；需要 JEV 判的，让生成器先为每个候选写一句「什么样的任务适合它」，判断器才有证据可依据，而不是在裸选项里凭空选。</p>
+    <p class="en">Asking JEV to pick color and roof as bare abstract options, 41 of 48 buildings came back the same blue-gray. The fix: let code decide whatever code can decide; where JEV must judge, have the generator first write one sentence per candidate on what kind of task it fits, so the judge has evidence to work from instead of choosing among bare labels.</p>
+  </section>
+
+  <section class="section">
+    <h2>程序<span class="en">The programs</span></h2>
+    <p>三个 J++ 程序各不到 60 行：<code>compile.jpp</code>、<code>compile-steps.jpp</code>、<code>compile-build-v2.jpp</code>。程序源码在 world 仓库里，暂未随本仓库发布，随下一次同步一并发布；这次先发运行产物——三段录制好的三维世界。</p>
+    <p class="en">The three J++ programs are each under 60 lines: <code>compile.jpp</code>, <code>compile-steps.jpp</code>, <code>compile-build-v2.jpp</code>. Source lives in the world repository and is not yet published here; it ships with the next sync. This drop is the recorded worlds themselves.</p>
+  </section>
+
+  <div class="hint">
+    建议用桌面 Chrome 打开；空格键重放，拖动画面可以接管镜头。
+    <div class="en">Best viewed in desktop Chrome. Press space to replay; drag to take over the camera.</div>
+  </div>
+
+  <div class="foot">
+    <p>数据来自 Nature 自己的 Harness 账本；页面上的任务名、事件原文是真实记录。</p>
+    <p>Data comes from Nature's own Harness ledger; the task names and event text shown are real records.</p>
+  </div>
+</div>
+<script>
+(function(){
+  var b = document.getElementById("theme");
+  if (!b) return;
+  b.addEventListener("click", function(){
+    var r = document.documentElement;
+    var dark = r.dataset.theme ? r.dataset.theme === "dark" : window.matchMedia("(prefers-color-scheme: dark)").matches;
+    r.dataset.theme = dark ? "light" : "dark";
+  });
+})();
+</script>
+</body>
+</html>

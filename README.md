@@ -20,6 +20,11 @@ All demos live on one page: **[towow-ai.github.io/jpp/demos/](https://towow-ai.g
 
 **06 [讲台提示](https://towow-ai.github.io/jpp/demos/speaker/)** 回放一场真机运行：每 3 秒把台下（12 张模拟的脸，汇总成四个比例）、最新字幕和本场画像冻结成一份材料，JEV 在一次合并调用里答两道选择题（约 1.3 秒）：提示讲者做什么（含「先不提示」）、往哪一节偏。观众由 JEV 看不到的隐藏偏好模拟，回放里每一拍的判断都是真机结果。
 
+**07 [World compiled from the Harness ledger / Harness 的世界](https://towow-ai.github.io/jpp/demos/world/)**: three months of one real Agent system's ledger (about 890,000 events) compiled into a viewable world with J++. JEV picks structure and procedure for 48 real construction tasks, about $0.07 total; the marginal cost of one fix session is $0.0000481.
+
+**07 [Harness 的世界](https://towow-ai.github.io/jpp/demos/world/)**：把三个月的 Agent 账本（约 89 万条事件）编译成 48 座在建的东西，JEV 选结构与工序，费用几美分；一次修复的单笔成本是 $0.0000481。
+
+
 <sub>01–04：录于 2026-09-26，旧默认：没写线即拿不准；新默认下的重录在赛后 / Recorded 2026-09-26 under the old default (no line = unsure); re-recording under the new default comes after the contest.</sub>
 
 - **01 Who is lying / 谁在说谎**: eight testimonies compared pair by pair. Cases A and B circle two people that include the culprit; in case C the program names Zhou Lin while the case design says Han Mei; some pairs stay uncertain in all three. / 八份证词两两对质。A、B 两案圈出的两人含真凶，C 案程序认定周琳而出题设定是韩梅，三案都仍有拿不准的证词对。
