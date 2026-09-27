@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>J++ 改写实测</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<style>
+:root{
+  --ground:#F5F7F6; --panel:#FFFFFF; --ink:#16201C; --muted:#5A6862; --rule:#D6DDD9;
+  --accent:#17705A; --accent-soft:#DCEEE7; --warn:#B45A2C; --warn-soft:#F6E4DA; --band:#E7ECEA; --band2:#EEF3F1;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+  --sans:"IBM Plex Sans","PingFang SC","Hiragino Sans GB","Noto Sans SC","Microsoft YaHei",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ground:#101614; --panel:#161E1B; --ink:#E3EAE6; --muted:#98A6A0; --rule:#2A3531;
+    --accent:#5CC4A2; --accent-soft:#16332A; --warn:#E28A5C; --warn-soft:#3A2419; --band:#1C2623; --band2:#19221F;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#101614; --panel:#161E1B; --ink:#E3EAE6; --muted:#98A6A0; --rule:#2A3531;
+  --accent:#5CC4A2; --accent-soft:#16332A; --warn:#E28A5C; --warn-soft:#3A2419; --band:#1C2623; --band2:#19221F;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--ground);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.7;margin:0;padding-inline:20px;padding-block:32px 64px}
+.wrap{max-width:980px;margin:0 auto;display:flex;flex-direction:column;gap:44px}
+.prose{max-width:44em}
+h1{font-size:2.1rem;line-height:1.25;margin:0;font-weight:700;letter-spacing:.01em;text-wrap:balance}
+h2{font-size:1.3rem;line-height:1.35;margin:0 0 14px;font-weight:600;text-wrap:balance}
+h3{font-size:1.02rem;margin:18px 0 6px;font-weight:600}
+p{margin:0 0 12px}
+.eyebrow{font-family:var(--mono);font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+.lede{font-size:1.08rem;color:var(--ink);max-width:44em;margin-top:14px}
+.muted{color:var(--muted)}
+code,.num{font-family:var(--mono);font-size:.92em}
+.num{font-variant-numeric:tabular-nums}
+.keys{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+.key{background:var(--panel);border:1px solid var(--rule);border-radius:6px;padding:16px 18px;display:flex;flex-direction:column;gap:4px}
+.key b{font-family:var(--mono);font-size:1.9rem;font-weight:500;color:var(--accent);line-height:1.2;font-variant-numeric:tabular-nums}
+.key span{font-size:.92rem;color:var(--muted);line-height:1.5}
+ol.steps{margin:0;padding-left:1.3em;display:flex;flex-direction:column;gap:6px}
+.chartbox{background:var(--panel);border:1px solid var(--rule);border-radius:6px;padding:16px 14px 10px}
+.chartbox svg{display:block;width:100%;height:auto}
+.legend{display:flex;flex-wrap:wrap;gap:8px 18px;font-size:.85rem;color:var(--muted);margin-top:8px;padding-inline:4px}
+.sw{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:-1px}
+.scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{border-collapse:collapse;width:100%;font-size:.92rem}
+th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--rule);vertical-align:top}
+th{font-weight:600;color:var(--muted);font-size:.82rem;letter-spacing:.03em;white-space:nowrap}
+td.n,th.n{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+.pill{display:inline-block;font-size:.76rem;padding:1px 8px;border-radius:999px;white-space:nowrap}
+.p-full{background:var(--accent-soft);color:var(--accent)}
+.p-part{background:var(--warn-soft);color:var(--warn)}
+.p-na{background:var(--band);color:var(--muted)}
+.frame td:first-child{font-weight:600;white-space:nowrap}
+.findings{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.finding{border-top:2px solid var(--accent);padding-top:10px}
+.finding h3{margin-top:0}
+.edge li{margin-bottom:6px}
+.controls{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}
+.controls button{font:inherit;font-size:.85rem;background:var(--panel);color:var(--ink);border:1px solid var(--rule);border-radius:999px;padding:3px 12px;cursor:pointer}
+.controls button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--panel)}
+.controls button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+footer{font-size:.85rem;color:var(--muted);border-top:1px solid var(--rule);padding-top:14px}
+@media (max-width:560px){h1{font-size:1.65rem} body{font-size:15px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div class="eyebrow">J++ · 真实项目改写实测 · 数据截至 2026-09-26 16:30</div>
+  <h1>84 个真实 JEV 项目，用 J++ 重写后逐字段比对</h1>
+  <p class="lede">从 GitHub 上 3361 个用到 JEV 判断接口的开源仓库里，按用途和题型聚成 75 类，每类取一个代表。原项目的代码一行不改地跑，J++ 另写一遍，两边喂同一批判断读数，逐字段比较输出。结果：<b>72 个完全一致</b>，11 个部分一致（不一致处单列原因、不剔除），1 个因原项目自身缺陷无法比较；J++ 的判断核心代码中位数是原项目的约五分之二。调用判断接口的次数在 79 个项目上与原项目持平；另有 4 个要在候选之间互相比较的项目，J++ 目前得把每个候选拆成单独一次判断，调用次数高出很多。</p>
+</header>
+
+<section class="keys" aria-label="关键数字">
+  <div class="key"><b>72 / 84</b><span>项目在同一份读数下逐字段完全一致（85.7%），另 11 个部分一致</span></div>
+  <div class="key"><b>2.5×</b><span>判断核心代码量倍率中位数（按每 100 字符折行归一；四分位 1.8–3.6×）</span></div>
+  <div class="key"><b>1.44–1.66×</b><span>把两边都要写的胶水代码也算进去之后的倍率（这一口径的上限）</span></div>
+  <div class="key"><b>0.999</b><span>79 个项目上 J++ 与原项目调用判断接口次数之比（1111 次对 1112 次）；4 个跨候选比较的项目是 174 次对 18 次</span></div>
+</section>
+
+<section class="prose">
+  <h2>怎么比的</h2>
+  <ol class="steps">
+    <li>圈出原项目的判断核心：题怎么定义、怎么调判断接口、阈值怎么分流、多道题怎么组合。命令行、网络、日志这些不算。</li>
+    <li>写任何代码之前先提交预注册：预测行数比、调用数比、哪些字段比不了。</li>
+    <li>给原项目接一个同名同签名的假客户端，跑它<b>未改动</b>的代码，记下每次调用的题目和读数；输入覆盖每个阈值的两侧和模棱两可的中间带。</li>
+    <li>核对每条依赖读数的分支确实走到了；走不到的先分清是输入没造到还是原项目自己的缺陷。</li>
+    <li>把调用记录转成 J++ 的夹具，写 J++ 程序，用同一批读数跑。</li>
+    <li>逐字段比较输出，第一处不同原样打印；再比调用次数、数代码行数。部分一致的项目照样计入分母。</li>
+  </ol>
+</section>
+
+<section>
+  <div class="prose">
+    <h2>代码量落在哪一层</h2>
+    <p>每个点是一个项目（判断核心口径，对数刻度）。底色是业界有出处的参考区间：同代通用语言之间（例如 C 对 C++）约 1.4–3 倍；领域专用语言连同它需要的生成器和胶水代码约 3.5–3.9 倍，只算专用语言自身的文本可到 2.7–17 倍。</p>
+  </div>
+  <div class="chartbox"><svg id="strip" viewBox="0 0 940 250" role="img" aria-label="83 个项目的代码量倍率分布"></svg>
+    <div class="legend"><span><i class="sw" style="background:var(--accent)"></i>完全一致</span><span><i class="sw" style="background:var(--warn)"></i>部分一致</span><span>竖线：中位数 2.5×　虚线：1×（行数相同）</span></div>
+  </div>
+  <div class="prose" style="margin-top:14px">
+    <p>省得最多的项目，原本手写了大量重试、校验、分批和拿不准时的分流，这些 J++ 语言本身就做了：推理力度路由 427 行变 39 行，机械臂控制 396 行变 43 行。省得最少、甚至更长的项目，核心本来就短，主要是题面文字和多道候选集不同的选择题，J++ 写法上每道题要各自带候选集。</p>
+  </div>
+</section>
+
+<section>
+  <h2>用业界评价语言的框架评 J++</h2>
+  <p class="prose muted">业界比较两门语言，从来不只看一个「好用多少倍」，而是分几个维度量。我们之前核实过这些框架的出处，下面逐项对照。</p>
+  <div class="scroll"><table class="frame">
+    <thead><tr><th>维度</th><th>业界怎么量、参考数</th><th>J++ 的结果</th></tr></thead>
+    <tbody>
+      <tr><td>代码量</td><td>功能点语言等级表（Jones）、同题多实现（Prechelt）：C→C++ 约 2.4 倍；同代通用语言 1.4–3 倍；专用语言连胶水 3.5–3.9 倍</td><td>判断核心中位数 2.5 倍、汇总 2.98 倍；计入胶水 1.44–1.66 倍。落在「同代通用语言」一层，和 C 对 C++ 同量级，不是 SQL 那种十倍量级</td></tr>
+      <tr><td>开发时间</td><td>受控实验：专用语言快 1.45–2.3 倍；时间倍率通常低于代码量倍率</td><td><b>没有测。</b>实验设计已写：同一批任务，代理分别用 J++ 和 Python 独立实现，记墙钟时间与 token 消耗，多次取中位数</td></tr>
+      <tr><td>正确性</td><td>Rust 的价值靠「一类错误写不出来」证明，Google 报告改写后工作量减少两倍以上，主要来自缺陷更少</td><td>改写时在原项目未改的代码里查出 8 处真实缺陷（见下）；J++ 版本自带原项目没有的保证：每次判断记账可重放、拿不准必须有去处、撤不回的动作过线才执行、判断线来历可见</td></tr>
+      <tr><td>运行成本</td><td>传统框架没有这一项：C 或 Rust 的执行不按次付费</td><td>79 个项目上与原项目持平（0.999）；4 个要在候选之间互相比较的项目，J++ 目前把每个候选拆成单独一次判断，合计 174 次对 18 次，这是已登记的缺口（请求形状与重排器）。同一处同样的请求只发一次，结果可缓存复用</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section class="prose">
+  <h2>我们发现的不一样</h2>
+  <p><b>只看代码量，J++ 像 C 到 C++。</b>倍率是几倍，不是几十倍。如果有人问「J++ 是不是像 SQL 那样把代码压缩了十倍」，如实的回答是「不是」。</p>
+  <p><b>更大的价值在正确性，这一点像 Rust。</b>原项目里那种「浮点误差改了阈值边界」「拿不准的结果被悄悄丢进失败列表」「一个更严格的阈值因为逻辑覆盖从来没生效」的问题，在 J++ 的结构里更难写出来。这类价值不体现在行数上，要用「少出多少错、能不能审计重放」来量。</p>
+  <p><b>判断的调用成本是传统框架没有的维度。</b>每一次判断都是一次真实的外部调用，有延迟和费用，需要单独测、单独报。</p>
+  <p><b>编码之外的工作变了形。</b>Jones 的研究提醒过：编码只占大型项目工作量约三成，代码量倍率不能直接换算成开发效率。J++ 还把原来藏在几行 if/else 里的判断设计（问什么题、线划在哪、拿不准怎么办）变成必须写明的东西，这部分工作在传统工时统计里没有对应的科目。</p>
+</section>
+
+<section>
+  <h2>在原项目里查出的真实缺陷</h2>
+  <p class="prose muted">这些缺陷都在原项目未改一行的代码里，是真的跑起来、喂数据时暴露的，不是 J++ 或改写工具引入的。</p>
+  <div class="findings">
+    <div class="finding"><h3>分支永远走不到</h3><p class="muted"><code>onciopescini/botcraft</code>：收判断结果的分支受线程执行顺序保证约束，两个条件永远不能同时成立。5000 次复现 0 次反例，真机 260 步一次也没触发。</p></div>
+    <div class="finding"><h3>更严的阈值从未生效</h3><p class="muted"><code>XMoyas/web_attack_detection_jev</code>：先判 0.40 再判 0.70，宽的条件已经覆盖了严的，0.70 从不单独决定结果。</p></div>
+    <div class="finding"><h3>分档在边界上方向交替</h3><p class="muted"><code>behindthedash/worktrail</code>：Python 的四舍五入在 0.5、1.5、2.5 上方向依次是下、上、下（「五取偶」规则），分档不单调。</p></div>
+    <div class="finding"><h3>浮点误差改了边界</h3><p class="muted"><code>meetr1912/jev-bracket</code>：<code>abs(p − 0.5) &lt; 0.05</code> 在 p = 0.45 时因双精度减法的舍入误差为真，本该在边界外的读数被划进了「拿不准」。</p></div>
+    <div class="finding"><h3>概率大于 0 就算「是」</h3><p class="muted"><code>sudeshkar/jev-corrective-rag</code>：用 <code>bool(ans.noul)</code> 取是非题的真假，概率只要不是恰好 0 就为真，真机上几乎每个问题都会被升级给人工。</p></div>
+    <div class="finding"><h3>置信度门永远能过</h3><p class="muted"><code>sudeshkar/jev-corrective-rag</code>：从是非题答案里取一个它根本没有的置信度字段，缺省为 1.0，「不低于 0.5」恒成立。</p></div>
+    <div class="finding"><h3>公开入口打不开的功能</h3><p class="muted"><code>adigulalkari/Jev_GC</code>：<code>ask_item_role</code> 没有暴露给配置，走文档写的入口时永远关着。</p></div>
+    <div class="finding"><h3>「或」条件意外重叠</h3><p class="muted"><code>prantikmedhi/anchorlint</code>：一条分支的条件里的「或」让它在标签不对时也会触发，造测试用例隔离分支时发现。</p></div>
+  </div>
+</section>
+
+<section class="prose">
+  <h2>原项目自己让 JEV 判断代码就能定的事</h2>
+  <p>JEV 的价值在复杂的语义判断。能不能运行、数值相等、坐标比较这类事，用普通代码判就行，不该花一次判断。改写要求效果一模一样，所以原项目这么问的，J++ 版照原样对照，但在这里标出来。</p>
+  <p>按题面扫了 84 个项目：明确属于这一类的有 1 个，<code>siroccomask/snake-jev</code>，贪吃蛇每一步问 JEV「会不会撞墙」「会不会撞到蛇身」「离食物是不是更近」，这些都是坐标运算。另有 9 个项目的题面里有一部分看起来能用代码算，要不要算取决于输入细节，没有逐题重读源码，暂列为拿不准。</p>
+</section>
+
+<section class="prose edge">
+  <h2>边界与还没做的</h2>
+  <ul>
+    <li><b>「一模一样」是在同一份读数下成立的。</b>真机读数本身有抖动；24 个项目在 JEV 返回的 confidence 上设门，真机上的 confidence 不等于最大概率，这部分项目的逐字段一致只在同一份读数下保证。</li>
+    <li><b>倍率只算判断核心。</b>胶水代码两边都算进去的口径同时给出；有 21 个项目的胶水行数没有登记、按 0 计，所以 1.44–1.66 倍是这个口径的上限。</li>
+    <li><b>部分一致的 11 项</b>，原因逐条写明：有的是改写当时 J++ 还不能表达对读数做加权或跨题比较（这类写法已在 2026-09-26 下午合入，受阻项目已用新版本补做），有的是只覆盖了部分分支，少数是原项目在概率归一化容差内的边界巧合。</li>
+    <li><b>跨候选比较的调用次数。</b>要在候选之间排序或比较的 4 个项目，结果一致，但 J++ 的调用次数是原项目的约 10 倍，这是待修的缺口，不是持平。</li>
+    <li><b>覆盖率是上限。</b>每类改写一个代表，说明这一类的判断结构 J++ 写得出，不说明同类每个仓库的细节都验证过。</li>
+    <li><b>开发时间没有测</b>，只给了实验设计。</li>
+    <li>没有许可证的原项目只在本地运行，报告里只写仓库名和数字，不附原码。</li>
+  </ul>
+</section>
+
+<section>
+  <h2>逐项数据</h2>
+  <div class="controls" role="group" aria-label="筛选">
+    <button type="button" id="f-all" aria-pressed="true" data-f="all">全部 84</button>
+    <button type="button" id="f-full" aria-pressed="false" data-f="全部">完全一致</button>
+    <button type="button" id="f-part" aria-pressed="false" data-f="部分">部分一致</button>
+    <button type="button" id="f-sort" aria-pressed="false" data-f="sort">按倍率排序</button>
+  </div>
+  <div class="scroll"><table id="items">
+    <thead><tr><th>编号</th><th>仓库</th><th>语言</th><th>用途</th><th>结果</th><th class="n">核心行</th><th class="n">J++ 行</th><th class="n">倍率</th><th class="n">调用 原 / J++</th></tr></thead>
+    <tbody></tbody>
+  </table></div>
+</section>
+
+<footer>数据与方法：全文报告与数据表见 <a href="https://github.com/Towow-ai/jpp/blob/main/research/2026-09-26-rewrite-study.zh-CN.md"><code>research/2026-09-26-rewrite-study.zh-CN.md</code></a>，逐项数据 <a href="https://github.com/Towow-ai/jpp/blob/main/research/data/2026-09-26-rewrite-study/2026-09-26-rewrite-data.csv"><code>research/data/2026-09-26-rewrite-study/2026-09-26-rewrite-data.csv</code></a>，复现脚本 <a href="https://github.com/Towow-ai/jpp/blob/main/research/scripts/rewrite_summary.py"><code>research/scripts/rewrite_summary.py</code></a>；84 个项目的原始代码与 J++ 改写代码本身是私有工作区的内部改写语料库，未随本次公开。倍率按每 100 字符折行归一，缺折行数的项目用原始行数。</footer>
+</div>
+
+<script>
+const DATA = [{"id": "B1-01", "repo": "religa/jfind", "lang": "Python", "cls": "筛选", "eq": "全部", "core": 82.0, "host": 142.0, "jpp": 45.0, "wrap": 1.6274509803921569, "raw": 1.8222222222222222, "wh": 1.1979, "co": 96.0, "cj": 96.0, "conf": "否"}, {"id": "B1-02", "repo": "krijingle-create/maibot-jev-timing-gate", "lang": "Python", "cls": "审核", "eq": "全部", "core": 145.0, "host": 78.0, "jpp": 30.0, "wrap": 4.257142857142857, "raw": 4.833333333333333, "wh": 2.0648, "co": 10.0, "cj": 10.0, "conf": "否"}, {"id": "B1-03", "repo": "XMoyas/web_attack_detection_jev", "lang": "Python", "cls": "审核", "eq": "全部", "core": 175.0, "host": 0.0, "jpp": 68.0, "wrap": 2.3333333333333335, "raw": 2.573529411764706, "wh": 2.5735, "co": 20.0, "cj": 20.0, "conf": "否"}, {"id": "B1-04", "repo": "Zafer-Liu/jev-demo-router", "lang": "Python", "cls": "分诊", "eq": "全部", "core": 60.0, "host": 0.0, "jpp": 26.0, "wrap": 2.2222222222222223, "raw": 2.3076923076923075, "wh": 2.3077, "co": 16.0, "cj": 16.0, "conf": "是"}, {"id": "B1-05", "repo": "sathariels/jevtriage", "lang": "Python", "cls": "审核", "eq": "全部", "core": 243.0, "host": 191.0, "jpp": 37.0, "wrap": 6.230769230769231, "raw": 6.5675675675675675, "wh": 1.9035, "co": 12.0, "cj": 12.0, "conf": "是"}, {"id": "B1-06", "repo": "Zafer-Liu/jev-demo-screener", "lang": "Python", "cls": "匹配", "eq": "全部", "core": 65.0, "host": 0.0, "jpp": 39.0, "wrap": 1.6, "raw": 1.6666666666666667, "wh": 1.6667, "co": 10.0, "cj": 10.0, "conf": "是"}, {"id": "B1-07", "repo": "jesusvillamarin/pulso-nps", "lang": "Python", "cls": "分诊", "eq": "全部", "core": 64.0, "host": 0.0, "jpp": 80.0, "wrap": 0.8333333333333334, "raw": 0.8, "wh": 0.8, "co": 2.0, "cj": 2.0, "conf": "是"}, {"id": "B1-08", "repo": "emreozyoruk/hush", "lang": "JavaScript", "cls": "分诊", "eq": "全部", "core": 156.0, "host": 40.0, "jpp": 74.0, "wrap": 2.1235955056179776, "raw": 2.108108108108108, "wh": 1.7193, "co": 14.0, "cj": 14.0, "conf": "是"}, {"id": "B1-09", "repo": "backmeupplz/jev_antispam_bot", "lang": "TypeScript", "cls": "审核", "eq": "全部", "core": 351.0, "host": 19.0, "jpp": 71.0, "wrap": 4.68, "raw": 4.943661971830986, "wh": 4.1111, "co": 10.0, "cj": 10.0, "conf": "否"}, {"id": "B1-10", "repo": "prantikmedhi/anchorlint", "lang": "Python", "cls": "审核", "eq": "全部", "core": 421.0, "host": 0.0, "jpp": 88.0, "wrap": 4.524752475247524, "raw": 4.784090909090909, "wh": 4.7841, "co": 25.0, "cj": 25.0, "conf": "是"}, {"id": "B1-11", "repo": "ygivenx/jev-try", "lang": "Python", "cls": "其他判断", "eq": "全部", "core": 137.0, "host": 12.0, "jpp": 64.0, "wrap": 2.1692, "raw": 2.1406, "wh": 1.9605, "co": 4.0, "cj": 4.0, "conf": "否"}, {"id": "B1-12", "repo": "awlevin/typesafe-computer-use", "lang": "Python", "cls": "游戏/交互", "eq": "全部", "core": 225.0, "host": 0.0, "jpp": 87.0, "wrap": 2.515463917525773, "raw": 2.586206896551724, "wh": 2.5862, "co": 8.0, "cj": 8.0, "conf": "是"}, {"id": "B2-01", "repo": "zzz1YAO/DataJev", "lang": "Python", "cls": "生成+判断", "eq": "全部", "core": 128.0, "host": 55.0, "jpp": 83.0, "wrap": 1.4, "raw": 1.5421686746987953, "wh": 1.3261, "co": 6.0, "cj": 6.0, "conf": "否"}, {"id": "B2-02", "repo": "dperezcabrera/system-one-poker", "lang": "Python", "cls": "游戏/交互", "eq": "全部", "core": 48.0, "host": 58.0, "jpp": 14.0, "wrap": 2.7777777777777777, "raw": 3.4285714285714284, "wh": 1.4722, "co": 130.0, "cj": 130.0, "conf": "否"}, {"id": "B2-03", "repo": "buberlo/jev-trader", "lang": "Python", "cls": "其他判断", "eq": "全部", "core": 105.0, "host": 81.0, "jpp": 56.0, "wrap": 1.8421052631578947, "raw": 1.875, "wh": 1.3577, "co": 6.0, "cj": 6.0, "conf": "否"}, {"id": "B2-04", "repo": "gurkannz/pi-jev-compaction", "lang": "TypeScript", "cls": "筛选", "eq": "全部", "core": 82.0, "host": 351.0, "jpp": 36.0, "wrap": 2.073, "raw": 2.278, "wh": 1.1189, "co": 1.0, "cj": 1.0, "conf": "否"}, {"id": "B2-05", "repo": "litshing/hermes-jev-plugins", "lang": "Python", "cls": "筛选", "eq": "全部", "core": 109.0, "host": 511.0, "jpp": 40.0, "wrap": 2.659090909090909, "raw": 2.725, "wh": 1.1252, "co": 13.0, "cj": 13.0, "conf": "否"}, {"id": "B2-06", "repo": "valentynkit/jev-plays-pokemon-red", "lang": "Python", "cls": "游戏/交互", "eq": "全部", "core": 75.0, "host": 633.0, "jpp": 40.0, "wrap": 1.6666666666666667, "raw": 1.875, "wh": 1.052, "co": 17.0, "cj": 17.0, "conf": "否"}, {"id": "B2-07", "repo": "harperreed/houseagent", "lang": "Python", "cls": "生成+判断", "eq": "全部", "core": 280.0, "host": 80.0, "jpp": 64.0, "wrap": 3.5977011494252875, "raw": 4.375, "wh": 2.5, "co": 15.0, "cj": 15.0, "conf": "是"}, {"id": "B2-08", "repo": "colinmcdermott/grok-jev-router", "lang": "Python", "cls": "路由", "eq": "全部", "core": 201.0, "host": 33.0, "jpp": 82.0, "wrap": 2.2222222222222223, "raw": 2.451219512195122, "wh": 2.0348, "co": 16.0, "cj": 16.0, "conf": "是"}, {"id": "B2-09", "repo": "jms-dcksn/jev-pii-guardrail", "lang": "Python", "cls": "审核", "eq": "全部", "core": 151.0, "host": 20.0, "jpp": 83.0, "wrap": 1.588, "raw": 1.819, "wh": 1.6602, "co": 5.0, "cj": 5.0, "conf": "否"}, {"id": "B2-10", "repo": "justinhe16/trade-jev", "lang": "Python", "cls": "其他判断", "eq": "全部", "core": 61.0, "host": 60.0, "jpp": 51.0, "wrap": 1.088, "raw": 1.196, "wh": 1.0901, "co": 11.0, "cj": 11.0, "conf": "否"}, {"id": "B2-11", "repo": "prismhq/jev-router", "lang": "Python", "cls": "路由", "eq": "全部", "core": 70.0, "host": 111.0, "jpp": 22.0, "wrap": 2.8, "raw": 3.1818181818181817, "wh": 1.3609, "co": 4.0, "cj": 4.0, "conf": "否"}, {"id": "B2-12", "repo": "ieedan/label", "lang": "TypeScript", "cls": "分诊", "eq": "全部", "core": 348.0, "host": 810.0, "jpp": 67.0, "wrap": 4.84, "raw": 5.194, "wh": 1.3204, "co": 2.0, "cj": 2.0, "conf": "否"}, {"id": "B3-01", "repo": "valentynkit/jev-commit", "lang": "Python", "cls": "匹配", "eq": "全部", "core": 212.0, "host": 565.0, "jpp": 89.0, "wrap": 2.171, "raw": 2.382, "wh": 1.1881, "co": 8.0, "cj": 8.0, "conf": "否"}, {"id": "B3-02", "repo": "justinhsu1477/jev-router", "lang": "Python", "cls": "路由", "eq": "全部", "core": 121.0, "host": 101.0, "jpp": 20.0, "wrap": 5.545, "raw": 6.05, "wh": 1.8347, "co": 12.0, "cj": 12.0, "conf": "否"}, {"id": "B3-03", "repo": "amitvijapur/cortex", "lang": "Python", "cls": "生成+判断", "eq": "全部", "core": 146.0, "host": 85.0, "jpp": 56.0, "wrap": 2.5084745762711864, "raw": 2.607142857142857, "wh": 1.6383, "co": 6.0, "cj": 6.0, "conf": "是"}, {"id": "B3-04", "repo": "Foadsf/jev-for-engineers", "lang": "Python", "cls": "抽取", "eq": "全部", "core": 59.0, "host": 81.0, "jpp": 57.0, "wrap": 0.9833333333333333, "raw": 1.0350877192982457, "wh": 1.0145, "co": 14.0, "cj": 14.0, "conf": "是"}, {"id": "B3-05", "repo": "EliaAlberti/jev-rules", "lang": "JavaScript", "cls": "生成+判断", "eq": "全部", "core": 74.0, "host": 662.0, "jpp": 71.0, "wrap": 0.98, "raw": 1.04, "wh": 1.0041, "co": 12.0, "cj": 12.0, "conf": "否"}, {"id": "B3-06", "repo": "allebee/jevgrep", "lang": "Python", "cls": "匹配", "eq": "全部", "core": 112.0, "host": 121.0, "jpp": 57.0, "wrap": 1.93, "raw": 1.96, "wh": 1.309, "co": 30.0, "cj": 30.0, "conf": "否"}, {"id": "B3-07", "repo": "onciopescini/botcraft", "lang": "Python", "cls": "匹配", "eq": "不可比", "core": 53.0, "host": 71.0, "jpp": null, "wrap": null, "raw": null, "wh": null, "co": 7.0, "cj": null, "conf": "是"}, {"id": "B3-07b", "repo": "", "lang": "Swift", "cls": "缺", "eq": "部分", "core": 169.0, "host": 0.0, "jpp": 26.0, "wrap": 6.24, "raw": 6.5, "wh": 6.5, "co": 8.0, "cj": 8.0, "conf": "缺"}, {"id": "B3-08", "repo": "joaovaleri/ruleworld", "lang": "TypeScript", "cls": "游戏/交互", "eq": "全部", "core": 76.0, "host": 481.0, "jpp": 27.0, "wrap": 2.7, "raw": 2.81, "wh": 1.0965, "co": 6.0, "cj": 6.0, "conf": "否"}, {"id": "B3-09", "repo": "socai-io/jev-social", "lang": "JavaScript", "cls": "筛选", "eq": "全部", "core": 145.0, "host": 358.0, "jpp": 49.0, "wrap": 2.514705882352941, "raw": 2.9591836734693877, "wh": 1.2359, "co": 6.0, "cj": 6.0, "conf": "是"}, {"id": "B3-10", "repo": "meetr1912/jev-bracket", "lang": "Python", "cls": "其他判断", "eq": "部分", "core": 87.0, "host": 31.0, "jpp": 53.0, "wrap": 1.49, "raw": 1.64, "wh": 1.4048, "co": 5.0, "cj": 5.0, "conf": "否"}, {"id": "B3-11", "repo": "MarissaFamularo/citation-verifier", "lang": "JavaScript", "cls": "抽取", "eq": "全部", "core": 97.0, "host": 52.0, "jpp": 27.0, "wrap": 3.4516129032258065, "raw": 3.5925925925925926, "wh": 1.8861, "co": 11.0, "cj": 11.0, "conf": "是"}, {"id": "B3-12", "repo": "BrunooMoniz/polymarket-btc-5m-agent", "lang": "Python", "cls": "其他判断", "eq": "部分", "core": 114.0, "host": 146.0, "jpp": 38.0, "wrap": 2.83, "raw": 3.0, "wh": 1.413, "co": 12.0, "cj": 12.0, "conf": "否"}, {"id": "B4-01", "repo": "lykycy123/RoboJEV", "lang": "Python", "cls": "游戏/交互", "eq": "全部", "core": 396.0, "host": 111.0, "jpp": 43.0, "wrap": 10.778, "raw": 9.209, "wh": 3.2922, "co": 11.0, "cj": 11.0, "conf": "否"}, {"id": "B4-02", "repo": "Armur-Ai/Pentest-Swarm-AI", "lang": "Go", "cls": "分诊", "eq": "全部", "core": 169.0, "host": 46.0, "jpp": 15.0, "wrap": 11.666666666666666, "raw": 11.266666666666667, "wh": 3.5246, "co": 2.0, "cj": 1.0, "conf": "否"}, {"id": "B4-03", "repo": "AstrBotDevs/astrbot_plugin_reply_gate", "lang": "Python", "cls": "生成+判断", "eq": "全部", "core": 238.0, "host": 134.0, "jpp": 52.0, "wrap": 4.193, "raw": 4.577, "wh": 2.0, "co": 8.0, "cj": 8.0, "conf": "是"}, {"id": "B4-04", "repo": "MaxIvanyshen/jev-review", "lang": "Python", "cls": "审核", "eq": "全部", "core": 76.0, "host": 0.0, "jpp": 41.0, "wrap": 1.4074074074074074, "raw": 1.853658536585366, "wh": 1.8537, "co": 8.0, "cj": 8.0, "conf": "缺"}, {"id": "B4-05", "repo": "ishantanu/jevmetrics", "lang": "Go", "cls": "其他判断", "eq": "全部", "core": 156.0, "host": 140.0, "jpp": 36.0, "wrap": 4.097560975609756, "raw": 4.333333333333333, "wh": 1.6818, "co": 16.0, "cj": 16.0, "conf": "否"}, {"id": "B4-06", "repo": "syumai/jevyoumean", "lang": "Go", "cls": "匹配", "eq": "全部", "core": 372.0, "host": 929.0, "jpp": 50.0, "wrap": 6.75, "raw": 7.44, "wh": 1.3289, "co": 17.0, "cj": 17.0, "conf": "是"}, {"id": "B4-07", "repo": "ielab/llm-rankers", "lang": "Python", "cls": "排序", "eq": "部分", "core": 90.0, "host": 6.0, "jpp": 19.0, "wrap": 1.86, "raw": 1.79, "wh": 3.84, "co": 38.0, "cj": 38.0, "conf": "否"}, {"id": "B4-08", "repo": "AkashPriyadarshii/jev-curate", "lang": "Rust", "cls": "筛选", "eq": "全部", "core": 124.0, "host": 0.0, "jpp": 30.0, "wrap": 3.282051282051282, "raw": 4.133333333333334, "wh": 4.1333, "co": 7.0, "cj": 7.0, "conf": "缺"}, {"id": "B4-09", "repo": "AlphaPerseii3000/jev-effort-router", "lang": "Python", "cls": "路由", "eq": "全部", "core": 427.0, "host": 202.0, "jpp": 39.0, "wrap": 11.256, "raw": 10.949, "wh": 2.61, "co": 10.0, "cj": 10.0, "conf": "是"}, {"id": "B4-10", "repo": "caiovicentino/jev-shield", "lang": "JavaScript", "cls": "审核", "eq": "全部", "core": 150.0, "host": 15.0, "jpp": 80.0, "wrap": 1.771, "raw": 1.875, "wh": 1.7368, "co": 11.0, "cj": 11.0, "conf": "缺"}, {"id": "B4-11", "repo": "QCMaxcer/SRTMood", "lang": "TypeScript", "cls": "排序", "eq": "全部", "core": 160.0, "host": 272.0, "jpp": 36.0, "wrap": 3.1481481481481484, "raw": 4.444444444444445, "wh": 1.4026, "co": 14.0, "cj": 14.0, "conf": "否"}, {"id": "B4-12", "repo": "saksham-malhotra-27/jev-relevance", "lang": "Python", "cls": "筛选", "eq": "全部", "core": 209.0, "host": 0.0, "jpp": 23.0, "wrap": 8.36, "raw": 9.087, "wh": 9.087, "co": 27.0, "cj": 27.0, "conf": "否"}, {"id": "B4-13", "repo": "yodablocks/commitjev", "lang": "Python", "cls": "审核", "eq": "全部", "core": 250.0, "host": 254.0, "jpp": 77.0, "wrap": 2.841, "raw": 3.247, "wh": 1.5227, "co": 15.0, "cj": 15.0, "conf": "是"}, {"id": "B5-01", "repo": "fazlerocks/jevmail", "lang": "TypeScript", "cls": "分诊", "eq": "全部", "core": 69.0, "host": 10.0, "jpp": 15.0, "wrap": 4.647058823529412, "raw": 4.6, "wh": 3.16, "co": 9.0, "cj": 9.0, "conf": "否"}, {"id": "B5-02", "repo": "manali-co/yapp", "lang": "Python", "cls": "抽取", "eq": "全部", "core": 125.0, "host": 136.0, "jpp": 121.0, "wrap": 0.926, "raw": 1.033, "wh": 1.0156, "co": 19.0, "cj": 24.0, "conf": "是"}, {"id": "B5-03", "repo": "jsk4581/jev-blindspot", "lang": "TypeScript", "cls": "生成+判断", "eq": "部分", "core": 94.0, "host": 194.0, "jpp": 70.0, "wrap": 1.365, "raw": 1.343, "wh": 1.0909, "co": 8.0, "cj": 7.0, "conf": "缺"}, {"id": "B5-04", "repo": "AiPersonacademy/jev-resume-disqualifier", "lang": "Python", "cls": "匹配", "eq": "全部", "core": 80.0, "host": 534.0, "jpp": 26.0, "wrap": 3.3, "raw": 3.08, "wh": 1.0964, "co": 5.0, "cj": 2.0, "conf": "是"}, {"id": "B5-05b", "repo": "neerajvipparla/dev-tab-autopilot", "lang": "JavaScript", "cls": "排序", "eq": "全部", "core": 98.0, "host": 608.0, "jpp": 25.0, "wrap": 3.219, "raw": 3.92, "wh": 1.1153, "co": 9.0, "cj": 9.0, "conf": "是"}, {"id": "B5-06b", "repo": "eachann1024/pi-jev-route", "lang": "TypeScript", "cls": "路由", "eq": "全部", "core": 81.0, "host": 528.0, "jpp": 89.0, "wrap": 1.284, "raw": 0.91, "wh": 0.987, "co": 13.0, "cj": 11.0, "conf": "是"}, {"id": "B5-07", "repo": "behindthedash/worktrail", "lang": "Python", "cls": "分诊", "eq": "部分", "core": 139.0, "host": 38.0, "jpp": 43.0, "wrap": 2.527, "raw": 3.233, "wh": 2.1852, "co": 12.0, "cj": 12.0, "conf": "缺"}, {"id": "B5-07b", "repo": "yaohao159123/paper-triage", "lang": "JavaScript", "cls": "分诊", "eq": "全部", "core": 239.0, "host": 363.0, "jpp": 63.0, "wrap": 3.780821917808219, "raw": 3.7936507936507935, "wh": 1.4131, "co": 2.0, "cj": 2.0, "conf": "是"}, {"id": "B5-08", "repo": "coo-quack/jev-pii-checker", "lang": "TypeScript", "cls": "抽取", "eq": "全部", "core": 783.0, "host": 850.0, "jpp": 255.0, "wrap": 2.583, "raw": 3.071, "wh": 1.4778, "co": 27.0, "cj": 24.0, "conf": "否"}, {"id": "B5-09", "repo": "Deepusleepy/jeff", "lang": "JavaScript", "cls": "排序", "eq": "全部", "core": 134.0, "host": 24.0, "jpp": 68.0, "wrap": 1.7625, "raw": 1.9706, "wh": 1.7174, "co": 5.0, "cj": 130.0, "conf": "缺"}, {"id": "B5-10", "repo": "lalitsonawane/jev-snake", "lang": "TypeScript", "cls": "游戏/交互", "eq": "全部", "core": 132.0, "host": 215.0, "jpp": 15.0, "wrap": 7.5, "raw": 8.8, "wh": 1.5087, "co": 15.0, "cj": 15.0, "conf": "否"}, {"id": "B5-11", "repo": "shiro-0x/hersona", "lang": "Python", "cls": "生成+判断", "eq": "全部", "core": 271.0, "host": 1561.0, "jpp": 83.0, "wrap": 2.635, "raw": 3.265, "wh": 1.1144, "co": 13.0, "cj": 13.0, "conf": "缺"}, {"id": "B5-11b", "repo": "SuperInstance/jev-diffusion", "lang": "Python", "cls": "生成+判断", "eq": "全部", "core": 34.0, "host": 0.0, "jpp": 50.0, "wrap": 0.61, "raw": 0.68, "wh": 0.68, "co": 11.0, "cj": 11.0, "conf": "否"}, {"id": "B5-12", "repo": "cheeaun/jevmoji", "lang": "JavaScript", "cls": "筛选", "eq": "全部", "core": 264.0, "host": 37.0, "jpp": 46.0, "wrap": 5.28, "raw": 5.7391, "wh": 3.6265, "co": 2.0, "cj": 9.0, "conf": "缺"}, {"id": "B6-01", "repo": "jammaru/jev-affected", "lang": "TypeScript", "cls": "路由", "eq": "全部", "core": 209.0, "host": 130.0, "jpp": 48.0, "wrap": 4.1, "raw": 4.35, "wh": 1.9045, "co": 8.0, "cj": 8.0, "conf": "否"}, {"id": "B6-02", "repo": "catorch/jev-domain-auctions", "lang": "TypeScript", "cls": "其他判断", "eq": "全部", "core": 68.0, "host": 48.0, "jpp": 30.0, "wrap": 2.2059, "raw": 2.2667, "wh": 1.4872, "co": 6.0, "cj": 6.0, "conf": "缺"}, {"id": "B6-03", "repo": "Sahilll15/jobfit", "lang": "TypeScript", "cls": "匹配", "eq": "部分", "core": 66.0, "host": 7.0, "jpp": 25.0, "wrap": 2.19, "raw": 2.64, "wh": 2.2812, "co": 13.0, "cj": 13.0, "conf": "否"}, {"id": "B6-05", "repo": "daisuke7/jevlergy", "lang": "Dart", "cls": "游戏/交互", "eq": "全部", "core": 131.0, "host": 0.0, "jpp": 62.0, "wrap": 2.225806451612903, "raw": 2.1129032258064515, "wh": 2.1129, "co": 9.0, "cj": 9.0, "conf": "缺"}, {"id": "B6-06", "repo": "diluteoxygen/JevMood", "lang": "JavaScript", "cls": "生成+判断", "eq": "全部", "core": 59.0, "host": 0.0, "jpp": 20.0, "wrap": 3.0, "raw": 2.95, "wh": 2.95, "co": 5.0, "cj": 5.0, "conf": "缺"}, {"id": "B6-07", "repo": "madeye/pi-jev", "lang": "TypeScript", "cls": "筛选", "eq": "全部", "core": 44.0, "host": 0.0, "jpp": 20.0, "wrap": 2.1905, "raw": 2.2, "wh": 2.2, "co": 2.0, "cj": 8.0, "conf": "缺"}, {"id": "B6-08", "repo": "iefnaf/pi-jev", "lang": "TypeScript", "cls": "路由", "eq": "全部", "core": 68.0, "host": 0.0, "jpp": 39.0, "wrap": 1.8048780487804879, "raw": 1.7435897435897436, "wh": 1.7436, "co": 15.0, "cj": 15.0, "conf": "缺"}, {"id": "B6-09", "repo": "aaronshaf/opencode-jev-orchestrator", "lang": "TypeScript", "cls": "路由", "eq": "全部", "core": 250.0, "host": 708.0, "jpp": 54.0, "wrap": 4.379, "raw": 4.63, "wh": 1.2572, "co": 9.0, "cj": 9.0, "conf": "是"}, {"id": "B6-10", "repo": "coldteadotai/abide", "lang": "TypeScript", "cls": "其他判断", "eq": "全部", "core": 148.0, "host": 0.0, "jpp": 59.0, "wrap": 2.3125, "raw": 2.5084745762711864, "wh": 2.5085, "co": 8.0, "cj": 8.0, "conf": "缺"}, {"id": "B6-11", "repo": "hamidfarmani/jev-resume-match", "lang": "TypeScript", "cls": "匹配", "eq": "部分", "core": 194.0, "host": 62.0, "jpp": 61.0, "wrap": 3.59375, "raw": 3.180327868852459, "wh": 2.0813, "co": 2.0, "cj": 4.0, "conf": "缺"}, {"id": "B7-01", "repo": "Obrais-cloud/ticket-rerank", "lang": "Python", "cls": "分诊", "eq": "部分", "core": 26.0, "host": 0.0, "jpp": 19.0, "wrap": 1.5, "raw": 1.368421052631579, "wh": 1.3684, "co": 8.0, "cj": 8.0, "conf": "缺"}, {"id": "B7-02", "repo": "adigulalkari/Jev_GC", "lang": "Python", "cls": "抽取", "eq": "全部", "core": 181.0, "host": 81.0, "jpp": 98.0, "wrap": 1.8431372549019607, "raw": 1.846938775510204, "wh": 1.4637, "co": 7.0, "cj": 7.0, "conf": "缺"}, {"id": "B7-03", "repo": "elliothux/tweet-911", "lang": "TypeScript", "cls": "抽取", "eq": "全部", "core": 182.0, "host": 144.0, "jpp": 51.0, "wrap": 3.05, "raw": 3.57, "wh": 1.6718, "co": 15.0, "cj": 15.0, "conf": "否"}, {"id": "Q-01", "repo": "kevin9327/jev-bot", "lang": "Python", "cls": "审核", "eq": "全部", "core": 129.0, "host": 0.0, "jpp": 43.0, "wrap": 2.480769230769231, "raw": 3.0, "wh": 3.0, "co": 8.0, "cj": 8.0, "conf": "缺"}, {"id": "Q-02", "repo": "mingleiw/jev-oncall", "lang": "Python", "cls": "分诊", "eq": "部分", "core": 116.0, "host": 0.0, "jpp": 61.0, "wrap": 1.5810810810810811, "raw": 1.901639344262295, "wh": 1.9016, "co": 9.0, "cj": 11.0, "conf": "缺"}, {"id": "Q-03", "repo": "sudeshkar/jev-corrective-rag", "lang": "Python", "cls": "生成+判断", "eq": "全部", "core": 184.0, "host": 257.0, "jpp": 55.0, "wrap": 2.6666666666666665, "raw": 3.3454545454545452, "wh": 1.4135, "co": 64.0, "cj": 64.0, "conf": "缺"}, {"id": "Q-04", "repo": "siroccomask/snake-jev", "lang": "Python", "cls": "游戏/交互", "eq": "全部", "core": 58.0, "host": 111.0, "jpp": 57.0, "wrap": 1.0508474576271187, "raw": 1.0175438596491229, "wh": 1.006, "co": 9.0, "cj": 27.0, "conf": "缺"}, {"id": "Q-05", "repo": "hectorlcastro09/jev-torneo-animales", "lang": "Python", "cls": "游戏/交互", "eq": "部分", "core": 51.0, "host": 2.0, "jpp": 24.0, "wrap": 2.708333333333333, "raw": 2.125, "wh": 2.0385, "co": 1.0, "cj": 1.0, "conf": "缺"}, {"id": "Q-06", "repo": "markusbug/jevymarket", "lang": "Python", "cls": "其他判断", "eq": "全部", "core": 88.0, "host": 205.0, "jpp": 48.0, "wrap": 1.4833333333333334, "raw": 1.8333333333333333, "wh": 1.1581, "co": 7.0, "cj": 7.0, "conf": "缺"}, {"id": "Q-07", "repo": "yodablocks/jobbyjev", "lang": "Python", "cls": "匹配", "eq": "全部", "core": 145.0, "host": 132.0, "jpp": 52.0, "wrap": 2.4242424242424243, "raw": 2.7884615384615383, "wh": 1.5054, "co": 8.0, "cj": 8.0, "conf": "缺"}];
+(function(){
+  const svg=document.getElementById('strip'); const NS='http://www.w3.org/2000/svg';
+  const W=940,H=250,L=40,R=20,top=30,bot=200;
+  const lo=Math.log10(0.5),hi=Math.log10(20);
+  const x=v=>L+(Math.log10(v)-lo)/(hi-lo)*(W-L-R);
+  const mk=(t,a)=>{const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);return e};
+  const band=(a,b,fill,label,y)=>{svg.appendChild(mk('rect',{x:x(a),y:top,width:x(b)-x(a),height:bot-top,fill:fill}));const t=mk('text',{x:x(a)+4,y:y,'font-size':11,fill:'var(--muted)'});t.textContent=label;svg.appendChild(t)};
+  band(2.7,17,'var(--band2)','专用语言只算自身 2.7–17×',top+14);
+  band(1.4,3,'var(--band)','同代通用语言 1.4–3×',bot-8);
+  band(3.5,3.9,'var(--accent-soft)','',0);
+  const t35=mk('text',{x:x(3.5)+3,y:top+30,'font-size':11,fill:'var(--muted)'});t35.textContent='专用语言连胶水 3.5–3.9×';svg.appendChild(t35);
+  [0.5,1,2,3,5,10,20].forEach(v=>{svg.appendChild(mk('line',{x1:x(v),x2:x(v),y1:bot,y2:bot+5,stroke:'var(--muted)'}));const t=mk('text',{x:x(v),y:bot+20,'text-anchor':'middle','font-size':12,fill:'var(--muted)','font-family':'IBM Plex Mono, monospace'});t.textContent=v+'×';svg.appendChild(t)});
+  svg.appendChild(mk('line',{x1:L,x2:W-R,y1:bot,y2:bot,stroke:'var(--rule)'}));
+  svg.appendChild(mk('line',{x1:x(1),x2:x(1),y1:top,y2:bot,stroke:'var(--muted)','stroke-dasharray':'3 4'}));
+  const med=2.515;
+  svg.appendChild(mk('line',{x1:x(med),x2:x(med),y1:top-8,y2:bot,stroke:'var(--ink)','stroke-width':1.5}));
+  const mt=mk('text',{x:x(med),y:top-12,'text-anchor':'middle','font-size':12,fill:'var(--ink)','font-weight':600});mt.textContent='中位数 2.5×';svg.appendChild(mt);
+  const pts=DATA.filter(d=>d.eq!=='不可比'&&(d.wrap||d.raw)).map(d=>({d,v:Math.max(0.5,Math.min(20,d.wrap||d.raw))})).sort((a,b)=>a.v-b.v);
+  const rows=[]; const r=5;
+  pts.forEach(p=>{const cx=x(p.v);let lane=0;while(rows[lane]&&rows[lane]>cx-2*r-1)lane++;rows[lane]=cx;const cy=bot-14-lane*(2*r+2);
+    const c=mk('circle',{cx:cx,cy:Math.max(top+40,cy),r:r,fill:p.d.eq==='全部'?'var(--accent)':'var(--warn)','fill-opacity':0.85});
+    const ti=mk('title',{});ti.textContent=p.d.id+' '+p.d.repo+'：'+(p.d.wrap||p.d.raw).toFixed(2)+'×';c.appendChild(ti);svg.appendChild(c)});
+})();
+(function(){
+  const tb=document.querySelector('#items tbody');let filter='all',sorted=false;
+  const fmt=v=>v==null?'—':(Math.round(v*100)/100).toString();
+  function render(){
+    let rows=DATA.filter(d=>filter==='all'||d.eq===filter);
+    if(sorted) rows=rows.slice().sort((a,b)=>((b.wrap||b.raw||0)-(a.wrap||a.raw||0)));
+    tb.innerHTML='';
+    rows.forEach(d=>{const tr=document.createElement('tr');
+      const pill=d.eq==='全部'?'<span class="pill p-full">完全一致</span>':d.eq==='部分'?'<span class="pill p-part">部分一致</span>':'<span class="pill p-na">不可比</span>';
+      const cells=[d.id,'<code>'+d.repo+'</code>',d.lang||'—',d.cls||'—',pill];
+      tr.innerHTML=cells.map(c=>'<td>'+c+'</td>').join('')+'<td class="n">'+(d.core==null?'—':d.core)+'</td><td class="n">'+(d.jpp==null?'—':d.jpp)+'</td><td class="n">'+(d.wrap||d.raw?fmt(d.wrap||d.raw)+'×':'—')+'</td><td class="n">'+(d.co==null?'—':d.co)+' / '+(d.cj==null?'—':d.cj)+'</td>';
+      tb.appendChild(tr)});
+  }
+  document.querySelectorAll('.controls button').forEach(b=>b.addEventListener('click',()=>{
+    const f=b.dataset.f;
+    if(f==='sort'){sorted=!sorted;b.setAttribute('aria-pressed',String(sorted));}
+    else{filter=f;document.querySelectorAll('.controls button:not(#f-sort)').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));}
+    render();
+  }));
+  render();
+})();
+</script>
+</body>
+</html>
