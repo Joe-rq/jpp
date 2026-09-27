@@ -1,0 +1,492 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>讲台提示 · 回放</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@600;900&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22%3E%3Ccircle cx=%228%22 cy=%228%22 r=%226%22 fill=%22%23c8412b%22/%3E%3C/svg%3E">
+<style>
+/* 风格：剧场节目单。纸色底、墨色字、宋体做字幕与标题，朱红只给「直播」和「提示」 */
+:root{
+  --paper:#f2ece1;--paper2:#e9e1d2;--card:#fbf8f2;--ink:#1c1a17;--ink2:#4a453d;--mute:#8a8274;--rule:#d8cfbf;
+  --red:#c8412b;--happy:#2f9e5b;--nod:#1f8f86;--calm:#c9b99d;--bored:#7d8797;--angry:#d23a2a;--jev:#2b4c8c;
+  --serif:"Noto Serif SC","Songti SC","STSong",serif;
+  --sans:-apple-system,"PingFang SC","Noto Sans SC",sans-serif;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.55 var(--sans);overflow-x:hidden}
+/* 顶栏：节目单报头 */
+header{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;padding:12px clamp(12px,2.2vw,28px);border-bottom:2px solid var(--ink)}
+.mast{display:flex;align-items:baseline;gap:12px;margin-right:auto;min-width:0}
+.mast b{font:900 24px/1 var(--serif);letter-spacing:.06em}
+.live{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;letter-spacing:.18em;color:var(--red)}
+.live i{width:8px;height:8px;border-radius:50%;background:var(--red)}
+.running .live i{animation:blink 1.2s infinite}
+@keyframes blink{50%{opacity:.25}}
+.mast small{color:var(--mute);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ctl{display:flex;flex-wrap:wrap;gap:8px}
+button,select{font:inherit;font-size:13px;padding:6px 12px;border:1.5px solid var(--ink);border-radius:999px;background:transparent;color:var(--ink);cursor:pointer}
+button:hover,select:hover{background:var(--paper2)}
+button:focus-visible,select:focus-visible{outline:2px solid var(--jev);outline-offset:2px}
+button.primary{background:var(--ink);color:var(--paper);font-weight:700}
+button.primary:hover{background:#000}
+/* 两栏：左讲者、右台下；页面按内容长高，放不下就滚动，不叠在一起 */
+main{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:clamp(12px,1.6vw,22px);padding:clamp(12px,1.6vw,22px) clamp(12px,2.2vw,28px)}
+.col{display:flex;flex-direction:column;gap:clamp(12px,1.6vw,18px);min-width:0}
+.eyebrow{font-size:11px;font-weight:700;letter-spacing:.22em;color:var(--mute);display:flex;align-items:center;gap:8px}
+.eyebrow::after{content:"";flex:1;height:1px;background:var(--rule)}
+/* 讲者 */
+.stage{background:var(--card);border:1px solid var(--rule);border-radius:4px;padding:clamp(14px,1.8vw,24px);display:flex;flex-direction:column;gap:14px;min-width:0}
+.prog{display:grid;grid-template-columns:repeat(8,1fr);gap:4px}
+.seg{height:30px;border:1px solid var(--rule);display:flex;align-items:center;justify-content:center;font:600 13px var(--serif);color:var(--mute);background:var(--paper);position:relative}
+.seg.cur{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.seg.done{color:var(--ink2)}
+.seg::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:3px}
+.seg.投入::after{background:var(--happy)}.seg.一般::after{background:var(--bored)}.seg.走神::after{background:var(--angry)}
+.now{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+.now .no{font:900 clamp(34px,4.2vw,56px)/1 var(--serif);color:var(--red)}
+.now h2{margin:0;font:900 clamp(20px,2.2vw,30px)/1.2 var(--serif)}
+.now p{flex-basis:100%;margin:0;color:var(--ink2);font-size:14px}
+.prompter{height:clamp(220px,42vh,520px);overflow:hidden;position:relative;border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);-webkit-mask-image:linear-gradient(transparent,#000 14%,#000 86%,transparent);mask-image:linear-gradient(transparent,#000 14%,#000 86%,transparent)}
+.lines{position:absolute;left:0;right:0;top:0;transition:transform .55s cubic-bezier(.2,.7,.2,1)}
+.ln{padding:6px 0 6px 18px;color:var(--mute);font:600 clamp(15px,1.25vw,18px)/1.6 var(--serif)}
+.ln.past{color:var(--ink2);opacity:.7}
+.ln.cur{color:var(--ink);font:900 clamp(20px,2vw,28px)/1.45 var(--serif);border-left:4px solid var(--red);padding-left:14px}
+.ln.hd{font:700 11px var(--sans);letter-spacing:.2em;color:var(--red);padding-top:16px}
+.ln.act{font:600 14px var(--sans);color:var(--jev)}
+.ticks{display:flex;align-items:center;gap:10px;min-width:0}
+.dots{display:flex;gap:3px;overflow:hidden;flex:none;max-width:45%}
+.dot{width:7px;height:16px;border-radius:1px;background:var(--rule);flex:none}
+.dot.cue{background:var(--red)}.dot.weak{background:transparent;border:1.5px solid var(--red)}.dot.end{background:var(--jev)}
+.last{font-size:13px;color:var(--ink2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0}
+/* 台下 */
+.house{background:var(--ink);color:var(--paper);border-radius:4px;padding:clamp(12px,1.5vw,18px);display:flex;flex-direction:column;gap:12px;min-width:0}
+.house .eyebrow{color:#b8ae9c}.house .eyebrow::after{background:#3a362f}
+.house .eyebrow .live{margin-right:2px}
+.seats{position:relative;width:100%;aspect-ratio:4/3;max-height:52vh}
+#cam{position:absolute;inset:0;width:100%;height:100%}
+.mood{display:flex;height:12px;border-radius:2px;overflow:hidden;background:#2b2823}
+.mood i{display:block;height:100%;transition:width .4s}
+.legend{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;font-size:12px;color:#b8ae9c}
+.legend div{display:flex;flex-direction:column;min-width:0}
+.legend b{font:700 20px/1.2 var(--sans);color:var(--paper);font-variant-numeric:tabular-nums}
+.legend span::before{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;background:var(--c)}
+.legend small{color:#8c8474;font-size:11px}
+details{font-size:12px;color:#b8ae9c}details summary{cursor:pointer}
+.sl{display:flex;gap:6px;align-items:center}.sl input{flex:1}
+/* 提示器：钉在右下角，页面滚动时也看得见 */
+#cue{position:sticky;bottom:clamp(10px,1.6vw,20px);background:var(--card);border:1.5px solid var(--ink);border-radius:4px;padding:14px 18px 16px;box-shadow:6px 6px 0 var(--ink);transition:background .3s,box-shadow .3s;z-index:3}
+#cue.on{background:#fff4ec;border-color:var(--red);box-shadow:6px 6px 0 var(--red)}
+#cue .head{display:flex;justify-content:space-between;gap:8px;font-size:11px;font-weight:700;letter-spacing:.18em;color:var(--mute)}
+#cue.on .head{color:var(--red)}
+#cue .weak{display:none;margin-left:8px;border:1px solid var(--red);border-radius:999px;padding:0 7px;letter-spacing:.05em}
+#cue.unsure .weak{display:inline-block}
+#cue .dir{font:600 14px var(--sans);color:var(--jev);margin-top:8px;min-height:1.3em}
+#cue .act{font:900 clamp(20px,2.1vw,28px)/1.3 var(--serif);margin-top:2px}
+#cue .why{font-size:12px;color:var(--ink2);margin-top:8px}
+#cue button{margin-top:10px;background:var(--red);border-color:var(--red);color:#fff;font-weight:700}
+/* 桌面宽度：整页一屏放下，各块按窗口高度伸缩，不叠在一起 */
+@media (min-width:761px){
+  body{height:100dvh;overflow:hidden;display:flex;flex-direction:column}
+  main{flex:1;min-height:0}
+  .col{min-height:0}
+  .stage{flex:1;min-height:0}.prompter{flex:1;height:auto;min-height:0}
+  .house{flex:1;min-height:0}.seats{flex:1;aspect-ratio:auto;max-height:none;min-height:0}
+  #cue{position:static}
+}
+/* 桌面宽度但窗口矮（笔记本、浏览器放大）：收掉次要信息，字号收小 */
+@media (min-width:761px) and (max-height:720px){
+  header{padding:6px 16px}.mast b{font-size:20px}
+  main{padding-top:10px;padding-bottom:10px;gap:12px}
+  .col{gap:8px}.col>.eyebrow{display:none}
+  .stage{gap:8px;padding:12px 14px}.prog .seg{height:22px;font-size:12px}
+  .now .no{font-size:30px}.now h2{font-size:18px}.now p{display:none}
+  .ln{font-size:14px}.ln.cur{font-size:19px}
+  .house{padding:10px;gap:8px}
+  .legend b{font-size:15px}.legend small{display:none}details{display:none}
+  #cue{padding:10px 14px 12px;box-shadow:4px 4px 0 var(--ink)}#cue.on{box-shadow:4px 4px 0 var(--red)}
+  #cue .act{font-size:19px}#cue .why{margin-top:4px}
+}
+/* 窄屏：单列，页面滚动，提示器贴在窗口底部 */
+@media (max-width:760px){
+  main{grid-template-columns:minmax(0,1fr)}
+  .prog .seg{font-size:11px}
+  .legend{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media (prefers-reduced-motion:reduce){.lines{transition:none}.running .live i{animation:none}}
+</style>
+</head>
+<body>
+<header>
+  <div class="mast"><b>讲台提示</b><span class="live"><i></i>LIVE</span><small id="topic">载入中…</small></div>
+  <div class="ctl">
+    <button class="primary" id="demo">▶ 看案例</button>
+    <select id="src" aria-label="现场转录来源"><option value="script">现场：脚本回放</option><option value="mic">现场：麦克风（Chrome，走 Google）</option></select>
+    <select id="speed" aria-label="倍速"><option value="2">2 倍速</option><option value="1">1 倍速</option></select>
+    <button id="go">开始现场</button>
+    <button id="next">下一节</button>
+  </div>
+</header>
+<main>
+  <section class="col">
+    <div class="eyebrow">讲者 · 讲到哪了</div>
+    <div class="stage">
+      <div class="prog" id="prog"></div>
+      <div class="now"><span class="no" id="nowNo">—</span><h2 id="nowT">点「看案例」</h2><p id="nowP">一场示例演讲会自动讲完。左边是讲者的字幕，右边是台下的表情，右下角是 JEV 给讲者的提示。</p></div>
+      <div class="prompter"><div class="lines" id="lines"></div></div>
+      <div class="ticks"><span class="eyebrow" style="flex:none">JEV 每拍</span><div class="dots" id="dots"></div><div class="last" id="last">每 3 秒看一次台下，决定提不提示</div></div>
+    </div>
+  </section>
+  <section class="col">
+    <div class="eyebrow">台下 · 一路摄像头（模拟）</div>
+    <div class="house">
+      <div class="seats"><canvas id="cam" aria-label="台下 12 位观众的表情"></canvas></div>
+      <div class="mood" id="mood"></div>
+      <div class="legend" id="legend"></div>
+      <details><summary>模拟观众的隐藏偏好（JEV 看不到）</summary><div id="prefs"></div></details>
+    </div>
+    <div id="cue" role="status" aria-live="polite">
+      <div class="head"><span>JEV 给讲者<span class="weak">把握一般</span></span><span id="cueMeta"></span></div>
+      <div class="dir" id="cueDir"></div>
+      <div class="act" id="cueAct">等待开始</div>
+      <button id="follow" hidden>照做</button>
+      <div class="why" id="cueWhy"></div>
+    </div>
+  </section>
+</main>
+<!-- 回放页：由 做回放页.py 从 案例-0927-184959.json 生成，录于 2026-09-27T08:49:59.980Z。每一拍的 JEV 选择都是那一场的真机结果。 -->
+<script src="回放/tape.js"></script>
+<div id="err" hidden style="position:fixed;left:12px;right:12px;top:12px;z-index:9;background:#c8412b;color:#fff;padding:10px 14px;border-radius:4px;font:13px/1.5 -apple-system,sans-serif"></div>
+<script>
+window.addEventListener("error", e => { const b = document.getElementById("err"); b.hidden = false; b.textContent = "页面出错：" + (e.message || e) + "（请把这行截图发给我）"; });
+window.addEventListener("unhandledrejection", e => { const b = document.getElementById("err"); b.hidden = false; b.textContent = "页面出错：" + (e.reason && e.reason.message || e.reason) + "（请把这行截图发给我）"; });
+const HOLD = "（先不提示）", STAY = "（留在当前这节）";
+const $ = id => document.getElementById(id);
+// 可复现的随机数：案例演示开场时台下的设定每次相同
+let seed = 1; const rng = () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+let talk, cur = 0, running = false, demo = false, visited = new Set(), secStart = 0, t0 = 0, simT = 0;
+let transcript = [], lineLog = [], lastWordAt = 0, charsLog = [];
+let samples = [], secSamples = [];
+let profile = [], lastCue = null, inflight = false, pendingEnd = null, lastShown = null;
+let interest = [], boost = 0, E = 0.55, faces = [];
+const N = 12;
+// 观众素材：Codex 图像生成的 6 位观众，每人一张 3×2 表情图（开心、点头、平静、打哈欠、看手机、红温）
+const SPRITES = ["p1", "p2", "p3", "p4", "p5", "p6"].map(id => { const im = new Image(); im.src = `素材/${id}.jpg`; return im; });
+const CELL = {happy: 0, nod: 1, calm: 2, bored: 3, phone: 4, angry: 5};
+const RING = {happy: "#2f9e5b", nod: "#1f8f86", calm: "#6b6353", bored: "#7d8797", angry: "#d23a2a"};
+const MOODS = [["开心", "#2f9e5b", 0], ["点头", "#1f8f86", 3], ["平静", "#c9b99d", -1], ["无聊", "#7d8797", 1], ["红温", "#d23a2a", 2]];
+
+const Q = new URLSearchParams(location.search);
+const REPLAY = Q.get("replay") || (window.TAPE ? "embedded" : null), RECORD = Q.has("record");
+let tape = null, tapeAt = 0, tapeStart = 0, frames = [], lastSnap = {};
+const pct = x => Math.round(x * 100);
+const mean = (a, k) => a.length ? a.reduce((s, x) => s + x[k], 0) / a.length : 0;
+const title = i => `第${i + 1}节「${talk.sections[i].title}」`;
+const speed = () => demo ? 2 : $("src").value === "mic" ? 1 : +$("speed").value;
+const clock = () => simT;
+
+function resetFaces() { seed = 7; faces = Array.from({length: N}, (_, i) => ({b: (rng() - .5) * .5, n: 0, ph: rng() * 6, st: "calm", cur: "calm", prev: "calm", since: 0, who: i % 6, flip: i >= 6})); }
+
+async function load() {
+  if (REPLAY) {
+    tape = window.TAPE || await (await fetch(REPLAY, {cache: "no-store"})).json();
+    talk = tape.talk;
+    for (const id of ["src", "speed", "go", "next"]) $(id).hidden = true;
+    $("demo").textContent = "▶ 重放这一场";
+    document.querySelector(".live").innerHTML = "<i></i>回放 · 真机录制";
+  }
+  for (; !talk;) {
+    try { talk = await (await fetch("talk", {cache: "no-store"})).json(); break; }
+    catch (e) { $("nowT").textContent = "连不上本地服务，2 秒后重试"; $("nowP").textContent = "请确认终端里的 讲台服务.py 还在运行"; await new Promise(r => setTimeout(r, 2000)); }
+  }
+  $("topic").textContent = talk.topic;
+  const def = [0.6, 0.85, 0.18, 0.85, 0.22, 0.5, 0.75, 0.6];   // 演示默认：爱听算账和真实故事，参数与手续偏干
+  interest = talk.sections.map((_, i) => def[i] ?? 0.5);
+  $("prefs").innerHTML = talk.sections.map((s, i) =>
+    `<div class="sl">${i + 1}. ${s.title}<input type="range" min="0" max="100" value="${pct(interest[i])}" data-i="${i}"></div>`).join("");
+  $("prefs").oninput = e => { interest[+e.target.dataset.i] = e.target.value / 100; };
+  resetFaces(); drawProg(); drawLines();
+}
+
+// ---------- 讲者一侧：进度与字幕 ----------
+function drawProg() {
+  const lab = {}; profile.forEach(p => lab[p.i] = p.label);
+  $("prog").innerHTML = talk.sections.map((s, i) =>
+    `<div class="seg ${running && i === cur ? "cur" : ""} ${visited.has(i) ? "done" : ""} ${lab[i] || ""}" title="${(i + 1) + " " + s.title + "：" + (profile.find(p => p.i === i)?.line || s.point).replace(/"/g, "'")}">${i + 1}</div>`).join("");
+  if (running) { $("nowNo").textContent = String(cur + 1).padStart(2, "0"); $("nowT").textContent = talk.sections[cur].title; $("nowP").textContent = talk.sections[cur].point; }
+}
+function drawLines() {
+  const el = $("lines"), rows = [];
+  let lastSec = -1, curIdx = -1;
+  lineLog.forEach(l => {
+    if (l.sec !== lastSec) { rows.push(`<div class="ln hd">第 ${l.sec + 1} 节　${talk.sections[l.sec].title}</div>`); lastSec = l.sec; }
+    if (l.act) rows.push(`<div class="ln act">↳ 照提示：${l.text}</div>`);
+    else { curIdx = rows.length; rows.push(`<div class="ln past">${l.text}</div>`); }
+  });
+  if (curIdx >= 0) rows[curIdx] = rows[curIdx].replace('class="ln past"', 'class="ln cur"');
+  if (running && (demo || $("src").value === "script")) {
+    if (lastSec !== cur) rows.push(`<div class="ln hd">第 ${cur + 1} 节　${talk.sections[cur].title}</div>`);
+    talk.sections[cur].script.slice(scriptIdx).forEach(t => rows.push(`<div class="ln">${t}</div>`));
+  }
+  el.innerHTML = rows.join("");
+  const c = el.querySelector(".ln.cur"), box = el.parentElement.getBoundingClientRect().height;
+  el.style.transform = `translateY(${c ? box * 0.45 - c.offsetTop : box * 0.3}px)`;
+}
+
+// ---------- 模拟观众（代替摄像头 + 表情识别） ----------
+function simStep(dt) {
+  const inSec = running ? clock() - secStart : 0;
+  const target = Math.max(0.02, Math.min(0.8, interest[cur] - 0.006 * inSec + boost));   // 封顶：再好也有人只是平静
+  E += (target - E) * Math.min(1, dt * 0.45) + (rng() - .5) * 0.02;
+  boost *= Math.pow(0.5, dt / 22);
+  const c = {happy: 0, bored: 0, angry: 0, nod: 0};
+  for (const f of faces) {
+    f.n += ((rng() - .5) * 0.4 - f.n) * dt * 0.8;
+    const e = E + f.b + f.n * 0.25;
+    f.st = e > 0.72 ? "happy" : e > 0.56 ? (Math.sin(f.ph + clock() * 0.9) > 0 ? "nod" : "calm") : e > 0.38 ? "calm" : e > 0.14 ? "bored" : "angry";
+    if (f.st !== f.cur) { f.prev = f.cur; f.cur = f.st; f.since = performance.now(); }
+    if (f.st in c) c[f.st]++;
+  }
+  // 与真摄像头接表情识别后要算的是同一组数：在笑、低头或看别处、皱眉、点头
+  const s = [c.happy / N, c.bored / N, c.angry / N, c.nod / N];
+  if (running) { const x = {t: clock(), 0: s[0], 1: s[1], 2: s[2], 3: s[3]}; samples.push(x); secSamples.push(x); }
+}
+function cellOf(f, st) { return st === "bored" ? (Math.sin(f.ph * 3) > 0 ? CELL.phone : CELL.bored) : CELL[st]; }
+function drawCam() {
+  const cv = $("cam"), r = cv.getBoundingClientRect(), dpr = devicePixelRatio || 1;
+  if (cv.width !== Math.round(r.width * dpr) || cv.height !== Math.round(r.height * dpr)) { cv.width = Math.round(r.width * dpr); cv.height = Math.round(r.height * dpr); }
+  const g = cv.getContext("2d"), W = cv.width, H = cv.height, t = clock();
+  g.clearRect(0, 0, W, H);
+  const ok = SPRITES.filter(im => im.complete && im.naturalWidth);
+  if (!ok.length) return;
+  const pad = Math.min(W, H) * 0.035;
+  const fit = ([c, r]) => Math.min((W - pad * (c + 1)) / (c + 0.5), (H - pad * (r + 1)) / r);
+  const [cols, rows] = [[6, 2], [4, 3], [3, 4]].reduce((a, b) => fit(b) > fit(a) ? b : a);
+  const side = fit([cols, rows]);
+  const ox = (W - side * (cols + 0.5) - pad * (cols - 1)) / 2, oy = (H - side * rows - pad * (rows - 1)) / 2;
+  faces.forEach((f, i) => {
+    const row = Math.floor(i / cols), col = i % cols;
+    let x = ox + col * (side + pad) + (row % 2 ? side * 0.5 : 0), y = oy + row * (side + pad);   // 错排，像剧场的座位
+    if (f.st === "nod") y += Math.sin(t * 9 + f.ph) * side * 0.025;
+    if (f.st === "angry") x += Math.sin(t * 40 + f.ph) * side * 0.01;
+    const im = ok[f.who % ok.length], cw = im.naturalWidth / 3, ch = im.naturalHeight / 2;
+    const draw = (cell, a) => {
+      g.save(); g.globalAlpha = a; g.beginPath(); g.arc(x + side / 2, y + side / 2, side / 2, 0, 7); g.clip();
+      if (f.flip) { g.translate(x * 2 + side, 0); g.scale(-1, 1); }
+      g.drawImage(im, (cell % 3) * cw, Math.floor(cell / 3) * ch, cw, ch, x, y, side, side); g.restore();
+    };
+    const k = Math.min(1, (performance.now() - f.since) / 350);
+    if (k < 1) draw(cellOf(f, f.prev), 1);
+    draw(cellOf(f, f.st), k);
+    g.save(); g.strokeStyle = RING[f.st]; g.lineWidth = side * (f.st === "calm" ? 0.025 : 0.05);
+    if (f.st === "angry" || f.st === "happy") { g.shadowColor = RING[f.st]; g.shadowBlur = side * 0.25; }
+    g.beginPath(); g.arc(x + side / 2, y + side / 2, side / 2 - g.lineWidth / 2, 0, 7); g.stroke(); g.restore();
+  });
+}
+function windowStats(sec) { const tt = clock() - sec; const w = samples.filter(x => x.t >= tt); return [0, 1, 2, 3].map(k => mean(w, k)); }
+function audienceText() {
+  const w = windowStats(5), m = [0, 1, 2, 3].map(k => mean(samples, k));
+  return `在笑 ${pct(w[0])}%（本场均值 ${pct(m[0])}%），低头或看别处 ${pct(w[1])}%（均值 ${pct(m[1])}%），皱眉 ${pct(w[2])}%（均值 ${pct(m[2])}%），点头 ${pct(w[3])}%（均值 ${pct(m[3])}%）`;
+}
+
+// ---------- 转录 ----------
+function addLine(s) {
+  transcript.push(s); lineLog.push({sec: cur, text: s}); lastWordAt = clock(); charsLog.push({t: clock(), n: [...s].length});
+  drawLines();
+}
+function speakerText() {
+  const t = clock(), rate = w => charsLog.filter(x => x.t >= t - w).reduce((s, x) => s + x.n, 0) / (Math.min(w, t - t0) / 60 || 1);
+  return `语速每分钟 ${Math.round(rate(30))} 字（本场均值 ${Math.round(rate(1e9))}），最近一次停顿在 ${Math.max(0, Math.round(t - lastWordAt))} 秒前`;
+}
+let scriptAt = 0, scriptIdx = 0;
+function scriptStep() {
+  if (!running || (!demo && $("src").value !== "script") || clock() < scriptAt) return;
+  const lines = talk.sections[cur].script;
+  if (scriptIdx >= lines.length) { goSection(nextPlanned()); return; }
+  const s = lines[scriptIdx++]; addLine(s); scriptAt = clock() + [...s].length / 4.5 + 0.6;
+}
+let rec = null;
+function startMic() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) { alert("这个浏览器没有语音识别，请用 Chrome，或改用脚本回放"); $("src").value = "script"; return; }
+  rec = new SR(); rec.lang = "zh-CN"; rec.continuous = true; rec.interimResults = false;
+  rec.onresult = e => { for (let i = e.resultIndex; i < e.results.length; i++) if (e.results[i].isFinal) addLine(e.results[i][0].transcript); };
+  rec.onend = () => { if (running && $("src").value === "mic") rec.start(); };
+  rec.start();
+}
+
+// ---------- 节与画像 ----------
+function nextPlanned() { for (let i = 0; i < talk.sections.length; i++) if (!visited.has(i) && i !== cur) return i; return -1; }
+function goSection(i) {
+  finishSection();
+  if (i < 0) { running = false; showCue({kind: "end"}); drawProg(); drawLines(); setTimeout(async () => { await flushEnd(); await saveTape(); }, 100); return; }
+  cur = i; secStart = clock(); scriptIdx = 0; scriptAt = clock() + 0.5; secSamples = [];
+  drawProg(); drawLines();
+}
+function finishSection() {
+  // 节末：这一节的汇总由代码算；下一拍作为「节末」材料交给 JEV，JEV 给一个标签（投入 / 一般 / 走神）
+  if (secSamples.length < 5) return;
+  visited.add(cur);
+  const m = [0, 1, 2, 3].map(k => mean(samples, k)), s = [0, 1, 2, 3].map(k => mean(secSamples, k));
+  const dur = Math.round(clock() - secStart);
+  const base = `${title(cur)}（讲的是：${talk.sections[cur].point}）：讲了 ${Math.floor(dur / 60)} 分 ${dur % 60} 秒；笑 ${pct(s[0])}%（本场均值 ${pct(m[0])}%），低头 ${pct(s[1])}%（均值 ${pct(m[1])}%）`;
+  const inp = material(cur, true);
+  inp.audience = `这一节平均：在笑 ${pct(s[0])}%（本场均值 ${pct(m[0])}%），低头或看别处 ${pct(s[1])}%（均值 ${pct(m[1])}%），皱眉 ${pct(s[2])}%（均值 ${pct(m[2])}%），点头 ${pct(s[3])}%（均值 ${pct(m[3])}%）`;
+  pendingEnd = {i: cur, base, inp};
+}
+function material(k, end = false) {
+  return {
+    now: `${title(k)}：${talk.sections[k].point}`,
+    said: transcript.slice(-3).join("") || "（还没开口）",
+    audience: audienceText(),
+    speaker: speakerText(),
+    profile: profile.length ? profile.map(p => p.line).join("\n") : "（还没有，开场刚开始）",
+    last_cue: lastCue ? `${Math.round(clock() - lastCue.t)} 秒前提示「${lastCue.text}」；演讲者${lastCue.followed ? "照做了" : "还没有照做"}` : "还没有提示过",
+    actions: talk.sections[k].actions,
+    others: talk.sections.map((_, i) => i).filter(i => i !== k && !visited.has(i)).map(title),   // 只放没讲过的节（L1b）
+    end
+  };
+}
+
+// ---------- 每拍 ----------
+async function send(inp) { const c = new AbortController(); const t = setTimeout(() => c.abort(), 20000); try { return await (await fetch("tick", {method: "POST", body: JSON.stringify(inp), signal: c.signal})).json(); } finally { clearTimeout(t); } }
+function dot(cls, tip) { const d = document.createElement("span"); d.className = "dot " + cls; d.title = tip; $("dots").append(d); while ($("dots").children.length > 40) $("dots").firstChild.remove(); }
+async function flushEnd() {
+  if (!pendingEnd) return;
+  const job = pendingEnd; pendingEnd = null;
+  const r = await send(job.inp);
+  if (r.error || r.absent) { pendingEnd = job; $("last").textContent = "这拍没连上 JEV，下一拍再判这一节"; return; }   // 缺席：下一拍重判
+  const lab = r.label || "一般";
+  profile.push({i: job.i, label: lab, line: `${job.base}；JEV：${lab}`}); drawProg();
+  dot("end", `${title(job.i)}讲完，JEV：${lab}`); $("last").textContent = `${title(job.i)}讲完，JEV 判台下「${lab}」`;
+}
+let nextTickAt = 0;
+const tipOf = r => r.act_top.slice(0, 3).map(([s, p]) => `${p.toFixed(2)} ${s}`).join("\n") + "\n—\n" + r.dir_top.slice(0, 3).map(([s, p]) => `${p.toFixed(2)} ${s}`).join("\n");
+async function tickLoop() {
+  if (!running || inflight || clock() < nextTickAt) return;
+  inflight = true; nextTickAt = clock() + 3 * speed();
+  try {
+    if (pendingEnd) await flushEnd();
+    if (!running) return;
+    const w = windowStats(5), inp = material(cur);
+    const r = await send(inp);
+    if (r.error) { $("last").textContent = "出错：" + r.error.slice(-120); return; }
+    if (r.absent || r.action === null) { dot("", "这拍没连上 JEV"); $("last").textContent = "这拍没连上 JEV（网络），下一拍再看"; return; }
+    const why = `JEV 看到的台下：开心 ${pct(w[0])}% · 点头 ${pct(w[3])}% · 无聊 ${pct(w[1])}% · 红温 ${pct(w[2])}%`;
+    if (r.action === HOLD) { dot("", "不打扰\n" + tipOf(r)); $("last").textContent = `不打扰（JEV ${r.wall} 秒）`; showCue({kind: "hold", r, why}); }
+    else { const weak = !(r.sure?.action && r.sure?.direction); dot(weak ? "weak" : "cue", "提示\n" + tipOf(r)); showCue({kind: "cue", r, why, weak}); }
+  } catch (e) { $("last").textContent = "出错：" + e; }
+  finally { inflight = false; }
+}
+function showCue({kind, r, why, weak}) {
+  const cue = $("cue");
+  if (kind === "end") { cue.classList.remove("on", "unsure"); $("cueDir").textContent = ""; $("cueAct").textContent = "讲完了"; $("cueWhy").textContent = ""; $("last").textContent = "全场结束"; $("follow").hidden = true; return; }
+  if (r) $("cueMeta").textContent = `JEV ${r.wall} 秒 · ${r.calls} 次调用`;
+  if (kind === "hold") {
+    // 刚提示过、讲者正在照做时，保留那条提示，不被「不打扰」刷掉
+    if (lastCue && clock() - lastCue.t < 12) return;
+    cue.classList.remove("on", "unsure"); $("cueDir").textContent = ""; $("cueAct").textContent = "不打扰，接着讲"; $("cueWhy").textContent = why || ""; $("follow").hidden = true; return;
+  }
+  const dtext = r.direction === STAY ? "留在这一节" : `转到 ${r.direction}`;
+  const text = `${dtext} · ${r.action}`;
+  if (lastCue && lastCue.followed && lastCue.text === text && clock() - lastCue.t < 20) { $("last").textContent = `仍建议：${r.action}（讲者正在做）`; return; }
+  cue.classList.add("on"); cue.classList.toggle("unsure", !!weak);
+  $("cueDir").textContent = dtext; $("cueAct").textContent = r.action; $("cueWhy").textContent = why;
+  lastShown = {act: r.action, dir: r.direction};
+  lastCue = {t: clock(), text, followed: false};
+  $("last").textContent = `提示：${text}`;
+  if (demo) { $("follow").hidden = true; setTimeout(() => running && follow(), 1800); } else $("follow").hidden = false;
+}
+function follow() {
+  // 「讲者照做」：模拟观众按动作类型回升一段；方向是别的节就转过去
+  if (!lastShown) return;
+  const a = lastShown.act;
+  boost += /笑|类比|调侃|段子/.test(a) ? 0.32 : /故事|老王|邻居|讲.*的事/.test(a) ? 0.28 : /问|举手|互动|投票/.test(a) ? 0.22 : /数字|例子|举例|元|算/.test(a) ? 0.16 : 0.08;
+  if (lastCue) lastCue.followed = true;
+  $("follow").hidden = true;
+  $("last").textContent = `讲者照做：${a}`;
+  $("cueDir").textContent = "✓ 讲者照做了";
+  lineLog.push({sec: cur, text: a, act: true}); drawLines();
+  if (lastShown.dir !== STAY) { const i = talk.sections.findIndex((_, k) => title(k) === lastShown.dir); if (i >= 0 && i !== cur) goSection(i); }
+  else if (/结论|跳到/.test(a)) goSection(nextPlanned());
+  lastShown = null;
+}
+$("follow").onclick = follow;
+
+// ---------- 录制与回放 ----------
+const FACE = {happy: "h", nod: "n", calm: "c", bored: "b", angry: "a"}, FACE_BACK = {h: "happy", n: "nod", c: "calm", b: "bored", a: "angry"};
+function snapshot() {
+  const w = windowStats(5), m = [0, 1, 2, 3].map(k => mean(samples, k)), r3 = x => Math.round(x * 1000) / 1000;
+  return {faces: faces.map(f => FACE[f.st]).join(""), w: w.map(r3), m: m.map(r3), n: samples.length, cur, scriptIdx, running,
+          visited: [...visited], profile: profile.map(p => ({...p})), lines: lineLog.length, dots: $("dots").innerHTML, last: $("last").textContent,
+          cue: [$("cue").className, $("cueDir").textContent, $("cueAct").textContent, $("cueWhy").textContent, $("cueMeta").textContent]};
+}
+let recNext = 0;
+function recordStep(nowReal) {
+  if (!RECORD || !running || nowReal < recNext) return;
+  recNext = nowReal + 0.1;
+  const snap = snapshot(), d = {t: Math.round((nowReal - tapeStart) * 1000) / 1000};
+  for (const k in snap) { const j = JSON.stringify(snap[k]); if (j !== lastSnap[k]) { d[k] = snap[k]; lastSnap[k] = j; } }
+  frames.push(d);
+}
+async function saveTape() {
+  if (!RECORD) return;
+  frames.push({t: Math.round((performance.now() / 1000 - tapeStart) * 1000) / 1000, ...snapshot()});
+  const body = JSON.stringify({talk, recorded: new Date().toISOString(), lineLog, frames});
+  const r = await (await fetch("record", {method: "POST", body})).json();
+  $("last").textContent = r.saved ? `这一场已录下：${r.saved}` : "录制保存失败";
+}
+let tapeState = {};
+function replayStep(nowReal) {
+  if (!running) return;
+  const t = nowReal - tapeStart;
+  while (tapeAt < tape.frames.length && tape.frames[tapeAt].t <= t) Object.assign(tapeState, tape.frames[tapeAt++]);
+  const S = tapeState;
+  if (S.faces) [...S.faces].forEach((c, i) => { const st = FACE_BACK[c]; const f = faces[i]; if (f.st !== st) { f.prev = f.st; f.st = st; f.cur = st; f.since = performance.now(); } });
+  const changed = S.cur !== cur || S.lines !== lineLog.length || S.scriptIdx !== scriptIdx || JSON.stringify(S.profile) !== JSON.stringify(profile);
+  cur = S.cur ?? cur; scriptIdx = S.scriptIdx ?? scriptIdx; visited = new Set(S.visited || []); profile = S.profile || [];
+  lineLog = tape.lineLog.slice(0, S.lines || 0);
+  if (changed) { drawProg(); drawLines(); }
+  if (S.dots !== undefined && $("dots").innerHTML !== S.dots) $("dots").innerHTML = S.dots;
+  if (S.last !== undefined) $("last").textContent = S.last;
+  if (S.cue) { const [cls, dir, act, why, meta] = S.cue; $("cue").className = cls; $("cueDir").textContent = dir; $("cueAct").textContent = act; $("cueWhy").textContent = why; $("cueMeta").textContent = meta; }
+  if (tapeAt >= tape.frames.length) { running = false; document.body.classList.remove("running"); drawProg(); }
+}
+
+// ---------- 开始与主循环 ----------
+function reset() {
+  resetFaces(); cur = 0; visited = new Set(); profile = []; transcript = []; lineLog = []; charsLog = []; samples = []; secSamples = [];
+  lastCue = null; lastShown = null; pendingEnd = null; boost = 0; E = 0.55; simT = 0; t0 = 0; nextTickAt = 1.5; scriptIdx = 0;
+  $("dots").innerHTML = ""; $("cue").classList.remove("on", "unsure"); $("cueDir").textContent = ""; $("cueAct").textContent = "JEV 在看台下…"; $("cueWhy").textContent = ""; $("cueMeta").textContent = "";
+}
+function start(asDemo) {
+  stop(); reset(); demo = asDemo; running = true; document.body.classList.add("running"); secStart = 0; lastWordAt = 0; scriptAt = 0.8;
+  tapeStart = performance.now() / 1000; tapeAt = 0; tapeState = {}; frames = []; lastSnap = {}; recNext = 0;
+  if (REPLAY) { demo = true; drawProg(); drawLines(); return; }
+  $("go").textContent = "停止"; drawProg(); drawLines();
+  if (!asDemo && $("src").value === "mic") startMic();
+}
+function stop() { running = false; document.body.classList.remove("running"); $("go").textContent = "开始现场"; if (rec) { rec.onend = null; rec.stop(); rec = null; } }
+$("demo").onclick = () => talk && start(true);
+$("go").onclick = () => running ? stop() : talk && start(false);
+$("next").onclick = () => running && goSection(nextPlanned());
+
+let last = performance.now() / 1000;
+function frame() {
+  const now = performance.now() / 1000, dt = Math.min(0.1, now - last); last = now;
+  const sdt = dt * (running ? speed() : 1); if (running) simT += sdt;
+  let w, m, n;
+  if (REPLAY) { replayStep(now); drawCam(); w = tapeState.w || [0, 0, 0, 0]; m = tapeState.m || [0, 0, 0, 0]; n = tapeState.n || 0; }
+  else { simStep(sdt); drawCam(); scriptStep(); tickLoop(); recordStep(now); w = windowStats(5); m = [0, 1, 2, 3].map(k => mean(samples, k)); n = samples.length; }
+  const val = (arr, k) => k < 0 ? Math.max(0, 1 - arr[0] - arr[1] - arr[2] - arr[3]) : arr[k];
+  $("mood").innerHTML = MOODS.map(([n, c, k]) => `<i style="width:${n ? val(w, k) * 100 : k < 0 ? 100 : 0}%;background:${c}" title="${n}"></i>`).join("");
+  $("legend").innerHTML = MOODS.map(([n, c, k]) => `<div><span style="--c:${c}">${n}</span><b>${n ? pct(val(w, k)) + "%" : "–"}</b><small>${n ? "均值 " + pct(val(m, k)) + "%" : "&nbsp;"}</small></div>`).join("");
+  requestAnimationFrame(frame);
+}
+load().then(() => { requestAnimationFrame(frame); if (Q.has("demo") || REPLAY) start(true); });
+</script>
+</body>
+</html>

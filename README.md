@@ -16,6 +16,10 @@ All demos live on one page: **[towow-ai.github.io/jpp/demos/](https://towow-ai.g
 
 所有演示都在这一页：**[towow-ai.github.io/jpp/demos/](https://towow-ai.github.io/jpp/demos/)**。01–04 回放真机运行，数字来自该次运行的报告与账本；05 同为真机录制回放（含负结果）。没有一个案子完全定案，页面照实写出。
 
+**06 [Live speaker coach / 讲台提示](https://towow-ai.github.io/jpp/demos/speaker/)** replays one real run. Every 3 seconds JEV reads a frozen snapshot of the audience (12 simulated faces reduced to four ratios), the latest transcript and the session profile, then answers two multiple-choice questions in one merged call (about 1.3 s): which action to cue, including "don't interrupt", and which section to steer toward. The audience is simulated from hidden preferences that JEV never sees; every judgment in the replay is a live JEV result.
+
+**06 [讲台提示](https://towow-ai.github.io/jpp/demos/speaker/)** 回放一场真机运行：每 3 秒把台下（12 张模拟的脸，汇总成四个比例）、最新字幕和本场画像冻结成一份材料，JEV 在一次合并调用里答两道选择题（约 1.3 秒）：提示讲者做什么（含「先不提示」）、往哪一节偏。观众由 JEV 看不到的隐藏偏好模拟，回放里每一拍的判断都是真机结果。
+
 <sub>01–04：录于 2026-09-26，旧默认：没写线即拿不准；新默认下的重录在赛后 / Recorded 2026-09-26 under the old default (no line = unsure); re-recording under the new default comes after the contest.</sub>
 
 - **01 Who is lying / 谁在说谎**: eight testimonies compared pair by pair. Cases A and B circle two people that include the culprit; in case C the program names Zhou Lin while the case design says Han Mei; some pairs stay uncertain in all three. / 八份证词两两对质。A、B 两案圈出的两人含真凶，C 案程序认定周琳而出题设定是韩梅，三案都仍有拿不准的证词对。
