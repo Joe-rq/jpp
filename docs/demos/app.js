@@ -992,6 +992,30 @@
     return { steps, layout, render };
   }
 
+  function scene06(svg) {
+    // 讲台提示的缩略画面：台下 12 个座位先冷下去，提示亮起，照做后回暖（示意，不是数据）
+    const steps = [{ title: "", dur: 1000 }];
+    const g = sv("g"); svg.append(g);
+    const seats = Array.from({ length: 12 }, (_, i) => { const c = sv("circle", {}); g.append(c); return { c, k: (i * 5) % 12 }; });
+    const cue = sv("rect", {}), line = sv("rect", {});
+    g.append(cue, line);
+    let L = null;
+    function layout(W, H) { L = { W, H, s: Math.min(W / 5.2, H / 3.9) }; }
+    function render(_, t) {
+      if (!L) return;
+      const cold = clamp((t - 0.12) / 0.3), warm = clamp((t - 0.62) / 0.3), lit = t > 0.5 && t < 0.95 ? 1 : 0;
+      seats.forEach((st, i) => {
+        const row = Math.floor(i / 4), col = i % 4;
+        const x = L.W / 2 + (col - 1.5 + (row % 2 ? 0.25 : -0.25)) * L.s * 1.15, y = L.H * 0.14 + (row + 0.5) * L.s * 0.95;
+        const f = st.k / 12, isCold = cold > f && !(warm > f), isWarm = warm > f;
+        at(st.c, { cx: x, cy: y, r: L.s * 0.4, fill: rgb(isWarm ? COL.ok : isCold ? COL.bad : COL.line), opacity: 0.9 });
+      });
+      at(cue, { x: L.W * 0.56, y: L.H * 0.8, width: L.W * 0.4, height: L.H * 0.13, rx: 3, fill: rgb(lit ? COL.accent : COL.card), stroke: rgb(COL.ink), "stroke-width": 1 });
+      at(line, { x: L.W * 0.59, y: L.H * 0.855, width: L.W * 0.3 * lit, height: L.H * 0.025, fill: rgb(COL.paper) });
+    }
+    return { steps, layout, render };
+  }
+
   // ---------- 页面 ----------
   function fit(stage, scene, after) {
     const ro = new ResizeObserver(() => { const r = stage.getBoundingClientRect(); if (r.width && r.height) { scene.layout(r.width, r.height); after && after(); } });
@@ -1005,6 +1029,7 @@
       { href: "#/03", no: "03", t: "最短书单", s: `${D.c03.articles.length} 篇条目收成书单`, mk: (g) => scene03(g, true) },
       { href: "#/04", no: "04", t: "合租分配", s: `${D.c04.hosts.length + D.c04.seekers.length} 人配成稳定合租`, mk: (g) => scene04(g, true) },
       { href: "./towow-net/", no: "05", t: "通爻网络", s: "花费约 1/74，盲评不如大模型", tag: "54 个方案中 24 个为生成失败的兜底版", mk: (g) => scene05(g) },
+      { href: "./speaker/", no: "06", t: "讲台提示", s: "每 3 秒看一次台下，一拍一次调用", tag: "观众为模拟，每拍判断是真机结果", mk: (g) => scene06(g) },
     ];
     const grid = el("div", { class: "home" });
     main.append(grid);
@@ -1014,8 +1039,8 @@
       const thumb = el("div", { class: "thumb" }, svg);
       grid.append(el("a", { class: "card", href: cd.href }, thumb, el("p", cd.tag ? { style: "white-space:normal" } : {}, el("span", { class: "no" }, cd.no), el("b", {}, cd.t), el("span", { class: "sub" }, cd.s), cd.tag ? el("span", { class: "sub", style: "display:block;font-size:12px;opacity:.75;margin-top:2px" }, cd.tag) : "")));
       const sc = cd.mk(svg);
-      const total = cd.no === "02" || cd.no === "05" ? 9000 : 10000;
-      const loop = Loop(cd.no === "02" || cd.no === "05" ? { steps: [{ dur: 1 }], render: (_, t) => sc.render(0, t) } : sc, total);
+      const total = cd.no === "02" || cd.no === "05" || cd.no === "06" ? 9000 : 10000;
+      const loop = Loop(cd.no === "02" || cd.no === "05" || cd.no === "06" ? { steps: [{ dur: 1 }], render: (_, t) => sc.render(0, t) } : sc, total);
       loops.push(loop);
       obs.push(fit(thumb, sc, loop.redraw));
     });
