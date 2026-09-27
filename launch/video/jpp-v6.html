@@ -1,0 +1,563 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>J++ 介绍片 v6</title>
+<meta name="viewport" content="width=1920">
+<style>
+:root{
+  --bg:#06080b; --ink:#f3f5f2; --muted:#9aaab4; --dim:#5b6b76; --line:rgba(255,255,255,.08);
+  --act:#bcf479; --jev:#5fd6f5; --amber:#ffc766; --gen:#ff7ad9; --violet:#9d86ff; --slate:#7f97a6; --bad:#ff6b5a;
+  --sans:"PingFang SC","Hiragino Sans GB",-apple-system,"Helvetica Neue",sans-serif;
+  --mono:"SF Mono",Menlo,Monaco,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:#000;width:1920px;height:1080px;overflow:hidden}
+body{font-family:var(--sans);color:var(--ink);-webkit-font-smoothing:antialiased}
+#stage{position:absolute;left:0;top:0;width:1920px;height:1080px;overflow:hidden;background:var(--bg)}
+.scene{position:absolute;inset:0;perspective:1800px}
+.a{position:absolute;left:0;top:0}
+canvas.full,svg.full{position:absolute;left:0;top:0;width:1920px;height:1080px;overflow:visible}
+/* type */
+.kick{font:600 17px/1 var(--mono);letter-spacing:.28em;color:var(--act);text-transform:uppercase;white-space:nowrap}
+.h{font-weight:650;font-size:62px;line-height:1.15;letter-spacing:-.01em;white-space:nowrap;background:linear-gradient(180deg,#ffffff 20%,#a9bac4);-webkit-background-clip:text;background-clip:text;color:transparent}
+.h em{font-style:normal;background:linear-gradient(90deg,#d9ff9e,#bcf479 40%,#5fd6f5);-webkit-background-clip:text;background-clip:text;color:transparent}
+.sub{font-size:28px;color:var(--muted);white-space:nowrap;letter-spacing:.01em}
+.lab{font-size:20px;color:var(--muted);white-space:nowrap}
+.num{font:700 88px/1 var(--mono);letter-spacing:-.04em;white-space:nowrap}
+.foot{font:400 15px/1 var(--mono);color:var(--dim);white-space:nowrap;letter-spacing:.02em}
+.mono{font-family:var(--mono)}
+/* panels with gradient hairline border */
+.panel{background:transparent;border:none;box-shadow:none}
+.panel.cy{background:transparent}
+.panel .ttl{position:absolute;left:22px;top:18px;font:600 15px/1 var(--mono);letter-spacing:.2em;text-transform:uppercase}
+.dots3{display:none}
+.code{font:500 21px/1.65 var(--mono);white-space:pre;color:#c8d4da}
+.code .k{color:var(--act)} .code .s{color:var(--amber)} .code .f{color:var(--jev)} .code .c{color:var(--dim)}
+.chip{font:500 19px/1 var(--sans);padding:10px 0;white-space:nowrap;color:var(--ink)}
+.tag{font:600 15px/1 var(--mono);padding:7px 11px;border-radius:8px;white-space:nowrap;letter-spacing:.06em}
+.avatar{width:170px;height:170px}
+.avatar img{position:absolute;left:50%;bottom:-4%;width:92%;transform:translateX(-50%)}
+.icon{background-size:contain;background-repeat:no-repeat;background-position:center}
+.bubble{font-size:26px;line-height:1.5;white-space:nowrap}
+#hud{position:fixed;left:12px;bottom:12px;font:12px var(--mono);color:#888;display:none;z-index:99}
+</style>
+<script src="data/timeline.js"></script>
+<script src="data/net.js"></script>
+</head>
+<body>
+<div id="stage"></div>
+<div id="hud"></div>
+<script>
+"use strict";
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const lerp = (a, b, t) => a + (b - a) * t;
+const E_ = {
+  out: t => 1 - Math.pow(1 - t, 3), inOut: t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2,
+  back: t => { const c1 = 1.70158, c3 = c1 + 1; return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2); },
+  expo: t => t >= 1 ? 1 : 1 - Math.pow(2, -10 * t), sine: t => .5 - .5 * Math.cos(Math.PI * t), lin: t => t,
+};
+const P = (t, a, b, e = E_.out) => e(clamp((t - a) / (b - a)));
+const win = (t, a, b, d = .4) => clamp((t - a) / d) * clamp((b - t) / d);
+function rng(seed) { return () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+function el(parent, cls, css, html) { const e = document.createElement("div"); e.className = cls ? "a " + cls : "a"; if (css) Object.assign(e.style, css); if (html != null) e.innerHTML = html; parent.appendChild(e); return e; }
+function place(e, x, y, o = 1, s = 1, ax = 0, ay = 0, extra = "") { e.style.transform = `translate(${x}px,${y}px) translate(${-ax * 100}%,${-ay * 100}%) ${extra} scale(${s})`; e.style.opacity = o; }
+function cv(parent) { const c = document.createElement("canvas"); c.className = "full"; c.width = 1920; c.height = 1080; parent.appendChild(c); return c.getContext("2d"); }
+const IMG = n => `assets/cut/${n}.png`;
+function img(parent, name, w, css) { const e = el(parent, "icon", { width: w + "px", height: w + "px", backgroundImage: `url(${IMG(name)})`, ...css }); return e; }
+function avatar(parent, who, k) { const a = el(parent, "avatar"); const i = document.createElement("img"); i.src = IMG(`${who}-${k}`); a.appendChild(i); return a; }
+function panel(parent, w, h, title, cls = "", color = "var(--act)") { const p = el(parent, "panel " + cls, { width: w + "px", height: h + "px" }); if (title) el(p, "ttl", { color }, title); el(p, "dots3", null, "<i></i><i></i><i></i>"); return p; }
+const esc = s => s.replace(/&/g, "&amp;").replace(/</g, "&lt;");
+function hl(src) {
+  return esc(src).replace(/("[^"]*")/g, "\u0001$1\u0002")
+    .replace(/(\/\/.*)$/gm, "\u0003$1\u0004")
+    .replace(/\b(let|fn|if|else|unit)\b/g, '<span class="k">$1</span>')
+    .replace(/\b([a-z_]+)(?=\()/g, '<span class="f">$1</span>')
+    .replace(/\u0001([^\u0002]*)\u0002/g, '<span class="s">$1</span>')
+    .replace(/\u0003([^\u0004]*)\u0004/g, '<span class="c">$1</span>');
+}
+// headline with word-mask reveal
+function head(parent, html, size) { const e = el(parent, "h", size ? { fontSize: size + "px" } : null, html); return e; }
+function rev(e, t, a, b, x, y, ax = 0, ay = 0) {
+  const pi = P(t, a, a + .8, E_.expo), po = P(t, b - .4, b, E_.inOut);
+  e.style.clipPath = `inset(-30% ${100 - pi * 100}% -30% -3%)`;
+  place(e, x + (1 - pi) * -24, y + po * -10, clamp((t - a) / .2) * (1 - po), 1, ax, ay);
+  e.style.filter = po > 0 ? `blur(${po * 6}px)` : "none";
+}
+const fmt = v => Math.round(v).toLocaleString("en-US");
+
+// ---------- stage & background ----------
+const stage = document.getElementById("stage");
+const bgc = cv(stage);
+const DOTS = (() => { const a = []; for (let y = 0; y < 1080; y += 32) for (let x = 0; x < 1920; x += 32) a.push([x + 16, y + 16]); return a; })();
+function renderBg(t, hue) {
+  const g = bgc; g.fillStyle = "#06080b"; g.fillRect(0, 0, 1920, 1080);
+  const gx = 960 + Math.sin(t * .13) * 380, gy = 120 + Math.cos(t * .11) * 60;
+  let gr = g.createRadialGradient(gx, gy, 0, gx, gy, 900); gr.addColorStop(0, hue === "cy" ? "rgba(95,214,245,.16)" : "rgba(188,244,121,.13)"); gr.addColorStop(1, "rgba(0,0,0,0)");
+  g.fillStyle = gr; g.fillRect(0, 0, 1920, 1080);
+  gr = g.createRadialGradient(1600, 1000, 0, 1600, 1000, 800); gr.addColorStop(0, "rgba(157,134,255,.10)"); gr.addColorStop(1, "rgba(0,0,0,0)");
+  g.fillStyle = gr; g.fillRect(0, 0, 1920, 1080);
+  g.fillStyle = "rgba(255,255,255,.055)";
+  for (const [x, y] of DOTS) { g.fillRect(x, y, 1.6, 1.6); }
+  // moving beam
+  const bx = ((t * 140) % 3200) - 600;
+  gr = g.createLinearGradient(bx - 300, 0, bx + 300, 0); gr.addColorStop(0, "rgba(188,244,121,0)"); gr.addColorStop(.5, "rgba(188,244,121,.035)"); gr.addColorStop(1, "rgba(188,244,121,0)");
+  g.fillStyle = gr; g.fillRect(0, 0, 1920, 1080);
+}
+
+// ---------- scenes from shared timeline ----------
+const TL = window.TIMELINE, BAR = 60 / TL.bpm * TL.beatsPerBar;
+const DEF = {}; const scenes = []; let T0 = 0;
+function S(id, def) { DEF[id] = def; }
+function foot(r, text) { const e = el(r, "foot", { whiteSpace: "normal", width: "1700px", textAlign: "right", lineHeight: "1.5" }, text); return (t, dur) => place(e, 1840, 1050, win(t, .8, dur - .1, .5), 1, 1, 1); }
+
+// JEV / J++ split mini diagram helper: J++ box, JEV box, beam dots between
+function splitBoxes(r, x1, x2, y, w = 300, h = 120) {
+  const a = el(r, "panel", { width: w + "px", height: h + "px" }); el(a, "ttl", { color: "var(--act)" }, "J++"); el(a, "", { position: "absolute", left: "22px", top: "52px", fontSize: "22px", color: "var(--ink)" }, "出题 · 合批 · 分路 · 记账");
+  const b = el(r, "panel cy", { width: w * .8 + "px", height: h + "px" }); el(b, "ttl", { color: "var(--jev)" }, "JEV API"); el(b, "", { position: "absolute", left: "22px", top: "52px", fontSize: "22px" }, "判断 → 概率");
+  const dots = Array.from({ length: 6 }, () => el(r, "", { width: "12px", height: "12px", borderRadius: "50%" }));
+  return (t, o = 1) => {
+    place(a, x1, y, o, 1, .5, .5); place(b, x2, y, o, 1, .5, .5);
+    dots.forEach((d, i) => { const ph = ((t * .9 + i / 6) % 1); const go = i % 2 === 0; const x = go ? lerp(x1 + w / 2, x2 - w * .4, ph) : lerp(x2 - w * .4, x1 + w / 2, ph); d.style.background = go ? "var(--act)" : "var(--jev)"; d.style.boxShadow = `0 0 12px ${go ? "var(--act)" : "var(--jev)"}`; place(d, x, y + (go ? -22 : 22), o * Math.sin(ph * Math.PI), 1, .5, .5); });
+  };
+}
+
+// ===== 1. JEV：问一个问题 =====
+S("jev", {
+  hue: "cy",
+  build(r) {
+    this.h = head(r, "JEV：语义判断器，返回<em>读数</em>");
+    this.av = avatar(r, "owner", 0);
+    this.msg = el(r, "bubble", { fontSize: "22px", color: "var(--muted)", whiteSpace: "normal", width: "560px" }, "“这台空气净化器用了不到一周就一直报警……东西你们拿回去，钱退给我就行。”");
+    this.q = el(r, "bubble", { color: "var(--act)", fontSize: "34px", fontWeight: 600 }, "这条客户留言是不是在明确要求退款？");
+    this.jev = panel(r, 360, 230, "JEV API", "cy", "var(--jev)");
+    this.bar = el(this.jev, "", { position: "absolute", left: "24px", top: "120px", width: "312px", height: "14px", borderRadius: "7px", background: "rgba(255,255,255,.08)", overflow: "hidden" });
+    this.fill = el(this.bar, "", { position: "absolute", left: 0, top: 0, bottom: 0, background: "linear-gradient(90deg,#5fd6f5,#bcf479)" });
+    el(this.jev, "", { position: "absolute", left: "24px", top: "74px", fontSize: "20px", color: "var(--muted)" }, "读数 · P(是)");
+    this.ans = el(this.jev, "", { position: "absolute", left: "24px", top: "158px", font: "600 26px/1 var(--sans)", color: "var(--act)" }, "是");
+    this.dot = el(r, "", { width: "16px", height: "16px", borderRadius: "50%", background: "var(--act)", boxShadow: "0 0 16px var(--act)" });
+    this.s1 = el(r, "num", { fontSize: "54px" }, "1.2 秒"); this.s2 = el(r, "num", { fontSize: "54px", color: "var(--act)" }, "$0.0004");
+    this.l1 = el(r, "lab", null, "一次调用"); this.l2 = el(r, "lab", null, "单次调用费用");
+    this.f = foot(r, "题面与留言取自 github.com/towow-ai/jpp rust/examples/guide/elem-judge.jpp · 时间与花费：JEV 实测，一份设计稿同时问 11 个问题");
+  },
+  update(t) {
+    rev(this.h, t, .2, this.dur, 140, 120);
+    place(this.av, 260, 560, P(t, .3, .8), lerp(.8, 1, P(t, .3, 1, E_.back)), .5, .5);
+    place(this.msg, 400, 430, P(t, .6, 1.1), 1, 0, .5, `translateX(${(1 - P(t, .6, 1.2)) * 30}px)`);
+    place(this.q, 400, 620, P(t, 1.3, 1.8), 1, 0, .5, `translateX(${(1 - P(t, 1.3, 1.9)) * 30}px)`);
+    place(this.jev, 1480, 540, P(t, .8, 1.3), 1, .5, .5, `rotateY(${lerp(-22, -10, P(t, 0, this.dur, E_.sine))}deg)`);
+    const f = P(t, 2.1, 3.0, E_.inOut);
+    place(this.dot, lerp(980, 1300, f), lerp(620, 540, f), f > 0 && f < 1 ? 1 : 0, 1, .5, .5);
+    this.fill.style.width = (P(t, 3.0, 4.2, E_.expo) * 93) + "%";
+    this.ans.style.opacity = P(t, 4.0, 4.4);
+    place(this.s1, 1310, 800, P(t, 4.6, 5.1), 1, 0, 0); place(this.l1, 1312, 870, P(t, 4.6, 5.1));
+    place(this.s2, 1560, 800, P(t, 4.9, 5.4), 1, 0, 0); place(this.l2, 1562, 870, P(t, 4.9, 5.4));
+    this.f(t, this.dur);
+  }
+});
+
+// ===== 2. J++ 是什么：分工 =====
+S("jpp", {
+  build(r) {
+    this.k = el(r, "kick", null, "J++ · 以判断为基本操作的编程语言");
+    this.h = head(r, "成百上千次判断，<em>组合成一个程序</em>");
+    this.jpp = panel(r, 560, 470, "J++ 的三个基本操作");
+    const rows = [["材料 · mat / state", "判断的对象：文本、记录、上一步的结果"], ["题 · test / select / measure", "三种题型：是非、K 选一、打分"], ["出口 · cut / handle", "读数按线切成 act / ignore / unsure，分别接代码"]];
+    this.rows = rows.map(([a, b], i) => el(this.jpp, "", { position: "absolute", left: "26px", top: 70 + i * 120 + "px", width: "508px", height: "100px" }, `<div style="position:absolute;left:0;top:10px;font-size:34px;font-weight:600;color:var(--act)">${a}</div><div style="position:absolute;left:0;top:58px;font-size:20px;color:var(--muted)">${b}</div>`));
+    this.jev = panel(r, 380, 300, "JEV API", "cy", "var(--jev)");
+    el(this.jev, "", { position: "absolute", left: "26px", top: "70px", fontSize: "30px", fontWeight: 600, color: "var(--jev)" }, "判断");
+    el(this.jev, "", { position: "absolute", left: "26px", top: "120px", fontSize: "20px", color: "var(--muted)", lineHeight: "1.6", whiteSpace: "normal", width: "330px" }, "judge：对材料回答题，返回读数");
+    this.c = cv(r);
+    this.sub = el(r, "sub", null, "判断由 JEV 完成 · 批调度、出口路由、账本由 J++ 运行时完成");
+  },
+  update(t) {
+    rev(this.k, t, .2, this.dur, 140, 110); rev(this.h, t, .4, this.dur, 140, 140);
+    const o = P(t, .6, 1.2);
+    place(this.jpp, 620, 590, o, 1, .5, .5, `rotateY(${lerp(16, 8, P(t, 0, this.dur, E_.sine))}deg) rotateX(4deg)`);
+    this.rows.forEach((e, i) => { e.style.opacity = P(t, 1.2 + i * .45, 1.6 + i * .45); e.style.transform = `translateX(${(1 - P(t, 1.2 + i * .45, 1.8 + i * .45)) * 20}px)`; });
+    place(this.jev, 1450, 560, P(t, 1.0, 1.6), 1, .5, .5, `rotateY(${lerp(-18, -9, P(t, 0, this.dur, E_.sine))}deg)`);
+    // incoming question dots merge into beams toward JEV and readings return
+    const g = this.c; g.clearRect(0, 0, 1920, 1080);
+    const rr = rng(5);
+    for (let i = 0; i < 60; i++) {
+      const sy = 300 + rr() * 560, st = 2.2 + rr() * 3.2, ph = clamp((t - st) / 1.2);
+      if (ph <= 0 || ph >= 1) continue;
+      const x = lerp(40, 330, E_.inOut(ph)), y = lerp(sy, 590, E_.inOut(ph));
+      g.fillStyle = `rgba(188,244,121,${.8 * Math.sin(ph * Math.PI)})`; g.beginPath(); g.arc(x, y, 5, 0, 6.28); g.fill();
+    }
+    const beamO = P(t, 3.0, 3.6) * clamp((this.dur - t) / .4);
+    for (let k = 0; k < 3; k++) {
+      const ph = ((t * .7 + k / 3) % 1);
+      const x = lerp(910, 1255, ph), y = 520 + k * 20;
+      const gr = g.createLinearGradient(x - 80, 0, x + 20, 0); gr.addColorStop(0, "rgba(188,244,121,0)"); gr.addColorStop(1, `rgba(188,244,121,${.9 * beamO})`);
+      g.fillStyle = gr; g.fillRect(x - 80, y - 3, 100, 6);
+      const x2 = lerp(1255, 910, ph), y2 = 640 + k * 16;
+      const gr2 = g.createLinearGradient(x2 - 20, 0, x2 + 80, 0); gr2.addColorStop(0, `rgba(95,214,245,${.9 * beamO})`); gr2.addColorStop(1, "rgba(95,214,245,0)");
+      g.fillStyle = gr2; g.fillRect(x2 - 20, y2 - 3, 100, 6);
+    }
+    g.font = "600 16px SF Mono, Menlo"; g.fillStyle = `rgba(188,244,121,${beamO})`; g.fillText("批调度：同材料多题，一次调用", 960, 492);
+    g.fillStyle = `rgba(95,214,245,${beamO})`; g.fillText("读数返回", 1000, 710);
+    rev(this.sub, t, 5.2, this.dur, 960, 930, .5, 0);
+  }
+});
+
+// ===== 3. 八件事 =====
+const EIGHT = [
+  ["判断力缺席", "thing-6", 79, "判断器不可用时的处理"], ["批调度", "thing-0", 75, "同一材料的多道题合成一次调用"], ["校准", "thing-5", 65, "读数与阈值的换算依据"], ["未决去向", "thing-2", 37, "unsure 出口的处理路径"],
+  ["缓存与增量", "thing-4", 33, "判过的题不再调用"], ["预算", "thing-3", 12, "调用次数与费用上限"], ["深度与终止", "thing-1", -1, "追问层数与停止条件"], ["时延预算", "thing-7", -1, "等待判断的时间上限"],
+];
+S("eight", {
+  build(r) {
+    this.h = head(r, "运行时的八项决定：<em>81 个开源项目各自手写</em>", 56);
+    this.av = avatar(r, "dev", 1);
+    this.cards = EIGHT.map(([name, icon, n, def], i) => {
+      const c = panel(r, 540, 118, null);
+      img(c, icon, 84, { position: "absolute", left: "16px", top: "17px" });
+      el(c, "", { position: "absolute", left: "116px", top: "12px", fontSize: "25px", fontWeight: 600 }, name); el(c, "", { position: "absolute", left: "116px", top: "48px", fontSize: "17px", color: "var(--muted)" }, def);
+      const cells = n >= 0 ? Array.from({ length: 20 }, (_, k) => el(c, "", { position: "absolute", left: 116 + k * 19.5 + "px", top: "80px", width: "11px", height: "18px", borderRadius: "3px", background: "rgba(255,255,255,.08)" })) : [];
+      el(c, "", { position: "absolute", left: "440px", top: "16px", font: "600 20px/1 var(--mono)", color: n >= 0 ? "var(--act)" : "var(--dim)" }, n >= 0 ? `${n}%` : "—");
+      if (n < 0) el(c, "", { position: "absolute", left: "116px", top: "80px", fontSize: "16px", color: "var(--dim)" }, "没有单独统计");
+      return { c, cells, n: n >= 0 ? Math.round(n / 5) : n };
+    });
+    this.ex = [
+      ["未决去向", "一个仓库写好了 safe_route，一次都没调用；阈值从 0.30 到 0.95，八种写法没有两个一样"],
+      ["校准", "四个互不相关的项目都这样写：<br><span class='mono' style='color:var(--amber)'>if (result.noul(\"is_urgent\").isYes(0.7)) { escalate(); }</span>"],
+      ["批调度", "官方 cookbook 实测：同材料多题一次调用，比逐题调用<b style='color:var(--act)'>便宜 12.2 倍、快 10 倍</b>"],
+    ].map(([k, v]) => { const p = panel(r, 620, 250, "实例 · " + k, "", "var(--amber)"); el(p, "", { position: "absolute", left: "24px", top: "62px", width: "572px", fontSize: "23px", lineHeight: "1.6", whiteSpace: "normal" }, v); return p; });
+    this.f = foot(r, "J++ 团队统计 2026-09-27：84 个真实开源项目，81 个有度量记录，4 个无代码副本按未出现计；按项目任一范围（判断核心或宿主）是否出现计，不是行占比 · 方法与数据见 towow-ai/jpp research/18-repetition-in-real-jev-projects.zh-CN.md · 例子：docs/evidence-from-the-wild.zh-CN.md");
+  },
+  update(t) {
+    rev(this.h, t, .2, this.dur, 140, 90);
+    this.cards.forEach((o, i) => {
+      const col = i % 2, row = Math.floor(i / 2), a = .6 + i * .22;
+      const shake = P(t, 9, 15) * 3 * Math.sin(t * 20 + i);
+      place(o.c, 140 + col * 570 + shake, 250 + row * 140, P(t, a, a + .5), 1, 0, 0, `translateY(${(1 - P(t, a, a + .6)) * 20}px)`);
+      o.cells.forEach((cell, k) => { const on = k < o.n && t > a + .4 + k * .04; cell.style.background = on ? "var(--act)" : "rgba(255,255,255,.08)"; cell.style.boxShadow = on ? "0 0 8px rgba(188,244,121,.5)" : "none"; });
+    });
+    place(this.av, 1600, 170, P(t, .5, 1), 1, .5, .5);
+    this.ex.forEach((p, i) => { const a = 3.5 + i * 3.8; place(p, 1270, 400, win(t, a, a + 3.8, .35), 1, 0, 0, `translateY(${(1 - P(t, a, a + .5)) * 20}px)`); });
+    this.f(t, this.dur);
+  }
+});
+
+// ===== 4. 运行时接管 =====
+S("takeover", {
+  build(r) {
+    this.core = panel(r, 620, 380, "J++ 运行时");
+    this.icons = EIGHT.map(([n, icon]) => img(r, icon, 70));
+    this.labs = EIGHT.map(([n]) => el(r, "lab", { fontSize: "17px" }, n));
+    this.av = avatar(r, "dev", 2);
+    this.h = head(r, "八项决定，<em>由 J++ 运行时统一处理</em>");
+    this.ring = el(r, "", { width: "40px", height: "40px", borderRadius: "50%", border: "3px solid var(--act)" });
+  },
+  update(t) {
+    rev(this.h, t, .9, this.dur, 960, 110, .5, 0);
+    place(this.core, 960, 610, P(t, .1, .6), lerp(.92, 1, P(t, .1, .8, E_.back)), .5, .5, `rotateX(${lerp(14, 6, P(t, 0, this.dur, E_.sine))}deg)`);
+    this.icons.forEach((e, i) => {
+      const f = P(t, .1 + i * .07, .9 + i * .07, E_.inOut);
+      const sx = 140 + (i % 2) * 570 + 58, sy = 250 + Math.floor(i / 2) * 140 + 59;
+      const tx = 960 - 225 + (i % 4) * 150, ty = 560 + Math.floor(i / 4) * 130;
+      place(e, lerp(sx, tx, f), lerp(sy, ty, f) - Math.sin(f * Math.PI) * 140, 1, lerp(1.1, 1, f), .5, .5);
+      place(this.labs[i], tx, ty + 52, P(t, 1.1, 1.5), 1, .5, 0);
+    });
+    const rq = P(t, .95, 2.2);
+    place(this.ring, 960, 610, (1 - rq) * (t > .95 ? 1 : 0), 1 + rq * 40, .5, .5);
+    place(this.av, 1600, 600, P(t, 1.2, 1.7), lerp(.8, 1, P(t, 1.2, 1.9, E_.back)), .5, .5);
+  }
+});
+
+// ===== 5–9. 五个能力 =====
+function capScene(o) {
+  S(o.id, {
+    build(r) {
+      this.icon = img(r, o.icon, 92);
+      this.k = el(r, "kick", null, o.kick);
+      this.h = head(r, o.title, 56);
+      this.sub = el(r, "sub", null, o.sub);
+      this.stage = panel(r, 1060, 520, o.stageTitle);
+      this.code = panel(r, 640, 60 + o.code.length * 35, o.file, "", "var(--dim)");
+      el(this.code, "code", { position: "absolute", left: "24px", top: "52px", fontSize: o.codeSize || "20px" }, o.code.map(hl).join("\n"));
+      this.tag = el(r, "tag", { color: "#0b1410", background: o.real ? "var(--jev)" : "var(--act)" }, o.real ? "真机录制" : "示例程序");
+      this.av = avatar(r, o.who, o.face || 0);
+      this.local = {}; o.build.call(this.local, this.stage, r);
+    },
+    update(t) {
+      place(this.icon, 140, 110, P(t, .1, .5), lerp(.6, 1, P(t, .1, .6, E_.back)), 0, 0);
+      rev(this.k, t, .2, this.dur, 250, 128); rev(this.h, t, .3, this.dur, 250, 150); rev(this.sub, t, .6, this.dur, 252, 230);
+      place(this.stage, 1290, 590, P(t, .4, 1.0), 1, .5, .5, `rotateY(${lerp(-10, -5, P(t, 0, this.dur, E_.sine))}deg) rotateX(3deg)`);
+      place(this.code, 140, 950, P(t, 1.0, 1.5), 1, 0, 1, `translateY(${(1 - P(t, 1.0, 1.6)) * 20}px)`);
+      place(this.tag, 140, 420, P(t, .8, 1.2));
+      place(this.av, 245, 580, P(t, .5, 1), 1, 0, .5);
+      o.update.call(this.local, t, this.dur);
+    }
+  });
+}
+// stage-local coordinate helper: stage panel is 1060x520
+const lane = (p, color) => el(p, "", { position: "absolute", height: "3px", background: color, opacity: .35, borderRadius: "2px" });
+
+capScene({
+  id: "cap-route", icon: "cap-0", kick: "能力 1 / 5 · judge · cut · handle", title: "三路出口：<em>act / ignore / unsure</em>", sub: "读数按线切成三个出口；unsure 必须有去向", who: "owner", face: 0,
+  stageTitle: "judge → cut → handle", file: "rust/examples/guide/elem-judge.jpp",
+  code: ['let refund_ask = test("这条客户留言是不是在明确要求退款？", "customer-refund-request");', 'handle(cut(r), {', '    act: fn() { "退款：升级处理" },', '    ignore: fn() { "非退款请求" },', '    unsure: fn(u) { consume(u, "drop"); "线附近，转人工" }})'], codeSize: "17px",
+  build(p) {
+    this.msgs = Array.from({ length: 9 }, (_, i) => el(p, "", { width: "70px", height: "46px", borderRadius: "50%", background: "rgba(255,255,255,.07)" }));
+    this.jev = el(p, "panel cy", { width: "180px", height: "110px" }, '<div style="position:absolute;left:18px;top:16px;font:600 14px/1 var(--mono);letter-spacing:.2em;color:var(--jev)">JEV API</div><div style="position:absolute;left:18px;top:52px;font-size:20px">概率</div>');
+    this.gate = el(p, "", { width: "22px", height: "180px", borderRadius: "11px", background: "linear-gradient(var(--act),var(--amber),var(--slate))", boxShadow: "0 0 24px rgba(188,244,121,.4)" });
+    this.bins = [["act：升级退款", "var(--act)"], ["unsure：转人工", "var(--amber)"], ["ignore：不处理", "var(--slate)"]].map(([n, c]) => el(p, "", { width: "230px", height: "84px", fontSize: "26px", fontWeight: 600, color: c, display: "flex", alignItems: "center", justifyContent: "center" }, n));
+    this.fate = [0, 2, 0, 1, 2, 0, 2, 0, 1];
+  },
+  update(t) {
+    place(this.jev, 330, 260, 1, 1, .5, .5); place(this.gate, 560, 260, 1, 1, .5, .5);
+    this.bins.forEach((b, i) => place(b, 800, 110 + i * 150, P(t, 1.2 + i * .15, 1.6 + i * .15), 1, 0, .5));
+    this.msgs.forEach((m, i) => {
+      const s = 1.4 + i * .55, ph = t - s;
+      let x = 40, y = 260, o = 0;
+      if (ph > 0 && ph < 3) {
+        o = 1;
+        if (ph < .8) { x = lerp(-40, 230, E_.inOut(ph / .8)); }
+        else if (ph < 1.2) { x = 330; m.style.boxShadow = "0 0 20px var(--jev)"; }
+        else if (ph < 1.7) { x = lerp(330, 560, E_.inOut((ph - 1.2) / .5)); m.style.boxShadow = "none"; }
+        else { const q = E_.inOut(clamp((ph - 1.7) / .7)); x = lerp(560, 800, q); y = lerp(260, [110, 410, 260][this.fate[i]], q); o = 1 - clamp((ph - 2.5) / .4); }
+        m.style.background = ph > 1.7 ? ["rgba(188,244,121,.5)", "rgba(127,151,166,.5)", "rgba(255,199,102,.55)"][this.fate[i]] : "rgba(255,255,255,.07)";
+      }
+      place(m, x, y, o, 1, .5, .5);
+    });
+  }
+});
+
+capScene({
+  id: "cap-sieve", icon: "cap-1", kick: "能力 2 / 5 · sieve", title: "批量筛选：<em>一道题 × 一批材料</em>", sub: "一次批调度，结果按三个出口分列", who: "owner", face: 0,
+  stageTitle: "sieve(notes, price)", file: "rust/examples/tally.jpp",
+  code: ['let price = test("这段话给出了具体价格或折扣吗？", "price");', 'let r = sieve(notes, price);'],
+  build(p) {
+    const notes = ["这款耳机售价三百九十九元。", "新店开业，全场八折。", "今天天气晴朗，适合出门。", "会员价比原价便宜了五十元。", "价格还没公布，据说下个月发布。"];
+    this.cards = notes.map(n => el(p, "", { padding: "6px 0", fontSize: "18px", color: "var(--ink)", whiteSpace: "nowrap" }, n));
+    this.demo = el(p, "tag", { color: "var(--muted)", border: "1px solid var(--line)" }, "示意");
+    this.col = [["act", "var(--act)"], ["ignore", "var(--slate)"], ["unsure", "var(--amber)"]].map(([n, c]) => el(p, "", { font: "600 18px/1 var(--mono)", color: c, letterSpacing: ".1em" }, n));
+    this.fate = [0, 0, 1, 0, 2];
+    this.batch = el(p, "tag", { color: "#06121a", background: "var(--jev)" }, "批调度：5 份材料 · 1 次调用");
+  },
+  update(t) {
+    this.col.forEach((c, i) => place(c, 400 + i * 220, 70, P(t, 1.5, 2), 1, 0, 0));
+    place(this.demo, 980, 470, P(t, 1.5, 2), 1, 1, 0);
+    place(this.batch, 60, 70, P(t, 1.6, 2.0) * (1 - P(t, 3.6, 3.9)));
+    this.cards.forEach((c, i) => {
+      const q = P(t, 3.2 + i * .25, 4.2 + i * .25, E_.inOut), f = this.fate[i];
+      const sx = 60, sy = 130 + i * 66, tx = 400 + f * 220, ty = 120 + this.cards.slice(0, i).filter((_, k) => this.fate[k] === f).length * 58;
+      c.style.transformOrigin = "0 0";
+      place(c, lerp(sx, tx, q), lerp(sy, ty, q), P(t, .8 + i * .12, 1.2 + i * .12), lerp(1, .72, q), 0, 0);
+      c.style.color = q > .5 ? ["var(--act)", "var(--slate)", "var(--amber)"][f] : "var(--ink)";
+    });
+  }
+});
+
+capScene({
+  id: "cap-pair", icon: "cap-2", kick: "能力 3 / 5 · judged_bipartite · interval", title: "判断建图 + <em>图算法</em>", sub: "JEV 判断每条边是否成立，图算法在已决边上求最大匹配", who: "dev", face: 0, real: false,
+  stageTitle: "judged_bipartite → interval(matching)", file: "rust/examples/guide/comp-graph-interval.jpp",
+  code: ['let g = judged_bipartite(tasks, people, can_do, {prune: fn(l, r) { cand }});', 'let t = interval(g, "matching", {});'], codeSize: "18px",
+  build(p) {
+    this.svg = document.createElementNS("http://www.w3.org/2000/svg", "svg"); this.svg.setAttribute("class", "full"); this.svg.setAttribute("style", "width:1060px;height:520px"); p.appendChild(this.svg);
+    this.L = [0, 1, 2, 3].map(i => [220, 110 + i * 100]); this.R = [0, 1, 2, 3].map(i => [840, 110 + i * 100]);
+    const nodes = (arr, lab, c) => arr.map((q, i) => el(p, "", { width: "150px", height: "54px", fontSize: "22px", fontWeight: 600, display: "flex", alignItems: "center", justifyContent: "center" }, lab[i]));
+    this.ln = nodes(this.L, ["网页后台", "订单数据库", "发布稿", "安卓界面"], "rgba(255,255,255,.2)");
+    this.rn = nodes(this.R, ["王工", "李工", "赵老师", "孙工"], "rgba(255,255,255,.2)");
+    this.edges = []; const ok = new Set(["0-0", "0-1", "1-1", "2-2", "3-3", "1-0", "3-0"]); const match = new Set(["0-0", "1-1", "2-2", "3-3"]);
+    for (let i = 0; i < 4; i++) for (let j = 0; j < 4; j++) {
+      const e = document.createElementNS("http://www.w3.org/2000/svg", "line");
+      e.setAttribute("x1", this.L[i][0] + 75); e.setAttribute("y1", this.L[i][1]); e.setAttribute("x2", this.R[j][0] - 75); e.setAttribute("y2", this.R[j][1]);
+      this.svg.appendChild(e); this.edges.push({ e, ok: ok.has(`${i}-${j}`), m: match.has(`${i}-${j}`), k: i * 4 + j });
+    }
+    this.note = el(p, "", { fontSize: "18px", color: "var(--muted)" }, "示意 · 真机案例：12 人合租分配，见演示页");
+  },
+  update(t) {
+    this.ln.forEach((n, i) => place(n, ...this.L[i], P(t, .6 + i * .1, 1 + i * .1), 1, .5, .5));
+    this.rn.forEach((n, i) => place(n, ...this.R[i], P(t, .8 + i * .1, 1.2 + i * .1), 1, .5, .5));
+    this.edges.forEach(E => {
+      const judged = t > 2 + E.k * .12, matched = t > 4.4 && E.m;
+      E.e.setAttribute("stroke", matched ? "#bcf479" : judged ? (E.ok ? "#5fd6f5" : "rgba(255,107,90,.0)") : "rgba(255,255,255,.14)");
+      E.e.setAttribute("stroke-width", matched ? 5 : judged && E.ok ? 2 : 1.2);
+      E.e.setAttribute("stroke-dasharray", judged ? "0" : "5 6");
+      E.e.style.opacity = P(t, 1.2, 1.6);
+      E.e.style.filter = matched ? "drop-shadow(0 0 8px #bcf479)" : "none";
+    });
+    place(this.note, 530, 480, P(t, 4.8, 5.3), 1, .5, .5);
+  }
+});
+
+capScene({
+  id: "cap-search", icon: "cap-3", kick: "能力 4 / 5 · search · ground · keep", title: "生成 → 执行 → <em>判断</em>：有界搜索", sub: "keep 用代码过滤执行结果，不产生判断调用；未决候选进入下一轮生成", who: "dev", face: 0,
+  stageTitle: "search · ground · keep", file: "rust/examples/search-ground.jpp",
+  code: ['let r = search([], propose, answers_question, unit, 3,', '    {width: 1, unsure_to: "refine", ground: run_sql, keep: keep});'], codeSize: "19px",
+  build(p) {
+    const st = (x, y, c, a, b) => { const e = el(p, "", { width: "230px", height: "104px", }, `<div style="position:absolute;left:18px;top:16px;font-size:23px;font-weight:600;color:${c}">${a}</div><div style="position:absolute;left:18px;top:56px;font-size:17px;color:var(--muted);white-space:nowrap">${b}</div>`); e._x = x; e._y = y; return e; };
+    this.st = [st(200, 150, "var(--gen)", "gen · 生成", "每轮 3 条候选 SQL"), st(530, 150, "var(--ink)", "ground · 执行", "keep：报错、空结果不进判断"), st(860, 150, "var(--jev)", "JEV", "结果回答了需求吗？")];
+    this.back = el(p, "", { width: "700px", height: "80px", borderRadius: "0 0 40px 40px", border: "2px dashed rgba(255,199,102,.5)", borderTop: "none" });
+    this.bl = el(p, "", { fontSize: "18px", color: "var(--amber)" }, "unsure_to: refine：未决与被过滤的候选带执行结果进入下一轮");
+    this.tok = Array.from({ length: 6 }, () => el(p, "", { width: "20px", height: "20px", borderRadius: "6px" }));
+    this.round = el(p, "tag", { color: "var(--ink)", border: "1px solid var(--line)" });
+    this.found = el(p, "tag", { background: "var(--act)", color: "#0b1410" }, "第 2 轮：act");
+  },
+  update(t) {
+    this.st.forEach(s => place(s, s._x, s._y, P(t, .6, 1.1), 1, .5, .5));
+    place(this.back, 530, 250, P(t, 1, 1.5), 1, .5, 0); place(this.bl, 530, 360, P(t, 1.2, 1.7), 1, .5, 0);
+    this.round.textContent = t < 4.2 ? "第 1 轮" : "第 2 轮"; place(this.round, 40, 60, P(t, .8, 1.2));
+    this.tok.forEach((e, i) => {
+      const R = i < 3 ? 0 : 1, k = i % 3, t0 = R ? 4.2 : 1.4, lt = t - t0;
+      let x = 200, y = 150, o = 0, c = "var(--gen)";
+      if (lt > 0) {
+        o = 1;
+        if (lt < .7) { x = lerp(200, 530, E_.inOut(lt / .7)); y = 150 + (k - 1) * 26; }
+        else if (k === 1) { x = 530; y = lerp(150, 230, clamp((lt - .7) / .4)); c = "var(--bad)"; o = 1 - clamp((lt - 1.1) / .3); }
+        else if (lt < 1.4) { x = lerp(530, 860, E_.inOut((lt - .7) / .7)); y = 150 + (k - 1) * 26; c = "var(--ink)"; }
+        else { c = R === 0 ? (k === 0 ? "var(--slate)" : "var(--amber)") : (k === 0 ? "var(--act)" : "var(--slate)"); x = 860; y = 150 + (k - 1) * 26; if (R === 0 && k === 2) { const q = E_.inOut(clamp((lt - 1.6) / 1.1)); x = lerp(860, 200, q); y = 150 + Math.sin(q * Math.PI) * 190; } else o = 1 - clamp((lt - 2.2) / .4); if (R === 1 && k === 0) o = 1; }
+      }
+      e.style.background = c; e.style.boxShadow = `0 0 14px ${c}`; place(e, x, y, o, 1, .5, .5);
+    });
+    place(this.found, 860, 250, P(t, 6.0, 6.4, E_.back), 1, .5, 0);
+  }
+});
+
+capScene({
+  id: "cap-tree", icon: "cap-4", kick: "能力 5 / 5 · gen · walk · enrich", title: "题树：<em>逐层追问与补材料</em>", sub: "生成器一次产出追问树，JEV 沿出口逐层判断；未决节点补材料后重判", who: "owner", face: 0,
+  stageTitle: "gen → walk → enrich", file: "rust/examples/tree-collab.jpp",
+  code: ['let r = walk(v.tree, pair_ab, 6, {line: {declare: {hi: 0.7, lo: 0.3}}, …'], codeSize: "19px",
+  build(p) {
+    const qs = ["团长和蔬菜基地适合合作吗？", "冷链公司加入，会更紧密吗？", "合作金额会变大吗？", "增量来自冷链的配送吗？"];
+    this.pos = qs.map((_, i) => [130 + i * 240, 90 + i * 100]);
+    this.nodes = qs.map(q => el(p, "", { width: "250px", padding: "6px 0", fontSize: "20px", fontWeight: 600, lineHeight: "1.4", whiteSpace: "normal" }, q));
+    this.svg = document.createElementNS("http://www.w3.org/2000/svg", "svg"); this.svg.setAttribute("class", "full"); this.svg.setAttribute("style", "width:1060px;height:520px"); p.insertBefore(this.svg, p.firstChild);
+    this.ed = this.pos.slice(1).map((b, i) => { const a = this.pos[i]; const e = document.createElementNS("http://www.w3.org/2000/svg", "path"); e.setAttribute("d", `M${a[0] + 120},${a[1] + 30} C${a[0] + 180},${a[1] + 30} ${b[0]},${b[1] - 40} ${b[0]},${b[1] - 28}`); e.setAttribute("fill", "none"); e.setAttribute("stroke", "#bcf479"); e.setAttribute("stroke-width", "2.5"); e.setAttribute("pathLength", "1"); e.style.strokeDasharray = "1 1"; this.svg.appendChild(e); return e; });
+    this.info = el(p, "chip", { background: "var(--act)", color: "#0b1410", fontSize: "17px" }, "enrich：补入 冷链的配送覆盖范围");
+    this.gen = el(p, "tag", { color: "#1a0716", background: "var(--gen)" }, "gen：1 次生成整棵题树");
+    this.cnt = el(p, "", { font: "600 20px/1 var(--mono)", color: "var(--muted)" });
+  },
+  update(t) {
+    const jt = [1.8, 2.5, 3.2, 3.9];
+    place(this.gen, 40, 470, P(t, .6, 1));
+    this.nodes.forEach((n, i) => {
+      place(n, ...this.pos[i], P(t, .8 + i * .1, 1.2 + i * .1), 1, .5, .5);
+      const unsure = i === 3 && t > jt[3] + .3 && t < 5.2;
+      n.style.color = t > jt[i] + .3 ? (unsure ? "var(--amber)" : "var(--act)") : "var(--ink)";
+      
+    });
+    this.ed.forEach((e, i) => { e.style.strokeDashoffset = 1 - P(t, jt[i] + .2, jt[i + 1]); });
+    const fi = P(t, 4.3, 5.0, E_.inOut);
+    place(this.info, lerp(1000, this.pos[3][0] + 130, fi), lerp(460, this.pos[3][1] + 70, fi), P(t, 4.2, 4.4) * (1 - P(t, 5.4, 5.7)), 1, 1, .5);
+    this.cnt.textContent = `1 次生成 + ${Math.min(8, Math.max(0, Math.floor((t - 1.8) / .5) + 1))} 次判断`;
+    place(this.cnt, 1020, 60, P(t, 1.8, 2.2), 1, 1, 0);
+  }
+});
+
+// ===== 10. 效果 =====
+S("effects", {
+  build(r) {
+    this.h = head(r, "改写实测：<em>84 个真实开源项目</em>");
+    const card = (big, color, lab, extra) => { const p = panel(r, 380, 330, null); el(p, "num", { position: "absolute", left: "28px", top: "40px", color, fontSize: "76px" }, big); el(p, "", { position: "absolute", left: "30px", top: "140px", width: "330px", fontSize: "22px", lineHeight: "1.5", color: "var(--ink)", whiteSpace: "normal" }, lab); if (extra) el(p, "", { position: "absolute", left: "30px", top: "226px", width: "330px", fontSize: "16px", lineHeight: "1.55", color: "var(--muted)", whiteSpace: "normal" }, extra); return p; };
+    this.cards = [
+      card("8 处", "var(--amber)", "原项目缺陷（7 个项目），改写核对时发现", "阈值被覆盖而失效 · 概率被当作布尔值 · 浮点误差改变区间边界"),
+      card("0 行", "var(--act)", "判断器接入样板代码：J++ 中无需编写", "响应校验 35→0 · 重试退避 36→0 · 候选回退 30→0（固定观察重放下核对）"),
+      card("14→1", "var(--jev)", "批调度向量化：编译器更新后，同一写法的调用次数", "源码未改动"),
+      card("账本", "var(--violet)", "记录每次效应；同一源码加账本可确定性重放", "跨运行缓存：--cache"),
+    ];
+    this.f = foot(r, "8 处缺陷：towow-ai.github.io/jpp/rewrite-study.html · 0 行：J++ 团队统计 2026-09-27，见 towow-ai/jpp research/19-what-the-rewrites-cut.zh-CN.md · 14→1：rust/crates/jpp/tests/source_execution.rs");
+  },
+  update(t) {
+    rev(this.h, t, .2, this.dur, 140, 130);
+    this.cards.forEach((c, i) => { const a = .9 + i * .45; place(c, 140 + i * 420, 340, P(t, a, a + .5), 1, 0, 0, `translateY(${(1 - P(t, a, a + .7)) * 40}px) rotateX(${(1 - P(t, a, a + .9)) * 25}deg)`); });
+    this.f(t, this.dur);
+  }
+});
+
+// ===== 11. 规模 =====
+S("scale", {
+  hue: "cy",
+  build(r) {
+    this.c = cv(r);
+    this.h = head(r, "通爻网络：<em>307 个主体</em>的意图传播");
+    const N = window.NET, rr = rng(9);
+    this.p3 = N.pos.map(([x, y]) => [(x - .5) * 900, (y - .5) * 620, (rr() - .5) * 500]);
+    this.act = N.act.map(a => { const c = []; let s = 0; for (const v of a) { s += v; c.push(s); } return c; });
+    this.cum = []; let s = 0; for (const v of N.cum) { s += v; this.cum.push(s); }
+    this.usd = []; s = 0; for (const v of N.usd) { s += v; this.usd.push(s); }
+    this.st = [0, 1, 2].map(() => ({ n: el(r, "num", { fontSize: "72px" }), l: el(r, "lab") }));
+    this.f = foot(r, "通爻网络真机录制 · 节点与传播来自事件流 · 合成主体仿真，含负结果 · towow-ai.github.io/jpp/demos/towow-net");
+  },
+  update(t) {
+    const N = window.NET, g = this.c; g.clearRect(0, 0, 1920, 1080);
+    rev(this.h, t, .2, this.dur, 140, 120);
+    const run = P(t, .6, this.dur - .8, E_.lin), bin = Math.min(59, Math.floor(run * 60)), fr = run * 60 - bin;
+    const acc = arr => bin ? arr[bin - 1] + (arr[bin] - arr[bin - 1]) * fr : arr[0] * fr;
+    const ang = t * .12 - .3, ca = Math.cos(ang), sa = Math.sin(ang), CX = 700, CY = 600, F = 1100;
+    const pr = this.p3.map(([x, y, z]) => { const X = x * ca + z * sa, Z = -x * sa + z * ca + 900; const k = F / Z; return [CX + X * k, CY + y * k * .9, k]; });
+    const o = P(t, .2, .8) * clamp((this.dur - t) / .4);
+    for (const [rt, f, tos] of N.routes) { if (rt > run) break; const fl = Math.max(0, 1 - (run - rt) * 60 / 3); for (const k of tos) { const a = pr[f], b = pr[k]; g.strokeStyle = fl > 0 ? `rgba(188,244,121,${(.15 + .7 * fl) * o})` : `rgba(95,214,245,${.12 * o})`; g.lineWidth = fl > 0 ? 1.6 : .8; g.beginPath(); g.moveTo(a[0], a[1]); g.lineTo(b[0], b[1]); g.stroke(); } }
+    const kc = ["#bcf479", "#b99cff", "#5fd6f5"];
+    pr.forEach((p, i) => { const c = this.act[i], recent = bin ? c[bin] - c[Math.max(0, bin - 3)] : c[0], glow = Math.min(1, recent / 25), rad = (2 + Math.min(5, Math.sqrt(acc(c)) * .4)) * p[2]; g.globalAlpha = o * (.35 + .65 * glow); g.fillStyle = kc[N.kind[i]]; g.shadowColor = kc[N.kind[i]]; g.shadowBlur = 16 * glow; g.beginPath(); g.arc(p[0], p[1], rad, 0, 6.28); g.fill(); });
+    g.shadowBlur = 0; g.globalAlpha = 1;
+    const vals = [[fmt(acc(this.cum)), "次判断", "var(--jev)"], ["$" + acc(this.usd).toFixed(3), "花费", "var(--act)"], [Math.round(run * N.elapsed_ms / 60000) + " 分钟", "录制时长", "var(--ink)"]];
+    this.st.forEach((s, i) => { const so = P(t, .8 + i * .3, 1.3 + i * .3) * clamp((this.dur - t) / .4); s.n.textContent = vals[i][0]; s.n.style.color = vals[i][2]; s.l.textContent = vals[i][1]; place(s.n, 1400, 380 + i * 170, so, 1, 0, 1); place(s.l, 1403, 392 + i * 170, so); });
+    this.f(t, this.dur);
+  }
+});
+
+// ===== 12. 我能做什么 + 结尾 =====
+S("cta", {
+  build(r) {
+    this.h = head(r, "开始使用");
+    const card = (who, face, title, line, url) => { const p = panel(r, 700, 330, null); const a = avatar(p, who, face); a.style.left = "30px"; a.style.top = "30px"; a.style.width = a.style.height = "150px"; el(p, "", { position: "absolute", left: "210px", top: "44px", fontSize: "30px", fontWeight: 650 }, title); el(p, "", { position: "absolute", left: "210px", top: "96px", width: "460px", fontSize: "21px", lineHeight: "1.55", color: "var(--muted)", whiteSpace: "normal" }, line); el(p, "", { position: "absolute", left: "30px", top: "262px", font: "500 24px/1 var(--mono)", color: "var(--act)" }, url); return p; };
+    this.cards = [
+      card("dev", 2, "开发者", "编写 .jpp 程序：judge、sieve、search、walk 等算子，由运行时调度", "github.com/towow-ai/jpp"),
+      card("owner", 2, "查看演示", "真机运行回放：谁在说谎、杭州聚餐、最短书单、合租分配", "towow-ai.github.io/jpp/demos"),
+    ];
+    this.logo = el(r, "", { font: "800 200px/1 var(--sans)", letterSpacing: "-.02em" }, 'J<span style="color:var(--act)">++</span>');
+    this.tag = el(r, "", { fontSize: "38px", fontWeight: 600, color: "var(--ink)" }, "你写要判断什么，调度交给语言");
+    this.url = el(r, "", { font: "500 30px/1 var(--mono)", padding: "14px 24px", borderRadius: "12px", border: "1px solid rgba(188,244,121,.6)" }, "github.com/towow-ai/jpp");
+    this.meta = el(r, "lab", null, "实验版 · MIT 许可");
+  },
+  update(t) {
+    const A = 1 - P(t, 6.4, 7.0);
+    rev(this.h, t, .2, 6.8, 140, 130);
+    this.cards.forEach((c, i) => place(c, 140 + i * 760, 330, P(t, .6 + i * .35, 1.1 + i * .35) * A, 1, 0, 0, `translateY(${(1 - P(t, .6 + i * .35, 1.3 + i * .35)) * 30}px)`));
+    const c = P(t, 7.0, 8.2, E_.expo);
+    place(this.logo, 960, 400, c, lerp(1.2, 1, c), .5, .5); this.logo.style.filter = `blur(${(1 - c) * 16}px)`; this.logo.style.textShadow = "0 0 80px rgba(188,244,121,.25)";
+    rev(this.tag, t, 8.0, this.dur, 960, 560, .5, .5);
+    place(this.url, 960, 670, P(t, 8.6, 9.1), 1, .5, .5); place(this.meta, 960, 750, P(t, 9.0, 9.5), 1, .5, .5);
+    stage.style.filter = `brightness(${1 - P(t, this.dur - 1.2, this.dur, E_.lin)})`;
+  }
+});
+
+// ---------- assemble from timeline ----------
+for (const sc of TL.scenes) {
+  const d = DEF[sc.id]; const root = el(stage, "scene");
+  const s = { t0: T0, dur: sc.bars * BAR, root, ...d }; T0 += s.dur; s.build(root); scenes.push(s);
+}
+const TOTAL = T0; window.TOTAL = TOTAL;
+window.render = function (t) {
+  let cur = null;
+  for (const s of scenes) {
+    const lt = t - s.t0, vis = lt > -0.01 && lt < s.dur + 0.01;
+    s.root.style.display = vis ? "block" : "none"; if (!vis) continue; cur = s;
+    const a = clamp(lt / .35), b = clamp((s.dur - lt) / .35);
+    s.root.style.opacity = Math.min(a, b);
+    s.root.style.filter = b < 1 ? `blur(${(1 - b) * 10}px)` : a < 1 ? `blur(${(1 - a) * 8}px)` : "none";
+    s.root.style.transform = `scale(${lerp(1.03, 1, E_.out(a)) * lerp(.97, 1, b)})`;
+    s.update(lt);
+  }
+  if (cur && cur.id !== "cta") stage.style.filter = "none";
+  renderBg(t, cur && cur.hue);
+};
+scenes.forEach((s, i) => s.id = TL.scenes[i].id);
+window.ready = () => Promise.all([...document.images].map(i => i.complete ? 1 : new Promise(r => { i.onload = i.onerror = r; })));
+if (!/render/.test(location.search)) {
+  const hud = document.getElementById("hud"); hud.style.display = "block";
+  let start = performance.now(), paused = false, pt = 0;
+  const m = location.hash.match(/t=([\d.]+)/); if (m) start -= parseFloat(m[1]) * 1000;
+  addEventListener("keydown", e => { if (e.code === "Space") { paused = !paused; if (!paused) start = performance.now() - pt * 1000; } });
+  const fit = () => { const k = Math.min(innerWidth / 1920, innerHeight / 1080); stage.style.transform = `scale(${k})`; stage.style.transformOrigin = "0 0"; };
+  document.body.style.width = document.documentElement.style.width = "100vw"; document.body.style.height = document.documentElement.style.height = "100vh"; addEventListener("resize", fit); fit();
+  const loopF = () => { if (!paused) pt = ((performance.now() - start) / 1000) % TOTAL; render(pt); hud.textContent = pt.toFixed(2) + " / " + TOTAL.toFixed(1) + "s"; requestAnimationFrame(loopF); };
+  requestAnimationFrame(loopF);
+} else { render(0); }
+</script>
+</body>
+</html>

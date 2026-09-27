@@ -12,5 +12,6 @@ The project is public. The posts here are drafts; they have not been sent to an 
 | Copyable structured drafts / 结构化文案 | [JSON](x-posts.json) |
 | Ready-to-upload cover / 可直接上传封面 | [PNG](../assets/social-card.png) |
 | Longer announcement / 较长公告 | [中文](announcement.zh-CN.md) · [English](announcement.en.md) |
+| 110-second intro film (Chinese, with score) / 110 秒介绍片（中文，带配乐） | [MP4](video/jpp-v6.mp4) · [source and notes / 源码与说明](video/README.md) |
 
 Run `python3 launch/check_x_posts.py` to check lengths and regenerate the two post documents. Recheck dated progress claims before publishing a draft later.
