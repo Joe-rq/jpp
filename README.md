@@ -12,17 +12,17 @@ J++ is an experimental programming-language project exploring semantic judgment 
 
 ## Demos / 演示
 
-All demos live on one page: **[towow-ai.github.io/jpp/demos/](https://towow-ai.github.io/jpp/demos/)**. Cards 01–04 replay real runs; every number comes from that run's report and ledger. None of the cases is fully settled, and the pages say so.
+All demos live on one page: **[jpp.towow.net/demos/](https://jpp.towow.net/demos/)**. Cards 01–04 replay real runs; every number comes from that run's report and ledger. None of the cases is fully settled, and the pages say so.
 
-所有演示都在这一页：**[towow-ai.github.io/jpp/demos/](https://towow-ai.github.io/jpp/demos/)**。01–04 回放真机运行，数字来自该次运行的报告与账本；05 同为真机录制回放（含负结果）。没有一个案子完全定案，页面照实写出。
+所有演示都在这一页：**[jpp.towow.net/demos/](https://jpp.towow.net/demos/)**。01–04 回放真机运行，数字来自该次运行的报告与账本；05 同为真机录制回放（含负结果）。没有一个案子完全定案，页面照实写出。
 
-**06 [Live speaker coach / 讲台提示](https://towow-ai.github.io/jpp/demos/speaker/)** replays one real run. Every 3 seconds JEV reads a frozen snapshot of the audience (12 simulated faces reduced to four ratios), the latest transcript and the session profile, then answers two multiple-choice questions in one merged call (about 1.3 s): which action to cue, including "don't interrupt", and which section to steer toward. The audience is simulated from hidden preferences that JEV never sees; every judgment in the replay is a live JEV result.
+**06 [Live speaker coach / 讲台提示](https://jpp.towow.net/demos/speaker/)** replays one real run. Every 3 seconds JEV reads a frozen snapshot of the audience (12 simulated faces reduced to four ratios), the latest transcript and the session profile, then answers two multiple-choice questions in one merged call (about 1.3 s): which action to cue, including "don't interrupt", and which section to steer toward. The audience is simulated from hidden preferences that JEV never sees; every judgment in the replay is a live JEV result.
 
-**06 [讲台提示](https://towow-ai.github.io/jpp/demos/speaker/)** 回放一场真机运行：每 3 秒把台下（12 张模拟的脸，汇总成四个比例）、最新字幕和本场画像冻结成一份材料，JEV 在一次合并调用里答两道选择题（约 1.3 秒）：提示讲者做什么（含「先不提示」）、往哪一节偏。观众由 JEV 看不到的隐藏偏好模拟，回放里每一拍的判断都是真机结果。
+**06 [讲台提示](https://jpp.towow.net/demos/speaker/)** 回放一场真机运行：每 3 秒把台下（12 张模拟的脸，汇总成四个比例）、最新字幕和本场画像冻结成一份材料，JEV 在一次合并调用里答两道选择题（约 1.3 秒）：提示讲者做什么（含「先不提示」）、往哪一节偏。观众由 JEV 看不到的隐藏偏好模拟，回放里每一拍的判断都是真机结果。
 
-**07 [World compiled from the Harness ledger / Harness 的世界](https://towow-ai.github.io/jpp/demos/world/)**: three months of one real Agent system's ledger (about 890,000 events) compiled into a viewable world with J++. JEV picks structure and procedure for 48 real construction tasks, about $0.07 total; the marginal cost of one fix session is $0.0000481.
+**07 [World compiled from the Harness ledger / Harness 的世界](https://jpp.towow.net/demos/world/)**: three months of one real Agent system's ledger (about 890,000 events) compiled into a viewable world with J++. JEV picks structure and procedure for 48 real construction tasks, about $0.07 total; the marginal cost of one fix session is $0.0000481.
 
-**07 [Harness 的世界](https://towow-ai.github.io/jpp/demos/world/)**：把三个月的 Agent 账本（约 89 万条事件）编译成 48 座在建的东西，JEV 选结构与工序，费用几美分；一次修复的单笔成本是 $0.0000481。
+**07 [Harness 的世界](https://jpp.towow.net/demos/world/)**：把三个月的 Agent 账本（约 89 万条事件）编译成 48 座在建的东西，JEV 选结构与工序，费用几美分；一次修复的单笔成本是 $0.0000481。
 
 
 <sub>01–04：录于 2026-09-26，旧默认：没写线即拿不准；新默认下的重录在赛后 / Recorded 2026-09-26 under the old default (no line = unsure); re-recording under the new default comes after the contest.</sub>
@@ -43,13 +43,13 @@ We do not yet know every application this will enable. We want others to constru
 
 Our first application question comes from Towow: can a fuzzy intent meet different participants' local contexts to produce new cooperation possibilities, with ongoing results and candidate combinations participating in further discovery? [Read the research proposal (中文)](docs/first-problem-towow.zh-CN.md).
 
-The first application is the **Towow discovery lab**. Explore [216 participants and 20 intents](https://towow-ai.github.io/jpp/demos/towow/population/), inspect profiles and compare a semantic-plus-lexical method against BM25, or [disable referral/composition in the ten-person experiment](https://towow-ai.github.io/jpp/demos/towow/lab/). Both pages execute the current J++ Python sources in the browser using published real JEV response recordings. [Animated explanation](https://towow-ai.github.io/jpp/) · [Measurements and reproduction (中文)](docs/towow-demo.zh-CN.md).
+The first application is the **Towow discovery lab**. Explore [216 participants and 20 intents](https://jpp.towow.net/demos/towow/population/), inspect profiles and compare a semantic-plus-lexical method against BM25, or [disable referral/composition in the ten-person experiment](https://jpp.towow.net/demos/towow/lab/). Both pages execute the current J++ Python sources in the browser using published real JEV response recordings. [Animated explanation](https://jpp.towow.net/) · [Measurements and reproduction (中文)](docs/towow-demo.zh-CN.md).
 
-The [325-profile real-source comparison](https://towow-ai.github.io/jpp/demos/towow/real/) evaluates seven retrieval/judgment compositions against 963 historical proxy relation labels. Inspect individual candidates, regressions, exact response recordings and offline reproduction. [Results and evaluation scope (中文)](docs/towow-real-relations-results.zh-CN.md).
+The [325-profile real-source comparison](https://jpp.towow.net/demos/towow/real/) evaluates seven retrieval/judgment compositions against 963 historical proxy relation labels. Inspect individual candidates, regressions, exact response recordings and offline reproduction. [Results and evaluation scope (中文)](docs/towow-real-relations-results.zh-CN.md).
 
 [Discovery roadmap (中文)](docs/towow-discovery-roadmap.zh-CN.md) records candidate-pool bottlenecks, reusable Towow research assets and the next bounded experiment. Its offline diagnostic script requires no model calls.
 
-The [composable discovery application](https://towow-ai.github.io/jpp/demos/towow/teams/) runs different task plans through the same J++ composition and feeds a two-member proposal back in to nominate a third member. Its API accepts replaceable questions, routing and combination functions. Three synthetic live examples, exact replay and the unsuccessful fixed-slot exploration control are documented in the [iteration report](docs/towow-discovery-iteration.zh-CN.md); this is a bounded application component, not a delivered distributed discovery network.
+The [composable discovery application](https://jpp.towow.net/demos/towow/teams/) runs different task plans through the same J++ composition and feeds a two-member proposal back in to nominate a third member. Its API accepts replaceable questions, routing and combination functions. Three synthetic live examples, exact replay and the unsuccessful fixed-slot exploration control are documented in the [iteration report](docs/towow-discovery-iteration.zh-CN.md); this is a bounded application component, not a delivered distributed discovery network.
 
 ## Run standalone J++
 
