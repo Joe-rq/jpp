@@ -47,7 +47,7 @@ from pathlib import Path
 SCRIPT_DIR = Path(__file__).resolve().parent
 EVAL_DIR = SCRIPT_DIR.parent
 JEV_ROOT = EVAL_DIR.parent.parent  # 内部改写语料库根目录（未随本次公开发布，脚本在公开仓库里运行会因找不到该目录而报错）
-REWRITE_DIR = JEV_ROOT / "地基" / "比赛" / "改写"
+REWRITE_DIR = JEV_ROOT / "internal_workspace" / "internal_rewrite_corpus" / "rewrites"  # private-workspace directory names generalized for publication; this path does not exist in the public repo
 OUT_DIR = EVAL_DIR / "2026-09-27-重复杂活"
 
 CATEGORIES = [

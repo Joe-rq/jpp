@@ -53,7 +53,7 @@ from pathlib import Path
 SCRIPT_DIR = Path(__file__).resolve().parent
 EVAL_DIR = SCRIPT_DIR.parent
 JEV_ROOT = EVAL_DIR.parent.parent
-REWRITE_DIR = JEV_ROOT / "地基" / "比赛" / "改写"
+REWRITE_DIR = JEV_ROOT / "internal_workspace" / "internal_rewrite_corpus" / "rewrites"  # private-workspace directory names generalized for publication; this path does not exist in the public repo
 OUT_DIR = EVAL_DIR / "2026-09-27-压掉的六成"
 DATA_CSV = EVAL_DIR / "2026-09-26-改写实测数据.csv"
 
