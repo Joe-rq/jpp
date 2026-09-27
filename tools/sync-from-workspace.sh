@@ -112,8 +112,9 @@ for f in "$WS"/*.md; do
   cp "$f" "$R/地基/$b"
 done
 # 附注（代理间协作消息与执行计划）不公开，由 Nature 另挑
+# 研究 18、19 已有整理过的公开版（research/18-*、research/19-*），原稿含内部路径，不同步
 for d in 设计 红队 研究 语言; do
-  [ -d "$WS/$d" ] && $RS --delete --include '*/' --include '*.md' --exclude '*' "$WS/$d/" "$R/地基/$d/"
+  [ -d "$WS/$d" ] && $RS --delete --include '*/' --exclude '18-*.md' --exclude '19-*.md' --include '*.md' --exclude '*' "$WS/$d/" "$R/地基/$d/"
 done
 for f in EXPERIMENTS.md 前提结论.md E9f-设计.md; do
   [ -f "$WS/foundation/experiments/$f" ] && cp "$WS/foundation/experiments/$f" "$R/地基/foundation/experiments/$f"
