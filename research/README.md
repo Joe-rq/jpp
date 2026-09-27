@@ -22,6 +22,22 @@ Start with [language design and grammar](../docs/design.md) for the current buil
 | `地基/foundation/experiments/` | `EXPERIMENTS.md` (pre-registrations) and `前提结论.md` (results, including E9f) |
 | `扩展/codex_composition/` | Composition-library handoff and the kernel-side review reply |
 
+## Standalone write-ups / 独立研究报告
+
+These are curated, bilingual write-ups published directly into `research/` (not part of the synced `地基/` copy above, and not touched by `tools/sync-from-workspace.sh`). Internal-only paths and materials have been replaced with public equivalents or marked "internal record"; conclusions, including failed predictions and known gaps, are kept as-is.
+
+以下是直接发布在 `research/` 下的独立整理报告（双语），不属于上面同步的 `地基/` 副本，`tools/sync-from-workspace.sh` 不会碰它们。仅本机可见的路径与材料已替换为公开对应物或标「内部记录」；结论（含预测不成立与已知缺口）照原样保留，不作美化。
+
+| Path / 路径 | What it is / 是什么 |
+|---|---|
+| [18-repetition-in-real-jev-projects](18-repetition-in-real-jev-projects.md) · [中文](18-repetition-in-real-jev-projects.zh-CN.md) | What repeated "busywork" looks like across 84 real JEV projects plus a 100-repo ecosystem sample, and which J++ mechanisms take over which category / 84 个真实 JEV 项目加 100 个生态抽样里反复出现的「杂活」是什么、J++ 哪些机制接管了哪一类 |
+| [19-what-the-rewrites-cut](19-what-the-rewrites-cut.md) · [中文](19-what-the-rewrites-cut.zh-CN.md) | Reading the ~60% of judgment-core lines the J++ rewrites cut, block by block, to see whether it's busywork or composition that's really being repeated / 逐块读改写压掉的约六成判断核心行，回答「重复的是杂活还是组合方式」 |
+| [2026-09-26-rewrite-study](2026-09-26-rewrite-study.md) · [中文](2026-09-26-rewrite-study.zh-CN.md) | Field-by-field rewrite comparison across 84 real JEV projects: equivalence rate, code-volume ratio under two scopes, call counts, and real defects found in unmodified original code; live version at [jpp.towow.net/rewrite-study](https://jpp.towow.net/rewrite-study/) / 84 个真实 JEV 项目逐字段改写对照：等价率、两种口径的代码量倍率、调用次数，以及在未改动原代码里发现的真实缺陷；同一数据的可交互版见 [jpp.towow.net/rewrite-study](https://jpp.towow.net/rewrite-study/) |
+
+Supporting data tables are in `research/data/2026-09-27-repetition/`, `research/data/2026-09-27-what-got-cut/`, and `research/data/2026-09-26-rewrite-study/`; the scripts that produced them are in `research/scripts/` (each script's docstring notes that it reads a private-workspace corpus not published with this release — the published CSVs are the reproducible artifact).
+
+这些报告用到的数据表在 `research/data/2026-09-27-repetition/`、`research/data/2026-09-27-what-got-cut/`、`research/data/2026-09-26-rewrite-study/`；产出它们的脚本在 `research/scripts/`（每个脚本的文档字符串都注明它读取的是未随本次公开的私有工作区语料库，已发布的 CSV 是可复现引用的产物）。
+
 这份副本由 `tools/sync-from-workspace.sh` 从工作区生成，**不要手改**——手改的内容下次同步会被静默盖回去。
 工作区里不适合公开的行，在它的上一行写一条单行 HTML 注释标记：一种把下一行替换成给定的公开版本，
 一种把下一行整条删掉；同步脚本在复制之后执行它们，`tools/sync-from-workspace.sh --self-test` 可以验证这一步还工作。
