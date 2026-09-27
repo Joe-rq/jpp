@@ -20,9 +20,9 @@ All demos live on one page: **[jpp.towow.net/demos/](https://jpp.towow.net/demos
 
 **06 [讲台提示](https://jpp.towow.net/demos/speaker/)** 回放一场真机运行：每 3 秒把台下（12 张模拟的脸，汇总成四个比例）、最新字幕和本场画像冻结成一份材料，JEV 在一次合并调用里答两道选择题（约 1.3 秒）：提示讲者做什么（含「先不提示」）、往哪一节偏。观众由 JEV 看不到的隐藏偏好模拟，回放里每一拍的判断都是真机结果。
 
-**07 [World compiled from the Harness ledger / Harness 的世界](https://jpp.towow.net/demos/world/)**: three months of one real Agent system's ledger (about 890,000 events) compiled into a viewable world with J++. JEV picks structure and procedure for 48 real construction tasks, about $0.07 total; the marginal cost of one fix session is $0.0000481.
+**07 [World compiled from the Harness ledger / Harness 的世界](https://jpp.towow.net/demos/world/)**: three months of one real Agent system's ledger (about 890,000 events) compiled into a viewable world with J++. JEV picks structure and procedure for 48 real construction tasks, about $0.07 total; the marginal cost of one fix session is $0.0000481. (incl. zoom-in and harbor pages)
 
-**07 [Harness 的世界](https://jpp.towow.net/demos/world/)**：把三个月的 Agent 账本（约 89 万条事件）编译成 48 座在建的东西，JEV 选结构与工序，费用几美分；一次修复的单笔成本是 $0.0000481。
+**07 [Harness 的世界](https://jpp.towow.net/demos/world/)**：把三个月的 Agent 账本（约 89 万条事件）编译成 48 座在建的东西，JEV 选结构与工序，费用几美分；一次修复的单笔成本是 $0.0000481。（含放大进楼与港与城两页）
 
 
 <sub>01–04：录于 2026-09-26，旧默认：没写线即拿不准；新默认下的重录在赛后 / Recorded 2026-09-26 under the old default (no line = unsure); re-recording under the new default comes after the contest.</sub>
