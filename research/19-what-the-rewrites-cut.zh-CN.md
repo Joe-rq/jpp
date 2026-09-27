@@ -1,8 +1,8 @@
 # 19 改写压掉的六成是什么
 
-2026-09-27。任务来源：主会话指派的对照调查——`research/18-repetition-in-real-jev-projects.zh-CN.md` 用 12 类杂活关键词法测出判断核心里杂活行占比中位数 11.1%（scope=core，v2 块级口径），而 https://jpp.towow.net/rewrite-study/（84 个真实 JEV 项目改写逐字段比对的公开报告页） 用另一套方法（数改写前后总行数）测出判断核心折行倍率中位数 2.5 倍——也就是说 J++ 版本平均只用了原判断核心约 40% 的行数，约 60% 被压掉。两个数字差五倍多，研究 18 自己承认「这份材料没有能力把这两种可能分开」。本文直接读被压掉的那些行，回答：那约六成行到底是什么代码，被 J++ 的哪个构造或哪件运行时接管的事替掉了；「重复的是什么」这个问题的答案是杂活还是组合方式。
+2026-09-27。任务来源：主会话指派的对照调查——`research/18-repetition-in-real-jev-projects.zh-CN.md` 用 12 类杂活关键词法测出判断核心里杂活行占比中位数 11.1%（scope=core，v2 块级口径），而 `research/2026-09-26-rewrite-study.zh-CN.md`（84 个真实 JEV 项目改写逐字段比对的公开报告；可交互版见 https://jpp.towow.net/rewrite-study/） 用另一套方法（数改写前后总行数）测出判断核心折行倍率中位数 2.5 倍——也就是说 J++ 版本平均只用了原判断核心约 40% 的行数，约 60% 被压掉。两个数字差五倍多，研究 18 自己承认「这份材料没有能力把这两种可能分开」。本文直接读被压掉的那些行，回答：那约六成行到底是什么代码，被 J++ 的哪个构造或哪件运行时接管的事替掉了；「重复的是什么」这个问题的答案是杂活还是组合方式。
 
-方法与判据见 `research/地基/00-定位与方法论-v1.md`、`research/地基/00-目标与动机-v1.md`、`research/地基/00-Nature意图汇编.md`（第 22 条要求「讲例子，不讲抽象」）。判断核心的定义、`measure.toml` 的口径、折行归一算法见 https://jpp.towow.net/rewrite-study/（84 个真实 JEV 项目改写逐字段比对的公开报告页）。12 类杂活的定义与识别规则、v1/v2 分类脚本的方法说明见 `research/18-repetition-in-real-jev-projects.zh-CN.md` 第二节。J++ 的构造清单（`judge`/`cut`/`sieve`/`pair`/`tally`/`first_k`/`iterate`/`order`/`fit`/`walk`/`search`/`verify`/`ground`/`judged_graph`/`compose`/`gen`/`do`、`budget`、账本与重放）见 `rust/GUIDE.md`「内置函数名单」与「搭配：元素 → 组合 → 嵌套」两节。
+方法与判据见 `research/地基/00-定位与方法论-v1.md`、`research/地基/00-目标与动机-v1.md`、`research/地基/00-Nature意图汇编.md`（第 22 条要求「讲例子，不讲抽象」）。判断核心的定义、`measure.toml` 的口径、折行归一算法见 `research/2026-09-26-rewrite-study.zh-CN.md`（84 个真实 JEV 项目改写逐字段比对的公开报告；可交互版见 https://jpp.towow.net/rewrite-study/）。12 类杂活的定义与识别规则、v1/v2 分类脚本的方法说明见 `research/18-repetition-in-real-jev-projects.zh-CN.md` 第二节。J++ 的构造清单（`judge`/`cut`/`sieve`/`pair`/`tally`/`first_k`/`iterate`/`order`/`fit`/`walk`/`search`/`verify`/`ground`/`judged_graph`/`compose`/`gen`/`do`、`budget`、账本与重放）见 `rust/GUIDE.md`「内置函数名单」与「搭配：元素 → 组合 → 嵌套」两节。
 
 材料：84 个项目的原始代码（对应仓库均为公开开源项目，按编号引用）与其 J++ 改写代码的逐块对照——这是私有工作区的内部改写语料库（每个项目下有原代码、标判断核心行范围的登记文件、J++ 改写程序、行数与等价结果记录、选题与预注册说明），未随本次公开；本文的量化结果来自对这批内部材料的人工核对与脚本统计，发布的数据表见 `research/data/2026-09-27-what-got-cut/`。
 

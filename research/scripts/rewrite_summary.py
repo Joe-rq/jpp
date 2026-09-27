@@ -42,10 +42,10 @@ from pathlib import Path
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 EVAL_DIR = SCRIPT_DIR.parent
-BASE = EVAL_DIR.parent / "比赛"
-REWRITE_DIR = BASE / "改写"
-XUANTI_PATH = BASE / "选题.json"
-JIESUO_PATH = BASE / "解锁.json"
+BASE = EVAL_DIR.parent / "internal_workspace"  # private-workspace directory name generalized for publication; this path does not exist in the public repo
+REWRITE_DIR = BASE / "rewrites"
+XUANTI_PATH = BASE / "selection.json"
+JIESUO_PATH = BASE / "unlock.json"
 
 OUT_CSV = EVAL_DIR / "2026-09-26-改写实测数据.csv"
 
@@ -757,7 +757,7 @@ def main():
         if "20j-4" in steps:
             needs_20j4.append(it["id"])
     print(f"仍未改写项目按解锁施工步计数：{dict(step_counter)}")
-    print(f"其中需要 20j-4（比赛后第三档）解锁的：{len(needs_20j4)} 项 -> {needs_20j4}")
+    print(f"其中需要 20j-4（内部第三档施工，原按内部进度排在赛后）解锁的：{len(needs_20j4)} 项 -> {needs_20j4}")
 
     print(f"\n---- 解析不出 / 需人工复核的字段（共 {len(MISSING)} 条）----")
     for item_id, field, why in MISSING:
