@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Harness 的世界 · J++ 案例</title>
-<meta name="description" content="把一个真实运行了三个月的 Agent 系统（Harness，约 89 万条事件）的账本，用 J++ 编译成可看的三维世界。三页真机演示：一个夏天的 48 座、五座在建的东西、一次修复。">
+<meta name="description" content="把一个真实运行了三个月的 Agent 系统（Harness，约 89 万条事件）的账本，用 J++ 编译成可看的三维世界。五页真机演示：一个夏天的 48 座、五座在建的东西、一次修复、放大进一座楼、港与城。">
 <link rel="icon" href="../favicon.svg" type="image/svg+xml">
 <style>
 :root {
@@ -103,8 +103,8 @@ h2 .en { display: block; font-size: 14px; font-weight: 500; color: var(--muted);
   <header class="hero">
     <h1>Harness 的世界<span class="en">A world compiled from the Harness ledger</span></h1>
     <div class="intro">
-      <p>这是把一个真实运行了三个月的 Agent 系统——Harness，约 89 万条事件——的账本，用 J++ 编译成可看的三维世界的第一批骨架。J++ 在里面做的事：生成器为每类对象提候选，JEV 逐个对象挑身体；为每个任务挑结构、材料、颜色、顶；为每一步挑工序。数量（规模、层数、开窗）由代码照实算，物理先决条件由世界强制。三页都是真机运行：判断次数与费用在页面右下角。</p>
-      <p class="en">This compiles the ledger of a real Agent system that ran for three months — Harness, about 890,000 events — into a viewable three-dimensional world with J++. What J++ does inside it: a generator proposes candidates for each object class, and JEV picks a body for each object, then picks structure, material, color and roof for each task, then picks a procedure for each step. Quantities (scale, floor count, window openings) are computed by code as recorded; physical preconditions are enforced by the world itself. All three pages are live runs: judgment counts and cost sit in the bottom-right corner of each page.</p>
+      <p>这是把一个真实运行了三个月的 Agent 系统——Harness，约 89 万条事件——的账本，用 J++ 编译成可看的三维世界的第一批骨架。J++ 在里面做的事：生成器为每类对象提候选，JEV 逐个对象挑身体；为每个任务挑结构、材料、颜色、顶；为每一步挑工序。数量（规模、层数、开窗）由代码照实算，物理先决条件由世界强制。五页都是真机运行：判断次数与费用在页面右下角。</p>
+      <p class="en">This compiles the ledger of a real Agent system that ran for three months — Harness, about 890,000 events — into a viewable three-dimensional world with J++. What J++ does inside it: a generator proposes candidates for each object class, and JEV picks a body for each object, then picks structure, material, color and roof for each task, then picks a procedure for each step. Quantities (scale, floor count, window openings) are computed by code as recorded; physical preconditions are enforced by the world itself. All five pages are live runs: judgment counts and cost sit in the bottom-right corner of each page.</p>
     </div>
   </header>
 
@@ -142,6 +142,28 @@ h2 .en { display: block; font-size: 14px; font-weight: 500; color: var(--muted);
       </ul>
       <a class="open" href="one-fix.html">打开 · Open ↗</a>
     </div>
+    <div class="card">
+      <div class="cno">04</div>
+      <h3>放大进一座楼<span class="en">Zoom into one building</span></h3>
+      <p class="verdict">一沙一世界：同一镜头从 48 座的城一路放大——外墙连续让开，露出楼里 441 间房（一个会话一间），房里 1,713 件东西（一条步骤一件），再放大到一件东西的原文与 JEV 对这一步的题和读数。原文里的任务代号是门，点开飞向那座楼。<span class="en">A world in a grain of sand: one continuous camera push from the 48-building city — walls part in sequence to reveal 441 rooms (one room per session), holding 1,713 items across them (one per step), zooming down to one item's original text and the question JEV was asked about that step, with its reading. Task codes in the text are doors; click one to fly to its building.</span></p>
+      <ul>
+        <li>441 间房、1,713 件东西 / 441 rooms, 1,713 items</li>
+        <li><code>?tour=1</code> 自动示范 38 秒 / <code>?tour=1</code> runs a 38-second auto-demo</li>
+        <li>层次全部由数据给出 / Every level comes from the data</li>
+      </ul>
+      <a class="open" href="zoom-in.html">打开 · Open ↗</a>
+    </div>
+    <div class="card">
+      <div class="cno">05</div>
+      <h3>港与城<span class="en">Harbor and city</span></h3>
+      <p class="verdict">一个夏天：编排器 orchestrator.py 是港城——391 个函数按行数定大小，调用铺成街，30 个片区由 JEV 判角色。16,117 次派发是船，JEV 判性质：卡滞重派 7,216（45%）、闸门拦截 2,289、接力推进 2,180、例行心跳 1,566、会话收尾 1,418、送信通知 665、异常告警 645、人工触发 135；真正起了会话的 2,701 艘驶向它任务的楼。7/19 轮询守护进程停下：灯塔暗、闸门放下、6 盏灯留在闸口，此后船从接力水道出港。<span class="en">One summer: the orchestrator, orchestrator.py, rendered as a harbor city — 391 functions sized by line count, calls paved into streets, JEV judging the role of 30 districts. 16,117 dispatches are ships; JEV judges what each one is: stall-retry 7,216 (45%), gate-block 2,289, relay-advance 2,180, routine heartbeat 1,566, session close-out 1,418, message delivery 665, alarm 645, manual trigger 135. Of these, 2,701 actually opened a session and sailed to their task's building. When the polling daemon stopped on 7/19: the lighthouse went dark, the gate dropped, 6 lights stayed at the gate, and ships have sailed out through the relay channel since.</span></p>
+      <ul>
+        <li>2,701 艘真正起了会话 / 2,701 ships actually opened a session</li>
+        <li>6–9 月出港/到楼：489/24、896/83、82/0、1,234/150 / Monthly ships out / arrivals, Jun–Sep: 489/24, 896/83, 82/0, 1,234/150</li>
+        <li>235 秒 / 235 seconds</li>
+      </ul>
+      <a class="open" href="harbor.html">打开 · Open ↗</a>
+    </div>
   </div>
 
   <section class="section">
@@ -154,8 +176,8 @@ h2 .en { display: block; font-size: 14px; font-weight: 500; color: var(--muted);
 
   <section class="section">
     <h2>程序<span class="en">The programs</span></h2>
-    <p>三个 J++ 程序各不到 60 行：<code>compile.jpp</code>、<code>compile-steps.jpp</code>、<code>compile-build-v2.jpp</code>。程序源码在 world 仓库里，暂未随本仓库发布，随下一次同步一并发布；这次先发运行产物——三段录制好的三维世界。</p>
-    <p class="en">The three J++ programs are each under 60 lines: <code>compile.jpp</code>, <code>compile-steps.jpp</code>, <code>compile-build-v2.jpp</code>. Source lives in the world repository and is not yet published here; it ships with the next sync. This drop is the recorded worlds themselves.</p>
+    <p>三个 J++ 程序各不到 60 行：<code>compile.jpp</code>、<code>compile-steps.jpp</code>、<code>compile-build-v2.jpp</code>；港城的片区角色与船的性质由 <code>compile-harbor.jpp</code> 判，不到 40 行。程序源码在 world 仓库里，暂未随本仓库发布，随下一次同步一并发布；这次先发运行产物——五段录制好的三维世界。</p>
+    <p class="en">The three J++ programs are each under 60 lines: <code>compile.jpp</code>, <code>compile-steps.jpp</code>, <code>compile-build-v2.jpp</code>; the harbor's district roles and each ship's nature are judged by <code>compile-harbor.jpp</code>, under 40 lines. Source lives in the world repository and is not yet published here; it ships with the next sync. This drop is the recorded worlds themselves.</p>
   </section>
 
   <div class="hint">
