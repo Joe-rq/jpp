@@ -449,13 +449,16 @@ def test_j02_self_reference_runtime():
         assert jv.cut(jv.judge(jv.state(on=jv.lit("截止日期"), ctx=[e]), q2)[0]) is not None
 
 
-def test_cold_calib_gives_unsure_cold_and_provisional_handler():
+def test_cold_calib_follows_answer_b187():
+    # 跨内核对齐（Z0334 §二十四第 4 件，以 Rust 与 B187 为准）：冷键没有线，按判断器的回答走（原来出 Unsure("cold") + 临时出口）；
+    # 这种出口不作不可逆动作的放行守卫（Rust 等级 Answer 不放行）
+    deploy = jv.Action("deploy", fn=lambda *a: "ok", reversible=False)
     with rt_with() as rt:
         r = jv.judge(jv.state(on=jv.lit("截止日期")), q_test(key="never.calibrated"))
         e = jv.cut(r[0])
-        assert isinstance(e, jv.Unsure) and e.cause == "cold"
-        p = jv.handle(e)
-        assert isinstance(p, jv.Act) and p.provisional
+        assert isinstance(e, jv.Act) and e.detail.get("answer") is True and not e.provisional
+        with pytest.raises(jv.JvError, match="J-08"):
+            jv.do(deploy, jv.lit("x"), iter_seq=0, guard=[e])
 
 
 def test_loop_stops_on_noprogress_and_bound():
@@ -543,9 +546,10 @@ def test_vectorized_cold_handle_keeps_alignment():
     with rt_with(client=jv.FakeClient(rule=rule)) as rt:
         q = jv.select("哪个", calib=jv.calib("cold.k"))
         es = jv.cut(jv.judge([jv.state(on=jv.lit(f"t{i}"), over=[jv.lit(d) for d in "甲乙丙"]) for i in range(5)], q))
+        # 冷键按回答走（B187，Z0334 §二十四第 4 件）：直接出 Pick，向量化后仍与输入一一对齐
         got = []
         for e in es:
             match e:
-                case jv.Unsure(c):
-                    got.append(jv.handle(c).k)
+                case jv.Pick(k):
+                    got.append(k)
         assert got == [0, 1, 2, 0, 1]

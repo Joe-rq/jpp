@@ -17,7 +17,8 @@ import foundation.jv as jv  # noqa: E402
 def rt_with(client=None, **kw):
     rt = jv.Runtime(client=client or jv.FakeClient(), **kw)
     for k in ("t.k", "s.k", "m.k"):
-        rt.calib.put(k, hi=0.6, lo=0.3, n=100, status="上岗")
+        # δ 写进记录（Z0334 §二十四第 4 件，allocate 与 Rust 同只从记录取 δ）；取画像中段，与此前经画像兜底的有效值相同
+        rt.calib.put(k, hi=0.6, lo=0.3, n=100, status="上岗", delta={"t.k": 0.1281, "s.k": 0.0971, "m.k": 0.0821}[k])
     return rt
 
 

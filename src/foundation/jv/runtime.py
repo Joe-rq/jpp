@@ -295,13 +295,31 @@ class Runtime:
                 "warnings": [w.split(":")[0] for w in self.stats["warnings"]]}
 
     # ------------------------------------------------------------ 档案数
-    def delta_for(self, phys: str) -> float:
-        d = (self.profile.get("delta") or {})
-        key = {"noul": "noul", "choice": "choice_prob_chosen", "score": "score"}[phys]
-        try:
-            return float(d[key]["immediate"]["p99"])
-        except (KeyError, TypeError):
-            return {"noul": 0.05, "choice": 0.15, "score": 0.15}[phys]
+    _DELTA_COLS = ("noul", "choice_prob_chosen", "score")
+
+    def delta_for(self, phys: str) -> float | None:
+        """画像 δ 先验，取中段（Z0334、裁定四十四；与 Rust `Profile::delta_prior` 同口径，Z0361）：
+        三列中段 `delta.<题型>.mid.immediate.p99` 齐 → 取本题型那列；任一列有 δ（尾段或中段）而中段不全 →
+        `E-delta-mid`（裁定四十五，不退回尾段）；两段都没有 → None（裁定五十六：不编数，调用者按「δ 未知」处理）。
+        原来取尾段、取不到退回 0.05 / 0.15 硬值，两处都已去掉。"""
+        d = self.profile.get("delta") or {}
+        col = {"noul": "noul", "choice": "choice_prob_chosen", "score": "score"}[phys]
+
+        def num(c, *path):
+            v = d.get(c)
+            for k in path:
+                v = v.get(k) if isinstance(v, dict) else None
+            return float(v) if isinstance(v, (int, float)) and not isinstance(v, bool) else None
+
+        mids = {c: num(c, "mid", "immediate", "p99") for c in self._DELTA_COLS}
+        tails = {c: num(c, "immediate", "p99") for c in self._DELTA_COLS}
+        if all(v is not None for v in mids.values()):
+            return mids[col]
+        if any(v is not None for v in list(mids.values()) + list(tails.values())):
+            missing = [f"delta.{c}.mid.immediate.p99" for c, v in mids.items() if v is None]
+            raise JvError(f"E-delta-mid: 画像测了 δ、中段 δ 却不全（缺 {'、'.join(missing)}）；尾段 δ 用满信心材料测得，"
+                          f"线附近偏小，不能代替中段（裁定四十五）。修法：重测中段 δ 写进画像 delta.<题型>.mid")
+        return None
 
     def text_window(self) -> int:
         """对象槽内单段材料的可用窗口：`window.text_slots.claim_bearing_ctx.usable_lower`（§2.1、B5）。"""
@@ -403,7 +421,9 @@ class Runtime:
 
     def _check_guard(self, action: Action, guard):
         gs = guard if isinstance(guard, (list, tuple)) else ([guard] if guard is not None else [])
-        ok = any(_is(g, Act) and g.taint == TRUSTED for g in gs) or \
+        # 带 delta_unknown 的 Act 不作放行守卫（裁定五十六；对应 Rust `Exit::releases` 含 !delta_unknown，Z0361）
+        ok = any(_is(g, Act) and g.taint == TRUSTED and not g.detail.get("delta_unknown")
+                 and not g.detail.get("answer") for g in gs) or \
              any(_is(g, Exit) and g.detail.get("from_ask") for g in gs)
         for g in gs:
             if _is(g, Exit):
@@ -415,6 +435,10 @@ class Runtime:
                 hint = " 守卫只收 test 题的 Act（一个被判为真的命题）；Pick/At 是选择或档位，不是命题，请再问一道 test 题作守卫。"
             elif any(k == "unsure" for k in kinds):
                 hint = " Unsure 不能放行；先 handle（补证据 / 问人）。"
+            elif any(_is(g, Act) and g.detail.get("answer") for g in gs):
+                hint = " 这个 Act 是没有上岗线时按判断器的回答走出来的（B187 无线默认），不作放行守卫；认证一条线或经 jv.ask。"
+            elif any(_is(g, Act) and g.detail.get("delta_unknown") for g in gs):
+                hint = " 这个 Act 按线切时记录与画像都没有 δ（delta_unknown），不作放行守卫（裁定五十六）；给画像测中段 δ 或给记录一个 δ。"
             elif any(k == "act" for k in kinds):
                 hint = " Act 来自 untrusted 状态（gen 输出、不可信执行器输出）；可信来自来源登记（I6），请用 trusted 材料重判或经 jv.ask。"
             raise JvError(f"J-08: 不可逆动作 {action.name} 的守卫里没有来自 trusted 状态的 Act（或 ask 的答案）；收到 {kinds}。"
@@ -1140,11 +1164,15 @@ class Runtime:
                 return self._register_exit(Unsure("insufficient", detail={"missing": slot}, **kw))
         if rec.status == "停岗":
             return self._register_exit(Unsure("drift", **kw))
-        delta = rec.delta if rec.delta is not None else self.delta_for(ans["phys"])
         if rec.status == "冷":
-            s_hi, s_lo = self.safety_lines()
-            prov = self._decide(ans, q, rs, s_hi, s_lo, delta, kw, provisional=True)
-            return self._register_exit(Unsure("cold", detail={"provisional": prov}, **kw))
+            # 跨内核对齐（Z0334 §二十四第 4 件，以 Rust 与 B187 为准）：没有上岗记录 = 没有线，按判断器的回答走（多数块），
+            # 不再出 Unsure("cold") 加保守线上的临时出口；出口 detail["answer"] 为真，不作放行守卫（对应 Rust 等级 Answer）
+            return self._register_exit(self._follow_answer(ans, q, kw))
+        # Z0361（裁定五十六）：记录与画像都没有 δ 时照线切、不加迁移带（δ 按 0 比线），出口带 delta_unknown，不作放行守卫
+        delta = rec.delta if rec.delta is not None else self.delta_for(ans["phys"])
+        delta_unknown = delta is None
+        if delta_unknown:
+            delta = 0.0
         hi, lo = rec.hi, rec.lo
         cost_mat = cost if cost is not None else ((rec.cost_matrix.get("fp"), rec.cost_matrix.get("fn"))
                                                   if rec.cost_matrix else None)
@@ -1160,7 +1188,10 @@ class Runtime:
                 cl = cost_line(rec.samples, *cost_mat)
                 hi = lo = cl["line"]
                 kw["detail"] = {"cost_line": cl}
-        return self._register_exit(self._decide(ans, q, rs, hi, lo, delta, kw))
+        e = self._decide(ans, q, rs, hi, lo, delta, kw)
+        if delta_unknown:
+            e.detail["delta_unknown"] = True
+        return self._register_exit(e)
 
     def _decide(self, ans: dict, q: Q, rs, hi: float, lo: float, delta: float, kw: dict, provisional=False) -> Exit:
         kw = dict(kw, provisional=provisional)
@@ -1196,6 +1227,26 @@ class Runtime:
             return At(int(ans["value"]), p=p, **kw)
         return Unsure("band", p=p, detail={"nearest_level": int(ans["value"]) if ans.get("value") is not None else None}, **kw)
 
+    @staticmethod
+    def _follow_answer(ans: dict, q, kw: dict) -> Exit:
+        """B187 无线默认（与 Rust `jpp_value::bridge::follow_answer` 同口径）：是非题 p > 0.5 act、< 0.5 ignore、= 0.5 tie；
+        K 选一置换不一致或最大不唯一出 tie，否则 pick；打分出众数档。出口 detail["answer"] 为真（等级 Answer，不放行）。"""
+        p = float(ans["p"])
+        det = {"answer": True}
+        if q.op == "test":
+            if p > 0.5:
+                return Act(p=p, detail=det, **kw)
+            if p < 0.5:
+                return Ignore(p=p, detail=det, **kw)
+            return Unsure("tie", p=p, detail=det, **kw)
+        if q.op == "select":
+            probs = ans.get("probs") or {}
+            top = max(probs.values()) if probs else p
+            if ans.get("mode_share", 1.0) < 1.0 or sum(1 for v in probs.values() if v == top) > 1:
+                return Unsure("tie", p=p, detail=det, **kw)
+            return Pick(int(ans["value"]), p=p, detail=det, **kw)
+        return At(int(ans["value"]), p=p, detail=det, **kw)
+
     def _register_exit(self, e: Exit) -> Exit:
         self.exits.append(e)
         if self._frames:
@@ -1226,12 +1277,24 @@ class Runtime:
             out.append(r)
         return out
 
-    def _uncertainty(self, r: Reading) -> float:
-        """与决定带的距离取负：带内 = 0（最不确定），带外越远越确定。线来自校准记录（I4），冷键用保守线。"""
+    def _uncertainty(self, r: Reading) -> float | None:
+        """与决定带的距离取负：带内 = 0（最不确定），带外越远越确定。线来自校准记录（I4），冷键用画像的保守线。
+        算不出时返回 None，不进 allocate 的榜（与 Rust `strength::uncertainty` 同，Z0334 §二十四第 4 件）：
+        不上岗又没加载画像；δ 只从记录取，记录没有 δ；不上岗而画像没测保守线。"""
         ans = r._need()
         rec = self.calib.get(r.q.calib.key)
-        delta = rec.delta if rec.delta is not None else self.delta_for(ans["phys"])
-        hi, lo = (rec.hi, rec.lo) if rec.status == "上岗" else self.safety_lines()
+        if rec.status != "上岗" and not self.profile:
+            return None
+        delta = rec.delta
+        if delta is None:
+            return None
+        if rec.status == "上岗":
+            hi, lo = rec.hi, rec.lo
+        else:
+            d = (self.profile.get("lines") or {}).get("safety_default")
+            if not isinstance(d, dict) or "hi" not in d or "lo" not in d or d.get("value") == "未测":
+                return None
+            hi, lo = float(d["hi"]), float(d["lo"])
         p = float(ans["p"])
         top, bot = hi + delta, lo - delta
         if bot <= p <= top:
@@ -1245,8 +1308,15 @@ class Runtime:
         if k is None or k < 0:
             raise JvError("allocate: k 必须是非负整数（通常取 Budget.escalate）")
         self.flush(reason="allocate")
-        scored = sorted(range(len(rs)), key=lambda i: (-self._uncertainty(rs[i]), i))
-        return scored[:min(k, len(rs))]
+        us = [self._uncertainty(r) for r in rs]
+        算不出 = [i for i, u in enumerate(us) if u is None]
+        if 算不出:
+            # 与 Rust 同：算不出的不进榜、点名（对不齐的一处：Rust 返回 {picked, 算不出} 记录，Python 仍返回下标表，
+            # 算不出的只在这条告警里点名）
+            self.warn(f"W-untested: uncertainty 对 {len(算不出)} 条读数算不出（下标 {算不出}：校准键没有上岗线、记录没有 δ，"
+                      f"或没有画像保守线），这些读数不进 allocate 的榜")
+        scored = sorted((i for i, u in enumerate(us) if u is not None), key=lambda i: (-us[i], i))
+        return scored[:min(k, len(scored))]
 
     def unsure_bound(self, readings) -> dict:
         """J-10：整批读数落入 unsure 的期望数——联合界 Σuᵢ（上界）与独立估计 1−Π(1−uᵢ)（只作参考）。
