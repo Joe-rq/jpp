@@ -57,6 +57,11 @@ fn 开关写进计划() {
 #[test]
 fn 切点_复现v8六份材料() {
     let p = root().join("../实测/V8-裂变-2026-09-29/材料.json");
+    if !p.exists() {
+        // 公开仓库没有研究区的 实测/ 目录：跳过（tools/sync-rust-from-research.sh 改写）
+        eprintln!("跳过：{} 不在本仓库", p.display());
+        return;
+    }
     let mats: Vec<Json> =
         serde_json::from_str(&std::fs::read_to_string(&p).expect("材料.json")).unwrap();
     assert_eq!(mats.len(), 6);

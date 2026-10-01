@@ -33,6 +33,9 @@ KEEP=(
   /crates/jpp/tests/known_defects.rs
   /scripts/ci_public.sh
   /scripts/doc_snippets.py
+  /examples/purpose-only.jpp
+  /examples/purpose-only.args
+  /examples/purpose-only/
   /PUBLIC-SNAPSHOT.md
 )
 SKIP=(
@@ -125,6 +128,58 @@ rewrite("crates/jpp/tests/ablation/plan.rs",
             continue;
         }
         let s = CalibStore::load(&d).expect("装载");''',
+        count=1, optional=True)
+
+# 2026-10-01：公开仓不放内部人名与过程性文字，也不绑研究机的工具链。
+# (1) rust/.cargo/config.toml：研究机的 rustc-wrapper = "sccache" 与占盘注释不带过来，公开版只留并发与目录体积两项配置。
+(root / ".cargo").mkdir(exist_ok=True)
+(root / ".cargo" / "config.toml").write_text(
+    "# 限制编译与测试并发，防止多轨并行时整机卡死；单轨或 CI 要更快，用环境变量 CARGO_BUILD_JOBS / RUST_TEST_THREADS 覆盖。\n"
+    "# Cap build/test parallelism; override with CARGO_BUILD_JOBS / RUST_TEST_THREADS.\n"
+    "[build]\n"
+    "jobs = 3\n"
+    "\n"
+    "# 关增量编译、调试信息只留行号表，让 target/ 小一半；改一行后的重编会慢一些。\n"
+    "# Smaller target/: no incremental builds, line tables only; rebuilds after a one-line edit are slower.\n"
+    "incremental = false\n"
+    "\n[profile.dev]\ndebug = \"line-tables-only\"\n\n[env]\nRUST_TEST_THREADS = \"4\"\n",
+    encoding="utf-8")
+print("PORT .cargo/config.toml：整份改写")
+
+# (2) 人名与「某某裁定/任务书」这类内部归属改成不带名字的说法，意思保留（optional：研究树改了之后自动跳过）。
+#     不改 lib/*.jpp 与 examples/*.jpp 的文本：库与示例的文本进 lib_version 和站点偏移，金样会整批变红；那两处要在研究树里改并重录金样。
+for rel, old, new in [
+    ("crates/jpp-runtime/src/guard.rs", "（12:649 Nature 裁定：", "（12:649 的裁定："),
+    ("crates/jpp/tests/guard.rs", "（`12`:649 Nature 的裁定）", "（`12`:649 的裁定）"),
+    ("crates/jpp/INTERFACE.md", "`12`:649 Nature 裁定：", "`12`:649 的裁定："),
+    ("crates/jpp/INTERFACE.md", "待 Nature 批准", "待批准"),
+    ("crates/jpp/INTERFACE.md", "待第三轮实验与 Nature 裁定", "待第三轮实验与裁定"),
+    ("crates/jpp/INTERFACE.md", "B17（Nature 确认进语言：", "B17（已确认进语言："),
+    ("crates/jpp/INTERFACE.md", "需要 Nature / 总控裁定", "需要裁定"),
+    ("crates/jpp/tests/sieve_declared_line.rs", "主会话 2026-09-26 晚：Nature 定翻转缺省值", "2026-09-26 晚：裁定翻转缺省值"),
+    ("scripts/equiv_pairs.py", "（Nature 任务书：", "（任务书："),
+    ("scripts/dashboard.py", "Nature 2026-09-24：「有了这个测量以后我们就可以根据结果不断地反馈，不断地修正……按真实的倍率或者真实的水平比较。」",
+     "设计取向：有了测量，就按结果不断反馈、不断修正，按真实的倍率或真实的水平比较。"),
+    ("scripts/dashboard.py", "（Nature 2026-09-24 确认）", "（2026-09-24 确认）"),
+    ("scripts/dashboard.py", "判定档，Nature 2026-09-24 确认按 T1 判", "判定档，2026-09-24 确认按 T1 判"),
+    ("probes/measure.toml", "Nature 2026-09-24 决定的维度", "2026-09-24 决定的维度"),
+]:
+    rewrite(rel, old, new, optional=True)
+for f in sorted((root / "probes").glob("*/measure.toml")):
+    rewrite(f.relative_to(root), "Nature 2026-09-24 确认验收 1 按 T1 判", "2026-09-24 确认验收 1 按 T1 判", optional=True)
+
+# 2026-10-01：jpp-plan 的 ablation/fission.rs「切点_复现v8六份材料」读研究区 实测/V8-裂变-2026-09-29/材料.json（公开仓库没有），
+# 缺文件时打印「跳过」后返回。
+rewrite("crates/jpp-plan/tests/ablation/fission.rs",
+        '''    let p = root().join("../实测/V8-裂变-2026-09-29/材料.json");
+''',
+        '''    let p = root().join("../实测/V8-裂变-2026-09-29/材料.json");
+    if !p.exists() {
+        // 公开仓库没有研究区的 实测/ 目录：跳过（tools/sync-rust-from-research.sh 改写）
+        eprintln!("跳过：{} 不在本仓库", p.display());
+        return;
+    }
+''',
         count=1, optional=True)
 
 # 探针脚本与运行记录里的本机绝对路径改成相对路径（不被测试或金样读取；研究树改了之后这两条自动跳过）。

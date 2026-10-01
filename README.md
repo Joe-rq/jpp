@@ -25,6 +25,8 @@ All demos live on one page: **[jpp.towow.net/demos/](https://jpp.towow.net/demos
 **07 [Harness 的世界](https://jpp.towow.net/demos/world/)**：把三个月的 Agent 账本（约 89 万条事件）编译成 48 座在建的东西，JEV 选结构与工序，费用几美分；一次修复的单笔成本是 $0.0000481。（含放大进楼与港与城两页）
 
 
+**A program given only a purpose / 只给一句目的的程序**: [`rust/examples/purpose-only.jpp`](rust/examples/purpose-only.jpp) hands one sentence of purpose and a small set of supplier records to `purpose_run`; the language writes the questions itself. On 2026-10-01 the same entry ran on the real judge over 400 companies and one résumé: 1,634 calls, $0.0857, no hand-written question text (details and what did not hold: [progress.md](docs/progress.md)). The shipped example is checked with `jpp check` only and has not been run live. 同一个入口 10-01 在真机上对 400 家公司和一份简历跑通：1,634 次调用，0.0857 美元，源码里没有手写题面；随仓示例只用 `jpp check` 验证过，没有真机运行。
+
 <sub>01–04：录于 2026-09-26，旧默认：没写线即拿不准；新默认下的重录在赛后 / Recorded 2026-09-26 under the old default (no line = unsure); re-recording under the new default comes after the contest.</sub>
 
 - **01 Who is lying / 谁在说谎**: eight testimonies compared pair by pair. Cases A and B circle two people that include the culprit; in case C the program names Zhou Lin while the case design says Han Mei; some pairs stay uncertain in all three. / 八份证词两两对质。A、B 两案圈出的两人含真凶，C 案程序认定周琳而出题设定是韩梅，三案都仍有拿不准的证词对。
