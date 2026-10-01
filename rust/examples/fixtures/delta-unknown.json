@@ -1,0 +1,10 @@
+{
+  "description": "Z0425：校准记录故意不写 delta，走「有线且记录没有 δ」这条路径（假结果，只为钉住行为）",
+  "calibrations": [
+    {"key": "ticket-followup", "hi": 0.60, "lo": 0.10, "n": 60, "status": "上岗"}
+  ],
+  "observations": [
+    {"on": ["客户第三次来信，说退款还没到账。"], "op": "test", "text": "这张工单需要人工跟进吗？", "calib": "ticket-followup", "answer": {"Noul": 0.66}},
+    {"on": ["客户来信说问题已经解决，谢谢。"], "op": "test", "text": "这张工单需要人工跟进吗？", "calib": "ticket-followup", "answer": {"Noul": 0.58}}
+  ]
+}

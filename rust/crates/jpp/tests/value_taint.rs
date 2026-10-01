@@ -78,7 +78,7 @@ let m = {mat_expr};
 let ok = handle(cut(judge(state(m), test("该发吗", "k"))), {{
     act: fn() {{ true }}, ignore: fn() {{ false }},
     unsure: fn(u) {{ consume(u, "drop"); false }}}});
-{{r: if ok {{ content(do("发邮件", [], 0)) }} else {{ "没发" }}, t: m.taint}}
+{{r: if ok {{ (do("发邮件", [], 0)) }} else {{ "没发" }}, t: m.taint}}
 "#
     )
 }
@@ -182,7 +182,7 @@ let 洗 = do("透传", [拆了.amount], 0);
 let ok = handle(cut(judge(state(洗), test("该发吗", "k"))), {
     act: fn() { true }, ignore: fn() { false },
     unsure: fn(u) { consume(u, "drop"); false }});
-{r: if ok { content(do("发邮件", [], 0)) } else { "没发" }, t: 洗.taint}
+{r: if ok { (do("发邮件", [], 0)) } else { "没发" }, t: 洗.taint}
 "#;
     let mut program = lower(&parse(src).expect("parse")).expect("lower");
     program.entry.guard = true; // 测放行把关本身：开 --guard（意图汇编 11a）

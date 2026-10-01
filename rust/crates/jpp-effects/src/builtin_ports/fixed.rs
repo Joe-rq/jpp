@@ -53,7 +53,19 @@ fn fixed_judge(
         let k = obs_key(state, q);
         measured.push(perms.get(&k).copied());
         置信.push(confidence.get(&k).copied());
-        let a = table.get(&k).cloned().ok_or_else(|| {
+        // 伴随题（B0492 S5，主控 2026-09-29）：固定观察没登记伴随题时给中性读数 0.5，只在固定观察下这样做；
+        // 其余没登记的照旧报错
+        let 伴随 = q.calib.starts_with("unsure-companion-")
+            || q.calib == "diag-in-material"
+            || q.calib == "diag-two-judgments";
+        // K 选一的伴随题（「最缺哪类」，过程记录 5.23）给均匀分布
+        let 中性 = match q.op {
+            jpp_value::value::Op::Select => {
+                Answer::Choice(vec![1.0 / state.over.len().max(1) as f64; state.over.len()])
+            }
+            _ => Answer::Noul(0.5),
+        };
+        let a = table.get(&k).cloned().or_else(|| 伴随.then_some(中性)).ok_or_else(|| {
             // **把自己算出来的那份状态与题打出来。**
             //
             // 以前只给哈希。于是作者猜 `measure` 的档位字段名猜了四次

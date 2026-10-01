@@ -1,8 +1,12 @@
+mod bank;
 mod calib_confirm;
 mod calib_import;
+mod calib_keys_out;
+mod derive_admit;
 mod diag_json;
 mod fixture;
 mod options;
+mod profile_check;
 mod profile_resolve;
 mod questions_out;
 mod run_io;
@@ -11,7 +15,12 @@ mod runner;
 use options::{Command, help};
 use std::{env, process::ExitCode};
 
-fn execute(command: Command, questions_out: Option<std::path::PathBuf>) -> Result<(), String> {
+fn execute(
+    command: Command,
+    questions_out: Option<std::path::PathBuf>,
+    explain: bool,
+    入口开关: options::EntryFlags,
+) -> Result<(), String> {
     let path = match &command {
         Command::Help => {
             println!("{}", help());
@@ -22,6 +31,10 @@ fn execute(command: Command, questions_out: Option<std::path::PathBuf>) -> Resul
             return calib_confirm::run(dir, key, *suspend);
         }
         Command::LedgerMigrate { from, to } => return run_io::ledger_migrate(from, to),
+        Command::LedgerTree { ledgers } => return run_io::ledger_tree(ledgers),
+        Command::Bank { stats, args } => return bank::run(*stats, args),
+        Command::DeriveAdmit { args } => return derive_admit::run(args),
+        Command::ProfileCheck { profile } => return profile_check::run(profile),
         Command::Parse { source, .. } | Command::Check { source, .. } => source,
         Command::Run(options) => &options.source,
     };
@@ -72,6 +85,12 @@ fn execute(command: Command, questions_out: Option<std::path::PathBuf>) -> Resul
         Command::Check { guard, .. } => *guard,
         _ => false,
     };
+    // B0472：`--purpose` 与 `--mat` 同法只看给没给、不读文件；材料条目一律按不可信声明（CLI 不开可信开关）
+    let 声明材料: Vec<jpp::EntryMat> = 入口开关
+        .mats
+        .iter()
+        .map(|(名, _)| jpp::EntryMat::untrusted(名, serde_json::Value::Null))
+        .collect();
     let 入口声明 = if 给了输入 {
         let taint = if 输入可信 {
             jpp::Taint::Trusted
@@ -79,14 +98,17 @@ fn execute(command: Command, questions_out: Option<std::path::PathBuf>) -> Resul
             jpp::Taint::Untrusted
         };
         jpp::EntryArgs {
+            purpose: 入口开关.purpose.clone(),
             values: vec![jpp::EntryValue::new("input", serde_json::Value::Null).with_taint(taint)],
+            materials: 声明材料,
             accept: 接受,
             guard,
-            ..Default::default()
         }
         .decl()
     } else {
         jpp::EntryArgs {
+            purpose: 入口开关.purpose.clone(),
+            materials: 声明材料,
             accept: 接受,
             guard,
             ..Default::default()
@@ -99,7 +121,7 @@ fn execute(command: Command, questions_out: Option<std::path::PathBuf>) -> Resul
         Err(ds) => {
             let items: Vec<_> = ds.iter().map(diag_json::from_lower).collect();
             if diag_json::json_mode() && matches!(command, Command::Check { .. }) {
-                print_check_doc(&filename, &loaded, items, None);
+                print_check_doc(&filename, &loaded, items, None, None, None);
                 return Err(String::new());
             }
             return Err(diag_json::render_all(&loaded, items).join("\n"));
@@ -130,6 +152,10 @@ fn execute(command: Command, questions_out: Option<std::path::PathBuf>) -> Resul
     // 真机运行解析不到画像即报 `E-profile-missing`，在检查与初始化真机客户端之前。
     let 画像 = match &command {
         Command::Run(r) => profile_resolve::resolve(r)?,
+        // L7（2026-09-28）：`check --profile`，依赖画像的检查（B32 时延静态面等）与 `run` 同口径
+        Command::Check {
+            profile: Some(p), ..
+        } => Some(profile_resolve::load(p)?),
         _ => None,
     };
     // 宿主入口（步 14b-0 `--input`；B105 起为一条值条目）：检查前读文件，读不成在检查前报错；
@@ -142,7 +168,15 @@ fn execute(command: Command, questions_out: Option<std::path::PathBuf>) -> Resul
     .map(|p| run_io::read_host_input(p, 输入可信))
     .transpose()?
     .unwrap_or_default();
+    // B0472：目的与材料条目（检查前读文件，读不成在检查前报错）
+    let 材料 = 入口开关
+        .mats
+        .iter()
+        .map(|(名, 文件)| run_io::read_entry_mat(名, 文件))
+        .collect::<Result<Vec<_>, _>>()?;
     let 输入 = jpp::EntryArgs {
+        purpose: 入口开关.purpose.clone(),
+        materials: 材料,
         accept: 接受,
         guard,
         ..输入
@@ -151,18 +185,94 @@ fn execute(command: Command, questions_out: Option<std::path::PathBuf>) -> Resul
     // 三个内置动作（与用户输入无关，随时能给）——J-08 静态子面从此能对 `record_check` 这类可逆
     // 动作不报、对 `write_json` 这类不可逆动作在检查期就报 error，不必等 `Session::go` 内部
     // 真正带表的那次检查。
-    let report = jpp::Session::explain_with_actions(
-        &program,
-        画像.as_ref().map(|p| &p.profile),
-        &jpp::actions::check_table(),
-    );
+    // L7（2026-09-28，K-084/K-160）：`check` 带上校准记录（`--calib`，不给时空记录本，与 `run` 不给时同口径），
+    // J-10 静态面在这里就跑；`run` 仍走原来那次，J-10 由 `Session::go` 执行前带出，不报两遍
+    let 校准 = match &command {
+        Command::Check { calib, .. } => Some(match calib {
+            Some(dir) => jpp::store::calib::open(dir)?,
+            None => jpp::effects::CalibStore::new(),
+        }),
+        _ => None,
+    };
+    let report = match &校准 {
+        Some(c) => jpp::Session::explain_with_calib_actions(
+            &program,
+            画像.as_ref().map(|p| &p.profile),
+            c,
+            &jpp::actions::check_table(),
+        ),
+        None => jpp::Session::explain_with_actions(
+            &program,
+            画像.as_ref().map(|p| &p.profile),
+            &jpp::actions::check_table(),
+        ),
+    };
+    // Z0157：`check` 也过一遍规划器，让可靠下界超预算的 `E-budget-plan`（J-07b 静态面，B42）在检查期可见；
+    // 与 `run` 首跑同口径（账本为空、缓存关闭）。`run` 自己在执行前规划，这里不重复。
+    let mut report = report;
+    let mut check_plan: Option<(jpp::interp::Plan, jpp::interp::PlanCtx)> = None;
+    if matches!(command, Command::Check { .. }) {
+        let price = match 画像.as_ref() {
+            Some(r) => match r.profile.price_per_input_token() {
+                Some(p) => jpp::interp::JudgePrice::Known(p),
+                None => jpp::interp::JudgePrice::Untested,
+            },
+            None => jpp::interp::JudgePrice::NotGiven,
+        };
+        let ctx = jpp::interp::PlanCtx {
+            ledger_empty: true,
+            cache_off: true,
+            judge_price: price,
+        };
+        let plan = jpp::interp::plan_with(
+            &program,
+            &jpp::interp::Passes::default(),
+            画像.as_ref().map(|p| &p.profile),
+            &ctx,
+        );
+        let strip = |d: &jpp_ir::ir::IrDiag| {
+            d.message
+                .strip_prefix(&format!("{}: ", d.code))
+                .unwrap_or(&d.message)
+                .to_string()
+        };
+        for w in &plan.warnings {
+            report
+                .diagnostics
+                .push(jpp::Diagnostic::warning(&w.code, strip(w), w.span));
+        }
+        if let Some(d) = &plan.rejected {
+            report
+                .diagnostics
+                .push(jpp::Diagnostic::error(&d.code, strip(d), d.span));
+        }
+        check_plan = Some((plan, ctx));
+    }
+    // `--explain`（Z0190 后一半）：`check` 在这里取计划与语境；`run` 由 `execute_with` 在运行前一刻自己取
+    let check_explain = match (&check_plan, explain) {
+        (Some((plan, ctx)), true) => Some((plan, ctx)),
+        _ => None,
+    };
     let items: Vec<_> = report
         .diagnostics
         .iter()
         .map(diag_json::from_check)
         .collect();
+    // L7（2026-09-28，K-088）：`check` 列出程序用到的校准键、各处用得上哪一层记录、`cut` 上的代价矩阵
+    let 键清单 = 校准
+        .as_ref()
+        .map(|c| calib_keys_out::build(&jpp_check::calib_keys::calib_keys(&program), c, &loaded));
     if diag_json::json_mode() && matches!(command, Command::Check { .. }) {
-        print_check_doc(&filename, &loaded, items, questions_out_summary.as_ref());
+        let explain_doc =
+            check_explain.map(|(plan, ctx)| runner::explain_json(plan, ctx, &program, &loaded));
+        print_check_doc(
+            &filename,
+            &loaded,
+            items,
+            questions_out_summary.as_ref(),
+            键清单.as_ref().map(|(doc, _)| doc),
+            explain_doc.as_ref(),
+        );
         return if report.is_ok() {
             Ok(())
         } else {
@@ -171,6 +281,15 @@ fn execute(command: Command, questions_out: Option<std::path::PathBuf>) -> Resul
     }
     for line in diag_json::render_all(&loaded, items) {
         eprintln!("{line}");
+    }
+    if let Some((_, 行)) = &键清单 {
+        for line in 行 {
+            eprintln!("{line}");
+        }
+    }
+    // 即使检查有错（含 `E-budget-plan`）也先打印计划：「拒绝前先看到为什么」
+    if let Some((plan, ctx)) = check_explain {
+        print!("{}", runner::explain_text(plan, ctx, &program, &loaded));
     }
     if !report.is_ok() {
         return Err(format!(
@@ -183,7 +302,9 @@ fn execute(command: Command, questions_out: Option<std::path::PathBuf>) -> Resul
             "Checked {filename}: no static errors ({} warnings)",
             report.warnings().len()
         ),
-        Command::Run(options) => run_io::run_checked(&program, &options, &loaded, 画像, 输入)?,
+        Command::Run(options) => {
+            run_io::run_checked(&program, &options, &loaded, 画像, 输入, explain)?
+        }
         _ => unreachable!(),
     }
     Ok(())
@@ -206,6 +327,8 @@ fn print_check_doc(
     loaded: &jpp_syntax::loader::LoadedProgram,
     items: Vec<diag_json::Item>,
     questions_out: Option<&QuestionsOutSummary>,
+    calib_keys: Option<&serde_json::Value>,
+    explain: Option<&serde_json::Value>,
 ) {
     let folded = diag_json::fold(items);
     let count = |l: diag_json::Level| {
@@ -230,8 +353,18 @@ fn print_check_doc(
             "path": q.path.display().to_string(),
         });
     }
+    if let Some(k) = calib_keys {
+        doc["calib_keys"] = k.clone();
+    }
+    if let Some(e) = explain {
+        doc["explain"] = e.clone();
+    }
     println!("{doc}");
 }
+
+/// G2（`12` R9 单次形态）：这次运行有违规，进程以退出码 3 结束（0 成功、1 出错、2 用法错）
+pub(crate) static VIOLATION_EXIT: std::sync::atomic::AtomicBool =
+    std::sync::atomic::AtomicBool::new(false);
 
 fn main() -> ExitCode {
     let mut args: Vec<String> = env::args().skip(1).collect();
@@ -249,14 +382,33 @@ fn main() -> ExitCode {
             return ExitCode::from(2);
         }
     };
-    let command = match options::parse(&args) {
+    let explain = match options::take_explain(&mut args) {
+        Ok(on) => on,
+        Err(error) => {
+            eprintln!("{error}\n\n{}", help());
+            return ExitCode::from(2);
+        }
+    };
+    // B0472：`--purpose`、`--mat`、`--mat-store` 同法在解析前取出
+    let mut 入口开关 = match options::take_entry(&mut args) {
+        Ok(f) => f,
+        Err(error) => {
+            eprintln!("{error}\n\n{}", help());
+            return ExitCode::from(2);
+        }
+    };
+    let mut command = match options::parse(&args) {
         Ok(command) => command,
         Err(error) => {
             eprintln!("{error}\n\n{}", help());
             return ExitCode::from(2);
         }
     };
-    match execute(command, questions_out) {
+    if let Command::Run(r) = &mut command {
+        r.mat_store = 入口开关.mat_store.take();
+    }
+    match execute(command, questions_out, explain, 入口开关) {
+        Ok(()) if VIOLATION_EXIT.load(std::sync::atomic::Ordering::SeqCst) => ExitCode::from(3),
         Ok(()) => ExitCode::SUCCESS,
         Err(error) => {
             // 空报文：诊断已按 `--json` 输出过

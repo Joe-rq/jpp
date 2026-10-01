@@ -13,7 +13,10 @@ use jpp::{
 };
 use jpp_effects::Ports;
 use serde::{Serialize, de::DeserializeOwned};
-use std::{fs, path::Path};
+use std::{
+    fs,
+    path::{Path, PathBuf},
+};
 
 /// 这一趟的观察后端（步 15b 起是端口表）：固定观察或注册表里的后端（步 15g-0）。
 enum Observer {
@@ -38,6 +41,25 @@ impl Observer {
 
 // 真机客户端的构造与传输超时步 15g-0 起在注册表条目里（`jpp::backends::jev::SPEC.build`）。
 
+/// 装载的题库题式里有非在岗的（退役、被取代、提出、诊断通过）：报 `W-bank-status`（stderr 与 `trace.warnings`
+/// 各一条）。只报，不拦、不改结果（意图汇编 11a：不加默认限制）。停岗候选按 B25 仍在岗，不报。
+fn mark_bank_status(
+    report: &mut serde_json::Value,
+    non_service: &[(String, jpp::store::bank::Status)],
+) {
+    for (slug, st) in non_service {
+        let w = format!(
+            // 依据：B48（题库生命周期）、意图汇编 11a；补缺 3（`地基/过程记录/工程-步27.md`）
+            "W-bank-status: 题库题式 {slug} 现在是「{}」，`bank.json` 已判它不在岗，程序仍 import 了 lib/bank/{slug}.jpp（线与题式照旧供给，不拦）",
+            st.as_str()
+        );
+        eprintln!("warning: {w}");
+        if let Some(ws) = report["trace"]["warnings"].as_array_mut() {
+            ws.push(serde_json::json!(w));
+        }
+    }
+}
+
 /// 画像没有 `transport.timeout_s`（J-15 形式：字段未测报 `W-untested`）：真机请求不设超时，照跑。
 fn mark_timeout_untested(report: &mut serde_json::Value, profile_path: &Path) {
     let w = format!(
@@ -59,10 +81,20 @@ fn mark_cost_unknown(report: &mut serde_json::Value, profile_path: &Path) {
         "W-cost-unknown: 画像 {} 没有 cost.price_usd_per_input_token，本次真机费用记为 Unknown，预算的费用上限没有核到",
         profile_path.display()
     );
-    eprintln!("warning: {w}");
     report["cost"]["usd"] = serde_json::json!("Unknown");
     if let Some(ws) = report["trace"]["warnings"].as_array_mut() {
-        ws.push(serde_json::json!(w));
+        // 步 22：计划期已报过 `W-cost-unknown`（`jpp-plan` 的 `plan` pass）就不再追加第二条，只打到 stderr
+        let 已报 = ws
+            .iter()
+            .find_map(|x| x.as_str().filter(|s| s.starts_with("W-cost-unknown")))
+            .map(str::to_string);
+        match 已报 {
+            Some(前) => eprintln!("warning: {前}"),
+            None => {
+                eprintln!("warning: {w}");
+                ws.push(serde_json::json!(w));
+            }
+        }
     }
 }
 
@@ -100,6 +132,55 @@ pub fn ledger_migrate(from: &Path, to: &Path) -> Result<(), String> {
         to.display(),
         m.calib_used_keys
     );
+    Ok(())
+}
+
+/// 宿主给的追踪上下文（C-2）：`--trace-parent` 是调用者的上下文，本段由它与标签推导；`--trace-seed` 起一条新链，
+/// 本段是根段；标签缺省是程序标识。都不给返回 `None`，由 `Session` 按账本推导（首跑的根、续跑的新段）。
+fn 宿主追踪(
+    program: &Program,
+    options: &RunOptions,
+) -> Result<Option<jpp::ledger::TraceCtx>, String> {
+    let 标签 = || {
+        options
+            .trace_label
+            .clone()
+            .unwrap_or_else(|| jpp::Session::program_id(program))
+    };
+    if let Some(tp) = &options.trace_parent {
+        return Ok(Some(
+            jpp::ledger::TraceCtx::from_traceparent(tp)?.enter(&标签()),
+        ));
+    }
+    if let Some(seed) = &options.trace_seed {
+        return Ok(Some(jpp::ledger::TraceCtx::start(seed, &标签())));
+    }
+    Ok(None)
+}
+
+/// `jpp ledger-tree <账本>...`（C-2）：把几份账本按追踪编号拼成调用树，打印文本或（`--json`）JSON。
+/// 账本按 `read_any` 读（v2 在内存里迁移，末行半写截断并报告）；来源名是命令行上给的路径。
+pub fn ledger_tree(paths: &[PathBuf]) -> Result<(), String> {
+    let mut ledgers: Vec<(String, Ledger)> = vec![];
+    for path in paths {
+        let text = fs::read_to_string(path).map_err(|e| format!("{}: {e}", path.display()))?;
+        let (l, truncated, _) = jpp::store::migrations::ledger_v2::read_any(&text)
+            .map_err(|e| format!("{}: {e}", path.display()))?;
+        if let Some(t) = truncated {
+            eprintln!("{}: {}", path.display(), t.render());
+        }
+        ledgers.push((path.display().to_string(), l));
+    }
+    let refs: Vec<(String, &Ledger)> = ledgers.iter().map(|(n, l)| (n.clone(), l)).collect();
+    let tree = jpp::ledger::TraceTree::build(&refs);
+    if super::diag_json::json_mode() {
+        println!(
+            "{}",
+            serde_json::to_string(&tree).map_err(|e| e.to_string())?
+        );
+    } else {
+        print!("{}", tree.render());
+    }
     Ok(())
 }
 
@@ -143,12 +224,29 @@ pub fn read_host_input(path: &Path, trusted: bool) -> Result<jpp::EntryArgs, Str
     })
 }
 
+/// 读 `--mat <name>=<file>`（B0472）：`.json` 按 JSON 读（整数范围与 `--input` 同一条校验），其余按 UTF-8 文本读、
+/// 内容是一个字符串；缺省不可信（`EntryMat::untrusted`），运行入口盖 `origin = ["input"]`（B105-1）
+pub fn read_entry_mat(name: &str, path: &Path) -> Result<jpp::EntryMat, String> {
+    let content = if path.extension().is_some_and(|e| e == "json") {
+        let v: serde_json::Value = read_json(path)?;
+        jpp::actions::validate_numbers(&v).map_err(|e| format!("{}: {e}", path.display()))?;
+        v
+    } else {
+        serde_json::Value::String(
+            std::fs::read_to_string(path)
+                .map_err(|e| format!("--mat {name}: {}: {e}", path.display()))?,
+        )
+    };
+    Ok(jpp::EntryMat::untrusted(name, content))
+}
+
 pub fn run_checked(
     program: &Program,
     options: &RunOptions,
     loaded: &jpp_syntax::loader::LoadedProgram,
     画像: Option<Resolved>,
     输入: jpp::EntryArgs,
+    explain: bool,
 ) -> Result<(), String> {
     // 步 18b（B55；主会话 2026-09-25 裁定）：有不可逆 `do` 的程序，首跑与续接的账本要落盘，
     // 否则写前意向不落盘，续接会重做不可逆动作；只凭账本重放不要求。
@@ -319,6 +417,10 @@ pub fn run_checked(
     // `header.model_id` 读，不必用户在重放时重新声明 `--backend`/`--model`；
     // 旧账本没有 `header` 时退回 `"fixed-0"`，与接线前逐字节相同。（步 15c 前这段写在 `ReplayClient` 上）
     let replay_model_id = jpp::Session::replay_model_id(&ledger);
+    let 账本头lib = ledger
+        .header
+        .as_ref()
+        .and_then(|h| h.compared.lib_version.clone());
     let mut evidence: Vec<(String, jpp::effects::Sample)> = vec![];
     // 步 18b（B55）：`--ledger-out` 的账本逐行落盘——头在运行入口定稿时整份原子写出（续接写的是新文件：
     // 新头、旧条目按新链重串），不可逆 `do` 的意向与结果即刻落盘，其余条目每层末落盘。不给就只在内存里。
@@ -341,9 +443,62 @@ pub fn run_checked(
         Some(f) => f,
         None => &mut ledger,
     };
+    // 标准库与题库版本（步 27，B48）：由本次装载的源文件算，首跑、续接、重放同一口径
+    // 伴随题序言（B0492 S5，主控 2026-09-30 路 A）：发法不为关时 `lib/unsure.jpp` 随程序一起算进 `lib_version`
+    // 审计重放带不带伴随题只看账本（主控复核 2026-09-30），`lib_version` 也按账本头：首跑没带序言（关伴随题）的账本，
+    // 重放算不带序言的那个版本，不报假的头不一致（复查 2026-09-30 小项 2）
+    let 序言路径 = std::path::PathBuf::from("lib/unsure.jpp");
+    let 算版本 = |带序言: bool| {
+        jpp::store::bank::versions_of(
+            loaded
+                .sources
+                .iter()
+                .map(|f| (f.path.as_path(), f.text.as_bytes()))
+                .chain(
+                    带序言.then_some((序言路径.as_path(), jpp::session::UNSURE_PRELUDE.as_bytes())),
+                ),
+        )
+    };
+    // Z0398 起序言一律装载（通用类别表，过程记录 5.19），首跑总带；重放按账本头挑（旧账本可能是不带序言录的）
+    let (lib_version, bank_version) = 选版本(
+        options.replay.is_some(),
+        账本头lib.as_deref(),
+        算版本(false),
+        || 算版本(true),
+    );
+    // `--explain`（Z0190 后一半）：运行前一刻由 `execute_with` 调；文本进 stderr（stdout 留给报告），
+    // `--json` 时改为返回一个对象并入报告的 `explain` 键
+    // C-3 G1：预算行按规划实际用的程序（带上游余额时是收紧后的那份）
+    let explain_cb = |plan: &jpp::interp::Plan,
+                      ctx: &jpp::interp::PlanCtx,
+                      计划用: &jpp::Program,
+                      confirm: Option<&jpp_plan::explain::ConfirmView>| {
+        if crate::diag_json::json_mode() {
+            Some(runner::explain_json_with(
+                plan, ctx, 计划用, loaded, confirm,
+            ))
+        } else {
+            eprint!(
+                "{}",
+                runner::explain_text_with(plan, ctx, 计划用, loaded, confirm)
+            );
+            None
+        }
+    };
+    // 费用确认（Z0236，`11` §5.5）：阈值取 `--confirm-above`，没给取默认；判定在 `runner::execute_with` 里
+    let confirm_args = runner::ConfirmArgs {
+        confirmed: options.confirm,
+        threshold_usd: options
+            .confirm_above
+            .unwrap_or(crate::options::CONFIRM_DEFAULT_USD),
+        threshold_is_default: options.confirm_above.is_none(),
+    };
+    let explain_ref: Option<&runner::ExplainFn<'_>> =
+        if explain { Some(&explain_cb) } else { None };
+    let 追踪 = 宿主追踪(program, options)?;
     let result = if options.replay.is_some() {
         let replay_ports = jpp_effects::ReplayPorts::ports(&replay_model_id);
-        runner::execute(
+        runner::execute_with(
             program,
             replay_ports,
             &calibrations,
@@ -351,6 +506,17 @@ pub fn run_checked(
             true,
             &mut evidence,
             &输入,
+            runner::CacheArgs {
+                lib_version: Some(lib_version.clone()),
+                bank_version: bank_version.clone(),
+                explain: explain_ref,
+                trace: 追踪.clone(),
+                confirm: Some(confirm_args),
+                // C-3：重放的交回余额取账本头与 `Spent`，与首跑逐字节相同
+                carry_out: options.carry_out.clone(),
+                ..Default::default()
+            },
+            None,
         )
     } else {
         let mut ports = client.ports();
@@ -371,6 +537,29 @@ pub fn run_checked(
                 // 生成器身份进账本头（步 19）：给了 `--gen-model` 才有
                 gen_model: 生成器.as_ref().map(|g| g.model.clone()),
                 gen_profile_hash: 生成器.as_ref().map(|g| g.profile.hash.clone()),
+                lib_version: Some(lib_version.clone()),
+                bank_version: bank_version.clone(),
+                trace: 追踪.clone(),
+                // 步 22（B42）：判断器的实际单价按后端给——真机为画像价格（没有价格为未测，计划期报
+                // `W-cost-unknown`），固定观察为 0（画像带价格也不算，固定观察不付费）
+                judge_price: match 真机画像 {
+                    Some(r) => match r.profile.price_per_input_token() {
+                        Some(p) => jpp::interp::JudgePrice::Known(p),
+                        None => jpp::interp::JudgePrice::Untested,
+                    },
+                    None => jpp::interp::JudgePrice::Known(0.0),
+                },
+                explain: explain_ref,
+                confirm: Some(confirm_args),
+                // C-3：上游余额进出（重放不给，重放取账本头）
+                carry_in: options.carry_in.clone(),
+                carry_out: options.carry_out.clone(),
+                carry_reauthorize: options.carry_reauthorize,
+                companions: options.companions,
+                // B0472：`--mat-store` 装文件料库（重放分支不给：变换结果取自账本）
+                mat_store: options.mat_store.clone(),
+                cells: options.cells,
+                cells_stats: options.cells_stats,
             },
             // 程序文件所在目录（现场稳定性三修 (2)）：`read_json` 与 `import` 一样先按它找
             options.source.parent(),
@@ -438,6 +627,13 @@ pub fn run_checked(
         };
         crate::diag_json::render_all(loaded, items).join("\n")
     })?;
+    // Z0594：运行期自己产生的告警（下面 run_io 追加的 W-cost-unknown、W-untested、W-bank-status 追加时已各自打过 stderr）
+    let 运行期告警: Vec<String> = report["trace"]["warnings"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .filter_map(|w| w.as_str().map(String::from))
+        .collect();
     report["fixture_description"] = serde_json::json!(description);
     // 缺省账本路径（B187）：只在用了缺省路径时出现，给了 --ledger-out 的报告逐字节不变
     if options.ledger_out.is_none()
@@ -465,6 +661,11 @@ pub fn run_checked(
     {
         mark_timeout_untested(&mut report, &r.path);
     }
+    // 题库：装载了非在岗条目的题式文件（补缺 3）
+    mark_bank_status(
+        &mut report,
+        &jpp::store::bank::non_service_loaded(loaded.sources.iter().map(|f| f.path.as_path())),
+    );
     // `run --json`：运行期告警（`trace.warnings` 里带编号的行）折叠后以 JSON Lines 写到 stderr；报告不动
     if crate::diag_json::json_mode() {
         let items = report["trace"]["warnings"]
@@ -477,6 +678,29 @@ pub fn run_checked(
             eprintln!("{line}");
         }
     }
+    // G2（`12` R9 单次形态，主控定第 2 条）：违规逐笔在 stderr 报（形状与原运行期 J-05 行相同），末尾一行汇总，
+    // 报告照写，进程以退出码 3 结束（`main` 读 `VIOLATION_EXIT`）
+    let 违规数 = report["violations"].as_array().map_or(0, |v| v.len());
+    let 违规行: Vec<String> = report["violations"]
+        .as_array()
+        .map(|vs| {
+            let items = vs
+                .iter()
+                .map(|v| {
+                    crate::diag_json::Item::new(
+                        "J-05",
+                        crate::diag_json::Level::Error,
+                        Some(jpp_syntax::ast::Span {
+                            start: v["site"].as_u64().unwrap_or(0) as usize,
+                            end: v["site_end"].as_u64().unwrap_or(0) as usize,
+                        }),
+                        v["message"].as_str().unwrap_or(""),
+                    )
+                })
+                .collect();
+            crate::diag_json::render_all(loaded, items)
+        })
+        .unwrap_or_default();
     if let Some(path) = &options.output {
         write_json(path, &report)?;
         println!(
@@ -491,6 +715,24 @@ pub fn run_checked(
             "{}",
             serde_json::to_string_pretty(&report).map_err(|e| e.to_string())?
         );
+    }
+    // Z0594（过程记录 5.29）：文本模式也把运行期告警打到 stderr（`--json` 时上面已以 JSON Lines 打过）：
+    // 同码同址折叠、带文件行列，报告写完之后、违规行之前
+    if !crate::diag_json::json_mode() {
+        let items = 运行期告警
+            .iter()
+            .filter_map(|w| crate::diag_json::Item::from_warning(w))
+            .collect();
+        for line in crate::diag_json::render_all(loaded, items) {
+            eprintln!("{line}");
+        }
+    }
+    if !违规行.is_empty() {
+        for line in &违规行 {
+            eprintln!("{line}");
+        }
+        eprintln!("违规 {违规数} 笔：本次结论为未决（violation），值照带；退出码 3");
+        crate::VIOLATION_EXIT.store(true, std::sync::atomic::Ordering::SeqCst);
     }
     Ok(())
 }
@@ -553,12 +795,106 @@ fn load_cache_dir(dir: &Path) -> Result<jpp::store::CacheIndex, String> {
     Ok(ix)
 }
 
+/// 本次运行的 `(lib_version, bank_version)`：首跑总带序言；审计重放时不带序言算出的等于账本头就用它（旧账本、
+/// 关着伴随题录的），否则带序言（两个都不等时照常由账本口报 `W-header`）。复查 2026-09-30 小项 2、过程记录 5.19
+fn 选版本(
+    重放: bool,
+    账本头: Option<&str>,
+    不带: (String, Option<String>),
+    带: impl FnOnce() -> (String, Option<String>),
+) -> (String, Option<String>) {
+    if 重放 && 账本头 == Some(不带.0.as_str()) {
+        不带
+    } else {
+        带()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
     use jpp::effects::{EffectError, JevClient, JevPorts, Profile, ReplayPorts, transport_timeout};
     use serde_json::json;
     use std::{cell::RefCell, rc::Rc};
+
+    /// 伴随题开关（B0492 S5，主控 2026-09-30 路 3）：与伴随题无关的测试显式关掉；`JPP_TEST_COMPANIONS=on` 整体开着跑
+    fn 伴随() -> jpp::interp::CompanionMode {
+        if std::env::var("JPP_TEST_COMPANIONS").is_ok_and(|v| v == "on") {
+            jpp::interp::CompanionMode::Same
+        } else {
+            jpp::interp::CompanionMode::Off
+        }
+    }
+
+    /// Jev 传输桩的回答：伴随题（按题面认，线上请求不带校准键）给 `jpp::testing` 约定的中性读数，其余题给 `原`。
+    /// 伴随题关着时请求里只有原题
+    /// 挑 `lib_version` 的三支：首跑总带序言；重放时账本头等于不带序言的版本取它，否则带
+    #[test]
+    fn 选版本三支() {
+        let 不带 = || ("甲".to_string(), None);
+        let 带 = || ("乙".to_string(), None);
+        assert_eq!(
+            super::选版本(false, Some("甲"), 不带(), 带).0,
+            "乙",
+            "首跑总带序言"
+        );
+        assert_eq!(
+            super::选版本(true, Some("甲"), 不带(), 带).0,
+            "甲",
+            "旧账本不带序言"
+        );
+        assert_eq!(super::选版本(true, Some("乙"), 不带(), 带).0, "乙");
+        assert_eq!(
+            super::选版本(true, Some("丙"), 不带(), 带).0,
+            "乙",
+            "都不等照带，由账本口报 W-header"
+        );
+    }
+
+    fn 桩答(body: &serde_json::Value, 原: f64) -> serde_json::Value {
+        let mut out = serde_json::Map::new();
+        for (id, q) in body["questions"].as_object().into_iter().flatten() {
+            let 中性 = jpp::testing::伴随题面(q["instructions"].as_str().unwrap_or(""));
+            // K 选一的伴随题（「最缺哪类」）：各候选键均匀
+            if 中性 && q["type"] == "choice" {
+                let ks: Vec<&String> = q["criteria"]
+                    .as_object()
+                    .map(|c| c.keys().collect())
+                    .unwrap_or_default();
+                let p = 1.0 / ks.len().max(1) as f64;
+                out.insert(id.clone(), json!({"probabilities": ks.iter().map(|k| ((*k).clone(), json!(p))).collect::<serde_json::Map<_, _>>()}));
+                continue;
+            }
+            out.insert(id.clone(), json!({"noul": if 中性 { 0.5 } else { 原 }}));
+        }
+        serde_json::Value::Object(out)
+    }
+
+    /// `runner::execute` 带 [`伴随`]
+    fn 执行(
+        program: &Program,
+        ports: jpp_effects::Ports<'_>,
+        calib: &CalibStore,
+        ledger: &mut dyn jpp::LedgerPort,
+        replay_only: bool,
+        evidence: &mut Vec<(String, jpp::effects::Sample)>,
+        entry: &jpp::EntryArgs,
+    ) -> Result<serde_json::Value, jpp::Error> {
+        runner::execute_with(
+            program,
+            ports,
+            calib,
+            ledger,
+            replay_only,
+            evidence,
+            entry,
+            runner::CacheArgs {
+                companions: Some(伴随()),
+                ..Default::default()
+            },
+            None,
+        )
+    }
 
     /// 与 `crates/jpp-cli/tests/wiring.rs` 的 `calib目录让unsure_bound不再恒等于n` 同一份
     /// 程序骨架：单道 `test` 题喂进 `unsure_bound`，产出是一个数，便于比较真实跑与重放。
@@ -580,16 +916,16 @@ mod tests {
         let c2 = calls.clone();
         let client = JevClient::with_transport(
             "jev-1.13.0",
-            Box::new(move |_body| {
+            Box::new(move |body| {
                 *c2.borrow_mut() += 1;
-                Ok(json!({"answers": {"q0": {"noul": 0.8}}}))
+                Ok(json!({"answers": 桩答(&body, 0.8)}))
             }),
         );
         let calib = CalibStore::new();
         let mut ledger = Ledger::new();
         ledger.rebuild_index();
         let mut evidence = vec![];
-        let report = runner::execute(
+        let report = 执行(
             &program,
             JevPorts::new(client).ports(),
             &calib,
@@ -608,7 +944,7 @@ mod tests {
         // `NoCallPorts`（固定 `"fixed-0"`）在这里会撞上与生产代码同一个键不匹配的坑。
 
         let mut evidence2 = vec![];
-        let replay_report = runner::execute(
+        let replay_report = 执行(
             &program,
             ReplayPorts::ports("jev-1.13.0"),
             &calib,
@@ -647,11 +983,23 @@ mod tests {
             ),
             input: None,
             input_trusted: false,
+            mat_store: None,
             release_on_declared: false,
             guard: false,
+            confirm: false,
+            confirm_above: None,
             gen_model: None,
+            companions: None,
+            cells: None,
+            cells_stats: false,
             gen_profile: None,
             cache: None,
+            trace_parent: None,
+            trace_seed: None,
+            trace_label: None,
+            carry_in: None,
+            carry_out: None,
+            carry_reauthorize: false,
         }
     }
 
@@ -671,15 +1019,15 @@ mod tests {
         install_profile(&mut calib, Some(&画像));
         let client = JevClient::with_transport(
             "jev-1.13.0",
-            Box::new(|_body| {
-                Ok(json!({"answers": {"q0": {"noul": 0.8}}, "usage": {"input_tokens": 1000}}))
+            Box::new(|body| {
+                Ok(json!({"answers": 桩答(&body, 0.8), "usage": {"input_tokens": 1000}}))
             }),
         )
         .with_price(画像.profile.price_per_input_token());
         let mut ledger = Ledger::new();
         ledger.rebuild_index();
         let mut evidence = vec![];
-        let report = runner::execute(
+        let report = 执行(
             &program,
             JevPorts::new(client).ports(),
             &calib,
@@ -692,7 +1040,7 @@ mod tests {
         let h = ledger.header.as_ref().expect("有账本头");
         assert_eq!(
             h.compared.profile_hash.as_deref(),
-            Some("d04dff93acb1e83f"),
+            Some("6dd82b3f651fed3f"),
             "账本头记发行画像的哈希（传输超时步加 transport 节后）"
         );
         assert_eq!(report["cost"]["tokens"], json!(1000));
@@ -763,7 +1111,7 @@ mod tests {
         let mut ledger = Ledger::new();
         ledger.rebuild_index();
         let mut evidence = vec![];
-        let err = runner::execute(
+        let err = 执行(
             &program,
             JevPorts::new(client).ports(),
             &calib,

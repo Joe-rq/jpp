@@ -3,41 +3,41 @@ budget calls=30 cost=0.02 depth=64 escalate=- unsure=- latency_p95=- absent=-
 block 1893..6383
   fn-stmt carry
     #0 fn (outer:-, inner:-, layer:-) -> - effects=-
-      block 38109..38235
+      block 38432..38558
         result
-          #1 call 38115..38233
+          #1 call 38438..38556
             callee:
               #2 name concat
             #3 name outer
-            #4 call @0 38129..38232
+            #4 call @0 38452..38555
               callee:
                 #5 name map
               #6 name inner
               #8 fn (p:-) -> - effects=-
-                block 38146..38231
+                block 38469..38554
                   result
-                    #9 call 38156..38225
+                    #9 call 38479..38548
                       callee:
                         #10 name with
                       #11 name p
                       #12 text "via"
-                      #13 call 38171..38224
+                      #13 call 38494..38547
                         callee:
                           #14 name append
-                        #15 if @1 38178..38216
+                        #15 if @1 38501..38539
                           cond:
-                            #16 call 38181..38194
+                            #16 call 38504..38517
                               callee:
                                 #17 name has
                               #18 name p
                               #19 text "via"
-                          block 38195..38204
+                          block 38518..38527
                             result
                               #20 field .via
                                 #21 name p
-                          block 38210..38216
+                          block 38533..38539
                             result
-                              #22 list 38212..38214
+                              #22 list 38535..38537
                         #23 name layer
   fn-stmt tree_is_select
     #24 fn (n:-) -> - effects=-
@@ -1710,7 +1710,7 @@ block 1893..6383
                                   #1107 name x
   fn-stmt walk
     #1108 fn (tree:-, material:-, depth:-, opts:-) -> {"Applied":["Record",[{"Named":"Exit"}]]} effects=-
-      block 27068..37576
+      block 27068..37899
         let how : -
           #1109 if @76 27084..27133
             cond:
@@ -2614,9 +2614,9 @@ block 1893..6383
                             #1695 int 0
         let step : -
           #1697 fn (s:-, i:-) -> - effects=-
-            block 32325..36263
+            block 32325..36586
               result
-                #1698 if @127 32335..36257
+                #1698 if @127 32335..36580
                   cond:
                     #1699 field .done
                       #1700 name s
@@ -2626,7 +2626,7 @@ block 1893..6383
                         callee:
                           #1702 name stop
                         #1703 name s
-                  block 32362..36257
+                  block 32362..36580
                     let node : -
                       #1704 field .node
                         #1705 name s
@@ -2638,7 +2638,7 @@ block 1893..6383
                           #1709 name s
                         #1710 name node
                     let next : -
-                      #1711 if @128 32456..36192
+                      #1711 if @128 32456..36515
                         cond:
                           #1712 binary &&
                             #1713 unary !
@@ -2687,7 +2687,7 @@ block 1893..6383
                               #1743 record 32640..32658
                                 branch:
                                   #1744 text "ignore"
-                        block 32679..36192
+                        block 32679..36515
                           let j0 : -
                             #1745 call 32706..32741
                               callee:
@@ -2701,7 +2701,7 @@ block 1893..6383
                                 #1753 name depth
                                 #1754 name i
                           let r : -
-                            #1755 call @129 32919..35471
+                            #1755 call @129 32919..35794
                               callee:
                                 #1756 name fold
                               #1757 call 32924..32943
@@ -2730,7 +2730,7 @@ block 1893..6383
                                 stop:
                                   #1773 bool false
                               #1775 fn (t:-, k:-) -> - effects=-
-                                block 33025..35470
+                                block 33025..35793
                                   let cands : -
                                     #1776 if @130 33059..33166
                                       cond:
@@ -2765,7 +2765,7 @@ block 1893..6383
                                                         #1797 name t
                                                       #1798 name c
                                   result
-                                    #1799 if @132 33188..35452
+                                    #1799 if @132 33188..35775
                                       cond:
                                         #1800 binary ==
                                           #1801 call 33191..33201
@@ -2776,7 +2776,7 @@ block 1893..6383
                                       block 33207..33212
                                         result
                                           #1805 name t
-                                      block 33218..35452
+                                      block 33218..35775
                                         let ch : -
                                           #1806 if @133 33373..34303
                                             cond:
@@ -2937,7 +2937,7 @@ block 1893..6383
                                           #1906 field .t1
                                             #1907 name ch
                                         result
-                                          #1908 if @140 34369..35430
+                                          #1908 if @140 34369..35753
                                             cond:
                                               #1909 binary <
                                                 #1910 field .j
@@ -2951,7 +2951,7 @@ block 1893..6383
                                                   #1915 name t1
                                                   #1916 text "stop"
                                                   #1917 bool true
-                                            block 34413..35430
+                                            block 34413..35753
                                               let need : -
                                                 #1918 index
                                                   #1919 name cands
@@ -2967,878 +2967,930 @@ block 1893..6383
                                                   #1927 field .m
                                                     #1928 name t
                                               result
-                                                #1929 if @141 34560..35404
+                                                #1929 if @141 34670..35727
                                                   cond:
-                                                    #1930 call 34563..34575
+                                                    #1930 call 34673..34685
                                                       callee:
                                                         #1931 name is_fail
                                                       #1932 name got
-                                                  block 34576..34602
-                                                    result
-                                                      #1933 call 34578..34600
-                                                        callee:
-                                                          #1934 name with
-                                                        #1935 name t1
-                                                        #1936 text "stop"
-                                                        #1937 bool true
-                                                  block 34608..35404
-                                                    let m2 : -
-                                                      #1938 call 34651..34672
-                                                        callee:
-                                                          #1939 name merge
-                                                        #1940 field .m
-                                                          #1941 name t
-                                                        #1942 name need
-                                                        #1943 name got
-                                                    let j2 : -
-                                                      #1944 call 34715..34754
-                                                        callee:
-                                                          #1945 name judged
-                                                        #1946 field .s
-                                                          #1947 name t1
-                                                        #1948 name node
-                                                        #1949 name m2
-                                                        #1950 field .at
-                                                          #1951 name s
-                                                        #1952 binary -
-                                                          #1953 name depth
-                                                          #1954 name i
-                                                    #1955 consume @142 34906..34933
-                                                      #1956 field .duty
-                                                        #1957 field .got
-                                                          #1958 name t
-                                                      #1959 text "drop"
-                                                    let j2s : -
-                                                      #1960 call 35103..35146
-                                                        callee:
-                                                          #1961 name with
-                                                        #1962 field .t
-                                                          #1963 name j2
-                                                        #1964 text "sel"
-                                                        #1965 call 35121..35145
-                                                          callee:
-                                                            #1966 name concat
-                                                          #1967 field .sel
-                                                            #1968 field .t
-                                                              #1969 name j2
-                                                          #1970 field .sel
-                                                            #1971 name ch
-                                                    result
-                                                      #1972 record 35180..35374
-                                                        s:
-                                                          #1973 call 35184..35261
-                                                            callee:
-                                                              #1974 name with
-                                                            #1975 name j2s
-                                                            #1976 text "enriched"
-                                                            #1977 call 35206..35260
-                                                              callee:
-                                                                #1978 name append
-                                                              #1979 field .enriched
-                                                                #1980 name j2s
-                                                              #1981 record 35227..35259
-                                                                q:
-                                                                  #1982 field .q
-                                                                    #1983 name node
-                                                                need:
-                                                                  #1984 name need
-                                                                step:
-                                                                  #1985 name i
-                                                        m:
-                                                          #1986 name m2
-                                                        e:
-                                                          #1987 field .e
-                                                            #1988 name j2
+                                                  block 34686..34778
+                                                    #1933 call 34688..34752
+                                                      callee:
+                                                        #1934 name refine
+                                                      #1935 field .duty
+                                                        #1936 field .got
+                                                          #1937 name t
+                                                      #1938 unit
+                                                      #1939 record 34713..34751
+                                                        need:
+                                                          #1940 name need
+                                                        round:
+                                                          #1941 binary +
+                                                            #1942 name k
+                                                            #1943 int 1
                                                         got:
-                                                          #1989 field .got
-                                                            #1990 name j2
-                                                        q:
-                                                          #1991 field .q
-                                                            #1992 name j2
-                                                        done:
-                                                          #1993 call 35340..35360
+                                                          #1944 bool false
+                                                    result
+                                                      #1945 call 34754..34776
+                                                        callee:
+                                                          #1946 name with
+                                                        #1947 name t1
+                                                        #1948 text "stop"
+                                                        #1949 bool true
+                                                  block 34784..35727
+                                                    let m2 : -
+                                                      #1950 call 34827..34848
+                                                        callee:
+                                                          #1951 name merge
+                                                        #1952 field .m
+                                                          #1953 name t
+                                                        #1954 name need
+                                                        #1955 name got
+                                                    let j2 : -
+                                                      #1956 call 34891..34930
+                                                        callee:
+                                                          #1957 name judged
+                                                        #1958 field .s
+                                                          #1959 name t1
+                                                        #1960 name node
+                                                        #1961 name m2
+                                                        #1962 field .at
+                                                          #1963 name s
+                                                        #1964 binary -
+                                                          #1965 name depth
+                                                          #1966 name i
+                                                    #1967 call 35121..35256
+                                                      callee:
+                                                        #1968 name refine
+                                                      #1969 field .duty
+                                                        #1970 field .got
+                                                          #1971 name t
+                                                      #1972 field .e
+                                                        #1973 name j2
+                                                      #1974 if @142 35146..35255
+                                                        cond:
+                                                          #1975 binary ==
+                                                            #1976 call 35149..35160
+                                                              callee:
+                                                                #1977 name len
+                                                              #1978 field .sel
+                                                                #1979 name ch
+                                                            #1980 int 0
+                                                        block 35166..35196
+                                                          result
+                                                            #1981 record 35168..35194
+                                                              need:
+                                                                #1982 name need
+                                                              round:
+                                                                #1983 binary +
+                                                                  #1984 name k
+                                                                  #1985 int 1
+                                                        block 35202..35255
+                                                          result
+                                                            #1986 record 35204..35253
+                                                              need:
+                                                                #1987 name need
+                                                              round:
+                                                                #1988 binary +
+                                                                  #1989 name k
+                                                                  #1990 int 1
+                                                              asked_by:
+                                                                #1991 field .e
+                                                                  #1992 index
+                                                                    #1993 field .sel
+                                                                      #1994 name ch
+                                                                    #1995 int 0
+                                                    let j2s : -
+                                                      #1996 call 35426..35469
+                                                        callee:
+                                                          #1997 name with
+                                                        #1998 field .t
+                                                          #1999 name j2
+                                                        #2000 text "sel"
+                                                        #2001 call 35444..35468
+                                                          callee:
+                                                            #2002 name concat
+                                                          #2003 field .sel
+                                                            #2004 field .t
+                                                              #2005 name j2
+                                                          #2006 field .sel
+                                                            #2007 name ch
+                                                    result
+                                                      #2008 record 35503..35697
+                                                        s:
+                                                          #2009 call 35507..35584
                                                             callee:
-                                                              #1994 name append
-                                                            #1995 field .done
-                                                              #1996 name t
-                                                            #1997 name need
+                                                              #2010 name with
+                                                            #2011 name j2s
+                                                            #2012 text "enriched"
+                                                            #2013 call 35529..35583
+                                                              callee:
+                                                                #2014 name append
+                                                              #2015 field .enriched
+                                                                #2016 name j2s
+                                                              #2017 record 35550..35582
+                                                                q:
+                                                                  #2018 field .q
+                                                                    #2019 name node
+                                                                need:
+                                                                  #2020 name need
+                                                                step:
+                                                                  #2021 name i
+                                                        m:
+                                                          #2022 name m2
+                                                        e:
+                                                          #2023 field .e
+                                                            #2024 name j2
+                                                        got:
+                                                          #2025 field .got
+                                                            #2026 name j2
+                                                        q:
+                                                          #2027 field .q
+                                                            #2028 name j2
+                                                        done:
+                                                          #2029 call 35663..35683
+                                                            callee:
+                                                              #2030 name append
+                                                            #2031 field .done
+                                                              #2032 name t
+                                                            #2033 name need
                                                         stop:
-                                                          #1998 bool false
+                                                          #2034 bool false
                           let s3 : -
-                            #1999 call 35498..35588
+                            #2035 call 35821..35911
                               callee:
-                                #2000 name with
-                              #2001 call 35503..35545
+                                #2036 name with
+                              #2037 call 35826..35868
                                 callee:
-                                  #2002 name with
-                                #2003 field .s
-                                  #2004 name r
-                                #2005 text "exits"
-                                #2006 call 35522..35544
+                                  #2038 name with
+                                #2039 field .s
+                                  #2040 name r
+                                #2041 text "exits"
+                                #2042 call 35845..35867
                                   callee:
-                                    #2007 name append
-                                  #2008 field .exits
-                                    #2009 field .s
-                                      #2010 name r
-                                  #2011 field .e
-                                    #2012 name r
-                              #2013 text "sel"
-                              #2014 call 35554..35587
+                                    #2043 name append
+                                  #2044 field .exits
+                                    #2045 field .s
+                                      #2046 name r
+                                  #2047 field .e
+                                    #2048 name r
+                              #2049 text "sel"
+                              #2050 call 35877..35910
                                 callee:
-                                  #2015 name append
-                                #2016 field .sel
-                                  #2017 field .s
-                                    #2018 name r
-                                #2019 record 35570..35586
+                                  #2051 name append
+                                #2052 field .sel
+                                  #2053 field .s
+                                    #2054 name r
+                                #2055 record 35893..35909
                                   e:
-                                    #2020 field .e
-                                      #2021 name r
+                                    #2056 field .e
+                                      #2057 name r
                                   q:
-                                    #2022 field .q
-                                      #2023 name r
+                                    #2058 field .q
+                                      #2059 name r
                           let entry : -
-                            #2024 record 35618..35680
+                            #2060 record 35941..36003
                               q:
-                                #2025 field .q
-                                  #2026 name node
+                                #2061 field .q
+                                  #2062 name node
                               exit:
-                                #2027 field .e
-                                  #2028 name r
+                                #2063 field .e
+                                  #2064 name r
                               branch:
-                                #2029 field .branch
-                                  #2030 field .got
-                                    #2031 name r
+                                #2065 field .branch
+                                  #2066 field .got
+                                    #2067 name r
                               enriched:
-                                #2032 field .done
-                                  #2033 name r
+                                #2068 field .done
+                                  #2069 name r
                           result
-                            #2034 if @143 35698..36178
+                            #2070 if @143 36021..36501
                               cond:
-                                #2035 binary ==
-                                  #2036 field .branch
-                                    #2037 field .got
-                                      #2038 name r
-                                  #2039 text "unsure"
-                              block 35726..36138
+                                #2071 binary ==
+                                  #2072 field .branch
+                                    #2073 field .got
+                                      #2074 name r
+                                  #2075 text "unsure"
+                              block 36049..36461
                                 let s4 : -
-                                  #2040 call 35897..35993
+                                  #2076 call 36220..36316
                                     callee:
-                                      #2041 name with
-                                    #2042 name s3
-                                    #2043 text "pending"
-                                    #2044 call 35917..35992
+                                      #2077 name with
+                                    #2078 name s3
+                                    #2079 text "pending"
+                                    #2080 call 36240..36315
                                       callee:
-                                        #2045 name carry
-                                      #2046 field .pending
-                                        #2047 name s3
-                                      #2048 list 35935..35972
-                                        #2049 construct element @144 35936..35971
-                                          #2050 field .m
-                                            #2051 name r
-                                          #2052 field .e
-                                            #2053 name r
-                                          #2054 record 35954..35970
+                                        #2081 name carry
+                                      #2082 field .pending
+                                        #2083 name s3
+                                      #2084 list 36258..36295
+                                        #2085 construct element @144 36259..36294
+                                          #2086 field .m
+                                            #2087 name r
+                                          #2088 field .e
+                                            #2089 name r
+                                          #2090 record 36277..36293
                                             pos:
-                                              #2055 name i
+                                              #2091 name i
                                             q:
-                                              #2056 field .q
-                                                #2057 name r
-                                      #2058 binary +
-                                        #2059 text "walk#"
-                                        #2060 call 35984..35991
+                                              #2092 field .q
+                                                #2093 name r
+                                      #2094 binary +
+                                        #2095 text "walk#"
+                                        #2096 call 36307..36314
                                           callee:
-                                            #2061 name text
-                                          #2062 name i
+                                            #2097 name text
+                                          #2098 name i
                                 result
-                                  #2063 if @145 36015..36120
+                                  #2099 if @145 36338..36443
                                     cond:
-                                      #2064 call 36018..36037
+                                      #2100 call 36341..36360
                                         callee:
-                                          #2065 name has
-                                        #2066 name node
-                                        #2067 text "unsure"
-                                    block 36038..36072
+                                          #2101 name has
+                                        #2102 name node
+                                        #2103 text "unsure"
+                                    block 36361..36395
                                       result
-                                        #2068 call 36040..36070
+                                        #2104 call 36363..36393
                                           callee:
-                                            #2069 name advance
-                                          #2070 name s4
-                                          #2071 field .m
-                                            #2072 name r
-                                          #2073 name entry
-                                          #2074 field .got
-                                            #2075 name r
-                                    block 36078..36120
+                                            #2105 name advance
+                                          #2106 name s4
+                                          #2107 field .m
+                                            #2108 name r
+                                          #2109 name entry
+                                          #2110 field .got
+                                            #2111 name r
+                                    block 36401..36443
                                       result
-                                        #2076 call 36080..36118
+                                        #2112 call 36403..36441
                                           callee:
-                                            #2077 name finish
-                                          #2078 name s4
-                                          #2079 field .m
-                                            #2080 name r
-                                          #2081 name entry
-                                          #2082 unit
-                                          #2083 text "unsure"
-                              block 36144..36178
+                                            #2113 name finish
+                                          #2114 name s4
+                                          #2115 field .m
+                                            #2116 name r
+                                          #2117 name entry
+                                          #2118 unit
+                                          #2119 text "unsure"
+                              block 36467..36501
                                 result
-                                  #2084 call 36146..36176
+                                  #2120 call 36469..36499
                                     callee:
-                                      #2085 name advance
-                                    #2086 name s3
-                                    #2087 field .m
-                                      #2088 name r
-                                    #2089 name entry
-                                    #2090 field .got
-                                      #2091 name r
+                                      #2121 name advance
+                                    #2122 name s3
+                                    #2123 field .m
+                                      #2124 name r
+                                    #2125 name entry
+                                    #2126 field .got
+                                      #2127 name r
                     result
-                      #2092 if @146 36206..36247
+                      #2128 if @146 36529..36570
                         cond:
-                          #2093 field .done
-                            #2094 name next
-                        block 36219..36233
+                          #2129 field .done
+                            #2130 name next
+                        block 36542..36556
                           result
-                            #2095 call 36221..36231
+                            #2131 call 36544..36554
                               callee:
-                                #2096 name stop
-                              #2097 name next
-                        block 36239..36247
+                                #2132 name stop
+                              #2133 name next
+                        block 36562..36570
                           result
-                            #2098 name next
+                            #2134 name next
         let r : -
-          #2099 loop @147 36277..36588
+          #2135 loop @147 36600..36911
             bound:
-              #2100 name depth
-            #2101 record 36289..36581
+              #2136 name depth
+            #2137 record 36612..36904
               node:
-                #2102 name tree
+                #2138 name tree
               at:
-                #2103 text "根"
+                #2139 text "根"
               m:
-                #2104 name material
+                #2140 name material
               path:
-                #2105 list 36332..36334
+                #2141 list 36655..36657
               exits:
-                #2106 list 36343..36345
+                #2142 list 36666..36668
               pending:
-                #2107 list 36356..36358
+                #2143 list 36679..36681
               code:
-                #2108 list 36366..36368
+                #2144 list 36689..36691
               enriched:
-                #2109 list 36380..36382
+                #2145 list 36703..36705
               batch:
-                #2110 list 36416..36418
+                #2146 list 36739..36741
               bm:
-                #2111 text ""
+                #2147 text ""
               keys:
-                #2112 list 36434..36436
+                #2148 list 36757..36759
               batches:
-                #2113 int 0
+                #2149 int 0
               asked:
-                #2114 int 0
+                #2150 int 0
               sel:
-                #2115 list 36465..36467
+                #2151 list 36788..36790
               leaf:
-                #2116 unit
+                #2152 unit
               reason:
-                #2117 if @148 36514..36560
+                #2153 if @148 36837..36883
                   cond:
-                    #2118 call 36517..36529
+                    #2154 call 36840..36852
                       callee:
-                        #2119 name is_fail
-                      #2120 name bad
-                  block 36530..36543
+                        #2155 name is_fail
+                      #2156 name bad
+                  block 36853..36866
                     result
-                      #2121 text "invalid"
-                  block 36549..36560
+                      #2157 text "invalid"
+                  block 36872..36883
                     result
-                      #2122 text "bound"
+                      #2158 text "bound"
               done:
-                #2123 call 36568..36580
+                #2159 call 36891..36903
                   callee:
-                    #2124 name is_fail
-                  #2125 name bad
-            #2126 name step
+                    #2160 name is_fail
+                  #2161 name bad
+            #2162 name step
         let kinds : -
-          #2127 call @149 36731..36767
+          #2163 call @149 37054..37090
             callee:
-              #2128 name map
-            #2129 field .exits
-              #2130 name r
-            #2132 fn (e:-) -> - effects=-
-              block 36750..36766
+              #2164 name map
+            #2165 field .exits
+              #2166 name r
+            #2168 fn (e:-) -> - effects=-
+              block 37073..37089
                 result
-                  #2133 call 36752..36764
+                  #2169 call 37075..37087
                     callee:
-                      #2134 name exit_kind
-                    #2135 name e
+                      #2170 name exit_kind
+                    #2171 name e
         let open : -
-          #2136 binary >
-            #2137 call 36784..36838
+          #2172 binary >
+            #2173 call 37107..37161
               callee:
-                #2138 name len
-              #2139 call @150 36788..36837
+                #2174 name len
+              #2175 call @150 37111..37160
                 callee:
-                  #2140 name filter
-                #2141 name kinds
-                #2143 fn (k:-) -> - effects=-
-                  block 36808..36836
+                  #2176 name filter
+                #2177 name kinds
+                #2179 fn (k:-) -> - effects=-
+                  block 37131..37159
                     result
-                      #2144 call 36810..36834
+                      #2180 call 37133..37157
                         callee:
-                          #2145 name starts_with
-                        #2146 name k
-                        #2147 text "unsure"
-            #2148 int 0
+                          #2181 name starts_with
+                        #2182 name k
+                        #2183 text "unsure"
+            #2184 int 0
         let parts : -
-          #2149 call @151 36860..37012
+          #2185 call @151 37183..37335
             callee:
-              #2150 name map
-            #2151 call @152 36864..36969
+              #2186 name map
+            #2187 call @152 37187..37292
               callee:
-                #2152 name filter
-              #2153 call 36871..36891
+                #2188 name filter
+              #2189 call 37194..37214
                 callee:
-                  #2154 name range
-                #2155 int 0
-                #2156 call 36880..36890
+                  #2190 name range
+                #2191 int 0
+                #2192 call 37203..37213
                   callee:
-                    #2157 name len
-                  #2158 name kinds
-              #2160 fn (k:-) -> - effects=-
-                block 36899..36968
+                    #2193 name len
+                  #2194 name kinds
+              #2196 fn (k:-) -> - effects=-
+                block 37222..37291
                   result
-                    #2161 binary &&
-                      #2162 unary !
-                        #2163 call 36902..36931
+                    #2197 binary &&
+                      #2198 unary !
+                        #2199 call 37225..37254
                           callee:
-                            #2164 name starts_with
-                          #2165 index
-                            #2166 name kinds
-                            #2167 name k
-                          #2168 text "pick"
-                      #2169 binary ||
-                        #2170 unary !
-                          #2171 name open
-                        #2172 binary !=
-                          #2173 index
-                            #2174 name kinds
-                            #2175 name k
-                          #2176 text "ignore"
-            #2178 fn (k:-) -> - effects=-
-              block 36997..37011
+                            #2200 name starts_with
+                          #2201 index
+                            #2202 name kinds
+                            #2203 name k
+                          #2204 text "pick"
+                      #2205 binary ||
+                        #2206 unary !
+                          #2207 name open
+                        #2208 binary !=
+                          #2209 index
+                            #2210 name kinds
+                            #2211 name k
+                          #2212 text "ignore"
+            #2214 fn (k:-) -> - effects=-
+              block 37320..37334
                 result
-                  #2179 index
-                    #2180 field .exits
-                      #2181 name r
-                    #2182 name k
+                  #2215 index
+                    #2216 field .exits
+                      #2217 name r
+                    #2218 name k
         let value : -
-          #2183 if @153 37030..37206
+          #2219 if @153 37353..37529
             cond:
-              #2184 binary ||
-                #2185 binary ==
-                  #2186 field .reason
-                    #2187 name r
-                  #2188 text "leaf"
-                #2189 binary ==
-                  #2190 field .reason
-                    #2191 name r
-                  #2192 text "unsure"
-            block 37076..37194
+              #2220 binary ||
+                #2221 binary ==
+                  #2222 field .reason
+                    #2223 name r
+                  #2224 text "leaf"
+                #2225 binary ==
+                  #2226 field .reason
+                    #2227 name r
+                  #2228 text "unsure"
+            block 37399..37517
               result
-                #2193 list 37086..37188
-                  #2194 record 37087..37187
+                #2229 list 37409..37511
+                  #2230 record 37410..37510
                     item:
-                      #2195 call 37094..37118
+                      #2231 call 37417..37441
                         callee:
-                          #2196 name tree_lineage
-                        #2197 field .m
-                          #2198 name r
-                        #2199 field .sel
-                          #2200 name r
+                          #2232 name tree_lineage
+                        #2233 field .m
+                          #2234 name r
+                        #2235 field .sel
+                          #2236 name r
                     leaf:
-                      #2201 field .leaf
-                        #2202 name r
+                      #2237 field .leaf
+                        #2238 name r
                     path:
-                      #2203 field .path
-                        #2204 name r
+                      #2239 field .path
+                        #2240 name r
                     exit:
-                      #2205 call 37154..37175
+                      #2241 call 37477..37498
                         callee:
-                          #2206 name compose
-                        #2207 name parts
-                        #2208 text "all"
+                          #2242 name compose
+                        #2243 name parts
+                        #2244 text "all"
                     trail:
-                      #2209 list 37184..37186
-            block 37200..37206
+                      #2245 list 37507..37509
+            block 37523..37529
               result
-                #2210 list 37202..37204
+                #2246 list 37525..37527
         let detail : -
-          #2211 record 37225..37421
+          #2247 record 37548..37744
             depth:
-              #2212 call 37233..37244
+              #2248 call 37556..37567
                 callee:
-                  #2213 name len
-                #2214 field .path
-                  #2215 name r
+                  #2249 name len
+                #2250 field .path
+                  #2251 name r
             reason:
-              #2216 field .reason
-                #2217 name r
+              #2252 field .reason
+                #2253 name r
             decided_by_code:
-              #2218 field .code
-                #2219 name r
+              #2254 field .code
+                #2255 name r
             enriched:
-              #2220 field .enriched
-                #2221 name r
+              #2256 field .enriched
+                #2257 name r
             eval:
-              #2222 name how
+              #2258 name how
             batches:
-              #2223 field .batches
-                #2224 name r
+              #2259 field .batches
+                #2260 name r
             asked:
-              #2225 field .asked
-                #2226 name r
+              #2261 field .asked
+                #2262 name r
             tree:
-              #2227 if @154 37382..37420
+              #2263 if @154 37705..37743
                 cond:
-                  #2228 call 37385..37397
+                  #2264 call 37708..37720
                     callee:
-                      #2229 name is_fail
-                    #2230 name bad
-                block 37398..37406
+                      #2265 name is_fail
+                    #2266 name bad
+                block 37721..37729
                   result
-                    #2231 unit
-                block 37412..37420
+                    #2267 unit
+                block 37735..37743
                   result
-                    #2232 name tree
+                    #2268 name tree
         result
-          #2233 construct outcome @155 37427..37574
-            #2234 record 37435..37573
+          #2269 construct outcome @155 37750..37897
+            #2270 record 37758..37896
               value:
-                #2235 name value
+                #2271 name value
               pending:
-                #2236 field .pending
-                  #2237 name r
+                #2272 field .pending
+                  #2273 name r
               evidence:
-                #2238 field .keys
-                  #2239 name r
+                #2274 field .keys
+                  #2275 name r
               detail:
-                #2240 if @156 37509..37572
+                #2276 if @156 37832..37895
                   cond:
-                    #2241 call 37512..37524
+                    #2277 call 37835..37847
                       callee:
-                        #2242 name is_fail
-                      #2243 name bad
-                  block 37525..37556
+                        #2278 name is_fail
+                      #2279 name bad
+                  block 37848..37879
                     result
-                      #2244 call 37527..37554
+                      #2280 call 37850..37877
                         callee:
-                          #2245 name with
-                        #2246 name detail
-                        #2247 text "failed"
-                        #2248 name bad
-                  block 37562..37572
+                          #2281 name with
+                        #2282 name detail
+                        #2283 text "failed"
+                        #2284 name bad
+                  block 37885..37895
                     result
-                      #2249 name detail
+                      #2285 name detail
   let pair_ab : -
-    #2250 call 1951..2193
+    #2286 call 1951..2193
       callee:
-        #2251 name mat
-      #2252 record 1955..2192
+        #2287 name mat
+      #2288 record 1955..2192
         a:
-          #2253 text "甲：社区团购团长，做了三年，手上有两千户固定下单的家庭，一直缺稳定的蔬菜货源"
+          #2289 text "甲：社区团购团长，做了三年，手上有两千户固定下单的家庭，一直缺稳定的蔬菜货源"
         b:
-          #2254 text "乙：城郊蔬菜基地负责人，产量常年过剩，想找稳定的线上销售渠道"
+          #2290 text "乙：城郊蔬菜基地负责人，产量常年过剩，想找稳定的线上销售渠道"
   let members : -
-    #2255 record 2209..2409
+    #2291 record 2209..2409
       c:
-        #2256 text "丙：冷链配送公司老板，能做城区当日达，正在找新的货源客户"
+        #2292 text "丙：冷链配送公司老板，能做城区当日达，正在找新的货源客户"
       d:
-        #2257 text "丁：连锁餐饮的采购经理，每月固定采购大量蔬菜，看重稳定供货"
+        #2293 text "丁：连锁餐饮的采购经理，每月固定采购大量蔬菜，看重稳定供货"
   let known : -
-    #2258 record 2746..3277
+    #2294 record 2746..3277
       c 的配送覆盖范围:
-        #2259 text "丙的车队已经覆盖城西 30 个小区，甲的下单家庭有八成住在城西"
+        #2295 text "丙的车队已经覆盖城西 30 个小区，甲的下单家庭有八成住在城西"
       a 的下单家庭分布:
-        #2260 text "甲的两千户下单家庭八成住在城西，两成在城东"
+        #2296 text "甲的两千户下单家庭八成住在城西，两成在城东"
       b 的日供货能力:
-        #2261 text "乙的基地每天能稳定供应约 3 吨叶菜"
+        #2297 text "乙的基地每天能稳定供应约 3 吨叶菜"
       d 的采购规模:
-        #2262 text "丁每月固定采购约 40 吨蔬菜，要求每天早上 6 点前到货"
+        #2298 text "丁每月固定采购约 40 吨蔬菜，要求每天早上 6 点前到货"
       双方过往合作记录:
-        #2263 text "甲和乙去年合作过一次社区团购试单，交付准时"
+        #2299 text "甲和乙去年合作过一次社区团购试单，交付准时"
   let vocab : -
-    #2264 call 3291..3302
+    #2300 call 3291..3302
       callee:
-        #2265 name keys
-      #2266 name known
+        #2301 name keys
+      #2302 name known
   let names : -
-    #2267 call 3316..3329
+    #2303 call 3316..3329
       callee:
-        #2268 name keys
-      #2269 name members
+        #2304 name keys
+      #2305 name members
   let skeleton : -
-    #2270 text "{\"q\": \"题面，字符串，一道是非题\", \"add\": [\"进入这道题前要并入材料的成员名，字符串；不需要就省掉这个字段\"], \"need\": [\"判这道题时材料里最可能缺的信息类别，字符串\"], \"act\": 下一个节点或叶, \"ignore\": 下一个节点或叶, \"unsure\": 下一个节点或叶（可省）}；叶写成 {\"leaf\": \"结论，字符串\"}"
+    #2306 text "{\"q\": \"题面，字符串，一道是非题\", \"add\": [\"进入这道题前要并入材料的成员名，字符串；不需要就省掉这个字段\"], \"need\": [\"判这道题时材料里最可能缺的信息类别，字符串\"], \"act\": 下一个节点或叶, \"ignore\": 下一个节点或叶, \"unsure\": 下一个节点或叶（可省）}；叶写成 {\"leaf\": \"结论，字符串\"}"
   let brief : -
-    #2271 call 3760..3980
+    #2307 call 3760..3980
       callee:
-        #2272 name mat
-      #2273 text "判断 a、b 两人适不适合合作；适合的话，c 加入会不会更紧密、金额会不会变大、增量从哪来，再加入 d 会不会更多；不适合的话，透露一条信息能不能推进合作"
+        #2308 name mat
+      #2309 text "判断 a、b 两人适不适合合作；适合的话，c 加入会不会更紧密、金额会不会变大、增量从哪来，再加入 d 会不会更多；不适合的话，透露一条信息能不能推进合作"
   let made : -
-    #2274 effect gen @157 3993..4489
+    #2310 effect gen @157 3993..4489
       prompt:
-        #2275 binary +
-          #2276 binary +
-            #2277 binary +
-              #2278 binary +
-                #2279 binary +
-                  #2280 binary +
-                    #2281 text "按下面的需求生成一棵合作判断题树。只输出一个 JSON 对象，不要代码块标记，不要解释。每个节点都照这个骨架写，字段名不能改："
-                    #2282 name skeleton
-                  #2283 text "。a、b 是两位当事人，已经在材料里，不要写进 add；add 只能从这些成员名里选："
-                #2284 call 4302..4320
+        #2311 binary +
+          #2312 binary +
+            #2313 binary +
+              #2314 binary +
+                #2315 binary +
+                  #2316 binary +
+                    #2317 text "按下面的需求生成一棵合作判断题树。只输出一个 JSON 对象，不要代码块标记，不要解释。每个节点都照这个骨架写，字段名不能改："
+                    #2318 name skeleton
+                  #2319 text "。a、b 是两位当事人，已经在材料里，不要写进 add；add 只能从这些成员名里选："
+                #2320 call 4302..4320
                   callee:
-                    #2285 name join
-                  #2286 name names
-                  #2287 text "、"
-              #2288 text "。need 只能从下面这些信息类别里原样照抄，一个节点写一到三个："
-            #2289 call 4417..4435
+                    #2321 name join
+                  #2322 name names
+                  #2323 text "、"
+              #2324 text "。need 只能从下面这些信息类别里原样照抄，一个节点写一到三个："
+            #2325 call 4417..4435
               callee:
-                #2290 name join
-              #2291 name vocab
-              #2292 text "；"
-          #2293 text "。从根到叶最多 5 道题。"
+                #2326 name join
+              #2327 name vocab
+              #2328 text "；"
+          #2329 text "。从根到叶最多 5 道题。"
       ctx:
-        #2294 list 4475..4482
-          #2295 name brief
+        #2330 list 4475..4482
+          #2331 name brief
       n:
-        #2296 int 1
+        #2332 int 1
       retry_seq:
-        #2297 int 0
+        #2333 int 0
   let v : -
-    #2298 if @158 4499..4616
+    #2334 if @158 4499..4616
       cond:
-        #2299 call 4502..4515
+        #2335 call 4502..4515
           callee:
-            #2300 name is_fail
-          #2301 name made
+            #2336 name is_fail
+          #2337 name made
       block 4516..4524
         result
-          #2302 name made
+          #2338 name made
       block 4530..4616
         result
-          #2303 call 4532..4614
+          #2339 call 4532..4614
             callee:
-              #2304 name validate_tree_with
-            #2305 call 4551..4579
+              #2340 name validate_tree_with
+            #2341 call 4551..4579
               callee:
-                #2306 name parse_tree
-              #2307 call 4562..4578
+                #2342 name parse_tree
+              #2343 call 4562..4578
                 callee:
-                  #2308 name content
-                #2309 index
-                  #2310 name made
-                  #2311 int 0
-            #2312 int 6
-            #2313 record 4584..4613
+                  #2344 name content
+                #2345 index
+                  #2346 name made
+                  #2347 int 0
+            #2348 int 6
+            #2349 record 4584..4613
               need:
-                #2314 name vocab
+                #2350 name vocab
               members:
-                #2315 name names
+                #2351 name names
   let grow : -
-    #2317 fn (m:-, node:-) -> - effects=-
+    #2353 fn (m:-, node:-) -> - effects=-
       block 4641..4713
         result
-          #2318 if @159 4643..4711
+          #2354 if @159 4643..4711
             cond:
-              #2319 call 4646..4662
+              #2355 call 4646..4662
                 callee:
-                  #2320 name has
-                #2321 name node
-                #2322 text "add"
+                  #2356 name has
+                #2357 name node
+                #2358 text "add"
             block 4663..4700
               result
-                #2323 call 4665..4698
+                #2359 call 4665..4698
                   callee:
-                    #2324 name add_members
-                  #2325 name m
-                  #2326 field .add
-                    #2327 name node
-                  #2328 name members
+                    #2360 name add_members
+                  #2361 name m
+                  #2362 field .add
+                    #2363 name node
+                  #2364 name members
             block 4706..4711
               result
-                #2329 name m
+                #2365 name m
   let amount : -
-    #2330 construct measure @160 4728..4849
-      #2331 text "这几个人一起做，这次合作能做成的生意金额有多大？"
-      #2332 list 4812..4833
-        #2333 text "小"
-        #2334 text "中"
-        #2335 text "大"
-      #2336 text "collab-tree"
+    #2366 construct measure @160 4728..4849
+      #2367 text "这几个人一起做，这次合作能做成的生意金额有多大？"
+      #2368 list 4812..4833
+        #2369 text "小"
+        #2370 text "中"
+        #2371 text "大"
+      #2372 text "collab-tree"
   result
-    #2337 if @161 4852..6383
+    #2373 if @161 4852..6383
       cond:
-        #2338 call 4855..4865
+        #2374 call 4855..4865
           callee:
-            #2339 name is_fail
-          #2340 name v
+            #2375 name is_fail
+          #2376 name v
       block 4866..4887
         result
-          #2341 record 4868..4885
+          #2377 record 4868..4885
             failed:
-              #2342 call 4877..4884
+              #2378 call 4877..4884
                 callee:
-                  #2343 name text
-                #2344 name v
+                  #2379 name text
+                #2380 name v
       block 4893..6383
         let r : -
-          #2345 call 4907..5251
+          #2381 call 4907..5251
             callee:
-              #2346 name walk
-            #2347 field .tree
-              #2348 name v
-            #2349 name pair_ab
-            #2350 int 6
-            #2351 record 4932..5250
+              #2382 name walk
+            #2383 field .tree
+              #2384 name v
+            #2385 name pair_ab
+            #2386 int 6
+            #2387 record 4932..5250
               line:
-                #2352 record 4939..4968
+                #2388 record 4939..4968
                   declare:
-                    #2353 record 4949..4967
+                    #2389 record 4949..4967
                       hi:
-                        #2354 dec 0.7
+                        #2390 dec 0.7
                       lo:
-                        #2355 dec 0.3
+                        #2391 dec 0.3
               calib:
-                #2356 text "collab-tree"
+                #2392 text "collab-tree"
               grow:
-                #2357 name grow
+                #2393 name grow
               enrich:
-                #2358 record 5049..5249
+                #2394 record 5049..5249
                   rounds:
-                    #2359 int 2
+                    #2395 int 2
                   line:
-                    #2360 record 5067..5087
+                    #2396 record 5067..5087
                       declare:
-                        #2361 record 5077..5086
+                        #2397 record 5077..5086
                           hi:
-                            #2362 dec 0.4
+                            #2398 dec 0.4
                   fetch:
-                    #2364 fn (node:-, need:-, m:-) -> - effects=-
+                    #2400 fn (node:-, need:-, m:-) -> - effects=-
                       block 5160..5248
                         result
-                          #2365 if @162 5162..5246
+                          #2401 if @162 5162..5246
                             cond:
-                              #2366 call 5165..5181
+                              #2402 call 5165..5181
                                 callee:
-                                  #2367 name has
-                                #2368 name known
-                                #2369 name need
+                                  #2403 name has
+                                #2404 name known
+                                #2405 name need
                             block 5182..5197
                               result
-                                #2370 index
-                                  #2371 name known
-                                  #2372 name need
+                                #2406 index
+                                  #2407 name known
+                                  #2408 name need
                             block 5203..5246
                               result
-                                #2373 call 5205..5244
+                                #2409 call 5205..5244
                                   callee:
-                                    #2374 name fail
-                                  #2375 binary +
-                                    #2376 text "没有这一类信息："
-                                    #2377 name need
+                                    #2410 name fail
+                                  #2411 binary +
+                                    #2412 text "没有这一类信息："
+                                    #2413 name need
         let item : -
-          #2378 if @163 5602..5659
+          #2414 if @163 5602..5659
             cond:
-              #2379 binary ==
-                #2380 call 5605..5617
+              #2415 binary ==
+                #2416 call 5605..5617
                   callee:
-                    #2381 name len
-                  #2382 field .value
-                    #2383 name r
-                #2384 int 0
+                    #2417 name len
+                  #2418 field .value
+                    #2419 name r
+                #2420 int 0
             block 5623..5634
               result
-                #2385 name pair_ab
+                #2421 name pair_ab
             block 5640..5659
               result
-                #2386 field .item
-                  #2387 index
-                    #2388 field .value
-                      #2389 name r
-                    #2390 int 0
+                #2422 field .item
+                  #2423 index
+                    #2424 field .value
+                      #2425 name r
+                    #2426 int 0
         let joined : -
-          #2391 call @164 5678..5724
+          #2427 call @164 5678..5724
             callee:
-              #2392 name filter
-            #2393 name names
-            #2395 fn (x:-) -> - effects=-
+              #2428 name filter
+            #2429 name names
+            #2431 fn (x:-) -> - effects=-
               block 5698..5723
                 result
-                  #2396 call 5700..5721
+                  #2432 call 5700..5721
                     callee:
-                      #2397 name has
-                    #2398 call 5704..5717
+                      #2433 name has
+                    #2434 call 5704..5717
                       callee:
-                        #2399 name content
-                      #2400 name item
-                    #2401 name x
+                        #2435 name content
+                      #2436 name item
+                    #2437 name x
         let reads : -
-          #2402 call @165 5742..5844
+          #2438 call @165 5742..5844
             callee:
-              #2403 name map
-            #2404 call 5746..5808
+              #2439 name map
+            #2440 call 5746..5808
               callee:
-                #2405 name concat
-              #2406 list 5753..5759
-                #2407 name item
-              #2408 call @166 5761..5807
+                #2441 name concat
+              #2442 list 5753..5759
+                #2443 name item
+              #2444 call @166 5761..5807
                 callee:
-                  #2409 name map
-                #2410 name joined
-                #2412 fn (x:-) -> - effects=-
+                  #2445 name map
+                #2446 name joined
+                #2448 fn (x:-) -> - effects=-
                   block 5779..5806
                     result
-                      #2413 call 5781..5804
+                      #2449 call 5781..5804
                         callee:
-                          #2414 name without_member
-                        #2415 name item
-                        #2416 name x
-            #2418 fn (m:-) -> - effects=-
+                          #2450 name without_member
+                        #2451 name item
+                        #2452 name x
+            #2454 fn (m:-) -> - effects=-
               block 5816..5843
                 result
-                  #2419 effect judge @167 5818..5841
+                  #2455 effect judge @167 5818..5841
                     state:
-                      #2420 state @168 5824..5832
+                      #2456 state @168 5824..5832
                         on:
-                          #2421 name m
+                          #2457 name m
                     questions:
-                      #2422 name amount
+                      #2458 name amount
         let tiers : -
-          #2423 construct order @169 5862..5892
-            #2424 name reads
-            #2425 record 5875..5891
+          #2459 construct order @169 5862..5892
+            #2460 name reads
+            #2461 record 5875..5891
               stat:
-                #2426 text "expect"
+                #2462 text "expect"
         let low : -
-          #2427 index
-            #2428 name tiers
-            #2429 binary -
-              #2430 call 5914..5924
+          #2463 index
+            #2464 name tiers
+            #2465 binary -
+              #2466 call 5914..5924
                 callee:
-                  #2431 name len
-                #2432 name tiers
-              #2433 int 1
+                  #2467 name len
+                #2468 name tiers
+              #2469 int 1
         let key : -
-          #2434 if @170 5945..6035
+          #2470 if @170 5945..6035
             cond:
-              #2435 binary ||
-                #2436 binary ==
-                  #2437 call 5948..5960
+              #2471 binary ||
+                #2472 binary ==
+                  #2473 call 5948..5960
                     callee:
-                      #2438 name len
-                    #2439 field .value
-                      #2440 name r
-                  #2441 int 0
-                #2442 call 5969..5985
+                      #2474 name len
+                    #2475 field .value
+                      #2476 name r
+                  #2477 int 0
+                #2478 call 5969..5985
                   callee:
-                    #2443 name contains
-                  #2444 name low
-                  #2445 int 0
+                    #2479 name contains
+                  #2480 name low
+                  #2481 int 0
             block 5986..5992
               result
-                #2446 list 5988..5990
+                #2482 list 5988..5990
             block 5998..6035
               result
-                #2447 call @171 6000..6033
+                #2483 call @171 6000..6033
                   callee:
-                    #2448 name map
-                  #2449 name low
-                  #2451 fn (k:-) -> - effects=-
+                    #2484 name map
+                  #2485 name low
+                  #2487 fn (k:-) -> - effects=-
                     block 6015..6032
                       result
-                        #2452 index
-                          #2453 name joined
-                          #2454 binary -
-                            #2455 name k
-                            #2456 int 1
+                        #2488 index
+                          #2489 name joined
+                          #2490 binary -
+                            #2491 name k
+                            #2492 int 1
         result
-          #2457 record 6041..6381
+          #2493 record 6041..6381
             leaf:
-              #2458 call @172 6048..6078
-                callee:
-                  #2459 name map
-                #2460 field .value
-                  #2461 name r
-                #2463 fn (e:-) -> - effects=-
-                  block 6067..6077
-                    result
-                      #2464 field .leaf
-                        #2465 name e
-            path:
-              #2466 call @173 6091..6162
-                callee:
-                  #2467 name map
-                #2468 field .value
-                  #2469 name r
-                #2471 fn (e:-) -> - effects=-
-                  block 6110..6161
-                    result
-                      #2472 call @174 6112..6159
-                        callee:
-                          #2473 name map
-                        #2474 field .path
-                          #2475 name e
-                        #2477 fn (p:-) -> - effects=-
-                          block 6130..6158
-                            result
-                              #2478 binary +
-                                #2479 binary +
-                                  #2480 field .q
-                                    #2481 name p
-                                  #2482 text " → "
-                                #2483 field .branch
-                                  #2484 name p
-            enriched:
-              #2485 call @175 6179..6219
-                callee:
-                  #2486 name map
-                #2487 field .enriched
-                  #2488 field .detail
-                    #2489 name r
-                #2491 fn (x:-) -> - effects=-
-                  block 6208..6218
-                    result
-                      #2492 field .need
-                        #2493 name x
-            leaf_exit:
-              #2494 call @176 6237..6278
+              #2494 call @172 6048..6078
                 callee:
                   #2495 name map
                 #2496 field .value
                   #2497 name r
                 #2499 fn (e:-) -> - effects=-
+                  block 6067..6077
+                    result
+                      #2500 field .leaf
+                        #2501 name e
+            path:
+              #2502 call @173 6091..6162
+                callee:
+                  #2503 name map
+                #2504 field .value
+                  #2505 name r
+                #2507 fn (e:-) -> - effects=-
+                  block 6110..6161
+                    result
+                      #2508 call @174 6112..6159
+                        callee:
+                          #2509 name map
+                        #2510 field .path
+                          #2511 name e
+                        #2513 fn (p:-) -> - effects=-
+                          block 6130..6158
+                            result
+                              #2514 binary +
+                                #2515 binary +
+                                  #2516 field .q
+                                    #2517 name p
+                                  #2518 text " → "
+                                #2519 field .branch
+                                  #2520 name p
+            enriched:
+              #2521 call @175 6179..6219
+                callee:
+                  #2522 name map
+                #2523 field .enriched
+                  #2524 field .detail
+                    #2525 name r
+                #2527 fn (x:-) -> - effects=-
+                  block 6208..6218
+                    result
+                      #2528 field .need
+                        #2529 name x
+            leaf_exit:
+              #2530 call @176 6237..6278
+                callee:
+                  #2531 name map
+                #2532 field .value
+                  #2533 name r
+                #2535 fn (e:-) -> - effects=-
                   block 6256..6277
                     result
-                      #2500 call 6258..6275
+                      #2536 call 6258..6275
                         callee:
-                          #2501 name exit_kind
-                        #2502 field .exit
-                          #2503 name e
+                          #2537 name exit_kind
+                        #2538 field .exit
+                          #2539 name e
             reason:
-              #2504 field .reason
-                #2505 field .detail
-                  #2506 name r
+              #2540 field .reason
+                #2541 field .detail
+                  #2542 name r
             key_member:
-              #2507 name key
+              #2543 name key
             dropped:
-              #2508 field .dropped
-                #2509 name v
+              #2544 field .dropped
+                #2545 name v
             pending:
-              #2510 field .pending
-                #2511 name r
+              #2546 field .pending
+                #2547 name r
 sites 177
-  @0 #4 hof:map 38129..38232 fn=#0 in=-
-  @1 #15 if 38178..38216 fn=#8 in=@0
+  @0 #4 hof:map 38452..38555 fn=#0 in=-
+  @1 #15 if 38501..38539 fn=#8 in=@0
   @2 #40 if 17170..17216 fn=#39 in=-
   @3 #50 if 17347..18578 fn=#49 in=-
   @4 #55 if 17376..18578 fn=#49 in=-
@@ -3964,12 +4016,12 @@ sites 177
   @124 #1627 if 31897..32068 fn=#1607 in=-
   @125 #1637 if 31976..32066 fn=#1607 in=-
   @126 #1655 if 32107..32293 fn=#1607 in=-
-  @127 #1698 if 32335..36257 fn=#1697 in=-
-  @128 #1711 if 32456..36192 fn=#1697 in=-
-  @129 #1755 hof:fold 32919..35471 fn=#1697 in=-
+  @127 #1698 if 32335..36580 fn=#1697 in=-
+  @128 #1711 if 32456..36515 fn=#1697 in=-
+  @129 #1755 hof:fold 32919..35794 fn=#1697 in=-
   @130 #1776 if 33059..33166 fn=#1775 in=@129
   @131 #1786 hof:filter 33111..33164 fn=#1775 in=@129
-  @132 #1799 if 33188..35452 fn=#1775 in=@129
+  @132 #1799 if 33188..35775 fn=#1775 in=@129
   @133 #1806 if 33373..34303 fn=#1775 in=@129
   @134 #1819 effect:judge 33514..33573 fn=#1775 in=@129
   @135 #1820 state 33520..33568 fn=#1775 in=@129
@@ -3977,40 +4029,40 @@ sites 177
   @137 #1836 handle 33665..33739 fn=#1775 in=@129
   @138 #1859 if 33841..34277 fn=#1775 in=@129
   @139 #1875 construct:element 34055..34090 fn=#1775 in=@129
-  @140 #1908 if 34369..35430 fn=#1775 in=@129
-  @141 #1929 if 34560..35404 fn=#1775 in=@129
-  @142 #1955 consume:consume 34906..34933 fn=#1775 in=@129
-  @143 #2034 if 35698..36178 fn=#1697 in=-
-  @144 #2049 construct:element 35936..35971 fn=#1697 in=-
-  @145 #2063 if 36015..36120 fn=#1697 in=-
-  @146 #2092 if 36206..36247 fn=#1697 in=-
-  @147 #2099 loop 36277..36588 fn=#1108 in=-
-  @148 #2117 if 36514..36560 fn=#1108 in=@147
-  @149 #2127 hof:map 36731..36767 fn=#1108 in=-
-  @150 #2139 hof:filter 36788..36837 fn=#1108 in=-
-  @151 #2149 hof:map 36860..37012 fn=#1108 in=-
-  @152 #2151 hof:filter 36864..36969 fn=#1108 in=@151
-  @153 #2183 if 37030..37206 fn=#1108 in=-
-  @154 #2227 if 37382..37420 fn=#1108 in=-
-  @155 #2233 construct:outcome 37427..37574 fn=#1108 in=-
-  @156 #2240 if 37509..37572 fn=#1108 in=@155
-  @157 #2274 effect:gen 3993..4489 fn=- in=-
-  @158 #2298 if 4499..4616 fn=- in=-
-  @159 #2318 if 4643..4711 fn=#2317 in=-
-  @160 #2330 construct:measure 4728..4849 fn=- in=-
-  @161 #2337 if 4852..6383 fn=- in=-
-  @162 #2365 if 5162..5246 fn=#2364 in=-
-  @163 #2378 if 5602..5659 fn=- in=-
-  @164 #2391 hof:filter 5678..5724 fn=- in=-
-  @165 #2402 hof:map 5742..5844 fn=- in=-
-  @166 #2408 hof:map 5761..5807 fn=- in=@165
-  @167 #2419 effect:judge 5818..5841 fn=#2418 in=@165
-  @168 #2420 state 5824..5832 fn=#2418 in=@165
-  @169 #2423 construct:order 5862..5892 fn=- in=-
-  @170 #2434 if 5945..6035 fn=- in=-
-  @171 #2447 hof:map 6000..6033 fn=- in=-
-  @172 #2458 hof:map 6048..6078 fn=- in=-
-  @173 #2466 hof:map 6091..6162 fn=- in=-
-  @174 #2472 hof:map 6112..6159 fn=#2471 in=@173
-  @175 #2485 hof:map 6179..6219 fn=- in=-
-  @176 #2494 hof:map 6237..6278 fn=- in=-
+  @140 #1908 if 34369..35753 fn=#1775 in=@129
+  @141 #1929 if 34670..35727 fn=#1775 in=@129
+  @142 #1974 if 35146..35255 fn=#1775 in=@129
+  @143 #2070 if 36021..36501 fn=#1697 in=-
+  @144 #2085 construct:element 36259..36294 fn=#1697 in=-
+  @145 #2099 if 36338..36443 fn=#1697 in=-
+  @146 #2128 if 36529..36570 fn=#1697 in=-
+  @147 #2135 loop 36600..36911 fn=#1108 in=-
+  @148 #2153 if 36837..36883 fn=#1108 in=@147
+  @149 #2163 hof:map 37054..37090 fn=#1108 in=-
+  @150 #2175 hof:filter 37111..37160 fn=#1108 in=-
+  @151 #2185 hof:map 37183..37335 fn=#1108 in=-
+  @152 #2187 hof:filter 37187..37292 fn=#1108 in=@151
+  @153 #2219 if 37353..37529 fn=#1108 in=-
+  @154 #2263 if 37705..37743 fn=#1108 in=-
+  @155 #2269 construct:outcome 37750..37897 fn=#1108 in=-
+  @156 #2276 if 37832..37895 fn=#1108 in=@155
+  @157 #2310 effect:gen 3993..4489 fn=- in=-
+  @158 #2334 if 4499..4616 fn=- in=-
+  @159 #2354 if 4643..4711 fn=#2353 in=-
+  @160 #2366 construct:measure 4728..4849 fn=- in=-
+  @161 #2373 if 4852..6383 fn=- in=-
+  @162 #2401 if 5162..5246 fn=#2400 in=-
+  @163 #2414 if 5602..5659 fn=- in=-
+  @164 #2427 hof:filter 5678..5724 fn=- in=-
+  @165 #2438 hof:map 5742..5844 fn=- in=-
+  @166 #2444 hof:map 5761..5807 fn=- in=@165
+  @167 #2455 effect:judge 5818..5841 fn=#2454 in=@165
+  @168 #2456 state 5824..5832 fn=#2454 in=@165
+  @169 #2459 construct:order 5862..5892 fn=- in=-
+  @170 #2470 if 5945..6035 fn=- in=-
+  @171 #2483 hof:map 6000..6033 fn=- in=-
+  @172 #2494 hof:map 6048..6078 fn=- in=-
+  @173 #2502 hof:map 6091..6162 fn=- in=-
+  @174 #2508 hof:map 6112..6159 fn=#2507 in=@173
+  @175 #2521 hof:map 6179..6219 fn=- in=-
+  @176 #2530 hof:map 6237..6278 fn=- in=-

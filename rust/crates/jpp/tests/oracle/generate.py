@@ -57,8 +57,9 @@ def collect(name, ps, k, *, status="上岗", hi=0.65, lo=0.35, unsure_rate=0.2, 
         kw = dict(hi=hi, lo=lo, n=100, status=status, set_id="conf")
         if unsure_rate is not None:
             kw["unsure_rate"] = unsure_rate
-        if delta is not None:
-            kw["delta"] = delta
+        # δ 只从记录取（Rust 步 15d-2、Python Z0334 §二十四第 4 件）：没给 δ 的用例把画像是非题中段 δ 写进记录，
+        # 与 Rust `tests/allocate.rs::store` 同一喂法——这组用例只核算法，不核 δ 从哪来
+        kw["delta"] = delta if delta is not None else rt.delta_for("noul")
         rt.calib.put("k", **kw)
 
         @jv.program(budget=jv.Budget(calls=50, cost=1.0), check_static=False)
@@ -134,15 +135,57 @@ with _rt_for_profile:
         # 账本头里的那个哈希：sha256(canon([profile]))[:16]
         "profile_hash": H(_prof),
         "safety_lines": list(_rt_for_profile.safety_lines()),
+        # Z0334 / Z0361：δ 取中段（`delta.<题型>.mid.immediate.p99`），与 Rust `Profile::delta_prior` 同口径
         "delta": {k: _rt_for_profile.delta_for(k) for k in ("noul", "choice", "score")},
         # δ 是从哪几个字段读出来的（Rust 要按同样的路径取，不是抄结果）
         "delta_paths": {
-            "noul": ["delta", "noul", "immediate", "p99"],
-            "choice": ["delta", "choice_prob_chosen", "immediate", "p99"],
-            "score": ["delta", "score", "immediate", "p99"],
+            "noul": ["delta", "noul", "mid", "immediate", "p99"],
+            "choice": ["delta", "choice_prob_chosen", "mid", "immediate", "p99"],
+            "score": ["delta", "score", "mid", "immediate", "p99"],
         },
         "safety_path": ["lines", "safety_default"],
     }
+
+
+def _delta_outcome(prof: dict) -> dict:
+    """一种画像形状下 Python 的 `delta_for` 结果：三列取值；缺 mid 记 E-delta-mid；没有 δ 记 null（Z0389）"""
+    rt = jv.Runtime(client=jv.FakeClient(rule=Rule({}, "noul")), profile=prof)
+    try:
+        return {"delta": {k: rt.delta_for(k) for k in ("noul", "choice", "score")}, "error": None}
+    except jv.JvError as e:
+        return {"delta": None, "error": str(e).split(":")[0]}
+
+
+_tail_only = json.loads(json.dumps(_prof))
+for _c in ("noul", "choice_prob_chosen", "score"):
+    _tail_only["delta"][_c].pop("mid", None)
+_no_delta = {k: v for k, v in _prof.items() if k != "delta"}
+# 两内核对三种画像形状的 δ 取值要一致（Z0389）：发行画像取中段；只有尾段报缺 mid；没有 δ 取不到（裁定五十六）
+_score_mid_only = {k: v for k, v in _prof.items() if k != "delta"}
+_score_mid_only["delta"] = {"score": {"mid": json.loads(json.dumps(_prof["delta"]["score"]["mid"]))}}
+_tail_mid_minus_one = json.loads(json.dumps(_prof))
+_tail_mid_minus_one["delta"]["choice_prob_chosen"].pop("mid", None)
+_profile_out["delta_shapes"] = {
+    "release": _delta_outcome(_prof),
+    "tail_only": _delta_outcome(_tail_only),
+    "no_delta": _delta_outcome(_no_delta),
+    # 部分列（Z0334 §二十四第 3 件）：只有 score 中段；尾段三列齐、中段缺 choice 一列——都算缺 mid
+    "score_mid_only": _delta_outcome(_score_mid_only),
+    "tail_mid_minus_choice": _delta_outcome(_tail_mid_minus_one),
+}
+
+
+def _cold_kind(p: float) -> str:
+    """冷键（没有上岗记录）cut 的出口种类：Python 按 B187 无线默认按回答走（Z0334 §二十四第 4 件，与 Rust 对齐）"""
+    rt = jv.Runtime(client=jv.FakeClient(rule=lambda t, qid, q: {"type": "noul", "noul": p}), profile=_prof)
+    with rt:
+        e = jv.cut(jv.judge(jv.state(on=jv.lit("x")), jv.test("行吗", calib=jv.calib("cold.k")))[0])
+        if isinstance(e, jv.Unsure):
+            jv.consume([e], unsure=jv.drop)
+        return e.kind + (f"({e.cause})" if isinstance(e, jv.Unsure) else "")
+
+
+_profile_out["cold_cut"] = {str(p): _cold_kind(p) for p in (0.7, 0.3, 0.5)}
 
 with open(out, encoding="utf-8") as f:
     _all = json.load(f)

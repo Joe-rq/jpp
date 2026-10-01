@@ -3,6 +3,7 @@
 //! 标签行不带 `q` 时报 `E-list-ambiguous`；带 `q` 的 108 行得 108 条样本、与直接导入同一条线。K 元读数的框同形。
 //! 另：报告 `questions` 表的题类随回填进记录（B120 (a)）；报告 `exits` 行带 `item`、`index`、`pos`（B120 (b)）。
 //! 账本用固定观察现造（不花钱）。依据：`地基/附注/2026-09-25-批量裁定.md` §一、§十；`21` 步 20h-2。
+mod common;
 use serde_json::{Value, json};
 use std::{
     fs,
@@ -15,9 +16,15 @@ use std::{
 const 画像: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/tests/delta_prior_legacy.json");
 
 fn 跑(dir: &Path, args: &[&str]) -> Output {
+    // 伴随题（B0492 S5，主控路 3）：`run` 跟测试开关走（关时给 `--companions off`，`JPP_TEST_COMPANIONS=on` 时用 CLI 默认）；
+    // 调用方自己给了 `--companions` 就不再加。原先整文件固定关，理由是「列表导出里混进伴随题行」；实查清单按校准键取框，
+    // 伴随题有自己的校准键，不进原题的清单，挂的是 `题表` 把报告 `questions` 表每行都当成带填法（伴随题行没有填法）。
+    // `题表` 改为只取带填法的行后不再固定关（复查 2026-09-30 小项 5）
+    let 加 = args.first() == Some(&"run") && !args.contains(&"--companions");
     Command::new(env!("CARGO_BIN_EXE_jpp"))
         .current_dir(dir)
         .args(args)
+        .args(if 加 { common::伴随参数() } else { vec![] })
         .output()
         .unwrap()
 }
@@ -37,6 +44,11 @@ fn 真值(i: usize, f: usize) -> bool {
 
 /// 36 段评论 × 三种填法，固定观察跑一遍：读数按真值取两极（真 0.97、假 0.03）。留账本与报告。
 fn 首跑(d: &Path) -> Vec<String> {
+    首跑_带(d, &[])
+}
+
+/// 同 [`首跑`]，`run` 另带参数（例如显式 `--companions same`）
+fn 首跑_带(d: &Path, 另: &[&str]) -> Vec<String> {
     let mats: Vec<String> = (0..36).map(|i| format!("第{i}条评论：还行。")).collect();
     let mut obs = vec![];
     for (i, m) in mats.iter().enumerate() {
@@ -58,19 +70,18 @@ fn 首跑(d: &Path) -> Vec<String> {
         ),
     )
     .unwrap();
-    let o = 跑(
-        d,
-        &[
-            "run",
-            "p.jpp",
-            "--fixtures",
-            "fx.json",
-            "--ledger-out",
-            "led.jsonl",
-            "--output",
-            "report.json",
-        ],
-    );
+    let mut args = vec![
+        "run",
+        "p.jpp",
+        "--fixtures",
+        "fx.json",
+        "--ledger-out",
+        "led.jsonl",
+        "--output",
+        "report.json",
+    ];
+    args.extend(另);
+    let o = 跑(d, &args);
     assert!(o.status.success(), "{}", String::from_utf8_lossy(&o.stderr));
     mats
 }
@@ -106,7 +117,7 @@ fn 清单(d: &Path, report: bool) -> (Vec<Value>, String) {
     )
 }
 
-/// 报告 `questions` 表：题哈希 → 填法
+/// 报告 `questions` 表：题哈希 → 填法。只取带填法的行（伴随题开着时表里另有伴随题的行，它们没有填法）
 fn 题表(d: &Path) -> std::collections::BTreeMap<String, String> {
     let r: Value =
         serde_json::from_str(&fs::read_to_string(d.join("report.json")).unwrap()).unwrap();
@@ -114,13 +125,62 @@ fn 题表(d: &Path) -> std::collections::BTreeMap<String, String> {
         .as_array()
         .unwrap()
         .iter()
-        .map(|x| {
-            (
-                x["q"].as_str().unwrap().to_string(),
-                x["fill"]["t"].as_str().unwrap().to_string(),
-            )
+        .filter_map(|x| {
+            Some((
+                x["q"].as_str()?.to_string(),
+                x["fill"]["t"].as_str()?.to_string(),
+            ))
         })
         .collect()
+}
+
+/// 复查 2026-09-30 小项 5（主控定）：伴随题是元问题，不走上岗，它们的行不进待标清单。首跑显式开伴随题，报告
+/// `questions` 表里有伴随题的行；原题键的清单仍是 108 行，每行的 q 都是三种填法之一
+#[test]
+fn companion_rows_stay_out_of_the_list() {
+    let d = 目录("companions");
+    首跑_带(&d, &["--companions", "same"]);
+    let r: Value =
+        serde_json::from_str(&fs::read_to_string(d.join("report.json")).unwrap()).unwrap();
+    let 全部题 = r["questions"].as_array().unwrap().len();
+    let 填 = 题表(&d);
+    assert_eq!(填.len(), 3);
+    assert!(
+        全部题 > 填.len(),
+        "首跑要真的带了伴随题：questions 表 {全部题} 行"
+    );
+    let (rows, _) = 清单(&d, true);
+    assert_eq!(rows[0]["list"]["n"], 108);
+    assert_eq!(rows.len() - 1, 108);
+    assert!(
+        rows[1..]
+            .iter()
+            .all(|x| 填.contains_key(x["q"].as_str().unwrap())),
+        "清单里混进了非原题的行"
+    );
+    // 显式要伴随题键的清单：拒（主控板 Z0413）
+    let o = 跑(
+        &d,
+        &[
+            "calib-import",
+            "--from-ledger",
+            "led.jsonl",
+            "--key",
+            "unsure-companion-premise",
+            "--list-out",
+            "c.jsonl",
+            "--profile",
+            画像,
+        ],
+    );
+    assert!(!o.status.success(), "伴随题键的清单应当被拒");
+    let err = String::from_utf8_lossy(&o.stderr);
+    assert!(
+        err.contains("E-list-companion") && err.contains("Z0413"),
+        "{err}"
+    );
+    assert!(!d.join("c.jsonl").exists());
+    let _ = fs::remove_dir_all(&d);
 }
 
 /// (a) 清单 108 行，每行 (item, q) 各不相同、带题面与填法，不带读数；报告的 exits 行带 item、index、pos。
@@ -430,6 +490,83 @@ fn row_kind_and_conflict() {
         String::from_utf8_lossy(&o.stderr).contains("E-kind-conflict"),
         "{}",
         String::from_utf8_lossy(&o.stderr)
+    );
+    let _ = fs::remove_dir_all(&d);
+}
+
+/// 过程记录 5.22（三次复查可后补）：`diag-two-judgments` 与伴随题共用（Z0398 返修起「材料」那道换了新键，只剩这一个
+/// 共用键）。带 `--report` 时按题式模板认出伴随题行，在两端先标排序与头行 `n` 之前去掉；不带 `--report` 认不出，报
+/// `W-list-companion-mixed`，清单照出
+#[test]
+fn diag_key_list_drops_companion_rows_by_template() {
+    let d = 目录("diag");
+    let mats: Vec<String> = (0..3).map(|i| format!("第{i}条评论：还行。")).collect();
+    let obs: Vec<Value> = mats
+        .iter()
+        .map(|m| json!({"on": [m], "op": "test", "text": "这条评论满意吗？", "calib": "k", "answer": {"Noul": 0.9}}))
+        .collect();
+    fs::write(d.join("fx.json"), json!({"observations": obs}).to_string()).unwrap();
+    let list = mats
+        .iter()
+        .map(|m| format!("{m:?}"))
+        .collect::<Vec<_>>()
+        .join(", ");
+    fs::write(
+        d.join("p.jpp"),
+        format!(
+            "budget {{calls: 200, cost: 1, depth: 256}};\nlet q = test(\"这条评论满意吗？\", \"k\");\nlet dq = test(\"这道题里是否有两个或更多需要分别回答的判断？\", \"diag-two-judgments\");\nmap([{list}], fn(m) {{ [cut(judge(state(mat(m)), q)), cut(judge(state(mat(m)), dq))] }})\n"
+        ),
+    )
+    .unwrap();
+    let o = 跑(
+        &d,
+        &[
+            "run",
+            "p.jpp",
+            "--fixtures",
+            "fx.json",
+            "--companions",
+            "same",
+            "--ledger-out",
+            "led.jsonl",
+            "--output",
+            "report.json",
+        ],
+    );
+    assert!(o.status.success(), "{}", String::from_utf8_lossy(&o.stderr));
+    let 导 = |report: bool| {
+        let mut args = vec![
+            "calib-import",
+            "--from-ledger",
+            "led.jsonl",
+            "--key",
+            "diag-two-judgments",
+            "--list-out",
+            "list.jsonl",
+            "--profile",
+            画像,
+        ];
+        if report {
+            args.extend(["--report", "report.json"]);
+        }
+        let o = 跑(&d, &args);
+        assert!(o.status.success(), "{}", String::from_utf8_lossy(&o.stderr));
+        (
+            读(&d.join("list.jsonl")),
+            String::from_utf8_lossy(&o.stderr).to_string(),
+        )
+    };
+    let (混, err) = 导(false);
+    assert!(err.contains("W-list-companion-mixed"), "{err}");
+    let (净, err) = 导(true);
+    assert!(!err.contains("W-list-companion-mixed"), "{err}");
+    assert!(err.contains("去掉"), "{err}");
+    assert_eq!(净[0]["list"]["n"], 3, "只剩三道字面的诊断题");
+    assert_eq!(净.len() - 1, 3);
+    assert!(
+        混.len() > 净.len(),
+        "不带报告时混着伴随题行：{} 行",
+        混.len() - 1
     );
     let _ = fs::remove_dir_all(&d);
 }

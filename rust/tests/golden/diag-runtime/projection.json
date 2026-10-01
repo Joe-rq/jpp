@@ -1,0 +1,395 @@
+{
+  "asks": 0,
+  "calls": 8,
+  "effects": [
+    [
+      "gen",
+      "为下面这段话出三道是非题，每行一道，只输出题面。",
+      "c9de7a9511cc27d9c7bfb18d",
+      false
+    ]
+  ],
+  "judge_registrations": 54,
+  "pending": [],
+  "returned_unsure": [
+    "unsure(tie)"
+  ],
+  "status": "returned",
+  "usd": 0.0,
+  "value": {
+    "answered": {
+      "detail": {
+        "ignore": [],
+        "questions": [
+          {
+            "calib": "diag-demo",
+            "op": "noul",
+            "question": "fe110bdf799f05a9c379af93",
+            "text": "这段话是否提到了成都？"
+          },
+          {
+            "calib": "diag-demo",
+            "op": "noul",
+            "question": "e654613bb414fae4ab5614b7",
+            "text": "这段话是否说他去出差并且见了朋友？"
+          },
+          {
+            "calib": "diag-demo",
+            "op": "noul",
+            "question": "999fa6b21d174505b3aa5f74",
+            "text": "他在成都住了多少天？"
+          }
+        ]
+      },
+      "evidence": [
+        "8e395f4ad0a89ab039c2d53e",
+        "0e18a0cb43cca9a17605938f",
+        "e3fcc43e510f3d13f02b8605"
+      ],
+      "kind": "sieve",
+      "pending": [
+        {
+          "cause": "tie",
+          "exit": {
+            "consumed": true,
+            "exit": "unsure(tie)",
+            "id": 2,
+            "q": "999fa6b21d174505b3aa5f74"
+          },
+          "index": 0,
+          "item": {
+            "content": "我上个月去了成都出差，顺便见了老朋友。",
+            "mat": "c6d0980e57fe4f4137896f6f",
+            "origin": [
+              "literal"
+            ],
+            "taint": "Trusted"
+          },
+          "key": "e3fcc43e510f3d13f02b8605",
+          "pos": 0,
+          "q": {
+            "calib": "diag-demo",
+            "op": "noul",
+            "question": "999fa6b21d174505b3aa5f74",
+            "text": "他在成都住了多少天？"
+          },
+          "qi": 2,
+          "trail": []
+        }
+      ],
+      "purpose": null,
+      "resume": {},
+      "spent": {
+        "calls": 1,
+        "usd": 0.0
+      },
+      "value": [
+        {
+          "cause": null,
+          "exit": {
+            "consumed": true,
+            "exit": "act",
+            "id": 0,
+            "q": "fe110bdf799f05a9c379af93"
+          },
+          "index": 0,
+          "item": {
+            "content": "我上个月去了成都出差，顺便见了老朋友。",
+            "mat": "c6d0980e57fe4f4137896f6f",
+            "origin": [
+              "literal"
+            ],
+            "taint": "Trusted"
+          },
+          "key": "8e395f4ad0a89ab039c2d53e",
+          "pos": 0,
+          "q": {
+            "calib": "diag-demo",
+            "op": "noul",
+            "question": "fe110bdf799f05a9c379af93",
+            "text": "这段话是否提到了成都？"
+          },
+          "qi": 0,
+          "trail": []
+        },
+        {
+          "cause": null,
+          "exit": {
+            "consumed": true,
+            "exit": "act",
+            "id": 1,
+            "q": "e654613bb414fae4ab5614b7"
+          },
+          "index": 0,
+          "item": {
+            "content": "我上个月去了成都出差，顺便见了老朋友。",
+            "mat": "c6d0980e57fe4f4137896f6f",
+            "origin": [
+              "literal"
+            ],
+            "taint": "Trusted"
+          },
+          "key": "0e18a0cb43cca9a17605938f",
+          "pos": 0,
+          "q": {
+            "calib": "diag-demo",
+            "op": "noul",
+            "question": "e654613bb414fae4ab5614b7",
+            "text": "这段话是否说他去出差并且见了朋友？"
+          },
+          "qi": 1,
+          "trail": []
+        }
+      ]
+    },
+    "auto": [
+      {
+        "codes": [
+          "W-diag-mention-scope"
+        ],
+        "q": "这段话是否提到了成都？"
+      },
+      {
+        "codes": [
+          "W-diag-two-judgments"
+        ],
+        "q": "这段话是否说他去出差并且见了朋友？"
+      },
+      {
+        "codes": [
+          "W-diag-open-question"
+        ],
+        "q": "他在成都住了多少天？"
+      }
+    ],
+    "in_material": {
+      "detail": {
+        "advice": "ignore 的题问的东西不在这段材料里：换材料，或先问缺哪类信息、取来补进材料再判",
+        "diagnosis": "in_material",
+        "ignore": [
+          {
+            "cause": null,
+            "exit": {
+              "consumed": true,
+              "exit": "ignore",
+              "id": 8,
+              "q": "13a875842ad4488dc2dd1f73"
+            },
+            "index": 2,
+            "item": {
+              "slots": {
+                "ctx": [
+                  "他在成都住了多少天？"
+                ],
+                "on": "我上个月去了成都出差，顺便见了老朋友。"
+              },
+              "state": "9f1fa0677573b8cf27476091",
+              "taint": "Trusted"
+            },
+            "key": "f17186268dbf8e0809b8c2ca",
+            "pos": 2,
+            "q": {
+              "calib": "diag-in-material",
+              "op": "noul",
+              "question": "13a875842ad4488dc2dd1f73",
+              "text": "上下文里那道题问的东西，这段材料里有没有？"
+            },
+            "qi": 0,
+            "trail": []
+          }
+        ],
+        "question": {
+          "calib": "diag-in-material",
+          "op": "noul",
+          "question": "13a875842ad4488dc2dd1f73",
+          "text": "上下文里那道题问的东西，这段材料里有没有？"
+        }
+      },
+      "evidence": [
+        "0c9cbbdef909555fb4a1551b",
+        "58c6662415918ea4ca5902af",
+        "f17186268dbf8e0809b8c2ca"
+      ],
+      "kind": "outcome",
+      "pending": [],
+      "purpose": null,
+      "resume": {},
+      "spent": {
+        "calls": 3,
+        "usd": 0.0
+      },
+      "value": [
+        {
+          "cause": null,
+          "exit": {
+            "consumed": true,
+            "exit": "act",
+            "id": 6,
+            "q": "13a875842ad4488dc2dd1f73"
+          },
+          "index": 0,
+          "item": {
+            "slots": {
+              "ctx": [
+                "这段话是否提到了成都？"
+              ],
+              "on": "我上个月去了成都出差，顺便见了老朋友。"
+            },
+            "state": "0ba545f286781b8f5d85a96d",
+            "taint": "Trusted"
+          },
+          "key": "0c9cbbdef909555fb4a1551b",
+          "pos": 0,
+          "q": {
+            "calib": "diag-in-material",
+            "op": "noul",
+            "question": "13a875842ad4488dc2dd1f73",
+            "text": "上下文里那道题问的东西，这段材料里有没有？"
+          },
+          "qi": 0,
+          "trail": []
+        },
+        {
+          "cause": null,
+          "exit": {
+            "consumed": true,
+            "exit": "act",
+            "id": 7,
+            "q": "13a875842ad4488dc2dd1f73"
+          },
+          "index": 1,
+          "item": {
+            "slots": {
+              "ctx": [
+                "这段话是否说他去出差并且见了朋友？"
+              ],
+              "on": "我上个月去了成都出差，顺便见了老朋友。"
+            },
+            "state": "3a7daf0e9513ce0a37464f99",
+            "taint": "Trusted"
+          },
+          "key": "58c6662415918ea4ca5902af",
+          "pos": 1,
+          "q": {
+            "calib": "diag-in-material",
+            "op": "noul",
+            "question": "13a875842ad4488dc2dd1f73",
+            "text": "上下文里那道题问的东西，这段材料里有没有？"
+          },
+          "qi": 0,
+          "trail": []
+        }
+      ]
+    },
+    "two_judgments": {
+      "detail": {
+        "advice": "act 的题藏了两个判断：拆成两道题，再用三值合取（all / 逐元素 ∧）组合",
+        "diagnosis": "two_judgments",
+        "ignore": [
+          {
+            "cause": null,
+            "exit": {
+              "consumed": true,
+              "exit": "ignore",
+              "id": 3,
+              "q": "3bb383eebc0557004f6369d9"
+            },
+            "index": 0,
+            "item": {
+              "slots": {
+                "on": "这段话是否提到了成都？"
+              },
+              "state": "fbe84ef4f1ac4a9ba90011e2",
+              "taint": "Trusted"
+            },
+            "key": "de3522411a9b008c86f418e4",
+            "pos": 0,
+            "q": {
+              "calib": "diag-two-judgments",
+              "op": "noul",
+              "question": "3bb383eebc0557004f6369d9",
+              "text": "这道题里是否有两个或更多需要分别回答的判断？"
+            },
+            "qi": 0,
+            "trail": []
+          },
+          {
+            "cause": null,
+            "exit": {
+              "consumed": true,
+              "exit": "ignore",
+              "id": 5,
+              "q": "3bb383eebc0557004f6369d9"
+            },
+            "index": 2,
+            "item": {
+              "slots": {
+                "on": "他在成都住了多少天？"
+              },
+              "state": "ba14518f5b9c05368352efac",
+              "taint": "Trusted"
+            },
+            "key": "967123720772dae27a3b3a98",
+            "pos": 2,
+            "q": {
+              "calib": "diag-two-judgments",
+              "op": "noul",
+              "question": "3bb383eebc0557004f6369d9",
+              "text": "这道题里是否有两个或更多需要分别回答的判断？"
+            },
+            "qi": 0,
+            "trail": []
+          }
+        ],
+        "question": {
+          "calib": "diag-two-judgments",
+          "op": "noul",
+          "question": "3bb383eebc0557004f6369d9",
+          "text": "这道题里是否有两个或更多需要分别回答的判断？"
+        }
+      },
+      "evidence": [
+        "de3522411a9b008c86f418e4",
+        "ac9400a47bd7d8c8ef4d4a98",
+        "967123720772dae27a3b3a98"
+      ],
+      "kind": "outcome",
+      "pending": [],
+      "purpose": null,
+      "resume": {},
+      "spent": {
+        "calls": 3,
+        "usd": 0.0
+      },
+      "value": [
+        {
+          "cause": null,
+          "exit": {
+            "consumed": true,
+            "exit": "act",
+            "id": 4,
+            "q": "3bb383eebc0557004f6369d9"
+          },
+          "index": 1,
+          "item": {
+            "slots": {
+              "on": "这段话是否说他去出差并且见了朋友？"
+            },
+            "state": "a564df2648bbe1b2dc074e71",
+            "taint": "Trusted"
+          },
+          "key": "ac9400a47bd7d8c8ef4d4a98",
+          "pos": 1,
+          "q": {
+            "calib": "diag-two-judgments",
+            "op": "noul",
+            "question": "3bb383eebc0557004f6369d9",
+            "text": "这道题里是否有两个或更多需要分别回答的判断？"
+          },
+          "qi": 0,
+          "trail": []
+        }
+      ]
+    }
+  }
+}

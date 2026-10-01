@@ -1,0 +1,59 @@
+// 划分细化（B45 确定性派生第二种）与前提反面（第三种）。
+//
+// 划分细化。触发：读数落在边界上——unsure(band)（作者线或认证线的迟滞带）、unsure(tie)（多数块并列），
+// 以及作者打开 near 时「已判出但离多数边界近」（同一读数再切一次作探测，主控答复 Q1；探测在 chain.jpp）。
+// 原出口照判断器的回答走，细化只追加题（00-定位 §八第 10 条）。按题类拆更字面的子题：
+//   程度（measure，m 档）→ m−1 道「是否至少达到第 j 档」，同一状态一次调用；合成取从低往上连续判 act 的最高档；
+//   归类 / 比较 / 决定（select，K 个候选）→ K 道「这一项是不是答案」；合成取判 act 的候选；
+//   是非题（属性、关系、充分性）没有确定性的字面拆法，返回空，由调用者决定是否唤出（过程记录 §1.2）。
+// 题类读题的只读字段 q.kind（基础题类，B76；K2 开放）：degree 按档拆；class、cmp、decide 按候选拆；
+// 其余（attr、rel、enough、mention、subset）没有确定性拆法或缺拆分所需的声明，返回空。
+// 探问蕴涵：子题的每个答案都是原题若干块的并（G&S Fact 2），每个答案都收窄原题的答案集。
+//
+// 前提反面。触发：unsure(insufficient:<槽>)（题声明的证据槽不在状态里，J-09）。题声明了前提 P 时，
+// 在现有材料上出一道「是否 P？」，答案标签 {yes: P, no: "并非：P"}，「前提不成立」是显式候选（Bromberger）。
+// 判出 ignore：原题的答案是「前提不成立」那一块；判出 act：原题成立但缺材料，未决交出（B0492 接手）。
+// 没声明前提：返回空。探问蕴涵：原题的每个直接答案都蕴涵 P，所以原题唤出 ?P。
+import "rules.jpp";
+import "node.jpp";
+import "fill.jpp";
+
+// 派生题都经题式造（derive_form，题式身份与填法继承）：程度细化的模板里档位是槽 {bin}，逐候选细化的模板里
+// 候选是槽 {cand}，前提题是零槽题式。原题题面里有花括号时造不成模板，不派生（返回空）。
+fn derive_refine(n, e, opts) {
+    let R = derive_rules();
+    let kind = n.q.kind;
+    if !derive_bracefree(n.q.text) { [] } else {
+        if kind == "degree" {
+            let bins = n.q.scale;
+            if len(bins) < 2 { [] } else {
+                let f = derive_form("test", R.degree_text(n.q.text, "{bin}"), {lacks: R.lacks.degree}, opts);
+                map(range(1, len(bins)), fn(j) {
+                    derive_child(n, e, j, fill(f, {bin: bins[j]}, {from: e}),
+                                 {by: "refine", meta: {kind: "degree", j: j, bin: bins[j], bins: bins}})
+                })
+            }
+        } else {
+            if (kind == "class" || kind == "cmp" || kind == "decide") && has(n, "over") && len(n.over) >= 2 {
+                let f = derive_form("test", R.choice_text(n.q.text, "{cand}"), {lacks: R.lacks.choice}, opts);
+                map(derive_idx(n.over), fn(k) {
+                    derive_child(n, e, k, fill(f, {cand: n.over[k]}, {from: e}),
+                                 {by: "refine", meta: {kind: "choice", k: k, cand: n.over[k]}})
+                })
+            } else { [] }
+        }
+    }
+}
+
+fn derive_premise(n, e, opts) {
+    let R = derive_rules();
+    let p = n.q.presupposition;
+    if p == unit { [] } else {
+        if !derive_bracefree(p) { [] } else {
+            let f = derive_form("test", R.premise_text(p), {labels: R.premise_labels(p), lacks: R.lacks.premise}, opts);
+            let q = fill(f, {}, {from: e});
+            // 问在现有材料上：不带缺的那个槽（只有 on）
+            [with(derive_child(n, e, 0, q, {by: "premise", meta: {premise: p}}), "st", state(n.item.on))]
+        }
+    }
+}

@@ -1,4 +1,91 @@
 {
+  "action_facts": {
+    "bm25_topk": {
+      "conditions": [],
+      "reason": "纯 Rust 计算：只读入参、返回新值，不碰宿主与外部系统",
+      "reversibility": "reversible"
+    },
+    "check_tests": {
+      "conditions": [
+        "沙箱：sandbox-exec"
+      ],
+      "reason": "运行被测代码与断言；在调用专属临时目录内运行，操作系统沙箱把写限定在该目录、拒绝一切网络，调用结束整目录丢弃。读宿主文件不隔离；CPU、内存、进程数不限",
+      "reversibility": "reversible"
+    },
+    "embed_topk": {
+      "conditions": [
+        "写 ~/.cache/jpp-embed 下的缓存文件（可再生）"
+      ],
+      "reason": "读入文本、起 Python 子进程算向量；会写可再生缓存 ~/.cache/jpp-embed，不改用户数据；删掉缓存即回到运行前",
+      "reversibility": "reversible"
+    },
+    "exec_py": {
+      "conditions": [
+        "沙箱：sandbox-exec"
+      ],
+      "reason": "运行给定的 Python 代码；在调用专属临时目录内运行，操作系统沙箱把写限定在该目录、拒绝一切网络，调用结束整目录丢弃。读宿主文件不隔离；CPU、内存、进程数不限",
+      "reversibility": "reversible"
+    },
+    "exec_sql": {
+      "conditions": [
+        "沙箱：sandbox-exec"
+      ],
+      "reason": "只读打开数据库（mode=ro + PRAGMA query_only + 授权回调只放行 SELECT，任何语句都改不了库）；在调用专属临时目录内运行，操作系统沙箱把写限定在该目录、拒绝一切网络，调用结束整目录丢弃。读宿主文件不隔离；CPU、内存、进程数不限",
+      "reversibility": "reversible"
+    },
+    "graph:components": {
+      "conditions": [],
+      "reason": "纯函数：只读入参、返回新值，不碰宿主与外部系统",
+      "reversibility": "reversible"
+    },
+    "graph:cycles": {
+      "conditions": [],
+      "reason": "纯函数：只读入参、返回新值，不碰宿主与外部系统",
+      "reversibility": "reversible"
+    },
+    "graph:matching": {
+      "conditions": [],
+      "reason": "纯函数：只读入参、返回新值，不碰宿主与外部系统",
+      "reversibility": "reversible"
+    },
+    "graph:max_clique": {
+      "conditions": [],
+      "reason": "纯函数：只读入参、返回新值，不碰宿主与外部系统",
+      "reversibility": "reversible"
+    },
+    "graph:max_flow": {
+      "conditions": [],
+      "reason": "纯函数：只读入参、返回新值，不碰宿主与外部系统",
+      "reversibility": "reversible"
+    },
+    "graph:set_cover": {
+      "conditions": [],
+      "reason": "纯函数：只读入参、返回新值，不碰宿主与外部系统",
+      "reversibility": "reversible"
+    },
+    "graph:shortest_path": {
+      "conditions": [],
+      "reason": "纯函数：只读入参、返回新值，不碰宿主与外部系统",
+      "reversibility": "reversible"
+    },
+    "read_json": {
+      "conditions": [],
+      "reason": "只读一个文件并解析，不写任何东西",
+      "reversibility": "reversible"
+    },
+    "record_check": {
+      "conditions": [],
+      "reason": "只把一条记录追加到本次运行的内存检查表（进报告 local_checks），不碰宿主文件与外部系统；进程结束即消失",
+      "reversibility": "reversible"
+    },
+    "write_json": {
+      "conditions": [
+        "path 指向已存在文件时原内容丢失；指向新路径时留下新文件"
+      ],
+      "reason": "创建或覆盖 path 指向的宿主文件；运行时不备份原内容，也没有删除或还原的动作，写完就无法由运行时撤回",
+      "reversibility": "irreversible"
+    }
+  },
   "backend": "fixed-0",
   "cost": {
     "asks": 0,
@@ -11,20 +98,20 @@
     {
       "exit": "unsure(band)",
       "holders": [
-        "$.pending[1].edges[0].exit",
-        "$.pending[1].exit",
-        "$.pending[3].exit"
-      ],
-      "key": "52d9c325c6ff07819be7e429"
-    },
-    {
-      "exit": "unsure(band)",
-      "holders": [
         "$.pending[0].edges[0].exit",
         "$.pending[0].exit",
         "$.pending[2].exit"
       ],
-      "key": "a92362f48abd0a75a8f6f452"
+      "key": "ae527d7308ad30ccfdfd3259"
+    },
+    {
+      "exit": "unsure(band)",
+      "holders": [
+        "$.pending[1].edges[0].exit",
+        "$.pending[1].exit",
+        "$.pending[3].exit"
+      ],
+      "key": "d6dcbf57b7a244e1cc84fd66"
     }
   ],
   "entry": [],
@@ -37,7 +124,7 @@
       "key": "graph-can-do",
       "pos": 0,
       "releases": false,
-      "site": 4211
+      "site": 4246
     },
     {
       "exit": "act",
@@ -47,7 +134,7 @@
       "key": "graph-can-do",
       "pos": 1,
       "releases": false,
-      "site": 4211
+      "site": 4246
     },
     {
       "exit": "act",
@@ -57,7 +144,7 @@
       "key": "graph-can-do",
       "pos": 2,
       "releases": false,
-      "site": 4211
+      "site": 4246
     },
     {
       "exit": "act",
@@ -67,7 +154,7 @@
       "key": "graph-can-do",
       "pos": 3,
       "releases": false,
-      "site": 4211
+      "site": 4246
     },
     {
       "exit": "act",
@@ -77,7 +164,7 @@
       "key": "graph-can-do",
       "pos": 4,
       "releases": false,
-      "site": 4211
+      "site": 4246
     },
     {
       "exit": "act",
@@ -87,7 +174,7 @@
       "key": "graph-can-do",
       "pos": 5,
       "releases": false,
-      "site": 4211
+      "site": 4246
     },
     {
       "exit": "ignore",
@@ -97,7 +184,7 @@
       "key": "graph-can-do",
       "pos": 6,
       "releases": false,
-      "site": 4211
+      "site": 4246
     },
     {
       "exit": "ignore",
@@ -107,7 +194,7 @@
       "key": "graph-can-do",
       "pos": 7,
       "releases": false,
-      "site": 4211
+      "site": 4246
     },
     {
       "exit": "unsure(band)",
@@ -117,7 +204,7 @@
       "key": "graph-can-do",
       "pos": 8,
       "releases": false,
-      "site": 4211
+      "site": 4246
     },
     {
       "exit": "unsure(band)",
@@ -127,13 +214,31 @@
       "key": "graph-can-do",
       "pos": 9,
       "releases": false,
-      "site": 4211
+      "site": 4246
     }
   ],
   "fixture_description": "Synthetic fixed observations for graph-interval.jpp (step 25d, B148): 10 candidate edges, 2 in the band.",
   "local_checks": [],
   "mode": "replay; no model API requests",
   "pending": [],
+  "plan": {
+    "calls": {
+      "kind": "at_least",
+      "lo": 0
+    },
+    "cost_usd": {
+      "kind": "unknown",
+      "reason": "price_not_given"
+    },
+    "latency_s": {
+      "kind": "unknown",
+      "reason": "untested:concurrency.latency_s.p95"
+    },
+    "layers": {
+      "kind": "at_least",
+      "lo": 0
+    }
+  },
   "questions": [
     {
       "kind": "attr",
@@ -150,139 +255,139 @@
     "events": [
       {
         "cost": 0.0,
-        "key": "b964e193639afb98f5b3923b",
+        "key": "f55f52216522a2300d1cd28f",
         "kind": "judge",
         "note": "「a 描述的这项任务，b 这个人能接下来吗？」",
         "replayed": true,
         "site": {
-          "end": 4231,
-          "start": 4211
+          "end": 4266,
+          "start": 4246
         }
       },
       {
         "cost": 0.0,
-        "key": "5a2eeb80cff92684457c6026",
+        "key": "9a32934ef0dd07572a6813ac",
         "kind": "judge",
         "note": "「a 描述的这项任务，b 这个人能接下来吗？」",
         "replayed": true,
         "site": {
-          "end": 4231,
-          "start": 4211
+          "end": 4266,
+          "start": 4246
         }
       },
       {
         "cost": 0.0,
-        "key": "f4e7f283e0fba8aab61ebd02",
+        "key": "6278d2a9ff98ce93d97fef48",
         "kind": "judge",
         "note": "「a 描述的这项任务，b 这个人能接下来吗？」",
         "replayed": true,
         "site": {
-          "end": 4231,
-          "start": 4211
+          "end": 4266,
+          "start": 4246
         }
       },
       {
         "cost": 0.0,
-        "key": "b9c8c7aa501ca336ce94f006",
+        "key": "84d4094a568c47c8e5e2470e",
         "kind": "judge",
         "note": "「a 描述的这项任务，b 这个人能接下来吗？」",
         "replayed": true,
         "site": {
-          "end": 4231,
-          "start": 4211
+          "end": 4266,
+          "start": 4246
         }
       },
       {
         "cost": 0.0,
-        "key": "793ee0ab0233d762c7ba50a8",
+        "key": "9eee41c6ad334ad7eaaf214a",
         "kind": "judge",
         "note": "「a 描述的这项任务，b 这个人能接下来吗？」",
         "replayed": true,
         "site": {
-          "end": 4231,
-          "start": 4211
+          "end": 4266,
+          "start": 4246
         }
       },
       {
         "cost": 0.0,
-        "key": "fb1a007e101d0dac808698ac",
+        "key": "78068281291f7a782c35f826",
         "kind": "judge",
         "note": "「a 描述的这项任务，b 这个人能接下来吗？」",
         "replayed": true,
         "site": {
-          "end": 4231,
-          "start": 4211
+          "end": 4266,
+          "start": 4246
         }
       },
       {
         "cost": 0.0,
-        "key": "5c4bf0482daaad1902263daf",
+        "key": "5881f7aebfed9ca483f248c6",
         "kind": "judge",
         "note": "「a 描述的这项任务，b 这个人能接下来吗？」",
         "replayed": true,
         "site": {
-          "end": 4231,
-          "start": 4211
+          "end": 4266,
+          "start": 4246
         }
       },
       {
         "cost": 0.0,
-        "key": "b6db91dd10655f4dd3ffbd03",
+        "key": "dad3eb064b0c050ea35631d5",
         "kind": "judge",
         "note": "「a 描述的这项任务，b 这个人能接下来吗？」",
         "replayed": true,
         "site": {
-          "end": 4231,
-          "start": 4211
+          "end": 4266,
+          "start": 4246
         }
       },
       {
         "cost": 0.0,
-        "key": "a92362f48abd0a75a8f6f452",
+        "key": "ae527d7308ad30ccfdfd3259",
         "kind": "judge",
         "note": "「a 描述的这项任务，b 这个人能接下来吗？」",
         "replayed": true,
         "site": {
-          "end": 4231,
-          "start": 4211
+          "end": 4266,
+          "start": 4246
         }
       },
       {
         "cost": 0.0,
-        "key": "52d9c325c6ff07819be7e429",
+        "key": "d6dcbf57b7a244e1cc84fd66",
         "kind": "judge",
         "note": "「a 描述的这项任务，b 这个人能接下来吗？」",
         "replayed": true,
         "site": {
-          "end": 4231,
-          "start": 4211
+          "end": 4266,
+          "start": 4246
         }
       },
       {
         "cost": 0.0,
-        "key": "880efb14078516d4aee5b8b6",
+        "key": "0a75a1b23db7b182179eb9f2",
         "kind": "do",
         "note": "graph:matching",
         "replayed": true,
         "site": {
-          "end": 9451,
-          "start": 9373
+          "end": 9486,
+          "start": 9408
         }
       },
       {
         "cost": 0.0,
-        "key": "890769e4060d72f513c08159",
+        "key": "dd1671c3195b5f0ea10a926a",
         "kind": "do",
         "note": "graph:matching",
         "replayed": true,
         "site": {
-          "end": 9451,
-          "start": 9373
+          "end": 9486,
+          "start": 9408
         }
       }
     ],
     "warnings": [
-      "W-window-untested: @4211 画像没有测过窗口（window），对象长度不核；超窗的语境可能接管读数而无痕",
+      "W-window-untested: @4246 画像没有测过窗口（window），对象长度不核；超窗的语境可能接管读数而无痕",
       "returned_unsure: unsure(band)"
     ]
   },
@@ -374,7 +479,7 @@
               "a": "任务：做数据看板",
               "b": "小王：数据分析，常做报表"
             },
-            "key": "a92362f48abd0a75a8f6f452",
+            "key": "ae527d7308ad30ccfdfd3259",
             "left": "任务：做数据看板",
             "pos": 8,
             "q": {
@@ -432,7 +537,7 @@
               "a": "任务：写单元测试",
               "b": "小陈：测试开发，熟悉单元测试框架"
             },
-            "key": "52d9c325c6ff07819be7e429",
+            "key": "d6dcbf57b7a244e1cc84fd66",
             "left": "任务：写单元测试",
             "pos": 9,
             "q": {
@@ -487,7 +592,7 @@
           "a": "任务：做数据看板",
           "b": "小王：数据分析，常做报表"
         },
-        "key": "a92362f48abd0a75a8f6f452",
+        "key": "ae527d7308ad30ccfdfd3259",
         "left": "任务：做数据看板",
         "pos": 8,
         "q": {
@@ -521,7 +626,7 @@
           "a": "任务：写单元测试",
           "b": "小陈：测试开发，熟悉单元测试框架"
         },
-        "key": "52d9c325c6ff07819be7e429",
+        "key": "d6dcbf57b7a244e1cc84fd66",
         "left": "任务：写单元测试",
         "pos": 9,
         "q": {

@@ -111,10 +111,12 @@ fn f(t) {
 }
 f("甲")
 "#;
-    let Err((rule, _)) = 跑(丢了, 0.5, Passes::default()) else {
-        panic!("未决出口被丢，应当 J-05")
-    };
-    assert_eq!(rule.as_deref(), Some("J-05"));
+    // B0492 S2c 起：这个 cut 在作用域里没有作者去向，运行时在站点当场走默认链（没有取材料来源，记账放弃），
+    // 不再是 J-05；`--guard` 下的 J-05 见 unsure_default.rs 的 s2c_guard下不走链_运行期j05
+    let (o, _) = 跑(丢了, 0.5, Passes::default()).expect("未决出口走默认链记账放弃");
+    assert_eq!(o.value_json(), serde_json::json!(1));
+    assert_eq!(o.unsure_default.len(), 1);
+    assert_eq!(o.unsure_default[0]["end"], "drop");
     // 已决的出口不检视也不算丢（与改前相同：只有未决有责任）
     let (o, _) = 跑(丢了, 0.9, Passes::default()).expect("已决出口不检视也照常返回");
     assert_eq!(o.value_json(), serde_json::json!(1));

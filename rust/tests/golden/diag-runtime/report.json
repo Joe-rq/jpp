@@ -1,0 +1,1703 @@
+{
+  "backend": "fixed-0",
+  "cost": {
+    "asks": 0,
+    "calls": 8,
+    "replayed": 0,
+    "tokens": 0,
+    "usd": 0.0
+  },
+  "entry": [],
+  "exits": [
+    {
+      "delta_unknown": true,
+      "exit": "act",
+      "grade": "Answer",
+      "index": 0,
+      "item": "bc57fcc1b279",
+      "pos": 0,
+      "releases": false,
+      "site": 1374
+    },
+    {
+      "delta_unknown": true,
+      "exit": "act",
+      "grade": "Answer",
+      "index": 0,
+      "item": "bc57fcc1b279",
+      "pos": 0,
+      "releases": false,
+      "site": 1374
+    },
+    {
+      "exit": "unsure(tie)",
+      "grade": "Answer",
+      "index": 0,
+      "item": "bc57fcc1b279",
+      "pos": 0,
+      "releases": false,
+      "site": 1374
+    },
+    {
+      "delta_unknown": true,
+      "exit": "ignore",
+      "grade": "Answer",
+      "index": 0,
+      "item": "fbe84ef4f1ac",
+      "pos": 0,
+      "releases": false,
+      "site": 4593
+    },
+    {
+      "delta_unknown": true,
+      "exit": "act",
+      "grade": "Answer",
+      "index": 1,
+      "item": "a564df2648bb",
+      "pos": 1,
+      "releases": false,
+      "site": 4593
+    },
+    {
+      "delta_unknown": true,
+      "exit": "ignore",
+      "grade": "Answer",
+      "index": 2,
+      "item": "ba14518f5b9c",
+      "pos": 2,
+      "releases": false,
+      "site": 4593
+    },
+    {
+      "delta_unknown": true,
+      "exit": "act",
+      "grade": "Answer",
+      "index": 0,
+      "item": "0ba545f28678",
+      "pos": 0,
+      "releases": false,
+      "site": 5021
+    },
+    {
+      "delta_unknown": true,
+      "exit": "act",
+      "grade": "Answer",
+      "index": 1,
+      "item": "3a7daf0e9513",
+      "pos": 1,
+      "releases": false,
+      "site": 5021
+    },
+    {
+      "delta_unknown": true,
+      "exit": "ignore",
+      "grade": "Answer",
+      "index": 2,
+      "item": "9f1fa0677573",
+      "pos": 2,
+      "releases": false,
+      "site": 5021
+    }
+  ],
+  "fixture_description": "Synthetic fixed observations for diag-runtime.jpp (step 26, B47): one generation of three questions, two judge-based diagnostics, one answering sieve. Fake results, construction check only.",
+  "improve": [
+    {
+      "companions": [
+        {
+          "key": "39fe7ebd8f570e826b2b0507",
+          "kind": "unsure-companion-premise",
+          "p": 0.5
+        },
+        {
+          "key": "38bfb5613f253f419bfabb99",
+          "kind": "diag-two-judgments",
+          "p": 0.5
+        },
+        {
+          "key": "e7731cdbbddd2744426bd571",
+          "kind": "unsure-companion-cut",
+          "p": 0.5
+        },
+        {
+          "key": "43bf30afec2d5fd8da5d9961",
+          "kind": "unsure-companion-reference",
+          "p": 0.5
+        },
+        {
+          "key": "17135e6effd6c062427d126b",
+          "kind": "unsure-companion-material",
+          "p": 0.25,
+          "pick": null
+        }
+      ],
+      "key": "8e395f4ad0a89ab039c2d53e",
+      "lacks": null,
+      "q": "这段话是否提到了成都？"
+    },
+    {
+      "companions": [
+        {
+          "key": "c707adda260982a744b2f995",
+          "kind": "unsure-companion-premise",
+          "p": 0.5
+        },
+        {
+          "key": "3f6e57cc00bca05c44b8f2fb",
+          "kind": "diag-two-judgments",
+          "p": 0.5
+        },
+        {
+          "key": "2c0b45641ab692bc72d5ff40",
+          "kind": "unsure-companion-cut",
+          "p": 0.5
+        },
+        {
+          "key": "fd68d47deb09fc5d0910a5ab",
+          "kind": "unsure-companion-reference",
+          "p": 0.5
+        },
+        {
+          "key": "247fe637454f5f8ab251110f",
+          "kind": "unsure-companion-material",
+          "p": 0.25,
+          "pick": null
+        }
+      ],
+      "key": "0e18a0cb43cca9a17605938f",
+      "lacks": null,
+      "q": "这段话是否说他去出差并且见了朋友？"
+    },
+    {
+      "companions": [
+        {
+          "key": "3f9746487bb2c1a2acc5b798",
+          "kind": "unsure-companion-premise",
+          "p": 0.5
+        },
+        {
+          "key": "71922d5429afc892810fd59a",
+          "kind": "diag-two-judgments",
+          "p": 0.5
+        },
+        {
+          "key": "5b01ae25f471f14190255259",
+          "kind": "unsure-companion-cut",
+          "p": 0.5
+        },
+        {
+          "key": "f2d4938a719cb884f21a3e51",
+          "kind": "unsure-companion-reference",
+          "p": 0.5
+        },
+        {
+          "key": "1a53b2d679228c7da15047b0",
+          "kind": "unsure-companion-material",
+          "p": 0.25,
+          "pick": null
+        }
+      ],
+      "key": "e3fcc43e510f3d13f02b8605",
+      "lacks": null,
+      "q": "他在成都住了多少天？"
+    },
+    {
+      "companions": [
+        {
+          "key": "b925abbade92b1db41710568",
+          "kind": "unsure-companion-premise",
+          "p": 0.5
+        },
+        {
+          "key": "0f5a56756ff363a34e6ea1bb",
+          "kind": "diag-two-judgments",
+          "p": 0.5
+        },
+        {
+          "key": "56dad9885e5b9e174107b2dc",
+          "kind": "unsure-companion-cut",
+          "p": 0.5
+        },
+        {
+          "key": "8b4fe5d1f0a27d0fe598283e",
+          "kind": "unsure-companion-reference",
+          "p": 0.5
+        },
+        {
+          "key": "603687ef255a736df1bdde9c",
+          "kind": "unsure-companion-material",
+          "p": 0.25,
+          "pick": null
+        }
+      ],
+      "key": "de3522411a9b008c86f418e4",
+      "lacks": null,
+      "q": "这道题里是否有两个或更多需要分别回答的判断？"
+    },
+    {
+      "companions": [
+        {
+          "key": "c709456b15fbfe3698a88da9",
+          "kind": "unsure-companion-premise",
+          "p": 0.5
+        },
+        {
+          "key": "c33ff41efe2f587a8d38eba2",
+          "kind": "diag-two-judgments",
+          "p": 0.5
+        },
+        {
+          "key": "a46690184e4d10dc5dc535e4",
+          "kind": "unsure-companion-cut",
+          "p": 0.5
+        },
+        {
+          "key": "9d5dc80b11b87b15697e6d88",
+          "kind": "unsure-companion-reference",
+          "p": 0.5
+        },
+        {
+          "key": "5a47e47fe14bfa1394ebf8f8",
+          "kind": "unsure-companion-material",
+          "p": 0.25,
+          "pick": null
+        }
+      ],
+      "key": "ac9400a47bd7d8c8ef4d4a98",
+      "lacks": null,
+      "q": "这道题里是否有两个或更多需要分别回答的判断？"
+    },
+    {
+      "companions": [
+        {
+          "key": "a139829629b10654af5192bf",
+          "kind": "unsure-companion-premise",
+          "p": 0.5
+        },
+        {
+          "key": "e52affc47dedbfabe05b7b75",
+          "kind": "diag-two-judgments",
+          "p": 0.5
+        },
+        {
+          "key": "08b6be284935124744bcf967",
+          "kind": "unsure-companion-cut",
+          "p": 0.5
+        },
+        {
+          "key": "2f74dcf6507b0cc183cf0c6c",
+          "kind": "unsure-companion-reference",
+          "p": 0.5
+        },
+        {
+          "key": "a64c0f24a833dc6d18cbd91c",
+          "kind": "unsure-companion-material",
+          "p": 0.25,
+          "pick": null
+        }
+      ],
+      "key": "967123720772dae27a3b3a98",
+      "lacks": null,
+      "q": "这道题里是否有两个或更多需要分别回答的判断？"
+    },
+    {
+      "companions": [
+        {
+          "key": "d58dc162f7f7619a503996d0",
+          "kind": "unsure-companion-premise",
+          "p": 0.5
+        },
+        {
+          "key": "b454f2d25b08bf3ce75917dd",
+          "kind": "diag-two-judgments",
+          "p": 0.5
+        },
+        {
+          "key": "45b4aa6d2e4114c93a4f377d",
+          "kind": "unsure-companion-cut",
+          "p": 0.5
+        },
+        {
+          "key": "819d6d9663032930f4e000fd",
+          "kind": "unsure-companion-reference",
+          "p": 0.5
+        },
+        {
+          "key": "52104d9e185efbbafa10c764",
+          "kind": "unsure-companion-material",
+          "p": 0.25,
+          "pick": null
+        }
+      ],
+      "key": "0c9cbbdef909555fb4a1551b",
+      "lacks": null,
+      "q": "上下文里那道题问的东西，这段材料里有没有？"
+    },
+    {
+      "companions": [
+        {
+          "key": "e4af6aabda0635b6ea5ec402",
+          "kind": "unsure-companion-premise",
+          "p": 0.5
+        },
+        {
+          "key": "e71f4afbd330e180fc04e425",
+          "kind": "diag-two-judgments",
+          "p": 0.5
+        },
+        {
+          "key": "b74c0ab75efa1067d35d9af9",
+          "kind": "unsure-companion-cut",
+          "p": 0.5
+        },
+        {
+          "key": "1c1e7777901182a03fd73a1c",
+          "kind": "unsure-companion-reference",
+          "p": 0.5
+        },
+        {
+          "key": "8c1128079691cd30fc763b35",
+          "kind": "unsure-companion-material",
+          "p": 0.25,
+          "pick": null
+        }
+      ],
+      "key": "58c6662415918ea4ca5902af",
+      "lacks": null,
+      "q": "上下文里那道题问的东西，这段材料里有没有？"
+    },
+    {
+      "companions": [
+        {
+          "key": "1ee303f7f25c8bd81cea3e7d",
+          "kind": "unsure-companion-premise",
+          "p": 0.5
+        },
+        {
+          "key": "6052e53510ddfde53ec975ee",
+          "kind": "diag-two-judgments",
+          "p": 0.5
+        },
+        {
+          "key": "bdb882d72845327bab4b9123",
+          "kind": "unsure-companion-cut",
+          "p": 0.5
+        },
+        {
+          "key": "47a680e86030813592230a51",
+          "kind": "unsure-companion-reference",
+          "p": 0.5
+        },
+        {
+          "key": "a124a7510f832ceccd633992",
+          "kind": "unsure-companion-material",
+          "p": 0.25,
+          "pick": null
+        }
+      ],
+      "key": "f17186268dbf8e0809b8c2ca",
+      "lacks": null,
+      "q": "上下文里那道题问的东西，这段材料里有没有？"
+    }
+  ],
+  "local_checks": [],
+  "mode": "fixed observations; no model API requests",
+  "pending": [],
+  "plan": {
+    "calls": {
+      "kind": "at_least",
+      "lo": 1
+    },
+    "cost_usd": {
+      "kind": "at_least",
+      "lo": 0.0
+    },
+    "latency_s": {
+      "kind": "unknown",
+      "reason": "untested:concurrency.latency_s.p95"
+    },
+    "layers": {
+      "kind": "at_least",
+      "lo": 1
+    }
+  },
+  "questions": [
+    {
+      "kind": "attr",
+      "q": "fe110bdf799f05a9c379af93"
+    },
+    {
+      "kind": "attr",
+      "q": "e654613bb414fae4ab5614b7"
+    },
+    {
+      "kind": "attr",
+      "q": "999fa6b21d174505b3aa5f74"
+    },
+    {
+      "fill": {
+        "q": "这段话是否提到了成都？"
+      },
+      "form_hash": "54315f241f66412e88607f2d",
+      "kind": "attr",
+      "q": "7c82f8cffcf6854833152c9b",
+      "template": "题「{q}」的前提在这份材料上成立吗？"
+    },
+    {
+      "fill": {
+        "q": "这段话是否提到了成都？"
+      },
+      "form_hash": "cd4d3fd600f3459fa6b03c89",
+      "kind": "attr",
+      "q": "833a7b3ea1e9a74869f148ed",
+      "template": "题「{q}」里是否有两个或更多需要分别回答的判断？"
+    },
+    {
+      "fill": {
+        "q": "这段话是否提到了成都？"
+      },
+      "form_hash": "18c6093988df2ab3840b661c",
+      "kind": "attr",
+      "q": "c50c62d7b63a9fded53bf242",
+      "template": "把题「{q}」按更细的情形分开问，会比整体问更容易答准吗？"
+    },
+    {
+      "fill": {
+        "q": "这段话是否提到了成都？"
+      },
+      "form_hash": "d8ff506d5be24dd56b495116",
+      "kind": "attr",
+      "q": "d4b93f5c14acd0757bae60cf",
+      "template": "判断题「{q}」需要的参照对象和语境，这段材料里给够了吗？"
+    },
+    {
+      "fill": {
+        "q": "这段话是否提到了成都？"
+      },
+      "form_hash": "2ec36692b44a45c1e23fbea6",
+      "kind": "class",
+      "q": "8d5e6fcacf7103709409df83",
+      "template": "题「{q}」要判得更明确，最缺哪一类信息？"
+    },
+    {
+      "fill": {
+        "q": "这段话是否说他去出差并且见了朋友？"
+      },
+      "form_hash": "54315f241f66412e88607f2d",
+      "kind": "attr",
+      "q": "68b297cdb28c1c5c89a43452",
+      "template": "题「{q}」的前提在这份材料上成立吗？"
+    },
+    {
+      "fill": {
+        "q": "这段话是否说他去出差并且见了朋友？"
+      },
+      "form_hash": "cd4d3fd600f3459fa6b03c89",
+      "kind": "attr",
+      "q": "dca13e06d64eaecd1cf5f6f8",
+      "template": "题「{q}」里是否有两个或更多需要分别回答的判断？"
+    },
+    {
+      "fill": {
+        "q": "这段话是否说他去出差并且见了朋友？"
+      },
+      "form_hash": "18c6093988df2ab3840b661c",
+      "kind": "attr",
+      "q": "fd740d9471437ba96ee072dd",
+      "template": "把题「{q}」按更细的情形分开问，会比整体问更容易答准吗？"
+    },
+    {
+      "fill": {
+        "q": "这段话是否说他去出差并且见了朋友？"
+      },
+      "form_hash": "d8ff506d5be24dd56b495116",
+      "kind": "attr",
+      "q": "30158a8432b4bd7a5ca23754",
+      "template": "判断题「{q}」需要的参照对象和语境，这段材料里给够了吗？"
+    },
+    {
+      "fill": {
+        "q": "这段话是否说他去出差并且见了朋友？"
+      },
+      "form_hash": "2ec36692b44a45c1e23fbea6",
+      "kind": "class",
+      "q": "3053fc1fe21df18f76a599b0",
+      "template": "题「{q}」要判得更明确，最缺哪一类信息？"
+    },
+    {
+      "fill": {
+        "q": "他在成都住了多少天？"
+      },
+      "form_hash": "54315f241f66412e88607f2d",
+      "kind": "attr",
+      "q": "ee9ea660e9a8a9aee4aea782",
+      "template": "题「{q}」的前提在这份材料上成立吗？"
+    },
+    {
+      "fill": {
+        "q": "他在成都住了多少天？"
+      },
+      "form_hash": "cd4d3fd600f3459fa6b03c89",
+      "kind": "attr",
+      "q": "0b01b779ee654f6c37196a47",
+      "template": "题「{q}」里是否有两个或更多需要分别回答的判断？"
+    },
+    {
+      "fill": {
+        "q": "他在成都住了多少天？"
+      },
+      "form_hash": "18c6093988df2ab3840b661c",
+      "kind": "attr",
+      "q": "b8fbe490cdc49dad42bc79b9",
+      "template": "把题「{q}」按更细的情形分开问，会比整体问更容易答准吗？"
+    },
+    {
+      "fill": {
+        "q": "他在成都住了多少天？"
+      },
+      "form_hash": "d8ff506d5be24dd56b495116",
+      "kind": "attr",
+      "q": "20d3103e1e1ef675f6235d20",
+      "template": "判断题「{q}」需要的参照对象和语境，这段材料里给够了吗？"
+    },
+    {
+      "fill": {
+        "q": "他在成都住了多少天？"
+      },
+      "form_hash": "2ec36692b44a45c1e23fbea6",
+      "kind": "class",
+      "q": "ab60958d95e495071065ac54",
+      "template": "题「{q}」要判得更明确，最缺哪一类信息？"
+    },
+    {
+      "kind": "attr",
+      "q": "3bb383eebc0557004f6369d9"
+    },
+    {
+      "fill": {
+        "q": "这道题里是否有两个或更多需要分别回答的判断？"
+      },
+      "form_hash": "54315f241f66412e88607f2d",
+      "kind": "attr",
+      "q": "e6a0736db12145d977b112c4",
+      "template": "题「{q}」的前提在这份材料上成立吗？"
+    },
+    {
+      "fill": {
+        "q": "这道题里是否有两个或更多需要分别回答的判断？"
+      },
+      "form_hash": "cd4d3fd600f3459fa6b03c89",
+      "kind": "attr",
+      "q": "396ca407f9a2e2118679c1a9",
+      "template": "题「{q}」里是否有两个或更多需要分别回答的判断？"
+    },
+    {
+      "fill": {
+        "q": "这道题里是否有两个或更多需要分别回答的判断？"
+      },
+      "form_hash": "18c6093988df2ab3840b661c",
+      "kind": "attr",
+      "q": "8941b37a9b4a18d68149d690",
+      "template": "把题「{q}」按更细的情形分开问，会比整体问更容易答准吗？"
+    },
+    {
+      "fill": {
+        "q": "这道题里是否有两个或更多需要分别回答的判断？"
+      },
+      "form_hash": "d8ff506d5be24dd56b495116",
+      "kind": "attr",
+      "q": "b111bf7350447341528ae82a",
+      "template": "判断题「{q}」需要的参照对象和语境，这段材料里给够了吗？"
+    },
+    {
+      "fill": {
+        "q": "这道题里是否有两个或更多需要分别回答的判断？"
+      },
+      "form_hash": "2ec36692b44a45c1e23fbea6",
+      "kind": "class",
+      "q": "1f733df9f15c54621768e65b",
+      "template": "题「{q}」要判得更明确，最缺哪一类信息？"
+    },
+    {
+      "kind": "attr",
+      "q": "13a875842ad4488dc2dd1f73"
+    },
+    {
+      "fill": {
+        "q": "上下文里那道题问的东西，这段材料里有没有？"
+      },
+      "form_hash": "54315f241f66412e88607f2d",
+      "kind": "attr",
+      "q": "0f85c68a1b07b20b10bf0516",
+      "template": "题「{q}」的前提在这份材料上成立吗？"
+    },
+    {
+      "fill": {
+        "q": "上下文里那道题问的东西，这段材料里有没有？"
+      },
+      "form_hash": "cd4d3fd600f3459fa6b03c89",
+      "kind": "attr",
+      "q": "d8c9ab1e3f0111720e6c20f2",
+      "template": "题「{q}」里是否有两个或更多需要分别回答的判断？"
+    },
+    {
+      "fill": {
+        "q": "上下文里那道题问的东西，这段材料里有没有？"
+      },
+      "form_hash": "18c6093988df2ab3840b661c",
+      "kind": "attr",
+      "q": "addd846f6163a2488f92990b",
+      "template": "把题「{q}」按更细的情形分开问，会比整体问更容易答准吗？"
+    },
+    {
+      "fill": {
+        "q": "上下文里那道题问的东西，这段材料里有没有？"
+      },
+      "form_hash": "d8ff506d5be24dd56b495116",
+      "kind": "attr",
+      "q": "29234b6445637016bf60715d",
+      "template": "判断题「{q}」需要的参照对象和语境，这段材料里给够了吗？"
+    },
+    {
+      "fill": {
+        "q": "上下文里那道题问的东西，这段材料里有没有？"
+      },
+      "form_hash": "2ec36692b44a45c1e23fbea6",
+      "kind": "class",
+      "q": "3cbd70d83a7cec5a525c5b08",
+      "template": "题「{q}」要判得更明确，最缺哪一类信息？"
+    }
+  ],
+  "replay": false,
+  "resumed": false,
+  "returned_unsure": [
+    "unsure(tie)"
+  ],
+  "status": "returned",
+  "trace": {
+    "events": [
+      {
+        "cost": 0.0,
+        "key": "c9de7a9511cc27d9c7bfb18d",
+        "kind": "gen",
+        "note": "为下面这段话出三道是非题，每行一道，只输出题面。",
+        "replayed": false,
+        "site": {
+          "end": 1260,
+          "start": 1167
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "8e395f4ad0a89ab039c2d53e",
+        "kind": "judge",
+        "note": "「这段话是否提到了成都？」",
+        "replayed": false,
+        "site": {
+          "end": 1391,
+          "start": 1374
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "0e18a0cb43cca9a17605938f",
+        "kind": "judge",
+        "note": "「这段话是否说他去出差并且见了朋友？」",
+        "replayed": false,
+        "site": {
+          "end": 1391,
+          "start": 1374
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "e3fcc43e510f3d13f02b8605",
+        "kind": "judge",
+        "note": "「他在成都住了多少天？」",
+        "replayed": false,
+        "site": {
+          "end": 1391,
+          "start": 1374
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "39fe7ebd8f570e826b2b0507",
+        "kind": "judge",
+        "note": "「题「这段话是否提到了成都？」的前提在这份材料上成立吗？」",
+        "replayed": false,
+        "site": {
+          "end": 1391,
+          "start": 1374
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "38bfb5613f253f419bfabb99",
+        "kind": "judge",
+        "note": "「题「这段话是否提到了成都？」里是否有两个或更多需要分别回答的判断？」",
+        "replayed": false,
+        "site": {
+          "end": 1391,
+          "start": 1374
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "e7731cdbbddd2744426bd571",
+        "kind": "judge",
+        "note": "「把题「这段话是否提到了成都？」按更细的情形分开问，会比整体问更容易答准吗？」",
+        "replayed": false,
+        "site": {
+          "end": 1391,
+          "start": 1374
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "43bf30afec2d5fd8da5d9961",
+        "kind": "judge",
+        "note": "「判断题「这段话是否提到了成都？」需要的参照对象和语境，这段材料里给够了吗？」",
+        "replayed": false,
+        "site": {
+          "end": 1391,
+          "start": 1374
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "17135e6effd6c062427d126b",
+        "kind": "judge",
+        "note": "「题「这段话是否提到了成都？」要判得更明确，最缺哪一类信息？」",
+        "replayed": false,
+        "site": {
+          "end": 1391,
+          "start": 1374
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "c707adda260982a744b2f995",
+        "kind": "judge",
+        "note": "「题「这段话是否说他去出差并且见了朋友？」的前提在这份材料上成立吗？」",
+        "replayed": false,
+        "site": {
+          "end": 1391,
+          "start": 1374
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "3f6e57cc00bca05c44b8f2fb",
+        "kind": "judge",
+        "note": "「题「这段话是否说他去出差并且见了朋友？」里是否有两个或更多需要分别回答的判断？」",
+        "replayed": false,
+        "site": {
+          "end": 1391,
+          "start": 1374
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "2c0b45641ab692bc72d5ff40",
+        "kind": "judge",
+        "note": "「把题「这段话是否说他去出差并且见了朋友？」按更细的情形分开问，会比整体问更容易答准吗？」",
+        "replayed": false,
+        "site": {
+          "end": 1391,
+          "start": 1374
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "fd68d47deb09fc5d0910a5ab",
+        "kind": "judge",
+        "note": "「判断题「这段话是否说他去出差并且见了朋友？」需要的参照对象和语境，这段材料里给够了吗？」",
+        "replayed": false,
+        "site": {
+          "end": 1391,
+          "start": 1374
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "247fe637454f5f8ab251110f",
+        "kind": "judge",
+        "note": "「题「这段话是否说他去出差并且见了朋友？」要判得更明确，最缺哪一类信息？」",
+        "replayed": false,
+        "site": {
+          "end": 1391,
+          "start": 1374
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "3f9746487bb2c1a2acc5b798",
+        "kind": "judge",
+        "note": "「题「他在成都住了多少天？」的前提在这份材料上成立吗？」",
+        "replayed": false,
+        "site": {
+          "end": 1391,
+          "start": 1374
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "71922d5429afc892810fd59a",
+        "kind": "judge",
+        "note": "「题「他在成都住了多少天？」里是否有两个或更多需要分别回答的判断？」",
+        "replayed": false,
+        "site": {
+          "end": 1391,
+          "start": 1374
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "5b01ae25f471f14190255259",
+        "kind": "judge",
+        "note": "「把题「他在成都住了多少天？」按更细的情形分开问，会比整体问更容易答准吗？」",
+        "replayed": false,
+        "site": {
+          "end": 1391,
+          "start": 1374
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "f2d4938a719cb884f21a3e51",
+        "kind": "judge",
+        "note": "「判断题「他在成都住了多少天？」需要的参照对象和语境，这段材料里给够了吗？」",
+        "replayed": false,
+        "site": {
+          "end": 1391,
+          "start": 1374
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "1a53b2d679228c7da15047b0",
+        "kind": "judge",
+        "note": "「题「他在成都住了多少天？」要判得更明确，最缺哪一类信息？」",
+        "replayed": false,
+        "site": {
+          "end": 1391,
+          "start": 1374
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "b937c13ffeb9bee0f861d1e2",
+        "kind": "transform",
+        "note": "",
+        "replayed": false,
+        "site": {
+          "end": 3899,
+          "start": 3865
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "3096251b351d6bcb6c498457",
+        "kind": "transform",
+        "note": "",
+        "replayed": false,
+        "site": {
+          "end": 3899,
+          "start": 3865
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "bbf2deaa0c546367399f436b",
+        "kind": "transform",
+        "note": "",
+        "replayed": false,
+        "site": {
+          "end": 3899,
+          "start": 3865
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "de3522411a9b008c86f418e4",
+        "kind": "judge",
+        "note": "「这道题里是否有两个或更多需要分别回答的判断？」",
+        "replayed": false,
+        "site": {
+          "end": 4659,
+          "start": 4593
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "b925abbade92b1db41710568",
+        "kind": "judge",
+        "note": "「题「这道题里是否有两个或更多需要分别回答的判断？」的前提在这份材料上成立吗？」",
+        "replayed": false,
+        "site": {
+          "end": 4659,
+          "start": 4593
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "0f5a56756ff363a34e6ea1bb",
+        "kind": "judge",
+        "note": "「题「这道题里是否有两个或更多需要分别回答的判断？」里是否有两个或更多需要分别回答的判断？」",
+        "replayed": false,
+        "site": {
+          "end": 4659,
+          "start": 4593
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "56dad9885e5b9e174107b2dc",
+        "kind": "judge",
+        "note": "「把题「这道题里是否有两个或更多需要分别回答的判断？」按更细的情形分开问，会比整体问更容易答准吗？」",
+        "replayed": false,
+        "site": {
+          "end": 4659,
+          "start": 4593
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "8b4fe5d1f0a27d0fe598283e",
+        "kind": "judge",
+        "note": "「判断题「这道题里是否有两个或更多需要分别回答的判断？」需要的参照对象和语境，这段材料里给够了吗？」",
+        "replayed": false,
+        "site": {
+          "end": 4659,
+          "start": 4593
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "603687ef255a736df1bdde9c",
+        "kind": "judge",
+        "note": "「题「这道题里是否有两个或更多需要分别回答的判断？」要判得更明确，最缺哪一类信息？」",
+        "replayed": false,
+        "site": {
+          "end": 4659,
+          "start": 4593
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "ac9400a47bd7d8c8ef4d4a98",
+        "kind": "judge",
+        "note": "「这道题里是否有两个或更多需要分别回答的判断？」",
+        "replayed": false,
+        "site": {
+          "end": 4659,
+          "start": 4593
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "c709456b15fbfe3698a88da9",
+        "kind": "judge",
+        "note": "「题「这道题里是否有两个或更多需要分别回答的判断？」的前提在这份材料上成立吗？」",
+        "replayed": false,
+        "site": {
+          "end": 4659,
+          "start": 4593
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "c33ff41efe2f587a8d38eba2",
+        "kind": "judge",
+        "note": "「题「这道题里是否有两个或更多需要分别回答的判断？」里是否有两个或更多需要分别回答的判断？」",
+        "replayed": false,
+        "site": {
+          "end": 4659,
+          "start": 4593
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "a46690184e4d10dc5dc535e4",
+        "kind": "judge",
+        "note": "「把题「这道题里是否有两个或更多需要分别回答的判断？」按更细的情形分开问，会比整体问更容易答准吗？」",
+        "replayed": false,
+        "site": {
+          "end": 4659,
+          "start": 4593
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "9d5dc80b11b87b15697e6d88",
+        "kind": "judge",
+        "note": "「判断题「这道题里是否有两个或更多需要分别回答的判断？」需要的参照对象和语境，这段材料里给够了吗？」",
+        "replayed": false,
+        "site": {
+          "end": 4659,
+          "start": 4593
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "5a47e47fe14bfa1394ebf8f8",
+        "kind": "judge",
+        "note": "「题「这道题里是否有两个或更多需要分别回答的判断？」要判得更明确，最缺哪一类信息？」",
+        "replayed": false,
+        "site": {
+          "end": 4659,
+          "start": 4593
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "967123720772dae27a3b3a98",
+        "kind": "judge",
+        "note": "「这道题里是否有两个或更多需要分别回答的判断？」",
+        "replayed": false,
+        "site": {
+          "end": 4659,
+          "start": 4593
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "a139829629b10654af5192bf",
+        "kind": "judge",
+        "note": "「题「这道题里是否有两个或更多需要分别回答的判断？」的前提在这份材料上成立吗？」",
+        "replayed": false,
+        "site": {
+          "end": 4659,
+          "start": 4593
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "e52affc47dedbfabe05b7b75",
+        "kind": "judge",
+        "note": "「题「这道题里是否有两个或更多需要分别回答的判断？」里是否有两个或更多需要分别回答的判断？」",
+        "replayed": false,
+        "site": {
+          "end": 4659,
+          "start": 4593
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "08b6be284935124744bcf967",
+        "kind": "judge",
+        "note": "「把题「这道题里是否有两个或更多需要分别回答的判断？」按更细的情形分开问，会比整体问更容易答准吗？」",
+        "replayed": false,
+        "site": {
+          "end": 4659,
+          "start": 4593
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "2f74dcf6507b0cc183cf0c6c",
+        "kind": "judge",
+        "note": "「判断题「这道题里是否有两个或更多需要分别回答的判断？」需要的参照对象和语境，这段材料里给够了吗？」",
+        "replayed": false,
+        "site": {
+          "end": 4659,
+          "start": 4593
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "a64c0f24a833dc6d18cbd91c",
+        "kind": "judge",
+        "note": "「题「这道题里是否有两个或更多需要分别回答的判断？」要判得更明确，最缺哪一类信息？」",
+        "replayed": false,
+        "site": {
+          "end": 4659,
+          "start": 4593
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "0c9cbbdef909555fb4a1551b",
+        "kind": "judge",
+        "note": "「上下文里那道题问的东西，这段材料里有没有？」",
+        "replayed": false,
+        "site": {
+          "end": 5097,
+          "start": 5021
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "d58dc162f7f7619a503996d0",
+        "kind": "judge",
+        "note": "「题「上下文里那道题问的东西，这段材料里有没有？」的前提在这份材料上成立吗？」",
+        "replayed": false,
+        "site": {
+          "end": 5097,
+          "start": 5021
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "b454f2d25b08bf3ce75917dd",
+        "kind": "judge",
+        "note": "「题「上下文里那道题问的东西，这段材料里有没有？」里是否有两个或更多需要分别回答的判断？」",
+        "replayed": false,
+        "site": {
+          "end": 5097,
+          "start": 5021
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "45b4aa6d2e4114c93a4f377d",
+        "kind": "judge",
+        "note": "「把题「上下文里那道题问的东西，这段材料里有没有？」按更细的情形分开问，会比整体问更容易答准吗？」",
+        "replayed": false,
+        "site": {
+          "end": 5097,
+          "start": 5021
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "819d6d9663032930f4e000fd",
+        "kind": "judge",
+        "note": "「判断题「上下文里那道题问的东西，这段材料里有没有？」需要的参照对象和语境，这段材料里给够了吗？」",
+        "replayed": false,
+        "site": {
+          "end": 5097,
+          "start": 5021
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "52104d9e185efbbafa10c764",
+        "kind": "judge",
+        "note": "「题「上下文里那道题问的东西，这段材料里有没有？」要判得更明确，最缺哪一类信息？」",
+        "replayed": false,
+        "site": {
+          "end": 5097,
+          "start": 5021
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "58c6662415918ea4ca5902af",
+        "kind": "judge",
+        "note": "「上下文里那道题问的东西，这段材料里有没有？」",
+        "replayed": false,
+        "site": {
+          "end": 5097,
+          "start": 5021
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "e4af6aabda0635b6ea5ec402",
+        "kind": "judge",
+        "note": "「题「上下文里那道题问的东西，这段材料里有没有？」的前提在这份材料上成立吗？」",
+        "replayed": false,
+        "site": {
+          "end": 5097,
+          "start": 5021
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "e71f4afbd330e180fc04e425",
+        "kind": "judge",
+        "note": "「题「上下文里那道题问的东西，这段材料里有没有？」里是否有两个或更多需要分别回答的判断？」",
+        "replayed": false,
+        "site": {
+          "end": 5097,
+          "start": 5021
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "b74c0ab75efa1067d35d9af9",
+        "kind": "judge",
+        "note": "「把题「上下文里那道题问的东西，这段材料里有没有？」按更细的情形分开问，会比整体问更容易答准吗？」",
+        "replayed": false,
+        "site": {
+          "end": 5097,
+          "start": 5021
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "1c1e7777901182a03fd73a1c",
+        "kind": "judge",
+        "note": "「判断题「上下文里那道题问的东西，这段材料里有没有？」需要的参照对象和语境，这段材料里给够了吗？」",
+        "replayed": false,
+        "site": {
+          "end": 5097,
+          "start": 5021
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "8c1128079691cd30fc763b35",
+        "kind": "judge",
+        "note": "「题「上下文里那道题问的东西，这段材料里有没有？」要判得更明确，最缺哪一类信息？」",
+        "replayed": false,
+        "site": {
+          "end": 5097,
+          "start": 5021
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "f17186268dbf8e0809b8c2ca",
+        "kind": "judge",
+        "note": "「上下文里那道题问的东西，这段材料里有没有？」",
+        "replayed": false,
+        "site": {
+          "end": 5097,
+          "start": 5021
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "1ee303f7f25c8bd81cea3e7d",
+        "kind": "judge",
+        "note": "「题「上下文里那道题问的东西，这段材料里有没有？」的前提在这份材料上成立吗？」",
+        "replayed": false,
+        "site": {
+          "end": 5097,
+          "start": 5021
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "6052e53510ddfde53ec975ee",
+        "kind": "judge",
+        "note": "「题「上下文里那道题问的东西，这段材料里有没有？」里是否有两个或更多需要分别回答的判断？」",
+        "replayed": false,
+        "site": {
+          "end": 5097,
+          "start": 5021
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "bdb882d72845327bab4b9123",
+        "kind": "judge",
+        "note": "「把题「上下文里那道题问的东西，这段材料里有没有？」按更细的情形分开问，会比整体问更容易答准吗？」",
+        "replayed": false,
+        "site": {
+          "end": 5097,
+          "start": 5021
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "47a680e86030813592230a51",
+        "kind": "judge",
+        "note": "「判断题「上下文里那道题问的东西，这段材料里有没有？」需要的参照对象和语境，这段材料里给够了吗？」",
+        "replayed": false,
+        "site": {
+          "end": 5097,
+          "start": 5021
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "a124a7510f832ceccd633992",
+        "kind": "judge",
+        "note": "「题「上下文里那道题问的东西，这段材料里有没有？」要判得更明确，最缺哪一类信息？」",
+        "replayed": false,
+        "site": {
+          "end": 5097,
+          "start": 5021
+        }
+      }
+    ],
+    "warnings": [
+      "W-diag-mention-scope: 运行期诊断 @1374 test「这段话是否提到了成都？」：题面问「提到」却没有声明外延：代称、所属成员、联想相关算不算，读题的人各有口径（B13；第三轮人机一致 78%，分歧全部来自这里）。修法：写明口径，例如「是否直接写出了…，或用代称明确指向它（只是话题相关不算）」，或改问「是否与…这个话题相关」",
+      "W-diag-two-judgments: 运行期诊断 @1374 test「这段话是否说他去出差并且见了朋友？」：题面用「并且」连接两个条件：一道题藏了两个判断（B13），读数混着两件事，出口不知道在答哪一件。修法：拆成两道题，用三值合取（all / 逐元素 ∧）组合",
+      "W-diag-open-question: 运行期诊断 @1374 test「他在成都住了多少天？」：题面是开放问句（含「多少」），题型却是是非题：是非题只划分「是 / 否」两块，开放问题的真答案不在这两块里，题式不安全（B13、B1）。修法：改写成「是否…」的是非问句；要从候选里挑用 select，要分档用 measure",
+      "W-window-untested: @1374 画像没有测过窗口（window），对象长度不核；超窗的语境可能接管读数而无痕",
+      "W-window-untested: @4593 画像没有测过窗口（window），对象长度不核；超窗的语境可能接管读数而无痕",
+      "W-window-untested: @5021 画像没有测过窗口（window），对象长度不核；超窗的语境可能接管读数而无痕",
+      "returned_unsure: unsure(tie)"
+    ]
+  },
+  "value": {
+    "answered": {
+      "detail": {
+        "ignore": [],
+        "questions": [
+          {
+            "calib": "diag-demo",
+            "op": "noul",
+            "question": "fe110bdf799f05a9c379af93",
+            "text": "这段话是否提到了成都？"
+          },
+          {
+            "calib": "diag-demo",
+            "op": "noul",
+            "question": "e654613bb414fae4ab5614b7",
+            "text": "这段话是否说他去出差并且见了朋友？"
+          },
+          {
+            "calib": "diag-demo",
+            "op": "noul",
+            "question": "999fa6b21d174505b3aa5f74",
+            "text": "他在成都住了多少天？"
+          }
+        ]
+      },
+      "evidence": [
+        "8e395f4ad0a89ab039c2d53e",
+        "0e18a0cb43cca9a17605938f",
+        "e3fcc43e510f3d13f02b8605"
+      ],
+      "kind": "sieve",
+      "pending": [
+        {
+          "cause": "tie",
+          "exit": {
+            "consumed": true,
+            "exit": "unsure(tie)",
+            "id": 2,
+            "q": "999fa6b21d174505b3aa5f74"
+          },
+          "index": 0,
+          "item": {
+            "content": "我上个月去了成都出差，顺便见了老朋友。",
+            "mat": "c6d0980e57fe4f4137896f6f",
+            "origin": [
+              "literal"
+            ],
+            "taint": "Trusted"
+          },
+          "key": "e3fcc43e510f3d13f02b8605",
+          "pos": 0,
+          "q": {
+            "calib": "diag-demo",
+            "op": "noul",
+            "question": "999fa6b21d174505b3aa5f74",
+            "text": "他在成都住了多少天？"
+          },
+          "qi": 2,
+          "trail": []
+        }
+      ],
+      "purpose": null,
+      "resume": {},
+      "spent": {
+        "calls": 1,
+        "usd": 0.0
+      },
+      "value": [
+        {
+          "cause": null,
+          "exit": {
+            "consumed": true,
+            "exit": "act",
+            "id": 0,
+            "q": "fe110bdf799f05a9c379af93"
+          },
+          "index": 0,
+          "item": {
+            "content": "我上个月去了成都出差，顺便见了老朋友。",
+            "mat": "c6d0980e57fe4f4137896f6f",
+            "origin": [
+              "literal"
+            ],
+            "taint": "Trusted"
+          },
+          "key": "8e395f4ad0a89ab039c2d53e",
+          "pos": 0,
+          "q": {
+            "calib": "diag-demo",
+            "op": "noul",
+            "question": "fe110bdf799f05a9c379af93",
+            "text": "这段话是否提到了成都？"
+          },
+          "qi": 0,
+          "trail": []
+        },
+        {
+          "cause": null,
+          "exit": {
+            "consumed": true,
+            "exit": "act",
+            "id": 1,
+            "q": "e654613bb414fae4ab5614b7"
+          },
+          "index": 0,
+          "item": {
+            "content": "我上个月去了成都出差，顺便见了老朋友。",
+            "mat": "c6d0980e57fe4f4137896f6f",
+            "origin": [
+              "literal"
+            ],
+            "taint": "Trusted"
+          },
+          "key": "0e18a0cb43cca9a17605938f",
+          "pos": 0,
+          "q": {
+            "calib": "diag-demo",
+            "op": "noul",
+            "question": "e654613bb414fae4ab5614b7",
+            "text": "这段话是否说他去出差并且见了朋友？"
+          },
+          "qi": 1,
+          "trail": []
+        }
+      ]
+    },
+    "auto": [
+      {
+        "codes": [
+          "W-diag-mention-scope"
+        ],
+        "q": "这段话是否提到了成都？"
+      },
+      {
+        "codes": [
+          "W-diag-two-judgments"
+        ],
+        "q": "这段话是否说他去出差并且见了朋友？"
+      },
+      {
+        "codes": [
+          "W-diag-open-question"
+        ],
+        "q": "他在成都住了多少天？"
+      }
+    ],
+    "in_material": {
+      "detail": {
+        "advice": "ignore 的题问的东西不在这段材料里：换材料，或先问缺哪类信息、取来补进材料再判",
+        "diagnosis": "in_material",
+        "ignore": [
+          {
+            "cause": null,
+            "exit": {
+              "consumed": true,
+              "exit": "ignore",
+              "id": 8,
+              "q": "13a875842ad4488dc2dd1f73"
+            },
+            "index": 2,
+            "item": {
+              "slots": {
+                "ctx": [
+                  "他在成都住了多少天？"
+                ],
+                "on": "我上个月去了成都出差，顺便见了老朋友。"
+              },
+              "state": "9f1fa0677573b8cf27476091",
+              "taint": "Trusted"
+            },
+            "key": "f17186268dbf8e0809b8c2ca",
+            "pos": 2,
+            "q": {
+              "calib": "diag-in-material",
+              "op": "noul",
+              "question": "13a875842ad4488dc2dd1f73",
+              "text": "上下文里那道题问的东西，这段材料里有没有？"
+            },
+            "qi": 0,
+            "trail": []
+          }
+        ],
+        "question": {
+          "calib": "diag-in-material",
+          "op": "noul",
+          "question": "13a875842ad4488dc2dd1f73",
+          "text": "上下文里那道题问的东西，这段材料里有没有？"
+        }
+      },
+      "evidence": [
+        "0c9cbbdef909555fb4a1551b",
+        "58c6662415918ea4ca5902af",
+        "f17186268dbf8e0809b8c2ca"
+      ],
+      "kind": "outcome",
+      "pending": [],
+      "purpose": null,
+      "resume": {},
+      "spent": {
+        "calls": 3,
+        "usd": 0.0
+      },
+      "value": [
+        {
+          "cause": null,
+          "exit": {
+            "consumed": true,
+            "exit": "act",
+            "id": 6,
+            "q": "13a875842ad4488dc2dd1f73"
+          },
+          "index": 0,
+          "item": {
+            "slots": {
+              "ctx": [
+                "这段话是否提到了成都？"
+              ],
+              "on": "我上个月去了成都出差，顺便见了老朋友。"
+            },
+            "state": "0ba545f286781b8f5d85a96d",
+            "taint": "Trusted"
+          },
+          "key": "0c9cbbdef909555fb4a1551b",
+          "pos": 0,
+          "q": {
+            "calib": "diag-in-material",
+            "op": "noul",
+            "question": "13a875842ad4488dc2dd1f73",
+            "text": "上下文里那道题问的东西，这段材料里有没有？"
+          },
+          "qi": 0,
+          "trail": []
+        },
+        {
+          "cause": null,
+          "exit": {
+            "consumed": true,
+            "exit": "act",
+            "id": 7,
+            "q": "13a875842ad4488dc2dd1f73"
+          },
+          "index": 1,
+          "item": {
+            "slots": {
+              "ctx": [
+                "这段话是否说他去出差并且见了朋友？"
+              ],
+              "on": "我上个月去了成都出差，顺便见了老朋友。"
+            },
+            "state": "3a7daf0e9513ce0a37464f99",
+            "taint": "Trusted"
+          },
+          "key": "58c6662415918ea4ca5902af",
+          "pos": 1,
+          "q": {
+            "calib": "diag-in-material",
+            "op": "noul",
+            "question": "13a875842ad4488dc2dd1f73",
+            "text": "上下文里那道题问的东西，这段材料里有没有？"
+          },
+          "qi": 0,
+          "trail": []
+        }
+      ]
+    },
+    "two_judgments": {
+      "detail": {
+        "advice": "act 的题藏了两个判断：拆成两道题，再用三值合取（all / 逐元素 ∧）组合",
+        "diagnosis": "two_judgments",
+        "ignore": [
+          {
+            "cause": null,
+            "exit": {
+              "consumed": true,
+              "exit": "ignore",
+              "id": 3,
+              "q": "3bb383eebc0557004f6369d9"
+            },
+            "index": 0,
+            "item": {
+              "slots": {
+                "on": "这段话是否提到了成都？"
+              },
+              "state": "fbe84ef4f1ac4a9ba90011e2",
+              "taint": "Trusted"
+            },
+            "key": "de3522411a9b008c86f418e4",
+            "pos": 0,
+            "q": {
+              "calib": "diag-two-judgments",
+              "op": "noul",
+              "question": "3bb383eebc0557004f6369d9",
+              "text": "这道题里是否有两个或更多需要分别回答的判断？"
+            },
+            "qi": 0,
+            "trail": []
+          },
+          {
+            "cause": null,
+            "exit": {
+              "consumed": true,
+              "exit": "ignore",
+              "id": 5,
+              "q": "3bb383eebc0557004f6369d9"
+            },
+            "index": 2,
+            "item": {
+              "slots": {
+                "on": "他在成都住了多少天？"
+              },
+              "state": "ba14518f5b9c05368352efac",
+              "taint": "Trusted"
+            },
+            "key": "967123720772dae27a3b3a98",
+            "pos": 2,
+            "q": {
+              "calib": "diag-two-judgments",
+              "op": "noul",
+              "question": "3bb383eebc0557004f6369d9",
+              "text": "这道题里是否有两个或更多需要分别回答的判断？"
+            },
+            "qi": 0,
+            "trail": []
+          }
+        ],
+        "question": {
+          "calib": "diag-two-judgments",
+          "op": "noul",
+          "question": "3bb383eebc0557004f6369d9",
+          "text": "这道题里是否有两个或更多需要分别回答的判断？"
+        }
+      },
+      "evidence": [
+        "de3522411a9b008c86f418e4",
+        "ac9400a47bd7d8c8ef4d4a98",
+        "967123720772dae27a3b3a98"
+      ],
+      "kind": "outcome",
+      "pending": [],
+      "purpose": null,
+      "resume": {},
+      "spent": {
+        "calls": 3,
+        "usd": 0.0
+      },
+      "value": [
+        {
+          "cause": null,
+          "exit": {
+            "consumed": true,
+            "exit": "act",
+            "id": 4,
+            "q": "3bb383eebc0557004f6369d9"
+          },
+          "index": 1,
+          "item": {
+            "slots": {
+              "on": "这段话是否说他去出差并且见了朋友？"
+            },
+            "state": "a564df2648bbe1b2dc074e71",
+            "taint": "Trusted"
+          },
+          "key": "ac9400a47bd7d8c8ef4d4a98",
+          "pos": 1,
+          "q": {
+            "calib": "diag-two-judgments",
+            "op": "noul",
+            "question": "3bb383eebc0557004f6369d9",
+            "text": "这道题里是否有两个或更多需要分别回答的判断？"
+          },
+          "qi": 0,
+          "trail": []
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,4 @@
+// 题库条目 claim_supported（第二批 C10，属性 · 单对象 · 语义题式；B36-2：Astra 写材料、Sonnet 标注、Opus 盲复核全覆盖）。
+// 条目说明：bank/entries/<form_hash>/条目.md（含「标注口径」栏与口径已知张力，B119）。
+// 用法：judge(state(mat("材料：……\n陈述：……")), fill(claim_supported, {}))；是 = 陈述里每条事实性说法都能在材料里找到依据。
+let claim_supported = form("test", "这段文字里，「陈述」部分的每一条事实性说法，是否都能在「材料」部分里找到依据？", {calib: "attr-claim-supported"});

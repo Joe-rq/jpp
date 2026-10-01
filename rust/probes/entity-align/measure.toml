@@ -5,7 +5,7 @@
 # 主读数为折行归一行数比（100 列、CJK 双宽），原始行数比、token 比、调用数比并列；caliber1_band 同作折行归一的带。
 [reference]
 frame = "专用语言对通用语言（J++ 源码按 COCOMO II 生成器计数规则当作写给生成器的输入）"
-caliber1_band = [9.0, 20.0]   # T1 的带（B79；Nature 2026-09-24 确认验收 1 按 T1 判）； 只算专用语言文本：GAL 9×、Jones C→SQL 9.8×、TranscriptSQL 与 Sawzall 10×、BOOM-MR 16.6×
+caliber1_band = [9.0, 20.0]   # T1 的带（B79；2026-09-24 确认验收 1 按 T1 判）； 只算专用语言文本：GAL 9×、Jones C→SQL 9.8×、TranscriptSQL 与 Sawzall 10×、BOOM-MR 16.6×
 t0_band = [2.7, 4.3]         # T0（最小任务书）对 LMQL 带：同规模同结构，基线 34–78 行（B79）
 caliber2_band = [3.5, 4.6]    # 计入生成器或胶水：GAL 3.5×、BOOM-MR 3.9×、QSM C→SQL 4.6×
 time_band = [1.45, 6.0]       # Sprat 1.45–2.3× 到 RISLA 4–6×；只报位置，不设通过线

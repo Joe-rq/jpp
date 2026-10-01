@@ -131,11 +131,21 @@ pub struct ClassAssumptions {
     pub single_char_existence_bias: Field<Json>,
 }
 
+/// 一次判断调用的 input token 回归（画像 `cost.regression`）：token ≈ 截距 + 状态系数 × 状态字符 + 题系数 × 题字符。
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct TokenRegression {
+    pub intercept_tokens: f64,
+    pub state_char_coef: f64,
+    pub question_char_coef: f64,
+}
+
 /// 一个效应实例的画像分表（`20` §3.9 `EffectProfile`）：调度与预算输入；读数效应另带类假设。
 #[derive(Clone, Debug, Default, PartialEq)]
 pub struct EffectProfile {
     /// 每个 input token 的价格（美元；`cost.price_usd_per_input_token`，B73）
     pub cost: Field<f64>,
+    /// 一次调用的 input token 回归（`cost.regression`；步 30 / B0488 逐组费用估计用）。三个系数缺一即未测
+    pub token_regression: Field<TokenRegression>,
     /// 每次调用的 p95 时延（秒；`concurrency.latency_s.p95`，B32）
     pub latency_p95: Field<f64>,
     /// 端口内并发上限（`concurrency.lower_bound_ok`；未测取 1，`20` §3.9，步 15e）
@@ -196,9 +206,16 @@ pub struct Profile {
     pub actions: BTreeMap<String, ActionProfile>,
     /// 冷键（非上岗）用的保守线 `(hi, lo)`（`lines.safety_default`）；只供 `allocate`/`unsure_bound` 的强度排序
     pub safety: Field<(f64, f64)>,
-    /// δ 先验：noul / choice / score（`delta.<题式>.immediate.p99`）。只作认证输入（`20` §3.9 `delta_prior`），
-    /// `cut` 不读它
+    /// δ 先验：noul / choice / score，**中段**（`delta.<题式>.mid.immediate.p99`，裁定四十四、四十五）。
+    /// 这是语言用的 δ：认证导入、两端先标、`cut` 在记录没有 δ 时的兜底都取它。三列都在才算已测
     pub delta: Field<(f64, f64, f64)>,
+    /// 尾段 δ（`delta.<题式>.immediate.p99`，E1 以满信心材料为主）：只作记录与 `jpp profile check`，
+    /// 认证与 `cut` 不读（裁定四十五：退回 tail 是已知偏小的数）
+    pub delta_tail: Field<(f64, f64, f64)>,
+    /// 画像里任一列测了 δ（尾段或中段，哪怕只有一列）：只供「缺 mid」判定（Z0411 (ii)，与 `jpp profile check` 同口径）
+    pub delta_any: bool,
+    /// 画像版本（顶层 `profile_revision`；缺即 1）。2 起 `delta` 带读数段（裁定四十四）
+    pub revision: u32,
 }
 
 /// 画像 JSON Schema 的唯一来源（`20` §2.3、§九；步 15d）。顶层键封闭（未知键报错），嵌套测量节开放。
@@ -229,6 +246,8 @@ pub fn profile_schema() -> Json {
         "provenance",
         "run_status",
         "run_budget_usd",
+        // 裁定四十四：画像版本（2 起 δ 分读数段）
+        "profile_revision",
     ];
     const 布尔类假设: &[&str] = &[
         "text_only",
@@ -301,10 +320,22 @@ impl Profile {
             actions: BTreeMap::new(),
             safety: Field::untested(),
             delta: Field::untested(),
+            delta_tail: Field::untested(),
+            delta_any: false,
+            revision: 1,
         }
     }
 
-    /// 某题型的 δ 先验（`Op` 顺序 noul / choice / score）；未测为 `None`
+    /// **缺 mid**：画像里任一列测了 δ（尾段或中段），而中段三列不齐（裁定四十五：这样的画像重测后才能用于 `cut`、
+    /// 认证与裂变，不退回 tail；Z0411 (ii)：与 `jpp profile check` 同口径，只有部分列的画像也算缺）。
+    /// δ 一个段都没测的画像不算缺 mid：不报错，按裁定五十六（主控板 Z0412）处理——带宽未知，`cut` 照线切不加带、
+    /// 出口带 `delta_unknown`，裂变不判 tie，都不编 0 去加宽带
+    pub fn delta_mid_missing(&self) -> bool {
+        self.delta.get().is_none() && (self.delta_any || self.delta_tail.get().is_some())
+    }
+
+    /// 某题型的 δ 先验（`Op` 顺序 noul / choice / score），取中段；中段未测为 `None`（缺 mid 时调用方报错，
+    /// 不退回尾段，裁定四十五）
     pub fn delta_prior(&self, op: jpp_ir::key::Op) -> Option<f64> {
         self.delta.get().map(|d| match op {
             jpp_ir::key::Op::Test => d.0,
@@ -416,6 +447,10 @@ impl Profile {
     pub fn price_per_input_token(&self) -> Option<f64> {
         self.judge().and_then(|e| e.cost.get().copied())
     }
+    /// 判断调用的 input token 回归（`cost.regression`，步 30 / B0488）；未测为 `None`
+    pub fn token_regression(&self) -> Option<TokenRegression> {
+        self.judge().and_then(|e| e.token_regression.get().copied())
+    }
     /// 单次真机请求的超时（秒）；未测为 `None`
     pub fn transport_timeout_s(&self) -> Option<f64> {
         self.judge().and_then(|e| e.timeout_s.get().copied())
@@ -514,14 +549,29 @@ impl Profile {
             (Some(hi), Some(lo)) => Field::known((hi, lo), "lines.safety_default"),
             _ => Field::untested(),
         };
-        // choice 的 δ 取「被选中那档的概率」那一列（与 Python `delta_for` 的映射一致）
-        let delta = match (
-            取(&["delta", "noul", "immediate", "p99"]),
-            取(&["delta", "choice_prob_chosen", "immediate", "p99"]),
-            取(&["delta", "score", "immediate", "p99"]),
+        // choice 的 δ 取「被选中那档的概率」那一列（与 Python `delta_for` 的映射一致）。
+        // 裁定四十四：`delta.<题式>.mid` 是中段（语言用的 δ），原来的 `delta.<题式>.immediate` 是尾段
+        let 三列 = |段: &[&str], 来源: &'static str| match (
+            取(&[&["delta", "noul"][..], 段].concat()),
+            取(&[&["delta", "choice_prob_chosen"][..], 段].concat()),
+            取(&[&["delta", "score"][..], 段].concat()),
         ) {
-            (Some(dn), Some(dc), Some(ds)) => Field::known((dn, dc, ds), "delta.*.immediate.p99"),
+            (Some(dn), Some(dc), Some(ds)) => Field::known((dn, dc, ds), 来源),
             _ => Field::untested(),
+        };
+        let delta = 三列(&["mid", "immediate", "p99"], "delta.*.mid.immediate.p99");
+        let delta_tail = 三列(&["immediate", "p99"], "delta.*.immediate.p99");
+        let delta_any = ["noul", "choice_prob_chosen", "score"].iter().any(|c| {
+            取(&["delta", c, "immediate", "p99"]).is_some()
+                || 取(&["delta", c, "mid", "immediate", "p99"]).is_some()
+        });
+        let revision = match j.get("profile_revision") {
+            None => 1,
+            Some(v) => v
+                .as_u64()
+                .filter(|&r| r >= 1 && r <= u32::MAX as u64)
+                .ok_or_else(|| format!("画像 profile_revision 要是正整数，得到 {v}"))?
+                as u32,
         };
         // 窗口缺即未测（步 15d；此前缺即报错）。两段都在才算已测。
         let text_window =
@@ -582,6 +632,17 @@ impl Profile {
             cost: Field::from_opt(
                 取(&["cost", "price_usd_per_input_token"]),
                 "cost.price_usd_per_input_token",
+            ),
+            // 步 30 / B0488：三个系数都在才算测过
+            token_regression: Field::from_opt(
+                (|| {
+                    Some(TokenRegression {
+                        intercept_tokens: 取(&["cost", "regression", "intercept_tokens"])?,
+                        state_char_coef: 取(&["cost", "regression", "state_char_coef"])?,
+                        question_char_coef: 取(&["cost", "regression", "question_char_coef"])?,
+                    })
+                })(),
+                "cost.regression",
             ),
             latency_p95: Field::from_opt(
                 取(&["concurrency", "latency_s", "p95"]),
@@ -701,6 +762,9 @@ impl Profile {
             actions,
             safety,
             delta,
+            delta_tail,
+            delta_any,
+            revision,
         })
     }
 }
@@ -861,6 +925,10 @@ mod tests {
         j.as_object_mut().unwrap().remove("lines");
         let p = Profile::from_json(&j).expect("δ 先验与保守线缺也是未测（15d-2）");
         assert!(p.delta.get().is_none() && p.safety.get().is_none());
+        assert!(
+            p.delta_tail.get().is_none() && !p.delta_mid_missing(),
+            "一个段都没测不算缺 mid"
+        );
     }
 
     /// `Profile::untested()` 全部未测、没有哈希

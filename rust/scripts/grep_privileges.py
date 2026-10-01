@@ -47,6 +47,8 @@ FORBIDDEN = [
     r"\.(taint|presupposition|request|permute|over_kind)\s*=[^=]",
     r"\bCap\s*\{",
     r"PhantomData",
+    # 步 23b：内核裂变合回签发派生是非题的入口（`caps.rs::裂变派生题`，自铸 `IssueQuestion` 令牌），构造文件不得直接调
+    r"裂变派生题",
 ]
 CAP_CALL = {
     "read_answer": "ReadAnswer",

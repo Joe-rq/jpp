@@ -90,7 +90,8 @@ fn a_首跑每键一条_同账本再跑逐字节不变() {
     assert_eq!(n.len(), 1, "只命中一条题式记录：{n:?}");
     let head: Value =
         serde_json::from_str(fs::read_to_string(&l1).unwrap().lines().next().unwrap()).unwrap();
-    assert_eq!(head["version"], 3);
+    // C-1：账本升到 v4（v3 照读）
+    assert_eq!(head["version"], 5); // 步 34 V5 起 5
     assert!(
         head.get("calib_used").is_none()
             && head["header"]["compared"].get("calib_used_hash").is_none()

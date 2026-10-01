@@ -22,7 +22,10 @@ ALLOWED = {
     "jpp-calib": {"jpp-ir", "jpp-value", "jpp-effects"},
     "jpp-check": {"jpp-ir", "jpp-effects"},
     "jpp-plan": {"jpp-ir", "jpp-effects"},
-    "jpp-runtime": {"jpp-ir", "jpp-value", "jpp-effects", "jpp-ledger"},
+    # B198（裁定六十一）：单元图 jpp-cell 是 L3b 层，在 L3 与 L4 之间；运行时依赖它
+    "jpp-cell": {"jpp-ir", "jpp-value", "jpp-effects", "jpp-ledger"},
+    "jpp-runtime": {"jpp-ir", "jpp-value", "jpp-effects", "jpp-ledger", "jpp-cell"},
+    # 步 26 建出（主会话裁定 2026-09-29 第十四条）：诊断闸门 `diagnose` 的注册与 `lib_version`
     "jpp-lib": {"jpp-ir", "jpp-value", "jpp-effects", "jpp-check"},
 }
 

@@ -1,0 +1,34 @@
+// 连环题：语言替作者出下一道题（步 28，B45 确定性派生；意图汇编 7b 的原题）。
+//
+// 作者写的：两个题式（第一题 root、程度题 money）、money 的填法签名 money_sig、root 的 act 块上的签名
+// aspect_sig（写在题式 root 上，裁定十九、B192——写一次，import 这个题式的程序都按它派生）、两个条目的材料和
+// 跳数上限。签名只在题式上写一次，不按跳写；也不写「下一题怎么定」，没有事先生成的题树：
+//   第 1 跳  题式 root「c 的加入会让 a 与 b 的合作更紧密吗？」
+//   第 2 跳  先选后填：判出 act → 按 root 上 act 块的签名填「变化最大的方面」，选中「资金」
+//   第 3 跳  先选后填：「资金」带着自己的签名（题式 money 与它的可选值）→ 填 money 的空「领域」，选中「硬件」
+//   第 4 跳  填好的程度题，作者声明线 {hi: 0.6}
+//   第 5 跳  x1 读数落在线下（band）→ 划分细化成四道「是否至少达到第 j 档」（语言从题式 money 的档位出题）；
+//            x2 没有合作历史（缺 ref，J-09 的 insufficient）→ 前提反面，按 money 声明的前提问「是否 a 与 b 已经在合作？」
+// 第 2、3 跳问什么、候选有哪些来自作者在题式上写的签名；第 5 跳是语言只凭出口结构与题式元数据出的题。
+// 每道派生题都是一个题式填出来的（带 form_hash，校准挂在题式上），先过验题闸门（静态诊断 diagnose、两道字面
+// 诊断题），账本里每个候选一条 transform 条目。原出口照判断器的回答走：x1 第 4 跳的出口仍是 band，细化结果另放在 refined。
+// 固定观察的读数是合成的，只检查构造，不代表模型表现。
+import "../lib/derive/chain.jpp";
+budget {calls: 40, cost: 0, depth: 512};
+
+let money = form("measure", "c 加入后，a 与 b 在{领域}上的合作金额会怎样变化？",
+                 {calib: "chain-money", scale: ["明显变小", "略变小", "基本不变", "略变大", "明显变大"],
+                  evidence: ["ref"], presupposition: "a 与 b 已经在合作"});
+let money_sig = {form: money, params: [{slot: "领域", choices: ["硬件", "软件", "渠道"]}], line: {declare: {hi: 0.6}}};
+let aspect_sig = {params: [{slot: "变化最大的方面", choices: [{name: "资金", sig: money_sig}, "分工", "进度"]}]};
+let root = form("test", "c 的加入会让 a 与 b 的合作更紧密吗？", {calib: "chain-root", on: {act: aspect_sig}});
+let first = fn(item) { {form: root} };
+let items = [{on: mat("a 做硬件，b 做渠道；c 做软件，打算加入。"), ref: mat("a 与 b 合作三年，去年合作金额 200 万。")},
+             {on: mat("a 做硬件，b 做渠道；c 做软件，想要加入。")}];
+
+let r = chain(items, first, 6, {});
+{value: map(r.value, fn(v) { {by: v.by, refined: if has(v, "refined") { v.refined } else { unit },
+                              conclusion: if has(v, "conclusion") { v.conclusion } else { unit },
+                              path: map(v.path, fn(p) { p.by + "：" + p.q + " → " + exit_kind(p.exit) })} }),
+ pending: r.pending, hops: r.detail.hops, per_hop: r.detail.per_hop,
+ rejected: r.detail.rejected, unchosen: r.detail.unchosen, version: r.detail.version}

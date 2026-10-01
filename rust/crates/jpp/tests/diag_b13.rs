@@ -113,3 +113,72 @@ fn 模板槽名不参与词面匹配() {
     .collect();
     assert!(r.is_empty(), "{r:?}");
 }
+
+/// Z0534：英文元题按形状认（帮助、用处一类词 + 判断、回答、决定一类词），中文同一形状；两面
+#[test]
+fn 元题_按形状_英文与中文() {
+    for t in [
+        "Does this material help judge whether the plan is feasible?",
+        "Would this passage be useful for deciding the case?",
+        "这段话对确定责任人有用吗？",
+    ] {
+        assert!(q("test", t).contains(&"W-diag-meta".to_string()), "{t}");
+    }
+    for t in [
+        "Does the plan list a budget?",
+        "Is the material in English?",
+        "这段有观点吗？",
+    ] {
+        assert!(!q("test", t).contains(&"W-diag-meta".to_string()), "{t}");
+    }
+}
+
+/// Z0534：英文一题两问按形状认（两处 whether；both … and；and / or 后接助动词起的第二个问句）；名词并列不算
+#[test]
+fn 一题两问_按形状_英文() {
+    for t in [
+        "Is the company hiring now and does the candidate fit the open role?",
+        "Whether the plan is funded and whether it is staffed?",
+        "Is it both cheap and fast?",
+    ] {
+        assert!(
+            q("test", t).contains(&"W-diag-two-judgments".to_string()),
+            "{t}"
+        );
+    }
+    for t in [
+        "Does it build payments and ledgers?",
+        "Is the office in Taipei and Tokyo?",
+        "Is the plan feasible?",
+    ] {
+        assert!(
+            !q("test", t).contains(&"W-diag-two-judgments".to_string()),
+            "{t}"
+        );
+    }
+}
+
+/// Z0534 复核收窄：评判类真题不判元题（帮助类词没有直接支配判断动词，或判断类是名词、是 answer）
+#[test]
+fn 元题_评判类真题不误拒() {
+    for t in [
+        "Does the response help answer the user's question?",
+        "Is the answer relevant to the question the user asked?",
+        "Does the reviewer's comment help the authors decide what to fix?",
+        "Is the evidence relevant to the court's decision?",
+    ] {
+        assert!(!q("test", t).contains(&"W-diag-meta".to_string()), "{t}");
+    }
+    // 已知误报：与「help decide」这类元题形状相同，按题面分不开（复核-线A-Z0534 第 88 行），这里钉住现状
+    assert!(
+        q("test", "Did the manager help decide the budget?").contains(&"W-diag-meta".to_string())
+    );
+    // 收窄后仍拦的真元题
+    for t in [
+        "Is this passage helpful in deciding the case?",
+        "Would this help to judge the claim?",
+        "Is it relevant for assessing the risk?",
+    ] {
+        assert!(q("test", t).contains(&"W-diag-meta".to_string()), "{t}");
+    }
+}

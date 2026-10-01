@@ -118,6 +118,20 @@ pub fn judge_key(
     ])
 }
 
+/// 欠账记号的摘要（R9、R4；原型乙 Z0419(1) 的六项构成）：帧种类（`program`、`code`）、主人、过桥种类（线上
+/// `cut`、`fit`、`cut_score`；单元图内部另有 `claim`）、第几次过桥、题内容键、原因（B197 的名字）。
+/// `jpp-ledger::DebtMark::token` 与 `jpp-cell` 的记号都经这一个函数算（主控 Z0519：只留一份）。不上账本。
+pub fn debt_mark_token(
+    frame: &str,
+    owner: &str,
+    via: &str,
+    nth: u32,
+    key: &str,
+    cause: &str,
+) -> String {
+    hash_of(&["debt-mark", frame, owner, via, &nth.to_string(), key, cause])
+}
+
 pub fn effect_key(kind: &str, parts: &[&str]) -> String {
     let mut v = vec![kind];
     v.extend_from_slice(parts);
@@ -428,6 +442,153 @@ impl LineGrade {
     /// 完整判定还要看正交位，只在 `jpp_value::value::Exit::releases` 一处合成。
     pub fn releases(self) -> bool {
         matches!(self, LineGrade::Certified | LineGrade::Form)
+    }
+}
+
+// ── 追踪上下文（C-2，账本 v4 的行外壳字段 `trace`） ──
+//
+// 依据：`地基/规划/骨架候选.md` 2.0.2 C-2；研究 15 的 OpenTelemetry：一条跨程序调用链共用一个追踪编号，每一段
+// （一趟程序运行）有自己的段编号与父段编号，事后按父子关系拼成树。与 OTel 的不同处：编号由哈希推导、不用随机数，
+// 同一条链重跑、审计重放得到同样的编号，账本才能逐字节重放（`21` 步 0 门禁）。追踪上下文只装身份；预算与截止时间
+// 是另一件事（C-3，研究 15 的 Baggage 与 Trace Context 分开传），不放进这里。
+// 命名：`jpp_ledger::Trace` / `TraceEvent` 已是「执行轨迹」，这里一律带 `Ctx`。
+
+/// 取 `parts`（以 `\x1f` 分隔）的 SHA-256 前 `nbytes` 字节的十六进制。
+fn hash_hex(parts: &[&str], nbytes: usize) -> String {
+    let mut h = Sha256::new();
+    for p in parts {
+        h.update(p.as_bytes());
+        h.update(b"\x1f");
+    }
+    hex::encode(&h.finalize()[..nbytes])
+}
+
+/// 编号必须是给定长度的小写十六进制且不全为零（W3C Trace Context 的要求）；不合格就拒收，不兜底。
+fn check_hex_id(what: &str, s: &str, len: usize) -> Result<(), String> {
+    if s.len() != len
+        || !s
+            .bytes()
+            .all(|b| b.is_ascii_digit() || (b'a'..=b'f').contains(&b))
+    {
+        return Err(format!(
+            "E-trace-id: {what}要 {len} 位小写十六进制，收到 {s:?}"
+        ));
+    }
+    if s.bytes().all(|b| b == b'0') {
+        return Err(format!("E-trace-id: {what}不能全为零"));
+    }
+    Ok(())
+}
+
+/// 追踪编号：一整条调用链共用一个；32 位小写十六进制（与 W3C `traceparent` 的 trace-id 同形）。
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
+#[serde(try_from = "String", into = "String")]
+pub struct TraceId(String);
+
+/// 段编号：一趟程序运行一个；16 位小写十六进制（与 `traceparent` 的 parent-id 同形）。
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
+#[serde(try_from = "String", into = "String")]
+pub struct SpanId(String);
+
+macro_rules! id_impl {
+    ($t:ident, $what:literal, $len:literal) => {
+        impl $t {
+            pub fn parse(s: &str) -> Result<$t, String> {
+                check_hex_id($what, s, $len)?;
+                Ok($t(s.to_string()))
+            }
+            pub fn as_str(&self) -> &str {
+                &self.0
+            }
+        }
+        impl TryFrom<String> for $t {
+            type Error = String;
+            fn try_from(s: String) -> Result<$t, String> {
+                check_hex_id($what, &s, $len)?;
+                Ok($t(s))
+            }
+        }
+        impl From<$t> for String {
+            fn from(v: $t) -> String {
+                v.0
+            }
+        }
+        impl std::fmt::Display for $t {
+            fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                f.write_str(&self.0)
+            }
+        }
+    };
+}
+id_impl!(TraceId, "追踪编号", 32);
+id_impl!(SpanId, "段编号", 16);
+
+/// 一段的追踪上下文：`trace` 整条链共用，`span` 是本段，`parent` 是调起本段的那一段（链的起点没有）。
+/// 账本行外壳的 `trace` 字段就是它（键序 `trace`、`span`、`parent`，没有父段不写 `parent`）。
+#[derive(Clone, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct TraceCtx {
+    pub trace: TraceId,
+    pub span: SpanId,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub parent: Option<SpanId>,
+}
+
+impl TraceCtx {
+    /// 链的起点：追踪编号由 `seed` 推导，本段（根段）由（追踪编号、`label`）推导，没有父段。
+    /// 同样的 `seed` 与 `label` 永远得到同样的上下文。
+    pub fn start(seed: &str, label: &str) -> TraceCtx {
+        let trace = hash_hex(&["jpp-trace", seed], 16);
+        let span = hash_hex(&["jpp-span", &trace, "", label], 8);
+        TraceCtx {
+            trace: TraceId(trace),
+            span: SpanId(span),
+            parent: None,
+        }
+    }
+
+    /// 从调用者（`self`）的上下文推导被调用段：同一追踪编号，父段 = 调用者的段，本段由
+    /// （追踪编号、调用者的段、`label`）推导。同一调用者、同一 `label` 得到同一段；要分成两个节点就换 `label`。
+    pub fn enter(&self, label: &str) -> TraceCtx {
+        let span = hash_hex(
+            &["jpp-span", self.trace.as_str(), self.span.as_str(), label],
+            8,
+        );
+        TraceCtx {
+            trace: self.trace.clone(),
+            span: SpanId(span),
+            parent: Some(self.span.clone()),
+        }
+    }
+
+    /// 传给被调用程序的文本形式（W3C `traceparent`：`00-<追踪编号>-<段编号>-01`）。
+    /// 传的是**调用者**的段：被调用方收到后用 [`TraceCtx::enter`] 推导自己的段。
+    pub fn to_traceparent(&self) -> String {
+        format!("00-{}-{}-01", self.trace, self.span)
+    }
+
+    /// 读 `traceparent`：版本要是 `00`，编号长度与字符合格且不全为零，标志两位十六进制。
+    /// 返回的上下文是**调用者**的（没有父段：调用者自己的父段 `traceparent` 里没有）。
+    pub fn from_traceparent(s: &str) -> Result<TraceCtx, String> {
+        let parts: Vec<&str> = s.split('-').collect();
+        let [ver, trace, span, flags] = parts.as_slice() else {
+            return Err(format!(
+                "E-trace-id: traceparent 要四段（00-追踪编号-段编号-标志），收到 {s:?}"
+            ));
+        };
+        if *ver != "00" {
+            return Err(format!("E-trace-id: traceparent 版本要 00，收到 {ver:?}"));
+        }
+        if flags.len() != 2 || !flags.bytes().all(|b| b.is_ascii_hexdigit()) {
+            return Err(format!(
+                "E-trace-id: traceparent 标志要两位十六进制，收到 {flags:?}"
+            ));
+        }
+        Ok(TraceCtx {
+            trace: TraceId::parse(trace)?,
+            span: SpanId::parse(span)?,
+            parent: None,
+        })
     }
 }
 

@@ -91,7 +91,7 @@ handle(e, {
 const 放行: &str = r#"
 budget {calls: 4, cost: 1, depth: 8};
 handle(cut(judge(state(mat("顾客说要退款")), test("该退吗", "k"))), {
-    act: fn() { content(do("退款", [], 0)) },
+    act: fn() { (do("退款", [], 0)) },
     ignore: fn() { "没退" },
     unsure: fn(u) { consume(u, "drop"); "没退" }})
 "#;
@@ -152,7 +152,7 @@ fn 试用线不放行不可逆do() {
     let e = 跑(放行, &库(80), &mut Ledger::new()).expect_err("试用线不该放行不可逆 do");
     assert!(e.contains("J-08"), "{e}");
     let o = 跑(放行, &库(240), &mut Ledger::new()).expect("正式线放行");
-    assert_eq!(o.value_json(), json!("已退"));
+    assert_eq!(o.value_json()["content"], json!("已退"));
     assert_eq!(o.exits[0]["grade"], json!("Certified"));
     assert_eq!(o.exits[0]["releases"], json!(true));
 }

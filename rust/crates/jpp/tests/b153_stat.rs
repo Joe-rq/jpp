@@ -7,16 +7,17 @@
 
 mod common;
 
+use common::run;
 use jpp::effects::{CalibStore, FixedPorts, FnPort, JudgeResult, Ports, Profile};
 use jpp::interp::{ActionRegistry, Passes};
 use jpp::ledger::{Entry, Ledger};
 use jpp::value::{Answer, Mat, Op, Question, State};
-use jpp::{lower, run, syntax::parse};
+use jpp::{lower, syntax::parse};
 use serde_json::{Value as Json, json};
 
 /// 判断器（非固定观察，模型 `m`）：每道题回同一个答案；置换测过且一致；不报自报置信度
 fn 端口<'a>(a: Answer) -> Ports<'a> {
-    Ports::new().with(FnPort::judge("m", move |_s: &State, qs| {
+    Ports::new().with(common::伴随中性judge("m", move |_s: &State, qs| {
         Ok(JudgeResult {
             answers: qs.iter().map(|_| a.clone()).collect(),
             tokens: 0,
@@ -336,7 +337,7 @@ fn 固定跑(src: &str, confidence: Option<f64>) -> (String, Vec<Json>, Ledger) 
 
 fn 重放(src: &str, l: &Ledger) -> String {
     let mut l = l.clone();
-    let o = jpp::run_replay(
+    let o = common::run_replay(
         &程序(src),
         jpp::effects::ReplayPorts::ports(jpp::effects::FIXED_MODEL),
         &CalibStore::new(),

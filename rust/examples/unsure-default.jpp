@@ -1,0 +1,13 @@
+// 拿不准先问缺什么再判（B0492，意图汇编 7c、主会话裁定六）：这个程序一个 handle 都不写。
+// sieve 的结果只取 accepted，拿不准的项没有作者给的去向，语言在 sieve 这个站点当场走默认链。伴随题默认开（S5）：
+// 先看同一请求里伴随题的读数定路——乙「材料里缺」→ 从 fetch 取来那一类补进材料、同一道题同一条线（这里无线，按判断器的回答）
+// 再判，补后已决照常分流；丁「材料都在、题也清楚」→ 两可，不补，直接记账放弃。逐条进报告 unsure_default 段，
+// 伴随题读数进 improve 段。乙、丁两份材料的读数恰为 0.5，是真的并列，不是造出来的未决。
+// 「补了仍拿不准 → 记账放弃」这条路由关着伴随题的测试（unsure_default.rs 用例 2、3）覆盖。
+import "../lib/outcome.jpp";
+budget {calls: 16, cost: 0.01, depth: 64};
+let known = {"过往项目": "近三年承接同类项目 12 个，全部按期交付", "交付团队": "团队名单尚未确定"};
+unsure_source({need: ["过往项目", "交付团队"], fetch: fn(q, need, m) { if has(known, need) { known[need] } else { fail("没有这一类信息：" + need) } }});
+let suppliers = ["甲：老牌厂商，产能充足。", "乙：新成立的团队，报价最低。", "丙：去年两次延期交付。", "丁：刚完成一轮融资。"];
+let o = sieve(suppliers, test("这家供应商能按期交付吗？", "supplier"));
+{accepted: map(accepted(o), fn(e) { e.item }), n: len(accepted(o))}

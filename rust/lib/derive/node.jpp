@@ -1,0 +1,64 @@
+// derive 的公用形状与辅助（步 28，过程记录 工程-步28.md）。
+//
+// 条目 item：{on: 材料, ref?: 材料, ctx?: 材料}——一个被连环追问的对象；ref 是它的参照材料（例如合作历史），ctx 是语境（B0478）。
+// 节点 node：一道待问的题与它的来历
+//   {id, item, q: 题, st: 状态, by: "author" | "fill" | "refine" | "premise" | "elicit",
+//    src: 来源出口 | unit, src_q: 来源题的哈希 | "", src_st: 来源题的状态 | unit, parent: 来源节点 id | "",
+//    form?: 题式（这道题由它填出；题式上的 on 是答案块上的签名，裁定十九、B192）, line?: cut 的选项（作者声明线等）,
+//    cands?: [选项]（select 的候选，与 over 同序）, over?: [文字], fillctx?: {sig, idx, filled}, meta?: 记录}
+// 签名 sig：{form?: 题式, params: [{slot, choices: [选项]}], line?}。签名写在题式上：form(…, {on: {act?: 签名,
+// ignore?: 签名}})，写一次，import 这个题式的程序都按它派生。
+// 选项：文字，或 {name: 文字, sig: 签名}（选中它就接着按它的签名填）。
+
+fn derive_calib(opts) { if has(opts, "calib") { opts.calib } else { "derive" } }
+
+// 派生题的题式身份（B45「题面变即新 form_hash 即新校准条目」；R2-3 校准挂在题式上、填法继承）：
+// 先按模板造一次取 hash，再以「前缀:hash」为标签造正式题式（form_hash 不含标签，两次同哈希）。
+// 每个题式一个标签，派生题的 calib_ref 写题式键；题库里同一题式上岗的线，下次运行派生出同一道题时 cut 取得到。
+fn derive_form(op, template, extra, opts) {
+    let pre = derive_calib(opts);
+    let f0 = form(op, template, with(extra, "calib", pre));
+    form(op, template, with(extra, "calib", pre + ":" + f0.hash))
+}
+
+// 模板里不能有字面花括号（会被读成槽）
+fn derive_bracefree(t) { len(regex_find(t, "[{}]")) == 0 }
+
+// 干净的下标表 [0, 1, …, len(xs) − 1]：下标由字面 0 逐个加 1 得到，不带列表的来源。
+// 按位置配对两个列表一律用它，不用 range(0, len(xs))：len 的来源是全部元素来源的并，用它产出的下标取值时
+// （B84：计算出的键并入来源）会把整张列表的来源并进取出的值，一个条目的题会挂上别的条目的来源出口。
+fn derive_idx(xs) { fold(xs, [], fn(acc, x) { append(acc, len(acc)) }) }
+
+// 条目可带语境 ctx（B0478：作者入口的语境模块进状态 ctx 槽）；不带时状态与改前相同
+fn derive_state(item, extra) {
+    let b0 = if has(item, "ref") { with(extra, "ref", item.ref) } else { extra };
+    let base = if has(item, "ctx") { with(b0, "ctx", item.ctx) } else { b0 };
+    if len(keys(base)) == 0 { state(item.on) } else { state(item.on, base) }
+}
+
+fn derive_choice_name(c) { if starts_with(to_json(c), "{") { c.name } else { c } }
+
+// 新节点：给定条目、题与附加字段；over（候选文字）进状态
+fn derive_node(id, item, q, extra) {
+    let st = if has(extra, "over") { derive_state(item, {over: map(extra.over, fn(x) { mat(x) })}) }
+             else { derive_state(item, {}) };
+    fold(keys(extra), {id: id, item: item, q: q, st: st, by: "author", src: unit, src_q: "", src_st: unit, parent: ""},
+         fn(acc, k) { with(acc, k, extra[k]) })
+}
+
+// 派生节点：带来源出口 e、来源题哈希与父节点 id
+fn derive_child(parent, e, k, q, extra) {
+    derive_node(parent.id + "." + text(k), parent.item, q,
+                with(with(with(with(extra, "src", e), "src_q", parent.q.hash), "src_st", parent.st), "parent", parent.id))
+}
+
+// 节点的判断键（Z0517）：材料项、ref、over（select 的候选在状态里）、题。同键的两个节点在同一站点上判出同一个账本键
+fn derive_key(n) {
+    let r = if has(n.item, "ref") { n.item.ref.hash } else { "" };
+    let o = if has(n, "over") { to_json(n.over) } else { "" };
+    let c = if has(n.item, "ctx") { "|" + n.item.ctx.hash } else { "" };
+    n.item.on.hash + "|" + r + "|" + o + "|" + n.q.hash + c
+}
+
+// pick(k) / at(l) 的下标
+fn derive_index(label) { parse_json(regex_find(label, "[0-9]+")[0]) }

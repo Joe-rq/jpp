@@ -79,10 +79,12 @@ fn bank_json_indexes_exactly_the_entry_dirs() {
         .collect();
     assert_eq!(idx, entry_dirs());
     for e in bank()["entries"].as_array().unwrap() {
+        // 步 27：状态取值放宽到生命周期全集（提出、诊断通过、已认证·未复用、共享、停岗候选、被取代、退役；
+        // `jpp::store::bank::Status`，规范缺的五档见 附注/2026-09-29-题库规范补全提议.md）
         let s = e["status"].as_str().unwrap();
         assert!(
-            s == "已认证·未复用" || s == "共享",
-            "状态 {s} 不在规范 §三的两档里（B118）"
+            jpp::store::bank::Status::parse(s).is_some(),
+            "状态 {s} 不在题库状态全集里"
         );
     }
 }

@@ -278,6 +278,7 @@ dependencies = [
  "jpp-effects",
  "jpp-ir",
  "jpp-ledger",
+ "jpp-lib",
  "jpp-plan",
  "jpp-runtime",
  "jpp-syntax",
@@ -296,6 +297,14 @@ dependencies = [
  "jpp-value",
  "serde",
  "serde_json",
+]
+
+[[package]]
+name = "jpp-cell"
+version = "0.1.0"
+dependencies = [
+ "jpp-ir",
+ "jpp-ledger",
 ]
 
 [[package]]
@@ -339,11 +348,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "jpp-lib"
+version = "0.1.0"
+dependencies = [
+ "jpp-check",
+ "jpp-effects",
+ "jpp-ir",
+ "serde_json",
+]
+
+[[package]]
 name = "jpp-plan"
 version = "0.1.0"
 dependencies = [
  "jpp-effects",
  "jpp-ir",
+ "jpp-syntax",
+ "serde_json",
 ]
 
 [[package]]
@@ -351,6 +372,7 @@ name = "jpp-runtime"
 version = "0.1.0"
 dependencies = [
  "chrono",
+ "jpp-cell",
  "jpp-effects",
  "jpp-ir",
  "jpp-ledger",

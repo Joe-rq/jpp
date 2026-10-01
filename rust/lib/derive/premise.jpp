@@ -1,0 +1,208 @@
+// 前提由目的派生（B0470；预注册与施工记录：地基/过程记录/工程-B0470-前提由目的派生.md）。
+//
+// 目的没说前提时，语言自己派生几道字面前提题（问条目材料本身写明了什么，不问「对判断有没有帮助」那类元题，
+// 09：P7、#17、E-ENOUGH），交给 lib/skeletons/select_material.jpp 一层层筛材料：判过线的才纳入深判。
+// 一次生成，与材料项个数无关；产物带 taint（B58），首批读数随之不可信，与抽模块同一口径。
+// 每道候选过闸门 ⓪ 形状（须是是非题或代码谓词）、① 静态诊断（元题等阻断码）、② 结构代理；跳过第③段——「在材料里」问的
+// 正是材料里有没有，会把正常判 ignore 的前提题成批拒掉（主控定）。闸门在第 0 项材料上过（前提题与项无关）。
+// 「材料不够」按库层读法（主控定 (L)）：由「这道字面前提题没过线」表达，运行时 J-09 不动。
+//
+// 三层（Z0860，主会话裁定六十八第①条；预注册 地基/过程记录/工程-Z0860-前提三层.md），顺序固定：
+//   ① 判断分工（B182、意图 7a）：结构化记录上代码能定的前提由生成器写成代码谓词 {op: "code", field, check, value?}，
+//      核过后不进判断器，在全部项上用一次闭包变换执行（账本一条，输出带 by: "code"）；
+//   ② 生成器看样本取值：提示里给 k ≤ 5 条等距抽取的记录取值（不看内容、不带种子，任务无关）；
+//   ③ 判断类前提先在 n = min(N, max(20, ⌈5% N⌉)) 条等距样本上判（与全量层同一个 select_material 站点，全量层同键复用）；
+//      已决的项全在同一侧（且至少一项已决）记 no_split 弃掉；代码谓词按全体结果同此判。
+//   有 no_split 弃掉而一道都没留下时带着被弃的前提再派生一次（R.premise_rounds 轮为限）；全被闸门拒不再派生。
+//
+// purpose_premises(purpose, preds, items, opts) ->
+//   {premises: [{q: 题面, question: 题, probe_pending: 样本上的未决}]（判断类，select_material 的前提链条目，至多 premise_max 道；
+//              样本未决由调用方在全量层之后结算：同键已在全量层 pending 里的由它承担，其余 premise_settle）,
+//    carry: [缺席类探测未决]（弃掉的前提在样本上没观察到的，调用方随返回值转交）,
+//    code: [{q: 说明, spec: {field, check, value?}, exits: [每项 act | ignore | unknown], key: 变换的效应键}]（已在全部项上执行）,
+//    derived: 生成的候选数（各轮合计）, rejected: [{q, stage, codes}], dropped: [{q, reason: "no_split", by, sample, act, ignore, unsure}],
+//    rounds: 生成了几轮, reason: "derived" | "none-passed" | "no-split" | "gen-failed" | "no-item"}
+import "rules.jpp";
+import "node.jpp";
+import "elicit.jpp";
+import "gate.jpp";
+import "../skeletons/select_material.jpp";
+
+// 等距下标：0, ⌊N/k⌋, 2⌊N/k⌋, …（k = min(k, N) 个），不看内容、不带种子
+fn premise_stride(items, k0) {
+    let n = len(items);
+    let k = min(k0, n);
+    if k == 0 { [] } else {
+        let step = floor(n / k);
+        map(derive_idx(slice(items, 0, k)), fn(i) { i * step })
+    }
+}
+
+// 材料项的顶层字段名（第 0 项；不是记录时为空）
+fn premise_shape(items) {
+    if len(items) == 0 { [] } else {
+        let c = content(items[0].on);
+        if starts_with(to_json(c), "{") { keys(c) } else { [] }
+    }
+}
+
+// 样本取值（②）：每条 JSON 截到 premise_value_chars 字
+fn premise_values(items) {
+    let R = derive_rules();
+    map(premise_stride(items, R.premise_sample_k), fn(i) {
+        let cs = chars(to_json(content(items[i].on)));
+        if len(cs) > R.premise_value_chars { join(slice(cs, 0, R.premise_value_chars), "") + "…" } else { join(cs, "") }
+    })
+}
+
+fn premise_is_num(x) { regex_match(to_json(x), "^-?[0-9]+(\\.[0-9]+)?([eE][-+]?[0-9]+)?$") }
+
+// 代码谓词在一条记录上的结果：act / ignore / unknown（取值不可比、字段缺而检查要取值）
+fn premise_code_eval(spec, row) {
+    let rec = starts_with(to_json(row), "{");
+    let present = rec && has(row, spec.field) && row[spec.field] != unit;
+    let v = if present { row[spec.field] } else { unit };
+    if spec.check == "has" {
+        if present && to_json(v) != "\"\"" && to_json(v) != "[]" && to_json(v) != "{}" { "act" } else { "ignore" }
+    } else if !present { "unknown" }
+    else if spec.check == "eq" { if to_json(v) == to_json(spec.value) { "act" } else { "ignore" } }
+    else if spec.check == "ne" { if to_json(v) != to_json(spec.value) { "act" } else { "ignore" } }
+    else if spec.check == "contains" {
+        if starts_with(to_json(v), "[") { if len(filter(v, fn(x) { to_json(x) == to_json(spec.value) })) > 0 { "act" } else { "ignore" } }
+        else if starts_with(to_json(v), "\"") && starts_with(to_json(spec.value), "\"") { if len(split(v, spec.value)) > 1 { "act" } else { "ignore" } }
+        else { "unknown" }
+    }
+    else if !premise_is_num(v) || !premise_is_num(spec.value) { "unknown" }
+    else if spec.check == "lt" { if v < spec.value { "act" } else { "ignore" } }
+    else if spec.check == "le" { if v <= spec.value { "act" } else { "ignore" } }
+    else if spec.check == "gt" { if v > spec.value { "act" } else { "ignore" } }
+    else { if v >= spec.value { "act" } else { "ignore" } }
+}
+
+// 代码谓词核对：空文本 = 可用；否则坏候选码 code-bad
+fn premise_code_bad(s, shape) {
+    let R = derive_rules();
+    if !has(s, "field") || !starts_with(to_json(s.field), "\"") || !contains(shape, s.field) { "code-bad" }
+    else if !has(s, "check") || !contains(R.code_checks, text(s.check)) { "code-bad" }
+    else if text(s.check) != "has" && (!has(s, "value") || s.value == unit) { "code-bad" }
+    else { "" }
+}
+
+fn premise_code_text(spec) {
+    "代码：" + spec.field + " " + spec.check + (if spec.check == "has" { "" } else { " " + to_json(spec.value) })
+}
+
+// 代码谓词在全部项上执行：一次闭包变换、账本一条，输出带 by: "code"（①）
+fn premise_code_run(spec, items) {
+    let rows = mat(map(items, fn(it) { content(it.on) }));
+    let out = transform(fn(m) { {by: "code", field: spec.field, check: spec.check, value: if has(spec, "value") { spec.value } else { unit },
+                                 exits: map(content(m), fn(r) { premise_code_eval(spec, r) })} }, rows);
+    let o = parse_json(to_json(out));
+    let org = filter(o.origin, fn(x) { starts_with(x, "transform:") });
+    {exits: content(out).exits, key: if len(org) == 0 { unit } else { replace(org[0], "transform:", "") }}
+}
+
+// 区分度：已决的全在同一侧（且至少一项已决）即 no_split
+fn premise_no_split(act, ignore) { (act > 0 && ignore == 0) || (act == 0 && ignore > 0) }
+
+// 判断类前提在样本上判一次（③）：走 select_material 自己的站点，全量层同键复用。样本未决不在这里消费：
+// 弃掉的前提由 premise_settle 结算，留下的前提由全量层同键的出口承担（Z0860 复核返修，B162 按账本键计责任）
+fn premise_probe(purpose, items, p) {
+    let R = derive_rules();
+    let pool = map(premise_stride(items, max(R.premise_sample_min, floor((len(items) * R.premise_sample_pct + 99) / 100))), fn(i) { items[i].on });
+    let s = select_material(purpose, pool, [p], {});
+    let l = s.detail.per_layer[0];
+    {sample: len(pool), act: l.act, ignore: l.ignore, unsure: l.unsure, pending: s.pending}
+}
+
+// 缺席类未决（没观察到：预算停发、判断器缺席、时延、深度、截止）不能 drop（E-drop-unobserved，同 Z0558）
+fn premise_absent(e) { contains(["absent", "budget", "depth", "latency", "deadline"], unsure_cause(e.exit)) }
+
+// 结算一批探测未决：判过而拿不准的按 drop 记账（探测，没有后续）；缺席类返回，由调用方随返回值转交
+fn premise_settle(pend) {
+    let judged = filter(pend, fn(e) { !premise_absent(e) });
+    if len(judged) > 0 { consume(map(judged, fn(e) { e.exit }), "drop") } else { unit };
+    filter(pend, fn(e) { premise_absent(e) })
+}
+
+// 一轮派生：生成 → 解析 → 闸门 → 代码谓词执行 → 判断类抽样检验
+fn premise_round(purpose, preds, items, opts, dropped0) {
+    let R = derive_rules();
+    let shape = premise_shape(items);
+    let raw = gen(R.premise_prompt(purpose, preds, shape, premise_values(items), map(dropped0, fn(d) { d.q })), [], R.premise_max, 0);
+    if is_fail(raw) || len(raw) == 0 { {ok: false, derived: 0, premises: [], code: [], rejected: [], dropped: [], carry: []} } else {
+        let popts = with(with(opts, "calib", "purpose-premise"), "judge_diag", false);
+        let specs = map(raw, fn(x) { derive_spec(x) });
+        let is_code = fn(s) { !is_fail(s) && starts_with(to_json(s), "{") && has(s, "op") && s.op == "code" };
+        // 代码谓词：核对，不过闸门（没有题面）；核不过的记 code-bad
+        let code_ix = filter(derive_idx(specs), fn(k) { is_code(specs[k]) });
+        let code_bad = filter(code_ix, fn(k) { premise_code_bad(specs[k], shape) != "" });
+        let code_ok = filter(code_ix, fn(k) { premise_code_bad(specs[k], shape) == "" });
+        let test_ix = filter(derive_idx(specs), fn(k) { !is_code(specs[k]) });
+        let nodes = map(test_ix, fn(k) {
+            let s = specs[k];
+            let bad0 = derive_spec_bad(s);
+            let bad = if bad0 != "" { bad0 } else if s.op != "test" { "premise-not-test" } else { "" };
+            let id = "premise." + text(k);
+            let base = {by: "premise-derive", parent: "purpose", cand: k};
+            if bad != "" {
+                derive_node(id, items[0], test("（坏候选）" + to_json(content(raw[k])), derive_calib(popts)), with(base, "bad", bad))
+            } else {
+                derive_node(id, items[0], fill(derive_form("test", text(s.text), {lacks: R.lacks.premise}, popts), {}), base)
+            }
+        });
+        let gm = if len(nodes) == 0 { unit } else { derive_gate_memo(nodes, with(popts, "width", len(nodes)), derive_memo0()) };
+        let g = if gm == unit { {pass: [], rejected: []} } else { gm.gate };
+        let pass_ids = map(g.pass, fn(c) { c.id });
+        let ok = filter(nodes, fn(n) { contains(pass_ids, n.id) });
+        // ① 代码谓词在全部项上执行，全同一侧的弃掉
+        let code_runs = map(code_ok, fn(k) {
+            let spec0 = specs[k];
+            let spec = {field: text(spec0.field), check: text(spec0.check), value: if has(spec0, "value") { spec0.value } else { unit }};
+            let r = premise_code_run(spec, items);
+            {q: premise_code_text(spec), spec: spec, exits: r.exits, key: r.key,
+             act: len(filter(r.exits, fn(x) { x == "act" })), ignore: len(filter(r.exits, fn(x) { x == "ignore" })),
+             unknown: len(filter(r.exits, fn(x) { x == "unknown" }))}
+        });
+        let code_keep = filter(code_runs, fn(c) { !premise_no_split(c.act, c.ignore) });
+        let code_drop = map(filter(code_runs, fn(c) { premise_no_split(c.act, c.ignore) }), fn(c) {
+            {q: c.q, reason: "no_split", by: "code", sample: len(items), act: c.act, ignore: c.ignore, unsure: c.unknown}
+        });
+        // ③ 判断类在样本上检验区分度
+        let probes = map(ok, fn(n) { with(premise_probe(purpose, items, {q: n.q.text, question: n.q}), "n", n) });
+        let test_keep0 = filter(probes, fn(p) { !premise_no_split(p.act, p.ignore) });
+        let test_keep = slice(test_keep0, 0, min(len(test_keep0), R.premise_max));
+        let test_spare = slice(test_keep0, len(test_keep), len(test_keep0));
+        let test_gone = filter(probes, fn(p) { premise_no_split(p.act, p.ignore) });
+        let test_drop = map(test_gone, fn(p) {
+            {q: p.n.q.text, reason: "no_split", by: "judge", sample: p.sample, act: p.act, ignore: p.ignore, unsure: p.unsure}
+        });
+        // 弃掉的与超出 premise_max 没用上的：样本未决当场结算，缺席类留着转交
+        let carry_out = premise_settle(fold(concat(test_gone, test_spare), [], fn(acc, p) { concat(acc, p.pending) }));
+        {ok: true, derived: len(raw), carry: carry_out,
+         premises: map(test_keep, fn(p) { {q: p.n.q.text, question: p.n.q, probe_pending: p.pending} }),
+         code: map(code_keep, fn(c) { {q: c.q, spec: c.spec, exits: c.exits, key: c.key} }),
+         rejected: concat(map(code_bad, fn(k) { {q: to_json(content(raw[k])), stage: "shape", codes: ["code-bad"]} }),
+                          map(g.rejected, fn(x) { {q: x.q, stage: x.stage, codes: x.codes} })),
+         dropped: concat(code_drop, test_drop)}
+    }
+}
+
+fn purpose_premises(purpose, preds, items, opts) {
+    let R = derive_rules();
+    if len(items) == 0 { {premises: [], code: [], derived: 0, rejected: [], dropped: [], carry: [], rounds: 0, reason: "no-item"} } else {
+        let r1 = premise_round(purpose, preds, items, opts, []);
+        let kept1 = len(r1.premises) + len(r1.code);
+        // 再派生：本轮有 no_split 弃掉、一道都没留下（全被闸门拒不再派生）
+        let again = r1.ok && kept1 == 0 && len(r1.dropped) > 0 && R.premise_rounds > 1;
+        let r2 = if again { premise_round(purpose, preds, items, opts, r1.dropped) } else { unit };
+        let last = if r2 == unit { r1 } else { r2 };
+        let dropped = if r2 == unit { r1.dropped } else { concat(r1.dropped, r2.dropped) };
+        let rejected = if r2 == unit { r1.rejected } else { concat(r1.rejected, r2.rejected) };
+        let kept = len(last.premises) + len(last.code);
+        {premises: last.premises, code: last.code, carry: if r2 == unit { r1.carry } else { concat(r1.carry, r2.carry) },
+         derived: r1.derived + (if r2 == unit { 0 } else { r2.derived }), rejected: rejected, dropped: dropped,
+         rounds: if r2 == unit { 1 } else { 2 },
+         reason: if !r1.ok { "gen-failed" } else if kept > 0 { "derived" } else if len(dropped) > 0 { "no-split" } else { "none-passed" }}
+    }
+}

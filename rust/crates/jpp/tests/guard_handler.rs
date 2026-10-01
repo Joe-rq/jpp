@@ -101,7 +101,7 @@ let 脏 = do("取外部数据", [], 0);
 let 该发 = handle(cut(judge(state(脏), test("该发吗", "k"))), {
     act: fn() { true }, ignore: fn() { false },
     unsure: fn(u) { consume(u, "drop"); false }});
-if 该发 { content(do("发邮件", [], 0)) } else { "没发" }
+if 该发 { (do("发邮件", [], 0)) } else { "没发" }
 "#)
     .expect_err("该被 J-08 拦住");
     assert!(e.contains("J-08"), "{e}");
@@ -115,7 +115,7 @@ fn b_写在handler臂里也要拦得住() {
 budget {calls: 4, cost: 1, depth: 8};
 let 脏 = do("取外部数据", [], 0);
 handle(cut(judge(state(脏), test("该发吗", "k"))), {
-    act: fn() { content(do("发邮件", [], 0)) },
+    act: fn() { (do("发邮件", [], 0)) },
     ignore: fn() { "没发" },
     unsure: fn(u) { consume(u, "drop"); "没发" }})
 "#);
@@ -134,12 +134,12 @@ fn 可信状态上的臂照常通过() {
 budget {calls: 4, cost: 1, depth: 8};
 let 干净 = do("取内部数据", [], 0);
 handle(cut(judge(state(干净), test("该发吗", "k"))), {
-    act: fn() { content(do("发邮件", [], 0)) },
+    act: fn() { (do("发邮件", [], 0)) },
     ignore: fn() { "没发" },
     unsure: fn(u) { consume(u, "drop"); "没发" }})
 "#)
     .expect("可信状态上的判断该放行");
-    assert_eq!(v, json!("已发"));
+    assert_eq!(v["content"], json!("已发"));
 }
 
 /// **`unsure` 臂也要压守卫。** 那里拿到的是未决责任，**本来就不是一个放行判定**——
@@ -155,7 +155,7 @@ let 脏 = do("取外部数据", [], 0);
 handle(cut(judge(state(脏), test("该发吗", "k"))), {
     act: fn() { "发了" },
     ignore: fn() { "没发" },
-    unsure: fn(u) { consume(u, "drop"); content(do("发邮件", [], 0)) }})
+    unsure: fn(u) { consume(u, "drop"); (do("发邮件", [], 0)) }})
 "#,
         0.5,
     )
@@ -173,7 +173,7 @@ budget {calls: 4, cost: 1, depth: 8};
 let 脏 = do("取外部数据", [], 0);
 let s = state(mat("对象"), {over: [mat("甲"), mat("乙")], ctx: [脏]});
 handle(cut(judge(s, select("挑一个", "k"))), {
-    pick: fn(k) { content(do("发邮件", [], 0)) },
+    pick: fn(k) { (do("发邮件", [], 0)) },
     unsure: fn(u) { consume(u, "drop"); "没发" }})
 "#)
     .expect_err("pick 臂里的不可逆 do 同样不该自由执行");
@@ -195,7 +195,7 @@ let 可信判断 = handle(cut(judge(state(干净), test("行吗", "k"))), {
     unsure: fn(u) { consume(u, "drop"); false }});
 if 可信判断 {
     handle(cut(judge(state(脏), test("该发吗", "k"))), {
-        act: fn() { content(do("发邮件", [], 0)) },
+        act: fn() { (do("发邮件", [], 0)) },
         ignore: fn() { "没发" },
         unsure: fn(u) { consume(u, "drop"); "没发" }})
 } else { "没发" }

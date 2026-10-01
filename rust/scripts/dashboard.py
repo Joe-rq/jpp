@@ -3,7 +3,7 @@
 
 依据：`地基/附注/2026-09-24-评估①裁定.md` §六·5（七项定义、数据来源、第一版允许）、§六·4（能力对照）、
 §四（B77 重放一致）；`地基/评估/2026-09-24-阶段评估-1.md` §五 建议 10 与附录 A。
-Nature 2026-09-24：「有了这个测量以后我们就可以根据结果不断地反馈，不断地修正……按真实的倍率或者真实的水平比较。」
+设计取向：有了测量，就按结果不断反馈、不断修正，按真实的倍率或真实的水平比较。
 所以每项都写「在参考系里的位置」或「对上一次读数的变化」，暂时取不到数的项写「无数」与原因，不留空。
 
 每个里程碑与每个 S 步后运行（`17` 阶段评估条，主会话落）：
@@ -96,7 +96,7 @@ def _tier_rows(t: dict) -> dict:
 
 
 def item_expr() -> dict:
-    """三档（B79、B96）：T1 是验收 1 的判定档（Nature 2026-09-24 确认），(d) 为性质验收；T1-strict 是旧 (d) 口径，
+    """三档（B79、B96）：T1 是验收 1 的判定档（2026-09-24 确认），(d) 为性质验收；T1-strict 是旧 (d) 口径，
     只报不判；T0 并列。两侧取该档实现的中位数；T1 位置判定用「只计验收全过」（B96）。"""
     doc = measure_expr.measure_all(quiet=True)
     out = {"tiers": {}}
@@ -113,7 +113,7 @@ def item_expr() -> dict:
     return {"status": "有数", "value": s1["passed_only_wrap100_median"], "position": s1["passed_only_position"],
             "value_all": s1["wrap100_median"], "no_pass_jpp": s1.get("no_pass_jpp", []),
             "baseline_failures": base_fail, "summary": s1,
-            "reference": "T1 折行归一行数比对 9–20×（判定档，Nature 2026-09-24 确认按 T1 判；B96 位置用只计验收全过）；"
+            "reference": "T1 折行归一行数比对 9–20×（判定档，2026-09-24 确认按 T1 判；B96 位置用只计验收全过）；"
                          "T1-strict 只报不判；T0 对 LMQL 2.7–4.3× 并列",
             "source": "scripts/measure_expr.py（measure_all）；scripts/t1_check.py；scripts/t1_cert.py；probes/*/measure.toml",
             **out}

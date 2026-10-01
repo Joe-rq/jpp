@@ -1,0 +1,5 @@
+// 选材料的旧入口名（步 29，B0460）：实现与说明在 select_material.jpp。
+// 叫 select 会盖住内置的 K 选一题构造（N7 / Z0513）；新程序请导入 select_material.jpp、调 select_material。
+import "select_material.jpp";
+
+fn select(purpose, pool, premises, opts) { select_material(purpose, pool, premises, opts) }

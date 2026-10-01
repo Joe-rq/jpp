@@ -12,6 +12,8 @@
 //!
 //! **Python 侧一样**（`runtime.py:1243` 同式）——所以这不是移植分叉，**是两边同一个洞**。
 
+// 伴随题「最缺哪类」是 K 选一：替身经 common::伴随中性judge 给伴随元题中性读数（Z0398 返修，过程记录 5.23）
+mod common;
 use std::rc::Rc;
 
 use jpp::effects::CalibStore;
@@ -152,7 +154,7 @@ allocate(rs, 2)
     let out = run(
         &program,
         Ports::new()
-            .with(FnPort::judge("m", |_s, qs| {
+            .with(common::伴随中性judge("m", |_s, qs| {
                 let mut idx = i.borrow_mut();
                 let answers = qs
                     .iter()

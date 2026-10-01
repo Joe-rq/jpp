@@ -60,6 +60,8 @@ struct 结果 {
     执行: u32,
     judge条目: usize,
     absent条目: usize,
+    /// G4（步 37）：预算停发从没发出的题记「未问」，与缺席分开数
+    unasked条目: usize,
     告警: Vec<String>,
 }
 
@@ -112,6 +114,12 @@ fn 跑(src: &str, lazy: bool, lift: bool) -> 结果 {
         .iter()
         .filter(|e| matches!(e, Entry::Absent { .. }))
         .count();
+    // G4（步 37）：预算停发从没发出的题记「未问」（原先记 Absent），分开数
+    let unasked条目 = ledger
+        .entries
+        .iter()
+        .filter(|e| matches!(e, Entry::Unasked { .. }))
+        .count();
     let 每次 = 每次.borrow().clone();
     结果 {
         r,
@@ -119,6 +127,7 @@ fn 跑(src: &str, lazy: bool, lift: bool) -> 结果 {
         执行: 计数.get(),
         judge条目,
         absent条目,
+        unasked条目,
         告警,
     }
 }
@@ -129,8 +138,8 @@ fn 有推测未用(x: &结果) -> bool {
 
 fn 报(名: &str, x: &结果) {
     eprintln!(
-        "[{名}] r={:?}\n    每次={:?} 执行={} judge条目={} absent条目={}\n    告警={:?}",
-        x.r, x.每次, x.执行, x.judge条目, x.absent条目, x.告警
+        "[{名}] r={:?}\n    每次={:?} 执行={} judge条目={} absent条目={} unasked条目={}\n    告警={:?}",
+        x.r, x.每次, x.执行, x.judge条目, x.absent条目, x.unasked条目, x.告警
     );
 }
 
@@ -280,7 +289,10 @@ let ok = a.ok && g(s, q2).ok;
     报("r5b lift关", &关);
     报("r5b lift开", &开);
     assert_eq!(开.r, 关.r);
-    assert_eq!((开.judge条目, 开.absent条目), (关.judge条目, 关.absent条目));
+    assert_eq!(
+        (开.judge条目, 开.absent条目, 开.unasked条目),
+        (关.judge条目, 关.absent条目, 关.unasked条目)
+    );
     assert!(!有推测未用(&开));
 }
 
@@ -401,7 +413,10 @@ let b = g(s, q2);
     // 修复 3b：提升登记的组排在程序序更靠前的真站点（z）之后，预算只够一次时发的是 z
     assert_eq!(开.r.as_ref().unwrap()["z"]["exit"], "act");
     assert_eq!(开.r, 关.r);
-    assert_eq!((开.judge条目, 开.absent条目), (关.judge条目, 关.absent条目));
+    assert_eq!(
+        (开.judge条目, 开.absent条目, 开.unasked条目),
+        (关.judge条目, 关.absent条目, 关.unasked条目)
+    );
 }
 
 #[test]
@@ -422,7 +437,10 @@ let ok = a.ok && g(s, q2).ok;
     报("r8 lift开", &开);
     // 修复 3b + 4：没走到的推测项不记缺席账
     assert_eq!(开.r, 关.r);
-    assert_eq!(开.absent条目, 关.absent条目);
+    assert_eq!(
+        (开.absent条目, 开.unasked条目),
+        (关.absent条目, 关.unasked条目)
+    );
     assert!(!有推测未用(&开));
 }
 
@@ -480,18 +498,21 @@ struct 复核结果 {
     动作: u32,
     judge条目: usize,
     absent条目: usize,
+    /// G4（步 37）：预算停发从没发出的题记「未问」，与缺席分开数
+    unasked条目: usize,
     告警: Vec<String>,
 }
 
 impl 复核结果 {
     /// 两臂比较的部分（告警单独核）
-    fn 可比(&self) -> (&str, &[usize], u32, usize, usize) {
+    fn 可比(&self) -> (&str, &[usize], u32, usize, usize, usize) {
         (
             &self.r,
             &self.每次,
             self.动作,
             self.judge条目,
             self.absent条目,
+            self.unasked条目,
         )
     }
     fn 推测未用(&self) -> bool {
@@ -533,15 +554,17 @@ fn 复核跑(src: &str, passes: Passes) -> 复核结果 {
         动作: 计数.get(),
         judge条目: 数(|e| matches!(e, Entry::Judge { .. })),
         absent条目: 数(|e| matches!(e, Entry::Absent { .. })),
+        unasked条目: 数(|e| matches!(e, Entry::Unasked { .. })),
         告警,
     };
     eprintln!(
-        "    r={} 每次={:?} 动作={} judge条目={} absent条目={} 告警={:?}",
+        "    r={} 每次={:?} 动作={} judge条目={} absent条目={} unasked条目={} 告警={:?}",
         结果.r.chars().take(160).collect::<String>(),
         结果.每次,
         结果.动作,
         结果.judge条目,
         结果.absent条目,
+        结果.unasked条目,
         结果.告警
     );
     结果
@@ -713,7 +736,8 @@ fn v5_融合关_提升与推测的多题登记() {
     // 复核修复 8：拆出的题继承提升标记与位置，提升组不再抢在 a 的第二题前面花掉预算
     let (关, 开) = 提升两臂(&融合关多题(2), false);
     assert_eq!(关.每次, vec![1, 1]);
-    assert_eq!(关.absent条目, 2);
+    // G4（步 37）：两道停发的题从没发出，记「未问」不记缺席
+    assert_eq!((关.absent条目, 关.unasked条目), (0, 2));
     assert_eq!(开.可比(), 关.可比());
 }
 

@@ -15,28 +15,31 @@ use serde_json::{Value as Json, json};
 
 /// 判断器（模型 `m`）：按「材料原文 + 题面」查答案，未列出的回 0.5；置换测过且一致；不报自报置信度
 fn 端口<'a>(表: Vec<(&'static str, &'static str, Answer)>) -> Ports<'a> {
-    Ports::new().with(FnPort::judge("m", move |s: &State, qs: &[&Question]| {
-        let 原文 =
-            s.on.first()
-                .and_then(|m| m.content.as_str().map(String::from))
-                .unwrap_or_default();
-        Ok(JudgeResult {
-            answers: qs
-                .iter()
-                .map(|q| {
-                    表.iter()
-                        .find(|(料, 题, _)| *料 == 原文 && *题 == q.text)
-                        .map(|(_, _, a)| a.clone())
-                        .unwrap_or(Answer::Noul(0.5))
-                })
-                .collect(),
-            tokens: 0,
-            cost: 0.0,
-            mode_share: qs.iter().map(|_| Some(1.0)).collect(),
-            perms: qs.iter().map(|_| 2).collect(),
-            confidence: vec![],
-        })
-    }))
+    Ports::new().with(common::伴随中性judge(
+        "m",
+        move |s: &State, qs: &[&Question]| {
+            let 原文 =
+                s.on.first()
+                    .and_then(|m| m.content.as_str().map(String::from))
+                    .unwrap_or_default();
+            Ok(JudgeResult {
+                answers: qs
+                    .iter()
+                    .map(|q| {
+                        表.iter()
+                            .find(|(料, 题, _)| *料 == 原文 && *题 == q.text)
+                            .map(|(_, _, a)| a.clone())
+                            .unwrap_or(Answer::Noul(0.5))
+                    })
+                    .collect(),
+                tokens: 0,
+                cost: 0.0,
+                mode_share: qs.iter().map(|_| Some(1.0)).collect(),
+                perms: qs.iter().map(|_| 2).collect(),
+                confidence: vec![],
+            })
+        },
+    ))
 }
 
 fn 动作表() -> ActionRegistry {
@@ -359,19 +362,22 @@ handle(cut(r), {
         let entry = 入口(接受);
         let a = 动作表();
         let mut l = Ledger::new();
-        let ports = Ports::new().with(FnPort::judge("m", |_s: &State, qs: &[&Question]| {
-            Ok(JudgeResult {
-                answers: qs
-                    .iter()
-                    .map(|q| Answer::Noul(if q.text == "好" { 0.9 } else { 0.95 }))
-                    .collect(),
-                tokens: 0,
-                cost: 0.0,
-                mode_share: vec![None; qs.len()],
-                perms: vec![0; qs.len()],
-                confidence: vec![],
-            })
-        }));
+        let ports = Ports::new().with(common::伴随中性judge(
+            "m",
+            |_s: &State, qs: &[&Question]| {
+                Ok(JudgeResult {
+                    answers: qs
+                        .iter()
+                        .map(|q| Answer::Noul(if q.text == "好" { 0.9 } else { 0.95 }))
+                        .collect(),
+                    tokens: 0,
+                    cost: 0.0,
+                    mode_share: vec![None; qs.len()],
+                    perms: vec![0; qs.len()],
+                    confidence: vec![],
+                })
+            },
+        ));
         jpp::Session::new(ports, &c, &a)
             .run(&编译(src, &entry), &entry, &mut l)
             .map(|o| o.value_json())

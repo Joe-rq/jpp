@@ -1,0 +1,175 @@
+// 验题闸门（B5、B45；两条出题路共用这一个函数，缺省参数也相同，主控答复 Q4）。
+//
+// 每个候选按序过：
+//   ⓪ 形状：唤出的坏候选（解析不了）直接拒；
+//   ① 静态诊断：transform("diagnose", 题材料)，每个候选一条账本条目，输出是它命中的诊断（裁定二十）；命中
+//      rules.jpp 的阻断码即拒。题材料里带候选 id：两个条目派生出同一题面时同键的 transform 会被复用，
+//      带 id 才各记一条。阻断只作用于派生题，作者手写的题照旧只得到提示（意图汇编 11a）；
+//   ② 结构代理：K 选一要有 ≥ 2 个候选；派生题不得与来源题同哈希；状态材料不越出来源状态（state_within，
+//      over 是题的切法不算）。唤出候选的探问蕴涵判不了，这里只是代理（过程记录 §1.2）；
+//   ③ 判断器诊断：lib/diag.jpp 的两道字面题——diag_two_judgments（问在题面材料上，同一题面只问一次）
+//      判 act、或 diag_in_material（问在候选所属条目的材料上，按条目分组调用）判 ignore 即拒；未决不拒（按判断器的
+//      回答走），未决随闸门结果交出（J-05）。opts.judge_diag 为假时跳过；
+//   ③b 已知答案验题（04-语言规范-v0 §5.4 的验题闸门本义：≥3 act + ≥3 ignore，gap = min(p|act) − max(p|ignore)
+//      ≥ 0.20，safety 0.30；程度题每档 ≥ 2 道、期望档偏差 ≤ 0.5）：opts.known(候选) 给出验题材料与期望的候选，
+//      逐条在验题材料上判一次（同一层登记），known_answers 判过没过，没过即拒（stage "known"）。没给验题的候选跳过
+//      （运行中通常没有真值）；K 选一的验题归 B0485，这里不判不拒；
+//   ④ 信息值打分：gate_info（B7、B43 的效用族，算法在 jpp-plan::value；「同批」= 同一来源的候选；
+//      折扣按主会话裁定四十三：有记录按记录，无记录取同题类已认证记录的最低折扣），
+//   ⑤ 同一来源的候选按信息值取前 width 个（opts.width，缺省全取），其余记为「过闸门未入选」。
+//
+// 去重（Z0517，过程记录 工程-Z0517-派生去重.md）：进闸门之前，同一次调用里判断键相同的候选（derive_key：材料项、ref、
+// over、题）只留先出现的一个，其余记入 merged（into = 留下的那个）；与自己父节点同题的不算，照旧由②拒。
+// derive_gate_memo 另带一份记忆跨调用复用：已问节点的键（asked）与③、③b 的诊断结论，命中即不再发判断——
+// 同一循环里判断键重复会被 J-06 当成没有进展而停下整条 chain。derive_gate 是空记忆的一次性调用。
+//
+import "../diag.jpp";
+import "../compose/carry.jpp";
+import "rules.jpp";
+import "node.jpp";
+
+// ① 命中的诊断码。题材料与 lib/diag.jpp 的 diag_mat 同形，另加候选 id
+fn derive_diagnose(c) {
+    let base = if c.q.template == unit { {op: c.q.op, text: c.q.text} }
+               else { {op: c.q.op, text: c.q.text, template: c.q.template, fill: c.q.fill} };
+    map(content(transform("diagnose", mat(with(base, "candidate", c.id)))), fn(n) { n.code })
+}
+
+// 按条目材料分组（保持首次出现的顺序）：[{on, cs: [候选]}]
+fn derive_by_item(cs) {
+    let hs = fold(cs, [], fn(acc, c) { if contains(acc, c.item.on.hash) { acc } else { append(acc, c.item.on.hash) } });
+    map(hs, fn(h) {
+        let g = filter(cs, fn(c) { c.item.on.hash == h });
+        {on: g[0].item.on, cs: g}
+    })
+}
+
+// 从 xs 里按 score 取前 w 个（稳定：打平时保持原顺序）
+fn derive_top(xs, w) {
+    let pick = fn(acc, k) {
+        let rest = filter(derive_idx(xs), fn(i) { !contains(acc, i) });
+        let best = fold(rest, -1, fn(b, i) { if b < 0 || xs[i].score > xs[b].score { i } else { b } });
+        if best < 0 { acc } else { append(acc, best) }
+    };
+    let chosen = fold(range(0, min(w, len(xs))), [], pick);
+    {chosen: map(chosen, fn(i) { xs[i].c }),
+     rest: map(filter(derive_idx(xs), fn(i) { !contains(chosen, i) }), fn(i) { xs[i].c })}
+}
+
+fn derive_gate(cands, opts) {
+    let g = derive_gate_memo(cands, opts, derive_memo0());
+    with(g.gate, "merged", g.merged)
+}
+
+// 空记忆：asked 已问节点 [{key, id}]；two / inm 是③「藏两判」、③「在材料里」的结论；known 是③b 验题的读数（键见下）
+fn derive_memo0() { {asked: [], two: {}, inm: {}, known: {}} }
+
+// 去重（进闸门前）：同键候选只留先出现的；键已在 asked 里的并入已问节点。与父节点同题的留给②
+fn derive_dedup(cands, asked) {
+    fold(cands, {keep: [], seen: [], merged: []}, fn(acc, c) {
+        if has(c, "bad") || c.q.hash == c.src_q { with(acc, "keep", append(acc.keep, c)) } else {
+            let k = derive_key(c);
+            let hit = filter(asked, fn(a) { a.key == k });
+            if len(hit) > 0 {
+                with(acc, "merged", append(acc.merged, {id: c.id, parent: c.parent, by: c.by, q: c.q.text, key: k, into: hit[0].id, asked: true}))
+            } else if contains(map(acc.seen, fn(x) { x.key }), k) {
+                let first = filter(acc.seen, fn(x) { x.key == k })[0];
+                with(acc, "merged", append(acc.merged, {id: c.id, parent: c.parent, by: c.by, q: c.q.text, key: k, into: first.id, asked: false}))
+            } else {
+                with(with(acc, "keep", append(acc.keep, c)), "seen", append(acc.seen, {key: k, id: c.id}))
+            }
+        }
+    })
+}
+
+// -> {gate: {pass, unchosen, rejected, evidence, pending}, merged: [{id, parent, by, q, key, into: 节点 id, asked}], memo}
+fn derive_gate_memo(cands0, opts, memo) {
+    let R = derive_rules();
+    let dd = derive_dedup(cands0, memo.asked);
+    let cands = dd.keep;
+    let rej = fn(c, stage, codes) { {id: c.id, q: c.q.text, qh: c.q.hash, by: c.by, stage: stage, codes: codes} };
+    // ⓪
+    let s0 = filter(cands, fn(c) { !has(c, "bad") });
+    let r0 = map(filter(cands, fn(c) { has(c, "bad") }), fn(c) { rej(c, "shape", [c.bad]) });
+    // ①
+    let d1 = map(s0, fn(c) { {c: c, hit: filter(derive_diagnose(c), fn(x) { contains(R.block_codes, x) })} });
+    let s1 = map(filter(d1, fn(d) { len(d.hit) == 0 }), fn(d) { d.c });
+    let r1 = map(filter(d1, fn(d) { len(d.hit) > 0 }), fn(d) { rej(d.c, "static", d.hit) });
+    // ②
+    let bad2 = fn(c) {
+        if c.q.op == "select" && (!has(c, "over") || len(c.over) < 2) { "k<2" }
+        else if c.q.hash == c.src_q { "same-as-source" }
+        else if c.src_st != unit && !state_within(c.st, c.src_st) { "state-beyond-source" } else { "" }
+    };
+    let s2 = filter(s1, fn(c) { bad2(c) == "" });
+    let r2 = map(filter(s1, fn(c) { bad2(c) != "" }), fn(c) { rej(c, "structure", [bad2(c)]) });
+    // ③ lib/diag.jpp：两道字面题，各自返回契约值；元素的 pos 是它在所给题列表里的下标
+    let on3 = !has(opts, "judge_diag") || opts.judge_diag;
+    // 「藏两判」只看题面：同一题面在一条 chain 里只问一次（记忆键 = 题面哈希），结果按题面映射回各候选
+    let tkey = fn(q) { hash(q.text) };
+    let uniq = fold(s2, [], fn(acc, c) {
+        if has(memo.two, tkey(c.q)) || len(filter(acc, fn(q) { q.text == c.q.text })) > 0 { acc } else { append(acc, c.q) }
+    });
+    let tj = if on3 && len(uniq) > 0 { diag_two_judgments(uniq) } else { unit };
+    let two_new = if tj == unit { [] } else { map(tj.value, fn(e) { tkey(uniq[e.pos]) }) };
+    let two_memo = if tj == unit { memo.two } else { fold(uniq, memo.two, fn(acc, q) { with(acc, tkey(q), if contains(two_new, tkey(q)) { "two" } else { "ok" }) }) };
+    let two = map(filter(s2, fn(c) { on3 && has(two_memo, tkey(c.q)) && two_memo[tkey(c.q)] == "two" }), fn(c) { c.id });
+    // 「在材料里」：按条目分组，组内同一题面只问一次；记忆键 = 材料项哈希 × 题面哈希
+    let ikey = fn(c) { c.item.on.hash + "|" + tkey(c.q) };
+    let ims = if on3 { map(derive_by_item(filter(s2, fn(c) { !has(memo.inm, ikey(c)) })), fn(g) {
+        let qs = fold(g.cs, [], fn(acc, c) { if len(filter(acc, fn(q) { q.text == c.q.text })) > 0 { acc } else { append(acc, c.q) } });
+        {g: g, qs: qs, o: diag_in_material(qs, g.on)}
+    }) } else { [] };
+    let inm_memo = fold(ims, memo.inm, fn(acc, x) {
+        let gone = map(x.o.detail.ignore, fn(e) { tkey(x.qs[e.pos]) });
+        fold(x.qs, acc, fn(a2, q) { with(a2, x.g.on.hash + "|" + tkey(q), if contains(gone, tkey(q)) { "absent" } else { "ok" }) })
+    });
+    let absent = map(filter(s2, fn(c) { on3 && has(inm_memo, ikey(c)) && inm_memo[ikey(c)] == "absent" }), fn(c) { c.id });
+    let why = fn(c) { concat(if contains(two, c.id) { ["two-judgments"] } else { [] },
+                             if contains(absent, c.id) { ["not-in-material"] } else { [] }) };
+    let s3 = filter(s2, fn(c) { len(why(c)) == 0 });
+    let r3 = map(filter(s2, fn(c) { len(why(c)) > 0 }), fn(c) { rej(c, "judge-diag", why(c)) });
+    let keys3 = concat(if tj == unit { [] } else { tj.evidence }, fold(ims, [], fn(acc, x) { concat(acc, x.o.evidence) }));
+    let pend3 = fold(ims, if tj == unit { [] } else { carry([], tj.pending, "derive-gate:two") },
+                     fn(acc, x) { carry(acc, x.o.pending, "derive-gate:in") });
+    // ③b 已知答案验题：只对给了验题、不是 K 选一的候选判。记忆的是读数，键 = 题哈希 × 验题材料哈希 × ref 哈希
+    // （判断状态由 on 与 ref 定）；过没过按各候选自己的 expect 用 known_answers 重算——expect 不进键，否则同材料
+    // 不同期望的两个候选会各判一次、判出同一个账本键，J-06 又会停链（复核 C1、C2）
+    let known_of = fn(c) { if has(opts, "known") && c.q.op != "select" { opts.known(c) } else { [] } };
+    let kg = if has(opts, "known_gate") { opts.known_gate } else { {} };
+    let kkey = fn(q, k) { q.hash + "|" + k.on.hash + "|" + (if has(k, "ref") { k.ref.hash } else { "" }) };
+    let kx = map(s3, fn(c) { {c: c, ks: known_of(c)} });
+    let need = fold(kx, [], fn(acc, x) {
+        fold(x.ks, acc, fn(a2, k) {
+            let key = kkey(x.c.q, k);
+            if has(memo.known, key) || len(filter(a2, fn(y) { y.key == key })) > 0 { a2 } else { append(a2, {key: key, k: k, q: x.c.q}) }
+        })
+    });
+    let fresh = map(need, fn(n) { {key: n.key, r: judge(derive_state(n.k, {}), n.q)} });
+    let known_memo = fold(fresh, memo.known, fn(acc, f) { with(acc, f.key, f.r) });
+    let kres = map(filter(kx, fn(x) { len(x.ks) > 0 }), fn(x) {
+        {c: x.c, v: known_answers(x.c.q, map(x.ks, fn(k) { known_memo[kkey(x.c.q, k)] }), map(x.ks, fn(k) { k.expect }), kg)}
+    });
+    let kfail = filter(kres, fn(x) { !x.v.pass });
+    let kbad = map(kfail, fn(x) { x.c.id });
+    let s4 = filter(s3, fn(c) { !contains(kbad, c.id) });
+    let r4 = map(kfail, fn(x) { rej(x.c, "known", [x.v.code]) });
+    let keys4 = map(fresh, fn(f) { key_of(f.r) });
+    // ④⑤ 按来源分组：同一来源的候选是争 width 的那一批，组内算信息值、取前 width。
+    // 只在组内按位置配对：用算出的下标取列表元素会把整张列表的来源并进取出的值（B84），
+    // 跨条目配对会让一个条目的候选挂上别的条目的来源出口
+    let parents = fold(s4, [], fn(acc, c) { if contains(acc, c.parent) { acc } else { append(acc, c.parent) } });
+    let groups = map(parents, fn(p) {
+        let cs = filter(s4, fn(c) { c.parent == p });
+        let vals = gate_info(map(cs, fn(c) { c.q }), map(cs, fn(c) { c.st }));
+        let xs = map(derive_idx(cs), fn(k) { {c: cs[k], score: vals[k]} });
+        derive_top(xs, if has(opts, "width") { opts.width } else { len(xs) })
+    });
+    let pass = fold(groups, [], fn(acc, g) { concat(acc, g.chosen) });
+    {gate: {pass: pass,
+            unchosen: fold(groups, [], fn(acc, g) { concat(acc, map(g.rest, fn(c) { {id: c.id, q: c.q.text, qh: c.q.hash, by: c.by} })) }),
+            rejected: concat(concat(concat(concat(r0, r1), r2), r3), r4),
+            evidence: concat(keys3, keys4), pending: pend3},
+     merged: dd.merged,
+     memo: {asked: concat(memo.asked, map(pass, fn(c) { {key: derive_key(c), id: c.id} })), two: two_memo, inm: inm_memo, known: known_memo}}
+}

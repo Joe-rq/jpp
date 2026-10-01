@@ -35,7 +35,7 @@ fn 定值端口<'a>(p: f64, calls: &'a RefCell<u64>) -> Ports<'a> {
 const 发信: &str = r#"
 budget {calls: 2, cost: 0, depth: 8};
 let e = cut(judge(state(mat("内部材料")), test("可以发吗", "k")));
-handle(e, {act: fn() { content(do("发邮件", [], 0)) },
+handle(e, {act: fn() { (do("发邮件", [], 0)) },
            ignore: fn() { "没发" },
            unsure: fn(u) { consume(u, "drop"); "没发" }})
 "#;
@@ -65,7 +65,7 @@ fn 夹具线不放行不可逆do() {
     let mut 认证 = CalibStore::new();
     common::certified(&mut 认证, "k", 0.8, 0.2, 50);
     let (v, w) = 跑(发信, &认证, 0.95).expect("认证线的 Act 放行");
-    assert_eq!(v, Json::from("已发"));
+    assert_eq!(v["content"], Json::from("已发"));
     assert!(!w.iter().any(|x| x.starts_with("W-fixture-line")), "{w:?}");
 }
 

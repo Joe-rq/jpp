@@ -16,6 +16,11 @@ struct 框行 {
     q: String,
     p: f64,
     pick: Option<usize>,
+    /// 读数的物理题型（账本 `jkey.phys`：noul / choice / score；旧账本没写时取答案种类 Noul / Choice / Score）。
+    /// 两端先标按它取画像 δ 的列（Z0388：打分读数也带 argmax 作 pick，不能按有没有 pick 猜题型）
+    phys: Option<String>,
+    /// 置换测量 `(perms, mode_share)`（账本 `perm`，两序 select 才有）：回填时与读数一起写进行（Z0308）
+    perm: Option<(usize, f64)>,
 }
 
 /// 键 → 抽样框
@@ -67,6 +72,14 @@ fn 账本框(path: &std::path::Path) -> Result<(框表, String), String> {
         ) else {
             continue;
         };
+        // 答案种类即物理题型（账本没写 `jkey.phys` 的旧账本按它判，不看有没有 pick；Z0388 复核可后补）
+        let 答案种类 = if j["answer"]["Noul"].is_number() {
+            "noul"
+        } else if j["answer"]["Choice"].is_array() {
+            "choice"
+        } else {
+            "score"
+        };
         let (p, pick) = if let Some(p) = j["answer"]["Noul"].as_f64() {
             (p, None)
         } else if let Some(v) = j["answer"]["Choice"]
@@ -96,6 +109,11 @@ fn 账本框(path: &std::path::Path) -> Result<(框表, String), String> {
                 q: q.to_string(),
                 p,
                 pick,
+                phys: Some(j["jkey"]["phys"].as_str().unwrap_or(答案种类).to_string()),
+                perm: j
+                    .get("perm")
+                    .filter(|m| !m.is_null())
+                    .and_then(|m| Some((m["perms"].as_u64()? as usize, m["mode_share"].as_f64()?))),
             });
         }
     }
@@ -195,15 +213,74 @@ fn 导出清单(a: &ImportArgs) -> Result<(), String> {
         a.key.as_ref().unwrap(),
         a.list_out.as_ref().unwrap(),
     );
+    // 伴随题是元问题，不走上岗，不进待标清单（B0492 S5，主控板 Z0413）。只认默认题式的键前缀：
+    // `diag-*` 两个键与 `lib/diag.jpp` 自己的诊断题共用，不拒；`unsure_source({companions})` 自定义题式的键任意，已知限制
+    if key.starts_with("unsure-companion-") {
+        return Err(format!(
+            "E-list-companion: 键 {key} 是伴随题的校准键。伴随题是元问题，不走上岗，不进待标清单（主控板 Z0413）"
+        ));
+    }
     let (框, 账本哈希) = 账本框(ledger)?;
     let frame = 框
         .get(key)
         .ok_or_else(|| format!("账本里没有键 {key} 的读数"))?;
-    let store = 库(a)?;
-    let op = if frame.iter().any(|x| x.pick.is_some()) {
-        jpp::value::Op::Select
+    let 题表 = match &a.report {
+        Some(r) => Some(报告题表(r)?),
+        None => None,
+    };
+    // diag-* 两个键与伴随题共用（过程记录 5.22）：带了报告就按题式模板认出伴随题行、在排序与计数前去掉；没带报告认不出，告警
+    let 去伴随;
+    let frame = if key == "diag-in-material" || key == "diag-two-judgments" {
+        match &题表 {
+            Some(t) => {
+                去伴随 = frame
+                    .iter()
+                    .filter(|x| {
+                        !t.get(&x.q)
+                            .and_then(|r| r["template"].as_str())
+                            .is_some_and(jpp::session::是伴随题面)
+                    })
+                    .cloned()
+                    .collect::<Vec<_>>();
+                if 去伴随.len() < frame.len() {
+                    eprintln!(
+                        "键 {key}：去掉 {} 行伴随题（元问题，不走上岗，主控板 Z0413），余 {} 行",
+                        frame.len() - 去伴随.len(),
+                        去伴随.len()
+                    );
+                }
+                &去伴随
+            }
+            None => {
+                eprintln!(
+                    "W-list-companion-mixed: 键 {key} 与伴随题共用，清单可能混进伴随题行；带 --report <首跑的 report.json> 按题面去掉（主控板 Z0413）"
+                );
+                frame
+            }
+        }
     } else {
-        jpp::value::Op::Test
+        frame
+    };
+    let store = 库(a)?;
+    // Z0388：按读数实际的物理题型取 δ 的列（Z0238 同类错：打分读数也带 pick，原来按有没有 pick 猜成 K 选一）。
+    // 题型取账本 `jkey.phys`，旧账本没写时取答案种类（建框时定，不猜）；同一键的题型必须一致
+    let 题型们: std::collections::BTreeSet<&str> =
+        frame.iter().filter_map(|x| x.phys.as_deref()).collect();
+    let op = match (题型们.len(), 题型们.iter().next().copied()) {
+        (1, Some("noul")) => jpp::value::Op::Test,
+        (1, Some("choice")) => jpp::value::Op::Select,
+        (1, Some("score")) => jpp::value::Op::Measure,
+        _ => {
+            return Err(format!(
+                "键 {key} 的读数题型不一致或认不出（{:?}），不知道取 δ 的哪一列（Z0388）",
+                题型们
+            ));
+        }
+    };
+    let phys = match op {
+        jpp::value::Op::Test => "noul",
+        jpp::value::Op::Select => "choice",
+        jpp::value::Op::Measure => "score",
     };
     // 步 15d-2：两端先标的 δ 取记录的，记录没有取 --profile 画像的 δ 先验，都没有报错
     let delta = store
@@ -213,10 +290,6 @@ fn 导出清单(a: &ImportArgs) -> Result<(), String> {
             "两端先标要 δ：记录没有、画像也没有 δ 先验。修法：带 --profile <画像>（步 15d-2）",
         )?;
     let ps: Vec<f64> = frame.iter().map(|x| x.p).collect();
-    let 题表 = match &a.report {
-        Some(r) => Some(报告题表(r)?),
-        None => None,
-    };
     let 题数 = frame
         .iter()
         .map(|x| x.q.as_str())
@@ -241,7 +314,7 @@ fn 导出清单(a: &ImportArgs) -> Result<(), String> {
         Some(m) => Some(材料表(m)?),
         None => None,
     };
-    let mut lines = vec![json!({"list": {"key": key, "seed": a.seed, "ledger": 账本哈希, "n": frame.len(), "rule": "two-ends/v1"}}).to_string()];
+    let mut lines = vec![json!({"list": {"key": key, "seed": a.seed, "ledger": 账本哈希, "n": frame.len(), "rule": "two-ends/v1", "phys": phys, "delta": delta}}).to_string()];
     let mut 对上 = 0;
     for (i, g) in &order {
         let x = &frame[*i];
@@ -411,6 +484,24 @@ pub fn run(a: &ImportArgs) -> Result<(), String> {
             v["q"] = json!(x.q);
             if let Some(k) = x.pick {
                 v["pick"] = json!(k);
+            }
+            // Z0308：置换测量是读数的一部分，同样只从账本回接；行里自带且与账本不同则拒收（B88 同一规则）
+            let 行里 = (
+                v["perms"].as_u64().map(|k| k as usize),
+                v["mode_share"].as_f64(),
+            );
+            match (行里, x.perm) {
+                ((None, None), _) => {}
+                ((Some(k), Some(s)), Some(m)) if (k, s) == m => {}
+                (r, m) => {
+                    return Err(at(format!(
+                        "置换测量 {r:?} 与账本 {m:?} 不同（B88：读数只从账本回接）"
+                    )));
+                }
+            }
+            if let Some((k, s)) = x.perm {
+                v["perms"] = json!(k);
+                v["mode_share"] = json!(s);
             }
             键们.insert(k);
         }

@@ -182,6 +182,44 @@ fn collect_nodes(input: &Json, edges: &[RawEdge]) -> Result<Vec<String>, String>
     }
 }
 
+// ---------- 并列解（C-8，主控 Z0174） ----------
+//
+// 「并列」= 与主解同样优的其他解。案例 01–03 缺口：动作只返回搜索顺序里的第一个最优解，另一个同样好的解
+// 被静默丢掉，读者会以为结论唯一；`interval` 也因此漏掉并列解用到的未决边。
+//
+// 形态（`地基/过程记录/工程-C7C8-动作表.md` §一·1.3、主控 2026-09-29 裁定）：原有输出字段一字不改，
+// 主解仍是原来那一个；另加三个字段——
+//   `tie_count`：并列最优解的个数（含主解）；`ties_complete=false` 时是「至少这么多」（等于枚举上限）；
+//   `ties`：并列最优解列表，每项与主解同形，主解排第一；
+//   `ties_complete`：`ties` 是否列全了全部并列解。无并列时 `tie_count=1`、`ties` 只有主解、`ties_complete=true`。
+// 无解（不可达、覆盖不了全集）时 `tie_count=0`、`ties=[]`、`ties_complete=true`。
+// 并列数可能指数增长，枚举上限 [`TIES_CAP`]（64），超过如实报 `ties_complete=false`，不静默截断。
+// `max_flow` 不枚举流的分配方式（个数无界、流量是连续量），只报 `flow_unique`。
+//
+// 并列的判据是数值相等：和、距离、成本先各自算出，再按相对容差 [`close`] 比较（相对 1e-9，没有绝对项——
+// 权重远小于 1e-9 时也照样按各自的量纲比较，理由同 PR #36 复核 P2）；主解永远在 `ties` 里。
+
+/// 并列解枚举上限。
+const TIES_CAP: usize = 64;
+
+/// 两个数在相对 1e-9 内视为相等（同为 0 或逐位相同也相等）。没有绝对项。
+fn close(a: f64, b: f64) -> bool {
+    a == b || (a - b).abs() <= 1e-9 * a.abs().max(b.abs())
+}
+
+/// 把并列字段加进动作输出（`out` 必须是 JSON 对象）。`ties.len() > TIES_CAP` 时截到上限、标不完整。
+fn with_ties(mut out: Json, mut ties: Vec<Json>, mut complete: bool) -> Json {
+    if ties.len() > TIES_CAP {
+        ties.truncate(TIES_CAP);
+        complete = false;
+    }
+    let obj = out.as_object_mut().expect("动作输出是 JSON 对象");
+    obj.insert("tie_count".into(), json!(ties.len()));
+    obj.insert("ties".into(), Json::Array(ties));
+    obj.insert("ties_complete".into(), json!(complete));
+    out
+}
+
 // ---------- graph:matching ----------
 //
 // 输入：`{"edges":[{"u","v","w"}], "nodes":[...]?, "bipartite": bool?(默认false),
@@ -270,14 +308,110 @@ fn run_matching_bipartite(input: &Json) -> Result<Json, String> {
 
     let n = left.len();
     let m = right.len();
+    let all_rows: Vec<usize> = (0..n).collect();
+    let all_cols: Vec<usize> = (0..m).collect();
+    let root = bip_solve(&best, &all_rows, &all_cols);
+    let mut pairs = root.pairs.clone();
+    let cap = size_cap(input);
+    let truncated_away = cap.is_some_and(|c| pairs.len() > c);
+    if let Some(cap) = cap {
+        pairs = truncate_pairs(pairs, cap);
+    }
+    let item = |ps: &[(usize, usize, f64, usize)]| -> Json {
+        let pairs_json: Vec<Json> = ps
+            .iter()
+            .map(|(row, col, w, idx)| json!({"u": left[*row], "v": right[*col], "w": w, "edge_index": idx}))
+            .collect();
+        let (matched_nodes, unmatched_nodes) = matched_unmatched(
+            left.iter().chain(right.iter()),
+            ps.iter()
+                .flat_map(|(row, col, _, _)| [left[*row].as_str(), right[*col].as_str()]),
+        );
+        json!({
+            "pairs": pairs_json,
+            "total_weight": ps.iter().map(|p| p.2).sum::<f64>(),
+            "matched_nodes": matched_nodes,
+            "unmatched_nodes": unmatched_nodes,
+        })
+    };
+    let mut out = item(&pairs);
+    let o = out.as_object_mut().expect("对象");
+    o.insert("algo".into(), json!("matching"));
+    o.insert("mode".into(), json!("bipartite"));
+    o.insert("exact".into(), json!(true));
+    o.insert("node_count".into(), json!(n + m));
+
+    // C-8：并列的最大权匹配。先枚举未截断的全部最优匹配（主解第一），再各自按 `size` 截断、按截断结果去重
+    let (all_ties, mut complete) = bip_enumerate(&best, n, m, &root);
+    let mut ties: Vec<Vec<(usize, usize, f64, usize)>> = Vec::new();
+    for t in all_ties {
+        let t = match cap {
+            Some(c) => truncate_pairs(t, c),
+            None => t,
+        };
+        if !ties.iter().any(|x| same_pairs(x, &t)) {
+            ties.push(t);
+        }
+    }
+    // 截断会让「同样优」的判据变模糊（边界上同权的边取谁也是并列来源），如实标不完整
+    if truncated_away {
+        complete = false;
+    }
+    Ok(with_ties(
+        out,
+        ties.iter().map(|t| item(t)).collect(),
+        complete,
+    ))
+}
+
+/// 按权降序取前 `cap` 对（稳定排序，`size` 选项的既有语义）。
+fn truncate_pairs(
+    mut pairs: Vec<(usize, usize, f64, usize)>,
+    cap: usize,
+) -> Vec<(usize, usize, f64, usize)> {
+    pairs.sort_by(|a, b| b.2.partial_cmp(&a.2).unwrap_or(Ordering::Equal));
+    pairs.truncate(cap);
+    pairs
+}
+
+/// 两个匹配是同一组节点对（不看顺序）。
+fn same_pairs(a: &[(usize, usize, f64, usize)], b: &[(usize, usize, f64, usize)]) -> bool {
+    let key = |p: &[(usize, usize, f64, usize)]| {
+        let mut k: Vec<(usize, usize)> = p.iter().map(|x| (x.0, x.1)).collect();
+        k.sort_unstable();
+        k
+    };
+    key(a) == key(b)
+}
+
+type BipEdges = HashMap<(usize, usize), (f64, usize)>;
+
+/// 二分图带权匹配一次求解的结果：`pairs` 是权 > 0 的实边配对（按右端升序）；`cost`/`u`/`v` 是补成方阵后的
+/// 匈牙利代价矩阵与对偶势（1-索引），供并列枚举判「紧边」。
+struct BipSol {
+    pairs: Vec<(usize, usize, f64, usize)>,
+    cost: Vec<Vec<f64>>,
+    u: Vec<f64>,
+    v: Vec<f64>,
+    /// 匈牙利的指派（1-索引）：`assign[j]` = 配到列 `j` 的行号，0 = 该列空。
+    assign: Vec<usize>,
+    size: usize,
+}
+
+/// 在给定的左行集合与右列集合上求最大权匹配（补零权哑元成方阵，同原有做法）。`rows`/`cols` 是全局下标。
+fn bip_solve(best: &BipEdges, rows: &[usize], cols: &[usize]) -> BipSol {
+    let (n, m) = (rows.len(), cols.len());
     let size = n.max(m);
     let mut cost = vec![vec![0.0f64; size + 1]; size + 1];
-    for (&(l, r), &(w, _)) in &best {
-        cost[l + 1][r + 1] = -w;
+    for (li, &l) in rows.iter().enumerate() {
+        for (ri, &r) in cols.iter().enumerate() {
+            if let Some(&(w, _)) = best.get(&(l, r)) {
+                cost[li + 1][ri + 1] = -w;
+            }
+        }
     }
-    let assignment = hungarian(&cost, size);
-
-    let mut pairs: Vec<(usize, usize, f64, usize)> = Vec::new();
+    let (assignment, u, v) = hungarian_full(&cost, size, size);
+    let mut pairs = Vec::new();
     for (j, &i) in assignment.iter().enumerate().skip(1).take(size) {
         if i == 0 {
             continue;
@@ -285,38 +419,245 @@ fn run_matching_bipartite(input: &Json) -> Result<Json, String> {
         let (row, col) = (i - 1, j - 1);
         if row < n
             && col < m
-            && let Some(&(w, orig_idx)) = best.get(&(row, col))
+            && let Some(&(w, orig_idx)) = best.get(&(rows[row], cols[col]))
             && w > 0.0
         {
-            pairs.push((row, col, w, orig_idx));
+            pairs.push((rows[row], cols[col], w, orig_idx));
         }
     }
-    if let Some(cap) = size_cap(input) {
-        pairs.sort_by(|a, b| b.2.partial_cmp(&a.2).unwrap_or(Ordering::Equal));
-        pairs.truncate(cap);
+    BipSol {
+        pairs,
+        cost,
+        u,
+        v,
+        assign: assignment,
+        size,
     }
-    let total_weight: f64 = pairs.iter().map(|p| p.2).sum();
-    let pairs_json: Vec<Json> = pairs
-        .iter()
-        .map(|(row, col, w, idx)| json!({"u": left[*row], "v": right[*col], "w": w, "edge_index": idx}))
-        .collect();
-    let (matched_nodes, unmatched_nodes) = matched_unmatched(
-        left.iter().chain(right.iter()),
-        pairs
-            .iter()
-            .flat_map(|(row, col, _, _)| [left[*row].as_str(), right[*col].as_str()]),
-    );
+}
 
-    Ok(json!({
-        "algo": "matching",
-        "mode": "bipartite",
-        "pairs": pairs_json,
-        "total_weight": total_weight,
-        "matched_nodes": matched_nodes,
-        "unmatched_nodes": unmatched_nodes,
-        "exact": true,
-        "node_count": n + m,
-    }))
+/// 枚举全部最大权匹配（C-8；Z0223 改为增广路核对）。返回 `(解们, 是否列全)`，主解排第一，解们两两不同，
+/// 最多 `TIES_CAP + 1` 个（多出的那一个只用来判「不止 64 个」，由 `with_ties` 截掉）。
+///
+/// 做法：补成方阵后（同 `bip_solve`），根问题的最优指派恰好是「紧格」图（约化代价 `代价 - u - v` 为 0 的格）
+/// 里的完美匹配（线性规划互补松弛）。左行按序逐行决定「配某条紧的实边」或「不配」（不配 = 落在一个紧的零格上），
+/// 每个决定用紧格图里的一次增广路核对「已定的前缀还能补成完美匹配」，所以不会走进死路，每个节点都至少通向一个解。
+/// 手里始终有一个与前缀相容的完美匹配（见证）：见证自己选的分支零成本，其他分支只需从被挤掉的那一行找一条增广路，
+/// 单次 O(紧格数)；C-8 原做法每个分支重跑一次匈牙利（O(n²m)），162×163 上是主要耗时。
+fn bip_enumerate(
+    best: &BipEdges,
+    n: usize,
+    m: usize,
+    root: &BipSol,
+) -> (Vec<Vec<(usize, usize, f64, usize)>>, bool) {
+    let mut found = vec![root.pairs.clone()];
+    let wmax = best.values().map(|x| x.0).fold(0.0f64, f64::max);
+    if wmax <= 0.0 || root.pairs.is_empty() {
+        return (found, true);
+    }
+    let tol = 1e-9 * wmax;
+    let s = root.size;
+    // 紧格：实格（有正权边）看约化代价；零格（无边、零权、哑元）要求代价 0 且约化代价 0
+    let mut pos_tight: Vec<Vec<usize>> = vec![Vec::new(); n];
+    let mut zero_tight: Vec<Vec<usize>> = vec![Vec::new(); s];
+    for i in 0..s {
+        for j in 0..s {
+            let c = root.cost[i + 1][j + 1];
+            let tight = (c - root.u[i + 1] - root.v[j + 1]).abs() <= tol;
+            if !tight {
+                continue;
+            }
+            if c == 0.0 {
+                zero_tight[i].push(j);
+            } else if i < n && j < m && best.get(&(i, j)).is_some_and(|x| x.0 > 0.0) {
+                pos_tight[i].push(j);
+            }
+        }
+    }
+    // 见证：匈牙利给出的指派（1-索引的 assign[j] = 行），限在紧格里；万一浮点使某格落在容差外，再由增广补齐
+    let mut st = BipState {
+        mode: vec![0; s],
+        col_fixed: vec![false; s],
+        mate_row: vec![NONE; s],
+        mate_col: vec![NONE; s],
+    };
+    let ctx = BipCtx {
+        best,
+        n,
+        pos_tight,
+        zero_tight,
+    };
+    for (j, &i1) in root.assign.iter().enumerate().skip(1).take(s) {
+        if i1 == 0 {
+            continue;
+        }
+        let (i, j0) = (i1 - 1, j - 1);
+        if ctx.pos_tight_has(i, j0) || ctx.zero_tight[i].contains(&j0) {
+            st.mate_row[i] = j0;
+            st.mate_col[j0] = i;
+        }
+    }
+    for i in 0..s {
+        if st.mate_row[i] == NONE && !ctx.augment(&mut st, i) {
+            // 不该发生（根解本身就是紧格图里的完美匹配）；发生就如实标不完整，不猜
+            return (found, false);
+        }
+    }
+    let mut chosen = Vec::new();
+    let mut overflow = false;
+    bip_rec(&ctx, 0, &st, &mut chosen, &mut found, &mut overflow);
+    (found, !overflow)
+}
+
+const NONE: usize = usize::MAX;
+
+/// 增广路核对的状态：`mode[i]` 0 = 自由（可配任一紧格），1 = 只能落零格（已决定不配实边），2 = 已定（其列 `col_fixed`）。
+#[derive(Clone)]
+struct BipState {
+    mode: Vec<u8>,
+    col_fixed: Vec<bool>,
+    mate_row: Vec<usize>,
+    mate_col: Vec<usize>,
+}
+
+struct BipCtx<'a> {
+    best: &'a BipEdges,
+    n: usize,
+    /// 左行 `l` 的紧实边（右端列号）。
+    pos_tight: Vec<Vec<usize>>,
+    /// 方阵每一行的紧零格（列号）。
+    zero_tight: Vec<Vec<usize>>,
+}
+
+impl BipCtx<'_> {
+    fn pos_tight_has(&self, i: usize, j: usize) -> bool {
+        i < self.n && self.pos_tight[i].contains(&j)
+    }
+
+    /// 从未配的行 `x` 出发在紧格图里宽搜一条增广路，成功就沿路翻转并返回 true。
+    /// 自由行可走紧实边与紧零格，`mode=1` 的行与哑元行只走紧零格；已定行的列被封住，所以已定行不会被挤动。
+    fn augment(&self, st: &mut BipState, x: usize) -> bool {
+        let s = st.mode.len();
+        let mut par_row = vec![NONE; s]; // 列 j 是被哪一行走到的（NONE = 还没走到）
+        let mut queue = vec![x];
+        let mut head = 0;
+        while head < queue.len() {
+            let row = queue[head];
+            head += 1;
+            let real: &[usize] = if st.mode[row] == 0 && row < self.n {
+                &self.pos_tight[row]
+            } else {
+                &[]
+            };
+            for &j in real.iter().chain(self.zero_tight[row].iter()) {
+                if par_row[j] != NONE || st.col_fixed[j] {
+                    continue;
+                }
+                par_row[j] = row;
+                let owner = st.mate_col[j];
+                if owner == NONE {
+                    // 空列：沿来路翻转
+                    let mut col = j;
+                    loop {
+                        let r = par_row[col];
+                        let old = st.mate_row[r];
+                        st.mate_row[r] = col;
+                        st.mate_col[col] = r;
+                        if r == x {
+                            return true;
+                        }
+                        col = old;
+                    }
+                }
+                queue.push(owner);
+            }
+        }
+        false
+    }
+
+    /// 决定左行 `i` 配紧实边到列 `r`（`r` 未被封）。返回决定后的状态；核对不通（前缀补不成完美匹配）返回 None。
+    fn try_choose(&self, st: &BipState, i: usize, r: usize) -> Option<BipState> {
+        let mut t = st.clone();
+        let j0 = t.mate_row[i];
+        t.mode[i] = 2;
+        t.col_fixed[r] = true;
+        if j0 != r {
+            let k = t.mate_col[r]; // 完美匹配里每列都有主；r 未封，所以 k 不是已定行
+            t.mate_row[i] = r;
+            t.mate_col[r] = i;
+            t.mate_col[j0] = NONE;
+            t.mate_row[k] = NONE;
+            if !self.augment(&mut t, k) {
+                return None;
+            }
+        }
+        Some(t)
+    }
+
+    /// 决定左行 `i` 不配实边（落在一个紧零格上）。
+    fn try_none(&self, st: &BipState, i: usize) -> Option<BipState> {
+        let mut t = st.clone();
+        t.mode[i] = 1;
+        let j0 = t.mate_row[i];
+        if self.zero_tight[i].contains(&j0) {
+            return Some(t);
+        }
+        t.mate_row[i] = NONE;
+        t.mate_col[j0] = NONE;
+        if self.augment(&mut t, i) {
+            Some(t)
+        } else {
+            None
+        }
+    }
+}
+
+fn bip_rec(
+    ctx: &BipCtx,
+    i: usize,
+    st: &BipState,
+    chosen: &mut Vec<(usize, usize, f64, usize)>,
+    found: &mut Vec<Vec<(usize, usize, f64, usize)>>,
+    overflow: &mut bool,
+) {
+    if *overflow {
+        return;
+    }
+    if i == ctx.n {
+        if !found.iter().any(|x| same_pairs(x, chosen)) {
+            if found.len() >= TIES_CAP {
+                *overflow = true;
+                return;
+            }
+            found.push(chosen.clone());
+        }
+        return;
+    }
+    let mut options: Vec<Option<usize>> = ctx.pos_tight[i]
+        .iter()
+        .filter(|&&r| !st.col_fixed[r])
+        .map(|&r| Some(r))
+        .collect();
+    if !ctx.zero_tight[i].is_empty() {
+        options.push(None);
+    }
+    for opt in options {
+        if *overflow {
+            return;
+        }
+        let next = match opt {
+            Some(r) => ctx.try_choose(st, i, r),
+            None => ctx.try_none(st, i),
+        };
+        let Some(next) = next else { continue };
+        if let Some(r) = opt {
+            let &(w, idx) = ctx.best.get(&(i, r)).expect("紧边一定是实边");
+            chosen.push((i, r, w, idx));
+        }
+        bip_rec(ctx, i + 1, &next, chosen, found, overflow);
+        if opt.is_some() {
+            chosen.pop();
+        }
+    }
 }
 
 fn matched_unmatched<'a>(
@@ -335,26 +676,27 @@ fn matched_unmatched<'a>(
     (matched_nodes, unmatched)
 }
 
-/// 方阵最小费用完美匹配（Kuhn 算法 + 势函数，O(n^3)；cp-algorithms「Assignment problem, Hungarian
-/// algorithm」同型写法）。`cost` 是 (n+1)×(n+1) 的 1-索引矩阵（第 0 行/列不用）。恒返回完美匹配
-/// （矩阵已经补成方阵，所有格子代价有限）：`p[j]` = 匹配到列 j 的行号（1..=n）。
-fn hungarian(cost: &[Vec<f64>], n: usize) -> Vec<usize> {
+/// 最小费用指派（Kuhn 算法 + 势函数，O(n^2 m)；cp-algorithms「Assignment problem, Hungarian
+/// algorithm」同型写法）。`cost` 是 (n+1)×(m+1) 的 1-索引矩阵（第 0 行/列不用），要求 n ≤ m。
+/// 每一行都被指派到一列（所有格子代价有限）：`p[j]` = 匹配到列 j 的行号（1..=n，0 = 该列空）。
+/// 调用方都是方阵（n = m）。
+fn hungarian_full(cost: &[Vec<f64>], n: usize, m: usize) -> (Vec<usize>, Vec<f64>, Vec<f64>) {
     const INF: f64 = f64::INFINITY;
     let mut u = vec![0.0f64; n + 1];
-    let mut v = vec![0.0f64; n + 1];
-    let mut p = vec![0usize; n + 1];
-    let mut way = vec![0usize; n + 1];
+    let mut v = vec![0.0f64; m + 1];
+    let mut p = vec![0usize; m + 1];
+    let mut way = vec![0usize; m + 1];
     for i in 1..=n {
         p[0] = i;
         let mut j0 = 0usize;
-        let mut minv = vec![INF; n + 1];
-        let mut used = vec![false; n + 1];
+        let mut minv = vec![INF; m + 1];
+        let mut used = vec![false; m + 1];
         loop {
             used[j0] = true;
             let i0 = p[j0];
             let mut delta = INF;
             let mut j1 = 0usize;
-            for j in 1..=n {
+            for j in 1..=m {
                 if !used[j] {
                     let cur = cost[i0][j] - u[i0] - v[j];
                     if cur < minv[j] {
@@ -367,7 +709,7 @@ fn hungarian(cost: &[Vec<f64>], n: usize) -> Vec<usize> {
                     }
                 }
             }
-            for j in 0..=n {
+            for j in 0..=m {
                 if used[j] {
                     u[p[j]] += delta;
                     v[j] -= delta;
@@ -389,7 +731,8 @@ fn hungarian(cost: &[Vec<f64>], n: usize) -> Vec<usize> {
             }
         }
     }
-    p
+    // 同时返回对偶势 u、v（`cost[i][j] - u[i] - v[j] >= 0`，匹配格取等号）：并列枚举据此认「紧边」（C-8）
+    (p, u, v)
 }
 
 const GENERAL_MATCHING_MAX_N: usize = 20;
@@ -490,32 +833,107 @@ fn run_matching_general(input: &Json) -> Result<Json, String> {
         mask = rest;
     }
 
-    if let Some(cap) = size_cap(input) {
-        pairs.sort_by(|a, b| b.2.partial_cmp(&a.2).unwrap_or(Ordering::Equal));
-        pairs.truncate(cap);
+    let primary_full = pairs.clone();
+    let cap = size_cap(input);
+    let truncated_away = cap.is_some_and(|c| pairs.len() > c);
+    if let Some(cap) = cap {
+        pairs = truncate_pairs(pairs, cap);
     }
-    let total_weight: f64 = pairs.iter().map(|p| p.2).sum();
-    let pairs_json: Vec<Json> = pairs
-        .iter()
-        .map(|(a, b, w, idx)| json!({"u": nodes[*a], "v": nodes[*b], "w": w, "edge_index": idx}))
-        .collect();
-    let (matched_nodes, unmatched_nodes) = matched_unmatched(
-        nodes.iter(),
-        pairs
+    let item = |ps: &[(usize, usize, f64, usize)]| -> Json {
+        let pairs_json: Vec<Json> = ps
             .iter()
-            .flat_map(|(a, b, _, _)| [nodes[*a].as_str(), nodes[*b].as_str()]),
-    );
+            .map(
+                |(a, b, w, idx)| json!({"u": nodes[*a], "v": nodes[*b], "w": w, "edge_index": idx}),
+            )
+            .collect();
+        let (matched_nodes, unmatched_nodes) = matched_unmatched(
+            nodes.iter(),
+            ps.iter()
+                .flat_map(|(a, b, _, _)| [nodes[*a].as_str(), nodes[*b].as_str()]),
+        );
+        json!({
+            "pairs": pairs_json,
+            "total_weight": ps.iter().map(|p| p.2).sum::<f64>(),
+            "matched_nodes": matched_nodes,
+            "unmatched_nodes": unmatched_nodes,
+        })
+    };
+    let mut out = item(&pairs);
+    let o = out.as_object_mut().expect("对象");
+    o.insert("algo".into(), json!("matching"));
+    o.insert("mode".into(), json!("general_exact"));
+    o.insert("exact".into(), json!(true));
+    o.insert("node_count".into(), json!(n));
 
-    Ok(json!({
-        "algo": "matching",
-        "mode": "general_exact",
-        "pairs": pairs_json,
-        "total_weight": total_weight,
-        "matched_nodes": matched_nodes,
-        "unmatched_nodes": unmatched_nodes,
-        "exact": true,
-        "node_count": n,
-    }))
+    // C-8：并列的最大权匹配（位掩码 DP 上逐点回溯，`dp` 是精确的子集最优，所以不会走进死路）
+    let mut found = vec![primary_full];
+    let mut overflow = false;
+    let mut chosen = Vec::new();
+    gen_rec(&best, &dp, n, full, &mut chosen, &mut found, &mut overflow);
+    let mut ties: Vec<Vec<(usize, usize, f64, usize)>> = Vec::new();
+    for t in found {
+        let t = match cap {
+            Some(c) => truncate_pairs(t, c),
+            None => t,
+        };
+        if !ties.iter().any(|x| same_pairs(x, &t)) {
+            ties.push(t);
+        }
+    }
+    let complete = !overflow && !truncated_away;
+    Ok(with_ties(
+        out,
+        ties.iter().map(|t| item(t)).collect(),
+        complete,
+    ))
+}
+
+/// 一般图匹配的并列枚举：沿最低位节点「不配」或「配某个邻居」逐点回溯，只走 `dp[mask]` 允许的分支
+/// （相对容差相等）。只看权 > 0 的边，与主解只含正权对一致（零权对不改变总权，不算另一种匹配）。
+fn gen_rec(
+    best: &HashMap<(usize, usize), (f64, usize)>,
+    dp: &[f64],
+    n: usize,
+    mask: usize,
+    chosen: &mut Vec<(usize, usize, f64, usize)>,
+    found: &mut Vec<Vec<(usize, usize, f64, usize)>>,
+    overflow: &mut bool,
+) {
+    if *overflow {
+        return;
+    }
+    if mask == 0 {
+        if !found.iter().any(|x| same_pairs(x, chosen)) {
+            if found.len() >= TIES_CAP {
+                *overflow = true;
+                return;
+            }
+            found.push(chosen.clone());
+        }
+        return;
+    }
+    let i = mask.trailing_zeros() as usize;
+    let without_i = mask & !(1 << i);
+    if close(dp[without_i], dp[mask]) {
+        gen_rec(best, dp, n, without_i, chosen, found, overflow);
+    }
+    for j in 0..n {
+        if j == i || mask & (1 << j) == 0 {
+            continue;
+        }
+        let Some(&(w, idx)) = best.get(&(i.min(j), i.max(j))) else {
+            continue;
+        };
+        if w <= 0.0 {
+            continue;
+        }
+        let rest = without_i & !(1 << j);
+        if close(dp[rest] + w, dp[mask]) {
+            chosen.push((i.min(j), i.max(j), w, idx));
+            gen_rec(best, dp, n, rest, chosen, found, overflow);
+            chosen.pop();
+        }
+    }
 }
 
 // ---------- graph:shortest_path ----------
@@ -579,9 +997,8 @@ fn run_shortest_path(input: &Json) -> Result<Json, String> {
             continue;
         }
         visited[u] = true;
-        if u == t {
-            break;
-        }
+        // C-8：不在弹出 t 时提前退出——并列的最短路要用到每个节点的最终距离（含与 t 等距的节点，
+        // 零权边会让它们落在最短路上）。t 的距离与 `prev[t]` 在它弹出时已定，继续跑不会改主解。
         for &(v2, w, ei) in &adj[u] {
             let nd = d + w;
             // 标准 Dijkstra 配合 `visited` 标记不需要「改进幅度」门槛（PR #36 复核 P2）：
@@ -596,10 +1013,14 @@ fn run_shortest_path(input: &Json) -> Result<Json, String> {
     }
 
     if dist[t].is_infinite() {
-        return Ok(json!({
-            "algo": "shortest_path", "reachable": false, "distance": Json::Null,
-            "path": Json::Array(vec![]), "path_edges": Json::Array(vec![]), "exact": true,
-        }));
+        return Ok(with_ties(
+            json!({
+                "algo": "shortest_path", "reachable": false, "distance": Json::Null,
+                "path": Json::Array(vec![]), "path_edges": Json::Array(vec![]), "exact": true,
+            }),
+            vec![],
+            true,
+        ));
     }
     let mut path_nodes = vec![t];
     let mut path_edges_idx = Vec::new();
@@ -620,14 +1041,116 @@ fn run_shortest_path(input: &Json) -> Result<Json, String> {
         })
         .collect();
 
-    Ok(json!({
-        "algo": "shortest_path",
-        "reachable": true,
-        "distance": dist[t],
-        "path": path_ids,
-        "path_edges": path_edges_json,
-        "exact": true,
-    }))
+    // C-8：并列的最短路（同样长的其他路径）。只走「紧弧」（dist[u] + w ≈ dist[v]），且只走能到 t 的节点，
+    // 所以不会走进死路；路径是简单路径（零权环不会把同一路径重复算成不同解）；按边下标序列区分，
+    // 同一对节点间的平行边走哪条是不同的解（`interval` 用到的边不同）。
+    let item = |nodes_seq: &[usize], edges_seq: &[usize]| -> Json {
+        json!({
+            "distance": dist[t],
+            "path": nodes_seq.iter().map(|&i| nodes[i].clone()).collect::<Vec<_>>(),
+            "path_edges": edges_seq.iter().map(|&ei| {
+                let e = &edges[ei];
+                json!({"u": e.u, "v": e.v, "w": e.w, "edge_index": ei})
+            }).collect::<Vec<_>>(),
+        })
+    };
+    let tight = |u: usize, v: usize, w: f64| dist[u].is_finite() && close(dist[u] + w, dist[v]);
+    // 反向可达：能沿紧弧走到 t 的节点
+    let mut radj: Vec<Vec<usize>> = vec![Vec::new(); n];
+    for u in 0..n {
+        for &(v2, w, _) in &adj[u] {
+            if tight(u, v2, w) {
+                radj[v2].push(u);
+            }
+        }
+    }
+    let mut reach_t = vec![false; n];
+    reach_t[t] = true;
+    let mut stack = vec![t];
+    while let Some(x) = stack.pop() {
+        for &p in &radj[x] {
+            if !reach_t[p] {
+                reach_t[p] = true;
+                stack.push(p);
+            }
+        }
+    }
+    let mut found: Vec<(Vec<usize>, Vec<usize>)> =
+        vec![(path_nodes.clone(), path_edges_idx.clone())];
+    let mut overflow = false;
+    let mut on_path = vec![false; n];
+    on_path[s] = true;
+    let mut ns = vec![s];
+    let mut es: Vec<usize> = Vec::new();
+    sp_rec(
+        s,
+        t,
+        &adj,
+        &tight,
+        &reach_t,
+        &mut on_path,
+        &mut ns,
+        &mut es,
+        &mut found,
+        &mut overflow,
+    );
+    let ties: Vec<Json> = found.iter().map(|(a, b)| item(a, b)).collect();
+
+    Ok(with_ties(
+        json!({
+            "algo": "shortest_path",
+            "reachable": true,
+            "distance": dist[t],
+            "path": path_ids,
+            "path_edges": path_edges_json,
+            "exact": true,
+        }),
+        ties,
+        !overflow,
+    ))
+}
+
+#[allow(clippy::too_many_arguments, clippy::type_complexity)]
+fn sp_rec(
+    u: usize,
+    t: usize,
+    adj: &[Vec<(usize, f64, usize)>],
+    tight: &dyn Fn(usize, usize, f64) -> bool,
+    reach_t: &[bool],
+    on_path: &mut Vec<bool>,
+    ns: &mut Vec<usize>,
+    es: &mut Vec<usize>,
+    found: &mut Vec<(Vec<usize>, Vec<usize>)>,
+    overflow: &mut bool,
+) {
+    if *overflow {
+        return;
+    }
+    if u == t {
+        if !found.iter().any(|(_, e)| e == &*es) {
+            if found.len() >= TIES_CAP {
+                *overflow = true;
+                return;
+            }
+            found.push((ns.clone(), es.clone()));
+        }
+        return;
+    }
+    for &(v2, w, ei) in &adj[u] {
+        if on_path[v2] || !reach_t[v2] || !tight(u, v2, w) {
+            continue;
+        }
+        on_path[v2] = true;
+        ns.push(v2);
+        es.push(ei);
+        sp_rec(v2, t, adj, tight, reach_t, on_path, ns, es, found, overflow);
+        es.pop();
+        ns.pop();
+        on_path[v2] = false;
+        if *overflow {
+            return;
+        }
+    }
 }
 
 // ---------- graph:max_clique ----------
@@ -677,27 +1200,112 @@ fn run_max_clique(input: &Json) -> Result<Json, String> {
     let mut best_size: u32 = 0;
     bron_kerbosch(0, full, 0, &adj, &mut best_r, &mut best_size);
 
-    let mut clique: Vec<usize> = (0..n).filter(|&i| best_r & (1 << i) != 0).collect();
-    clique.sort_unstable();
-    let mut edge_indices = Vec::new();
-    for a_pos in 0..clique.len() {
-        for b_pos in (a_pos + 1)..clique.len() {
-            let (a, b) = (clique[a_pos], clique[b_pos]);
-            if let Some(&ei) = edge_lookup.get(&(a.min(b), a.max(b))) {
-                edge_indices.push(ei);
+    // 一个团（位集）→ 与主解同形的 `{clique, size, edge_indices}`
+    let item = |mask: u64| -> Json {
+        let mut clique: Vec<usize> = (0..n).filter(|&i| mask & (1 << i) != 0).collect();
+        clique.sort_unstable();
+        let mut edge_indices = Vec::new();
+        for a_pos in 0..clique.len() {
+            for b_pos in (a_pos + 1)..clique.len() {
+                let (a, b) = (clique[a_pos], clique[b_pos]);
+                if let Some(&ei) = edge_lookup.get(&(a.min(b), a.max(b))) {
+                    edge_indices.push(ei);
+                }
             }
         }
-    }
-    let clique_ids: Vec<String> = clique.iter().map(|&i| nodes[i].clone()).collect();
+        let clique_ids: Vec<String> = clique.iter().map(|&i| nodes[i].clone()).collect();
+        json!({"clique": clique_ids, "size": clique.len(), "edge_indices": edge_indices})
+    };
+    let mut out = item(best_r);
+    let o = out.as_object_mut().expect("对象");
+    o.insert("algo".into(), json!("max_clique"));
+    o.insert("exact".into(), json!(true));
+    o.insert("node_count".into(), json!(n));
 
-    Ok(json!({
-        "algo": "max_clique",
-        "clique": clique_ids,
-        "size": clique.len(),
-        "edge_indices": edge_indices,
-        "exact": true,
-        "node_count": n,
-    }))
+    // C-8：并列的最大团。第二趟只收大小等于 `best_size` 的极大团（最大团一定极大，Bron–Kerbosch 每个只出一次），
+    // 剪枝改成严格小于；主解排第一。
+    let mut found = vec![best_r];
+    let mut overflow = false;
+    if n > 0 {
+        bk_collect(
+            0,
+            full,
+            0,
+            &adj,
+            best_size,
+            best_r,
+            &mut found,
+            &mut overflow,
+        );
+    }
+    Ok(with_ties(
+        out,
+        found.iter().map(|&m| item(m)).collect(),
+        !overflow,
+    ))
+}
+
+/// 收集全部大小为 `target` 的极大团（不含已在 `found` 里的主解 `primary`），到上限就标溢出。
+#[allow(clippy::too_many_arguments)]
+fn bk_collect(
+    r: u64,
+    p: u64,
+    x: u64,
+    adj: &[u64],
+    target: u32,
+    primary: u64,
+    found: &mut Vec<u64>,
+    overflow: &mut bool,
+) {
+    if *overflow {
+        return;
+    }
+    if p == 0 && x == 0 {
+        if r.count_ones() == target && r != primary {
+            if found.len() >= TIES_CAP {
+                *overflow = true;
+                return;
+            }
+            found.push(r);
+        }
+        return;
+    }
+    if r.count_ones() + p.count_ones() < target {
+        return;
+    }
+    let px = p | x;
+    let mut pivot = px.trailing_zeros() as usize;
+    let mut best_count = -1i32;
+    let mut scan = px;
+    while scan != 0 {
+        let u = scan.trailing_zeros() as usize;
+        let cnt = (p & adj[u]).count_ones() as i32;
+        if cnt > best_count {
+            best_count = cnt;
+            pivot = u;
+        }
+        scan &= scan - 1;
+    }
+    let mut candidates = p & !adj[pivot];
+    let mut pp = p;
+    let mut xx = x;
+    while candidates != 0 {
+        let v = candidates.trailing_zeros() as usize;
+        let vb = 1u64 << v;
+        bk_collect(
+            r | vb,
+            pp & adj[v],
+            xx & adj[v],
+            adj,
+            target,
+            primary,
+            found,
+            overflow,
+        );
+        pp &= !vb;
+        xx |= vb;
+        candidates &= !vb;
+    }
 }
 
 /// Bron–Kerbosch with pivoting，带「当前团 + 候选数 ≤ 已知最优即剪」的分支定界（派单要求「小规模
@@ -801,13 +1409,19 @@ fn run_components(input: &Json) -> Result<Json, String> {
     components.sort_by(|a, b| a.first().cmp(&b.first()));
     let count = components.len();
 
-    Ok(json!({
-        "algo": "components",
-        "components": components,
-        "count": count,
-        "exact": true,
-        "node_count": n,
-    }))
+    // C-8：连通分量的划分是唯一的（没有并列的可能），恒 `tie_count=1`
+    let item = json!({"components": components, "count": count});
+    Ok(with_ties(
+        json!({
+            "algo": "components",
+            "components": components,
+            "count": count,
+            "exact": true,
+            "node_count": n,
+        }),
+        vec![item],
+        true,
+    ))
 }
 
 // ---------- graph:set_cover ----------
@@ -918,10 +1532,14 @@ fn set_cover_exact(universe: &[String], sets: &[SetIn]) -> Result<Json, String> 
     }
     let full_usize = full as usize;
     if dp[full_usize].is_infinite() {
-        return Ok(json!({
-            "algo": "set_cover", "chosen": Json::Array(vec![]), "total_cost": Json::Null,
-            "exact": true, "covers_universe": false, "universe_size": u,
-        }));
+        return Ok(with_ties(
+            json!({
+                "algo": "set_cover", "chosen": Json::Array(vec![]), "total_cost": Json::Null,
+                "exact": true, "covers_universe": false, "universe_size": u,
+            }),
+            vec![],
+            true,
+        ));
     }
     let mut chosen_idx = Vec::new();
     let mut mask = full_usize;
@@ -936,10 +1554,127 @@ fn set_cover_exact(universe: &[String], sets: &[SetIn]) -> Result<Json, String> 
     let total_cost: f64 = chosen_idx.iter().map(|&i| sets[i].cost).sum();
     let chosen: Vec<String> = chosen_idx.iter().map(|&i| sets[i].id.clone()).collect();
 
-    Ok(json!({
-        "algo": "set_cover", "chosen": chosen, "total_cost": total_cost,
-        "exact": true, "covers_universe": true, "universe_size": u,
-    }))
+    // C-8：并列的最小成本覆盖。反向 DP `g[mask]` = 已覆盖 mask 时覆盖其余元素的最小成本，
+    // 逐点回溯只走「前缀成本 + 这一集合成本 + g[新掩码] ≈ 最优」的分支，所以不会走进死路；
+    // 只收无冗余的覆盖（每个被选集合都有独占元素——零成本集合可以任意叠加，不算另一种覆盖），主解排第一。
+    let opt = dp[full_usize];
+    let mut g = vec![INF; size];
+    g[full_usize] = 0.0;
+    for mask in (0..size).rev() {
+        let m32 = mask as u32;
+        if m32 == full {
+            continue;
+        }
+        let bit = ((!m32) & full).trailing_zeros();
+        for (si, s) in sets.iter().enumerate() {
+            if masks[si] & (1 << bit) == 0 {
+                continue;
+            }
+            let c = s.cost + g[(m32 | masks[si]) as usize];
+            if c < g[mask] {
+                g[mask] = c;
+            }
+        }
+    }
+    let irredundant = |pick: &[usize]| -> bool {
+        pick.iter().all(|&x| {
+            let others = pick
+                .iter()
+                .filter(|&&y| y != x)
+                .fold(0u32, |m, &y| m | masks[y]);
+            others != full
+        })
+    };
+    let mut found: Vec<Vec<usize>> = vec![chosen_idx.clone()];
+    let mut seen: std::collections::HashSet<Vec<usize>> = std::collections::HashSet::new();
+    let mut overflow = false;
+    let mut pick: Vec<usize> = Vec::new();
+    let ctx = ScCtx {
+        sets,
+        masks: &masks,
+        g: &g,
+        full,
+        opt,
+        irredundant: &irredundant,
+    };
+    sc_rec(
+        &ctx,
+        0,
+        0.0,
+        &mut pick,
+        &mut seen,
+        &mut found,
+        &mut overflow,
+    );
+    let item = |ix: &[usize]| -> Json {
+        json!({
+            "chosen": ix.iter().map(|&i| sets[i].id.clone()).collect::<Vec<_>>(),
+            "total_cost": ix.iter().map(|&i| sets[i].cost).sum::<f64>(),
+        })
+    };
+
+    Ok(with_ties(
+        json!({
+            "algo": "set_cover", "chosen": chosen, "total_cost": total_cost,
+            "exact": true, "covers_universe": true, "universe_size": u,
+        }),
+        found.iter().map(|ix| item(ix)).collect(),
+        !overflow,
+    ))
+}
+
+struct ScCtx<'a> {
+    sets: &'a [SetIn],
+    masks: &'a [u32],
+    g: &'a [f64],
+    full: u32,
+    opt: f64,
+    irredundant: &'a dyn Fn(&[usize]) -> bool,
+}
+
+fn sc_rec(
+    ctx: &ScCtx,
+    mask: u32,
+    cw: f64,
+    pick: &mut Vec<usize>,
+    seen: &mut std::collections::HashSet<Vec<usize>>,
+    found: &mut Vec<Vec<usize>>,
+    overflow: &mut bool,
+) {
+    if *overflow {
+        return;
+    }
+    let mut key = pick.clone();
+    key.sort_unstable();
+    if !seen.insert(key.clone()) {
+        return;
+    }
+    if mask == ctx.full {
+        if (ctx.irredundant)(&key) && !found.contains(&key) {
+            if found.len() >= TIES_CAP {
+                *overflow = true;
+                return;
+            }
+            found.push(key);
+        }
+        return;
+    }
+    let bit = ((!mask) & ctx.full).trailing_zeros();
+    for (si, s) in ctx.sets.iter().enumerate() {
+        if ctx.masks[si] & (1 << bit) == 0 {
+            continue;
+        }
+        let nm = mask | ctx.masks[si];
+        if !close(cw + s.cost + ctx.g[nm as usize], ctx.opt) {
+            continue;
+        }
+        pick.push(si);
+        sc_rec(ctx, nm, cw + s.cost, pick, seen, found, overflow);
+        pick.pop();
+        if *overflow {
+            return;
+        }
+    }
 }
 
 fn set_cover_greedy(universe: &[String], sets: &[SetIn]) -> Result<Json, String> {
@@ -983,10 +1718,16 @@ fn set_cover_greedy(universe: &[String], sets: &[SetIn]) -> Result<Json, String>
     let covers_universe = remaining == 0;
     let chosen_ids: Vec<String> = chosen.iter().map(|&i| sets[i].id.clone()).collect();
 
-    Ok(json!({
-        "algo": "set_cover", "chosen": chosen_ids, "total_cost": total_cost,
-        "exact": false, "covers_universe": covers_universe, "universe_size": u,
-    }))
+    // C-8：贪心不是精确算法（`exact:false`），无法保证列全并列解，只报它自己给的这一个，`ties_complete=false`
+    let item = json!({"chosen": chosen_ids, "total_cost": total_cost});
+    Ok(with_ties(
+        json!({
+            "algo": "set_cover", "chosen": chosen_ids, "total_cost": total_cost,
+            "exact": false, "covers_universe": covers_universe, "universe_size": u,
+        }),
+        vec![item],
+        false,
+    ))
 }
 
 // ---------- graph:max_flow ----------
@@ -1086,6 +1827,50 @@ impl Dinic {
         0.0
     }
 
+    /// 最大流是否唯一（C-8）：最大流值本身唯一，并列的是边上的流量分配。残量图里有一个「非平凡」有向环
+    /// （不是某条边与它自己的反向弧来回）就能沿环改流量、得到另一个同值的最大流；没有这样的环则分配唯一。
+    /// 环上的残量按 `eps` 判正。返回 `true` = 唯一。
+    fn flow_is_unique(&self) -> bool {
+        // 状态：0 未访问，1 在栈上，2 已完成
+        let mut state = vec![0u8; self.n];
+        let mut enter_arc: Vec<Option<usize>> = vec![None; self.n];
+        for root in 0..self.n {
+            if state[root] != 0 {
+                continue;
+            }
+            // 栈元素：(节点, 该节点已扫到 graph[u] 的第几条)
+            let mut stack: Vec<(usize, usize)> = vec![(root, 0)];
+            state[root] = 1;
+            while let Some(&mut (u, ref mut k)) = stack.last_mut() {
+                if *k >= self.graph[u].len() {
+                    state[u] = 2;
+                    stack.pop();
+                    continue;
+                }
+                let arc = self.graph[u][*k];
+                *k += 1;
+                let e = &self.edges[arc];
+                if e.cap - e.flow <= self.eps {
+                    continue;
+                }
+                // 跳过刚才进入本节点的那条弧的反向弧：来回走同一条边不算环
+                if enter_arc[u].is_some_and(|p| p ^ 1 == arc) {
+                    continue;
+                }
+                match state[e.to] {
+                    1 => return false,
+                    0 => {
+                        state[e.to] = 1;
+                        enter_arc[e.to] = Some(arc);
+                        stack.push((e.to, 0));
+                    }
+                    _ => {}
+                }
+            }
+        }
+        true
+    }
+
     fn max_flow(&mut self, s: usize, t: usize) -> f64 {
         let mut flow = 0.0;
         let mut level = vec![-1i32; self.n];
@@ -1153,5 +1938,7 @@ fn run_max_flow(input: &Json) -> Result<Json, String> {
         "flow_edges": flow_edges_json,
         "exact": true,
         "node_count": n,
+        // C-8：最大流值唯一，并列的是流量分配；不枚举（个数无界、流量连续），只报分配是否唯一
+        "flow_unique": din.flow_is_unique(),
     }))
 }

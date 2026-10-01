@@ -169,12 +169,17 @@ impl Cap<ReadAnswer> {
     pub(crate) fn answer_of(&self, it: &Interp, r: &Reading) -> Option<Answer> {
         it.answer_of(r)
     }
+    /// 刷新之后仍没有观察到的读数：没有答案、不是 Fail，也不是超窗裂变的合成读数（步 23b：合成读数本来就没有答案，
+    /// 它的答案在各块上，要经 `cut` 合回；按「没答案」判会把它静默记成预算未观察，复核 B0476 缺口 2）
+    pub(crate) fn 未观察(&self, it: &Interp, r: &Reading) -> bool {
+        it.answer_of(r).is_none() && r.fail.is_none() && !it.是合成读数(r)
+    }
     pub(crate) fn answers<'b>(&self, it: &'b Interp) -> std::cell::Ref<'b, AnswerTable> {
         it.answers.borrow()
     }
     /// 读数的缺席标记（B32）：判断器缺席或超时时的原因；声明式拟合据此把 `Score` 标为不可用（步 20j-4）
     pub(crate) fn absent_of(&self, it: &Interp, r: &Reading) -> Option<String> {
-        it.absent_marks.get(&r.ledger_key).cloned()
+        it.缺席因(r)
     }
     /// 声明式拟合的数（B153 (2)）：`order` 按它分档；`Score` 不可用时为 `None`
     pub(crate) fn score_of(&self, it: &Interp, s: &Score) -> Option<f64> {
@@ -207,14 +212,14 @@ impl Cap<IssueUnsure> {
     pub(crate) fn new_unsure(
         &self,
         it: &mut Interp,
-        cause: &str,
+        cause: UnsureCause,
         op: Op,
         q_hash: &str,
         taint: Taint,
         sp: Span,
     ) -> Value {
         it.new_exit(
-            ExitKind::Unsure(cause.into()),
+            ExitKind::Unsure(Why::of(cause)),
             None,
             op,
             q_hash,
@@ -298,9 +303,13 @@ impl Cap<LedgerRead> {
     pub(crate) fn get<'b>(&self, it: &'b Interp, key: &str) -> Option<&'b Entry> {
         it.账本查(key)
     }
+    /// 一次模型调用的费用：同调用号判断条目的最大 `cost`（合批只在首条记费，L7 2026-09-28）
+    pub(crate) fn call_cost(&self, it: &Interp, call: u64) -> f64 {
+        it.调用费(call)
+    }
     /// 缺席账的停发标记（B93，步 22-0：预算停发的读数标 `budget`）
-    pub(crate) fn absent_mark<'b>(&self, it: &'b Interp, key: &str) -> Option<&'b str> {
-        it.absent_marks.get(key).map(String::as_str)
+    pub(crate) fn absent_mark(&self, it: &Interp, r: &Reading) -> Option<String> {
+        it.缺席因(r)
     }
 }
 
@@ -393,6 +402,42 @@ impl Cap<IssueQuestion> {
         f.permute = permute;
         f.over_kind = over_kind;
         Value::Form(Rc::new(f))
+    }
+    /// 写超窗裂变的声明（步 23b，`{fission: "approx"}`）：题与题式都收，不进任何哈希；`None` 原样返回。
+    /// 题式的声明由 `fill` 带到题上。依据：`11` §5.3；主控 2026-09-29 越界项答复第 1 条
+    pub(crate) fn with_fission(
+        &self,
+        v: Value,
+        decl: Option<jpp_value::value::FissionDecl>,
+    ) -> Value {
+        let Some(d) = decl else { return v };
+        match v {
+            Value::Question(q) => {
+                let mut q = (*q).clone();
+                q.fission = Some(d);
+                Value::Question(Rc::new(q))
+            }
+            Value::Form(f) => {
+                let mut f = (*f).clone();
+                f.fission = Some(d);
+                Value::Form(Rc::new(f))
+            }
+            other => other,
+        }
+    }
+    /// 超窗裂变 select 第二层的派生是非题（步 23b；`12` B156 的题面形式：把候选内容字面渲染进题面）。
+    /// 题哈希由调用者按 `hash("fission-noul", select 题哈希, 候选)` 给，校准键另起、不借 select 的线
+    pub(crate) fn derived_test(
+        &self,
+        text: &str,
+        calib: &str,
+        hash: String,
+        taint: Taint,
+    ) -> Rc<Question> {
+        let mut q = Question::new(Op::Test, text, calib, vec![]);
+        q.hash = hash;
+        q.taint = taint;
+        Rc::new(q)
     }
     /// 填题式：题面 taint = 模板 ∨ 各填入值（B58），由调用者算好传入
     pub(crate) fn fill_form(
@@ -810,4 +855,10 @@ mod tests {
             }
         }
     }
+}
+
+/// 内核的裂变合回（`fission.rs`，步 23b）签发派生是非题的入口：它不是 `constructs/` 下的构造，没有注册表条目，
+/// 令牌在这里按 `IssueQuestion` 一类铸一枚（B138：题值只经 `IssueQuestion` 签发；复核 B0476 第 5 条）。
+pub(crate) fn 裂变派生题(text: &str, calib: &str, hash: String, taint: Taint) -> Rc<Question> {
+    Cap::<IssueQuestion>::mint().derived_test(text, calib, hash, taint)
 }

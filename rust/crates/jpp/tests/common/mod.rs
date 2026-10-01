@@ -344,3 +344,155 @@ pub fn certified(calib: &mut jpp::effects::CalibStore, key: &str, hi: f64, lo: f
         extensions: vec![],
     });
 }
+
+/// 伴随题开关（B0492 S5，主控 2026-09-30 路 3）：与伴随题无关的测试集中在这里显式关掉；
+/// `JPP_TEST_COMPANIONS=on` 时整体开着跑（语言、库与 CLI 的默认都是开）
+pub fn 伴随() -> jpp::interp::CompanionMode {
+    if std::env::var("JPP_TEST_COMPANIONS").is_ok_and(|v| v == "on") {
+        jpp::interp::CompanionMode::Same
+    } else {
+        jpp::interp::CompanionMode::Off
+    }
+}
+
+/// 单元图开关（C2b，步 41；H1a 对照臂）：`JPP_TEST_CELLS=off` 时整体关着跑，缺省开（与运行时缺省相同）
+pub fn 单元图() -> bool {
+    !std::env::var("JPP_TEST_CELLS").is_ok_and(|v| v == "off")
+}
+
+/// CLI 测试用：关时给 `--companions off`，开时不给（用 CLI 的默认）
+pub fn 伴随参数() -> Vec<&'static str> {
+    if 伴随() == jpp::interp::CompanionMode::Off {
+        vec!["--companions", "off"]
+    } else {
+        vec![]
+    }
+}
+
+/// `jpp::run` 的同形包装，带 [`伴随`]（与伴随题无关的测试用它，免得默认开的伴随题改变替身看到的题）
+pub fn run(
+    program: &jpp::ir::Program,
+    ports: jpp::effects::Ports<'_>,
+    calib: &jpp::effects::CalibStore,
+    actions: &jpp::ActionRegistry,
+    ledger: &mut dyn jpp::LedgerPort,
+) -> Result<jpp::Outcome, jpp::Error> {
+    jpp::Session::new(ports, calib, actions)
+        .with_companions(伴随())
+        .with_cells(单元图())
+        .run(program, &jpp::EntryArgs::default(), ledger)
+}
+
+/// `jpp::run_replay` 的同形包装，带 [`伴随`]
+pub fn run_replay(
+    program: &jpp::ir::Program,
+    ports: jpp::effects::Ports<'_>,
+    calib: &jpp::effects::CalibStore,
+    actions: &jpp::ActionRegistry,
+    ledger: &mut dyn jpp::LedgerPort,
+) -> Result<jpp::Outcome, jpp::Error> {
+    jpp::Session::new(ports, calib, actions)
+        .with_companions(伴随())
+        .with_cells(单元图())
+        .replay(program, &jpp::EntryArgs::default(), ledger)
+}
+
+/// 伴随题元题的中性读数约定（B0492 S5，主控 2026-09-30）：定义在 `jpp::testing`，命令行单元测试的 Jev 桩也引用那一处
+pub use jpp::testing::伴随中性;
+
+/// 判断替身的包装：伴随元题按 [`伴随中性`] 给中性读数，其余题交给 `f`（`f` 只看到非伴随题；全是伴随题时不调 `f`）
+pub fn 伴随中性judge<'f>(
+    model: &str,
+    mut f: impl FnMut(
+        &jpp::value::State,
+        &[&jpp::value::Question],
+    ) -> Result<jpp::effects::JudgeResult, jpp::effects::EffectError>
+    + 'f,
+) -> jpp::effects::FnPort<'f> {
+    jpp::effects::FnPort::judge(model, move |s, qs| {
+        let 其余: Vec<&jpp::value::Question> = qs
+            .iter()
+            .copied()
+            .filter(|q| 伴随中性(q, s).is_none())
+            .collect();
+        let r = if 其余.is_empty() {
+            jpp::effects::JudgeResult {
+                answers: vec![],
+                tokens: 0,
+                cost: 0.0,
+                mode_share: vec![],
+                perms: vec![],
+                confidence: vec![],
+            }
+        } else {
+            f(s, &其余)?
+        };
+        let (mut ai, n) = (0usize, 其余.len());
+        let mut out = jpp::effects::JudgeResult {
+            answers: vec![],
+            tokens: r.tokens,
+            cost: r.cost,
+            mode_share: vec![],
+            perms: vec![],
+            confidence: vec![],
+        };
+        for q in qs {
+            match 伴随中性(q, s) {
+                Some(a) => {
+                    out.answers.push(a);
+                    if r.mode_share.len() == n && n > 0 {
+                        out.mode_share.push(None);
+                    }
+                    if r.perms.len() == n && n > 0 {
+                        out.perms.push(0);
+                    }
+                    if r.confidence.len() == n && n > 0 {
+                        out.confidence.push(None);
+                    }
+                }
+                None => {
+                    out.answers.push(r.answers[ai].clone());
+                    if r.mode_share.len() == n && n > 0 {
+                        out.mode_share.push(r.mode_share[ai]);
+                    }
+                    if r.perms.len() == n && n > 0 {
+                        out.perms.push(r.perms[ai]);
+                    }
+                    if r.confidence.len() == n && n > 0 {
+                        out.confidence.push(r.confidence[ai]);
+                    }
+                    ai += 1;
+                }
+            }
+        }
+        Ok(out)
+    })
+}
+
+/// `run` 固定关伴随题：测试数的是题数、条目数，或测默认链的选路，伴随题会改变它们（主控 2026-09-30：第二、三类保持关）
+pub fn run_关(
+    program: &jpp::ir::Program,
+    ports: jpp::effects::Ports<'_>,
+    calib: &jpp::effects::CalibStore,
+    actions: &jpp::ActionRegistry,
+    ledger: &mut dyn jpp::LedgerPort,
+) -> Result<jpp::Outcome, jpp::Error> {
+    jpp::Session::new(ports, calib, actions)
+        .with_companions(jpp::interp::CompanionMode::Off)
+        .with_cells(单元图())
+        .run(program, &jpp::EntryArgs::default(), ledger)
+}
+
+/// `run_replay` 固定关伴随题
+pub fn run_replay_关(
+    program: &jpp::ir::Program,
+    ports: jpp::effects::Ports<'_>,
+    calib: &jpp::effects::CalibStore,
+    actions: &jpp::ActionRegistry,
+    ledger: &mut dyn jpp::LedgerPort,
+) -> Result<jpp::Outcome, jpp::Error> {
+    jpp::Session::new(ports, calib, actions)
+        .with_companions(jpp::interp::CompanionMode::Off)
+        .with_cells(单元图())
+        .replay(program, &jpp::EntryArgs::default(), ledger)
+}

@@ -219,9 +219,12 @@ impl<'a> Interp<'a> {
                     sp.start
                 ));
             }
-            return Ok(Self::下标分档(
-                self.candidate_tiers(caps.read_answer(), r),
-            ));
+            let tol = self.并档容差(std::slice::from_ref(r), sp)?;
+            return Ok(Self::下标分档(self.candidate_tiers(
+                caps.read_answer(),
+                r,
+                tol,
+            )));
         }
         let rs = self.readings_of(&args[0], "order", sp)?;
         // J-04（12:255）：跨题、跨候选集、跨刻度或异锚的读数**不可比**。
@@ -250,7 +253,13 @@ impl<'a> Interp<'a> {
             Some(Op::Measure) => jpp_value::stat::Stat::Argmax,
             _ => jpp_value::stat::Stat::Max,
         });
-        match self.order_tiers(caps.read_answer(), &rs, &stat, tie) {
+        // 并档容差（B167 (3)；Z0425）：`argmax` 按档位相等、`expect` 按作者的 `tie`，概率型取记录 δ → 画像中段 → 不并档
+        let tol = match stat {
+            jpp_value::stat::Stat::Argmax => 0.0,
+            jpp_value::stat::Stat::Expect => tie.unwrap_or_default(),
+            _ => self.并档容差(&rs, sp)?,
+        };
+        match self.order_tiers(caps.read_answer(), &rs, &stat, tol) {
             Ok(t) => Ok(Self::下标分档(t)),
             // 依据：B167 (1)（统计量与题型不配）
             Err(jpp_value::stat::StatError::Options(m)) => err(

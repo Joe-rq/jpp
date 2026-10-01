@@ -1,0 +1,1168 @@
+{
+  "backend": "fixed-0",
+  "cost": {
+    "asks": 0,
+    "calls": 0,
+    "replayed": 48,
+    "tokens": 0,
+    "usd": 0.0
+  },
+  "entry": [],
+  "exits": [
+    {
+      "exit": "pick(2)",
+      "grade": "Answer",
+      "item": "f0399d254580",
+      "releases": false,
+      "site": 48006
+    },
+    {
+      "exit": "pick(4)",
+      "grade": "Answer",
+      "item": "f33fda9712d2",
+      "releases": false,
+      "site": 48006
+    },
+    {
+      "exit": "at(1)",
+      "grade": "Answer",
+      "item": "a1deb259b52a",
+      "releases": false,
+      "site": 67802
+    },
+    {
+      "exit": "pick(1)",
+      "grade": "Answer",
+      "item": "3d599ec1b8e1",
+      "releases": false,
+      "site": 68963
+    },
+    {
+      "exit": "at(2)",
+      "grade": "Answer",
+      "item": "be3dbeb0a475",
+      "releases": false,
+      "site": 67802
+    },
+    {
+      "exit": "pick(0)",
+      "grade": "Answer",
+      "item": "97bc379186fa",
+      "releases": false,
+      "site": 68963
+    },
+    {
+      "exit": "at(0)",
+      "grade": "Answer",
+      "item": "7fe70b93df45",
+      "releases": false,
+      "site": 67802
+    },
+    {
+      "exit": "pick(2)",
+      "grade": "Answer",
+      "item": "a30a30b8b823",
+      "releases": false,
+      "site": 68963
+    }
+  ],
+  "fixture_description": "Synthetic fixed observations for modules-fill.jpp (construction check only; not model evaluation). B0478: the author fills the modules only; both predicates miss the question bank (\"none of these\"), so the rules assemble a measure question (three levels) and a select question (four candidates); reference goes to the ref slot, context to ctx, presupposition to the form.",
+  "improve": [
+    {
+      "companions": [
+        {
+          "key": "f008eb1ad50955f85fbace44",
+          "kind": "unsure-companion-premise",
+          "p": 0.5
+        },
+        {
+          "key": "8dba19c361e06de1ff447e64",
+          "kind": "diag-two-judgments",
+          "p": 0.5
+        },
+        {
+          "key": "98ea10f8d8a7309954493893",
+          "kind": "unsure-companion-cut",
+          "p": 0.5
+        },
+        {
+          "key": "e21293c823fac5f8efde7caa",
+          "kind": "unsure-companion-reference",
+          "p": 0.5
+        },
+        {
+          "key": "0df06371ba36335430162120",
+          "kind": "unsure-companion-material",
+          "p": 0.25,
+          "pick": null
+        }
+      ],
+      "key": "1d5dbcb81dc8a5f4e1974e04",
+      "lacks": null,
+      "q": "这段话要判断的事，和下列哪一道已认证的题问的是同一件事？"
+    },
+    {
+      "companions": [
+        {
+          "key": "1d617ef51806e700f3ef2d4c",
+          "kind": "unsure-companion-premise",
+          "p": 0.5
+        },
+        {
+          "key": "240784907e9e25c391ec2a7b",
+          "kind": "diag-two-judgments",
+          "p": 0.5
+        },
+        {
+          "key": "65d3c6d0de7cd38832041e15",
+          "kind": "unsure-companion-cut",
+          "p": 0.5
+        },
+        {
+          "key": "3c8d243b402c22d4c8447099",
+          "kind": "unsure-companion-reference",
+          "p": 0.5
+        },
+        {
+          "key": "b2073466fc121f0c21e267f6",
+          "kind": "unsure-companion-material",
+          "p": 0.25,
+          "pick": null
+        }
+      ],
+      "key": "c7a572ad6a4f4f018192ab5c",
+      "lacks": null,
+      "q": "这段话要判断的事，和下列哪一道已认证的题问的是同一件事？"
+    },
+    {
+      "companions": [
+        {
+          "key": "9a7dc218e1672b9e3799579c",
+          "kind": "unsure-companion-premise",
+          "p": 0.5
+        },
+        {
+          "key": "47115526630d1156125bf257",
+          "kind": "diag-two-judgments",
+          "p": 0.5
+        },
+        {
+          "key": "cc452ea8a3da7e879032376a",
+          "kind": "unsure-companion-cut",
+          "p": 0.5
+        },
+        {
+          "key": "fd66596869db0fc948bddd53",
+          "kind": "unsure-companion-reference",
+          "p": 0.5
+        },
+        {
+          "key": "f61b643f66a2862073cde8a6",
+          "kind": "unsure-companion-material",
+          "p": 0.25,
+          "pick": null
+        }
+      ],
+      "key": "99042186c7cadc586e58cbb1",
+      "lacks": null,
+      "q": "就这份材料来说，这套房满足租客需求的程度落在哪一档？"
+    },
+    {
+      "companions": [
+        {
+          "key": "b94f42564874d8c8f0241f14",
+          "kind": "unsure-companion-premise",
+          "p": 0.5
+        },
+        {
+          "key": "319b3f67d58149e6e322f878",
+          "kind": "diag-two-judgments",
+          "p": 0.5
+        },
+        {
+          "key": "4425b3b4321c8a8a5aa96f70",
+          "kind": "unsure-companion-cut",
+          "p": 0.5
+        },
+        {
+          "key": "e46dccaec48fce26fb51b433",
+          "kind": "unsure-companion-reference",
+          "p": 0.5
+        },
+        {
+          "key": "ff60877fdf4e3db76528a567",
+          "kind": "unsure-companion-material",
+          "p": 0.25,
+          "pick": null
+        }
+      ],
+      "key": "92150732d8fe10dd1ef4a405",
+      "lacks": null,
+      "q": "就这份材料来说，这套房对这位租客最大的不合适之处是下列哪一项？"
+    },
+    {
+      "companions": [
+        {
+          "key": "7852df382eff4e7feffb7016",
+          "kind": "unsure-companion-premise",
+          "p": 0.5
+        },
+        {
+          "key": "d521f4750f0554085d1c0dab",
+          "kind": "diag-two-judgments",
+          "p": 0.5
+        },
+        {
+          "key": "9dc47530233143a3f073736b",
+          "kind": "unsure-companion-cut",
+          "p": 0.5
+        },
+        {
+          "key": "fc8c0a6bc1bf2b8deaabe44e",
+          "kind": "unsure-companion-reference",
+          "p": 0.5
+        },
+        {
+          "key": "154522df36c219b6d5f07755",
+          "kind": "unsure-companion-material",
+          "p": 0.25,
+          "pick": null
+        }
+      ],
+      "key": "7ecd62e81fc0f1cd178d7d17",
+      "lacks": null,
+      "q": "就这份材料来说，这套房满足租客需求的程度落在哪一档？"
+    },
+    {
+      "companions": [
+        {
+          "key": "5fba322c847e7703aab312e8",
+          "kind": "unsure-companion-premise",
+          "p": 0.5
+        },
+        {
+          "key": "d5fce5447033117f1e41091f",
+          "kind": "diag-two-judgments",
+          "p": 0.5
+        },
+        {
+          "key": "936af3e125788dc624a6e811",
+          "kind": "unsure-companion-cut",
+          "p": 0.5
+        },
+        {
+          "key": "4d4e5e1093a17e3938fd12e8",
+          "kind": "unsure-companion-reference",
+          "p": 0.5
+        },
+        {
+          "key": "08ca110c04ef125c57c60504",
+          "kind": "unsure-companion-material",
+          "p": 0.25,
+          "pick": null
+        }
+      ],
+      "key": "c1eb7fa48396d3f55e49181c",
+      "lacks": null,
+      "q": "就这份材料来说，这套房对这位租客最大的不合适之处是下列哪一项？"
+    },
+    {
+      "companions": [
+        {
+          "key": "fce70cc9c92d3aeda3cf7394",
+          "kind": "unsure-companion-premise",
+          "p": 0.5
+        },
+        {
+          "key": "dfd5a9eb674172d76b2d5156",
+          "kind": "diag-two-judgments",
+          "p": 0.5
+        },
+        {
+          "key": "e796ba66fac3313a3deff310",
+          "kind": "unsure-companion-cut",
+          "p": 0.5
+        },
+        {
+          "key": "f880be5d1892572358217ee0",
+          "kind": "unsure-companion-reference",
+          "p": 0.5
+        },
+        {
+          "key": "7e7f2568c5a0813ed5db7efc",
+          "kind": "unsure-companion-material",
+          "p": 0.25,
+          "pick": null
+        }
+      ],
+      "key": "7216a02cc935ec8977637ebb",
+      "lacks": null,
+      "q": "就这份材料来说，这套房满足租客需求的程度落在哪一档？"
+    },
+    {
+      "companions": [
+        {
+          "key": "9c836f6661e48587513320d7",
+          "kind": "unsure-companion-premise",
+          "p": 0.5
+        },
+        {
+          "key": "bf64c6a1964bf28c67d06444",
+          "kind": "diag-two-judgments",
+          "p": 0.5
+        },
+        {
+          "key": "dba777d26dabcbd9adab4192",
+          "kind": "unsure-companion-cut",
+          "p": 0.5
+        },
+        {
+          "key": "d61c69c702f59f5727e279f4",
+          "kind": "unsure-companion-reference",
+          "p": 0.5
+        },
+        {
+          "key": "5f674cd77b5986f7d5376a61",
+          "kind": "unsure-companion-material",
+          "p": 0.25,
+          "pick": null
+        }
+      ],
+      "key": "921bb838837dcf2bddd4f33c",
+      "lacks": null,
+      "q": "就这份材料来说，这套房对这位租客最大的不合适之处是下列哪一项？"
+    }
+  ],
+  "local_checks": [],
+  "mode": "replay; no model API requests",
+  "pending": [],
+  "plan": {
+    "calls": {
+      "kind": "at_least",
+      "lo": 0
+    },
+    "cost_usd": {
+      "kind": "unknown",
+      "reason": "price_not_given"
+    },
+    "latency_s": {
+      "kind": "unknown",
+      "reason": "untested:concurrency.latency_s.p95"
+    },
+    "layers": {
+      "kind": "at_least",
+      "lo": 0
+    }
+  },
+  "questions": [
+    {
+      "kind": "class",
+      "q": "6327c7d32a9550ef59e0d3b4"
+    },
+    {
+      "fill": {
+        "q": "这段话要判断的事，和下列哪一道已认证的题问的是同一件事？"
+      },
+      "form_hash": "54315f241f66412e88607f2d",
+      "kind": "attr",
+      "q": "658f7d70e815911cfdaf85cd",
+      "template": "题「{q}」的前提在这份材料上成立吗？"
+    },
+    {
+      "fill": {
+        "q": "这段话要判断的事，和下列哪一道已认证的题问的是同一件事？"
+      },
+      "form_hash": "cd4d3fd600f3459fa6b03c89",
+      "kind": "attr",
+      "q": "36e8ee7eeed0490a4d64de7c",
+      "template": "题「{q}」里是否有两个或更多需要分别回答的判断？"
+    },
+    {
+      "fill": {
+        "q": "这段话要判断的事，和下列哪一道已认证的题问的是同一件事？"
+      },
+      "form_hash": "18c6093988df2ab3840b661c",
+      "kind": "attr",
+      "q": "24b5b9346471a58bf9fd3379",
+      "template": "把题「{q}」按更细的情形分开问，会比整体问更容易答准吗？"
+    },
+    {
+      "fill": {
+        "q": "这段话要判断的事，和下列哪一道已认证的题问的是同一件事？"
+      },
+      "form_hash": "d8ff506d5be24dd56b495116",
+      "kind": "attr",
+      "q": "b8aff15d24d03f4d2b9957b2",
+      "template": "判断题「{q}」需要的参照对象和语境，这段材料里给够了吗？"
+    },
+    {
+      "fill": {
+        "q": "这段话要判断的事，和下列哪一道已认证的题问的是同一件事？"
+      },
+      "form_hash": "2ec36692b44a45c1e23fbea6",
+      "kind": "class",
+      "q": "d564ddf8a426d7623fc7d9f0",
+      "template": "题「{q}」要判得更明确，最缺哪一类信息？"
+    },
+    {
+      "fill": {},
+      "form_hash": "bcbfc8ff514c4be3b336b293",
+      "kind": "degree",
+      "q": "4e3c48ff7ce5a62881c187ea",
+      "template": "就这份材料来说，这套房满足租客需求的程度落在哪一档？"
+    },
+    {
+      "fill": {
+        "q": "就这份材料来说，这套房满足租客需求的程度落在哪一档？"
+      },
+      "form_hash": "54315f241f66412e88607f2d",
+      "kind": "attr",
+      "q": "62e7c07626802860b33020ee",
+      "template": "题「{q}」的前提在这份材料上成立吗？"
+    },
+    {
+      "fill": {
+        "q": "就这份材料来说，这套房满足租客需求的程度落在哪一档？"
+      },
+      "form_hash": "cd4d3fd600f3459fa6b03c89",
+      "kind": "attr",
+      "q": "44f215f9b9a62cdcd35b0957",
+      "template": "题「{q}」里是否有两个或更多需要分别回答的判断？"
+    },
+    {
+      "fill": {
+        "q": "就这份材料来说，这套房满足租客需求的程度落在哪一档？"
+      },
+      "form_hash": "18c6093988df2ab3840b661c",
+      "kind": "attr",
+      "q": "a1619018a91104fe91567a4e",
+      "template": "把题「{q}」按更细的情形分开问，会比整体问更容易答准吗？"
+    },
+    {
+      "fill": {
+        "q": "就这份材料来说，这套房满足租客需求的程度落在哪一档？"
+      },
+      "form_hash": "d8ff506d5be24dd56b495116",
+      "kind": "attr",
+      "q": "6a816890d5ddee602707fd2d",
+      "template": "判断题「{q}」需要的参照对象和语境，这段材料里给够了吗？"
+    },
+    {
+      "fill": {
+        "q": "就这份材料来说，这套房满足租客需求的程度落在哪一档？"
+      },
+      "form_hash": "2ec36692b44a45c1e23fbea6",
+      "kind": "class",
+      "q": "0a1089dc04db508cf989789e",
+      "template": "题「{q}」要判得更明确，最缺哪一类信息？"
+    },
+    {
+      "fill": {},
+      "form_hash": "cfe8b16caae3db04ea2d4fe0",
+      "kind": "class",
+      "q": "d7f9d40fe7b92da5750ad7f7",
+      "template": "就这份材料来说，这套房对这位租客最大的不合适之处是下列哪一项？"
+    },
+    {
+      "fill": {
+        "q": "就这份材料来说，这套房对这位租客最大的不合适之处是下列哪一项？"
+      },
+      "form_hash": "54315f241f66412e88607f2d",
+      "kind": "attr",
+      "q": "5314658e25f255af2750e0ed",
+      "template": "题「{q}」的前提在这份材料上成立吗？"
+    },
+    {
+      "fill": {
+        "q": "就这份材料来说，这套房对这位租客最大的不合适之处是下列哪一项？"
+      },
+      "form_hash": "cd4d3fd600f3459fa6b03c89",
+      "kind": "attr",
+      "q": "2a9b166c947df609ab14ade7",
+      "template": "题「{q}」里是否有两个或更多需要分别回答的判断？"
+    },
+    {
+      "fill": {
+        "q": "就这份材料来说，这套房对这位租客最大的不合适之处是下列哪一项？"
+      },
+      "form_hash": "18c6093988df2ab3840b661c",
+      "kind": "attr",
+      "q": "0058b2691e206157407a06af",
+      "template": "把题「{q}」按更细的情形分开问，会比整体问更容易答准吗？"
+    },
+    {
+      "fill": {
+        "q": "就这份材料来说，这套房对这位租客最大的不合适之处是下列哪一项？"
+      },
+      "form_hash": "d8ff506d5be24dd56b495116",
+      "kind": "attr",
+      "q": "29994af4da19c236e9e0defa",
+      "template": "判断题「{q}」需要的参照对象和语境，这段材料里给够了吗？"
+    },
+    {
+      "fill": {
+        "q": "就这份材料来说，这套房对这位租客最大的不合适之处是下列哪一项？"
+      },
+      "form_hash": "2ec36692b44a45c1e23fbea6",
+      "kind": "class",
+      "q": "717f1989b9ffb017dbddac9f",
+      "template": "题「{q}」要判得更明确，最缺哪一类信息？"
+    }
+  ],
+  "replay": true,
+  "resumed": false,
+  "returned_unsure": [],
+  "status": "returned",
+  "trace": {
+    "events": [
+      {
+        "cost": 0.0,
+        "key": "1d5dbcb81dc8a5f4e1974e04",
+        "kind": "judge",
+        "note": "「这段话要判断的事，和下列哪一道已认证的题问的是同一件事？」",
+        "replayed": true,
+        "site": {
+          "end": 47988,
+          "start": 47945
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "f008eb1ad50955f85fbace44",
+        "kind": "judge",
+        "note": "「题「这段话要判断的事，和下列哪一道已认证的题问的是同一件事？」的前提在这份材料上成立吗？」",
+        "replayed": true,
+        "site": {
+          "end": 47988,
+          "start": 47945
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "8dba19c361e06de1ff447e64",
+        "kind": "judge",
+        "note": "「题「这段话要判断的事，和下列哪一道已认证的题问的是同一件事？」里是否有两个或更多需要分别回答的判断？」",
+        "replayed": true,
+        "site": {
+          "end": 47988,
+          "start": 47945
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "98ea10f8d8a7309954493893",
+        "kind": "judge",
+        "note": "「把题「这段话要判断的事，和下列哪一道已认证的题问的是同一件事？」按更细的情形分开问，会比整体问更容易答准吗？」",
+        "replayed": true,
+        "site": {
+          "end": 47988,
+          "start": 47945
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "e21293c823fac5f8efde7caa",
+        "kind": "judge",
+        "note": "「判断题「这段话要判断的事，和下列哪一道已认证的题问的是同一件事？」需要的参照对象和语境，这段材料里给够了吗？」",
+        "replayed": true,
+        "site": {
+          "end": 47988,
+          "start": 47945
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "0df06371ba36335430162120",
+        "kind": "judge",
+        "note": "「题「这段话要判断的事，和下列哪一道已认证的题问的是同一件事？」要判得更明确，最缺哪一类信息？」",
+        "replayed": true,
+        "site": {
+          "end": 47988,
+          "start": 47945
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "c7a572ad6a4f4f018192ab5c",
+        "kind": "judge",
+        "note": "「这段话要判断的事，和下列哪一道已认证的题问的是同一件事？」",
+        "replayed": true,
+        "site": {
+          "end": 47988,
+          "start": 47945
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "1d617ef51806e700f3ef2d4c",
+        "kind": "judge",
+        "note": "「题「这段话要判断的事，和下列哪一道已认证的题问的是同一件事？」的前提在这份材料上成立吗？」",
+        "replayed": true,
+        "site": {
+          "end": 47988,
+          "start": 47945
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "240784907e9e25c391ec2a7b",
+        "kind": "judge",
+        "note": "「题「这段话要判断的事，和下列哪一道已认证的题问的是同一件事？」里是否有两个或更多需要分别回答的判断？」",
+        "replayed": true,
+        "site": {
+          "end": 47988,
+          "start": 47945
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "65d3c6d0de7cd38832041e15",
+        "kind": "judge",
+        "note": "「把题「这段话要判断的事，和下列哪一道已认证的题问的是同一件事？」按更细的情形分开问，会比整体问更容易答准吗？」",
+        "replayed": true,
+        "site": {
+          "end": 47988,
+          "start": 47945
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "3c8d243b402c22d4c8447099",
+        "kind": "judge",
+        "note": "「判断题「这段话要判断的事，和下列哪一道已认证的题问的是同一件事？」需要的参照对象和语境，这段材料里给够了吗？」",
+        "replayed": true,
+        "site": {
+          "end": 47988,
+          "start": 47945
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "b2073466fc121f0c21e267f6",
+        "kind": "judge",
+        "note": "「题「这段话要判断的事，和下列哪一道已认证的题问的是同一件事？」要判得更明确，最缺哪一类信息？」",
+        "replayed": true,
+        "site": {
+          "end": 47988,
+          "start": 47945
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "99042186c7cadc586e58cbb1",
+        "kind": "judge",
+        "note": "「就这份材料来说，这套房满足租客需求的程度落在哪一档？」",
+        "replayed": true,
+        "site": {
+          "end": 67126,
+          "start": 67110
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "9a7dc218e1672b9e3799579c",
+        "kind": "judge",
+        "note": "「题「就这份材料来说，这套房满足租客需求的程度落在哪一档？」的前提在这份材料上成立吗？」",
+        "replayed": true,
+        "site": {
+          "end": 67126,
+          "start": 67110
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "47115526630d1156125bf257",
+        "kind": "judge",
+        "note": "「题「就这份材料来说，这套房满足租客需求的程度落在哪一档？」里是否有两个或更多需要分别回答的判断？」",
+        "replayed": true,
+        "site": {
+          "end": 67126,
+          "start": 67110
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "cc452ea8a3da7e879032376a",
+        "kind": "judge",
+        "note": "「把题「就这份材料来说，这套房满足租客需求的程度落在哪一档？」按更细的情形分开问，会比整体问更容易答准吗？」",
+        "replayed": true,
+        "site": {
+          "end": 67126,
+          "start": 67110
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "fd66596869db0fc948bddd53",
+        "kind": "judge",
+        "note": "「判断题「就这份材料来说，这套房满足租客需求的程度落在哪一档？」需要的参照对象和语境，这段材料里给够了吗？」",
+        "replayed": true,
+        "site": {
+          "end": 67126,
+          "start": 67110
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "f61b643f66a2862073cde8a6",
+        "kind": "judge",
+        "note": "「题「就这份材料来说，这套房满足租客需求的程度落在哪一档？」要判得更明确，最缺哪一类信息？」",
+        "replayed": true,
+        "site": {
+          "end": 67126,
+          "start": 67110
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "92150732d8fe10dd1ef4a405",
+        "kind": "judge",
+        "note": "「就这份材料来说，这套房对这位租客最大的不合适之处是下列哪一项？」",
+        "replayed": true,
+        "site": {
+          "end": 67126,
+          "start": 67110
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "b94f42564874d8c8f0241f14",
+        "kind": "judge",
+        "note": "「题「就这份材料来说，这套房对这位租客最大的不合适之处是下列哪一项？」的前提在这份材料上成立吗？」",
+        "replayed": true,
+        "site": {
+          "end": 67126,
+          "start": 67110
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "319b3f67d58149e6e322f878",
+        "kind": "judge",
+        "note": "「题「就这份材料来说，这套房对这位租客最大的不合适之处是下列哪一项？」里是否有两个或更多需要分别回答的判断？」",
+        "replayed": true,
+        "site": {
+          "end": 67126,
+          "start": 67110
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "4425b3b4321c8a8a5aa96f70",
+        "kind": "judge",
+        "note": "「把题「就这份材料来说，这套房对这位租客最大的不合适之处是下列哪一项？」按更细的情形分开问，会比整体问更容易答准吗？」",
+        "replayed": true,
+        "site": {
+          "end": 67126,
+          "start": 67110
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "e46dccaec48fce26fb51b433",
+        "kind": "judge",
+        "note": "「判断题「就这份材料来说，这套房对这位租客最大的不合适之处是下列哪一项？」需要的参照对象和语境，这段材料里给够了吗？」",
+        "replayed": true,
+        "site": {
+          "end": 67126,
+          "start": 67110
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "ff60877fdf4e3db76528a567",
+        "kind": "judge",
+        "note": "「题「就这份材料来说，这套房对这位租客最大的不合适之处是下列哪一项？」要判得更明确，最缺哪一类信息？」",
+        "replayed": true,
+        "site": {
+          "end": 67126,
+          "start": 67110
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "7ecd62e81fc0f1cd178d7d17",
+        "kind": "judge",
+        "note": "「就这份材料来说，这套房满足租客需求的程度落在哪一档？」",
+        "replayed": true,
+        "site": {
+          "end": 67126,
+          "start": 67110
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "7852df382eff4e7feffb7016",
+        "kind": "judge",
+        "note": "「题「就这份材料来说，这套房满足租客需求的程度落在哪一档？」的前提在这份材料上成立吗？」",
+        "replayed": true,
+        "site": {
+          "end": 67126,
+          "start": 67110
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "d521f4750f0554085d1c0dab",
+        "kind": "judge",
+        "note": "「题「就这份材料来说，这套房满足租客需求的程度落在哪一档？」里是否有两个或更多需要分别回答的判断？」",
+        "replayed": true,
+        "site": {
+          "end": 67126,
+          "start": 67110
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "9dc47530233143a3f073736b",
+        "kind": "judge",
+        "note": "「把题「就这份材料来说，这套房满足租客需求的程度落在哪一档？」按更细的情形分开问，会比整体问更容易答准吗？」",
+        "replayed": true,
+        "site": {
+          "end": 67126,
+          "start": 67110
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "fc8c0a6bc1bf2b8deaabe44e",
+        "kind": "judge",
+        "note": "「判断题「就这份材料来说，这套房满足租客需求的程度落在哪一档？」需要的参照对象和语境，这段材料里给够了吗？」",
+        "replayed": true,
+        "site": {
+          "end": 67126,
+          "start": 67110
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "154522df36c219b6d5f07755",
+        "kind": "judge",
+        "note": "「题「就这份材料来说，这套房满足租客需求的程度落在哪一档？」要判得更明确，最缺哪一类信息？」",
+        "replayed": true,
+        "site": {
+          "end": 67126,
+          "start": 67110
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "c1eb7fa48396d3f55e49181c",
+        "kind": "judge",
+        "note": "「就这份材料来说，这套房对这位租客最大的不合适之处是下列哪一项？」",
+        "replayed": true,
+        "site": {
+          "end": 67126,
+          "start": 67110
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "5fba322c847e7703aab312e8",
+        "kind": "judge",
+        "note": "「题「就这份材料来说，这套房对这位租客最大的不合适之处是下列哪一项？」的前提在这份材料上成立吗？」",
+        "replayed": true,
+        "site": {
+          "end": 67126,
+          "start": 67110
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "d5fce5447033117f1e41091f",
+        "kind": "judge",
+        "note": "「题「就这份材料来说，这套房对这位租客最大的不合适之处是下列哪一项？」里是否有两个或更多需要分别回答的判断？」",
+        "replayed": true,
+        "site": {
+          "end": 67126,
+          "start": 67110
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "936af3e125788dc624a6e811",
+        "kind": "judge",
+        "note": "「把题「就这份材料来说，这套房对这位租客最大的不合适之处是下列哪一项？」按更细的情形分开问，会比整体问更容易答准吗？」",
+        "replayed": true,
+        "site": {
+          "end": 67126,
+          "start": 67110
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "4d4e5e1093a17e3938fd12e8",
+        "kind": "judge",
+        "note": "「判断题「就这份材料来说，这套房对这位租客最大的不合适之处是下列哪一项？」需要的参照对象和语境，这段材料里给够了吗？」",
+        "replayed": true,
+        "site": {
+          "end": 67126,
+          "start": 67110
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "08ca110c04ef125c57c60504",
+        "kind": "judge",
+        "note": "「题「就这份材料来说，这套房对这位租客最大的不合适之处是下列哪一项？」要判得更明确，最缺哪一类信息？」",
+        "replayed": true,
+        "site": {
+          "end": 67126,
+          "start": 67110
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "7216a02cc935ec8977637ebb",
+        "kind": "judge",
+        "note": "「就这份材料来说，这套房满足租客需求的程度落在哪一档？」",
+        "replayed": true,
+        "site": {
+          "end": 67126,
+          "start": 67110
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "fce70cc9c92d3aeda3cf7394",
+        "kind": "judge",
+        "note": "「题「就这份材料来说，这套房满足租客需求的程度落在哪一档？」的前提在这份材料上成立吗？」",
+        "replayed": true,
+        "site": {
+          "end": 67126,
+          "start": 67110
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "dfd5a9eb674172d76b2d5156",
+        "kind": "judge",
+        "note": "「题「就这份材料来说，这套房满足租客需求的程度落在哪一档？」里是否有两个或更多需要分别回答的判断？」",
+        "replayed": true,
+        "site": {
+          "end": 67126,
+          "start": 67110
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "e796ba66fac3313a3deff310",
+        "kind": "judge",
+        "note": "「把题「就这份材料来说，这套房满足租客需求的程度落在哪一档？」按更细的情形分开问，会比整体问更容易答准吗？」",
+        "replayed": true,
+        "site": {
+          "end": 67126,
+          "start": 67110
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "f880be5d1892572358217ee0",
+        "kind": "judge",
+        "note": "「判断题「就这份材料来说，这套房满足租客需求的程度落在哪一档？」需要的参照对象和语境，这段材料里给够了吗？」",
+        "replayed": true,
+        "site": {
+          "end": 67126,
+          "start": 67110
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "7e7f2568c5a0813ed5db7efc",
+        "kind": "judge",
+        "note": "「题「就这份材料来说，这套房满足租客需求的程度落在哪一档？」要判得更明确，最缺哪一类信息？」",
+        "replayed": true,
+        "site": {
+          "end": 67126,
+          "start": 67110
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "921bb838837dcf2bddd4f33c",
+        "kind": "judge",
+        "note": "「就这份材料来说，这套房对这位租客最大的不合适之处是下列哪一项？」",
+        "replayed": true,
+        "site": {
+          "end": 67126,
+          "start": 67110
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "9c836f6661e48587513320d7",
+        "kind": "judge",
+        "note": "「题「就这份材料来说，这套房对这位租客最大的不合适之处是下列哪一项？」的前提在这份材料上成立吗？」",
+        "replayed": true,
+        "site": {
+          "end": 67126,
+          "start": 67110
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "bf64c6a1964bf28c67d06444",
+        "kind": "judge",
+        "note": "「题「就这份材料来说，这套房对这位租客最大的不合适之处是下列哪一项？」里是否有两个或更多需要分别回答的判断？」",
+        "replayed": true,
+        "site": {
+          "end": 67126,
+          "start": 67110
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "dba777d26dabcbd9adab4192",
+        "kind": "judge",
+        "note": "「把题「就这份材料来说，这套房对这位租客最大的不合适之处是下列哪一项？」按更细的情形分开问，会比整体问更容易答准吗？」",
+        "replayed": true,
+        "site": {
+          "end": 67126,
+          "start": 67110
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "d61c69c702f59f5727e279f4",
+        "kind": "judge",
+        "note": "「判断题「就这份材料来说，这套房对这位租客最大的不合适之处是下列哪一项？」需要的参照对象和语境，这段材料里给够了吗？」",
+        "replayed": true,
+        "site": {
+          "end": 67126,
+          "start": 67110
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "5f674cd77b5986f7d5376a61",
+        "kind": "judge",
+        "note": "「题「就这份材料来说，这套房对这位租客最大的不合适之处是下列哪一项？」要判得更明确，最缺哪一类信息？」",
+        "replayed": true,
+        "site": {
+          "end": 67126,
+          "start": 67110
+        }
+      }
+    ],
+    "warnings": [
+      "W-window-untested: @47945 画像没有测过窗口（window），对象长度不核；超窗的语境可能接管读数而无痕",
+      "W-window-untested: @67110 画像没有测过窗口（window），对象长度不核；超窗的语境可能接管读数而无痕"
+    ]
+  },
+  "value": {
+    "bank": [
+      {
+        "how": "none",
+        "kind": "degree",
+        "pred": "p0"
+      },
+      {
+        "how": "none",
+        "kind": "class",
+        "pred": "p1"
+      }
+    ],
+    "inputs": [
+      {
+        "ctx": "北京，十月看房",
+        "field": "fit",
+        "slots": [
+          "on",
+          "ref",
+          "ctx"
+        ]
+      },
+      {
+        "ctx": "北京，十月看房",
+        "field": "flaw",
+        "over": [
+          "价格",
+          "通勤",
+          "采光",
+          "没有明显不合适"
+        ],
+        "slots": [
+          "on",
+          "ref",
+          "ctx",
+          "over"
+        ]
+      }
+    ],
+    "pending": [],
+    "questions": [
+      {
+        "cut": "ordered",
+        "field": "fit",
+        "from": "assemble",
+        "lacks": [
+          "材料",
+          "语境",
+          "参照"
+        ],
+        "op": "measure",
+        "q": "就这份材料来说，这套房满足租客需求的程度落在哪一档？"
+      },
+      {
+        "cut": "k_ary",
+        "field": "flaw",
+        "from": "assemble",
+        "lacks": [
+          "材料",
+          "语境",
+          "参照"
+        ],
+        "op": "select",
+        "q": "就这份材料来说，这套房对这位租客最大的不合适之处是下列哪一项？"
+      }
+    ],
+    "sources": {
+      "budget": "system",
+      "context": "author",
+      "cut": "author",
+      "done": "system",
+      "material": "author",
+      "predicate": "author",
+      "presupposition": "author",
+      "reference": "author",
+      "request": "system",
+      "unsure": "system"
+    },
+    "value": [
+      {
+        "fields": {
+          "fit": 2,
+          "flaw": "通勤"
+        },
+        "item": "一室一厅，月租四千，离地铁五百米，朝北",
+        "trust": {
+          "fit": "trusted",
+          "flaw": "trusted"
+        }
+      },
+      {
+        "fields": {
+          "fit": 1,
+          "flaw": "价格"
+        },
+        "item": "两室，月租六千，离地铁两公里，朝南",
+        "trust": {
+          "fit": "trusted",
+          "flaw": "trusted"
+        }
+      },
+      {
+        "fields": {
+          "fit": 3,
+          "flaw": "采光"
+        },
+        "item": "开间，月租三千，离地铁一百米，无窗",
+        "trust": {
+          "fit": "trusted",
+          "flaw": "trusted"
+        }
+      }
+    ],
+    "version": "derive-14"
+  }
+}

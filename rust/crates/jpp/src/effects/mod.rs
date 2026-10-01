@@ -13,6 +13,8 @@ pub use jpp_effects::port::{
     Ticket, argmax_index,
 };
 pub use jpp_effects::{EffectId, EffectInstance};
+// Z0398：默认链取材料的第二、三级（裁定五十五）
+pub use jpp_effects::material::{CategoryStore, MaterialSource};
 // 跨运行缓存的查找端口（步 19，B40、B151），`jpp::store::CacheIndex` 实现它
 pub use jpp_effects::views::{CacheLookup, CachedReading};
 // 真机客户端 `JevClient` 步 14a 搬到 `backends/jev`（B74），步 15b 起由 `JevPorts` 接成端口，这里原路径重导出。

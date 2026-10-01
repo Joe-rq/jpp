@@ -1,0 +1,223 @@
+{
+  "backend": "fixed-0",
+  "cost": {
+    "asks": 0,
+    "calls": 1,
+    "replayed": 0,
+    "tokens": 0,
+    "usd": 0.0
+  },
+  "entry": [],
+  "exits": [
+    {
+      "exit": "pick(1)",
+      "feasible": {
+        "chosen": 1,
+        "from": 0,
+        "skipped": [
+          {
+            "k": 0,
+            "p": 0.5
+          }
+        ]
+      },
+      "grade": "Answer",
+      "item": "9c299058d4fc",
+      "releases": false,
+      "site": 1374
+    }
+  ],
+  "fixture_description": "Fixed reading for the feasible-pick golden (C-4): a three-candidate select [0.5, 0.35, 0.15] over [pour foundation, lay a course of wall, fit windows]. The foundation is already poured, so the judge's top pick (k=0) is infeasible for the code predicate and the wall (k=1, p=0.35) is chosen instead; windows (k=2) still need a wall.",
+  "improve": [
+    {
+      "companions": [
+        {
+          "key": "0dcf5ff2ee7d68d65c8f2d14",
+          "kind": "unsure-companion-premise",
+          "p": 0.5
+        },
+        {
+          "key": "30eb9b0a1bc4fdcc15fec309",
+          "kind": "diag-two-judgments",
+          "p": 0.5
+        },
+        {
+          "key": "46b65988ad0bedd640ecb677",
+          "kind": "unsure-companion-cut",
+          "p": 0.5
+        },
+        {
+          "key": "15a5b7137943030d5585a023",
+          "kind": "unsure-companion-reference",
+          "p": 0.5
+        },
+        {
+          "key": "68102526788deeaf139141ad",
+          "kind": "unsure-companion-material",
+          "p": 0.25,
+          "pick": null
+        }
+      ],
+      "key": "84a467c599a8dec9543563ff",
+      "lacks": null,
+      "q": "下一道工序做哪一项？"
+    }
+  ],
+  "local_checks": [],
+  "mode": "fixed observations; no model API requests",
+  "pending": [],
+  "plan": {
+    "calls": {
+      "hi": 3,
+      "kind": "known",
+      "lo": 1
+    },
+    "cost_usd": {
+      "hi": 0.0,
+      "kind": "known",
+      "lo": 0.0
+    },
+    "latency_s": {
+      "kind": "unknown",
+      "reason": "untested:concurrency.latency_s.p95"
+    },
+    "layers": {
+      "hi": 1,
+      "kind": "known",
+      "lo": 1
+    }
+  },
+  "questions": [
+    {
+      "kind": "class",
+      "q": "ac3f7a562a855f4bcf0d76f5"
+    },
+    {
+      "fill": {
+        "q": "下一道工序做哪一项？"
+      },
+      "form_hash": "54315f241f66412e88607f2d",
+      "kind": "attr",
+      "q": "325cbdb294fa62a96836bb1a",
+      "template": "题「{q}」的前提在这份材料上成立吗？"
+    },
+    {
+      "fill": {
+        "q": "下一道工序做哪一项？"
+      },
+      "form_hash": "cd4d3fd600f3459fa6b03c89",
+      "kind": "attr",
+      "q": "5acbeacd92c7eb9b80aefe61",
+      "template": "题「{q}」里是否有两个或更多需要分别回答的判断？"
+    },
+    {
+      "fill": {
+        "q": "下一道工序做哪一项？"
+      },
+      "form_hash": "18c6093988df2ab3840b661c",
+      "kind": "attr",
+      "q": "856706739c1380e44386ac88",
+      "template": "把题「{q}」按更细的情形分开问，会比整体问更容易答准吗？"
+    },
+    {
+      "fill": {
+        "q": "下一道工序做哪一项？"
+      },
+      "form_hash": "d8ff506d5be24dd56b495116",
+      "kind": "attr",
+      "q": "3ba6620183913f0510a1c404",
+      "template": "判断题「{q}」需要的参照对象和语境，这段材料里给够了吗？"
+    },
+    {
+      "fill": {
+        "q": "下一道工序做哪一项？"
+      },
+      "form_hash": "2ec36692b44a45c1e23fbea6",
+      "kind": "class",
+      "q": "02f41e41a59e99407a68b6a2",
+      "template": "题「{q}」要判得更明确，最缺哪一类信息？"
+    }
+  ],
+  "replay": false,
+  "resumed": false,
+  "returned_unsure": [],
+  "status": "returned",
+  "trace": {
+    "events": [
+      {
+        "cost": 0.0,
+        "key": "84a467c599a8dec9543563ff",
+        "kind": "judge",
+        "note": "「下一道工序做哪一项？」",
+        "replayed": false,
+        "site": {
+          "end": 1365,
+          "start": 1168
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "0dcf5ff2ee7d68d65c8f2d14",
+        "kind": "judge",
+        "note": "「题「下一道工序做哪一项？」的前提在这份材料上成立吗？」",
+        "replayed": false,
+        "site": {
+          "end": 1365,
+          "start": 1168
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "30eb9b0a1bc4fdcc15fec309",
+        "kind": "judge",
+        "note": "「题「下一道工序做哪一项？」里是否有两个或更多需要分别回答的判断？」",
+        "replayed": false,
+        "site": {
+          "end": 1365,
+          "start": 1168
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "46b65988ad0bedd640ecb677",
+        "kind": "judge",
+        "note": "「把题「下一道工序做哪一项？」按更细的情形分开问，会比整体问更容易答准吗？」",
+        "replayed": false,
+        "site": {
+          "end": 1365,
+          "start": 1168
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "15a5b7137943030d5585a023",
+        "kind": "judge",
+        "note": "「判断题「下一道工序做哪一项？」需要的参照对象和语境，这段材料里给够了吗？」",
+        "replayed": false,
+        "site": {
+          "end": 1365,
+          "start": 1168
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "68102526788deeaf139141ad",
+        "kind": "judge",
+        "note": "「题「下一道工序做哪一项？」要判得更明确，最缺哪一类信息？」",
+        "replayed": false,
+        "site": {
+          "end": 1365,
+          "start": 1168
+        }
+      }
+    ],
+    "warnings": [
+      "W-window-untested: @1168 画像没有测过窗口（window），对象长度不核；超窗的语境可能接管读数而无痕",
+      "N-feasible-skip: @1374 判断器已决 pick(0)，代码谓词否决了 1 个候选（k=0 p=0.500），改选 pick(1)"
+    ]
+  },
+  "value": {
+    "下一步": "砌一层墙",
+    "序号": 1
+  }
+}

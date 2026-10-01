@@ -41,8 +41,8 @@
 //   path  每判一个节点一次调用。grow 会调 gen、do 这类贵的效应时用它
 // 每个节点：grow → keep → 取本节点读数（没有就发一组）→ cut → handle 选子节点（K 选一的 pick(k) 走 picks[k]）；
 // 是非题节点判出未决且给了 enrich、候选里还有没补过的、轮数没用完：select 问「最缺哪一类」→ fetch → merge → 在补过的
-// 材料上再判同一节点。上一次的未决出口 consume(u, "drop") 记账（它被重判取代；本该走 J-05 的「细化」，内置
-// literalize 今天不收声明线，赛后 refine 补）。select 未决、fetch 返回 Fail、候选或轮数用完即停止补：select 的
+// 材料上再判同一节点。上一次的未决出口由 refine(u, 新出口, {need, round}) 记下一轮补信息（Enrich）与细化
+// （Refine{how: default}），它已经被重判取代（C-1）。select 未决、fetch 返回 Fail、候选或轮数用完即停止补：select 的
 // 未决出口进 pending（via walk#<步号>:need），节点最后一次的出口照旧。补过的材料一路往下带。补的轮次不占 depth。
 // 返回（B17 契约值）：
 //   value    到叶时一个元素 {item: 到叶时的材料, leaf, path: [{q, exit, branch, enriched}], exit, trail: []}；
@@ -305,7 +305,7 @@ fn walk(tree, material, depth, opts) -> Record<Exit> {
         let b = if fresh { batch(node, m, at, left) } else { t.batch };
         let mine = filter(b, fn(g) { g.at == at })[0];
         let e = cut_of(node, mine.r);
-        // unsure 臂把责任 u 放进臂的返回值（J-05 第四条去向）；同一出口随后进 pending，或被补信息后的重判取代时 drop 记账
+        // unsure 臂把责任 u 放进臂的返回值（J-05 第四条去向）；同一出口随后进 pending，或被补信息后的重判取代时记为细化
         let got = if tree_is_select(node) {
             handle(e, {pick: fn(k) { {branch: "pick:" + text(node.over[k]), k: k} },
                        unsure: fn(u) { {branch: "unsure", duty: u} }})
@@ -360,11 +360,12 @@ fn walk(tree, material, depth, opts) -> Record<Exit> {
                         if ch.j < 0 { with(t1, "stop", true) } else {
                             let need = cands[ch.j];
                             let got = en.fetch(node, need, t.m);
-                            if is_fail(got) { with(t1, "stop", true) } else {
+                            // 取不到：记一轮 Enrich{got: false}（责任不动，随后进 pending）
+                            if is_fail(got) { refine(t.got.duty, unit, {need: need, round: k + 1, got: false}); with(t1, "stop", true) } else {
                                 let m2 = merge(t.m, need, got);
                                 let j2 = judged(t1.s, node, m2, s.at, depth - i);
-                                // 上一次的未决被补信息后的重判取代：显式丢弃并记账（J-05）
-                                consume(t.got.duty, "drop");
+                                // 上一次的未决被补信息后的重判取代：记一轮补信息与细化（C-1：Enrich 与 Refine{how: default}）
+                                refine(t.got.duty, j2.e, if len(ch.sel) == 0 { {need: need, round: k + 1} } else { {need: need, round: k + 1, asked_by: ch.sel[0].e} });
                                 // 「最缺哪一类」选定了补进材料的内容：它也进叶材料的谱系（Q10）
                                 let j2s = with(j2.t, "sel", concat(j2.t.sel, ch.sel));
                                 {s: with(j2s, "enriched", append(j2s.enriched, {q: node.q, need: need, step: i})),

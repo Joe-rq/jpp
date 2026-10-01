@@ -1,0 +1,25 @@
+// C-8：图算法报并列解。四个人，只有「甲—乙」「丙—丁」两条边，两个团同样大：动作照旧返回其中一个
+// （clique、size、edge_indices 不变），另外报出全部并列解——tie_count 是个数，ties 是并列解列表（主解第一，
+// 每项与主解同形），ties_complete 说明有没有列全（并列数有上限 64，超过时为 false，个数是「至少」）。
+// 读者不会再误以为结论唯一；`interval`（lib/compose/graph.jpp）也据此把并列解用到的未决边算进 differs。
+//
+// 不花调用：图算法是纯函数、可逆、成本 0。可撤回性的事实在报告的 action_facts 一节，也能用
+// action_fact("graph:max_clique") 读到。
+budget {calls: 3, cost: 0, depth: 8};
+
+let g = {
+    nodes: ["甲", "乙", "丙", "丁"],
+    edges: [{u: "甲", v: "乙"}, {u: "丙", v: "丁"}]
+};
+let r = content(do("graph:max_clique", [g], 0));
+
+// 等价的两个集合：s1、s2 各自都能覆盖全集，最小覆盖有两组
+let c = content(do("graph:set_cover", [{
+    universe: ["e1", "e2"],
+    sets: [{id: "s1", elements: ["e1", "e2"]}, {id: "s2", elements: ["e1", "e2"]}]
+}], 1));
+
+{clique: {picked: r.clique, tie_count: r.tie_count, ties_complete: r.ties_complete,
+          alternatives: map(r.ties, fn(t) { t.clique })},
+ cover: {picked: c.chosen, tie_count: c.tie_count, alternatives: map(c.ties, fn(t) { t.chosen })},
+ undo: action_fact("graph:max_clique").reversibility}

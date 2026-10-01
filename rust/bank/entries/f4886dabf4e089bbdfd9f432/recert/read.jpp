@@ -1,0 +1,19 @@
+// 步 27a · 置换重跑：与 27a-准备 同名程序只差题式记录里的 permute: true（B64，步 15f），材料逐字节相同。
+// 27a 准备 · F4（比较 · K 候选为计算出的材料 · 可算真值）：取真机读数用于认证。
+// 一条材料一道题（一个填法）；候选文字来自 input（计算出的材料），题式声明 over_kind = candidates（B76）。
+budget {calls: 70, cost: 0.05, depth: 256};
+
+let same = form("select", "下列哪一段话里也直接写出了这段话里那个{kind}的名字？", {calib: "cmp-same-referent", over_kind: "candidates", permute: true});
+
+fn one(x) !{judge} {
+    let r = judge(state(mat(x.text), {over: x.over}), fill(same, {kind: x.kind}));
+    handle(cut(r), {
+        pick: fn(k) { {id: x.id, key: key_of(r), exit: "pick", open: []} },
+        unsure: fn(u) { {id: x.id, key: key_of(r), exit: "unsure", open: [u]} }
+    })
+}
+
+let rows = map(input.items, fn(x) !{judge} { one(x) });
+
+{rows: map(rows, fn(x) { {id: x.id, key: x.key, exit: x.exit} }),
+ pending: fold(rows, [], fn(acc, x) { concat(acc, x.open) })}

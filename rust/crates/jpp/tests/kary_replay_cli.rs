@@ -150,7 +150,7 @@ fn sel(t) {
     fs::write(d.join("p.jpp"), src).unwrap();
     fs::write(d.join("fx.json"), fixture.to_string()).unwrap();
     let (r1, r2) = 首跑与重放("inline-run", &d.join("p.jpp"), &d.join("fx.json"));
-    assert_eq!(r1["value"], json!(["pick", "tie", "band", "untested"]));
+    assert_eq!(r1["value"], json!(["pick", "tie", "band", "cold"]));
     assert_eq!(r2["cost"]["calls"], 0);
     assert_eq!(取(&r2), 取(&r1));
     let _ = fs::remove_dir_all(&d);

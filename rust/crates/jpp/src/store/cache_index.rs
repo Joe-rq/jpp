@@ -3,13 +3,15 @@
 //! 从一组账本建：判断条目按判断缓存键（`JudgeKey::cache_key`，不含调用位置与运行序号，选择题含 `perm_seed`），
 //! `gen`、`transform` 的效应条目按 `EffectKey::cache_digest`（不含调用位置；`gen` 带生成器模型，取该账本头的
 //! `gen_model`，没有则取 `model_id`）。只收有结构化键、不是复用条目、不是失败值的条目；同键先到先得（来源按给定
-//! 顺序、条目按序号）。它是派生物，不落盘，可丢弃重建（`20` v2 §九「可丢弃」）。
-//! 依据：B40（`20` v2 附录）；B151（`21` 步 19 追加项）；B74（本模块只依赖 `jpp_ledger` 与 `jpp_effects` 的视图）
+//! 顺序、条目按序号）。宿主变换带「读外部状态，不跨运行缓存」位（`HostTransform.reads_external_state`，如料库标记的读写）的不收：
+//! 结果随外部状态变、键里没有那份状态（Z0206；位由宿主变换注册表定，Z0222）。
+//! 它是派生物，不落盘，可丢弃重建（`20` v2 §九「可丢弃」）。
+//! 依据：B40（`20` v2 附录）；B151（`21` 步 19 追加项）；B74（本模块依赖 `jpp_ledger` 与 `jpp_effects` 的视图；`build` 的默认宿主变换表取自 `jpp_lib::standard_transforms`）
 
 use std::collections::HashMap;
 
-use jpp_effects::ReuseRule;
 use jpp_effects::views::{CacheLookup, CachedReading};
+use jpp_effects::{ReuseRule, TransformTable};
 use jpp_ir::key::CacheKey;
 use jpp_ledger::{Entry, Ledger};
 use serde_json::Value as Json;
@@ -31,7 +33,14 @@ pub struct CacheIndexCounts {
 
 impl CacheIndex {
     /// 从账本建索引。`ledgers` 的每项是（来源名，账本）；来源名进复用条目的 `reused_from`（`ext:<来源>#<序号>`）。
+    /// 宿主变换的语义位取标准库的宿主变换表（`jpp_lib::standard_transforms`）；自带宿主变换表的用 [`CacheIndex::build_with`]。
     pub fn build(ledgers: &[(String, Ledger)]) -> CacheIndex {
+        CacheIndex::build_with(ledgers, &jpp_lib::standard_transforms(None))
+    }
+
+    /// [`CacheIndex::build`]，宿主变换的「读外部状态」位按给定的表查。键的方法位在表里查不到的（闭包变换、
+    /// 表外的宿主变换）照进索引：没有登记就没有位可查，也没有别的依据不收。
+    pub fn build_with(ledgers: &[(String, Ledger)], transforms: &TransformTable) -> CacheIndex {
         let mut ix = CacheIndex::default();
         for (source, l) in ledgers {
             let gen_model = l
@@ -63,7 +72,9 @@ impl CacheIndex {
                         // 复用规则只在注册表里定（`EffectSpec.reuse`）：生成物带来源账本的生成器模型
                         let d = match jpp_effects::by_name(&ek.kind).map(|s| s.reuse) {
                             Some(ReuseRule::Generator) => ek.cache_digest(Some(&gen_model)),
-                            Some(ReuseRule::Method) => ek.cache_digest(None),
+                            Some(ReuseRule::Method) if !读外部状态(ek, transforms) => {
+                                ek.cache_digest(None)
+                            }
                             _ => None,
                         };
                         if let Some(d) = d {
@@ -102,6 +113,16 @@ impl CacheIndex {
 
 fn 是失败值(output: &Json) -> bool {
     output.get("__fail").is_some()
+}
+
+/// 方法位（键的第二段，`host:<名>@<版本>`）在宿主变换表里带「读外部状态」位（`mat_marks`、`mat_mark` 等，Z0206）。
+/// 这类结果取决于外部状态当时的内容，键里没有那份状态：另一本账本里同输入的记录拿来当本次的复用，读会读到旧状态，
+/// 写会被跳过、外部状态一点没写。所以不进跨运行索引；本运行内的复用与账本重放不经索引，不受影响。
+fn 读外部状态(ek: &jpp_ledger::EffectKey, transforms: &TransformTable) -> bool {
+    ek.parts
+        .get(1)
+        .and_then(|m| transforms.by_identity(m))
+        .is_some_and(|t| t.reads_external_state)
 }
 
 impl CacheLookup for CacheIndex {
@@ -171,5 +192,48 @@ mod tests {
                 transform: 0
             }
         );
+    }
+
+    fn 变换(site: &str, 方法: &str, 输入: &str, out: Json) -> Entry {
+        let ek = EffectKey::new("transform", &[site, 方法, "", 输入]);
+        Entry::effect(ek, "transform", out, 0.0)
+    }
+
+    #[test]
+    fn 料库标记变换不进索引_其他变换照进() {
+        let mut a = Ledger::new();
+        a.put(变换(
+            "1",
+            "host:mat_marks@1",
+            "h",
+            serde_json::json!([{"found": false}]),
+        ));
+        a.put(变换(
+            "2",
+            "host:mat_mark@1",
+            "h",
+            serde_json::json!({"written": 1}),
+        ));
+        a.put(变换("3", "host:diagnose@1", "h", serde_json::json!([])));
+        a.put(变换("4", "闭包哈希", "h", serde_json::json!(["x"])));
+        let ix = CacheIndex::build(&[("a.jsonl".into(), a)]);
+        assert_eq!(
+            ix.counts(),
+            CacheIndexCounts {
+                judge: 0,
+                gen_: 0,
+                transform: 2
+            },
+            "只有 diagnose 与闭包变换进索引"
+        );
+        for 方法 in ["host:mat_marks@1", "host:mat_mark@1"] {
+            let ek = EffectKey::new("transform", &["9", 方法, "", "h"]);
+            assert!(
+                ix.get_effect(&ek.cache_digest(None).unwrap()).is_none(),
+                "{方法} 不跨运行复用"
+            );
+        }
+        let ek = EffectKey::new("transform", &["9", "host:diagnose@1", "", "h"]);
+        assert!(ix.get_effect(&ek.cache_digest(None).unwrap()).is_some());
     }
 }

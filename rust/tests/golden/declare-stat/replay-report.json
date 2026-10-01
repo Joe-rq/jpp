@@ -3,7 +3,7 @@
   "cost": {
     "asks": 0,
     "calls": 0,
-    "replayed": 2,
+    "replayed": 12,
     "tokens": 0,
     "usd": 0.0
   },
@@ -91,17 +91,195 @@
     }
   ],
   "fixture_description": "Fixed readings for the statistic-line golden (step 20j-3, B153): a four-level measure reading [0.1, 0.2, 0.6, 0.1] (expected level 1.7: below the declared 2.0 -> ignore; bucketed by cuts [0.5, 1.5, 2.5] -> at 2) and a four-candidate select reading [0.3, 0.25, 0.4, 0.05] (mass of candidates 0 and 1 is 0.55 >= 0.5 -> act).",
+  "improve": [
+    {
+      "companions": [
+        {
+          "key": "6799e394276de23d57ef006f",
+          "kind": "unsure-companion-premise",
+          "p": 0.5
+        },
+        {
+          "key": "997e5be1834ccb3b4ce92808",
+          "kind": "diag-two-judgments",
+          "p": 0.5
+        },
+        {
+          "key": "95ff4dd08c4e9b48e9470e5c",
+          "kind": "unsure-companion-cut",
+          "p": 0.5
+        },
+        {
+          "key": "68d354693f3308ba91209688",
+          "kind": "unsure-companion-reference",
+          "p": 0.5
+        },
+        {
+          "key": "2b0a8fe5808a51073e18afa8",
+          "kind": "unsure-companion-material",
+          "p": 0.25,
+          "pick": null
+        }
+      ],
+      "key": "aecd9d6b5294afeadad4781a",
+      "lacks": null,
+      "q": "这段工单描述的故障影响有多大？"
+    },
+    {
+      "companions": [
+        {
+          "key": "fdf9ced09baf546b17f4a1a1",
+          "kind": "unsure-companion-premise",
+          "p": 0.5
+        },
+        {
+          "key": "38c7dd23a273a472372f6548",
+          "kind": "diag-two-judgments",
+          "p": 0.5
+        },
+        {
+          "key": "69dc654bfc6f8ec6d943ef93",
+          "kind": "unsure-companion-cut",
+          "p": 0.5
+        },
+        {
+          "key": "eccb357bc87d075782717af9",
+          "kind": "unsure-companion-reference",
+          "p": 0.5
+        },
+        {
+          "key": "ba69f61241160f02dddb6b0d",
+          "kind": "unsure-companion-material",
+          "p": 0.25,
+          "pick": null
+        }
+      ],
+      "key": "f53295f75dc45bad2d1fd52b",
+      "lacks": null,
+      "q": "这段工单最可能归哪个组处理？"
+    }
+  ],
   "local_checks": [],
   "mode": "replay; no model API requests",
   "pending": [],
+  "plan": {
+    "calls": {
+      "hi": 6,
+      "kind": "known",
+      "lo": 0
+    },
+    "cost_usd": {
+      "kind": "unknown",
+      "reason": "price_not_given"
+    },
+    "latency_s": {
+      "kind": "unknown",
+      "reason": "untested:concurrency.latency_s.p95"
+    },
+    "layers": {
+      "hi": 2,
+      "kind": "known",
+      "lo": 0
+    }
+  },
   "questions": [
     {
       "kind": "degree",
       "q": "24eb243952eea27c566cdfe2"
     },
     {
+      "fill": {
+        "q": "这段工单描述的故障影响有多大？"
+      },
+      "form_hash": "54315f241f66412e88607f2d",
+      "kind": "attr",
+      "q": "c11eb1952c01f4a7316386fe",
+      "template": "题「{q}」的前提在这份材料上成立吗？"
+    },
+    {
+      "fill": {
+        "q": "这段工单描述的故障影响有多大？"
+      },
+      "form_hash": "cd4d3fd600f3459fa6b03c89",
+      "kind": "attr",
+      "q": "104135898087df10d034f689",
+      "template": "题「{q}」里是否有两个或更多需要分别回答的判断？"
+    },
+    {
+      "fill": {
+        "q": "这段工单描述的故障影响有多大？"
+      },
+      "form_hash": "18c6093988df2ab3840b661c",
+      "kind": "attr",
+      "q": "4252f76139b682ad52b410e5",
+      "template": "把题「{q}」按更细的情形分开问，会比整体问更容易答准吗？"
+    },
+    {
+      "fill": {
+        "q": "这段工单描述的故障影响有多大？"
+      },
+      "form_hash": "d8ff506d5be24dd56b495116",
+      "kind": "attr",
+      "q": "0a850c098abaa2e9b8d9e57f",
+      "template": "判断题「{q}」需要的参照对象和语境，这段材料里给够了吗？"
+    },
+    {
+      "fill": {
+        "q": "这段工单描述的故障影响有多大？"
+      },
+      "form_hash": "2ec36692b44a45c1e23fbea6",
+      "kind": "class",
+      "q": "8c08ec77876aa0818ce6af67",
+      "template": "题「{q}」要判得更明确，最缺哪一类信息？"
+    },
+    {
       "kind": "class",
       "q": "0103f3241896fa570146ec8a"
+    },
+    {
+      "fill": {
+        "q": "这段工单最可能归哪个组处理？"
+      },
+      "form_hash": "54315f241f66412e88607f2d",
+      "kind": "attr",
+      "q": "f463bedd4815fc04c82288b8",
+      "template": "题「{q}」的前提在这份材料上成立吗？"
+    },
+    {
+      "fill": {
+        "q": "这段工单最可能归哪个组处理？"
+      },
+      "form_hash": "cd4d3fd600f3459fa6b03c89",
+      "kind": "attr",
+      "q": "585af1ec76fa39004a8535ca",
+      "template": "题「{q}」里是否有两个或更多需要分别回答的判断？"
+    },
+    {
+      "fill": {
+        "q": "这段工单最可能归哪个组处理？"
+      },
+      "form_hash": "18c6093988df2ab3840b661c",
+      "kind": "attr",
+      "q": "6673fff2f377bfd9d43a0a27",
+      "template": "把题「{q}」按更细的情形分开问，会比整体问更容易答准吗？"
+    },
+    {
+      "fill": {
+        "q": "这段工单最可能归哪个组处理？"
+      },
+      "form_hash": "d8ff506d5be24dd56b495116",
+      "kind": "attr",
+      "q": "5c7cc709ea888f4ee52689b5",
+      "template": "判断题「{q}」需要的参照对象和语境，这段材料里给够了吗？"
+    },
+    {
+      "fill": {
+        "q": "这段工单最可能归哪个组处理？"
+      },
+      "form_hash": "2ec36692b44a45c1e23fbea6",
+      "kind": "class",
+      "q": "788a9eac8d1dafcc377cdd5a",
+      "template": "题「{q}」要判得更明确，最缺哪一类信息？"
     }
   ],
   "replay": true,
@@ -123,9 +301,119 @@
       },
       {
         "cost": 0.0,
+        "key": "6799e394276de23d57ef006f",
+        "kind": "judge",
+        "note": "「题「这段工单描述的故障影响有多大？」的前提在这份材料上成立吗？」",
+        "replayed": true,
+        "site": {
+          "end": 1115,
+          "start": 1002
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "997e5be1834ccb3b4ce92808",
+        "kind": "judge",
+        "note": "「题「这段工单描述的故障影响有多大？」里是否有两个或更多需要分别回答的判断？」",
+        "replayed": true,
+        "site": {
+          "end": 1115,
+          "start": 1002
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "95ff4dd08c4e9b48e9470e5c",
+        "kind": "judge",
+        "note": "「把题「这段工单描述的故障影响有多大？」按更细的情形分开问，会比整体问更容易答准吗？」",
+        "replayed": true,
+        "site": {
+          "end": 1115,
+          "start": 1002
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "68d354693f3308ba91209688",
+        "kind": "judge",
+        "note": "「判断题「这段工单描述的故障影响有多大？」需要的参照对象和语境，这段材料里给够了吗？」",
+        "replayed": true,
+        "site": {
+          "end": 1115,
+          "start": 1002
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "2b0a8fe5808a51073e18afa8",
+        "kind": "judge",
+        "note": "「题「这段工单描述的故障影响有多大？」要判得更明确，最缺哪一类信息？」",
+        "replayed": true,
+        "site": {
+          "end": 1115,
+          "start": 1002
+        }
+      },
+      {
+        "cost": 0.0,
         "key": "f53295f75dc45bad2d1fd52b",
         "kind": "judge",
         "note": "「这段工单最可能归哪个组处理？」",
+        "replayed": true,
+        "site": {
+          "end": 1676,
+          "start": 1472
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "fdf9ced09baf546b17f4a1a1",
+        "kind": "judge",
+        "note": "「题「这段工单最可能归哪个组处理？」的前提在这份材料上成立吗？」",
+        "replayed": true,
+        "site": {
+          "end": 1676,
+          "start": 1472
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "38c7dd23a273a472372f6548",
+        "kind": "judge",
+        "note": "「题「这段工单最可能归哪个组处理？」里是否有两个或更多需要分别回答的判断？」",
+        "replayed": true,
+        "site": {
+          "end": 1676,
+          "start": 1472
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "69dc654bfc6f8ec6d943ef93",
+        "kind": "judge",
+        "note": "「把题「这段工单最可能归哪个组处理？」按更细的情形分开问，会比整体问更容易答准吗？」",
+        "replayed": true,
+        "site": {
+          "end": 1676,
+          "start": 1472
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "eccb357bc87d075782717af9",
+        "kind": "judge",
+        "note": "「判断题「这段工单最可能归哪个组处理？」需要的参照对象和语境，这段材料里给够了吗？」",
+        "replayed": true,
+        "site": {
+          "end": 1676,
+          "start": 1472
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "ba69f61241160f02dddb6b0d",
+        "kind": "judge",
+        "note": "「题「这段工单最可能归哪个组处理？」要判得更明确，最缺哪一类信息？」",
         "replayed": true,
         "site": {
           "end": 1676,

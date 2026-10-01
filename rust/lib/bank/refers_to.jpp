@@ -1,0 +1,4 @@
+// 题库条目 refers_to（第二批 C26，归类 · K 个候选 · 语义题式；B36-2：Astra 写材料、Sonnet 标注、Opus 盲复核、Fable 第三读两条）。
+// 条目说明：bank/entries/<form_hash>/条目.md。两序读数（permute: true，B64）；不声明 over_kind（路 B，检查器缺省推为归类）。
+// 用法：judge(state(mat(说话人的一句话), {over: 候选}), fill(refers_to, {kind: 候选的类别}))。
+let refers_to = form("select", "这句话说的是下列哪一个{kind}？", {calib: "cls-refers-to", permute: true});

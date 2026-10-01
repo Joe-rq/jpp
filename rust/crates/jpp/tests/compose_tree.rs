@@ -12,7 +12,7 @@ mod common;
 
 use jpp::effects::{CalibStore, EffectError, FnPort, GenResult, JudgeResult, Ports};
 use jpp::interp::TaintOut;
-use jpp::ledger::Ledger;
+use jpp::ledger::{Entry, Ledger};
 use jpp::value::{Answer, Taint, Value};
 use jpp::{ActionRegistry, EntryArgs, Outcome, Session};
 use serde_json::{Value as Json, json};
@@ -93,6 +93,11 @@ fn 生成端口(outputs: &'static [&'static str]) -> FnPort<'static> {
 
 /// 把程序写进 `target/` 下的临时目录（import 只收相对路径），经装载器装上库再跑
 fn 跑(src: &str, ports: Ports<'_>) -> Result<Outcome, String> {
+    跑_账(src, ports, &mut Ledger::new())
+}
+
+/// 同 [`跑`]，账本由调用方给（看补信息事件用）
+fn 跑_账(src: &str, ports: Ports<'_>, ledger: &mut Ledger) -> Result<Outcome, String> {
     let dir = root().join(format!(
         "target/compose-tree-{}-{}",
         std::process::id(),
@@ -108,7 +113,8 @@ fn 跑(src: &str, ports: Ports<'_>) -> Result<Outcome, String> {
     let calib = 库();
     let acts = ActionRegistry::new();
     Session::new(ports, &calib, &acts)
-        .run(&program, &EntryArgs::default(), &mut Ledger::new())
+        .with_companions(jpp::interp::CompanionMode::Off)
+        .run(&program, &EntryArgs::default(), ledger)
         .map_err(|e| e.render())
 }
 
@@ -570,6 +576,41 @@ fn u_fetch_失败停止补() {
     assert_eq!(calls.borrow().len(), 2, "首判与 select，fetch 失败后不再判");
 }
 
+/// (u′) 复查 2026-09-30 小项 4：fetch 失败的那一轮在账本记 `Enrich{got: false}`，责任不动（不记 Refine），
+/// 节点的未决随 pending 交出，记 Handoff
+#[test]
+fn u2_fetch_失败记一轮取不到() {
+    let calls = RefCell::new(vec![]);
+    let t = 表(&[("Q1", 0.5)]);
+    let ports = Ports::new().with(判断端口(&calls, &t));
+    let src = format!(
+        "{头}{补树}look2(walk(E, mat({{a: \"甲\"}}), 3, {{line: line, enrich: {{rounds: 2, line: {{declare: {{hi: 0.5}}}},
+                              fetch: fn(node, need, m) {{ fail(\"查不到\") }}}}}}))"
+    );
+    let mut l = Ledger::new();
+    跑_账(&src, ports, &mut l).unwrap();
+    let ev: Vec<&Entry> = l.entries.iter().filter(|e| e.is_duty_event()).collect();
+    let 取不到: Vec<&Entry> = ev
+        .iter()
+        .copied()
+        .filter(|e| matches!(e, Entry::Enrich { got: false, .. }))
+        .collect();
+    assert_eq!(取不到.len(), 1, "{ev:?}");
+    assert!(
+        matches!(取不到[0], Entry::Enrich { need, round: 1, .. } if need.starts_with("缺")),
+        "{ev:?}"
+    );
+    assert!(
+        !ev.iter()
+            .any(|e| matches!(e, Entry::Refine { .. } | Entry::Drop { .. })),
+        "{ev:?}"
+    );
+    assert!(
+        ev.iter().any(|e| matches!(e, Entry::Handoff { .. })),
+        "{ev:?}"
+    );
+}
+
 /// (v) 文字材料的缺省 merge：「缺项：取来的」接在末尾
 #[test]
 fn v_文字材料接在末尾() {
@@ -837,6 +878,7 @@ fn 会话跑(src: &str, ports: Ports<'_>, 接受: bool) -> Result<Outcome, Strin
         ..Default::default()
     };
     Session::new(ports, &calib, &acts)
+        .with_companions(jpp::interp::CompanionMode::Off)
         .run(&program, &entry, &mut Ledger::new())
         .map_err(|e| e.render())
 }
@@ -844,7 +886,7 @@ fn 会话跑(src: &str, ports: Ports<'_>, 接受: bool) -> Result<Outcome, Strin
 /// 走完题树后对叶材料再判一道正式线的题，在 act 臂里发不可逆动作
 const 守: &str = r#"let s = sieve(r, test("复核：这份材料可以发出去吗？", "k2"));
 let sent = map(s.value, fn(e) {
-    handle(e.exit, {act: fn() { content(do("发邮件", [], 0)) }, ignore: fn() { "不发" },
+    handle(e.exit, {act: fn() { (do("发邮件", [], 0)) }, ignore: fn() { "不发" },
                     unsure: fn(u) { consume(u, "drop"); "不发" }})
 });
 {sent: sent, pending: s.pending}
@@ -875,7 +917,7 @@ fn l2_声明线路径_宿主接受_照发() {
     let t = 表(&[]);
     let ports = Ports::new().with(判断端口(&calls, &t));
     let o = 会话跑(&format!("{字面树}{守}"), ports, true).unwrap();
-    assert_eq!(值(&o)["sent"], json!(["已发"]));
+    assert_eq!(值(&o)["sent"][0]["content"], json!("已发"));
 }
 
 /// 生成器给出的题树（题面不可信，B58）
@@ -912,7 +954,7 @@ fn l4_不经_walk_照发() {
         "import \"../../lib/compose/tree.jpp\";\nbudget {{calls: 8, cost: 0, depth: 64}};\nlet r = [mat({{a: \"甲\", b: \"乙\"}})];\n{守}"
     );
     let o = 会话跑(&src, ports, false).unwrap();
-    assert_eq!(值(&o)["sent"], json!(["已发"]));
+    assert_eq!(值(&o)["sent"][0]["content"], json!("已发"));
 }
 
 // ---------- (n1)–(n4) 真实生成器的输出：形状规范、词表、parse_tree、add_members（冒烟 3，过程记录六） ----------

@@ -102,10 +102,37 @@ fn a_网络错误用尽重试落缺席_程序照常() {
     )
     .unwrap_or_else(|e| panic!("{}", e.render()));
     assert_eq!(r.value_json(), o.value_json(), "只凭账本重放同值");
-    // 续跑：作者没声明 absent，缺席只是那一趟的事，恢复后重新发问
+    // G5（步 38，裁定五十九第 16 条、六十一主控暂定 (b)）：推翻 PR #48 的「续跑不重发」——缺席不是答案，续跑重发
+    // 这道题（判断器已恢复），出口 act；账本同键一条缺席、一条答案（本条原断言「续跑不重发、与首跑同值」）
     let (o2, 请求2) = 跑判断(0, 网络错(), &mut l);
-    assert_eq!(o2.expect("续跑").value_json(), json!("act"));
-    assert_eq!(请求2, 1);
+    assert_eq!(
+        o2.expect("续跑").value_json(),
+        json!("act"),
+        "续跑重发、得到答案"
+    );
+    assert_eq!(请求2, 1, "续跑重发缺席的题 1 次");
+    let 缺 = l
+        .entries
+        .iter()
+        .filter(|e| matches!(e, jpp::ledger::Entry::Absent { .. }))
+        .count();
+    let 答 = l
+        .entries
+        .iter()
+        .filter(|e| matches!(e, jpp::ledger::Entry::Judge { .. }))
+        .count();
+    assert_eq!((缺, 答), (1, 1), "账本记两次：一次缺席、一次答案");
+    // A-4：续跑账本的审计重放零调用、值与续跑相同
+    l.rebuild_index();
+    let r2 = run_replay(
+        &program,
+        ReplayPorts::ports("jev-1.13.0"),
+        &线(),
+        &ActionRegistry::new(),
+        &mut l,
+    )
+    .unwrap_or_else(|e| panic!("{}", e.render()));
+    assert_eq!(r2.value_json(), json!("act"));
 }
 
 /// (b) 网络类错误只出现一次：重试成功，出口 act，两次都计调用。
@@ -125,6 +152,58 @@ fn c_非网络错误照旧中止() {
     let e = o.expect_err("非网络类错误照旧是运行期错误");
     assert!(e.contains("E-rt-client") && e.contains("HTTP 401"), "{e}");
     assert_eq!(请求, 1);
+}
+
+/// 按序给回复：第 k 次请求取 `seq[k]`，用完后重复最后一个；`n` 数请求次数
+fn 序列跑判断(
+    seq: Vec<Result<Json, EffectError>>,
+    ledger: &mut Ledger,
+) -> (Result<Outcome, String>, u64) {
+    let program = lower(&parse(判断程序).expect("解析")).expect("lower");
+    let n = Arc::new(AtomicU64::new(0));
+    let n2 = n.clone();
+    let mut c = JevPorts::new(JevClient::with_transport("jev-1.13.0", {
+        Box::new(move |_b: &Json| {
+            let k = n2.fetch_add(1, Ordering::SeqCst) as usize;
+            seq[k.min(seq.len() - 1)].clone()
+        })
+    }));
+    let o = run(&program, c.ports(), &线(), &ActionRegistry::new(), ledger).map_err(|e| e.render());
+    (o, n.load(Ordering::SeqCst))
+}
+
+/// (h) 公开 PR #48 Codex 意见（flush.rs:571）：首发网络类错误、重试里遇到 HTTP 400，不再重试、不转缺席，
+/// 报 E-rt-client，报文是 400 那一次的原文；两次请求都计调用。
+#[test]
+fn h_隐式重试遇到非网络错误_报客户端错误() {
+    let mut l = Ledger::new();
+    let (o, 请求) = 序列跑判断(
+        vec![
+            Err(网络错()),
+            Err(EffectError("HTTP 400 Bad Request".into())),
+        ],
+        &mut l,
+    );
+    let e = o.expect_err("非网络类错误不转缺席");
+    assert!(e.contains("E-rt-client") && e.contains("HTTP 400"), "{e}");
+    assert_eq!(请求, 2, "首发 + 一次重试，遇 400 即停，不再重试");
+    assert!(
+        !l.encode().contains("\"Absent\""),
+        "不记缺席账：{}",
+        l.encode()
+    );
+}
+
+/// (i) 同上，重试拿到的回复解析失败（答案形状不对）：同样报 E-rt-client，不转缺席。
+#[test]
+fn i_隐式重试遇到解析失败_报客户端错误() {
+    let mut l = Ledger::new();
+    let (o, 请求) = 序列跑判断(vec![Err(网络错()), Ok(json!({"unexpected": true}))], &mut l);
+    let e = o.expect_err("解析失败不转缺席");
+    assert!(e.contains("E-rt-client"), "{e}");
+    assert!(!e.contains("absent"), "{e}");
+    assert_eq!(请求, 2);
+    assert!(!l.encode().contains("\"Absent\""), "{}", l.encode());
 }
 
 /// (g) 传输层超时标成网络类；4xx 不是。

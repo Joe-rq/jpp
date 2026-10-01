@@ -2,10 +2,10 @@ ir v1
 budget calls=3 cost=0.01 depth=16 escalate=- unsure=- latency_p95=- absent=-
 block 521..1252
   let which_named : -
-    #0 construct form @0 1889..2035
+    #0 construct form @0 1894..2040
       #1 text "select"
       #2 text "这段话里直接写出了下列哪一个{kind}的名字？"
-      #3 record 1968..2034
+      #3 record 1973..2039
         calib:
           #4 text "cls-which-mentioned"
         over_kind:
@@ -121,7 +121,7 @@ block 521..1252
                   #74 field .open
                     #75 name r
 sites 9
-  @0 #0 construct:form 1889..2035 fn=- in=-
+  @0 #0 construct:form 1894..2040 fn=- in=-
   @1 #17 handle 812..1036 fn=#16 in=-
   @2 #18 cut 819..900 fn=#16 in=-
   @3 #19 effect:judge 823..899 fn=#16 in=-

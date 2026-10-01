@@ -1,0 +1,17 @@
+// 只给一句目的（B0472、Z0511）：程序只写「把目的和材料交给 purpose_run」。题面、候选、前提、线都不写，
+// 由语言从目的里抽模块、补模块、查题库、唤出题、组装，对每一项问同一批题，目的的每个子请求成每项记录里的一个字段。
+// 目的与材料来自命令行，见 purpose-only.args：
+//   cargo run --locked -p jpp -- run examples/purpose-only.jpp --purpose "<一句目的>" \
+//     --mat vendors=examples/purpose-only/vendors.json --mat need=examples/purpose-only/need.md \
+//     --backend live --model jev-1.13.0 --profile profiles/jev-1.13.0.json --confirm \
+//     --gen-model sonnet --gen-profile profiles/gen-claude-p.json --cache .jpp-cache
+// 这份示例只验证到 jpp check；真机会花钱，没有为它录固定观察，也没有金样。
+// A program given only a purpose: the source hands the purpose and the material to purpose_run and writes no question
+// text, candidate list, premise or line. Purpose and material come from the command line (see purpose-only.args).
+// Verified with jpp check only; the live backend costs money and no fixture or golden is recorded for it.
+import "../lib/derive/purpose.jpp";
+budget {calls: 2000, cost: 0.5, depth: 100000};
+
+let items = map(content(vendors).items, fn(x) { {on: mat(x), ref: need} });
+let r = purpose_run(purpose, items, {});
+{value: r.value, pending: r.pending, detail: r.detail}

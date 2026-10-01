@@ -1,0 +1,239 @@
+// 连环题骨架（B0469；B43「何时再问一层」由 derive 承担的那一半）：每跳判当前这批题，对每个出口查一次
+// derive_next，派生出的题过验题闸门，过了的成为下一跳。作者只写第一道题、材料与跳数上限，不写 S，
+// 也没有事先生成的题树（与 lib/compose/tree.jpp 并存：那是「事先生成整棵树」的写法）。
+//
+// chain(items, first, hops, opts) -> 契约值
+//   items  条目列表，每个 {on: 材料, ref?: 材料}
+//   first  fn(item) -> {q?: 题, form?: 题式, over?: [文字], cands?: [选项], line?: cut 选项}
+//          给 form 时题式上 on 的签名（裁定十九、B192）决定是非题判出后接着问什么；只给 form 时库按零槽题式填出题
+//   hops   跳数上限，loop 的 bound；写字面量或顶层 let 常量（J-06 在调用点核）
+//   opts   {calib?: 派生题式的标签前缀（缺省 "derive"；每个派生题式的标签是「前缀:form_hash」）,
+//           elicit?: true（确定性派生长不出题时唤出）| "always"（总唤出，两路同批过闸门；只作调试开关，不作程序口径：
+//                    已决出口也会唤出，到跳数上限时可能一个叶都没有，Z0515/Z0535）, 缺省不唤出, elicit_n?: Int,
+//           known?: fn(候选) -> [{on: 材料, ref?: 材料, expect: "act" | "ignore" | 档下标}]（闸门的已知答案验题）,
+//           known_gate?: {gap?, safety?, tolerance?}（已知答案验题的门槛，缺省按 04-v0 §5.4）,
+//           width?: Int（同一来源取前几个，缺省全取）, judge_diag?: Bool（闸门第③段，缺省真）,
+//           near?: {declare: {hi, lo?}}（作者自己定「已判出但离边界近」的线：同一读数再切一次作探测；不给时按出口上的
+//                  near_boundary 位——无线是非题读数落在画像中段 δ 带内，Z0497——决定已决出口要不要再派生，
+//                  探测出口按 drop 记账，原出口照判断器的回答走，主控答复 Q1。是非题与程度题直接可用；
+//                  K 选一的声明线要求测过置换，题上没带 {permute: true} 时探测出 unsure(untested)，不算落进带里）}
+// 每跳：全部条目的题在不含 if 的 map 里登记（同一次刷新，同一状态的题合成一次调用）→ 逐个 cut →
+// 逐个 derive_next → 一次过闸门 → 下一跳。
+// 未决的去向（J-05）：派生出的题过了闸门，来源的未决按 "branch"（细化去向）消费；前提反面例外，来源的
+// insufficient 等前提题判完再消费（ignore → 「前提不成立」、branch；act → 随返回值转交，交给「问缺什么」）；
+// 派生不出或全被闸门拒掉的未决（前提题除外）先走 J-05 默认链（unsure_default，Z0514：问缺哪类 → 取 → 同线再判）：
+// 再判成已决的直接成叶（元素带 unsure_default: true；不在同一跳接着派生，已知限制）；默认链放弃的不转交，记进
+// detail.dropped；转交或缺席类随值走的、以及默认链不接的（原因不可补、开了 --guard）随返回值转交（pending，via "derive#<跳>"）。
+// 返回（B17 契约值）：
+//   value    每条链一个元素 {item, path: [{q, exit, by, also?, merged_into?}], exit, by, refined?, conclusion?,
+//            also?, merged_into?}：
+//            细化的子题合成为一个元素（refined：程度类取从低往上连续判 act 的最高档，K 选一取判 act 的候选），
+//            exit 是被细化的那道题的原出口（不改判）；前提被判不成立时 conclusion 为「前提不成立」。
+//            去重（Z0517）：also = 被并进这个节点的候选的来路 [{parent, q, by}]；merged_into = 这个节点派生出的题
+//            并进了哪些节点（节点 id）。两者写在元素上，也写在路径条目上，子孙叶子看得到。派生的题全部并进
+//            别处、自己没有子题过闸门的节点也留一个元素（带 merged_into）。
+//            因离边界近（作者的 near 或画像边界带 near_boundary）而派生的已决节点也留一个元素（Z0497）：
+//            near: true，refined: 问到并直接成叶的子题 [{q, exit}]，unasked: 到跳数上限没问到的子题节点 id；
+//            默认链再判成已决的节点 unsure_default: true，exit 与路径末条目是再判后的出口（Z0514）
+//   pending  转交的未决
+//   evidence 全部判断的账本键（含闸门第③段）
+//   detail   {version: 守则版本, hops: 走过的跳数, per_hop: [{hop, asked, derived, rejected, unchosen, passed}],
+//             rejected: [{id, q, by, stage, codes}], unchosen, unasked: 到上限还没问的题,
+//             merged: [{id, parent, by, q, into: 节点 id}], dropped: 默认链放弃的 [{id, q, exit}]（Z0514）}
+import "../outcome.jpp";
+import "../compose/carry.jpp";
+import "rules.jpp";
+import "node.jpp";
+import "next.jpp";
+import "gate.jpp";
+
+fn derive_cut(n, r) -> Exit { if has(n, "line") { cut(r, n.line) } else { cut(r) } }
+
+fn derive_path(n) { if has(n, "path") { n.path } else { [] } }
+
+// 路径条目（Z0517 复核返修）：节点被别的候选并入过时带 also（那些候选的父节点），它的子孙叶子的 path 里都看得到
+fn derive_entry(n, e) {
+    let base = {q: n.q.text, exit: e, by: n.by};
+    if has(n, "also") { with(base, "also", n.also) } else { base }
+}
+
+fn chain(items, first, hops, opts) -> Record<Exit> {
+    let R = derive_rules();
+    let front0 = map(derive_idx(items), fn(i) {
+        let f = first(items[i]);
+        // first 给题式（{form}）时由这里填出题（零槽题式；带槽的作者自己给 q 并同时给 form）
+        let q = if has(f, "q") { f.q } else { fill(f.form, {}) };
+        derive_node("x" + text(i), items[i], q, f)
+    });
+    let step = fn(s, h) {
+        if len(s.front) == 0 { stop(s) } else {
+            // Z0542：上一跳欠下的细化——子题这一跳就问，父节点的未决此时才按细化去向消费
+            let paid = fold(s.owed, 0, fn(acc, o) { consume(o.e, "branch"); acc + 1 });
+            let front = s.front;
+            let rs = map(front, fn(n) { judge(n.st, n.q) });
+            let es = map(derive_idx(front), fn(k) { derive_cut(front[k], rs[k]) });
+            // near：已判出的出口在同一读数上再切一次作探测；落进带里就同样派生细化题（原出口不动）
+            let near_of = fn(k) {
+                let lab = exit_kind(es[k]);
+                if starts_with(lab, "unsure") { false }
+                // 作者没给 near：读出口上的边界带位（Z0497，带宽只取画像 delta.<phys>.mid，与默认链同一个带）
+                else if !has(opts, "near") { near_boundary(es[k]) } else {
+                    let p = cut(rs[k], opts.near);
+                    let hit = starts_with(exit_kind(p), "unsure(band");
+                    consume(p, "drop");
+                    hit
+                }
+            };
+            let kids = map(derive_idx(front), fn(k) {
+                let base = derive_next(front[k], es[k], opts);
+                let more0 = if len(base) == 0 && near_of(k) {
+                    let det = derive_refine(front[k], es[k], opts);
+                    if len(det) == 0 && derive_elicit_on(opts) { derive_elicit(front[k], es[k], exit_kind(es[k]), opts) } else { det }
+                } else { [] };
+                // 因「离边界近」派生的子题做个记号：父节点是已决的，要自己留在 value（Z0497 复核返修）
+                let more = map(more0, fn(c) { with(c, "via_near", true) });
+                map(concat(base, more), fn(c) {
+                    with(c, "path", append(derive_path(front[k]), derive_entry(front[k], es[k])))
+                })
+            });
+            let all = fold(kids, [], fn(acc, x) { concat(acc, x) });
+            // 去重与诊断记忆跨跳带着走（Z0517）：判断键在同一个 loop 里重复会被 J-06 停下整条 chain
+            let gm = derive_gate_memo(all, opts, s.memo);
+            let g = gm.gate;
+            // 被并入的候选对父节点也算派生过了闸门：并入已问节点的，或并入本跳过了闸门的
+            let pass_ids = map(g.pass, fn(c) { c.id });
+            let merged_ok = filter(gm.merged, fn(m) { m.asked || contains(pass_ids, m.into) });
+            // 一个节点派生出的候选并进了哪些节点（节点 id）：写进它的路径条目，读者能从输出追到来路
+            let merged_into = fn(id) { map(filter(merged_ok, fn(m) { m.parent == id }), fn(m) { m.into }) };
+            let mark = fn(entry, id) { let ids = merged_into(id); if len(ids) == 0 { entry } else { with(entry, "merged_into", ids) } };
+            let front_q = fn(id) { let f = filter(front, fn(n) { n.id == id }); if len(f) == 0 { "" } else { f[0].q.text } };
+            let pass2 = map(g.pass, fn(c0) {
+                // 父节点那一条路径条目补上它的并入去向
+                let p = derive_path(c0);
+                let c = if len(p) == 0 { c0 } else {
+                    with(c0, "path", append(slice(p, 0, len(p) - 1), mark(p[len(p) - 1], c0.parent)))
+                };
+                let also = filter(merged_ok, fn(m) { m.into == c.id });
+                if len(also) == 0 { c } else {
+                    with(c, "also", map(also, fn(m) { {parent: m.parent, q: front_q(m.parent), by: m.by} }))
+                }
+            });
+            // 逐节点收尾：派生过闸门的转下一跳；没有的成叶或未决
+            let fin = fold(derive_idx(front), {leaves: s.leaves, pending: s.pending, owed: [], dropped: s.dropped, extra: []}, fn(acc, k) {
+                let n = front[k];
+                let e = es[k];
+                let lab = exit_kind(e);
+                let passed = concat(filter(g.pass, fn(c) { c.parent == n.id }),
+                                    filter(merged_ok, fn(m) { m.parent == n.id }));
+                let self_entry = mark(derive_entry(n, e), n.id);
+                // 前提题判完：处理它的来源（那个 insufficient）
+                let acc2 = if n.by == "premise" {
+                    if lab == "ignore" { consume(n.src, "branch"); acc }
+                    else { with(acc, "pending", carry(acc.pending, [element(n.item.on, n.src, {pos: h, q: n.q})], "derive#" + text(h) + ":premise")) }
+                } else { acc };
+                if len(passed) > 0 {
+                    // 前提反面的来源等前提题判完再消费；其余未决按细化去向消费。Z0542：子题下一跳才问，消费推迟到
+                    // 那时（记进 owed）；到跳数上限没问到就随返回值转交，不静默销账。只并进已问节点的当场消费
+                    let 下跳问 = len(filter(g.pass, fn(c) { c.parent == n.id })) > 0
+                        || len(filter(merged_ok, fn(m) { m.parent == n.id && contains(pass_ids, m.into) })) > 0;
+                    let acc2 = if starts_with(lab, "unsure") && !(len(filter(passed, fn(c) { c.by == "premise" })) == len(passed)) {
+                        if 下跳问 { with(acc2, "owed", append(acc2.owed, {e: e, item: n.item.on, q: n.q, h: h})) }
+                        else { consume(e, "branch"); acc2 }
+                    } else { acc2 };
+                    // 因离边界近而派生的已决节点：自己留一个元素（出口照判断器的回答），子题作它的细化，
+                    // 没问到的在收尾时记 unasked（Z0497 复核返修 (a)）
+                    let near_kids = filter(g.pass, fn(c) { c.parent == n.id && has(c, "via_near") });
+                    if !starts_with(lab, "unsure") && len(near_kids) > 0 {
+                        with(acc2, "leaves", append(acc2.leaves, {id: n.id, parent: n.parent, item: n.item.on, by: n.by,
+                                                                  exit: e, path: append(derive_path(n), self_entry),
+                                                                  meta: if has(n, "meta") { n.meta } else { {} },
+                                                                  near: true, children: map(near_kids, fn(c) { c.id })}))
+                    }
+                    // 派生出的题全部并进了别的节点、自己没有子题过闸门：在 value 里留一个元素写明并进了哪里
+                    else if len(filter(g.pass, fn(c) { c.parent == n.id })) == 0 {
+                        with(acc2, "leaves", append(acc2.leaves, {id: n.id, parent: n.parent, item: n.item.on, by: n.by,
+                                                                  exit: e, path: append(derive_path(n), self_entry),
+                                                                  meta: if has(n, "meta") { n.meta } else { {} },
+                                                                  merged_into: merged_into(n.id)}))
+                    } else { acc2 }
+                } else {
+                    if starts_with(lab, "unsure") && n.by != "premise" {
+                        // 先走默认链（Z0514）：与 handle 缺 unsure 臂同一份实现与记账
+                        let d = unsure_default(e);
+                        let f = d.exit;
+                        let acc3 = if key_of(f) != key_of(e) { with(acc2, "extra", append(acc2.extra, key_of(f))) } else { acc2 };
+                        if d.end == "decided" {
+                            let leaf = {id: n.id, parent: n.parent, item: n.item.on, by: n.by,
+                                        exit: f, path: append(derive_path(n), mark(derive_entry(n, f), n.id)),
+                                        meta: if has(n, "meta") { n.meta } else { {} }, unsure_default: true};
+                            with(acc3, "leaves", append(acc3.leaves, if has(n, "also") { with(leaf, "also", n.also) } else { leaf }))
+                        } else if d.end == "drop" {
+                            with(acc3, "dropped", append(acc3.dropped, {id: n.id, q: n.q.text, exit: exit_kind(f)}))
+                        } else {
+                            with(acc3, "pending", carry(acc3.pending, [element(n.item.on, f, {pos: h, q: n.q})], "derive#" + text(h)))
+                        }
+                    } else {
+                        let leaf = {id: n.id, parent: n.parent, item: n.item.on, by: n.by,
+                                    exit: e, path: append(derive_path(n), self_entry),
+                                    meta: if has(n, "meta") { n.meta } else { {} }};
+                        with(acc2, "leaves", append(acc2.leaves, if has(n, "also") { with(leaf, "also", n.also) } else { leaf }))
+                    }
+                }
+            });
+            let next = {front: pass2, leaves: fin.leaves, pending: concat(fin.pending, g.pending), owed: fin.owed, dropped: fin.dropped,
+                        memo: gm.memo, merged: concat(s.merged, gm.merged),
+                        evidence: concat(concat(concat(s.evidence, map(rs, fn(r) { key_of(r) })), g.evidence), fin.extra),
+                        rejected: concat(s.rejected, g.rejected), unchosen: concat(s.unchosen, g.unchosen),
+                        hops: h + 1,
+                        per_hop: append(s.per_hop, {hop: h + 1, asked: len(front), derived: len(all),
+                                                     rejected: len(g.rejected), unchosen: len(g.unchosen),
+                                                     passed: len(g.pass)})};
+            if len(next.front) == 0 { stop(next) } else { next }
+        }
+    };
+    let memo0 = with(derive_memo0(), "asked", map(front0, fn(n) { {key: derive_key(n), id: n.id} }));
+    let r = loop(hops, {front: front0, leaves: [], pending: [], dropped: [], evidence: [], rejected: [], unchosen: [],
+                        hops: 0, per_hop: [], memo: memo0, merged: [], owed: []}, step);
+    // Z0542：到跳数上限，末跳过了闸门的子题没被问，父节点的未决随返回值转交（不按 branch 销账）
+    let pending_all = if len(r.owed) == 0 { r.pending } else {
+        carry(r.pending, map(r.owed, fn(o) { element(o.item, o.e, {pos: o.h, q: o.q}) }), "derive#" + text(r.owed[0].h) + ":unasked")
+    };
+    // 合成：细化的子题按来源合成一个元素，其余叶各一个元素
+    let refined_parents = fold(filter(r.leaves, fn(l) { l.by == "refine" && !has(l, "near") }), [], fn(acc, l) {
+        if contains(acc, l.parent) { acc } else { append(acc, l.parent) }
+    });
+    let unasked_ids = map(r.front, fn(n) { n.id });
+    // 按带派生的已决节点，若它的细化子题问到了、已由下面的细化合成带出（出口就是它的原出口），就不再另留一个元素
+    let plain = map(filter(r.leaves, fn(l) { if has(l, "near") { !contains(refined_parents, l.id) } else { l.by != "refine" } }), fn(l) {
+        let base000 = {item: l.item, path: l.path, exit: l.exit, by: l.by};
+        let base00 = if has(l, "unsure_default") { with(base000, "unsure_default", true) } else { base000 };
+        // 按带派生的已决节点：子题问到并直接成叶的挂作细化，没问到的记 unasked
+        let base0 = if has(l, "near") {
+            let kids = filter(r.leaves, fn(x) { x.parent == l.id });
+            with(with(with(base00, "near", true), "refined", map(kids, fn(x) { {q: x.path[len(x.path) - 1].q, exit: exit_kind(x.exit)} })),
+                 "unasked", filter(l.children, fn(id) { contains(unasked_ids, id) }))
+        } else { base00 };
+        let base1 = if has(l, "also") { with(base0, "also", l.also) } else { base0 };
+        let base = if has(l, "merged_into") { with(base1, "merged_into", l.merged_into) } else { base1 };
+        if l.by == "premise" && exit_kind(l.exit) == "ignore" { with(base, "conclusion", R.premise_failed) } else { base }
+    });
+    let merged = map(refined_parents, fn(p) {
+        // 只合成细化子题（同一父节点下也可能有唤出或并入留下的元素，它们各自成元素，Z0517 复核返修）
+        let ls = filter(r.leaves, fn(l) { l.parent == p && l.by == "refine" && !has(l, "near") });
+        let head = ls[0];
+        let src = head.path[len(head.path) - 2];
+        let refined = if head.meta.kind == "degree" {
+            let acts = fold(range(1, len(head.meta.bins)), {n: 0, open: true}, fn(acc, j) {
+                let hit = filter(ls, fn(l) { l.meta.j == j && exit_kind(l.exit) == "act" });
+                if acc.open && len(hit) > 0 { {n: acc.n + 1, open: true} } else { {n: acc.n, open: false} }
+            });
+            head.meta.bins[acts.n]
+        } else { map(filter(ls, fn(l) { exit_kind(l.exit) == "act" }), fn(l) { l.meta.cand }) };
+        {item: head.item, path: slice(head.path, 0, len(head.path) - 1), exit: src.exit, by: "refine", refined: refined}
+    });
+    outcome({value: concat(plain, merged), pending: pending_all, evidence: r.evidence,
+             detail: {version: R.version, hops: r.hops, per_hop: r.per_hop, rejected: r.rejected,
+                      unchosen: r.unchosen, unasked: map(r.front, fn(n) { {id: n.id, q: n.q.text, by: n.by} }),
+                      merged: map(r.merged, fn(m) { {id: m.id, parent: m.parent, by: m.by, q: m.q, into: m.into} }),
+                      dropped: r.dropped}})
+}

@@ -156,12 +156,30 @@ fn 审计重放在同一站点停发() {
     let mut l = Ledger::new();
     let c1 = Cell::new(0);
     let o1 = 跑(三题, &mut l, &c1);
-    let n_absent = l
+    // G4（步 37，预注册 D-7）：从未发出的题记「未问」（原先记 `Absent(budget)`），第一次停发记一条「停下」
+    let n_unasked = l
         .entries
         .iter()
-        .filter(|e| matches!(e, Entry::Absent { cause, .. } if cause == "budget"))
+        .filter(|e| {
+            matches!(e, Entry::Unasked { reason, .. } if *reason == jpp::ledger::StopCause::Budget)
+        })
         .count();
-    assert_eq!(n_absent, 2, "停发的两个站点记缺席账，首因 budget");
+    assert_eq!(n_unasked, 2, "停发的两个站点记未问，原因 budget");
+    assert!(
+        !l.entries
+            .iter()
+            .any(|e| matches!(e, Entry::Absent { cause, .. } if cause == "budget")),
+        "不再记 Absent(budget)"
+    );
+    let n_stop = l
+        .entries
+        .iter()
+        .filter(
+            |e| matches!(e, Entry::Stop { cause, .. } if *cause == jpp::ledger::StopCause::Budget),
+        )
+        .count();
+    assert_eq!(n_stop, 1, "第一次停发记一条停下");
+    let n0 = l.entries.len();
     let c2 = Cell::new(0);
     let o2 = run_replay(
         &程序(三题),
@@ -174,6 +192,7 @@ fn 审计重放在同一站点停发() {
     assert_eq!(c2.get(), 0, "重放不发");
     assert_eq!(o2.value_json(), o1.value_json());
     assert_eq!(o2.budget.as_ref().map(|b| b.unsent), Some(2));
+    assert_eq!(l.entries.len(), n0, "审计重放不重复写未问与停下");
 }
 
 #[test]

@@ -1,0 +1,28 @@
+{
+ "description": "outcome-dropped.jpp 的固定观察（合成，只验路由）：第二段读数 0.5 是真并列；程序没声明取材料来源，默认链无从补。--guard 下这份未决没人接，运行期 J-05。",
+ "calibrations": [],
+ "observations": [
+  {
+   "on": [
+    "这款耳机售价三百九十九元。"
+   ],
+   "op": "test",
+   "text": "这段话给出了具体价格吗？",
+   "calib": "price",
+   "answer": {
+    "Noul": 0.95
+   }
+  },
+  {
+   "on": [
+    "价格还没公布。"
+   ],
+   "op": "test",
+   "text": "这段话给出了具体价格吗？",
+   "calib": "price",
+   "answer": {
+    "Noul": 0.5
+   }
+  }
+ ]
+}

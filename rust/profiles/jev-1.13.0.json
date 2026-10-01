@@ -1,5 +1,6 @@
 {
   "model_version": "jev-1.13.0",
+  "profile_revision": 2,
   "date": "2026-09-20",
   "sources": [
     "E1",
@@ -151,6 +152,23 @@
         "p95": 0.0305,
         "p99": 0.0461,
         "max": 0.07
+      },
+      "mid": {
+        "band": [
+          0.2,
+          0.8
+        ],
+        "immediate": {
+          "items": 52,
+          "n": 520,
+          "runs": 5,
+          "p95": 0.06,
+          "p99": 0.1281,
+          "max": 0.28
+        },
+        "source": "Z0334（地基/实测/δ分层-2026-09-30/，预注册 7d1bca0f9，结果 fc3fe68d2）",
+        "date": "2026-09-30",
+        "note": "是非题两个题族分别测：题库语义题 52 条 p99 0.1281、题式校准字面 / 话题相关题 55 条 p99 0.09（两族合并 107 条 0.1062）；按预注册事先规则取较大的一族（不利侧，B39）。这个 0.1281 主要由一条材料（C10 h0af5eca9bd，五趟 0.21–0.49）决定，去掉它是 0.0791；为什么摆待查（δ分层板 X26-0003），下一版测量是否剔除由那时的预注册定。"
       }
     },
     "choice_prob_chosen": {
@@ -165,6 +183,23 @@
         "p95": 0.05,
         "p99": 0.0866,
         "max": 0.11
+      },
+      "mid": {
+        "band": [
+          0.2,
+          0.8
+        ],
+        "immediate": {
+          "items": 13,
+          "n": 130,
+          "runs": 5,
+          "p95": 0.08,
+          "p99": 0.0971,
+          "max": 0.12
+        },
+        "source": "Z0334（地基/实测/δ分层-2026-09-30/，预注册 7d1bca0f9，结果 fc3fe68d2）",
+        "date": "2026-09-30",
+        "note": "K 选一被选项概率，不开 permute（与 E1 同口径，单次调用）。只有 13 条，p99 不稳。"
       }
     },
     "choice_confidence": {
@@ -193,8 +228,26 @@
         "p95": 0.071,
         "p99": 0.0862,
         "max": 0.09
+      },
+      "mid": {
+        "band": [
+          0.2,
+          0.8
+        ],
+        "immediate": {
+          "items": 18,
+          "n": 180,
+          "runs": 5,
+          "p95": 0.06,
+          "p99": 0.0821,
+          "max": 0.1
+        },
+        "source": "Z0334（地基/实测/δ分层-2026-09-30/，预注册 7d1bca0f9，结果 fc3fe68d2）",
+        "date": "2026-09-30",
+        "note": "打分题被选档的概率（cut 比线用的就是它，jpp-value bridge decide 的 Score 分支）。与本节 immediate / after_gap（E1 记的是判断器返回的标量 score 之差）口径不同，所以这里 0.0821 小于 E1 的 0.1141 不说明中段抖得少；同场同口径的尾段是 0.06。"
       }
-    }
+    },
+    "note": "读数段（裁定四十四、四十五）：各题型的 immediate / after_gap 是 tail 段（E1，材料以满信心读数为主）；mid 是中段（读数 5 趟均值在 [0.2, 0.8]）。语言的 cut 兜底、认证导入、两端先标一律取 mid；缺 mid 的画像报错，重测后才能用于 cut 与认证。测法：δ 的材料读数必须覆盖中段，同题同状态背靠背重跑 ≥ 5 趟，两两差绝对值取 p99；只用满信心材料测的 δ 不作数。"
   },
   "flip_rate": {
     "choice_argmax_rerun": {
@@ -561,7 +614,7 @@
     "choice",
     "score"
   ],
-  "notes": "值为「未测」的字段带 by= 指向该由 run.py 的哪一项测；上界/下界见各 bound 字段。",
+  "notes": "值为「未测」的字段带 by= 指向该由 run.py 的哪一项测；上界/下界见各 bound 字段。 画像版本 profile_revision 2（2026-09-30）：delta 各题型加 mid 段，见 delta.note。",
   "field_stats": {
     "filled": 277,
     "untested": 5
@@ -587,7 +640,7 @@
   },
   "provenance": {
     "generated_from": "地基/foundation/profile/profiles/jev-1.13.0.json",
-    "source_profile_hash": "ea01589429412ed0",
+    "source_profile_hash": "e1a83f986488d581",
     "measurements": [
       "E1",
       "E2",

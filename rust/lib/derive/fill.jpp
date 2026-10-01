@@ -1,0 +1,75 @@
+// 先选后填（B45 确定性派生第一种；裁定十九把它用到是非题的已决块）。
+//
+// 触发：select 判出 pick(k) 而候选 k 带签名；填空题判出 pick(k)；是非题判出 act / ignore 而该块挂了签名。
+// 产出：签名里每个没填的参数出一道 K 选一「这个空填哪一项」，候选值取签名声明的可选值；全部填完且签名带题式时，
+// fill(题式, 填法) 出完整的下一道题。选中的候选自己带签名时，接着按它的签名填（签名可以嵌套）。
+// 探问蕴涵：原题的答案加上新题的任一直接答案，确定候选的一个完整实例，新题的每个答案都收窄它（过程记录 §1.2）。
+// 签名写在题式上（form(…, {on: {act?, ignore?}})，裁定十九、B192）；节点带着造它的题式（n.form）。
+// 可选值不足两项的参数：确定性派生出不了题，返回一个「要唤出」记号 {want: 槽名}，由 next.jpp 按 opts.elicit 决定是否唤出
+// （过程记录 §1.4 的第二种唤出触发）。
+import "rules.jpp";
+import "node.jpp";
+
+// 填空题的题面：已填的槽写进去，正在填的槽写成「___」，还没填的槽写成「（槽名）」（模板里不留花括号）
+fn derive_fill_body(f, filled, slot) {
+    let t1 = fold(keys(filled), f.template, fn(t, k) { replace(t, "{" + k + "}", text(filled[k])) });
+    let t2 = replace(t1, "{" + slot + "}", "___");
+    fold(f.slots, t2, fn(t, k) { replace(t, "{" + k + "}", "（" + k + "）") })
+}
+
+// 从签名的第 idx 个参数起往下填；lead 是没有题式时题面的起头
+fn derive_fill_step(n, e, sig, idx, filled, lead, opts) {
+    let R = derive_rules();
+    if idx >= len(sig.params) {
+        if !has(sig, "form") { [] } else {
+            let q = fill(sig.form, filled, {from: e});
+            let extra0 = {by: "fill", form: sig.form};
+            let extra1 = if has(sig, "line") { with(extra0, "line", sig.line) } else { extra0 };
+            [derive_child(n, e, 0, q, extra1)]
+        }
+    } else {
+        let p = sig.params[idx];
+        let names = map(p.choices, fn(c) { derive_choice_name(c) });
+        if len(names) < 2 { [{want: p.slot}] } else {
+            let body = if has(sig, "form") { R.fill_text(derive_fill_body(sig.form, filled, p.slot), p.slot) }
+                       else { R.pick_text(lead, p.slot) };
+            if !derive_bracefree(body) { [] } else {
+                let q = fill(derive_form("select", body, {lacks: R.lacks.fill}, opts), {}, {from: e});
+                [derive_child(n, e, 0, q, {by: "fill", over: names, cands: p.choices,
+                                            fillctx: {sig: sig, idx: idx, filled: filled}})]
+            }
+        }
+    }
+}
+
+// 是非题的已决块在题式上挂了签名：从这个签名起填（裁定十九）
+fn derive_fill_block(n, e, block, opts) {
+    let R = derive_rules();
+    let on = if has(n, "form") { n.form.on } else { unit };
+    if on == unit { [] } else {
+        if !has(on, block) { [] }
+        else { derive_fill_step(n, e, on[block], 0, {}, R.lead_block(n.q.text, block), opts) }
+    }
+}
+
+// select 判出 pick(k)：填空题接着填；普通 select 的候选 k 带签名就从它起填
+fn derive_fill_pick(n, e, k, opts) {
+    let R = derive_rules();
+    if has(n, "fillctx") {
+        let ctx = n.fillctx;
+        let c = n.cands[k];
+        if starts_with(to_json(c), "{") && has(c, "sig") {
+            derive_fill_step(n, e, c.sig, 0, {}, R.lead_pick(c.name), opts)
+        } else {
+            let slot = ctx.sig.params[ctx.idx].slot;
+            derive_fill_step(n, e, ctx.sig, ctx.idx + 1, with(ctx.filled, slot, derive_choice_name(c)),
+                             R.lead_pick(derive_choice_name(c)), opts)
+        }
+    } else {
+        if !has(n, "cands") { [] } else {
+            let c = n.cands[k];
+            if starts_with(to_json(c), "{") && has(c, "sig") { derive_fill_step(n, e, c.sig, 0, {}, R.lead_pick(c.name), opts) }
+            else { [] }
+        }
+    }
+}

@@ -1,0 +1,28 @@
+// 伴随题（B0492 S5；J-05 默认去向草案第三稿 (0a)；意图汇编 30：「拿不准本身是个信息……并行问逻辑完备的所有其他问题」）。
+//
+// 一道题还没有可信记录时（第一版的判据：题级与题式级都没有「上岗」记录），语言在发这道题的同一刷新时刻、对同一份材料
+// 并行问一组伴随题：改题只能改题的某个模块，所以按模块问，方向的全集就是模块的全集。
+//   前提       题的前提在这份材料上成立吗
+//   材料       最缺哪一类信息（K 选一：候选是这道题的四级候选类别，另加「材料不缺」；裁定五十一）
+//   谓词       题里是不是藏了两个判断（复用 lib/diag.jpp 的谓词与校准键 diag-two-judgments）
+//   切法       按更细的情形分开问，会不会更容易答准
+//   参照与语境 相对什么来判、语境够不够
+// 题面以原题题面作填法 {q}，状态与原题相同（「材料」那道只换 over 槽），刷新按材料分组，所以能与原题并进一次请求（发法见 CLI --companions）；校准挂在题式上，
+// 跨填法有效（核心讨论结论 R2-3）。lib/diag.jpp 原来那两道（把被诊断的题放进状态）保留不动，诊断闸门还在用。
+//
+// 读数不参与原题的出口，只作两个用处：原题拿不准时直接指出默认链走哪一路（题不清 / 缺信息去补 / 两可）；
+// 不论原题结果如何，都进报告的 improve 段（「这道题怎样能更拿得准」）。
+// 用法：import 本文件后，运行时默认用 unsure_companions；unsure_source({need, fetch, companions: […]}) 可以换成自己的题式。
+
+let unsure_companion_premise = form("test", "题「{q}」的前提在这份材料上成立吗？", {calib: "unsure-companion-premise"});
+let unsure_companion_material = form("select", "题「{q}」要判得更明确，最缺哪一类信息？", {calib: "unsure-companion-material"});
+let unsure_companion_predicate = form("test", "题「{q}」里是否有两个或更多需要分别回答的判断？", {calib: "diag-two-judgments"});
+let unsure_companion_cut = form("test", "把题「{q}」按更细的情形分开问，会比整体问更容易答准吗？", {calib: "unsure-companion-cut"});
+let unsure_companion_reference = form("test", "判断题「{q}」需要的参照对象和语境，这段材料里给够了吗？", {calib: "unsure-companion-reference"});
+
+// 通用类别表（裁定五十一）：题没有 lacks、作者也没写 unsure_source 的 need 时，默认链的候选取它。
+// 程序顶层自己定义了文本列表 unsure_lacks 就用程序的
+let unsure_lacks = ["材料", "语境", "参照"];
+
+let unsure_companions = [unsure_companion_premise, unsure_companion_material, unsure_companion_predicate,
+                         unsure_companion_cut, unsure_companion_reference];

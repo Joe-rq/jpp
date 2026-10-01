@@ -1,0 +1,68 @@
+// 唤出（B0468，B5 的「唤出 → 候选池」两步；B45 的后备路）。
+//
+// 确定性派生长不出题时（属性 / 关系类的细化、没声明前提的 insufficient、没有可选值的参数），由生成器按
+// rules.jpp 的同一套守则出候选。提示词是带版本的字面量材料，随 lib_version 进账本头。
+// 生成器的产物是材料，题面带不可信 taint（B58），读数与出口随之不可信——这是现行 taint 规则，不是新加的限制。
+// 每个候选写成 JSON 对象 {op: "test" | "select" | "measure", text, over?（select）, scale?（measure，至少两档）, presupposition?, evidence?, request?}；解析不了、缺字段、
+// 题面带花括号、请求不是缺省的记为坏候选（码 parse / braces / request-unsupported），闸门在第⓪段拒掉。
+// 每道唤出题是零槽题式（derive_form），带题式身份；前提、证据槽、请求写进题式，前提反面由此接得上。
+import "rules.jpp";
+import "node.jpp";
+
+fn derive_spec(raw) {
+    let c = content(raw);
+    if starts_with(to_json(c), "{") { c }
+    else {
+        let found = regex_find(text(c), "(?s)\\{.*\\}");
+        if len(found) == 0 { fail("不是 JSON 对象") } else { parse_json(found[0]) }
+    }
+}
+
+// 候选的毛病：空文本 = 可用；否则是坏候选的码（闸门第⓪段按它拒）
+fn derive_spec_bad(s) {
+    if is_fail(s) || !has(s, "op") || !has(s, "text") { "parse" }
+    else if !(s.op == "test" || (s.op == "select" && has(s, "over") && starts_with(to_json(s.over), "["))
+              || (s.op == "measure" && has(s, "scale") && starts_with(to_json(s.scale), "[") && len(s.scale) >= 2)) { "parse" }
+    else if !derive_bracefree(s.text) { "braces" }
+    else if has(s, "request") && !(to_json(s.request) == to_json(if s.op == "test" { "whether" } else if s.op == "select" { "one" } else { "degree" })) {
+        // 本版内核只支持缺省请求（是非题 whether、K 选一 one、程度题 degree），别的请求造不成题，在这里拒，不让它到 form 才报错
+        // （臂 3 空跑 3.1：measure 带 "one" 曾一路进 form、整个程序中止）
+        "request-unsupported"
+    }
+    else if has(s, "evidence") && !starts_with(to_json(s.evidence), "[") { "parse" }
+    else if has(s, "presupposition") && !starts_with(to_json(s.presupposition), "\"") { "parse" }
+    else { "" }
+}
+
+// 候选写进题式的声明：前提、证据槽、请求（守则的「前提」「参照」「请求」三个模块，解析时保留）
+fn derive_spec_extra(s) {
+    let a = if has(s, "presupposition") { {presupposition: s.presupposition} } else { {} };
+    let b = if has(s, "evidence") { with(a, "evidence", s.evidence) } else { a };
+    let c = if has(s, "request") { with(b, "request", s.request) } else { b };
+    // 程度题的档位（两个入口同一段第⓪段收同一形状，Z0511 复核返修）
+    if s.op == "measure" { with(c, "scale", map(s.scale, fn(x) { text(x) })) } else { c }
+}
+
+// cause：给提示词的「判不下来的原因」，缺省用出口种类（先选后填缺可选值时由 next.jpp 另给）
+// 不带材料（Z0512）：gen 的键只剩站点、提示（父题题面 + 原因）、n、retry_seq，同一题同一出口在不同材料项上
+// 命中同一次生成（运行时按键复用），生成器调用数不随材料项数涨；产物是与材料无关的零槽题式
+fn derive_elicit(n, e, cause, opts) {
+    let R = derive_rules();
+    let count = if has(opts, "elicit_n") { opts.elicit_n } else { 4 };
+    let raw = gen(R.elicit_prompt(n.q.text, cause), [], count, 0);
+    if is_fail(raw) { [] } else {
+        let specs = map(raw, fn(m) { derive_spec(m) });
+        map(derive_idx(specs), fn(k) {
+            let s = specs[k];
+            let bad = derive_spec_bad(s);
+            if bad != "" {
+                derive_child(n, e, k, test("（坏候选）" + to_json(content(raw[k])), derive_calib(opts), {from: e}),
+                             {by: "elicit", bad: bad})
+            } else {
+                let q = fill(derive_form(s.op, s.text, with(derive_spec_extra(s), "lacks", R.lacks.elicit), opts), {}, {from: e});
+                if s.op == "select" { derive_child(n, e, k, q, {by: "elicit", over: s.over}) }
+                else { derive_child(n, e, k, q, {by: "elicit"}) }
+            }
+        })
+    }
+}

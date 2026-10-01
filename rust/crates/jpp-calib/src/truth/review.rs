@@ -110,14 +110,17 @@ fn 题身份(r: &LabelRow) -> String {
 /// 整批（`E-review-leak`）；复核行的读数（与 K 元的 argmax）从同一道题、同一材料的标注行回接，
 /// 没有标注行可回接时拒收。非复核行照旧要自带读数。
 pub(super) fn 复核行回接(rows: &[LabelRow]) -> Result<Vec<LabelRow>, String> {
-    let mut 标注: BTreeMap<(String, String), (f64, Option<usize>)> = BTreeMap::new();
+    // 读数 = (p, pick, 置换测量)；置换测量（Z0308）与 p 同属读数，一起回接
+    #[allow(clippy::type_complexity)]
+    let mut 标注: BTreeMap<(String, String), (f64, Option<usize>, Option<usize>, Option<f64>)> =
+        BTreeMap::new();
     for r in rows
         .iter()
         .filter(|r| r.spot_check.is_none() && !r.p.is_nan())
     {
         标注
             .entry((题身份(r), r.item.clone()))
-            .or_insert((r.p, r.pick));
+            .or_insert((r.p, r.pick, r.perms, r.mode_share));
     }
     let mut out = Vec::with_capacity(rows.len());
     for (i, r) in rows.iter().enumerate() {
@@ -126,6 +129,8 @@ pub(super) fn 复核行回接(rows: &[LabelRow]) -> Result<Vec<LabelRow>, String
             let 漏 = [
                 (!r.p.is_nan()).then_some("读数 p"),
                 r.pick.is_some().then_some("argmax pick"),
+                (r.perms.is_some() || r.mode_share.is_some())
+                    .then_some("置换测量 perms / mode_share"),
                 r.exit.is_some().then_some("出口 exit"),
                 r.reading.is_some().then_some("读数 reading"),
             ];
@@ -135,7 +140,7 @@ pub(super) fn 复核行回接(rows: &[LabelRow]) -> Result<Vec<LabelRow>, String
                     i + 1
                 ));
             }
-            let (p, pick) = 标注
+            let (p, pick, perms, mode_share) = 标注
                 .get(&(题身份(&r), r.item.clone()))
                 .copied()
                 .ok_or_else(|| {
@@ -147,6 +152,8 @@ pub(super) fn 复核行回接(rows: &[LabelRow]) -> Result<Vec<LabelRow>, String
                 })?;
             r.p = p;
             r.pick = pick;
+            r.perms = perms;
+            r.mode_share = mode_share;
         } else if r.exit.is_some() || r.reading.is_some() {
             return Err(format!(
                 "第 {} 行：标注行不收 exit / reading 字段（读数只写在 p）",

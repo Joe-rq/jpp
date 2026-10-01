@@ -1,0 +1,21 @@
+// 第二批 C02 · 危害程度（程度 · 单对象 · 固定四档 · 语义题式）：取真机读数用于认证。
+// 一条材料一道题；读数经 key_of 回接材料编号，不走 --from-ledger 清单（B107 未修）。
+// 材料经 `jpp run --input input.json` 交入：input.items[i] = {id, text}，id 是不透明编号。
+budget {calls: 90, cost: 0.05, depth: 256};
+
+let worst_harm = form("measure", "如果这项操作出了差错，最坏会造成多大的损害？",
+    {calib: "deg-worst-harm",
+     scale: ["几乎没有损害", "轻微，容易补救", "严重，但事后可以弥补", "严重，且难以挽回"]});
+
+fn one(x) !{judge} {
+    let r = judge(state(mat(x.text)), fill(worst_harm, {}));
+    handle(cut(r), {
+        at: fn(level) { {id: x.id, key: key_of(r), exit: "at", open: []} },
+        unsure: fn(u) { {id: x.id, key: key_of(r), exit: "unsure", open: [u]} }
+    })
+}
+
+let rows = map(input.items, fn(x) !{judge} { one(x) });
+
+{rows: map(rows, fn(x) { {id: x.id, key: x.key, exit: x.exit} }),
+ pending: fold(rows, [], fn(acc, x) { concat(acc, x.open) })}

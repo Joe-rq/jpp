@@ -38,6 +38,27 @@
   "local_checks": [],
   "mode": "fixed observations; no model API requests",
   "pending": [],
+  "plan": {
+    "calls": {
+      "hi": 9,
+      "kind": "known",
+      "lo": 1
+    },
+    "cost_usd": {
+      "hi": 0.0,
+      "kind": "known",
+      "lo": 0.0
+    },
+    "latency_s": {
+      "kind": "unknown",
+      "reason": "untested:concurrency.latency_s.p95"
+    },
+    "layers": {
+      "hi": 3,
+      "kind": "known",
+      "lo": 1
+    }
+  },
   "questions": [
     {
       "fill": {

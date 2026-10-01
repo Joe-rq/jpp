@@ -73,6 +73,10 @@ impl<'a> Interp<'a> {
     /// B155（步 15i）起改按材料哈希分组：`over` 随题走，同材料上候选集不同的题也在一次调用里。
     pub(crate) fn flush(&mut self, reason: &str) -> R<()> {
         let r = self.flush_inner(reason);
+        // C2b：单元图的刷新纪元随解释器的刷新点推进
+        self.单元刷新();
+        // 步 30（B93 第 6 条）：重排过的刷新攒下的停发，不论本次刷新从哪条路返回都在这里落定
+        self.落定首停();
         // 层末落盘（B55，步 18b）：刷新即一层；这一层与此前登记的条目按序写出
         if r.is_ok() {
             self.层末落盘()?;
@@ -101,6 +105,14 @@ impl<'a> Interp<'a> {
             return Ok(());
         }
         let pending = std::mem::take(&mut self.pending);
+        // W-spec-unused 只报「发出、跨状态、没用上」（B51-C1，步 22 / B0487；主控 Z0209 Q4）：本层待发的推测键先从
+        // `speculated` 拿掉，只含推测的组真发出时再加回（`flush_after_send`）。并进含真站点那次调用的（同状态推测）
+        // 和因预算、中止没发出的不加回。`speculated` 因此是「推测登记且发出了的跨状态键」
+        for p in pending.iter().filter(|p| p.speculative) {
+            for (_, _, k) in &p.items {
+                self.speculated.remove(k);
+            }
+        }
         // 融合 pass（12 §4 序 2）：同材料、同层的题合成一次调用（P5 / 12 §10 G2；B155 起按材料哈希
         // `hash(on, ctx, ref)`，同材料上候选集不同的 `select` 也合成一次）。
         // **关掉就逐题发**——这正是 §4 表里「不做会坏什么：E8 成本 +45%」那一栏要量的东西。
@@ -126,6 +138,7 @@ impl<'a> Interp<'a> {
                         site,
                         speculative,
                         lifted,
+                        site_id,
                     } = p;
                     items.into_iter().map(move |it| {
                         let p = PendingJudge {
@@ -134,6 +147,7 @@ impl<'a> Interp<'a> {
                             site,
                             speculative,
                             lifted,
+                            site_id,
                         };
                         (idx, p)
                     })
@@ -146,7 +160,12 @@ impl<'a> Interp<'a> {
             // B155（步 15i）：分组键是材料哈希，不是 `StateHash`（`over` 随题走，不分组）。
             // 依据：B155（地基/附注/2026-09-26-批6裁定.md §三）
             let h = if fuse {
-                p.state.mat_hash()
+                // 伴随题并行发法（B0492 S5）：伴随题另成一组，同一刷新时刻另发一次调用
+                if self.伴随键.contains(&p.items[0].2) {
+                    format!("{}#伴随", p.state.mat_hash())
+                } else {
+                    p.state.mat_hash()
+                }
             } else {
                 p.items[0].2.clone()
             };
@@ -167,7 +186,30 @@ impl<'a> Interp<'a> {
             groups
                 .values_mut()
                 .for_each(|g| g.retain(|p| !p.speculative));
+            // 只含推测的组整组拿空了：不再排进本层（改前空组会走到 `flush_before_send` 的 `group[0]` 越界；
+            // 推测在预算用完后被重新登记即会触发，步 22 的层内挑选测试首次撞上）
+            order.retain(|h| !groups[h].is_empty());
         }
+        // 层内挑选（B43、B51-C1，步 22 / B0487）：本层会真发的组超出剩余调用数时，按钩子给的顺序发——真站点先、
+        // 跨状态推测后；不超时顺序不动。停发点仍由下面逐组的 `charge_after` 定
+        // 原登记下标（步 30：重排后首个停发站点仍按它记，B93 第 6 条）
+        let 原位: HashMap<String, usize> = order
+            .iter()
+            .enumerate()
+            .map(|(i, h)| (h.clone(), i))
+            .collect();
+        let order = {
+            let gs: Vec<&[PendingJudge]> = order.iter().map(|h| groups[h].as_slice()).collect();
+            match self.层内挑选(&gs) {
+                Some(新序) => {
+                    if self.预算停.is_none() && self.首停延后.is_none() {
+                        self.首停延后 = Some(vec![]);
+                    }
+                    新序.into_iter().map(|i| order[i].clone()).collect()
+                }
+                None => order,
+            }
+        };
         let mut layer_calls = 0u64;
         let mut layer_questions = 0usize;
         // **按窗口发出**（步 15e）：窗口大小取画像 `concurrency`（未测 1），cost 预算再按已观察的
@@ -184,21 +226,27 @@ impl<'a> Interp<'a> {
             // 发出前的停：审计缺记录、缺席处置报错（`Err`），或缺席处置结束本次刷新（`结束`）
             let mut 前停: Option<R<()>> = None;
             // 预算发不起的那一组（B93）：本窗发完再停发它，队列里余下的组接着逐组核（同样停发）
-            let mut 停发组: Option<(Vec<题项>, Span, String)> = None;
+            let mut 停发组: Option<(Vec<题项>, Span, String, usize)> = None;
+            // 窗内各组的原登记下标（步 30：发出后重试中途停发时，首个停发站点按它记）
+            let mut 窗位: Vec<usize> = vec![];
             while 窗.len() < w {
                 let Some(h) = 队列.pop_front() else {
                     break;
                 };
                 let group = groups.remove(&h).expect("刚放进去的");
+                self.当前组位 = 原位.get(&h).copied().unwrap_or(usize::MAX);
                 match self.flush_before_send(group, 窗.len() as u64) {
                     Ok(发出前::跳过) => {}
-                    Ok(发出前::发出(g)) => 窗.push(g),
+                    Ok(发出前::发出(g)) => {
+                        窗.push(g);
+                        窗位.push(self.当前组位);
+                    }
                     Ok(发出前::结束) => {
                         前停 = Some(Ok(()));
                         break;
                     }
                     Ok(发出前::停发(items, site, detail)) => {
-                        停发组 = Some((items, site, detail));
+                        停发组 = Some((items, site, detail, self.当前组位));
                         break;
                     }
                     Err(f) => {
@@ -225,6 +273,7 @@ impl<'a> Interp<'a> {
             // 先把事实记完再停（`13` §5）；W = 1 时本窗只有一组，与串行相同
             let mut 后停: Option<Fault> = None;
             for (k, (g, r)) in 窗.into_iter().zip(首发).enumerate() {
+                self.当前组位 = 窗位[k];
                 let 起 = if n == 1 {
                     批起
                 } else {
@@ -245,7 +294,8 @@ impl<'a> Interp<'a> {
             if let Some(f) = 后停 {
                 return Err(f);
             }
-            if let Some((items, site, detail)) = 停发组 {
+            if let Some((items, site, detail, 位)) = 停发组 {
+                self.当前组位 = 位;
                 self.预算停发(&items, site, &detail, 0);
             }
             if let Some(r) = 前停 {
@@ -259,8 +309,10 @@ impl<'a> Interp<'a> {
                 questions: layer_questions,
             });
         }
-        // 关融合时拆出来的余项，接着发（它们同属这一层，只是各自一次调用）
+        // 关融合时拆出来的余项，接着发（它们同属这一层，只是各自一次调用）。先落定本次攒下的停发：
+        // 下一次刷新的登记下标另起，不能和这一次的比
         if !self.pending.is_empty() {
+            self.落定首停();
             return self.flush(reason);
         }
         Ok(())
@@ -341,24 +393,56 @@ impl<'a> Interp<'a> {
             }
         }
         let items = 去重;
+        // G5 附录二：这一组每道题所属的真登记（同键有多条取最小；只有推测、提升登记的不记），缺席入账时写进 `nth`
+        for ((_, _, k), rs) in items.iter().zip(&同键) {
+            match rs
+                .iter()
+                .filter_map(|r| self.真登记序.get(&r.id).copied())
+                .min()
+            {
+                Some(m) => {
+                    self.待发真序.insert(k.clone(), m);
+                }
+                None => {
+                    self.待发真序.remove(k);
+                }
+            }
+        }
+        // G4（裁定五十九第 7、17 条）：跨程序触发链到限，这一趟一道题都不发，逐题 `Unsure(depth)` 并记「未问」
+        if self.深度停 {
+            self.深度停发(&items, site);
+            return Ok(发出前::跳过);
+        }
         // **缺席 / 超时的重放**（B32、B35）：账本里记过这一组题的缺席事件，照记的给出，不再发。
         // 首跑的失败尝试按记的次数计入审计重放的预算（逐次计费，B32 裁定选项 A）。
         let 已记: Vec<Option<(String, String, u64)>> = items
             .iter()
-            .map(|(_, _, k)| match self.账本查(&format!("absent:{k}")) {
-                // 步 13a-1：推测组被放弃的记录只对只含推测的组生效；真站点走到同一个键（续跑）照常发问
-                Some(Entry::Absent { cause, .. })
-                    if cause.as_str() == 推测放弃 && !only_speculative =>
-                {
-                    None
+            .map(|(_, r, k)| {
+                // G5 附录一：审计重放按缺席复现的读数取登记时对上的那一条记录（带序号），其余取 `absent:<k>`
+                let 记录键 = self
+                    .重放缺席键
+                    .get(&r.id)
+                    .cloned()
+                    .unwrap_or_else(|| format!("absent:{k}"));
+                match self.账本查(&记录键) {
+                    // 步 13a-1：推测组被放弃的记录只对只含推测的组生效；真站点走到同一个键（续跑）照常发问
+                    Some(Entry::Absent { cause, .. })
+                        if cause.as_str() == 推测放弃 && !only_speculative =>
+                    {
+                        None
+                    }
+                    Some(Entry::Absent {
+                        cause,
+                        detail,
+                        attempts,
+                        ..
+                    }) => Some((cause.clone(), detail.clone(), *attempts)),
+                    // G4 一·4：预算停发记为「未问」的题（原先记 `Absent(budget)`）；说明文字到用时再算
+                    _ if self.未问(k) == Some("budget") => {
+                        Some(("budget".into(), String::new(), 0))
+                    }
+                    _ => None,
                 }
-                Some(Entry::Absent {
-                    cause,
-                    detail,
-                    attempts,
-                    ..
-                }) => Some((cause.clone(), detail.clone(), *attempts)),
-                _ => None,
             })
             .collect();
         if 已记.iter().all(|x| x.is_some()) {
@@ -366,17 +450,27 @@ impl<'a> Interp<'a> {
             let (首因, 首详, _) = 记[0].clone();
             let 尝试: u64 = 记.iter().map(|x| x.2).sum();
             let 策略 = self.budget.absent.clone();
-            let 处置 = 策略.as_ref().map(|p| p.then.clone()).unwrap_or_default();
-            // 续跑（非审计）时，因预算停机、挂起或报错的站点要重新发：它们当时没有得到答案
-            let 重发 = !self.audit.on
-                && (首因 == "budget" || (首因 == "absent" && 处置 != "conservative"));
+            // 没声明策略时账本里的缺席只能来自隐含策略（网络类错误用尽重试），隐含策略的处置就是 conservative
+            // （`budget.rs::缺席策略`）。G5（推翻 PR #48）：续跑不论处置都重发，处置只在审计重放复现时用
+            let 处置 = 策略
+                .as_ref()
+                .map(|p| p.then.clone())
+                .unwrap_or_else(|| "conservative".into());
+            // 续跑（非审计）时，因预算停机、挂起或报错的站点要重新发：它们当时没有得到答案（与层内挑选的预判共用）
+            let 重发 = self.缺席记录重发(&首因);
             if !重发 {
                 if self.audit.on {
                     self.audit.calls += 尝试;
                     self.audit.last_site = Some(site);
                 }
                 if 首因 == "budget" {
-                    // B93：首跑在这里停发（发出前预算不够，或重试中途用完），重放在同一站点同样停发
+                    // B93：首跑在这里停发（发出前预算不够，或重试中途用完），重放在同一站点同样停发。
+                    // G4：「未问」不带说明文字，由同一站点的预算核对重算（审计重放计数与首跑相同，文字相同）
+                    let 首详 = if 首详.is_empty() {
+                        self.charge(1, 0.0).err().unwrap_or_default()
+                    } else {
+                        首详
+                    };
                     self.预算停发(&items, site, &首详, 0);
                     return Ok(发出前::跳过);
                 }
@@ -392,10 +486,14 @@ impl<'a> Interp<'a> {
                 if 首因 == 推测放弃 {
                     // 步 13a-1：首跑放弃的推测组，重放按记录跳过（调用已照记录计入），补报同一告警
                     self.推测组放弃告警(&items, site, "重放：首跑时端口报错", &首详);
+                    // 首跑发出过（付了一次调用）：照首跑记进白花账（步 22，B35 重放同告警）
+                    for (_, _, k) in &items {
+                        self.speculated.insert(k.clone());
+                    }
                     return Ok(发出前::跳过);
                 }
-                for ((_, _, k), (c, _, _)) in items.iter().zip(记) {
-                    self.absent_marks.insert(k.clone(), c);
+                for ((_, r, k), (c, _, _)) in items.iter().zip(记) {
+                    self.标缺席(r, k, &c);
                     self.cost.replayed += 1;
                 }
                 return Ok(发出前::跳过);
@@ -519,6 +617,12 @@ impl<'a> Interp<'a> {
         // 重试前各核一次预算，每次发出（无论成败）都计入 `cost.calls`。
         // 步 15e：首发已由窗口发出，计数在这里按登记顺序加，账本 `call` 编号与串行相同。
         let ask: Vec<&Question> = items.iter().map(|(q, _, _)| q.as_ref()).collect();
+        // 只含推测的组发出了：自付一次调用的跨状态推测，没用上要记白花（B51-C1，步 22）
+        if speculative {
+            for (_, _, k) in &items {
+                self.speculated.insert(k.clone());
+            }
+        }
         let mut 结果 = 首发;
         self.cost.calls += 1;
         self.记请求(Self::读数效应());
@@ -566,9 +670,16 @@ impl<'a> Interp<'a> {
         // **重试与退避**（B32）：声明了 absent 策略按声明的；没声明而首发报网络类错误，按隐含策略重试、用尽转
         // Unsure(absent)、程序照常（现场稳定性三修 (1)）；其余沿用旧行为（客户端错误即运行期错误）
         if let Some(pol) = self.缺席策略(结果.as_ref().err()) {
+            // 隐含策略（程序没声明 `budget.absent`，首发是网络类错误）只管网络类错误：重试里一旦遇到非网络类
+            // 错误（HTTP 400、回复解析失败），不再重试、不转缺席，按客户端错误报 E-rt-client（公开 PR #48 Codex
+            // 意见；赛后欠账 flush.rs:571）。声明了策略的按声明的办，不变
+            let 隐含 = self.budget.absent.is_none();
+            let 非网络 = |r: &Result<jpp_effects::JudgeResult, EffectError>| {
+                r.as_ref().err().is_some_and(|e| !e.is_network())
+            };
             let mut 等 = pol.backoff;
             let mut 次 = 0;
-            while 结果.is_err() && 次 < pol.retry {
+            while 结果.is_err() && 次 < pol.retry && !(隐含 && 非网络(&结果)) {
                 if 等 > 0.0 {
                     std::thread::sleep(std::time::Duration::from_secs_f64(等));
                 }
@@ -589,7 +700,9 @@ impl<'a> Interp<'a> {
             // 失败路径也计时延：退避睡眠与各次失败请求都占时延预算
             let 用时 = 起.elapsed().as_secs_f64();
             self.latency_spent += 用时;
-            if let Err(e) = &结果 {
+            if let Err(e) = &结果
+                && !(隐含 && !e.is_network())
+            {
                 self.consecutive_absent += 1;
                 self.缺席处置(
                     &items,
@@ -600,7 +713,9 @@ impl<'a> Interp<'a> {
                 )?;
                 return Ok(());
             }
-            self.consecutive_absent = 0;
+            if 结果.is_ok() {
+                self.consecutive_absent = 0;
+            }
         } else {
             let 用时 = 起.elapsed().as_secs_f64();
             self.latency_spent += 用时;
@@ -628,7 +743,16 @@ impl<'a> Interp<'a> {
         let 置信 = res.confidence;
         // 一次调用里不止一道题 = 同材料合并发出（融合），账本条目记下是谁合并的（D8.2）
         let merged = items.len() > 1;
+        // 合批的费用只记在首条（L7 2026-09-28，赛后欠账「合批花费重复记账」）：一次调用的 tokens/cost 记在本组
+        // 第一条判断条目上，其余记 0，按条目相加即得实际花费；同调用号（`call`）的条目仍标 `merged_by: fuse`，
+        // 按调用号去重的读者取最大值（`调用费`）。均摊会让「按调用号取首条」的读者（审计重放、契约 `spent`、
+        // 案例 05 build-demo）少算，且与旧账本（每条整次费用）无法用同一条规则读，所以不均摊
         for (idx, ((q, r, key), a)) in items.iter().zip(res.answers.into_iter()).enumerate() {
+            let (条目tokens, 条目费用) = if idx == 0 {
+                (res.tokens, res.cost)
+            } else {
+                (0, 0.0)
+            };
             // perms 跟着读数走：改 K 产生**新键**而不是覆盖旧值，两边并存
             // ——与「线重算之后已经发出的出口不改」是同一条纪律。
             // 测量与答案一起进账本（INTERFACE §四·二·七·五），重放与同键复用从账本取回。
@@ -646,7 +770,26 @@ impl<'a> Interp<'a> {
             }
             // 每题按自己的状态核（B155：同一次调用里各 `select` 的候选数可以不同）
             let state = &states[idx];
-            self.validate_answer(&a, q, state, site)?;
+            if let Err(e) = self.validate_answer(&a, q, state, site) {
+                // Z0556（过程记录 5.26）：语言自己发的元题形状不符，丢掉这道读数（不写 Judge、不填答案），记
+                // `Absent{fail:shape}` 让重放照记录给同一个缺席标记，报 W-companion-shape，程序照常；作者自己的题照旧中止
+                if !self.元题.contains(&r.id) {
+                    return Err(e);
+                }
+                let 期望 = match q.op {
+                    Op::Test => "是非读数 {noul: p}".to_string(),
+                    Op::Select => format!("K 选一读数（{} 个候选的概率）", state.over.len()),
+                    Op::Measure => format!("打分读数（{} 档）", q.scale.len()),
+                };
+                let detail = format!("期望{期望}，收到 {a:?}");
+                self.记缺席账(&[(q.clone(), r.clone(), key.clone())], 形状不符, &detail, 0);
+                self.absent_marks.insert(key.clone(), 形状不符.to_string());
+                self.trace.warn(format!(
+                    "W-companion-shape: @{} 语言自己发的元题「{}」的回答形状不符（{detail}）：丢掉这道读数，按没选出处理，程序照常（Z0556）",
+                    site.start, q.text
+                ));
+                continue;
+            }
             // B59（步 17a）：跳按依赖计。parents = 状态的来源读数 ∪ 题的来源出口（排序去重），
             // hop = 1 + max(父条目的 hop)，无父为 1；父条目不在账本或不是判断条目按 0 计。
             // 只数结构通道（下界），经普通值的依赖待候选 B84。
@@ -672,11 +815,11 @@ impl<'a> Interp<'a> {
                     key: key.clone(),
                     jkey: self.judge_keys.get(key).cloned(),
                     answer: a.clone(),
-                    tokens: res.tokens,
-                    cost: res.cost,
+                    tokens: 条目tokens,
+                    cost: 条目费用,
                     model_id: self.model_id.clone(),
                     call: self.cost.calls,
-                    calib_ref: Some(Box::new(CalibRef::declared(&r.calib))),
+                    calib_ref: Some(self.judge_calib_ref(r)),
                     layer: self.layers.len() as u32 + 1,
                     merged_by: if merged { Some("fuse".into()) } else { None },
                     parents,
@@ -690,7 +833,7 @@ impl<'a> Interp<'a> {
                 "judge",
                 key,
                 false,
-                res.cost,
+                条目费用,
                 site,
                 format!("「{}」", q.text),
             );
@@ -761,5 +904,39 @@ impl<'a> Interp<'a> {
                 sp,
             ),
         }
+    }
+}
+
+/// Z0556：元题回答形状不符时的缺席标记与 `Absent` 记录的原因（`fail` 族，不是缺席类，可以放弃）
+pub(crate) const 形状不符: &str = "fail:shape";
+
+impl Interp<'_> {
+    /// 判断条目的 `calib_ref`（步 27，B116 的一部分：步 20a-2 里「账本 `calib_ref` 填值」）。
+    ///
+    /// 题由题式填出（读数带 `form_hash`）时填 `key`（题式键 `\u{1f}form\u{1f}<form_hash>`，与 `CalibStore::form_key`
+    /// 同格式，`tests/bank_version.rs` 钉住）、`kind`（登记读数时算出的精化题类，B120 (a)）、`fill`（填法，B107）；
+    /// 手写题没有题式，三项为空，账本与旧格式逐字节相同。题库使用统计只读账本，靠这个键把判断归到题式。
+    /// 元组序列化与迁移不在这里（归 20a-2 其余部分）。
+    pub(crate) fn judge_calib_ref(&self, r: &Reading) -> Box<CalibRef> {
+        let mut c = CalibRef::declared(&r.calib);
+        if let Some(h) = &r.form_hash {
+            c.key = Some(format!("\u{1f}form\u{1f}{h}"));
+            c.kind = self
+                .reading_kinds
+                .get(&r.id)
+                .and_then(|k| serde_json::to_value(k).ok())
+                .and_then(|v| v.as_str().map(str::to_string));
+            c.fill = self
+                .questions
+                .iter()
+                .find(|x| x["q"] == r.q_hash.as_str())
+                .and_then(|x| x["fill"].as_object())
+                .map(|o| {
+                    o.iter()
+                        .map(|(k, v)| (k.clone(), v.as_str().unwrap_or_default().to_string()))
+                        .collect()
+                });
+        }
+        Box::new(c)
     }
 }

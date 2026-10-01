@@ -121,6 +121,13 @@ impl<'a> Interp<'a> {
         self.生成.预留
     }
 
+    /// 取一个生成句柄号（G2：守卫下推迟的不可逆 `do` 借用生成值的句柄，号与生成共用一个序列，不相撞）
+    pub(crate) fn 新生成号(&mut self) -> u64 {
+        let id = self.生成.next;
+        self.生成.next += 1;
+        id
+    }
+
     /// 登记一次生成（B160：不交端口，等所在层的刷新点），返回未取回的生成值。
     #[allow(clippy::too_many_arguments)]
     pub(crate) fn 登记生成(
@@ -245,6 +252,10 @@ impl<'a> Interp<'a> {
         if let Some(v) = g.value() {
             return Ok(v);
         }
+        // G2（B200）：守卫下推迟的不可逆 `do`，同一趟里读它的结果即报错
+        if let Some(e) = self.推迟被读(g) {
+            return Err(Fault::Error(e));
+        }
         if self.生成.不等 > 0 {
             return Err(不等生成(g.site));
         }
@@ -317,6 +328,40 @@ impl<'a> Interp<'a> {
             Some(l) => l.entries.push(((2 * reading_id + 1, 0), e)),
             None => self.账本追加(e),
         }
+    }
+
+    /// 一次模型调用的费用（L7 2026-09-28，赛后欠账「合批花费重复记账」）：同一调用号的判断条目里 `cost` 的最大值，
+    /// 先查账本（增量索引）、再查开着的层。合批（一次调用多道题）的新账本只在首条记整次费用、其余记 0，
+    /// 旧账本每条都记整次费用——两种账本按调用号取最大都得到这次调用的费用，与条目顺序、读到哪几条无关。
+    /// 调用号 0（旧账本、复用条目）不在表里，返回 0。
+    pub(crate) fn 调用费(&self, call: u64) -> f64 {
+        let l = self.ledger.view();
+        let mut t = self.调用费表.borrow_mut();
+        if t.0 > l.entries.len() {
+            *t = Default::default();
+        }
+        for e in &l.entries[t.0..] {
+            if let Entry::Judge { call, cost, .. } = e
+                && *call > 0
+            {
+                let v = t.1.entry(*call).or_insert(0.0);
+                if *cost > *v {
+                    *v = *cost;
+                }
+            }
+        }
+        t.0 = l.entries.len();
+        let mut c = t.1.get(&call).copied().unwrap_or(0.0);
+        if let Some(层) = &self.生成.层 {
+            for (_, e) in &层.entries {
+                if let Entry::Judge { call: k, cost, .. } = e
+                    && *k == call
+                {
+                    c = c.max(*cost);
+                }
+            }
+        }
+        c
     }
 
     /// 按键查条目：先查开着的层，再查账本（层开着时，刷新写出的判断条目还在层里）。

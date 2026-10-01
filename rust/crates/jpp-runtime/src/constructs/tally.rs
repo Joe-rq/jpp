@@ -92,8 +92,7 @@ impl<'a> Interp<'a> {
         let act = list_of(r.get("value"));
         let ignore = list_of(r.get("detail").and_then(|d| d.get("ignore")));
         let pend = list_of(r.get("pending"));
-        let is_budget =
-            |e: &Value| matches!(e.get("cause"), Some(Value::Text(t, _)) if t.as_ref() == "budget");
+        let is_budget = |e: &Value| matches!(e.get("cause"), Some(Value::Text(t, _)) if matches!(t.as_ref(), "budget" | "depth"));
         let no = pend.iter().filter(|e| is_budget(e)).count() as i64;
         let nu = pend.len() as i64 - no;
         let (na, ni) = (act.len() as i64, ignore.len() as i64);

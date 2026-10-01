@@ -178,7 +178,7 @@ impl CalibStore {
             &sel,
             grade,
         );
-        Ok(self.单侧上岗(key, cert, &按条, pre.op, delta))
+        Ok(self.单侧上岗(key, cert, &pre, delta))
     }
 }
 

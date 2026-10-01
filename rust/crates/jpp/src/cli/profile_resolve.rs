@@ -28,7 +28,7 @@ fn beside_executable() -> Option<PathBuf> {
     Some(exe.parent()?.join("profiles"))
 }
 
-fn load(path: &Path) -> Result<Resolved, String> {
+pub fn load(path: &Path) -> Result<Resolved, String> {
     // 字节装载在 `jpp::store::ProfileLoader`（步 18-0）；路径与读文件留在 CLI（B73）。报文与 `Profile::load` 相同
     let bytes = std::fs::read(path)
         .map_err(|e| format!("{}: 读不到档案 {}：{e}", path.display(), path.display()))?;

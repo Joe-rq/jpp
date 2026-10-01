@@ -204,6 +204,25 @@ impl jpp_effects::views::CalibView for CalibStore {
                 .then(|| link(CalibStore::class_key(key))),
         }
     }
+    fn certified(&self) -> Vec<(String, Option<jpp_ir::question_kind::QuestionKind>)> {
+        // 步 30 B 段（裁定四十三、四十六）：上岗、有选中证书的记录；按键排序
+        let mut v: Vec<_> = self
+            .records
+            .values()
+            // 降为夹具的（`fixture` 或没有选中证书）不算已认证（J-03；复核 B0488-B 缺口 1）
+            .filter(|r| r.status == "上岗" && !r.fixture_line())
+            .map(|r| (r.key.clone(), r.kind))
+            .collect();
+        v.sort_by(|a, b| a.0.cmp(&b.0));
+        v
+    }
+    fn binary(&self, key: &str) -> bool {
+        // 步 30 B 段：样本的物理形式为 noul 即是非题（标签是真值）
+        self.records
+            .get(key)
+            .and_then(|r| r.samples.first())
+            .is_some_and(|s| s.phys == "noul")
+    }
     fn labelled(&self, key: &str) -> Vec<(f64, bool)> {
         // 样本的 `label` 已是「对错位」：test 是标签本身，K 元划分是 argmax 等于真值（`truth.rs::correct`，B63）
         self.records

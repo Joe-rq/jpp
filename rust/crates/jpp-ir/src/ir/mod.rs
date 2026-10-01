@@ -40,6 +40,11 @@ pub struct Program {
     /// 依据：B106（地基/附注/2026-09-25-B105-B106裁定.md §三）
     #[serde(default, skip_serializing_if = "EntryDecl::is_empty")]
     pub entry: EntryDecl,
+    /// 「无作者去向」站点（主控板 B0492 S4，供 S2c）：`cut` 或出契约值构造的调用起点，它的作用域里一定没有作者
+    /// 给的未决去向；运行时在这里切出未决时当场走 J-05 默认链。由 `jpp::Session::compile` 调
+    /// `jpp_check::unsure_default_sites` 写入（唯一写入处）。空时不序列化、不打印，不进任何哈希与金样。
+    #[serde(default, skip_serializing_if = "std::collections::BTreeSet::is_empty")]
+    pub unsure_default_sites: std::collections::BTreeSet<usize>,
 }
 
 /// 宿主入口参数声明（B106）：名字、种类与宿主声明的 taint。源码级声明语法未定（`21` A-13）。

@@ -228,6 +228,7 @@ fn b_执行失败成为未决() {
     let src = format!(
         "{头}let r = verify([mat(\"print(385)\"), mat(\"boom\"), mat(\"sleep\")], runner, correct, {{}});
 {{ok: len(accepted(r)), bad: len(ignored(r)), causes: map(r.pending, fn(p) {{ p.cause }}),
+  kinds: map(r.pending, fn(p) {{ exit_kind(p.exit) }}),
   failed: map(r.pending, fn(p) {{ is_fail(p.item) }}), pending: r.pending}}"
     );
     let o = 跑(&src, ports, &acts).unwrap();
@@ -236,8 +237,13 @@ fn b_执行失败成为未决() {
     assert_eq!(v["bad"], json!(1), "超时的那段照常判，输出为空，被拒");
     assert_eq!(
         v["causes"],
-        json!(["fail:状态含 Fail 材料"]),
-        "失败类原因，带明细"
+        json!(["fail"]),
+        "失败类原因（步 36 G3：原因名只写成员名，明细在标签里）"
+    );
+    assert_eq!(
+        v["kinds"],
+        json!(["unsure(fail:状态含 Fail 材料)"]),
+        "标签带明细"
     );
     assert_eq!(v["failed"], json!([true]));
     assert_eq!(e.get(), 3, "失败的那次也算一次执行");
@@ -405,7 +411,7 @@ let r = verify([mat(\"print(285)\"), mat(\"boom\"), mat(\"print('大约', 385)\"
     );
     assert_eq!(
         v["causes"],
-        json!(["fail:状态含 Fail 材料", "band"]),
+        json!(["fail", "band"]),
         "boom 的 Fail 与 大约385 的 band 都在 pending 里；被排除的 print(285) 不在"
     );
     assert_eq!(

@@ -471,8 +471,19 @@ fn every_construction_returns_the_same_contract_and_composes_again() {
 /// B17 不变量 2：带未决的契约值绑定后不用 = 静默丢弃，检查阶段报 J-05。
 #[test]
 fn dropping_a_contract_with_pending_is_rejected_by_check() {
-    let err = fails(&["check", "examples/errors/outcome-dropped.jpp"]);
-    assert!(err.contains("J-05") && err.contains("契约值 r"), "{err}");
+    // B0492 S2c 起：丢掉的 sieve 契约值在站点当场走默认链，检查器只提示 N-unsure-default；
+    // --guard 下没人接的未决在运行期是 J-05（金样 error-outcome-dropped 同）
+    let err = fails(&[
+        "run",
+        "examples/errors/outcome-dropped.jpp",
+        "--fixtures",
+        "examples/fixtures/outcome-dropped.json",
+        "--guard",
+    ]);
+    assert!(
+        err.contains("N-unsure-default") && err.contains("J-05"),
+        "{err}"
+    );
 }
 
 /// B17 不变量 3：契约的证据只存账本键；给观察副本会被拒绝。

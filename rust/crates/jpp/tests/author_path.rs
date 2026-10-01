@@ -90,7 +90,7 @@ handle(cut(judge(state(mat("材料")), test("行吗", "k"))), {
         run(
             &program,
             Ports::new()
-                .with(FnPort::judge("m", |_s, qs| {
+                .with(common::伴随中性judge("m", |_s, qs| {
                     *calls.borrow_mut() += 1;
                     Ok(JudgeResult {
                         answers: qs.iter().map(|_| Answer::Noul(0.99)).collect(),
@@ -149,7 +149,7 @@ fn j08没触发的两个原因各自独立成立() {
     // 步 15c：原 `impl Client` 的桩改为三个闭包端口
     fn 端口() -> Ports<'static> {
         Ports::new()
-            .with(FnPort::judge("m", |_s, qs| {
+            .with(common::伴随中性judge("m", |_s, qs| {
                 Ok(JudgeResult {
                     answers: qs.iter().map(|_| Answer::Noul(0.99)).collect(),
                     tokens: 0,
@@ -227,7 +227,9 @@ fn 作者查得到哪些动作不可逆() {
     let e = run(
         &program,
         Ports::new()
-            .with(FnPort::judge("m", |_s, _qs| Err(EffectError("x".into()))))
+            .with(common::伴随中性judge("m", |_s, _qs| {
+                Err(EffectError("x".into()))
+            }))
             .with(FnPort::generate("m", |_p, _c, _n, _r| {
                 Err(EffectError("x".into()))
             }))

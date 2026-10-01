@@ -1,0 +1,126 @@
+{
+  "asks": 0,
+  "calls": 8,
+  "effects": [],
+  "judge_registrations": 48,
+  "pending": [],
+  "returned_unsure": [],
+  "status": "returned",
+  "usd": 0.0,
+  "value": {
+    "bank": [
+      {
+        "how": "none",
+        "kind": "degree",
+        "pred": "p0"
+      },
+      {
+        "how": "none",
+        "kind": "class",
+        "pred": "p1"
+      }
+    ],
+    "inputs": [
+      {
+        "ctx": "北京，十月看房",
+        "field": "fit",
+        "slots": [
+          "on",
+          "ref",
+          "ctx"
+        ]
+      },
+      {
+        "ctx": "北京，十月看房",
+        "field": "flaw",
+        "over": [
+          "价格",
+          "通勤",
+          "采光",
+          "没有明显不合适"
+        ],
+        "slots": [
+          "on",
+          "ref",
+          "ctx",
+          "over"
+        ]
+      }
+    ],
+    "pending": [],
+    "questions": [
+      {
+        "cut": "ordered",
+        "field": "fit",
+        "from": "assemble",
+        "lacks": [
+          "材料",
+          "语境",
+          "参照"
+        ],
+        "op": "measure",
+        "q": "就这份材料来说，这套房满足租客需求的程度落在哪一档？"
+      },
+      {
+        "cut": "k_ary",
+        "field": "flaw",
+        "from": "assemble",
+        "lacks": [
+          "材料",
+          "语境",
+          "参照"
+        ],
+        "op": "select",
+        "q": "就这份材料来说，这套房对这位租客最大的不合适之处是下列哪一项？"
+      }
+    ],
+    "sources": {
+      "budget": "system",
+      "context": "author",
+      "cut": "author",
+      "done": "system",
+      "material": "author",
+      "predicate": "author",
+      "presupposition": "author",
+      "reference": "author",
+      "request": "system",
+      "unsure": "system"
+    },
+    "value": [
+      {
+        "fields": {
+          "fit": 2,
+          "flaw": "通勤"
+        },
+        "item": "一室一厅，月租四千，离地铁五百米，朝北",
+        "trust": {
+          "fit": "trusted",
+          "flaw": "trusted"
+        }
+      },
+      {
+        "fields": {
+          "fit": 1,
+          "flaw": "价格"
+        },
+        "item": "两室，月租六千，离地铁两公里，朝南",
+        "trust": {
+          "fit": "trusted",
+          "flaw": "trusted"
+        }
+      },
+      {
+        "fields": {
+          "fit": 3,
+          "flaw": "采光"
+        },
+        "item": "开间，月租三千，离地铁一百米，无窗",
+        "trust": {
+          "fit": "trusted",
+          "flaw": "trusted"
+        }
+      }
+    ],
+    "version": "derive-14"
+  }
+}

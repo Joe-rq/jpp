@@ -22,6 +22,8 @@ pub mod ledger;
 pub mod names;
 pub mod session;
 pub mod store;
+#[doc(hidden)]
+pub mod testing;
 pub use jpp_calib::truth;
 pub use jpp_runtime::strength;
 pub use jpp_value::value;
@@ -33,8 +35,8 @@ pub use effects::{
     NoCallPorts, Ports, ReplayPorts, obs_key,
 };
 pub use interp::{
-    ActionRegistry, Cost, EntryArgs, EntryMat, EntryValue, HostAccept, Interp, Outcome, RtError,
-    TaintOut,
+    ActionRegistry, BudgetCarry, Cost, EntryArgs, EntryMat, EntryValue, HostAccept, Interp,
+    Outcome, RtError, TaintOut, TripCarry, rewrite_plan_rejection,
 };
 pub use jpp_ir::ir;
 pub use jpp_ir::ir::{Block, Budget, Expr, Function, Parameter, Program, Span, Stmt, Type};

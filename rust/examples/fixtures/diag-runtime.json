@@ -1,0 +1,122 @@
+{
+  "description": "Synthetic fixed observations for diag-runtime.jpp (step 26, B47): one generation of three questions, two judge-based diagnostics, one answering sieve. Fake results, construction check only.",
+  "generations": [
+    {
+      "prompt": "为下面这段话出三道是非题，每行一道，只输出题面。",
+      "retry_seq": 0,
+      "output": [
+        "这段话是否提到了成都？\n这段话是否说他去出差并且见了朋友？\n他在成都住了多少天？"
+      ]
+    }
+  ],
+  "observations": [
+    {
+      "on": [
+        "这段话是否提到了成都？"
+      ],
+      "op": "test",
+      "text": "这道题里是否有两个或更多需要分别回答的判断？",
+      "calib": "diag-two-judgments",
+      "answer": {
+        "Noul": 0.05
+      }
+    },
+    {
+      "on": [
+        "这段话是否说他去出差并且见了朋友？"
+      ],
+      "op": "test",
+      "text": "这道题里是否有两个或更多需要分别回答的判断？",
+      "calib": "diag-two-judgments",
+      "answer": {
+        "Noul": 0.95
+      }
+    },
+    {
+      "on": [
+        "他在成都住了多少天？"
+      ],
+      "op": "test",
+      "text": "这道题里是否有两个或更多需要分别回答的判断？",
+      "calib": "diag-two-judgments",
+      "answer": {
+        "Noul": 0.1
+      }
+    },
+    {
+      "on": [
+        "我上个月去了成都出差，顺便见了老朋友。"
+      ],
+      "ctx": [
+        "这段话是否提到了成都？"
+      ],
+      "op": "test",
+      "text": "上下文里那道题问的东西，这段材料里有没有？",
+      "calib": "diag-in-material",
+      "answer": {
+        "Noul": 0.95
+      }
+    },
+    {
+      "on": [
+        "我上个月去了成都出差，顺便见了老朋友。"
+      ],
+      "ctx": [
+        "这段话是否说他去出差并且见了朋友？"
+      ],
+      "op": "test",
+      "text": "上下文里那道题问的东西，这段材料里有没有？",
+      "calib": "diag-in-material",
+      "answer": {
+        "Noul": 0.9
+      }
+    },
+    {
+      "on": [
+        "我上个月去了成都出差，顺便见了老朋友。"
+      ],
+      "ctx": [
+        "他在成都住了多少天？"
+      ],
+      "op": "test",
+      "text": "上下文里那道题问的东西，这段材料里有没有？",
+      "calib": "diag-in-material",
+      "answer": {
+        "Noul": 0.1
+      }
+    },
+    {
+      "on": [
+        "我上个月去了成都出差，顺便见了老朋友。"
+      ],
+      "op": "test",
+      "text": "这段话是否提到了成都？",
+      "calib": "diag-demo",
+      "answer": {
+        "Noul": 0.97
+      }
+    },
+    {
+      "on": [
+        "我上个月去了成都出差，顺便见了老朋友。"
+      ],
+      "op": "test",
+      "text": "这段话是否说他去出差并且见了朋友？",
+      "calib": "diag-demo",
+      "answer": {
+        "Noul": 0.9
+      }
+    },
+    {
+      "on": [
+        "我上个月去了成都出差，顺便见了老朋友。"
+      ],
+      "op": "test",
+      "text": "他在成都住了多少天？",
+      "calib": "diag-demo",
+      "answer": {
+        "Noul": 0.5
+      }
+    }
+  ]
+}

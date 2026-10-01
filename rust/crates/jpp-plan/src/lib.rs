@@ -13,32 +13,57 @@
 //! 禁止依赖：客户端、账本、运行时、`jpp-value`。
 
 mod analysis;
+pub mod explain;
 pub mod passes;
 mod switches;
+pub mod value;
 
+pub use explain::{Explain, Located, explain, explain_with};
 pub use switches::Passes;
 
 use jpp_effects::view::{K, kind};
 use jpp_ir::ir::{Block, Expr, Function, Program, Stmt, find_expr};
 use jpp_ir::key::NodeId;
 use jpp_ir::plan::{
-    EnvView, Plan, PlanHooks, Reach, Target, TargetSite, TriggerKind, TriggerPlan, ValueSummary,
+    BudgetLeft, EnvView, PendingSite, Plan, PlanCtx, PlanHooks, Reach, Selection, Target,
+    TargetSite, TriggerKind, TriggerPlan, ValueSummary,
 };
 use std::collections::BTreeSet;
 use std::rc::Rc;
 
-/// 由开关算出一次运行的计划。未开的 pass 不写对应条目，运行时见不到条目即不提前。
+/// 由开关算出一次运行的计划，不带画像与运行语境（不算可靠下界、不拒；旧入口，外部行为与步 22 前相同）。
 pub fn plan(p: &Program, passes: &Passes) -> Plan {
+    plan_with(p, passes, None, &PlanCtx::unknown())
+}
+
+/// 由开关、画像与运行语境算出一次运行的计划（`20` §2.3 `plan(p, a, profile, passes, ctx)`）。
+/// 未开的 pass 不写对应条目，运行时见不到条目即不提前。`plan` pass 开着时写估计、`per_site`、告警，
+/// 可靠下界超预算时写 `rejected`（步 22，B42）——宿主见 `rejected` 即不运行。
+pub fn plan_with(
+    p: &Program,
+    passes: &Passes,
+    profile: Option<&jpp_effects::Profile>,
+    ctx: &PlanCtx,
+) -> Plan {
     let mut out = Plan::empty();
     out.fuse = passes.enabled("fuse");
     out.vectorize = passes.enabled("vectorize");
     out.lazy_cut = passes.enabled("lazy_cut");
+    out.select_within = passes.enabled("select_within");
+    // 步 23b：裂变是全程序一位，运行时在登记处按实际长度切（`passes::fission`）
+    out.fission = passes.enabled("fission");
+    out.critical_path = passes.enabled("critical_path");
+    out.value_density = passes.enabled("value_density");
+    out.companions = passes.companions;
     let cx = Cx {
         speculate: passes.enabled("speculate"),
         lift: passes.enabled("lift"),
         vectorize: out.vectorize,
     };
     visit_block(&p.body, &cx, &mut out);
+    if passes.enabled("plan") {
+        passes::plan::run(p, profile, ctx, &mut out);
+    }
     out
 }
 
@@ -292,5 +317,59 @@ impl PlanHooks for Hooks {
             Reach::Strict => analysis::may_effect(e, env),
             Reach::World => analysis::may_touch_world(e, env),
         }
+    }
+
+    /// 层内挑选（B43、B51-C1）：开关开时按丢弃顺序排（[`passes::select`]）；关时走 trait 缺省的登记顺序
+    /// （消融矩阵第 ⑧ 行）。
+    fn select_within(&self, plan: &Plan, layer: &[PendingSite], left: BudgetLeft) -> Selection {
+        if plan.select_within {
+            passes::select::select(layer, left, plan.critical_path, plan.value_density)
+        } else {
+            Selection::cut((0..layer.len()).collect(), layer, left)
+        }
+    }
+
+    /// 闸门的信息值（裁定四十三、四十六）：有记录的候选取记录混淆矩阵上的互信息（与规划器同一个值）；无记录的取同题类已认证
+    /// 记录的最低折扣 × 期望熵降（没有同题类取全库最低，全库为空只按熵）。返回每项的信息值与取了哪条已认证记录（下标），运行时
+    /// 把它记进账本
+    fn gate_info(
+        &self,
+        items: &[jpp_ir::plan::GateItem],
+        certified: &[(
+            Option<jpp_ir::question_kind::QuestionKind>,
+            jpp_ir::plan::Channel,
+        )],
+    ) -> Option<Vec<(f64, Option<usize>)>> {
+        let d: Vec<f64> = certified
+            .iter()
+            .map(|(_, ch)| value::record_discount(ch))
+            .collect();
+        // 最低折扣的下标（并列取靠前的）
+        let argmin = |idx: &mut dyn Iterator<Item = usize>| -> Option<usize> {
+            idx.fold(None, |best: Option<usize>, i| match best {
+                Some(b) if d[b] <= d[i] => Some(b),
+                _ => Some(i),
+            })
+        };
+        let all_min = argmin(&mut (0..d.len()));
+        Some(
+            items
+                .iter()
+                .map(|it| match &it.own {
+                    Some(ch) => (value::channel_value(it.request, it.k, ch, 0, 0), None),
+                    None => {
+                        let same =
+                            argmin(&mut (0..d.len()).filter(|&i| certified[i].0 == Some(it.kind)));
+                        let pick = same.or(all_min);
+                        (value::gate_info(it.request, it.k, pick.map(|i| d[i])), pick)
+                    }
+                })
+                .collect(),
+        )
+    }
+
+    /// 切分点与信道容量（B7 后半）：`value::channel_capacity`
+    fn split_point(&self, n: [[f64; 3]; 2]) -> Option<(f64, f64)> {
+        Some(value::split_point(&n))
     }
 }

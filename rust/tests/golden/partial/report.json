@@ -1,4 +1,11 @@
 {
+  "action_facts": {
+    "record_check": {
+      "conditions": [],
+      "reason": "只把一条记录追加到本次运行的内存检查表（进报告 local_checks），不碰宿主文件与外部系统；进程结束即消失",
+      "reversibility": "reversible"
+    }
+  },
   "backend": "fixed-0",
   "cost": {
     "asks": 0,
@@ -88,6 +95,24 @@
   ],
   "mode": "fixed observations; no model API requests",
   "pending": [],
+  "plan": {
+    "calls": {
+      "kind": "at_least",
+      "lo": 1
+    },
+    "cost_usd": {
+      "kind": "at_least",
+      "lo": 0.0
+    },
+    "latency_s": {
+      "kind": "unknown",
+      "reason": "untested:concurrency.latency_s.p95"
+    },
+    "layers": {
+      "kind": "at_least",
+      "lo": 1
+    }
+  },
   "questions": [
     {
       "kind": "attr",

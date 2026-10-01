@@ -88,7 +88,7 @@ fn 会话跑(src: &str, 接受: bool) -> Result<Json, String> {
         .map_err(|e| e.render())
 }
 
-const 发: &str = r#"{act: fn() { content(do("发邮件", [], 0)) }, ignore: fn() { "不发" }, unsure: fn(u) { consume(u, "drop"); "不发" }}"#;
+const 发: &str = r#"{act: fn() { (do("发邮件", [], 0)) }, ignore: fn() { "不发" }, unsure: fn(u) { consume(u, "drop"); "不发" }}"#;
 
 #[test]
 fn a_没有分量的合成出口不放行() {
@@ -110,7 +110,7 @@ handle(compose([a, h], "all"), {发})
 "#
     ))
     .expect("正式线与人答都放行");
-    assert_eq!(v, Json::from("已发"));
+    assert_eq!(v["content"], Json::from("已发"));
 }
 
 const 声明: &str = r#"budget {calls: 4, cost: 1, depth: 8};
@@ -127,7 +127,7 @@ fn c_声明线分量随宿主接受放行() {
     let e = 会话跑(&src, false).expect_err("不带 --release-on-declared 不放行");
     assert!(e.contains("J-08"), "{e}");
     let v = 会话跑(&src, true).expect("宿主接受声明线：两个分量都放行");
-    assert_eq!(v["sent"], Json::from("已发"));
+    assert_eq!(v["sent"]["content"], Json::from("已发"));
     // 放行与误差界分开：声明线分量仍按 1 计入 n_unknown
     assert_eq!(v["unknown"], Json::from(1));
 }
@@ -178,7 +178,7 @@ let t = interval(g, "matching", {{}});
 #[test]
 fn f_判出来的图_分量都放行时产物守不可逆动作() {
     let v = 跑(&图程序("k")).expect("两条边都是正式线：分工产物放行");
-    assert_eq!(v["sent"], Json::from("已发"));
+    assert_eq!(v["sent"]["content"], Json::from("已发"));
     let e = 跑(&图程序("t")).expect_err("边是试用线：产物不放行");
     assert!(e.contains("J-08"), "{e}");
 }
@@ -202,7 +202,7 @@ let o = search([mat("给登录页选一个实现")], propose, test("这个方案
         )
     };
     let v = 跑(&程序("k")).expect("搜出来、判过了（正式线）、就执行");
-    assert_eq!(v["sent"], Json::from("已发"));
+    assert_eq!(v["sent"]["content"], Json::from("已发"));
     let e = 跑(&程序("t")).expect_err("试用线判的：不放行");
     assert!(e.contains("J-08"), "{e}");
 }

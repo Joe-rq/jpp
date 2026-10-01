@@ -66,9 +66,11 @@ fn handle_arms(_cx: &Cx, s: &CallSite) -> Vec<Diagnostic> {
         return out;
     };
     match fields.iter().find(|(n, _)| n == "unsure").map(|(_, v)| v) {
-        None => out.push(Diagnostic::error(
-            "J-05",
-            "handle 的臂表没有 unsure 去向：三种题的出口都可能是 unsure，缺这一臂就是静默丢弃，otherwise 也兜不住它。修法：补 unsure: fn(u) {…}",
+        // J-05 默认链（B0492 S2，Z0207 第 6 条）：缺 unsure 臂不再是错，未决走语言的默认链（问缺哪类信息、取来再判，
+        // 仍拿不准记账放弃）；检查器只提示，`--guard` 只在运行期恢复错
+        None => out.push(Diagnostic::warning(
+            "N-unsure-default",
+            "handle 的臂表没有 unsure 去向（otherwise 兜不住未决）：这里拿不准时走语言的默认链——问缺哪类信息、从 unsure_source 声明的来源取来再判，仍拿不准就记账放弃（缺席类转交程序结果），逐条进报告 unsure_default 段。要自己定去向，补 unsure: fn(u) {…}；开 --guard 时缺这一臂在运行期是 J-05 错",
             a.span,
         )),
         Some(arm) => match arm.kind() {
@@ -254,6 +256,17 @@ fn is_outcome_call(e: &Expr) -> bool {
 /// 契约值在语句位置被丢掉
 fn dropped_outcome(_cx: &Cx, e: &Expr) -> Vec<Diagnostic> {
     let mut out = vec![];
+    // J-05 默认链（B0492 S2c）：语句位置丢掉的 sieve，运行时在该站点当场走默认链，检查器只提示
+    if call_name(e) == Some("sieve")
+        && crate::unsure_sites::unsure_default_sites(_cx.p).contains(&e.span.start)
+    {
+        out.push(Diagnostic::warning(
+            "N-unsure-default",
+            "sieve 的结果（契约值）在语句位置被丢掉：它拿不准的项没有作者给的去向，运行时在这个站点当场走语言的默认链（问缺哪类信息、取来再判，仍拿不准记账放弃）。要自己定去向，绑定它并返回 pending；开 --guard 时这里在运行期是 J-05 错",
+            e.span,
+        ));
+        return out;
+    }
     if is_outcome_call(e) {
         out.push(Diagnostic::error(
             "J-05",
@@ -266,7 +279,24 @@ fn dropped_outcome(_cx: &Cx, e: &Expr) -> Vec<Diagnostic> {
 
 /// 出口绑定之后在本块里再没被提到 = 静默丢弃
 fn exit_binding(_cx: &Cx, value: &Expr, name: &str, span: Span, block: &Block) -> Vec<Diagnostic> {
-    let mut out = vec![];
+    let mut out = handle_flow(value, name, block);
+    // 伴随题（B0492 S5，主控复核 2026-09-30）：程序自己定义的 `unsure_companions` 不是题式列表时，运行时用不上它、
+    // 回落到标准库的伴随题；提示作者
+    if name == "unsure_companions" {
+        let 像题式列表 = match value.kind() {
+            ExprKind::List(items) => items
+                .iter()
+                .all(|x| matches!(x.kind(), ExprKind::Name(_)) || call_name(x) == Some("form")),
+            _ => false,
+        };
+        if !像题式列表 {
+            out.push(Diagnostic::warning(
+                "N-unsure-companions",
+                "unsure_companions 不像题式列表（要写成 [form(…), …] 或题式名的列表）：运行时用不上它，伴随题回落到标准库 lib/unsure.jpp 的题式。修法：改成题式列表，或换个名字",
+                span,
+            ));
+        }
+    }
     let is_outcome = is_outcome_call(value);
     if !matches!(call_name(value), Some("cut") | Some("unsure") | Some("ask")) && !is_outcome {
         return out;
@@ -292,10 +322,46 @@ fn exit_binding(_cx: &Cx, value: &Expr, name: &str, span: Span, block: &Block) -
     if let Some(r) = &block.result {
         walk_expr(r, &mut note);
     }
-    if !used && is_outcome {
+    // J-05 默认链（B0492 S2c）：cut 与 sieve 绑定后再没被提到，运行时在该站点当场走默认链（问缺哪类信息、取来再判，
+    // 仍拿不准记账放弃），检查器只提示；`--guard` 下运行期照旧是 J-05 错
+    // 只有标了「无作者去向」的站点，运行时才当场走默认链；没标的（同一读数另有持有者等）运行期仍是 J-05，
+    // 检查器同样报错，与运行期一致（复查 2026-09-30）
+    let 走链 = matches!(call_name(value), Some("cut") | Some("sieve"))
+        && crate::unsure_sites::unsure_default_sites(_cx.p).contains(&value.span.start);
+    // 同一判断直接绑定的一组 cut 里另一处已有作者去向（B162：任一持有者交出，其余视图解除；主控 2026-09-30 路 2）
+    let 同组已交 = call_name(value) == Some("cut")
+        && crate::unsure_sites::b162_shared_sites(_cx.p).contains(&value.span.start);
+    if !used && 同组已交 {
+        out.push(Diagnostic::warning(
+            "N-duty-shared",
+            format!("{name} 绑定之后再没被提到，但它与同一块里另一个 cut 切的是同一个判断，那个视图已有作者给的去向：同一判断的另一视图已有去向，这份不计责任（B162）。运行时这里不走默认链"),
+            span,
+        ));
+    } else if !used && 走链 {
+        out.push(Diagnostic::warning(
+            "N-unsure-default",
+            format!("{name} 绑定之后再没被提到：这里拿不准的项没有作者给的去向，运行时在这个站点当场走语言的默认链——问缺哪类信息、从 unsure_source 声明的来源取来再判，仍拿不准就记账放弃，逐条进报告 unsure_default 段。要自己定去向，handle 它或把它（契约值的 pending）放进返回值；开 --guard 时这里在运行期是 J-05 错"),
+            span,
+        ));
+    } else if !used && is_outcome {
         out.push(Diagnostic::error(
             "J-05",
             format!("契约值 {name} 绑定之后再没被提到：它的未决清单（pending）随包转移给了你，丢掉它就是静默丢弃未决（13 §3）。修法：转交——返回它，或返回 undecided({name}) 与 unobserved({name})（或 {name}.pending），或交给下一个构造；契约值不能整份 drop（B95），确实不进入输出的项才逐项丢"),
+            span,
+        ));
+    } else if !used && call_name(value) == Some("cut") {
+        // 裁定五十九第三节（G1 步 33，过程记录 5.25）：读数另有持有者的 cut（别名、先取下标、闭包捕获、同组另一视图只是
+        // 被提到过等）静态看不清责任由谁接，不整份拒，报 W-unsure-untracked 交运行期按 B162 记账
+        let 读数 = call_args(value)
+            .first()
+            .map(|x| match x.kind() {
+                ExprKind::Name(n) => n.to_string(),
+                _ => "（表达式）".to_string(),
+            })
+            .unwrap_or_default();
+        out.push(Diagnostic::warning(
+            "W-unsure-untracked",
+            format!("出口 {name}（绑定在这里，切的读数是 {读数}）绑定之后再没被提到，而这个读数另有持有者（别名、下标、闭包捕获或同一判断的另一视图）：静态看不清这份未决责任由谁接，交运行期按 B162 记账——同一判断任一视图随值交出即解除，都没人接时运行期照报 J-05（裁定五十九）。要自己定去向，handle({name}, {{…, unsure: …}}) 或把它放进返回值"),
             span,
         ));
     } else if !used {
@@ -313,6 +379,67 @@ fn exit_binding(_cx: &Cx, value: &Expr, name: &str, span: Span, block: &Block) -
                 "W-pending-unreturned",
                 format!("契约值 {name} 的 value/accepted()/ignored() 被用了，但 pending/undecided()/unobserved() 都没被提到、没有整体转交、也没有 consume：未决清单可能被悄悄漏掉了。修法：返回 undecided({name}) 与 unobserved({name})（或 {name}.pending），或整体返回 {name}，或交给下一个构造；确实不进入任何输出、不参与路由才 consume({name}, \"drop\")"),
                 span,
+            ));
+        }
+    }
+    out
+}
+
+/// J-05 默认链的数据流提示（B0492 S4，草案第三稿 (5)）：`let v = handle(x, {…没有 unsure…})` 之后，v 流进 `if` 条件、
+/// 效应实参、块结果时各提示一条——拿不准时 v 是未决值（S3 的传播规则）。只看同一块里 v 的直接出现，不追绑定链。
+fn handle_flow(value: &Expr, name: &str, block: &Block) -> Vec<Diagnostic> {
+    let mut out = vec![];
+    if call_name(value) != Some("handle") {
+        return out;
+    }
+    let 缺臂 = call_args(value).get(1).is_some_and(|a| match a.kind() {
+        ExprKind::Record(fields) => !fields.iter().any(|(n, _)| n == "unsure"),
+        _ => false,
+    });
+    if !缺臂 {
+        return out;
+    }
+    let mut 看 = |e: &Expr| match e.kind() {
+        ExprKind::If { condition, .. } if mentions(condition, name) => {
+            out.push(Diagnostic::warning(
+                "N-unsure-default",
+                format!("{name} 来自没写 unsure 臂的 handle：拿不准时它是未决值，这个 if 两支都不走，整个表达式的值是它。要自己定去向，给那个 handle 写 unsure 臂"),
+                condition.span,
+            ));
+        }
+        ExprKind::Call {
+            function,
+            arguments,
+        } if function
+            .name()
+            .is_some_and(|f| jpp_effects::by_name(f).is_some())
+            && arguments.iter().any(|a| mentions(a, name)) =>
+        {
+            out.push(Diagnostic::warning(
+                "N-unsure-default",
+                format!("{name} 来自没写 unsure 臂的 handle，这里作 {} 的实参：拿不准时这个效应不发出，账本记 Skip，结果是那个未决值。要自己定去向，给那个 handle 写 unsure 臂", function.name().unwrap_or("")),
+                e.span,
+            ));
+        }
+        _ => {}
+    };
+    let mut 起 = false;
+    for s in &block.statements {
+        match s {
+            Statement::Let { value: v, .. } if std::ptr::eq(v, value) => 起 = true,
+            _ if !起 => {}
+            Statement::Let { value: v, .. } => walk_expr(v, &mut 看),
+            Statement::Function { function, .. } => walk_block(&function.body, &mut 看),
+            Statement::Expr(e) => walk_expr(e, &mut 看),
+        }
+    }
+    if let Some(r) = &block.result {
+        walk_expr(r, &mut 看);
+        if mentions(r, name) {
+            out.push(Diagnostic::warning(
+                "N-unsure-default",
+                format!("{name} 来自没写 unsure 臂的 handle，随块结果交出：拿不准时交出的是未决值（默认链已记账）。要自己定去向，给那个 handle 写 unsure 臂"),
+                r.span,
             ));
         }
     }

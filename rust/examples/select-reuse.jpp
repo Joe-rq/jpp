@@ -1,0 +1,41 @@
+// 选材料：两个目的先后筛同一批材料，第二个目的复用第一个目的留下的标记（步 29，B20 第 1 种；主控:B0460）。
+//
+// 人只给目的和范围（pool）；每个目的的前提题链是字面前提题，材料怎么筛由 lib/skeletons/select.jpp 做。
+// 每层的答案作为标记留在料库里的材料上（键 = 材料哈希 × 前提题字面，与目的无关）。目的 B 的第一层问的
+// 「是否出自合同文本」和目的 A 的第二层是同一道字面题：A 已问过、已决的材料，B 直接读标记，不再发这一问。
+// 目的 B 这一层的复用数见返回值 b.per_layer[0].reused。注意：同一次运行里，运行时自己的判断复用（同状态同题）
+// 本来就不重发，所以在一次运行里端口调用数装不装料库一样；标记的价值在跨运行、跨程序、手边没有上次账本时——
+// 把目的 A、B 拆成两次运行（同一个料库），第二次账本里的判断条目就少发复用数那么多（crates/jpp/tests/select_marks.rs）。
+//
+// 宿主要给会话装料库（Session::with_mat_store；`jpp::store::FileMatStore` 是最简单的文件实现，临时存储，
+// 骨架最终裁定后换）。没装时两个目的各层照发，结果相同、只是不省调用（detail.stored 为 false）。
+import "../lib/skeletons/select.jpp";
+budget {calls: 40, cost: 0.01, depth: 256};
+
+let pool = [
+    mat({id: 1, text: "甲方应于签约日支付定金三万元。"}),
+    mat({id: 2, text: "会议纪要：下周二讨论排期。"}),
+    mat({id: 3, text: "补充条款：逾期按日千分之一计违约金。"}),
+    mat({id: 4, text: "午饭吃什么。"}),
+    mat({id: 5, text: "本合同自双方签字之日起生效。"}),
+    mat({id: 6, text: "合同总价为人民币十二万元，分三期支付。"})
+];
+let line = {declare: {hi: 0.9, lo: 0.1}};
+let has_amount = "这段材料是否提到了具体金额？";
+let from_contract = "这段材料是否出自合同文本？";
+let has_deadline = "这段材料是否涉及付款期限？";
+
+// 目的 A：找出提到金额的合同材料
+let a = select("找出提到金额的合同材料", pool,
+               [{q: has_amount, line: line}, {q: from_contract, line: line}], {});
+// 目的 B：找出涉及付款期限的合同材料。第一层与目的 A 的第二层是同一道字面前提题
+let b = select("找出涉及付款期限的合同材料", pool,
+               [{q: from_contract, line: line}, {q: has_deadline, line: line}], {});
+
+fn ids(r) { map(r.value, fn(e) { content(e.item).id }) }
+fn layers(r) { r.detail.per_layer }
+// 未决随返回值交出（J-05）：投影保留 exit 字段
+fn open(r) { map(r.pending, fn(p) { {id: content(p.item).id, cause: p.cause, exit: p.exit} }) }
+
+{a: {ids: ids(a), per_layer: layers(a), pending: open(a), stored: a.detail.stored},
+ b: {ids: ids(b), per_layer: layers(b), pending: open(b), stored: b.detail.stored}}

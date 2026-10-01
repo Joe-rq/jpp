@@ -34,6 +34,24 @@
   "local_checks": [],
   "mode": "replay; no model API requests",
   "pending": [],
+  "plan": {
+    "calls": {
+      "kind": "at_least",
+      "lo": 0
+    },
+    "cost_usd": {
+      "kind": "unknown",
+      "reason": "price_not_given"
+    },
+    "latency_s": {
+      "kind": "unknown",
+      "reason": "untested:concurrency.latency_s.p95"
+    },
+    "layers": {
+      "kind": "at_least",
+      "lo": 0
+    }
+  },
   "questions": [
     {
       "kind": "attr",
@@ -59,24 +77,24 @@
       },
       {
         "cost": 0.0,
-        "key": "50df8c3522d6c05eb19fa2c1",
+        "key": "80f48ddfdedffefadfe01dc9",
         "kind": "transform",
         "note": "",
         "replayed": true,
         "site": {
-          "end": 3572,
-          "start": 3487
+          "end": 3700,
+          "start": 3615
         }
       },
       {
         "cost": 0.0,
-        "key": "0a42a00de67fd94fc15464d2",
+        "key": "cf3577e8840fc766ceb17280",
         "kind": "transform",
         "note": "",
         "replayed": true,
         "site": {
-          "end": 3572,
-          "start": 3487
+          "end": 3700,
+          "start": 3615
         }
       },
       {

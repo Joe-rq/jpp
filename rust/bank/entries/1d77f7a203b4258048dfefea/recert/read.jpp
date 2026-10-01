@@ -1,0 +1,16 @@
+// 27a 准备 · F2（关系 · 一对 · 语义题式）：取真机读数用于认证。
+// 一对一道题；配对由 input.links 决定（宿主侧谓词，不交给判断器），元素的 key 回接材料，不走 --from-ledger 清单（B107 未修）。
+import "../../../../lib/outcome.jpp";
+budget {calls: 90, cost: 0.05, depth: 256};
+
+let answers = form("test", "b 是否给出了 a 所问的信息？（间接但足以推出答案的说法也算）", {calib: "rel-answers-question"});
+
+let linked = pair(input.asks, input.replies, fn(a, b) { contains(input.links, [a, b]) });
+let o = sieve(linked, fill(answers, {}));
+
+fn row(e) { {a: e.left, b: e.right, key: e.key, exit: exit_kind(e.exit)} }
+
+{rows: map(concat(concat(accepted(o), ignored(o)), undecided(o)), row),
+ // 未决条目本身带 exit 与 cause，整体返回即转交（J-05）
+ pending: undecided(o),
+ unobserved: unobserved(o)}

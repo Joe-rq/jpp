@@ -20,10 +20,13 @@ pub(crate) use jpp_ir::ir::{Block, Expr, Function, Stmt as Statement};
 use jpp_ir::ir::{Parameter, Span, Type, TypeName};
 
 mod analysis;
+pub mod calib_keys;
 pub mod diag;
 pub mod questions;
 mod rules;
 pub mod shapes;
+pub mod unsure_sites;
+pub use unsure_sites::unsure_default_sites;
 
 use analysis::rows::*;
 use analysis::view::{ExprKind, View};
@@ -209,6 +212,20 @@ pub fn explain_with_actions(
     actions: &ActionTable,
 ) -> Report {
     check_annotated_with(program, profile, None, Some(actions)).0
+}
+
+/// CLI `check` 的预检查（L7 2026-09-28，K-084/K-160 前端接线）：[`explain_with_actions`] 再带上整本校准记录，
+/// J-10 静态面（unsure 上界，要各键的 `unsure_rate`）因此在 `jpp check` 上也跑，不必等 `run`。
+/// 档案仍由调用者给（`check` 不解析画像时为 `None`），不从 `calib.profile()` 取——与 `explain_with_actions` 同口径，
+/// 只多 J-10 这一面（检查器里只有 J-10 读校准记录）。`run` 的预检查不走这里：`Session::go` 执行前那次已带记录，
+/// 两处都带会让 J-10 在 `run` 上报两遍。
+pub fn explain_with_calib_actions(
+    program: &Program,
+    profile: Option<&jpp_effects::Profile>,
+    calib: &dyn CalibView,
+    actions: &ActionTable,
+) -> Report {
+    check_annotated_with(program, profile, Some(calib), Some(actions)).0
 }
 
 /// 程序里每个动作效应（`do`）站点的字面动作名（按源顺序，含库函数体；动作名不是字面量、且追不到

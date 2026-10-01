@@ -1,0 +1,28 @@
+// 已认证题式目录（Z0511 的「查题库」一步用；裁定六十三第 4 条）：lib/bank/ 下每个条目一行 {slug, kind, op, form}。
+// kind 取 bank/bank.json 的题类（题类的权威来源，Z0323）。本文件与 bank.json 的「已认证」条目一一对应，
+// 由测试 crates/jpp/tests/purpose_catalog.rs 钉住：题库加减条目而这里没跟上，测试即红（不做第二个维护点）。
+import "amount_left.jpp";
+import "answers_question.jpp";
+import "claim_supported.jpp";
+import "hard_to_undo.jpp";
+import "json_field.jpp";
+import "next_step.jpp";
+import "refers_to.jpp";
+import "same_name.jpp";
+import "which_named.jpp";
+import "who_owns.jpp";
+import "worst_harm.jpp";
+
+fn bank_catalog() {
+    [{slug: "json_field", kind: "attr", op: "test", form: json_field},
+     {slug: "answers_question", kind: "rel", op: "test", form: answers_question},
+     {slug: "which_named", kind: "class", op: "select", form: which_named},
+     {slug: "same_name", kind: "cmp", op: "select", form: same_name},
+     {slug: "amount_left", kind: "degree", op: "measure", form: amount_left},
+     {slug: "hard_to_undo", kind: "attr", op: "test", form: hard_to_undo},
+     {slug: "claim_supported", kind: "attr", op: "test", form: claim_supported},
+     {slug: "worst_harm", kind: "degree", op: "measure", form: worst_harm},
+     {slug: "who_owns", kind: "class", op: "select", form: who_owns},
+     {slug: "next_step", kind: "class", op: "select", form: next_step},
+     {slug: "refers_to", kind: "class", op: "select", form: refers_to}]
+}

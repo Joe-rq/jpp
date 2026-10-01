@@ -66,7 +66,7 @@ fn client() -> FixedPorts {
     client
 }
 
-/// `let q = …; let s = …; handle(unsure("材料不够"), {act: 1, ignore: 0, unsure: <臂>})`
+/// `let q = …; let s = …; handle(unsure("insufficient"), {act: 1, ignore: 0, unsure: <臂>})`（步 36 G3：原因须为成员，B197）
 fn duty_program(arm: Expr, escalate: u64) -> Program {
     build(
         Some(spend(escalate)),
@@ -81,7 +81,7 @@ fn duty_program(arm: Expr, escalate: u64) -> Program {
         call(
             "handle",
             vec![
-                call("unsure", vec![text("材料不够")]),
+                call("unsure", vec![text("insufficient")]),
                 rec(vec![("act", int(1)), ("ignore", int(0)), ("unsure", arm)]),
             ],
         ),
@@ -159,7 +159,8 @@ fn 字面量臂静态就被拦() {
     assert_eq!(e.rule.as_deref(), Some("J-05"));
 }
 
-/// 通配分支兜不住未决责任：Unsure 必须有自己的一臂。
+/// 通配分支兜不住未决责任：Unsure 必须有自己的一臂。B0492 S2 起没写 unsure 臂时走语言的默认链，
+/// 检查器只报提示 `N-unsure-default`（仍说明 otherwise 兜不住）；`--guard` 下运行期照旧是 J-05 错。
 #[test]
 fn otherwise兜不住未决责任() {
     let program = build(
@@ -168,29 +169,51 @@ fn otherwise兜不住未决责任() {
         call(
             "handle",
             vec![
-                call("unsure", vec![text("材料不够")]),
+                call("unsure", vec![text("insufficient")]),
                 rec(vec![("otherwise", int(1))]),
             ],
         ),
     );
     let report = check(&program);
+    assert!(report.find("J-05").is_none(), "{}", report.render());
     let d = report
-        .find("J-05")
-        .unwrap_or_else(|| panic!("应当报 J-05：\n{}", report.render()));
+        .find("N-unsure-default")
+        .unwrap_or_else(|| panic!("应当报提示 N-unsure-default：\n{}", report.render()));
     assert!(d.message.contains("otherwise"), "{}", d.message);
 
+    // 不开 --guard：未决走默认链（原因不是判过而拿不准，转交程序结果），程序跑完
     let mut c = client();
     let mut ledger = Ledger::new();
-    let e = run_unchecked(
+    run_unchecked(
         &program,
         c.ports(),
         &calibrations(),
         &ActionRegistry::new(),
         &mut ledger,
     )
-    .unwrap_err();
-    assert_eq!(e.rule.as_deref(), Some("J-05"));
-    assert!(e.message.contains("otherwise"), "{}", e.message);
+    .expect("不开 --guard 时缺 unsure 臂走默认链");
+
+    let mut program = program;
+    program.entry.guard = true;
+    let mut c = client();
+    let mut ledger = Ledger::new();
+    // G2（步 35，附录二）：原断言「--guard 下缺 unsure 臂即运行期 J-05」。改后不当场报错：otherwise 照样兜不住未决，
+    // 这笔作为未决值往下传；本程序把它随返回值交出（转交），所以没有违规
+    let o = run_unchecked(
+        &program,
+        c.ports(),
+        &calibrations(),
+        &ActionRegistry::new(),
+        &mut ledger,
+    )
+    .unwrap_or_else(|e| panic!("不再当场报错：{}", e.render()));
+    assert_eq!(
+        o.returned_unsure.len(),
+        1,
+        "otherwise 没有吞掉未决：{:?}",
+        o.returned_unsure
+    );
+    assert!(o.violations.is_empty());
 }
 
 /// 合法去向一：包进返回值，责任转交给调用者。
@@ -211,7 +234,7 @@ fn 包进返回值是合法去向() {
     assert_eq!(value["下一步"], json!("补材料"));
     assert_eq!(
         value["待办"]["unsure"],
-        json!("材料不够"),
+        json!("insufficient"),
         "责任带着原因一起交出去"
     );
     // 13 §3：包进返回值是**转交**不是了结，责任一路挂到程序结束；带到最外层要留账。
@@ -324,18 +347,20 @@ fn 显式丢弃合法但留痕() {
     );
 }
 
-/// 责任不能换个壳就消失：变成材料也不行。
+/// 责任不能换个壳就消失：变成材料也不行。B0492 S3（未决值传播）起 `mat(u)` 的结果就是 `u` 本身——材料依赖它的内容，
+/// 结果是那个未决值——责任没有换壳，随臂的返回值转交，程序结果里仍带着它。
 #[test]
 fn 责任不能变成材料() {
     let program = duty_program(
         lambda(&["u"], body(vec![], call("mat", vec![name("u")]))),
         0,
     );
-    let Err(Error::Runtime(e)) = go(&program) else {
-        panic!("应当报 J-05")
-    };
-    assert_eq!(e.rule.as_deref(), Some("J-05"));
-    assert!(e.message.contains("材料"), "{}", e.message);
+    let outcome = go(&program).unwrap_or_else(|e| panic!("{}", e.render()));
+    assert_eq!(
+        outcome.returned_unsure.len(),
+        1,
+        "mat(u) 仍是 u，责任随返回值交出"
+    );
 }
 
 /// 表层的方法类型 `Fn(params) -!{effects}-> ret`（`linear` 即 `Fn¹`，捕获了未决责任）

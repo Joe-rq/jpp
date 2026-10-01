@@ -125,6 +125,17 @@ pub trait CalibView {
     fn labelled(&self, _key: &str) -> Vec<(f64, bool)> {
         vec![]
     }
+    /// 已认证的记录（步 30 B 段，主会话裁定四十三 `gate_info` 的「题库里同题类已认证记录的最低折扣」）：状态「上岗」且有选中
+    /// 证书的记录，每条给（键, 题类 B76），按键排序（结果与哈希表迭代序无关）。价值由调用方按记录的带标注样本建混淆矩阵算
+    /// （裁定四十六）。只读；缺省空
+    fn certified(&self) -> Vec<(String, Option<jpp_ir::question_kind::QuestionKind>)> {
+        vec![]
+    }
+    /// 该键记录的带标注样本是不是是非题的 (p, 真值)（样本的 `phys` 为 `noul`）；否则是 K 元划分的 (p_max, 对错)（B63）。
+    /// 没有记录或没有样本为假。步 30 B 段建混淆矩阵用
+    fn binary(&self, _key: &str) -> bool {
+        false
+    }
 }
 
 /// 查找链上的一级：键与记录（无记录时是冷记录）。

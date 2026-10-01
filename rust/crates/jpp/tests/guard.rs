@@ -8,7 +8,7 @@
 //! 前面几包让 taint 变准了（堵了五个洗白口子、`cut` 继承状态 taint）——**那些全是这条的输入**。
 //! 没有这条，taint 准了也没人用它做判断。
 //!
-//! **它不拦什么**（`12`:649 Nature 的裁定）：**不拦「这个 trusted 是不是真的可信」**。
+//! **它不拦什么**（`12`:649 的裁定）：**不拦「这个 trusted 是不是真的可信」**。
 //! `taint_out="trusted"` 是作者的**显式标记**，语言只保证它可见可追，**不设审核方**。
 //! 所以这条查的是「守卫里有没有一个 trusted 合取项」，不是「那个 trusted 配不配」。
 
@@ -79,7 +79,7 @@ let 脏 = do("取外部数据", [], 0);
 let 可以发吗 = handle(cut(judge(state(脏), test("该发吗", "k"))), {
     act: fn() { true }, ignore: fn() { false },
     unsure: fn(u) { consume(u, "drop"); false }});
-let 结果 = if 可以发吗 { content(do("发邮件", [], 0)) } else { "没发" };
+let 结果 = if 可以发吗 { (do("发邮件", [], 0)) } else { "没发" };
 {r: 结果}
 "#;
     let e = 跑(src, 0.9).expect_err("不可信判断单独放行不可逆 do 该被拦");
@@ -93,7 +93,12 @@ let 结果 = if 可以发吗 { content(do("发邮件", [], 0)) } else { "没发"
     // （三次效应调用：取外部数据、判断、发邮件；预算放到 4，否则发邮件因预算得到失败值）
     let o = 跑_把关(&src.replace("calls: 2", "calls: 4"), 0.9, false)
         .expect("默认不开把关：不拦任何 do");
-    assert_eq!(o.value_json()["r"], "已发", "{:?}", o.value_json());
+    assert_eq!(
+        o.value_json()["r"]["content"],
+        "已发",
+        "{:?}",
+        o.value_json()
+    );
 }
 
 /// 守卫里**有一个 trusted 合取项**就放行（`12`:265「至少一个」）。
@@ -110,11 +115,11 @@ let 脏判断 = handle(cut(judge(state(脏), test("该发吗", "k"))), {
 let 净判断 = handle(cut(judge(state(干净), test("该发吗", "k"))), {
     act: fn() { true }, ignore: fn() { false },
     unsure: fn(u) { consume(u, "drop"); false }});
-let 结果 = if 净判断 && 脏判断 { content(do("发邮件", [], 0)) } else { "没发" };
+let 结果 = if 净判断 && 脏判断 { (do("发邮件", [], 0)) } else { "没发" };
 {r: 结果}
 "#;
     let out = 跑(src, 0.9).unwrap_or_else(|e| panic!("有 trusted 合取项该放行：{}", e.render()));
-    assert_eq!(out.value_json()["r"], serde_json::json!("已发"));
+    assert_eq!(out.value_json()["r"]["content"], serde_json::json!("已发"));
 }
 
 /// **可逆的 `do` 不受这条管**（`12`:265 只说「不可逆」）。别误伤。
@@ -139,10 +144,10 @@ let 结果 = if 可以吗 { content(do("存草稿", [], 0)) } else { "没存" };
 fn 无条件的不可逆do不受管() {
     let src = r#"
 budget {calls: 1, cost: 1, depth: 8};
-{r: content(do("发邮件", [], 0))}
+{r: (do("发邮件", [], 0))}
 "#;
     let out = 跑(src, 0.9).unwrap_or_else(|e| panic!("无守卫的 do 不该被拦：{}", e.render()));
-    assert_eq!(out.value_json()["r"], serde_json::json!("已发"));
+    assert_eq!(out.value_json()["r"]["content"], serde_json::json!("已发"));
 }
 
 /// **经 `ask` 也放行**（`12`:265「或经 `ask`」）——人答是 trusted（§2.11）。
@@ -154,11 +159,11 @@ let 脏 = do("取外部数据", [], 0);
 let 人说 = handle(ask(state(脏), test("该发吗", "k")), {
     act: fn() { true }, ignore: fn() { false },
     unsure: fn(u) { consume(u, "drop"); false }});
-let 结果 = if 人说 { content(do("发邮件", [], 0)) } else { "没发" };
+let 结果 = if 人说 { (do("发邮件", [], 0)) } else { "没发" };
 {r: 结果}
 "#;
     let out = 跑(src, 0.9).unwrap_or_else(|e| panic!("经 ask 该放行：{}", e.render()));
-    assert_eq!(out.value_json()["r"], serde_json::json!("已发"));
+    assert_eq!(out.value_json()["r"]["content"], serde_json::json!("已发"));
 }
 
 /// **来源要能穿过 helper 函数**。这条是实测撞出来的：J-08 第一版误伤了
@@ -178,10 +183,10 @@ fn 问人(m) -> Record !{ask} {
         unsure: fn(u) { consume(u, "drop"); {好了: false, 值: unit} }})
 }
 let 批了 = 问人(mat("甲"));
-{r: if 批了.好了 && 批了.值 { content(do("发邮件", [], 0)) } else { "没发" }}
+{r: if 批了.好了 && 批了.值 { (do("发邮件", [], 0)) } else { "没发" }}
 "#;
     let out = 跑(src, 0.9).unwrap_or_else(|e| panic!("helper 里走 ask 该放行：{}", e.render()));
-    assert_eq!(out.value_json()["r"], serde_json::json!("已发"));
+    assert_eq!(out.value_json()["r"]["content"], serde_json::json!("已发"));
 
     // 反面：helper 里不走 ask、状态是脏的，仍要拦——别为了穿透 helper 把检查弄没
     let 脏 = r#"
@@ -194,7 +199,7 @@ fn 看看(m) -> Record !{judge} {
 }
 let 脏料 = do("取外部数据", [], 0);
 let 批了 = 看看(脏料);
-{r: if 批了.好了 && 批了.值 { content(do("发邮件", [], 0)) } else { "没发" }}
+{r: if 批了.好了 && 批了.值 { (do("发邮件", [], 0)) } else { "没发" }}
 "#;
     let e = 跑(脏, 0.9).expect_err("helper 里是脏状态上的判断，仍该拦");
     assert!(e.render().contains("J-08"), "{}", e.render());
@@ -230,7 +235,7 @@ let 洗白了 = {包装};
 let 可以发吗 = handle(cut(judge(state(洗白了), test("该发吗", "k"))), {{
     act: fn() {{ true }}, ignore: fn() {{ false }},
     unsure: fn(u) {{ consume(u, "drop"); false }}}});
-{{r: if 可以发吗 {{ content(do("发邮件", [], 0)) }} else {{ "没发" }}}}
+{{r: if 可以发吗 {{ (do("发邮件", [], 0)) }} else {{ "没发" }}}}
 "#
         );
         let e = 跑(&src, 0.9).expect_err(&format!("{名}：套一层容器也不该洗白，本该被 J-08 拦下"));
@@ -252,10 +257,10 @@ let 干净 = mat({outer: "源码里的字面量"});
 let 可以发吗 = handle(cut(judge(state(干净), test("该发吗", "k"))), {
     act: fn() { true }, ignore: fn() { false },
     unsure: fn(u) { consume(u, "drop"); false }});
-{r: if 可以发吗 { content(do("发邮件", [], 0)) } else { "没发" }}
+{r: if 可以发吗 { (do("发邮件", [], 0)) } else { "没发" }}
 "#;
     let out = 跑(src, 0.9).unwrap_or_else(|e| panic!("无辜字面量不该被拦：{}", e.render()));
-    assert_eq!(out.value_json()["r"], serde_json::json!("已发"));
+    assert_eq!(out.value_json()["r"]["content"], serde_json::json!("已发"));
 }
 
 /// **来源通道必须有作用域**（`12` §2.11 第五条，`boundary-scan-1` 实测查出）。
@@ -283,7 +288,7 @@ let 脏2 = do("取外部数据", [], 0);
 let bad_guard = handle(cut(judge(state(脏2), test("该发吗", "k"))), {
     act: fn() { true }, ignore: fn() { false },
     unsure: fn(u) { consume(u, "drop"); false }});
-{r: if bad_guard { content(do("发邮件", [], 0)) } else { "没发" }}
+{r: if bad_guard { (do("发邮件", [], 0)) } else { "没发" }}
 "#;
     let e = 跑(src, 0.9).expect_err("不相关的脏判断不该继承别处的「经过 ask」");
     assert!(e.render().contains("J-08"), "该是 J-08：{}", e.render());
@@ -302,7 +307,7 @@ fn 走过ask(m) -> Mat !{ask} {
 let 脏 = do("取外部数据", [], 0);
 let 材料 = 走过ask(脏);
 let ok = true;
-{r: if ok { content(do("发邮件", [], 0)) } else { "没发" }}
+{r: if ok { (do("发邮件", [], 0)) } else { "没发" }}
 "#;
     let e = 跑(src, 0.9).expect_err("`let ok = true` 没有任何来源，不该放行不可逆动作");
     assert!(e.render().contains("J-08"), "该是 J-08：{}", e.render());
@@ -338,14 +343,12 @@ let 净 = mat("源码里的字面量");
 let 包 = 混合(脏, 净);
 "#;
     // (c) 脏字段当守卫：该拦
-    let 用脏 =
-        format!("{头}{{r: if 包.脏字段 {{ content(do(\"发邮件\", [], 0)) }} else {{ \"没发\" }}}}");
+    let 用脏 = format!("{头}{{r: if 包.脏字段 {{ (do(\"发邮件\", [], 0)) }} else {{ \"没发\" }}}}");
     let e = 跑(&用脏, 0.9).expect_err("用不可信判断决定的那个字段当守卫，该被 J-08 拦");
     assert!(e.render().contains("J-08"), "该是 J-08：{}", e.render());
 
     // (c) 净字段当守卫：该过
-    let 用净 =
-        format!("{头}{{r: if 包.净字段 {{ content(do(\"发邮件\", [], 0)) }} else {{ \"没发\" }}}}");
+    let 用净 = format!("{头}{{r: if 包.净字段 {{ (do(\"发邮件\", [], 0)) }} else {{ \"没发\" }}}}");
     let out = 跑(&用净, 0.9).unwrap_or_else(|e| panic!("可信材料上的判断该放行：{}", e.render()));
-    assert_eq!(out.value_json()["r"], serde_json::json!("已发"));
+    assert_eq!(out.value_json()["r"]["content"], serde_json::json!("已发"));
 }

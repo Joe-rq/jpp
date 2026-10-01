@@ -8,7 +8,7 @@
 //! 依据：B128、B129（`地基/附注/2026-09-25-作者主权与策略表达裁定.md`）；意图汇编第 11 条；预注册
 //! `地基/过程记录/工程-sieve声明线.md` 一·4 (a)–(j)。
 //!
-//! 与缺省规则的关系（主会话 2026-09-26 晚：Nature 定翻转缺省值——没有线的 `cut` 按判断器的回答走、J-08 放行改为
+//! 与缺省规则的关系（2026-09-26 晚：裁定翻转缺省值——没有线的 `cut` 按判断器的回答走、J-08 放行改为
 //! 宿主可选的 `--guard`，由另一个代理 trust-default 施工）：本文件先合入，断言的是合入时 main 上的行为。凡标了
 //! 「【缺省】」的断言依赖「没给线即冷」，翻转后改为「没给线按回答走」；标了「【放行】」的依赖「声明线守不可逆动作
 //! 默认要宿主接受」，翻转后改为在 `--guard` 下断言。给了线之后的出口（种类、等级 `Declared`、与逐个 `cut` 等价）
@@ -18,6 +18,8 @@
 //! （act 高、ignore 低、恰好 0.5 并列出 `unsure(tie)`，等级 `Answer`）；【放行】断言与 `W-declared-line` 的计数
 //! 在 `--guard` 下断言（本文件的宿主入口都开 `--guard`，(h) 末尾另加不开把关的对照）。
 
+// 伴随题「最缺哪类」是 K 选一：替身经 common::伴随中性judge 给伴随元题中性读数（Z0398 返修，过程记录 5.23）
+mod common;
 use jpp::effects::{CalibStore, FnPort, JudgeResult, Ports};
 use jpp::interp::{ActionRegistry, TaintOut};
 use jpp::ledger::Ledger;
@@ -66,7 +68,7 @@ fn 边表(_q: &str, m: &str) -> f64 {
 }
 
 fn 端口(t: 表) -> Ports<'static> {
-    Ports::new().with(FnPort::judge(
+    Ports::new().with(common::伴随中性judge(
         "live-shaped",
         move |s: &State, qs: &[&Question]| {
             let text = s.on_text();

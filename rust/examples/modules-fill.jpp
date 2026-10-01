@@ -1,0 +1,26 @@
+// 作者填模块（B0478，功能一）：作者只填十个模块，不写题面；语言按 lib/derive/rules.jpp 的守则组装成题和输入。
+//
+// 填了五个模块：材料（三套房源）、谓词（两个：满足需求的程度、最大的不合适之处）、切法（ordered 带三档、k_ary 带四个候选）、
+// 参照（租客的需求）、语境、前提。没填的由系统补，来源在 detail.sources：请求、预算、拿不准去向、完成条件。
+// 每个谓词先查题库（已认证题式里有没有同一件事），没命中就按守则组装：
+//   有序 → measure「就这份材料来说，……落在哪一档？」，档位进题式；
+//   K 选一 → select「就这份材料来说，……是下列哪一项？」，候选进状态 over 槽；
+//   参照进状态 ref 槽（题式 evidence: ["ref"]），语境进 ctx 槽，前提进题式 presupposition。
+// 组装出的题在报告 questions 段（template 即题面），每道题的输入槽在返回值的 inputs 里。
+// 固定观察的读数是合成的，只检查构造，不代表模型表现。
+import "../lib/derive/modules.jpp";
+budget {calls: 40, cost: 0, depth: 4096};
+
+let r = modules_run({
+    material: [{on: mat("一室一厅，月租四千，离地铁五百米，朝北")},
+               {on: mat("两室，月租六千，离地铁两公里，朝南")},
+               {on: mat("开间，月租三千，离地铁一百米，无窗")}],
+    predicates: [{text: "这套房满足租客需求的程度", cut: "ordered", scale: ["不满足", "部分满足", "满足"], field: "fit"},
+                 {text: "这套房对这位租客最大的不合适之处", cut: "k_ary", over: ["价格", "通勤", "采光", "没有明显不合适"], field: "flaw"}],
+    reference: mat("租客：预算五千以内，每天地铁通勤，喜欢朝南"),
+    context: "北京，十月看房",
+    presupposition: "房源信息是真实的"
+}, {});
+{value: map(r.value, fn(v) { {item: content(v.item), fields: v.fields, trust: v.trust} }),
+ pending: r.pending,
+ questions: r.detail.questions, inputs: r.detail.inputs, bank: r.detail.bank, sources: r.detail.sources, version: r.detail.version}

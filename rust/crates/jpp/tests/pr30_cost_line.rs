@@ -13,7 +13,7 @@ use serde_json::Value as Json;
 /// 判断恒给 `p`、不该生成、问人恒答「还没答」（步 15c：原 `impl Client` 的桩改为三个闭包端口）
 fn 定值端口(p: f64) -> Ports<'static> {
     Ports::new()
-        .with(FnPort::judge("fixed-0", move |_s, qs| {
+        .with(common::伴随中性judge("fixed-0", move |_s, qs| {
             Ok(JudgeResult {
                 answers: qs.iter().map(|_| Answer::Noul(p)).collect(),
                 tokens: 0,

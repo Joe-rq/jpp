@@ -158,7 +158,9 @@ impl<'a> Interp<'a> {
             if let Value::Text(t, _) = k {
                 if let Some(Entry::Judge { call, cost, .. }) = cap.get(self, t) {
                     if *call > 0 {
-                        calls.entry(*call).or_insert(*cost);
+                        // 合批只在首条记费（L7 2026-09-28）：证据只含同批其余条目时也按整次调用的费用计
+                        let c = cap.call_cost(self, *call).max(*cost);
+                        calls.entry(*call).or_insert(c);
                     }
                 }
             }

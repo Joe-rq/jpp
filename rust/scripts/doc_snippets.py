@@ -167,7 +167,10 @@ def run_sh(where, lines, state):
 
 
 def run_jpp_source(where, path, expect_error=False):
-    c = subprocess.run([str(JPP), "check", str(path)], cwd=ROOT, capture_output=True, text=True)
+    # 需要命令行给目的与材料的示例（examples/purpose-only.jpp）在旁边放同名 .args，check 时带上这些开关
+    sidecar = path.with_suffix(".args")
+    extra = shlex.split(sidecar.read_text(encoding="utf-8")) if sidecar.exists() else []
+    c = subprocess.run([str(JPP), "check", str(path), *extra], cwd=ROOT, capture_output=True, text=True)
     if expect_error:
         return c.returncode != 0, c.stderr
     return c.returncode == 0, c.stdout + c.stderr

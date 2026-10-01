@@ -1,0 +1,25 @@
+{
+  "model_version": "judge-claude-p-priced",
+  "notes": "V1-4 价格小臂专用画像（team-lead 2026-09-28 批复追加）：内容与冻结的 judge-claude-p.json 完全一致，只把 cost.price_usd_per_input_token 填成装配阶段实测的真实单价，专测 pair-team.jpp 一个程序，预期触发 budget.cost=0.01 的 Halt。价格来源：装配阶段直接调 claude -p --model sonnet 得到 usage.input_tokens=870、usage.output_tokens=13、claude 自报 total_cost_usd=0.00187（该字段是 claude 自己按 API 价算的估算，不是账单，仅当等价花费披露用，同 claude_p/mod.rs 对 gen 端口 total_cost_usd 的既有处理原则）；price = 0.00187 / 870 = 2.149425e-6 美元/输入token（只按输入 token 计价，是画像 schema 本身只有这一个价格字段的限制，见预注册「候选画像缺口」）。只在这一条小臂用，不替换主臂画像，不影响主臂 10 个程序的判定。",
+  "question_types": ["noul", "choice", "score"],
+  "select_sums_to_one": true,
+  "fixed_output_types": true,
+  "cost": {
+    "price_usd_per_input_token": 0.000002149425,
+    "source": "装配阶段单次真机调用（claude -p --model sonnet 直调，非经 jpp）：input_tokens=870, output_tokens=13, total_cost_usd=0.00187（claude 自报，等价披露用）；n=1，只用输入 token 折算单价"
+  },
+  "concurrency": {
+    "lower_bound_ok": 4,
+    "note": "沿用 gen-claude-p.json 的宿主策略值，未按判断请求实测"
+  },
+  "transport": {
+    "timeout_s": 120,
+    "status": "宿主策略值，非实测",
+    "reason": "沿用 claude_p/mod.rs 生成端口 gen.timeout_s 的量级；子进程超时只截断挂起，不截断慢响应"
+  },
+  "provenance": {
+    "written_by": "V1-4 验证线（预注册 地基/规划/验证/预注册-V1-4.md，提交 d927ffe24；team-lead 批复追加价格小臂）",
+    "backend_commit": "d386e8959",
+    "main_profile_commit": "bd0d0c126"
+  }
+}

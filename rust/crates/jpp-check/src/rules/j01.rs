@@ -58,7 +58,7 @@ fn builtin_call(cx: &Cx, name: &str, args: &[&Expr]) -> Vec<Diagnostic> {
                 );
             }
         }
-        "handle" | "consume" | "exit_kind" | "untested" => {
+        "handle" | "consume" | "exit_kind" | "untested" | "near_boundary" | "unsure_default" => {
             if args.first().map(|a| inside(a)).unwrap_or(false) {
                 reading_err(
                     &mut out,

@@ -39,14 +39,43 @@ pub const RT_CODES: &[(&str, &str)] = &[
     ("E-rt-answer", "判断器答案的形状或条数与题不符"),
     ("E-rt-absent", "判断器缺席且缺席策略为 fail"),
     (
+        "E-rt-plan",
+        "要规划器算的内置（gate_info、split_point）在没接规划器钩子的解释器里被调用，经 jpp::run / Session 跑；或提升计划与正在求值的块对不上（计划不是按这个块算的，内部错误，Z0613）",
+    ),
+    (
         "E-rt-regex",
         "regex_match / regex_find 的正则表达式编译失败（B157）",
     ),
 ];
 
-/// 编号的类型说明；不是运行期编号返回 `None`。
+/// 计划期编号与类型说明（步 22）：`jpp-plan` 的 `plan` pass 拒绝计划时由宿主（`jpp::interp::Interp::run`）
+/// 当运行期错误交出，与 `E-rt-*` 分开登记（上面那张表只收运行时 crate 里的编号，单元测试按此核）。
+pub const PLAN_CODES: &[(&str, &str)] = &[(
+    "E-budget-plan",
+    "计划期拒绝（B42，J-07b）：按效应都成功计，可靠下界（必经判断层数、每层一次调用）已超预算的调用数、费用或时延，一次调用都不发",
+)];
+
+/// 宿主（`jpp` 二进制，`cli/`）自己报的告警与拒绝编号与说明：不在运行时 crate 里，所以不进 `RT_CODES`
+/// （那张表的单元测试要求每个编号在 `jpp-runtime/src` 里有站点）。步 27 补缺 3（`地基/过程记录/工程-步27.md`）。
+pub const HOST_CODES: &[(&str, &str)] = &[
+    (
+        "W-bank-status",
+        "程序 import 了题库题式 lib/bank/<slug>.jpp，而 bank.json 判该条目不在岗（退役、被取代、提出、诊断通过）；只报不拦，线与题式照旧供给（B48、意图汇编 11a）",
+    ),
+    (
+        "E-confirm-required",
+        "费用确认（Z0236，11 §5.5）：这一趟会花钱（判断器单价大于 0 或给了 --gen-model，非重放），费用上界（生效费用上限 budget cost——程序声明与上游余额取小——与计划估计取小；运行时已花超过 budget cost 才停，可超出最后一次调用）超过确认阈值（默认值见帮助文本，--confirm-above 可改），没有给 --confirm；一次调用都不发。这是操作者对花费的确认，与判断器的回答无关",
+    ),
+];
+
+/// 编号的类型说明；不是运行期、计划期或宿主告警编号返回 `None`。
 pub fn explain(code: &str) -> Option<&'static str> {
-    RT_CODES.iter().find(|(c, _)| *c == code).map(|(_, d)| *d)
+    RT_CODES
+        .iter()
+        .chain(PLAN_CODES)
+        .chain(HOST_CODES)
+        .find(|(c, _)| *c == code)
+        .map(|(_, d)| *d)
 }
 
 static JSON: AtomicBool = AtomicBool::new(false);
@@ -301,6 +330,13 @@ mod tests {
     }
 
     /// `interp/` 里用到的每个 `E-rt-*` 都在编号表里，表里每个编号都有人用
+    #[test]
+    fn 宿主告警编号有说明() {
+        for (c, d) in HOST_CODES {
+            assert_eq!(explain(c), Some(*d));
+        }
+    }
+
     #[test]
     fn 编号表覆盖运行期全部编号() {
         let dir = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../jpp-runtime/src");

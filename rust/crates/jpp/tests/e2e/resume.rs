@@ -44,7 +44,7 @@ fn 目录(名: &str) -> PathBuf {
 
 fn 端口<'a>() -> Ports<'a> {
     Ports::new()
-        .with(FnPort::judge("fixed-0", |_s, qs| {
+        .with(crate::common::伴随中性judge("fixed-0", |_s, qs| {
             Ok(JudgeResult {
                 answers: qs.iter().map(|_| Answer::Noul(0.9)).collect(),
                 tokens: 0,

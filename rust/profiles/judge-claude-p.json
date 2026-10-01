@@ -1,0 +1,20 @@
+{
+  "model_version": "judge-claude-p",
+  "notes": "V1-4 验证专用的第二判断器画像（预注册 地基/规划/验证/预注册-V1-4.md，提交 d927ffe24）。底层 claude -p --model sonnet。cost.price_usd_per_input_token 主臂故意留未测：如实填会让 budget.cost=0.01 在第一次调用附近就 Halt，把其余机制测废（见预注册「预算记账与合批窗口」）。concurrency 沿用 gen-claude-p.json 的宿主策略值 4，不实测（这台机器此刻与多个队友/会话共享同一 Sonnet 订阅，探测高并发会抢配额）。transport.timeout_s 沿用同一份生成器画像的量级（120 秒），也是宿主策略值，非实测。question_types、select_sums_to_one 是端口协议本身的性质，不是模型测出来的：端口只接受严格 JSON 数组、只支持这三种题型、自己做归一化，见 backends/claude_p_judge/mod.rs。fixed_output_types 是实测（小样本）：装配阶段三种题型各跑 3 遍（9 次调用），JSON 全部解析成功、无 malformed；n=9，不是大样本，置信度低。",
+  "question_types": ["noul", "choice", "score"],
+  "select_sums_to_one": true,
+  "fixed_output_types": true,
+  "concurrency": {
+    "lower_bound_ok": 4,
+    "note": "沿用 gen-claude-p.json 的宿主策略值，未按判断请求实测"
+  },
+  "transport": {
+    "timeout_s": 120,
+    "status": "宿主策略值，非实测",
+    "reason": "沿用 claude_p/mod.rs 生成端口 gen.timeout_s 的量级；子进程超时只截断挂起，不截断慢响应"
+  },
+  "provenance": {
+    "written_by": "V1-4 验证线（预注册 地基/规划/验证/预注册-V1-4.md，提交 d927ffe24）",
+    "backend_commit": "d386e8959"
+  }
+}

@@ -14,8 +14,8 @@ use jpp_effects::views::{CalibView, Lookup};
 use jpp_effects::views::{FitRecord, FitView};
 use jpp_ir::ir::{Block, Budget, Expr, Function, Program, Span, Stmt};
 use jpp_ledger::{
-    CalibRef, Durability, EffectKey, Entry, Header, HeaderCompare, JudgeKey, LedgerError,
-    LedgerPort, MatMeta, RENDER_VERSION, SourceEdge, Trace,
+    AttemptRef, CalibRef, Durability, EffectKey, Entry, Header, HeaderCompare, JudgeKey,
+    LedgerError, LedgerPort, MatMeta, RENDER_VERSION, SourceEdge, StopCause, Trace,
 };
 use jpp_value::value::*;
 
@@ -84,6 +84,17 @@ pub struct Action {
     pub f: Rc<dyn Fn(&[Value]) -> Result<Value, String>>,
     /// 声明的输出形状（B51-R2 候选字段，步 15d）：`None` = 未声明，运行期不核
     pub mat_shape: Option<jpp_effects::MatShape>,
+    /// 如实的可撤回性事实（C-7，Z0173）：三值、理由、成立条件。`None` = 登记方没给（`action_fact` 只能
+    /// 从 `reversible` 布尔推出两值、理由写「登记时未附」）。这一份只是事实与记录，J-08、放行门不读它。
+    pub undo: Option<ActionUndo>,
+}
+
+/// 动作可撤回性的如实标注（C-7）：`reversibility` 取 `"reversible" | "irreversible" | "depends_on_args"`。
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct ActionUndo {
+    pub reversibility: String,
+    pub reason: String,
+    pub conditions: Vec<String>,
 }
 
 #[derive(Default)]
@@ -112,8 +123,20 @@ impl ActionRegistry {
                 taint_out,
                 f: Rc::new(f),
                 mat_shape: None,
+                undo: None,
             }),
         );
+    }
+
+    /// 给已登记的动作附上可撤回性事实（C-7）：`.jpp` 里 `action_fact(name)` 与报告读它。动作没登记时返回 `false`。
+    pub fn describe_undo(&mut self, name: &str, undo: ActionUndo) -> bool {
+        match self.actions.get_mut(name) {
+            Some(a) => {
+                Rc::make_mut(a).undo = Some(undo);
+                true
+            }
+            None => false,
+        }
     }
 
     /// 给已登记的动作声明输出形状（B51-R2，步 15d）：`do` 返回后运行期核基数与单项尺寸，违反出
@@ -227,6 +250,27 @@ pub struct Outcome {
     pub budget: Option<BudgetStop>,
     /// 按缓存键复用的计数（步 19，B40、B151）：给了跨运行缓存或本趟有命中时才有（报告 `cache` 一节）。
     pub cache: Option<CacheStats>,
+    /// 交给下一轮的整场余额（C-3）：进门余额扣去本轮实际花费、深度 +1。宿主没给上游余额（重放时账本头没有）为 `None`
+    pub carry: Option<BudgetCarry>,
+    /// 层内挑选的决定（步 30 / B0488）：本趟每次层内挑选一行（层、剩余额度、各组的类别、下游层数、估计费用、
+    /// 各校准键本趟计数、是否在钩子给的发出段）。没有挑选时为空（报告不出这一段）。不进账本，审计重放不重算
+    pub selections: Vec<Json>,
+    /// J-05 默认链（B0492 S2）：每个进过默认链的出口一行 `{key, cause, site, asked, fetched, missed, why, end}`；
+    /// 没有时为空（报告不出 `unsure_default` 段，默认输出逐字节不变）
+    pub unsure_default: Vec<Json>,
+    /// 伴随题（B0492 S5）：报告 `improve` 段，每道带了伴随题的原题一行 `{key, q, companions: [{kind, key, p}]}`；
+    /// 没有时为空（报告不出这一段）
+    pub improve: Vec<Json>,
+    /// `order` / 候选分档用的并档容差（Z0425）：每行 `site`、`tol`、`tol_source`（record | profile | unknown）；
+    /// 并档是否可信看这里，下游出口不继承
+    pub orders: Vec<Json>,
+    /// 违规的单次形态（G2，`12` R9）：程序结束时还欠着的未决，每笔一项；值照带，这次结论为「未决（violation）」。
+    /// 为空即没有违规
+    pub violations: Vec<ViolationReport>,
+    /// 守卫下推迟、结算时才执行失败的不可逆 `do`（Z0565）：每条 `{site, action, detail}`；不算 J-12，退出码不变
+    pub settle_failed: Vec<Json>,
+    /// 单元图的只读统计（C2b，步 41）：单元图关着为 `None`。不进报告（报告由宿主按字段拼，不含它），给测试用
+    pub cells: Option<单元统计>,
 }
 
 /// 预算停机的记账（B93）：停发，不停程序。
@@ -237,6 +281,9 @@ pub struct BudgetStop {
     pub unsent: u64,
     /// 首个未发站点的起始字节偏移
     pub first_site: usize,
+    /// 停的原因：`None` = 预算耗尽（B93，报告逐字节不变）；`"depth"` = 跨程序触发链已到深度上限，这一趟只停发、照常求值（G4）
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub cause: Option<String>,
 }
 
 impl Outcome {
@@ -255,6 +302,10 @@ struct Frame {
     cuts: Vec<Rc<PendingCut>>,
     /// 返回类型提到 Exit：未消费的 Unsure 由调用者接手
     returns_exit: bool,
+    /// 本帧过桥的次数（G2：欠账记号的「第几次」）
+    过桥: u32,
+    /// 帧的主人（G2 附录三，Z0564、R9）：函数帧是 `<函数名>#<实参哈希>`；程序顶层帧不用（取程序单元身份）
+    主人: String,
 }
 
 struct LoopCtx {
@@ -292,12 +343,17 @@ pub struct Interp<'a> {
     loops: Vec<LoopCtx>,
     next_exit: usize,
     depth: u32,
+    /// 本段递归深度的峰值（C2c 复核 K1）：代码单元记下首次求值往下走了几层，取记忆时按它核 J-06
+    pub(crate) 深度峰: u32,
     run_seq: u64,
     model_id: String,
     /// 已登记但还没发出的判断（`12` §2.2「登记后不发」）
     pending: Vec<PendingJudge>,
     /// 交出去还没取回的生成与生成缓存（B149，步 15h-2：`gen_pending.rs`）
     生成: gen_pending::GenState,
+    /// 调用号 → 这次调用的费用（账本里同调用号判断条目的最大 `cost`）。账本只增，按已扫到的条目数增量补
+    /// （L7 2026-09-28：合批只在首条记费，读者按调用号取最大，见 `gen_pending.rs::调用费`）
+    调用费表: std::cell::RefCell<(usize, HashMap<u64, f64>)>,
     /// **审计重放**（B35；21 步 3）：只凭账本重现首跑。账本里记过的调用照记录计入预算，
     /// 使首跑在哪里预算停机，重放就在哪里停；账本缺的记录报 `E-replay`（致命，不进 cause）。
     /// 续跑（`--resume`）不开：已记录的不付费、继续往下。依据：12 §2.3 B35 注；21 §三·2 步 3。
@@ -319,10 +375,28 @@ pub struct Interp<'a> {
     /// 就是**包着这个 `do` 的那些条件**——不必是 `do` 的一个参数。条件求值成 `Bool` 之后
     /// taint 就没了，所以在**求值条件的那一刻**记下来。
     guards: Vec<GuardEv>,
-    /// 推测登记过的账本键：程序真走到时会命中账本，没走到的留 `W-spec-unused`
+    /// 推测登记且自付一次调用发出了的跨状态键（步 22 / B0487 起由 `flush.rs` 维护：登记时先记，刷新时拿掉本层
+    /// 待发的，只含推测的组发出时加回）。程序真走到时命中账本，没走到的留 `W-spec-unused`（B51-C1）
     speculated: HashSet<String>,
     /// 推测的键里，真被程序用上的
     speculation_used: HashSet<String>,
+    /// 读数站点的 `span.start → SiteId`（步 30 / B0488）：`run` 入口按 `Program.sites` 建，只收产出读数的站点种类
+    /// （判断效应、`literalize`、构造）；同一起点有多个候选的不收。判断键本来就以 `span.start` 作站点，同口径
+    站点表: HashMap<usize, jpp_ir::key::SiteId>,
+    /// 本趟逐校准键计数（步 30 / B0488；读数进「接下来先问什么」，B22 第 5 类消费者）：键 → (过桥且有答案的读数条数,
+    /// 其中出口为 `Unsure` 的条数)。同一读数切两次只计一次（`键计数已记`）
+    键计数: HashMap<String, (u64, u64)>,
+    键计数已记: HashSet<u64>,
+    /// 层内挑选的决定（步 30 / B0488，主控 Q7/Q9）：每次钩子被调用记一行，进报告 `selections`，不进账本
+    挑选记录: Vec<Json>,
+    /// `order` 并档容差的报告行（Z0425），进报告 `orders`
+    并档记录: Vec<Json>,
+    /// 首个停发站点的延后记法（步 30，B93 第 6 条；复核 B0488-A 缺口 1）：本次刷新重排过、且本趟此前没有停发时为
+    /// `Some`，各停发组的（原登记下标, 条数, 站点, 报文）先攒在这里，刷新结束取原登记下标最小的一组写 `W-budget` 与
+    /// `first_site`——与审计重放按登记顺序停发的第一组相同。挑选只改发出顺序，不改首个停发站点的记法
+    首停延后: Option<Vec<(usize, u64, jpp_ir::ir::Span, String)>>,
+    /// 当前处理的组在本次刷新里的原登记下标（配合 `首停延后`）
+    当前组位: usize,
     /// 布尔绑定的来源：`let x = …` 求值过程中产生的出口带着状态 taint，据此答
     /// 「这个布尔是不是由**可信状态上的判断**决定的」（J-08）。名字被重新绑定时覆盖。
     /// 来源通道**的作用域由环境给**：`let x = …` 时把来源连同值一起绑进 `env`，
@@ -340,6 +414,18 @@ pub struct Interp<'a> {
     asks_in_ledger: u64,
     /// **缺席 / 超时标记**（B32）：账本键 → `absent` / `latency`。`cut` 据此给 `Unsure(原因)`。
     absent_marks: HashMap<String, String>,
+    /// 按读数记的缺席原因（G5，裁定五十九第 16 条）：同一内容键之后可以再问，已经缺席的那个读数不被后来的答案改写
+    读数缺席: HashMap<u64, String>,
+    /// 审计重放（G5 附录二）：最后一条趟标记与那一趟的缺席记录（首次用到时扫账本建表；没有趟标记为 `None`）
+    重放趟: std::cell::OnceCell<Option<readings::重放趟表>>,
+    /// 本趟每道题（账本键）由真站点登记了几次（G5 附录二：缺席记录的读数身份）
+    真登记次数: HashMap<String, u32>,
+    /// 读数 → 它是这道题本趟第几次真登记（推测、提升登记的读数不在表里）
+    真登记序: HashMap<u64, u32>,
+    /// 正要发出的组里，每道题的真登记序号（同键有多条真登记取最小；只有推测、提升登记的不在表里）
+    待发真序: HashMap<String, u32>,
+    /// 审计重放里按缺席复现的读数 → 取哪一条缺席记录（G5 附录一）
+    重放缺席键: HashMap<u64, String>,
     /// 连续缺席次数（熔断用）
     consecutive_absent: u32,
     /// 本趟算出的判断键：账本键 → 结构化键（账本 v2 条目记结构化键，步 7）
@@ -351,6 +437,45 @@ pub struct Interp<'a> {
     effect_keys: HashMap<String, EffectKey>,
     /// 本趟判断调用累计耗时（秒，B32 时延预算）
     latency_spent: f64,
+    /// 宿主交进来的上游余额（C-3）：`run` 入口据此收紧 `budget`、定起算深度；审计重放改取账本头里的
+    上游: Option<BudgetCarry>,
+    /// 带上游余额时的 (程序声明的深度, 上游深度上限, 起算深度)：J-06 报文据此区分「程序声明」与「上游收紧」（C-3）
+    深度上游: Option<(u32, u32, u32)>,
+    /// 本趟开跑时账本里已答的问人次数（C-3）：`Spent.asks` 记本趟新增的得到回答的次数
+    本趟起答: u64,
+    /// 宿主显式重新授权（C-3 R1）
+    重新授权: bool,
+    /// 不带余额的一趟在账本头有余额、前一趟被杀时，开跑前要补的结清（C-3 Z0384 B1）
+    无余额结清: Option<Entry>,
+    /// 程序声明的 `budget.depth`（G4b）：进门收紧之前记下（外层 `None` = 还没记）；J-06 的递归上限只取它（没声明取引擎默认），不被余额收紧
+    声明深度: Option<Option<u32>>,
+    /// 引擎默认深度上限（G4b，裁定六十四）：宿主配置，缺省 [`DEFAULT_DEPTH`]；审计重放取账本头的 `depth_cap_default`
+    深度默认: u32,
+    /// 跨程序触发链到限（G4：`hop ≥ depth_cap`）：这一趟判断一律不发（`Unsure(depth)`、`Unasked`），效应产出失败值
+    深度停: bool,
+    /// 本趟的续跑计数（G4 一·5）：带余额时取余额的 `round`，否则取开跑前账本里的段数；`attempt.n = 本趟轮 + 1`
+    本趟轮: u32,
+    /// 账本里（开跑前）记为未问的题：键 → 原因（G4 一·4：审计重放在同一站点照样停发、续跑照样重发）；首次用到时建
+    未问表: std::cell::OnceCell<HashMap<String, String>>,
+    /// 停发说明（G4 一·4）：停发那一刻由预算核对算出的文字，按键留在内存（`W-sieve-budget` 与契约值的 `resume.detail`
+    /// 用；原先取自账本 `Absent.detail`）
+    停发说明: HashMap<String, String>,
+    /// 出口的欠账记号成分（G2）：出口号 → 帧种类、主人、过桥种类、帧内第几次
+    记号表: HashMap<usize, violation::记号成分>,
+    /// 函数返回前丢了、被挂到调用者的未决（G2）：出口号 → 最初所在的函数名
+    丢失处: HashMap<usize, String>,
+    /// 程序结束时记下的违规（G2）：（报告, 出口号）
+    违规: Vec<violation::违规笔>,
+    /// 结算时才失败的推迟动作（Z0565，报告 `settle_failed`）
+    结算失败: Vec<Json>,
+    /// 守卫下推迟的不可逆 `do`（G2，B200）
+    推迟: Vec<violation::推迟动作>,
+    /// 当前建出口的桥（G2：`cut` 或 `cut_score`）
+    当前桥: jpp_ledger::Via,
+    /// 本趟已写过「停下」（G4：一趟一条）
+    停下已写: bool,
+    /// 本趟已记「未问」的键（G4：同一键一趟一条）
+    未问已记: HashSet<String>,
     /// 本趟见过的单次判断调用最大费用（步 15e：cost 预算按它限窗；`None` = 还没观察到）
     c_max: Option<f64>,
     /// 预算停机（B93，步 22-0）：首次停发时置上；此后登记的站点同样停发、费用为零
@@ -370,6 +495,47 @@ pub struct Interp<'a> {
     /// 本趟已记下命中的校准键（`note_calib` 去重；账本 v3 起 `calib_used` 是账本条目的派生视图，
     /// 跨趟保留，不再在入口清空）
     本趟已记校准: HashSet<String>,
+    /// C-1：本趟每条去向事件（按序列化文本）是第几次出现，及账本里这趟之前已有几条相同的（续跑、重放不重复写）
+    去向计数: HashMap<String, (usize, usize)>,
+    /// J-05 默认链（B0492 S2；Z0398 起两项都可省）：程序声明的取材料来源 `unsure_source({need?, fetch?})`：
+    /// 类别清单（候选第一级，空 = 没给）与取材料函数（取法第一级）
+    未决来源: Option<(Vec<String>, Option<Rc<Closure>>)>,
+    /// 默认链再判要用的来历：读数账本键 → 发这道题时的状态与题（`judge` 登记时记）
+    判断来历: HashMap<String, (Rc<State>, Rc<Question>)>,
+    /// 读数账本键 → `cut` 的校准键与切法（`cut` 时记；再判用同一条线切）
+    切法来历: HashMap<String, (Option<String>, bridge::CutOpts)>,
+    /// 报告 `unsure_default` 段：每个进过默认链的出口一行
+    默认链记录: Vec<Json>,
+    /// 「无作者去向」站点（B0492 S2c）：运行入口从 `Program.unsure_default_sites` 取；这些站点切出未决时当场走默认链
+    默认链站点: BTreeSet<usize>,
+    /// 默认链再判要用的读数：读数账本键 → 读数（读数触发看它离边界多远）
+    读数表: HashMap<String, Rc<Reading>>,
+    /// 正在补信息（>0）：这期间的再判不再触发读数触发（B0492 S2b）
+    链中: u32,
+    /// 审计重放里，这趟开始前账本按次数找不到的去向事件（W-replay-duty，主控 2026-09-29）
+    本趟去向: Vec<Entry>,
+    /// 伴随题（B0492 S5）：`unsure_source` 给的题式；每道原题带的伴随题；并行发法下伴随题的读数键；登记伴随题中
+    伴随题式: Option<Vec<Value>>,
+    伴随: Vec<companions::伴随组>,
+    pub(crate) 伴随键: HashSet<String>,
+    pub(crate) 伴随中: bool,
+    /// 正在登记裂变的块（>0）：块不是新题，不带伴随题（主控 2026-09-30）
+    pub(crate) 裂变块中: u32,
+    /// 程序顶层环境（运行入口记下；伴随题取 `unsure_companions` 用）
+    pub(crate) 顶层环境: Option<Env>,
+    /// 伴随题序言（B0492 S5，主控 2026-09-30 路 A）：宿主交来的 `lib/unsure.jpp` 降级结果；运行入口先求值它，
+    /// 取其中的 `unsure_companions` 作标准题式（`序言伴随`）
+    序言: Option<Program>,
+    序言伴随: Option<Vec<Value>>,
+    /// 序言里的通用类别表 `unsure_lacks`（裁定五十一；默认链候选的末级）
+    序言类别: Option<Vec<String>>,
+    /// Z0556：语言自己发的元题（伴随题、默认链「为什么拿不准」）的读数号；刷新时答案形状不符就降级（丢读数、报
+    /// `W-companion-shape`），不中止。`元题登记` > 0 时 `judge` 登记的读数都记进来
+    pub(crate) 元题: HashSet<u64>,
+    pub(crate) 元题登记: u32,
+    /// 默认链取材料的第二、三级（裁定五十五）：程序料库与宿主取材料端口，宿主经 `Session` 交来
+    料库: Option<Rc<dyn jpp_effects::CategoryStore>>,
+    宿主取材料: Option<Rc<dyn jpp_effects::MaterialSource>>,
     /// 本趟已记的声明线记录（键 + 记录哈希；B175 (3)，步 20j-3 追加 (8)）：同一站点每个不同的线各记一条
     本趟已记声明: HashSet<(String, String)>,
     /// 层末条目追加时账本端口报的错（B55，步 18b）：先记下，下一次层末落盘时报 `E-ledger-io`
@@ -402,6 +568,14 @@ pub struct Interp<'a> {
     /// 宿主开启放行把关（意图汇编 11a；`Program.entry.guard`，在 [`Interp::run`] 入口取）。默认关：`release`
     /// 不拦任何 `do`，`W-lineage-unknown` 不报，`W-declared-line` 不说放行
     pub(crate) guard: bool,
+    /// 运行期诊断闸门（步 26，B47）：由宿主注入，实现在 `jpp-check::diag::gate`（运行时不依赖检查器）。
+    /// 未注入时不诊断。只提示、不改走向（批 9 裁定 :42、:136）。
+    pub(crate) gate: Option<&'a dyn jpp_ir::diag_gate::QuestionGate>,
+    /// 本趟已过闸门的题哈希：每道题每趟只诊断一次
+    pub(crate) gated: HashSet<String>,
+    /// 宿主变换表（步 26，`12` §2.8 `transform(f: HostFn, …)`、`20` §2.3 `Ports.transform`）：由宿主注入，
+    /// 登记者是 `jpp-lib::s_library()`。未注入时 `transform("名", …)` 报 `E-rt-arg`。
+    pub(crate) transforms: Option<&'a jpp_effects::TransformTable>,
     evidence: Vec<(String, jpp_effects::views::Sample)>,
     /// 逐 `cut` 出口的线等级（步 20f，报告 `exits`；出口不进账本，重放时重算）
     exit_grades: Vec<Json>,
@@ -413,6 +587,19 @@ pub struct Interp<'a> {
     reading_kinds: HashMap<u64, QuestionKind>,
     /// 报告的 `questions` 表（B107、B120 (a)，步 20h-2）：每个不同的题哈希一行，按首次登记的顺序；不带读数
     questions: Vec<Json>,
+    /// 超窗裂变的合成读数（步 23b）：合成读数的句柄 → 它的块读数与合回方式。`judge` 在声明了
+    /// `fission: "approx"` 的超窗站点返回合成读数，`cut` 据此逐块过桥再合回（`fission.rs`）。放在这里而不放
+    /// `Reading` 上，理由同 `reading_kinds`
+    裂变表: HashMap<u64, Rc<fission::合成读数>>,
+    /// 裂变出的块站点的账本键（步 23b；`20` v2 §4.5 第 3 条末句「超窗裂变出的调用按跨状态推测计」）：层内挑选给组定类别时
+    /// 不把它们算作真站点，只含这些键的组归跨状态推测、预算不够时先让出（`budget.rs::层内挑选`）
+    pub(crate) 裂变块键: HashSet<String>,
+    /// 窗口未测的读数句柄（Z0364，裁定四十九 (c)；设计写作 `ReadingMeta.window_untested`）：开关开、画像没测窗口、
+    /// 题声明了 `fission: "approx"` 的读数（本想按窗切、因窗口未测没切）。`cut` 出口据此置 `Exit.window_untested`。
+    /// 放在这里而不放 `Reading` 上，理由同 `reading_kinds`
+    pub(crate) 窗口未测读数: HashSet<u64>,
+    /// 单元图（C2b，步 41；`cells.rs`）：缺省开，`set_cells(false)` 关（H1a 对照臂），关着为 `None`
+    单元: Option<cells::单元图>,
 }
 
 /// 一次 `judge` 登记：一个状态 + 它那几道题
@@ -425,6 +612,9 @@ struct PendingJudge {
     /// 直线段提升登记的（B94 下半，审查修复 3b）：刷新分组按组内第一条非提升登记的位置排序，
     /// 只有提升登记的组排在最后，不挤掉程序序更靠前的真站点
     lifted: bool,
+    /// 登记处的站点号（步 30 / B0488）：按 `span.start → SiteId` 表查（`Interp::站点表`），查不到为 `None`。
+    /// 层内挑选按它取计划里的下游层数
+    site_id: Option<jpp_ir::key::SiteId>,
 }
 
 /// 一次刷新发出的一层
@@ -451,6 +641,7 @@ pub const BUILTINS: &[&str] = &[
     "iterate",
     "outcome",
     "key_of",
+    "action_fact",
     "element",
     "cut",
     "handle",
@@ -469,18 +660,27 @@ pub const BUILTINS: &[&str] = &[
     "stop",
     "unsure_cause",
     "untested",
+    "near_boundary",
+    "unsure_default",
     "line_source",
     "cert",
     "compose",
     "taint",
     "escalate",
     "literalize",
+    // J-05 默认链（B0492 S2）：取材料函数的声明、库代码记细化
+    "refine",
+    "unsure_source",
     "allocate",
     "unsure_bound",
     "agg",
     "repeat",
     "order",
     "fit",
+    "gate_info",
+    "split_point",
+    "known_answers",
+    "state_within",
     "len",
     "map",
     "filter",
@@ -589,11 +789,15 @@ mod bridge;
 mod budget;
 mod builtins_text;
 mod caps;
+mod carry;
+mod cells;
+mod companions;
 mod constructs;
 mod duty;
 mod effects_exec;
 mod entry;
 mod eval;
+mod fission;
 mod flush;
 mod gen_pending;
 mod guard;
@@ -604,16 +808,33 @@ mod readings;
 mod register;
 mod reuse;
 mod schedule;
+mod undecided;
+mod unsure_default;
+mod violation;
+pub use cells::单元统计;
+pub use violation::{ViolationReport, ViolationView};
 pub mod strength;
 pub use builtins_text::RAND_VERSION;
 use caps::Caps;
 pub use caps::{ConstructSpec, Privilege, construct_specs};
+pub use carry::{BudgetCarry, TripCarry, rewrite_plan_rejection};
 pub use entry::{EntryArgs, EntryMat, EntryValue, HostAccept};
 pub use reuse::CacheStats;
 
 use readings::refresh_point;
 
 impl<'a> Interp<'a> {
+    /// 注入运行期诊断闸门（步 26，B47）。宿主构造闸门（`jpp_check::diag::RuntimeGate::new(&program)`）后调用；
+    /// 不调用则运行期不诊断。
+    pub fn set_gate(&mut self, gate: &'a dyn jpp_ir::diag_gate::QuestionGate) {
+        self.gate = Some(gate);
+    }
+
+    /// 注入宿主变换表（步 26）：`transform("名", 材料…)` 按名字取宿主函数，记账同闭包形式（`12` §2.8）。
+    pub fn set_transforms(&mut self, t: &'a jpp_effects::TransformTable) {
+        self.transforms = Some(t);
+    }
+
     /// 不带 fit 注册表的入口（绝大多数程序不用 fit）。要用 fit 走 `with_fits`。
     /// 按端口表构造（步 15b；步 15c 起唯一入口）：运行时只经端口发调用。不带 fit 注册表（绝大多数
     /// 程序不用 fit），要用 fit 走 `with_fits`。
@@ -662,20 +883,51 @@ impl<'a> Interp<'a> {
             loops: vec![],
             next_exit: 0,
             depth: 0,
+            深度峰: 0,
             run_seq: 0,
             model_id,
             pending: vec![],
             生成: Default::default(),
+            调用费表: Default::default(),
             layers: vec![],
             plan: jpp_ir::plan::Plan::empty(),
             hooks: &Unplanned,
             guards: vec![],
             speculated: HashSet::new(),
             speculation_used: HashSet::new(),
+            站点表: HashMap::new(),
+            键计数: HashMap::new(),
+            键计数已记: HashSet::new(),
+            挑选记录: vec![],
+            并档记录: vec![],
+            首停延后: None,
+            当前组位: 0,
             asks_in_ledger: 0,
             computed_untrusted_states: std::cell::RefCell::new(HashSet::new()),
             input_untrusted_states: std::cell::RefCell::new(HashMap::new()),
             本趟已记校准: HashSet::new(),
+            去向计数: HashMap::new(),
+            未决来源: None,
+            判断来历: HashMap::new(),
+            切法来历: HashMap::new(),
+            默认链记录: vec![],
+            默认链站点: BTreeSet::new(),
+            读数表: HashMap::new(),
+            链中: 0,
+            本趟去向: vec![],
+            伴随题式: None,
+            伴随: vec![],
+            伴随键: HashSet::new(),
+            伴随中: false,
+            裂变块中: 0,
+            顶层环境: None,
+            序言: None,
+            序言伴随: None,
+            序言类别: None,
+            元题: HashSet::new(),
+            元题登记: 0,
+            料库: None,
+            宿主取材料: None,
             本趟已记声明: HashSet::new(),
             账本错: None,
             复用: Default::default(),
@@ -693,13 +945,42 @@ impl<'a> Interp<'a> {
             exit_rows: HashMap::new(),
             reading_kinds: HashMap::new(),
             questions: vec![],
+            裂变表: HashMap::new(),
+            裂变块键: HashSet::new(),
+            窗口未测读数: HashSet::new(),
+            单元: Some(cells::单元图::new()),
             evidence: vec![],
             absent_marks: HashMap::new(),
+            读数缺席: HashMap::new(),
+            重放趟: std::cell::OnceCell::new(),
+            真登记次数: HashMap::new(),
+            真登记序: HashMap::new(),
+            待发真序: HashMap::new(),
+            重放缺席键: HashMap::new(),
             consecutive_absent: 0,
             judge_keys: HashMap::new(),
             render: RENDER_VERSION.to_string(),
             effect_keys: HashMap::new(),
             latency_spent: 0.0,
+            上游: None,
+            深度上游: None,
+            本趟起答: 0,
+            重新授权: false,
+            无余额结清: None,
+            声明深度: None,
+            深度默认: DEFAULT_DEPTH,
+            深度停: false,
+            本趟轮: 0,
+            未问表: std::cell::OnceCell::new(),
+            停发说明: HashMap::new(),
+            记号表: HashMap::new(),
+            丢失处: HashMap::new(),
+            违规: vec![],
+            结算失败: vec![],
+            推迟: vec![],
+            当前桥: jpp_ledger::Via::Cut,
+            停下已写: false,
+            未问已记: HashSet::new(),
             c_max: None,
             预算停: None,
             出口预定: None,
@@ -708,808 +989,16 @@ impl<'a> Interp<'a> {
             entry: EntryArgs::default(),
             entry_mat_names: HashMap::new(),
             guard: false,
+            gate: None,
+            gated: HashSet::new(),
+            transforms: None,
         }
     }
 }
 
-/// 函数体里引用到的名字（含嵌套 lambda 与参数名）。**宁可多收**——多收只是少复用一点缓存，
-/// 少收会把别人的结果当成自己的。语言形式与效应节点的名字也收（与步 12c 前按源码树收集同口径）。
-fn referenced_names(f: &Function) -> BTreeSet<String> {
-    fn go_block(b: &Block, out: &mut BTreeSet<String>) {
-        for s in &b.statements {
-            match s {
-                Stmt::Let { value, .. } => go(value, out),
-                Stmt::Function { function, .. } => go_block(&function.body, out),
-                Stmt::Expr(e) => go(e, out),
-            }
-        }
-        if let Some(r) = &b.result {
-            go(r, out);
-        }
-    }
-    fn go(e: &Expr, out: &mut BTreeSet<String>) {
-        match kind(e) {
-            K::Name(n) => {
-                out.insert(n.to_string());
-            }
-            K::List(items) => items.iter().for_each(|x| go(x, out)),
-            K::Record(fields) => fields.iter().for_each(|(_, x)| go(x, out)),
-            K::Function(inner) => go_block(&inner.body, out),
-            K::Call { callee, args } => {
-                match callee {
-                    Callee::Name(n) => {
-                        out.insert(n.to_string());
-                    }
-                    Callee::Expr(c) => go(c, out),
-                }
-                args.iter().for_each(|x| go(x, out));
-            }
-            K::Field { value, .. } => go(value, out),
-            K::Index { value, index } => {
-                go(value, out);
-                go(index, out);
-            }
-            K::Unary { value, .. } => go(value, out),
-            K::Binary { left, right, .. } => {
-                go(left, out);
-                go(right, out);
-            }
-            K::If { condition, yes, no } => {
-                go(condition, out);
-                go_block(yes, out);
-                go_block(no, out);
-            }
-            K::Block(b) => go_block(b, out),
-            _ => {}
-        }
-    }
-    let mut out = BTreeSet::new();
-    go_block(&f.body, &mut out);
-    out
-}
-
-/// 同题跨运行合并：noul / score 取均值，choice 取众数（`12`:134）
-fn merge_runs(ans: &dyn Answers, rs: &[Rc<Reading>], method: &str, sp: Span) -> R<Answer> {
-    let answers: Vec<Answer> = rs.iter().filter_map(|r| ans.answer_of(r)).collect();
-    if answers.is_empty() {
-        return err(
-            Some("J-12"),
-            "repeat 收到的读数全是失败或未答，没有可合并的",
-            sp,
-        );
-    }
-    // 逐分量取均值或中位数（B28）。choice / score 都是概率向量，逐分量合并，不投票。
-    let 合 = |xs: &mut Vec<f64>| -> f64 {
-        if xs.is_empty() {
-            return 0.0;
-        }
-        if method == "median" {
-            xs.sort_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal));
-            let m = xs.len() / 2;
-            if xs.len() % 2 == 1 {
-                xs[m]
-            } else {
-                (xs[m - 1] + xs[m]) / 2.0
-            }
-        } else {
-            xs.iter().sum::<f64>() / xs.len() as f64
-        }
-    };
-    let 向量 = |pick: &dyn Fn(&Answer) -> Option<Vec<f64>>, len: usize| -> Vec<f64> {
-        (0..len)
-            .map(|i| {
-                let mut xs: Vec<f64> = answers
-                    .iter()
-                    .filter_map(|a| pick(a).and_then(|v| v.get(i).copied()))
-                    .collect();
-                合(&mut xs)
-            })
-            .collect()
-    };
-    Ok(match &answers[0] {
-        Answer::Noul(_) => {
-            let mut ps: Vec<f64> = answers
-                .iter()
-                .filter_map(|a| {
-                    if let Answer::Noul(p) = a {
-                        Some(*p)
-                    } else {
-                        None
-                    }
-                })
-                .collect();
-            Answer::Noul(合(&mut ps))
-        }
-        Answer::Score(v0) => Answer::Score(向量(
-            &|a| {
-                if let Answer::Score(v) = a {
-                    Some(v.clone())
-                } else {
-                    None
-                }
-            },
-            v0.len(),
-        )),
-        Answer::Choice(v0) => Answer::Choice(向量(
-            &|a| {
-                if let Answer::Choice(v) = a {
-                    Some(v.clone())
-                } else {
-                    None
-                }
-            },
-            v0.len(),
-        )),
-    })
-}
-
-/// 这道题声明了、而状态里空着的证据槽（J-09）。与 Python `runtime.py:1133` 同口径：
-/// 只查「槽不存在或为空」，不查内容。
-fn missing_evidence(state: &State, q: &Question) -> Vec<String> {
-    q.evidence
-        .iter()
-        .filter(|slot| {
-            let v = match slot.as_str() {
-                "on" => &state.on,
-                "ctx" => &state.ctx,
-                "ref" => &state.r#ref,
-                // B155（步 15i）：`over` 只随 `select` 题作 `criteria` 发出，是非题与打分题线上看不到它——
-                // 声明 `over` 为决定性证据的非 `select` 题按缺证据处理（不信任 p），不因状态里有 `over` 放行。
-                // 依据：B155、J-09
-                "over" if q.op != Op::Select => return true,
-                "over" => &state.over,
-                _ => return false,
-            };
-            v.is_empty()
-        })
-        .cloned()
-        .collect()
-}
-
-/// `test`/`select`/`measure` 的可选第三参：`{evidence: [槽名…]}`（J-09）
-fn evidence_of(v: Option<&Value>, sp: Span) -> R<Vec<String>> {
-    let Some(v) = v else { return Ok(vec![]) };
-    let Value::Record(fields) = v else {
-        return err(
-            Some("E-rt-question"),
-            "题的第三个参数要是记录：{evidence: [\"ctx\", …]}",
-            sp,
-        );
-    };
-    let Some((_, slots)) = fields.iter().find(|(k, _)| k == "evidence") else {
-        return Ok(vec![]);
-    };
-    let Value::List(l) = slots else {
-        return err(Some("E-rt-question"), "evidence 要是槽名的列表", sp);
-    };
-    let mut out = vec![];
-    for s in l.iter() {
-        let Value::Text(t, _) = s else {
-            return err(Some("E-rt-question"), "evidence 里要是槽名（文本）", sp);
-        };
-        if !matches!(t.as_ref(), "on" | "ctx" | "ref" | "over") {
-            return err(
-                Some("E-rt-question"),
-                format!("evidence 里的 {t} 不是槽名；状态只有 on / ctx / ref / over 四个槽"),
-                sp,
-            );
-        }
-        out.push(t.to_string());
-    }
-    Ok(out)
-}
-
-/// 题上可读的字段（只读）。静态检查（check.rs）用同一张表核字段名。
-pub const QUESTION_FIELDS: &[&str] = &[
-    "text",
-    "op",
-    "calib",
-    "scale",
-    "evidence",
-    "hash",
-    "subject",
-    "predicate",
-    "partition",
-    "request",
-    "presupposition",
-    "form",
-    "template",
-    "fill",
-];
-/// 题式上可读的字段（只读）。
-pub const FORM_FIELDS: &[&str] = &[
-    "template",
-    "op",
-    "slots",
-    "calib",
-    "scale",
-    "evidence",
-    "presupposition",
-    "request",
-    "partition",
-    "subject",
-    "hash",
-];
-
-/// 组合封闭性契约（B17，施工件 i）的字段。每个构造（`sieve` / `pair` / `tally` / `first_k` /
-/// `iterate` / `outcome`）返回同一形状的记录，检查器据此核字段名。
-/// - `kind`：产生它的构造；
-/// - `value`：产出；
-/// - `pending`：未决清单，每项 `{element, exit, cause}`，`exit` 承担责任（J-05 / 13 §3）；
-/// - `evidence`：账本键（Text），不存读数或材料的副本；
-/// - `resume`：续接——停在哪里、为什么、可选的继续方法 `next`；
-/// - `spent`：本构造新增的调用与费用 `{calls, usd}`；
-/// - `detail`：构造特有的已决信息（例如 sieve 的 `question`、`ignore`）；
-/// - `purpose`：可选的可读目的，供诊断。
-pub const OUTCOME_FIELDS: &[&str] = &[
-    "kind", "value", "pending", "evidence", "resume", "spent", "detail", "purpose",
-];
-
-/// 这个值是不是一个契约值（字段集合与 `OUTCOME_FIELDS` 一致）
-pub fn is_outcome(v: &Value) -> bool {
-    match v {
-        Value::Record(r) => {
-            r.len() == OUTCOME_FIELDS.len()
-                && OUTCOME_FIELDS.iter().all(|f| r.iter().any(|(k, _)| k == f))
-        }
-        _ => false,
-    }
-}
-
-/// 证据列表去重追加（证据都是账本键 Text）
-fn push_key(v: &mut Vec<Value>, k: Value) {
-    let same = |a: &Value| matches!((a, &k), (Value::Text(x, _), Value::Text(y, _)) if x == y);
-    if !v.iter().any(same) {
-        v.push(k);
-    }
-}
-
-fn list_of(v: Option<Value>) -> Vec<Value> {
-    match v {
-        Some(Value::List(l)) => l.iter().cloned().collect(),
-        _ => vec![],
-    }
-}
-
-fn texts(v: &[String]) -> Value {
-    Value::list(v.iter().map(|x| Value::text(x)).collect())
-}
-fn opt_text(v: &Option<String>) -> Value {
-    v.as_deref().map(Value::text).unwrap_or(Value::Unit)
-}
-
-/// B1 五件与题的元数据。`predicate` 就是题面：主体（被判断的对象）在状态里，不在题面里，
-/// 题面说的是对它判断什么。由题式填出的题另有 `template`（带槽的谓词）与 `fill`（填法）。
-fn question_field(q: &Question, field: &str) -> Option<Value> {
-    Some(match field {
-        "text" | "predicate" => Value::text(&q.text),
-        "op" => Value::text(q.op.fixture_name()),
-        "calib" => Value::text(&q.calib),
-        "scale" => texts(&q.scale),
-        "evidence" => texts(&q.evidence),
-        "hash" => Value::text(&q.hash),
-        "subject" => Value::text(q.subject()),
-        "partition" => Value::text(q.partition()),
-        "request" => Value::text(&q.request()),
-        "presupposition" => opt_text(&q.presupposition),
-        "form" => opt_text(&q.form_hash),
-        "template" => opt_text(&q.template),
-        "fill" => match &q.fill {
-            Some(f) => Value::Record(Rc::new(
-                f.iter().map(|(k, v)| (k.clone(), Value::text(v))).collect(),
-            )),
-            None => Value::Unit,
-        },
-        _ => return None,
-    })
-}
-
-fn form_field(f: &jpp_value::value::Form, field: &str) -> Option<Value> {
-    Some(match field {
-        "template" => Value::text(&f.template),
-        "op" => Value::text(f.op.fixture_name()),
-        "slots" => texts(&f.slots),
-        "calib" => Value::text(&f.calib),
-        "scale" => texts(&f.scale),
-        "evidence" => texts(&f.evidence),
-        "presupposition" => opt_text(&f.presupposition),
-        "request" => Value::text(
-            f.request
-                .as_deref()
-                .unwrap_or(jpp_value::value::default_request(f.op)),
-        ),
-        "partition" => Value::text(match f.op {
-            Op::Test => "binary",
-            Op::Select => "k_ary",
-            Op::Measure => "ordered",
-        }),
-        "subject" => Value::text(match f.op {
-            Op::Select => "over",
-            _ => "on",
-        }),
-        "hash" => Value::text(&f.hash),
-        _ => return None,
-    })
-}
-
-/// 题与题式的置换声明 `{permute: true}`（B64，步 15f）：只对 K 选一（`select`）有意义，值须为布尔。
-/// 依据：B64（地基/附注/2026-09-24-探针首轮裁定.md，I-1(b)）
-fn permute_of(v: Option<&Value>, op: Op, sp: Span) -> R<bool> {
-    let declared = match v.and_then(|v| v.get("permute")) {
-        None | Some(Value::Unit) => return Ok(false),
-        Some(Value::Bool(b, _, _)) => b,
-        Some(other) => {
-            return err(
-                Some("E-rt-question"),
-                format!(
-                    "permute 要是布尔（{{permute: true}}），收到 {}（依据：B64）",
-                    other.type_name()
-                ),
-                sp,
-            );
-        }
-    };
-    if declared && op != Op::Select {
-        return err(
-            Some("E-rt-question"),
-            format!(
-                "permute 只用于 select（K 选一）：{} 题没有候选顺序可换（依据：B64）",
-                op.fixture_name()
-            ),
-            sp,
-        );
-    }
-    Ok(declared)
-}
-
-/// 是非题的答案标签 `{labels: {yes: Text, no: Text}}`（B155，步 15i）：线上作 `criteria: {true, false}`，
-/// 进题哈希与题式哈希。只用于 `test`（`select` 的候选标签写在候选材料上：`{label, text}`）。
-/// 依据：B155（地基/附注/2026-09-26-批6裁定.md §三）
-fn labels_of(v: Option<&Value>, op: Op, sp: Span) -> R<Option<jpp_value::value::TestLabels>> {
-    let l = match v.and_then(|v| v.get("labels")) {
-        None | Some(Value::Unit) => return Ok(None),
-        Some(l) => l,
-    };
-    if op != Op::Test {
-        return err(
-            Some("E-rt-question"),
-            format!(
-                "labels 只用于 test（是非题的答案标签）：{} 题的候选标签写在候选材料上 {{label, text}}（依据：B155）",
-                op.fixture_name()
-            ),
-            sp,
-        );
-    }
-    let (yes, no) = (l.get("yes"), l.get("no"));
-    match (&l, yes, no) {
-        (Value::Record(fs), Some(Value::Text(y, _)), Some(Value::Text(n, _))) if fs.len() == 2 => {
-            Ok(Some(jpp_value::value::TestLabels {
-                yes: y.to_string(),
-                no: n.to_string(),
-            }))
-        }
-        _ => err(
-            Some("E-rt-question"),
-            format!(
-                "labels 要是 {{yes: Text, no: Text}}，收到 {}（依据：B155）",
-                l.type_name()
-            ),
-            sp,
-        ),
-    }
-}
-
-/// 题的声明项：前提（可选文本）与请求（本版只接受各题型的缺省请求，见下）。
-fn question_decl_of(v: Option<&Value>, op: Op, sp: Span) -> R<(Option<String>, Option<String>)> {
-    let Some(v) = v else { return Ok((None, None)) };
-    let presupposition = match v.get("presupposition") {
-        None | Some(Value::Unit) => None,
-        Some(Value::Text(t, _)) => Some(t.to_string()),
-        Some(other) => {
-            return err(
-                Some("E-rt-question"),
-                format!("presupposition 要是文本，收到 {}", other.type_name()),
-                sp,
-            );
-        }
-    };
-    let request = match v.get("request") {
-        None | Some(Value::Unit) => None,
-        Some(Value::Text(t, _)) => {
-            // 本版 `cut` 只实现每个题型的缺省请求。「K 选一、选出全部」（all）要由三路过滤
-            // 与子集判断承担（施工件 c），在那之前声明它只会被静默当成 one——所以拒绝，而不是收下不管。
-            if t.as_ref() != jpp_value::value::default_request(op) {
-                let hint = if op == Op::Select && t.as_ref() == "all" {
-                    "；「选出全部」待三路过滤（施工件 c）实现后可用，现在用 map + test 逐个判"
-                } else {
-                    ""
-                };
-                return err(
-                    Some("E-rt-question"),
-                    format!(
-                        "request 「{t}」不适用于 {} 题：本版只支持缺省请求 {}{hint}",
-                        op.fixture_name(),
-                        jpp_value::value::default_request(op)
-                    ),
-                    sp,
-                );
-            }
-            Some(t.to_string())
-        }
-        Some(other) => {
-            return err(
-                Some("E-rt-question"),
-                format!("request 要是文本，收到 {}", other.type_name()),
-                sp,
-            );
-        }
-    };
-    Ok((presupposition, request))
-}
-
-/// 一组实参里各材料的来源出口键（`Mat.from_key`）的并（B59，步 17a；容器递归看，与 `derived_of` 同）。
-/// 步 17c（B84）起取值级标签的 sources：标量叶子、材料、出口、题都算。
-/// 步 18c（B92）起带边的种类：效应输出承接输入边，种类不变。
-fn from_keys_of(args: &[Value]) -> Sources {
-    args.iter()
-        .fold(Provenance::trusted(), |p, a| prov_join(&p, &a.prov()))
-        .sources
-}
-
-/// 出口交给 `pick`/`at` 臂的标签（B84）：出口 taint，sources = {出口键}，值依赖边（B92：k 由读数算出）。
-fn 出口标签(e: &Exit) -> Provenance {
-    Provenance::new(e.taint, Sources::value(&e.ledger_key.borrow(), &e.q_hash))
-}
-
-/// 元素记录的直接来源（B59，步 17a，结构通道）：`sieve` 元素有 `exit` 且账本键非空 → 该键；
-/// `pair` 元素（无 `exit`、有 `left`/`right`）→ 两侧来源的并；其余为空。
-/// 只取直接来源，更早的祖先经它们自己的 `hop` 计入。经普通值（`e.item` 取出）的依赖不在此列（候选 B84）。
-fn element_lineage(it: &Value) -> BTreeSet<String> {
-    let mut out = BTreeSet::new();
-    if !matches!(it, Value::Record(_)) {
-        return out;
-    }
-    match it.get("exit") {
-        Some(Value::Exit(e)) | Some(Value::Duty(e)) => {
-            let k = e.ledger_key.borrow().clone();
-            if !k.is_empty() {
-                out.insert(k);
-            }
-        }
-        _ => {
-            for side in ["left", "right"] {
-                if let Some(v) = it.get(side) {
-                    out.extend(element_lineage(&v));
-                }
-            }
-        }
-    }
-    out
-}
-
-/// 一组实参里各材料的 `derived_from` 的并（容器要递归看，与 `taint_of` 同）
-fn derived_of(args: &[Value]) -> BTreeSet<String> {
-    fn go(v: &Value, out: &mut BTreeSet<String>) {
-        match v {
-            Value::Mat(m) => out.extend(m.derived_from.iter().cloned()),
-            Value::List(l) => l.iter().for_each(|x| go(x, out)),
-            Value::Record(fs) => fs.iter().for_each(|(_, x)| go(x, out)),
-            Value::Stop(x) => go(x, out),
-            _ => {}
-        }
-    }
-    let mut out = BTreeSet::new();
-    args.iter().for_each(|a| go(a, &mut out));
-    out
-}
-
-/// 不在分派处做「输出 ∨ 输入」的内置（B33 第 3 点）。两类：
-/// 1. **效应边界与自带规则**：taint 按 `12` §2.11 表在这里赋值（`state`/`mat`/`content`/`judge`/
-///    `cut`/`do`/`gen`/`ask`/`transform`…），或输出本身就带着该有的位（出口、材料、契约值）；
-/// 2. **只搬运元素**：输出的元素就是输入的元素（或用户函数的返回值），各带自身的位；
-///    整体 ∨ 会把一个不可信元素的位抹到所有元素上（取字段 / 下标返回叶子自身的位，同一原则）。
-/// 不在表上的内置（含将来新增的）一律按 ∨ 输入处理——**兜底往拒绝那边倒**。
-const 不做数据流合取的内置: &[&str] = &[
-    // 效应边界与自带规则
-    "state",
-    "test",
-    "select",
-    "measure",
-    "form",
-    "fill",
-    "judge",
-    "cut",
-    "handle",
-    "consume",
-    "do",
-    "gen",
-    "ask",
-    "transform",
-    "mat",
-    "content",
-    "sieve",
-    "pair",
-    "tally",
-    "first_k",
-    "iterate",
-    "outcome",
-    "repeat",
-    "agg",
-    "allocate",
-    "unsure_bound",
-    "fit",
-    "order",
-    // 步 25-8a：元素构造自带来源规则（item 只加选择边，B92）；整体 ∨ 会给 item 加出口的值依赖边，
-    // 把「读数只选中了它」变成「内容派生自这道题」（J-02 会误拦同题再问）
-    "element",
-    "escalate",
-    "literalize",
-    "unsure",
-    "pending",
-    "print",
-    "stop",
-    "fail",
-    // 只搬运元素
-    "map",
-    "filter",
-    "fold",
-    "loop",
-    "append",
-    "concat",
-    "slice",
-    "reverse",
-    "with",
-];
-
-/// 一个值携带的 taint（B33：标量自带位，容器递归 ∨）
-fn taint_of(v: &Value) -> Taint {
-    v.taint()
-}
-
-/// 13 §6 的运行错误：说清是哪一步越界、越的是哪个界，并带 `.jpp` 的 Span
-fn overflow(what: &str, a: i64, b: i64, sp: Span) -> Fault {
-    Fault::Error(RtError::new(
-        Some("E-rt-int"),
-        format!(
-            "Int {what}溢出：{a} 与 {b} 的结果超出有符号 64 位范围（{} … {}）。Int 是 64 位有符号整数，溢出是错误不是回绕",
-            i64::MIN,
-            i64::MAX
-        ),
-        sp,
-    ))
-}
-
+// 自由函数在 `support.rs`（C2a 拆出）；对外的常量与函数在这里按原路径导出
+mod support;
 use jpp_value::bridge::argmax;
-
-pub fn json_to_value(j: &Json) -> Value {
-    match j {
-        Json::Null => Value::Unit,
-        Json::Bool(b) => Value::Bool(*b, Taint::Trusted.into(), GuardEv::EMPTY),
-        Json::Number(n) => n
-            .as_i64()
-            .map(Value::int)
-            .unwrap_or_else(|| Value::Float(n.as_f64().unwrap_or(0.0), Taint::Trusted.into())),
-        Json::String(s) => Value::text(s),
-        Json::Array(a) => Value::list(a.iter().map(json_to_value).collect()),
-        Json::Object(o) => Value::record(
-            o.iter()
-                .map(|(k, v)| (k.clone(), json_to_value(v)))
-                .collect(),
-        ),
-    }
-}
-
-/// 效应输出写进账本（账本 v3，步 18a）：`(output, output_mat)`。材料输出的内容进 `output`，
-/// 地址、来源链、taint 与来源边（带种类，B92）进 `output_mat`；`derived_from` 不写（B84：值依赖边的投影，
-/// 读回时重算）。失败值写 `{"__fail", "taint"}`，其余写值本身、`output_mat` 为空。
-pub fn effect_value_to_entry(v: &Value) -> (Json, Option<MatMeta>) {
-    match v {
-        Value::Fail(s, t) => (json!({"__fail": s.as_ref(), "taint": t.taint}), None),
-        Value::Mat(m) => {
-            let sources = m
-                .prov()
-                .sources
-                .edges()
-                .map(|(k, e)| SourceEdge {
-                    key: k.clone(),
-                    kind: e.kind,
-                    q: e.q.clone(),
-                })
-                .collect();
-            (
-                m.content.clone(),
-                Some(MatMeta {
-                    addr: m.addr.clone(),
-                    origin: m.origin.clone(),
-                    taint: m.taint,
-                    sources,
-                }),
-            )
-        }
-        other => (other.to_json(), None),
-    }
-}
-
-/// 从账本读回效应输出（账本 v3）。`output_mat` 在即为材料：来源边按种类还原，`derived_from` 由值依赖边重算。
-pub fn entry_to_effect_value(output: &Json, output_mat: Option<&MatMeta>) -> Value {
-    if let Some(meta) = output_mat {
-        let edges = meta
-            .sources
-            .iter()
-            .map(|e| {
-                (
-                    e.key.clone(),
-                    jpp_value::prov::Edge {
-                        kind: e.kind,
-                        q: e.q.clone(),
-                    },
-                )
-            })
-            .collect();
-        return Value::Mat(Rc::new(
-            Mat::new(
-                output.clone(),
-                &meta.addr,
-                meta.origin.clone(),
-                meta.taint,
-                BTreeSet::new(),
-            )
-            .with_sources(&Sources::from_map(edges)),
-        ));
-    }
-    if let Some(f) = output.get("__fail").and_then(|x| x.as_str()) {
-        // 失败值的 taint 缺了或坏了：兜底往拒绝那边倒（untrusted），与材料的反序列化同一纪律
-        let t = output
-            .get("taint")
-            .and_then(|x| serde_json::from_value::<Taint>(x.clone()).ok())
-            .unwrap_or(Taint::Untrusted);
-        return Value::Fail(Rc::from(f), t.into());
-    }
-    json_to_value(output)
-}
-
-/// 缺席类未决原因（B95）：没观察到的项，不是判过而拿不准的项；不能 drop（`E-drop-unobserved`）
-const 缺席类原因: &[&str] = &["budget", "absent", "latency"];
-
-/// 返回值里带着哪些出口 / 未决责任（可达性核，`20` v2 §3.5）。
-fn collect_exit_ids(v: &Value, out: &mut HashSet<usize>) {
-    visit_exits(v, &mut |e| {
-        out.insert(e.id);
-    });
-}
-
-/// 按可达性走一个值里的出口与未决责任，逐个交给 `f`（同一出口可能经多条路径被交多次）。
-fn visit_exits(v: &Value, f: &mut dyn FnMut(&Rc<Exit>)) {
-    match v {
-        Value::Exit(e) | Value::Duty(e) => f(e),
-        // 惰性出口（B94）：解析了按出口算；未解析的只会在它自己那一帧还活着时出现，帧返回前必解析
-        Value::Cut(c) => {
-            if let Some(e) = c.exit() {
-                f(&e)
-            }
-        }
-        Value::List(l) => l.iter().for_each(|x| visit_exits(x, f)),
-        Value::Record(r) => r.iter().for_each(|(_, x)| visit_exits(x, f)),
-        Value::Stop(x) => visit_exits(x, f),
-        // 方法的**捕获环境**里也可能装着责任。`13` §3 明列「随返回值/继续方法交给调用者」
-        // 是合法去向，而类型侧早就用 `captures_responsibility` 认了方法能捕获责任——
-        // 扫描侧不进环境，就成了内核两半打架：合法的续接方法被判成「责任丢了」。
-        Value::Fn(c) => visit_closure(c, 3, f),
-        _ => {}
-    }
-}
-
-/// 经闭包捕获环境可达的责任（B52：可达性延伸进闭包捕获）。
-/// 已用掉的 Fn¹（判为唯一路径后调用过一次）不再是它那几条责任的路径：责任在那次调用里已按
-/// 实际去向处置，闭包不能再调用，经它「可达」只是字面上的（依据：B52、`13` §3）。
-fn visit_closure(c: &Closure, depth: u32, f: &mut dyn FnMut(&Rc<Exit>)) {
-    let spent: Vec<usize> = if c.linear_called.get() {
-        c.linear.borrow().clone()
-    } else {
-        vec![]
-    };
-    let mut g = |e: &Rc<Exit>| {
-        if !spent.contains(&e.id) {
-            f(e)
-        }
-    };
-    visit_env(&c.env, &referenced_names(&c.function), depth, &mut g);
-}
-
-/// 从捕获环境里找责任。只看方法体**实际引用到**的名字，不把共享环境链里所有可达名字都算成捕获
-/// （Codex 陷阱 5 的后半句）；`depth` 防递归环境链无限展开。
-fn visit_env(env: &Env, names: &BTreeSet<String>, depth: u32, f: &mut dyn FnMut(&Rc<Exit>)) {
-    if depth == 0 {
-        return;
-    }
-    for n in names {
-        let Some(v) = env_lookup(env, n) else {
-            continue;
-        };
-        match &v {
-            Value::Fn(c) => {
-                if depth > 1 {
-                    visit_closure(c, depth - 1, f)
-                }
-            }
-            other => visit_exits(other, f),
-        }
-    }
-}
-
-/// 闭包创建时经捕获环境可达的未销账未决责任（`Closure.captures`，B52，步 21）
-fn captured_duties(f: &Function, env: &Env) -> Vec<usize> {
-    let mut out = vec![];
-    visit_env(env, &referenced_names(f), 3, &mut |e| {
-        if e.is_unsure() && !e.consumed.get() && !out.contains(&e.id) {
-            out.push(e.id);
-        }
-    });
-    // 未解析的惰性出口（B94）：种类还不知道，按可能是未决记下它预分配的出口号（多记只让 Fn¹ 判定
-    // 多一个候选，是否真是未决在帧返回时按出口核）
-    for n in referenced_names(f) {
-        if let Some(v) = env_lookup(env, &n) {
-            未解析出口号(&v, &mut out);
-        }
-    }
-    out
-}
-
-fn 未解析出口号(v: &Value, out: &mut Vec<usize>) {
-    match v {
-        Value::Cut(c) if c.exit().is_none() => {
-            if !out.contains(&c.id) {
-                out.push(c.id)
-            }
-        }
-        Value::List(l) => l.iter().for_each(|x| 未解析出口号(x, out)),
-        Value::Record(r) => r.iter().for_each(|(_, x)| 未解析出口号(x, out)),
-        Value::Stop(x) => 未解析出口号(x, out),
-        _ => {}
-    }
-}
-
-/// 返回值里每条责任的可达路径（B52 的 Fn¹ 判定用）：`direct` 是不经任何闭包可达的出口 id；
-/// `via` 是经闭包可达的出口 id → 途经的**值层**闭包（按身份去重；嵌在闭包环境里的闭包算作外层那个）。
-fn exit_paths(v: &Value, direct: &mut HashSet<usize>, via: &mut HashMap<usize, Vec<Rc<Closure>>>) {
-    match v {
-        Value::Exit(e) | Value::Duty(e) => {
-            direct.insert(e.id);
-        }
-        Value::Cut(c) => {
-            direct.insert(c.id);
-        }
-        Value::List(l) => l.iter().for_each(|x| exit_paths(x, direct, via)),
-        Value::Record(r) => r.iter().for_each(|(_, x)| exit_paths(x, direct, via)),
-        Value::Stop(x) => exit_paths(x, direct, via),
-        Value::Fn(c) => visit_closure(c, 3, &mut |e| {
-            let cs = via.entry(e.id).or_default();
-            if !cs.iter().any(|x| Rc::ptr_eq(x, c)) {
-                cs.push(c.clone());
-            }
-        }),
-        _ => {}
-    }
-}
-
-/// 一个元素交给判断器的那份材料与来路：
-/// 过滤或配对的产物（带 `item` 与 `trail` 的记录）取 `item` 当材料，`trail` 接上上一次的出口；
-/// 其余值原样当材料、来路为空。产物与输入同形，可再过滤、再配对（组合封闭）。
-/// （输出元素的构造 `element_out`、`is_element` 在步 25-2b 搬进 `constructs/element.rs`，B133。）
-fn element_parts(it: &Value) -> (Value, Value) {
-    let is_elem =
-        matches!(it, Value::Record(_)) && it.get("item").is_some() && it.get("trail").is_some();
-    if !is_elem {
-        return (it.clone(), Value::list(vec![]));
-    }
-    let mut t: Vec<Value> = match it.get("trail") {
-        Some(Value::List(l)) => l.iter().cloned().collect(),
-        _ => vec![],
-    };
-    if let Some(e) = it.get("exit") {
-        if !matches!(e, Value::Unit) {
-            t.push(e);
-        }
-    }
-    (it.get("item").unwrap_or(Value::Unit), Value::list(t))
-}
+use support::*;
+pub use support::{FORM_FIELDS, OUTCOME_FIELDS, QUESTION_FIELDS};
+pub use support::{effect_value_to_entry, entry_to_effect_value, is_outcome, json_to_value};

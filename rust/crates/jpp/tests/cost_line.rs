@@ -6,6 +6,8 @@
 //! **门装好了，旋钮没装**：作者能被告知「你这条线没凭据」，
 //! 却没有任何办法告诉语言「我这一格的误放行比漏放行贵十倍」。
 
+// 伴随题「最缺哪类」是 K 选一：替身经 common::伴随中性judge 给伴随元题中性读数（Z0398 返修，过程记录 5.23）
+mod common;
 use jpp::conformal::cost_line;
 use jpp::effects::{CalibStore, LiteralMode, Sample};
 use serde_json::Value as Json;
@@ -227,7 +229,7 @@ fn 参考值在jpp那侧也比不了大小() {
     /// 判断恒给 0.9，不该生成、不该问人（步 15c：原 `impl Client` 的桩改为三个闭包端口；无状态，故 'static）
     fn 桩端口() -> Ports<'static> {
         Ports::new()
-            .with(FnPort::judge("m", |_s, qs| {
+            .with(common::伴随中性judge("m", |_s, qs| {
                 Ok(JudgeResult {
                     answers: qs.iter().map(|_| Answer::Noul(0.9)).collect(),
                     tokens: 0,

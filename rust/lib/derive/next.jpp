@@ -1,0 +1,52 @@
+// 按出口种类长出下一道题（B45：从上一轮出口的结构或类型签名长出下一题）。
+//
+//   act / ignore（是非题式的已决块挂了签名，裁定十九）→ 先选后填；签名的参数没有可选值且 opts.elicit 开 → 唤出
+//   pick(k)（填空题，或候选 k 带签名）                → 先选后填；同上
+//   unsure(band) / unsure(tie)                        → 划分细化；拆不了且 opts.elicit 开 → 唤出
+//   unsure(insufficient:…)                            → 前提反面；没声明前提且 opts.elicit 开 → 唤出
+//   其余                                              → 不派生（叶或未决，由 chain 处理）
+// opts.elicit == "always"：以上确定性派生之外，每个出口都再唤出一批，两路候选同批过同一个闸门（过程记录 §1.4）。
+// 返回派生节点列表（还没过闸门）。
+import "rules.jpp";
+import "node.jpp";
+import "fill.jpp";
+import "refine.jpp";
+import "elicit.jpp";
+
+// 唤出的开关：opts.elicit 为 true = 确定性派生长不出题时唤出（后备）；"always" = 确定性派生之外总唤出一批，
+// "always" 只作调试开关（对照两条出题路用）；程序口径是缺省或 true：已决出口没挂签名即成叶（Z0515/Z0535）
+// 两路候选同批过同一个闸门；缺省不唤出
+fn derive_elicit_mode(opts) {
+    if !has(opts, "elicit") { "off" } else {
+        let j = to_json(opts.elicit);
+        if j == "true" { "fallback" } else if j == "\"always\"" { "always" } else { "off" }
+    }
+}
+fn derive_elicit_on(opts) { derive_elicit_mode(opts) != "off" }
+
+// 确定性派生的结果：先选后填缺可选值时的 {want} 记号要唤出（开着时）或丢掉
+fn derive_with_fallback(n, e, det, opts) {
+    let wants = filter(det, fn(c) { has(c, "want") });
+    let real = filter(det, fn(c) { !has(c, "want") });
+    let mode = derive_elicit_mode(opts);
+    if mode == "always" { concat(real, derive_elicit(n, e, exit_kind(e), opts)) }
+    else if len(real) == 0 && mode == "fallback" {
+        if len(wants) > 0 { derive_elicit(n, e, exit_kind(e) + "；「" + wants[0].want + "」没有可选值", opts) }
+        else if det_needs_elicit(n, e) { derive_elicit(n, e, exit_kind(e), opts) } else { [] }
+    }
+    else { real }
+}
+
+// 确定性派生拆不了、要唤出的出口：未决（细化拆不了、没声明前提）；已决出口没挂签名时是叶，不唤出
+fn det_needs_elicit(n, e) { starts_with(exit_kind(e), "unsure(band") || starts_with(exit_kind(e), "unsure(tie")
+                            || starts_with(exit_kind(e), "unsure(insufficient") }
+
+fn derive_next(n, e, opts) {
+    let label = exit_kind(e);
+    let det = if label == "act" || label == "ignore" { derive_fill_block(n, e, label, opts) }
+              else if starts_with(label, "pick(") { derive_fill_pick(n, e, derive_index(label), opts) }
+              else if starts_with(label, "unsure(band") || starts_with(label, "unsure(tie") { derive_refine(n, e, opts) }
+              else if starts_with(label, "unsure(insufficient") { derive_premise(n, e, opts) }
+              else { [] };
+    derive_with_fallback(n, e, det, opts)
+}

@@ -58,7 +58,7 @@ fn 跑(src: &str) -> Result<Json, String> {
 /// 返回 {t: taint(e), m: as_mat 之后材料的 taint, w: act 臂里不可逆 do 的结果}
 fn 程序(题: &str) -> String {
     format!(
-        "budget {{calls: 4, cost: 1, depth: 8}};\nlet 外来 = content(do(\"取外部\", [], 0));\nlet 提到 = form(\"test\", \"材料里提到{{city}}吗\", {{calib: \"k\"}});\nlet q = {题};\nlet e = cut(judge(state(mat(\"我下周去北京出差\")), q));\nhandle(e, {{act: fn() {{ content(do(\"发邮件\", [], 0)) }}, ignore: fn() {{ \"不发\" }}, unsure: fn(u) {{ consume(u, \"drop\"); \"不发\" }}}})\n"
+        "budget {{calls: 4, cost: 1, depth: 8}};\nlet 外来 = content(do(\"取外部\", [], 0));\nlet 提到 = form(\"test\", \"材料里提到{{city}}吗\", {{calib: \"k\"}});\nlet q = {题};\nlet e = cut(judge(state(mat(\"我下周去北京出差\")), q));\nhandle(e, {{act: fn() {{ (do(\"发邮件\", [], 0)) }}, ignore: fn() {{ \"不发\" }}, unsure: fn(u) {{ consume(u, \"drop\"); \"不发\" }}}})\n"
     )
 }
 
@@ -83,7 +83,7 @@ fn b_字面填入值出口可信且放行() {
     let v = 出口taint("fill(提到, {city: \"北京\"})");
     assert_eq!(v["t"], Json::from("trusted"), "{v}");
     assert_eq!(
-        跑(&程序("fill(提到, {city: \"北京\"})")).unwrap(),
+        跑(&程序("fill(提到, {city: \"北京\"})")).unwrap()["content"],
         Json::from("已发")
     );
 }

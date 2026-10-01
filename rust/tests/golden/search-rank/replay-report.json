@@ -3,7 +3,7 @@
   "cost": {
     "asks": 0,
     "calls": 0,
-    "replayed": 15,
+    "replayed": 40,
     "tokens": 0,
     "usd": 0.0
   },
@@ -81,9 +81,194 @@
     }
   ],
   "fixture_description": "Synthetic fixed observations for search-rank.jpp (construction check only; not model evaluation). Feasibility is a yes/no question; memorability is a scored question used only for ranking by expected level. Round 0: two fitting names (expected levels 1.0 and 0.4) and one rejected; round 1: a better name (1.8), a re-proposed name and another fitting one (0.5); round 2: a new name tying the second-best (1.0), a re-proposed name and a rejected one, so the top two do not change and the search ends at noshrink. The calibration record is hand-written to exercise routing.",
+  "improve": [
+    {
+      "companions": [
+        {
+          "key": "b754516bc233e50f0193d4a3",
+          "kind": "unsure-companion-premise",
+          "p": 0.5
+        },
+        {
+          "key": "e38291c2e22ff4ee02e58b76",
+          "kind": "diag-two-judgments",
+          "p": 0.5
+        },
+        {
+          "key": "ed64f7975d02ad7efb66fe8d",
+          "kind": "unsure-companion-cut",
+          "p": 0.5
+        },
+        {
+          "key": "aed6f9ef07670ceef3910f08",
+          "kind": "unsure-companion-reference",
+          "p": 0.5
+        },
+        {
+          "key": "892a23854e8dcf4a01aa2477",
+          "kind": "unsure-companion-material",
+          "p": 0.25,
+          "pick": null
+        }
+      ],
+      "key": "1a1c1e2c08e43ec44adc008a",
+      "lacks": null,
+      "q": "这个名字有多好记？"
+    },
+    {
+      "companions": [
+        {
+          "key": "b80ce1758fa345c5dc94ac6d",
+          "kind": "unsure-companion-premise",
+          "p": 0.5
+        },
+        {
+          "key": "42cb64a95465f00915e3301c",
+          "kind": "diag-two-judgments",
+          "p": 0.5
+        },
+        {
+          "key": "80e5f1cec02ef3201bf287f9",
+          "kind": "unsure-companion-cut",
+          "p": 0.5
+        },
+        {
+          "key": "347f4d87fa04baa44854fd26",
+          "kind": "unsure-companion-reference",
+          "p": 0.5
+        },
+        {
+          "key": "e45c583b498e11934cad0873",
+          "kind": "unsure-companion-material",
+          "p": 0.25,
+          "pick": null
+        }
+      ],
+      "key": "b8bf0a76e6afda842bc6558d",
+      "lacks": null,
+      "q": "这个名字有多好记？"
+    },
+    {
+      "companions": [
+        {
+          "key": "62eacae4df23beb07e1199bb",
+          "kind": "unsure-companion-premise",
+          "p": 0.5
+        },
+        {
+          "key": "0be1af51a01789678de802a7",
+          "kind": "diag-two-judgments",
+          "p": 0.5
+        },
+        {
+          "key": "4f330b1e1822a03bff25f452",
+          "kind": "unsure-companion-cut",
+          "p": 0.5
+        },
+        {
+          "key": "144ddbe658db0274d14683cf",
+          "kind": "unsure-companion-reference",
+          "p": 0.5
+        },
+        {
+          "key": "3e13131d8066cc9e1fe78bc2",
+          "kind": "unsure-companion-material",
+          "p": 0.25,
+          "pick": null
+        }
+      ],
+      "key": "842c93b0ce2ce321c75c7463",
+      "lacks": null,
+      "q": "这个名字有多好记？"
+    },
+    {
+      "companions": [
+        {
+          "key": "91d5847a941cfd7497c74922",
+          "kind": "unsure-companion-premise",
+          "p": 0.5
+        },
+        {
+          "key": "e534156c8a0045111f679efb",
+          "kind": "diag-two-judgments",
+          "p": 0.5
+        },
+        {
+          "key": "693859a9509a287bec2216c3",
+          "kind": "unsure-companion-cut",
+          "p": 0.5
+        },
+        {
+          "key": "a29602b0442a2fb0616260a7",
+          "kind": "unsure-companion-reference",
+          "p": 0.5
+        },
+        {
+          "key": "d7f2e3fc75b4edac084cf6f7",
+          "kind": "unsure-companion-material",
+          "p": 0.25,
+          "pick": null
+        }
+      ],
+      "key": "f0429fb09f0bb66791b91c44",
+      "lacks": null,
+      "q": "这个名字有多好记？"
+    },
+    {
+      "companions": [
+        {
+          "key": "a660a601f8171d401d565e02",
+          "kind": "unsure-companion-premise",
+          "p": 0.5
+        },
+        {
+          "key": "3c75effb52003e752d537a19",
+          "kind": "diag-two-judgments",
+          "p": 0.5
+        },
+        {
+          "key": "a795b788a4a7af45a5bbc50b",
+          "kind": "unsure-companion-cut",
+          "p": 0.5
+        },
+        {
+          "key": "4f55244cab47a2e634abb168",
+          "kind": "unsure-companion-reference",
+          "p": 0.5
+        },
+        {
+          "key": "7535433616b465f29d5bc04d",
+          "kind": "unsure-companion-material",
+          "p": 0.25,
+          "pick": null
+        }
+      ],
+      "key": "c899ebab37690afba0446f70",
+      "lacks": null,
+      "q": "这个名字有多好记？"
+    }
+  ],
   "local_checks": [],
   "mode": "replay; no model API requests",
   "pending": [],
+  "plan": {
+    "calls": {
+      "kind": "at_least",
+      "lo": 0
+    },
+    "cost_usd": {
+      "kind": "unknown",
+      "reason": "price_not_given"
+    },
+    "latency_s": {
+      "kind": "unknown",
+      "reason": "untested:concurrency.latency_s.p95"
+    },
+    "layers": {
+      "kind": "at_least",
+      "lo": 0
+    }
+  },
   "questions": [
     {
       "kind": "attr",
@@ -92,6 +277,51 @@
     {
       "kind": "degree",
       "q": "7ca889bf716952459b4fbdff"
+    },
+    {
+      "fill": {
+        "q": "这个名字有多好记？"
+      },
+      "form_hash": "54315f241f66412e88607f2d",
+      "kind": "attr",
+      "q": "85e9c61abc150b98c22c376b",
+      "template": "题「{q}」的前提在这份材料上成立吗？"
+    },
+    {
+      "fill": {
+        "q": "这个名字有多好记？"
+      },
+      "form_hash": "cd4d3fd600f3459fa6b03c89",
+      "kind": "attr",
+      "q": "f5e19d0196160fb454a1235a",
+      "template": "题「{q}」里是否有两个或更多需要分别回答的判断？"
+    },
+    {
+      "fill": {
+        "q": "这个名字有多好记？"
+      },
+      "form_hash": "18c6093988df2ab3840b661c",
+      "kind": "attr",
+      "q": "337178a9f9843863576c9639",
+      "template": "把题「{q}」按更细的情形分开问，会比整体问更容易答准吗？"
+    },
+    {
+      "fill": {
+        "q": "这个名字有多好记？"
+      },
+      "form_hash": "d8ff506d5be24dd56b495116",
+      "kind": "attr",
+      "q": "332bc871af1d4cfb51f26504",
+      "template": "判断题「{q}」需要的参照对象和语境，这段材料里给够了吗？"
+    },
+    {
+      "fill": {
+        "q": "这个名字有多好记？"
+      },
+      "form_hash": "2ec36692b44a45c1e23fbea6",
+      "kind": "class",
+      "q": "01200a493e771d4e5eb59ea1",
+      "template": "题「{q}」要判得更明确，最缺哪一类信息？"
     }
   ],
   "replay": true,
@@ -157,9 +387,119 @@
       },
       {
         "cost": 0.0,
+        "key": "b754516bc233e50f0193d4a3",
+        "kind": "judge",
+        "note": "「题「这个名字有多好记？」的前提在这份材料上成立吗？」",
+        "replayed": true,
+        "site": {
+          "end": 12262,
+          "start": 12204
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "e38291c2e22ff4ee02e58b76",
+        "kind": "judge",
+        "note": "「题「这个名字有多好记？」里是否有两个或更多需要分别回答的判断？」",
+        "replayed": true,
+        "site": {
+          "end": 12262,
+          "start": 12204
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "ed64f7975d02ad7efb66fe8d",
+        "kind": "judge",
+        "note": "「把题「这个名字有多好记？」按更细的情形分开问，会比整体问更容易答准吗？」",
+        "replayed": true,
+        "site": {
+          "end": 12262,
+          "start": 12204
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "aed6f9ef07670ceef3910f08",
+        "kind": "judge",
+        "note": "「判断题「这个名字有多好记？」需要的参照对象和语境，这段材料里给够了吗？」",
+        "replayed": true,
+        "site": {
+          "end": 12262,
+          "start": 12204
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "892a23854e8dcf4a01aa2477",
+        "kind": "judge",
+        "note": "「题「这个名字有多好记？」要判得更明确，最缺哪一类信息？」",
+        "replayed": true,
+        "site": {
+          "end": 12262,
+          "start": 12204
+        }
+      },
+      {
+        "cost": 0.0,
         "key": "b8bf0a76e6afda842bc6558d",
         "kind": "judge",
         "note": "「这个名字有多好记？」",
+        "replayed": true,
+        "site": {
+          "end": 12262,
+          "start": 12204
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "b80ce1758fa345c5dc94ac6d",
+        "kind": "judge",
+        "note": "「题「这个名字有多好记？」的前提在这份材料上成立吗？」",
+        "replayed": true,
+        "site": {
+          "end": 12262,
+          "start": 12204
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "42cb64a95465f00915e3301c",
+        "kind": "judge",
+        "note": "「题「这个名字有多好记？」里是否有两个或更多需要分别回答的判断？」",
+        "replayed": true,
+        "site": {
+          "end": 12262,
+          "start": 12204
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "80e5f1cec02ef3201bf287f9",
+        "kind": "judge",
+        "note": "「把题「这个名字有多好记？」按更细的情形分开问，会比整体问更容易答准吗？」",
+        "replayed": true,
+        "site": {
+          "end": 12262,
+          "start": 12204
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "347f4d87fa04baa44854fd26",
+        "kind": "judge",
+        "note": "「判断题「这个名字有多好记？」需要的参照对象和语境，这段材料里给够了吗？」",
+        "replayed": true,
+        "site": {
+          "end": 12262,
+          "start": 12204
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "e45c583b498e11934cad0873",
+        "kind": "judge",
+        "note": "「题「这个名字有多好记？」要判得更明确，最缺哪一类信息？」",
         "replayed": true,
         "site": {
           "end": 12262,
@@ -212,9 +552,119 @@
       },
       {
         "cost": 0.0,
+        "key": "62eacae4df23beb07e1199bb",
+        "kind": "judge",
+        "note": "「题「这个名字有多好记？」的前提在这份材料上成立吗？」",
+        "replayed": true,
+        "site": {
+          "end": 12262,
+          "start": 12204
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "0be1af51a01789678de802a7",
+        "kind": "judge",
+        "note": "「题「这个名字有多好记？」里是否有两个或更多需要分别回答的判断？」",
+        "replayed": true,
+        "site": {
+          "end": 12262,
+          "start": 12204
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "4f330b1e1822a03bff25f452",
+        "kind": "judge",
+        "note": "「把题「这个名字有多好记？」按更细的情形分开问，会比整体问更容易答准吗？」",
+        "replayed": true,
+        "site": {
+          "end": 12262,
+          "start": 12204
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "144ddbe658db0274d14683cf",
+        "kind": "judge",
+        "note": "「判断题「这个名字有多好记？」需要的参照对象和语境，这段材料里给够了吗？」",
+        "replayed": true,
+        "site": {
+          "end": 12262,
+          "start": 12204
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "3e13131d8066cc9e1fe78bc2",
+        "kind": "judge",
+        "note": "「题「这个名字有多好记？」要判得更明确，最缺哪一类信息？」",
+        "replayed": true,
+        "site": {
+          "end": 12262,
+          "start": 12204
+        }
+      },
+      {
+        "cost": 0.0,
         "key": "f0429fb09f0bb66791b91c44",
         "kind": "judge",
         "note": "「这个名字有多好记？」",
+        "replayed": true,
+        "site": {
+          "end": 12262,
+          "start": 12204
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "91d5847a941cfd7497c74922",
+        "kind": "judge",
+        "note": "「题「这个名字有多好记？」的前提在这份材料上成立吗？」",
+        "replayed": true,
+        "site": {
+          "end": 12262,
+          "start": 12204
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "e534156c8a0045111f679efb",
+        "kind": "judge",
+        "note": "「题「这个名字有多好记？」里是否有两个或更多需要分别回答的判断？」",
+        "replayed": true,
+        "site": {
+          "end": 12262,
+          "start": 12204
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "693859a9509a287bec2216c3",
+        "kind": "judge",
+        "note": "「把题「这个名字有多好记？」按更细的情形分开问，会比整体问更容易答准吗？」",
+        "replayed": true,
+        "site": {
+          "end": 12262,
+          "start": 12204
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "a29602b0442a2fb0616260a7",
+        "kind": "judge",
+        "note": "「判断题「这个名字有多好记？」需要的参照对象和语境，这段材料里给够了吗？」",
+        "replayed": true,
+        "site": {
+          "end": 12262,
+          "start": 12204
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "d7f2e3fc75b4edac084cf6f7",
+        "kind": "judge",
+        "note": "「题「这个名字有多好记？」要判得更明确，最缺哪一类信息？」",
         "replayed": true,
         "site": {
           "end": 12262,
@@ -259,6 +709,61 @@
         "key": "c899ebab37690afba0446f70",
         "kind": "judge",
         "note": "「这个名字有多好记？」",
+        "replayed": true,
+        "site": {
+          "end": 12262,
+          "start": 12204
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "a660a601f8171d401d565e02",
+        "kind": "judge",
+        "note": "「题「这个名字有多好记？」的前提在这份材料上成立吗？」",
+        "replayed": true,
+        "site": {
+          "end": 12262,
+          "start": 12204
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "3c75effb52003e752d537a19",
+        "kind": "judge",
+        "note": "「题「这个名字有多好记？」里是否有两个或更多需要分别回答的判断？」",
+        "replayed": true,
+        "site": {
+          "end": 12262,
+          "start": 12204
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "a795b788a4a7af45a5bbc50b",
+        "kind": "judge",
+        "note": "「把题「这个名字有多好记？」按更细的情形分开问，会比整体问更容易答准吗？」",
+        "replayed": true,
+        "site": {
+          "end": 12262,
+          "start": 12204
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "4f55244cab47a2e634abb168",
+        "kind": "judge",
+        "note": "「判断题「这个名字有多好记？」需要的参照对象和语境，这段材料里给够了吗？」",
+        "replayed": true,
+        "site": {
+          "end": 12262,
+          "start": 12204
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "7535433616b465f29d5bc04d",
+        "kind": "judge",
+        "note": "「题「这个名字有多好记？」要判得更明确，最缺哪一类信息？」",
         "replayed": true,
         "site": {
           "end": 12262,

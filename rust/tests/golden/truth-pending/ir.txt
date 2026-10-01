@@ -16,268 +16,276 @@ block 179..683
               #6 name o
   fn-stmt unobserved_cause
     #7 fn (c:-) -> - effects=-
-      block 1496..1548
+      block 1570..1657
         result
           #8 binary ||
             #9 binary ||
-              #10 binary ==
-                #11 name c
-                #12 text "budget"
-              #13 binary ==
-                #14 name c
-                #15 text "absent"
-            #16 binary ==
-              #17 name c
-              #18 text "latency"
+              #10 binary ||
+                #11 binary ||
+                  #12 binary ==
+                    #13 name c
+                    #14 text "absent"
+                  #15 binary ==
+                    #16 name c
+                    #17 text "budget"
+                #18 binary ==
+                  #19 name c
+                  #20 text "depth"
+              #21 binary ==
+                #22 name c
+                #23 text "latency"
+            #24 binary ==
+              #25 name c
+              #26 text "deadline"
   fn-stmt undecided
-    #19 fn (o:-) -> - effects=-
-      block 1617..1676
+    #27 fn (o:-) -> - effects=-
+      block 1726..1785
         result
-          #20 call @0 1619..1674
+          #28 call @0 1728..1783
             callee:
-              #21 name filter
-            #22 field .pending
-              #23 name o
-            #25 fn (p:-) -> - effects=-
-              block 1643..1673
+              #29 name filter
+            #30 field .pending
+              #31 name o
+            #33 fn (p:-) -> - effects=-
+              block 1752..1782
                 result
-                  #26 unary !
-                    #27 call 1646..1671
+                  #34 unary !
+                    #35 call 1755..1780
                       callee:
-                        #28 name unobserved_cause
-                      #29 field .cause
-                        #30 name p
+                        #36 name unobserved_cause
+                      #37 field .cause
+                        #38 name p
   fn-stmt unobserved
-    #31 fn (o:-) -> - effects=-
-      block 1770..1828
+    #39 fn (o:-) -> - effects=-
+      block 1898..1956
         result
-          #32 call @1 1772..1826
+          #40 call @1 1900..1954
             callee:
-              #33 name filter
-            #34 field .pending
-              #35 name o
-            #37 fn (p:-) -> - effects=-
-              block 1796..1825
+              #41 name filter
+            #42 field .pending
+              #43 name o
+            #45 fn (p:-) -> - effects=-
+              block 1924..1953
                 result
-                  #38 call 1798..1823
+                  #46 call 1926..1951
                     callee:
-                      #39 name unobserved_cause
-                    #40 field .cause
-                      #41 name p
+                      #47 name unobserved_cause
+                    #48 field .cause
+                      #49 name p
   fn-stmt stopped
-    #42 fn (o:-) -> - effects=-
-      block 1891..1955
+    #50 fn (o:-) -> - effects=-
+      block 2019..2083
         result
-          #43 if @2 1893..1953
+          #51 if @2 2021..2081
             cond:
-              #44 call 1896..1919
+              #52 call 2024..2047
                 callee:
-                  #45 name has
-                #46 field .resume
-                  #47 name o
-                #48 text "detail"
-            block 1920..1939
+                  #53 name has
+                #54 field .resume
+                  #55 name o
+                #56 text "detail"
+            block 2048..2067
               result
-                #49 field .detail
-                  #50 field .resume
-                    #51 name o
-            block 1945..1953
+                #57 field .detail
+                  #58 field .resume
+                    #59 name o
+            block 2073..2081
               result
-                #52 unit
+                #60 unit
   fn-stmt by_q
-    #53 fn (o:-, k:-) -> - effects=-
-      block 2441..2964
+    #61 fn (o:-, k:-) -> - effects=-
+      block 2569..3092
         let keep : -
-          #55 fn (e:-) -> - effects=-
-            block 2464..2493
+          #63 fn (e:-) -> - effects=-
+            block 2592..2621
               result
-                #56 binary &&
-                  #57 call 2466..2478
+                #64 binary &&
+                  #65 call 2594..2606
                     callee:
-                      #58 name has
-                    #59 name e
-                    #60 text "qi"
-                  #61 binary ==
-                    #62 field .qi
-                      #63 name e
-                    #64 name k
+                      #66 name has
+                    #67 name e
+                    #68 text "qi"
+                  #69 binary ==
+                    #70 field .qi
+                      #71 name e
+                    #72 name k
         let 键表 : -
-          #65 call @3 2512..2599
+          #73 call @3 2640..2727
             callee:
-              #66 name map
-            #67 call @4 2516..2581
+              #74 name map
+            #75 call @4 2644..2709
               callee:
-                #68 name filter
-              #69 call 2523..2574
+                #76 name filter
+              #77 call 2651..2702
                 callee:
-                  #70 name concat
-                #71 call 2530..2562
+                  #78 name concat
+                #79 call 2658..2690
                   callee:
-                    #72 name concat
-                  #73 field .value
-                    #74 name o
-                  #75 field .ignore
-                    #76 field .detail
-                      #77 name o
-                #78 field .pending
-                  #79 name o
-              #80 name keep
-            #82 fn (e:-) -> - effects=-
-              block 2589..2598
+                    #80 name concat
+                  #81 field .value
+                    #82 name o
+                  #83 field .ignore
+                    #84 field .detail
+                      #85 name o
+                #86 field .pending
+                  #87 name o
+              #88 name keep
+            #90 fn (e:-) -> - effects=-
+              block 2717..2726
                 result
-                  #83 field .key
-                    #84 name e
+                  #91 field .key
+                    #92 name e
         result
-          #85 construct outcome @5 2605..2962
-            #86 record 2613..2961
+          #93 construct outcome @5 2733..3090
+            #94 record 2741..3089
               value:
-                #87 call @6 2621..2642
+                #95 call @6 2749..2770
                   callee:
-                    #88 name filter
-                  #89 field .value
-                    #90 name o
-                  #91 name keep
+                    #96 name filter
+                  #97 field .value
+                    #98 name o
+                  #99 name keep
               pending:
-                #92 call @7 2653..2676
+                #100 call @7 2781..2804
                   callee:
-                    #93 name filter
-                  #94 field .pending
-                    #95 name o
-                  #96 name keep
+                    #101 name filter
+                  #102 field .pending
+                    #103 name o
+                  #104 name keep
               evidence:
-                #97 call @8 2701..2750
+                #105 call @8 2829..2878
                   callee:
-                    #98 name filter
-                  #99 field .evidence
-                    #100 name o
-                  #102 fn (x:-) -> - effects=-
-                    block 2726..2749
+                    #106 name filter
+                  #107 field .evidence
+                    #108 name o
+                  #110 fn (x:-) -> - effects=-
+                    block 2854..2877
                       result
-                        #103 call 2728..2747
+                        #111 call 2856..2875
                           callee:
-                            #104 name contains
-                          #105 name 键表
-                          #106 name x
+                            #112 name contains
+                          #113 name 键表
+                          #114 name x
               resume:
-                #107 field .resume
-                  #108 name o
+                #115 field .resume
+                  #116 name o
               detail:
-                #109 record 2791..2960
+                #117 record 2919..3088
                   question:
-                    #110 if @9 2802..2884
+                    #118 if @9 2930..3012
                       cond:
-                        #111 call 2805..2831
+                        #119 call 2933..2959
                           callee:
-                            #112 name has
-                          #113 field .detail
-                            #114 name o
-                          #115 text "questions"
-                      block 2832..2857
+                            #120 name has
+                          #121 field .detail
+                            #122 name o
+                          #123 text "questions"
+                      block 2960..2985
                         result
-                          #116 index
-                            #117 field .questions
-                              #118 field .detail
-                                #119 name o
-                            #120 name k
-                      block 2863..2884
+                          #124 index
+                            #125 field .questions
+                              #126 field .detail
+                                #127 name o
+                            #128 name k
+                      block 2991..3012
                         result
-                          #121 field .question
-                            #122 field .detail
-                              #123 name o
+                          #129 field .question
+                            #130 field .detail
+                              #131 name o
                   ignore:
-                    #124 call @10 2916..2945
+                    #132 call @10 3044..3073
                       callee:
-                        #125 name filter
-                      #126 field .ignore
-                        #127 field .detail
-                          #128 name o
-                      #129 name keep
+                        #133 name filter
+                      #134 field .ignore
+                        #135 field .detail
+                          #136 name o
+                      #137 name keep
                   shared:
-                    #130 bool true
+                    #138 bool true
   fn-stmt by_fill
-    #131 fn (o:-, k:-) -> - effects=-
-      block 2982..2996
+    #139 fn (o:-, k:-) -> - effects=-
+      block 3110..3124
         result
-          #132 call 2984..2994
+          #140 call 3112..3122
             callee:
-              #133 name by_q
-            #134 name o
-            #135 name k
+              #141 name by_q
+            #142 name o
+            #143 name k
   let mention : -
-    #136 construct form @11 237..314
-      #137 text "test"
-      #138 text "这段话是否提到了{concept}？"
-      #139 record 290..313
+    #144 construct form @11 237..314
+      #145 text "test"
+      #146 text "这段话是否提到了{concept}？"
+      #147 record 290..313
         calib:
-          #140 text "form-concept"
+          #148 text "form-concept"
   let notes : -
-    #141 list 328..456
-      #142 text "那台立式乐器占了客厅一角，搬家时最费劲。"
-      #143 text "他背起吉他，坐在公园长椅上弹唱了一下午。"
+    #149 list 328..456
+      #150 text "那台立式乐器占了客厅一角，搬家时最费劲。"
+      #151 text "他背起吉他，坐在公园长椅上弹唱了一下午。"
   let r : -
-    #144 construct sieve @12 466..510
-      #145 name notes
-      #146 name mention
-      #147 list 488..509
-        #148 record 489..508
+    #152 construct sieve @12 466..510
+      #153 name notes
+      #154 name mention
+      #155 list 488..509
+        #156 record 489..508
           concept:
-            #149 text "钢琴"
+            #157 text "钢琴"
   result
-    #150 record 512..683
+    #158 record 512..683
       asked:
-        #151 field .text
-          #152 field .question
-            #153 field .detail
-              #154 name r
+        #159 field .text
+          #160 field .question
+            #161 field .detail
+              #162 name r
       act:
-        #155 call 549..565
+        #163 call 549..565
           callee:
-            #156 name len
-          #157 call 553..564
+            #164 name len
+          #165 call 553..564
             callee:
-              #158 name accepted
-            #159 name r
+              #166 name accepted
+            #167 name r
       ignore:
-        #160 call 575..590
+        #168 call 575..590
           callee:
-            #161 name len
-          #162 call 579..589
+            #169 name len
+          #170 call 579..589
             callee:
-              #163 name ignored
-            #164 name r
+              #171 name ignored
+            #172 name r
       unsure:
-        #165 call @13 601..662
+        #173 call @13 601..662
           callee:
-            #166 name map
-          #167 call 605..617
+            #174 name map
+          #175 call 605..617
             callee:
-              #168 name undecided
-            #169 name r
-          #171 fn (p:-) -> - effects=-
+              #176 name undecided
+            #177 name r
+          #179 fn (p:-) -> - effects=-
             block 625..661
               result
-                #172 record 627..659
+                #180 record 627..659
                   index:
-                    #173 field .index
-                      #174 name p
+                    #181 field .index
+                      #182 name p
                   cause:
-                    #175 field .cause
-                      #176 name p
+                    #183 field .cause
+                      #184 name p
       pending:
-        #177 field .pending
-          #178 name r
+        #185 field .pending
+          #186 name r
 sites 14
-  @0 #20 hof:filter 1619..1674 fn=#19 in=-
-  @1 #32 hof:filter 1772..1826 fn=#31 in=-
-  @2 #43 if 1893..1953 fn=#42 in=-
-  @3 #65 hof:map 2512..2599 fn=#53 in=-
-  @4 #67 hof:filter 2516..2581 fn=#53 in=@3
-  @5 #85 construct:outcome 2605..2962 fn=#53 in=-
-  @6 #87 hof:filter 2621..2642 fn=#53 in=@5
-  @7 #92 hof:filter 2653..2676 fn=#53 in=@5
-  @8 #97 hof:filter 2701..2750 fn=#53 in=@5
-  @9 #110 if 2802..2884 fn=#53 in=@5
-  @10 #124 hof:filter 2916..2945 fn=#53 in=@5
-  @11 #136 construct:form 237..314 fn=- in=-
-  @12 #144 construct:sieve 466..510 fn=- in=-
-  @13 #165 hof:map 601..662 fn=- in=-
+  @0 #28 hof:filter 1728..1783 fn=#27 in=-
+  @1 #40 hof:filter 1900..1954 fn=#39 in=-
+  @2 #51 if 2021..2081 fn=#50 in=-
+  @3 #73 hof:map 2640..2727 fn=#61 in=-
+  @4 #75 hof:filter 2644..2709 fn=#61 in=@3
+  @5 #93 construct:outcome 2733..3090 fn=#61 in=-
+  @6 #95 hof:filter 2749..2770 fn=#61 in=@5
+  @7 #100 hof:filter 2781..2804 fn=#61 in=@5
+  @8 #105 hof:filter 2829..2878 fn=#61 in=@5
+  @9 #118 if 2930..3012 fn=#61 in=@5
+  @10 #132 hof:filter 3044..3073 fn=#61 in=@5
+  @11 #144 construct:form 237..314 fn=- in=-
+  @12 #152 construct:sieve 466..510 fn=- in=-
+  @13 #173 hof:map 601..662 fn=- in=-

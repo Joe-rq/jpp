@@ -255,12 +255,18 @@ fn 未落地的pass开关开着也不谎称在工作() {
         vectorize: true,
         // 步 23c（B94）：惰性过桥的开关
         lazy_cut: true,
+        select_within: true,
+        critical_path: true,
+        value_density: true,
+        // B0492 S5：伴随题的发法（不是 pass，不进 enabled 表）
+        companions: jpp::interp::CompanionMode::Same,
     };
     // 9 个不是 7 个：12 §4 的表写 7 行，v0.1.1 修订记录 1（:610）另增两个（推测提升、循环向量化），
     // 表从没改过。按 9 个算，文档不一致记在 INTERFACE。
     // `vectorize` 这一轮落地了，从这张表里移出去——**一个 pass 落地之后
     // 还留在「未落地」表里，这张表就开始说假话**，而它存在的全部理由是不说假话。
-    for name in ["fission", "lower", "schedule", "plan"] {
+    // 步 22：`plan`（估计与计划期拒绝）落地，移出去；步 23b：`fission`（近似档）落地，移出去
+    for name in ["lower", "schedule"] {
         assert!(
             !全开.enabled(name),
             "{name} 还没落地，开关开着也不该说自己在工作"

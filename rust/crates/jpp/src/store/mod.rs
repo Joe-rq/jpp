@@ -10,14 +10,19 @@
 //! 仍在 CLI，B73）。步 18a 加 [`migrations`]（账本 v2 → v3）。步 18b 加 [`LedgerFile`]（逐行落盘的
 //! 账本，B55）。步 19 加 [`CacheIndex`]（跨运行缓存索引，B40、B151）。
 
+pub mod bank;
+pub mod bank_stats;
 pub mod blob;
 mod cache_index;
 pub mod calib;
 mod ledger_file;
+mod mat_file;
 pub mod migrations;
 mod profile;
 
+pub use bank::QuestionBank;
 pub use blob::{Blob, DirBlob, IoErr, MemBlob};
 pub use cache_index::{CacheIndex, CacheIndexCounts};
 pub use ledger_file::LedgerFile;
+pub use mat_file::FileMatStore;
 pub use profile::ProfileLoader;

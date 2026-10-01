@@ -141,7 +141,7 @@ fn 桥按hi加delta出pick与at() {
     );
     assert_eq!(
         判(Answer::Score(vec![0.3, 0.7, 0.0]), None),
-        ExitKind::Unsure("band".into())
+        ExitKind::Unsure(jpp::value::Why::of(jpp::value::UnsureCause::Band))
     );
     assert_eq!(
         判(Answer::Choice(vec![0.8, 0.2]), Some(1.0)),
@@ -149,10 +149,11 @@ fn 桥按hi加delta出pick与at() {
     );
     assert_eq!(
         判(Answer::Choice(vec![0.7, 0.3]), Some(1.0)),
-        ExitKind::Unsure("band".into())
+        ExitKind::Unsure(jpp::value::Why::of(jpp::value::UnsureCause::Band))
     );
     assert_eq!(
         判(Answer::Choice(vec![0.9, 0.1]), None),
-        ExitKind::Unsure("untested".into())
+        // 步 36 G3（裁定六十六）：没测置换改为 cold（正交位 untested:permutation 在第二项）
+        ExitKind::Unsure(jpp::value::Why::of(jpp::value::UnsureCause::Cold))
     );
 }

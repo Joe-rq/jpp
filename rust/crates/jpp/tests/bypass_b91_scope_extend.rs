@@ -106,7 +106,7 @@ fn 跑(calib: &CalibStore) -> Result<jpp::Outcome, String> {
         r#"
 budget {{calls: 4, cost: 1, depth: 8}};
 handle(cut(judge(state(mat({:?})), test("该退吗", "k"))), {{
-    act: fn() {{ content(do("退款", [], 0)) }},
+    act: fn() {{ (do("退款", [], 0)) }},
     ignore: fn() {{ "没退" }},
     unsure: fn(u) {{ consume(u, "drop"); "没退" }}}})
 "#,
@@ -169,7 +169,7 @@ fn formal_extension_releases() {
     let ext = s.extend_scope("k", &批(22, 22, 0), &选项()).unwrap();
     assert_eq!(ext.alpha, 0.1);
     let o = 跑(&s).expect("正式扩展放行");
-    assert_eq!(o.value_json(), json!("已退"));
+    assert_eq!(o.value_json()["content"], json!("已退"));
     assert_eq!(o.exits[0]["grade"], json!("Certified"));
 }
 
@@ -235,5 +235,5 @@ fn extension_survives_save_and_load() {
         back.records["k"].scope.as_ref().unwrap().extensions.len(),
         1
     );
-    assert_eq!(跑(&back).unwrap().value_json(), json!("已退"));
+    assert_eq!(跑(&back).unwrap().value_json()["content"], json!("已退"));
 }

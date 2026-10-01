@@ -1,0 +1,592 @@
+{
+  "backend": "fixed-0",
+  "cost": {
+    "asks": 0,
+    "calls": 5,
+    "replayed": 0,
+    "tokens": 0,
+    "usd": 0.0
+  },
+  "entry": [],
+  "exits": [
+    {
+      "delta_unknown": true,
+      "exit": "act",
+      "grade": "Answer",
+      "index": 0,
+      "item": "d16a7edfc371",
+      "pos": 0,
+      "releases": false,
+      "site": 1432
+    },
+    {
+      "exit": "unsure(tie)",
+      "grade": "Answer",
+      "item": "36b2d35e06ae",
+      "releases": false,
+      "site": 1432
+    },
+    {
+      "delta_unknown": true,
+      "exit": "act",
+      "grade": "Answer",
+      "index": 1,
+      "item": "002309cf559d",
+      "pos": 1,
+      "releases": false,
+      "site": 1432
+    },
+    {
+      "delta_unknown": true,
+      "exit": "ignore",
+      "grade": "Answer",
+      "index": 2,
+      "item": "7a2b76e10144",
+      "pos": 2,
+      "releases": false,
+      "site": 1432
+    },
+    {
+      "exit": "unsure(tie)",
+      "grade": "Answer",
+      "index": 3,
+      "item": "2d2399a26950",
+      "pos": 3,
+      "releases": false,
+      "site": 1432
+    }
+  ],
+  "fixture_description": "B0492 证明示例的固定观察（合成，只验路由，不是模型评测）：乙、丁原题读数 0.5 是并列。伴随题默认开（S5）：乙的材料伴随题读 0.2（缺信息），默认链去补，补「过往项目」后 0.85 定为 act；丁的前提、材料、参照伴随题读 0.9、谓词读 0.1，判为「两可」，不补、直接记账放弃。丁那两条补后仍 0.5 的观察只在关着伴随题时用到（「补了仍拿不准 → 放弃」这条路现在只有关着伴随题的测试 unsure_default.rs 用例 2、3 覆盖）。其余伴随题没登记，固定观察给 0.5。",
+  "improve": [
+    {
+      "companions": [
+        {
+          "key": "1ec254dd02c141f69e176638",
+          "kind": "unsure-companion-premise",
+          "p": 0.5
+        },
+        {
+          "key": "efeff99d97d472bfe9f8f9dd",
+          "kind": "diag-two-judgments",
+          "p": 0.5
+        },
+        {
+          "key": "b526f465bbc3707466ae615c",
+          "kind": "unsure-companion-cut",
+          "p": 0.5
+        },
+        {
+          "key": "7edf34776f91930291cbf551",
+          "kind": "unsure-companion-reference",
+          "p": 0.5
+        },
+        {
+          "key": "1b762925b7761a1734e90989",
+          "kind": "unsure-companion-material",
+          "p": 0.3333333333333333,
+          "pick": null
+        }
+      ],
+      "key": "a8d11805b143ea2e2b443cad",
+      "lacks": null,
+      "q": "这家供应商能按期交付吗？"
+    },
+    {
+      "companions": [
+        {
+          "key": "d151e59d509c93bc95c1acd7",
+          "kind": "unsure-companion-premise",
+          "p": 0.5
+        },
+        {
+          "key": "2b5fb773052c289e45eac4fe",
+          "kind": "diag-two-judgments",
+          "p": 0.5
+        },
+        {
+          "key": "1203b2f22fce2bd31af8025f",
+          "kind": "unsure-companion-cut",
+          "p": 0.5
+        },
+        {
+          "key": "d6ab484f0cd5e5b569f728c4",
+          "kind": "unsure-companion-reference",
+          "p": 0.5
+        },
+        {
+          "key": "435cd2b166853258eac00c39",
+          "kind": "unsure-companion-material",
+          "p": 0.7,
+          "pick": 0
+        }
+      ],
+      "key": "b8cc8943d78c5d8bcf526d3a",
+      "lacks": "过往项目",
+      "q": "这家供应商能按期交付吗？"
+    },
+    {
+      "companions": [
+        {
+          "key": "5bd90c2e6fce22e454ef0e63",
+          "kind": "unsure-companion-premise",
+          "p": 0.5
+        },
+        {
+          "key": "01c12929c94357aa4e037fbd",
+          "kind": "diag-two-judgments",
+          "p": 0.5
+        },
+        {
+          "key": "b52753282bfb4cf7d07c31c8",
+          "kind": "unsure-companion-cut",
+          "p": 0.5
+        },
+        {
+          "key": "17ba688f0f39864a818e2cb9",
+          "kind": "unsure-companion-reference",
+          "p": 0.5
+        },
+        {
+          "key": "c9ae87d5106e6d54576a7818",
+          "kind": "unsure-companion-material",
+          "p": 0.3333333333333333,
+          "pick": null
+        }
+      ],
+      "key": "b8dca0f53f86cc5a3bfa6c0a",
+      "lacks": null,
+      "q": "这家供应商能按期交付吗？"
+    },
+    {
+      "companions": [
+        {
+          "key": "a77746905d1e7e4974771e41",
+          "kind": "unsure-companion-premise",
+          "p": 0.9
+        },
+        {
+          "key": "f0bb713911303b7c381cceac",
+          "kind": "diag-two-judgments",
+          "p": 0.1
+        },
+        {
+          "key": "0dc9b1bf04b0c6caf875d6d2",
+          "kind": "unsure-companion-cut",
+          "p": 0.8
+        },
+        {
+          "key": "e8294463aeab84e0db83742b",
+          "kind": "unsure-companion-reference",
+          "p": 0.9
+        },
+        {
+          "key": "efe85a97557f80c098323283",
+          "kind": "unsure-companion-material",
+          "p": 0.9,
+          "pick": 2
+        }
+      ],
+      "key": "2cfbb08f144bce53c4be8acf",
+      "lacks": "材料不缺",
+      "q": "这家供应商能按期交付吗？"
+    }
+  ],
+  "local_checks": [],
+  "mode": "fixed observations; no model API requests",
+  "pending": [],
+  "plan": {
+    "calls": {
+      "hi": 12,
+      "kind": "known",
+      "lo": 1
+    },
+    "cost_usd": {
+      "hi": 0.0,
+      "kind": "known",
+      "lo": 0.0
+    },
+    "latency_s": {
+      "kind": "unknown",
+      "reason": "untested:concurrency.latency_s.p95"
+    },
+    "layers": {
+      "hi": 4,
+      "kind": "known",
+      "lo": 1
+    }
+  },
+  "questions": [
+    {
+      "kind": "attr",
+      "q": "ab640abddffd5789f9098eb5"
+    },
+    {
+      "fill": {
+        "q": "这家供应商能按期交付吗？"
+      },
+      "form_hash": "54315f241f66412e88607f2d",
+      "kind": "attr",
+      "q": "d103b2d664c70943045700ce",
+      "template": "题「{q}」的前提在这份材料上成立吗？"
+    },
+    {
+      "fill": {
+        "q": "这家供应商能按期交付吗？"
+      },
+      "form_hash": "cd4d3fd600f3459fa6b03c89",
+      "kind": "attr",
+      "q": "b8f763261788957c4bb63d75",
+      "template": "题「{q}」里是否有两个或更多需要分别回答的判断？"
+    },
+    {
+      "fill": {
+        "q": "这家供应商能按期交付吗？"
+      },
+      "form_hash": "18c6093988df2ab3840b661c",
+      "kind": "attr",
+      "q": "18d47a02422340c3d657fa96",
+      "template": "把题「{q}」按更细的情形分开问，会比整体问更容易答准吗？"
+    },
+    {
+      "fill": {
+        "q": "这家供应商能按期交付吗？"
+      },
+      "form_hash": "d8ff506d5be24dd56b495116",
+      "kind": "attr",
+      "q": "82c85236d1bfe13d72908857",
+      "template": "判断题「{q}」需要的参照对象和语境，这段材料里给够了吗？"
+    },
+    {
+      "fill": {
+        "q": "这家供应商能按期交付吗？"
+      },
+      "form_hash": "2ec36692b44a45c1e23fbea6",
+      "kind": "class",
+      "q": "130c7ca02dac2b36723f605f",
+      "template": "题「{q}」要判得更明确，最缺哪一类信息？"
+    }
+  ],
+  "replay": false,
+  "resumed": false,
+  "returned_unsure": [],
+  "status": "returned",
+  "trace": {
+    "events": [
+      {
+        "cost": 0.0,
+        "key": "a8d11805b143ea2e2b443cad",
+        "kind": "judge",
+        "note": "「这家供应商能按期交付吗？」",
+        "replayed": false,
+        "site": {
+          "end": 1506,
+          "start": 1432
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "1ec254dd02c141f69e176638",
+        "kind": "judge",
+        "note": "「题「这家供应商能按期交付吗？」的前提在这份材料上成立吗？」",
+        "replayed": false,
+        "site": {
+          "end": 1506,
+          "start": 1432
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "efeff99d97d472bfe9f8f9dd",
+        "kind": "judge",
+        "note": "「题「这家供应商能按期交付吗？」里是否有两个或更多需要分别回答的判断？」",
+        "replayed": false,
+        "site": {
+          "end": 1506,
+          "start": 1432
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "b526f465bbc3707466ae615c",
+        "kind": "judge",
+        "note": "「把题「这家供应商能按期交付吗？」按更细的情形分开问，会比整体问更容易答准吗？」",
+        "replayed": false,
+        "site": {
+          "end": 1506,
+          "start": 1432
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "7edf34776f91930291cbf551",
+        "kind": "judge",
+        "note": "「判断题「这家供应商能按期交付吗？」需要的参照对象和语境，这段材料里给够了吗？」",
+        "replayed": false,
+        "site": {
+          "end": 1506,
+          "start": 1432
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "1b762925b7761a1734e90989",
+        "kind": "judge",
+        "note": "「题「这家供应商能按期交付吗？」要判得更明确，最缺哪一类信息？」",
+        "replayed": false,
+        "site": {
+          "end": 1506,
+          "start": 1432
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "b8cc8943d78c5d8bcf526d3a",
+        "kind": "judge",
+        "note": "「这家供应商能按期交付吗？」",
+        "replayed": false,
+        "site": {
+          "end": 1506,
+          "start": 1432
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "d151e59d509c93bc95c1acd7",
+        "kind": "judge",
+        "note": "「题「这家供应商能按期交付吗？」的前提在这份材料上成立吗？」",
+        "replayed": false,
+        "site": {
+          "end": 1506,
+          "start": 1432
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "2b5fb773052c289e45eac4fe",
+        "kind": "judge",
+        "note": "「题「这家供应商能按期交付吗？」里是否有两个或更多需要分别回答的判断？」",
+        "replayed": false,
+        "site": {
+          "end": 1506,
+          "start": 1432
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "1203b2f22fce2bd31af8025f",
+        "kind": "judge",
+        "note": "「把题「这家供应商能按期交付吗？」按更细的情形分开问，会比整体问更容易答准吗？」",
+        "replayed": false,
+        "site": {
+          "end": 1506,
+          "start": 1432
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "d6ab484f0cd5e5b569f728c4",
+        "kind": "judge",
+        "note": "「判断题「这家供应商能按期交付吗？」需要的参照对象和语境，这段材料里给够了吗？」",
+        "replayed": false,
+        "site": {
+          "end": 1506,
+          "start": 1432
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "435cd2b166853258eac00c39",
+        "kind": "judge",
+        "note": "「题「这家供应商能按期交付吗？」要判得更明确，最缺哪一类信息？」",
+        "replayed": false,
+        "site": {
+          "end": 1506,
+          "start": 1432
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "b8dca0f53f86cc5a3bfa6c0a",
+        "kind": "judge",
+        "note": "「这家供应商能按期交付吗？」",
+        "replayed": false,
+        "site": {
+          "end": 1506,
+          "start": 1432
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "5bd90c2e6fce22e454ef0e63",
+        "kind": "judge",
+        "note": "「题「这家供应商能按期交付吗？」的前提在这份材料上成立吗？」",
+        "replayed": false,
+        "site": {
+          "end": 1506,
+          "start": 1432
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "01c12929c94357aa4e037fbd",
+        "kind": "judge",
+        "note": "「题「这家供应商能按期交付吗？」里是否有两个或更多需要分别回答的判断？」",
+        "replayed": false,
+        "site": {
+          "end": 1506,
+          "start": 1432
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "b52753282bfb4cf7d07c31c8",
+        "kind": "judge",
+        "note": "「把题「这家供应商能按期交付吗？」按更细的情形分开问，会比整体问更容易答准吗？」",
+        "replayed": false,
+        "site": {
+          "end": 1506,
+          "start": 1432
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "17ba688f0f39864a818e2cb9",
+        "kind": "judge",
+        "note": "「判断题「这家供应商能按期交付吗？」需要的参照对象和语境，这段材料里给够了吗？」",
+        "replayed": false,
+        "site": {
+          "end": 1506,
+          "start": 1432
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "c9ae87d5106e6d54576a7818",
+        "kind": "judge",
+        "note": "「题「这家供应商能按期交付吗？」要判得更明确，最缺哪一类信息？」",
+        "replayed": false,
+        "site": {
+          "end": 1506,
+          "start": 1432
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "2cfbb08f144bce53c4be8acf",
+        "kind": "judge",
+        "note": "「这家供应商能按期交付吗？」",
+        "replayed": false,
+        "site": {
+          "end": 1506,
+          "start": 1432
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "a77746905d1e7e4974771e41",
+        "kind": "judge",
+        "note": "「题「这家供应商能按期交付吗？」的前提在这份材料上成立吗？」",
+        "replayed": false,
+        "site": {
+          "end": 1506,
+          "start": 1432
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "f0bb713911303b7c381cceac",
+        "kind": "judge",
+        "note": "「题「这家供应商能按期交付吗？」里是否有两个或更多需要分别回答的判断？」",
+        "replayed": false,
+        "site": {
+          "end": 1506,
+          "start": 1432
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "0dc9b1bf04b0c6caf875d6d2",
+        "kind": "judge",
+        "note": "「把题「这家供应商能按期交付吗？」按更细的情形分开问，会比整体问更容易答准吗？」",
+        "replayed": false,
+        "site": {
+          "end": 1506,
+          "start": 1432
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "e8294463aeab84e0db83742b",
+        "kind": "judge",
+        "note": "「判断题「这家供应商能按期交付吗？」需要的参照对象和语境，这段材料里给够了吗？」",
+        "replayed": false,
+        "site": {
+          "end": 1506,
+          "start": 1432
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "efe85a97557f80c098323283",
+        "kind": "judge",
+        "note": "「题「这家供应商能按期交付吗？」要判得更明确，最缺哪一类信息？」",
+        "replayed": false,
+        "site": {
+          "end": 1506,
+          "start": 1432
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "5fe67235f26a1c236056a5a9",
+        "kind": "judge",
+        "note": "「这家供应商能按期交付吗？」",
+        "replayed": false,
+        "site": {
+          "end": 1506,
+          "start": 1432
+        }
+      }
+    ],
+    "warnings": [
+      "W-window-untested: @1432 画像没有测过窗口（window），对象长度不核；超窗的语境可能接管读数而无痕",
+      "W-unsure-default: 1 个未决没写去向，走了语言的默认链（问缺哪类信息、取来再判）仍拿不准：判过而拿不准的已记账放弃，没观察到的随值交出（值被丢掉则记违规）。逐条见报告 unsure_default 段。要自己定去向，给 handle 写 unsure 臂"
+    ]
+  },
+  "unsure_default": [
+    {
+      "asked": [],
+      "cause": "tie",
+      "end": "decided",
+      "fetched": [
+        "过往项目"
+      ],
+      "fetched_by": [
+        "fetch"
+      ],
+      "key": "b8cc8943d78c5d8bcf526d3a",
+      "missed": [],
+      "site": 1432,
+      "source": "unsure_source",
+      "why": null
+    },
+    {
+      "asked": [],
+      "cause": "tie",
+      "end": "drop",
+      "fetched": [],
+      "key": "2cfbb08f144bce53c4be8acf",
+      "missed": [],
+      "site": 1432,
+      "source": "unsure_source",
+      "why": "ambiguous"
+    }
+  ],
+  "value": {
+    "accepted": [
+      "甲：老牌厂商，产能充足。",
+      "乙：新成立的团队，报价最低。"
+    ],
+    "n": 2
+  }
+}

@@ -1,0 +1,20 @@
+// 第二批 C10 · 陈述是否被材料支持（属性 · 单对象 · 语义题式；路 B：材料与陈述装进同一段文字）：取真机读数用于认证。
+// 一条材料一道题；读数经 key_of 回接材料编号，不走 --from-ledger 清单（B107 未修）。
+// 材料经 `jpp run --input input.json` 交入：input.items[i] = {id, text}，text 是「材料：……\n陈述：……」，id 是不透明编号。
+budget {calls: 90, cost: 0.05, depth: 256};
+
+let claim_supported = form("test", "这段文字里，「陈述」部分的每一条事实性说法，是否都能在「材料」部分里找到依据？", {calib: "attr-claim-supported"});
+
+fn one(x) !{judge} {
+    let r = judge(state(mat(x.text)), fill(claim_supported, {}));
+    handle(cut(r), {
+        act: fn() { {id: x.id, key: key_of(r), exit: "act", open: []} },
+        ignore: fn() { {id: x.id, key: key_of(r), exit: "ignore", open: []} },
+        unsure: fn(u) { {id: x.id, key: key_of(r), exit: "unsure", open: [u]} }
+    })
+}
+
+let rows = map(input.items, fn(x) !{judge} { one(x) });
+
+{rows: map(rows, fn(x) { {id: x.id, key: x.key, exit: x.exit} }),
+ pending: fold(rows, [], fn(acc, x) { concat(acc, x.open) })}

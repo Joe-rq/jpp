@@ -21,6 +21,7 @@ pub const BUILTINS: &[&str] = &[
     "iterate",
     "outcome",
     "key_of",
+    "action_fact",
     "element",
     "cut",
     "handle",
@@ -39,18 +40,27 @@ pub const BUILTINS: &[&str] = &[
     "stop",
     "unsure_cause",
     "untested",
+    "near_boundary",
+    "unsure_default",
     "line_source",
     "cert",
     "compose",
     "taint",
     "escalate",
     "literalize",
+    // J-05 默认链（B0492 S2）
+    "refine",
+    "unsure_source",
     "allocate",
     "unsure_bound",
     "agg",
     "repeat",
     "order",
     "fit",
+    "gate_info",
+    "split_point",
+    "known_answers",
+    "state_within",
     "len",
     "map",
     "filter",
@@ -115,6 +125,11 @@ pub const QUESTION_FIELDS: &[&str] = &[
     "form",
     "template",
     "fill",
+    "kind",
+    // 步 23b：超窗裂变的声明
+    "fission",
+    // 裁定五十一：拿不准时可能缺的信息类别（与运行时 QUESTION_FIELDS / FORM_FIELDS 同表）
+    "lacks",
 ];
 
 /// 题式的可读字段（运行时 `interp::FORM_FIELDS` 的副本）。
@@ -130,6 +145,11 @@ pub const FORM_FIELDS: &[&str] = &[
     "partition",
     "subject",
     "hash",
+    "on",
+    // 步 23b：超窗裂变的声明
+    "fission",
+    // 裁定五十一：拿不准时可能缺的信息类别（与运行时 QUESTION_FIELDS / FORM_FIELDS 同表）
+    "lacks",
 ];
 
 /// 组合封闭性契约的字段（运行时 `interp::OUTCOME_FIELDS` 的副本，B17）。

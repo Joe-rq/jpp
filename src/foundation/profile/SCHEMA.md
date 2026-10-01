@@ -15,6 +15,8 @@
 | `window.choice` | 按候选长度分档：一致率仍可接受的最大状态 token 与对应 K | token；K | choice_k |
 | `window.score` | 锚数最多、重跑一致率仍可接受的状态 token | token | score_anchor |
 | `delta.<题型>` | 同题同状态重跑差：`immediate`（立即）与 `after_gap`（隔时）各给 `n/p95/p99/max`；题型 = noul / choice_prob_chosen / choice_confidence / score | 概率差 | delta |
+| `delta.<题型>.mid` | **中段 δ**（profile_revision 2 起，裁定四十四、四十五）：材料读数 5 趟均值在 `band` [0.2, 0.8] 内的条目，`immediate` 给 `items/n/runs/p95/p99/max`；题型 = noul / choice_prob_chosen / score。上一行的 `immediate` / `after_gap` 是**尾段**（E1，材料以满信心读数为主）。语言的认证导入、两端先标、`cut` 在记录没有 δ 时的兜底一律取 `mid.immediate.p99`；缺 mid 的画像在这些地方报错，不退回尾段。`jpp profile check` 列缺项 | 概率差 | Z0334（`地基/实测/δ分层-2026-09-30/`） |
+| `profile_revision` | 画像版本，正整数；缺即 1。2 = `delta` 分读数段 | — | — |
 | `flip_rate.choice_argmax_rerun` | 重跑后 choice 选中项改变的比例，`rate/n/ci95` | 比例 | delta |
 | `flip_rate.noul_outlet_under_filler` | 各填充档下过线翻转数 | 计数 | window |
 | `batch_invariance.noul` | 单独 vs 同批 10/50/200 题的读数均值差与最大差；choice 标签是否变 | 概率差 | batch |
@@ -54,3 +56,13 @@
 |---|---|---|---|
 | `fixed_output_types` | bool | 官方文档（D1）；`choice_k` 探测 | 下沉表 |
 | `select_sums_to_one` | bool | 官方文档（D2） | 单候选 select 平凡出口 `Pick(0)`；为 False 时照常发调用 |
+
+## δ 的测法（裁定四十四，2026-09-30）
+
+δ 的用处全在线附近：迟滞带、认证的线平移、两端先标。线附近的读数在中段，所以 **δ 的材料读数必须覆盖中段，只用满信心材料测的 δ 不作数**（满信心读数几乎不动，测出来的是地板）。
+
+- 材料：读数落在 [0.2, 0.8] 的条目，按题型分开，每个题型尽量 ≥ 100 条；另加同场尾段对照臂。只用材料文本，不用标注。
+- 做法：同题同状态背靠背重跑 ≥ 5 趟，每趟新账本、不带缓存；K 选一不开 permute（单次调用的读数）。
+- 统计量：同条各趟两两之差的绝对值，汇总取 p95 / p99 / max（与 E1 同口径）；读数段按该条各趟均值归。是非、K 选一取被选项概率，打分取被选档概率（`cut` 比线用的就是它）。
+- 题族（语义题 / 字面题）只在报告里分列，不给画像加维度；两族 p99 取较大者写进画像（不利侧，B39）。
+- 2026-09-30 首测：是非 0.1281（题库语义题族；字面题族 0.09；主要由一条材料决定，去掉为 0.0791，待查）、K 选一 0.0971、打分 0.0821；尾段 0.04–0.06。

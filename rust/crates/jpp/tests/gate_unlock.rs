@@ -10,13 +10,15 @@
 //! **一条只有无标注观察的记录，没有积累任何「关于线的证据」，它只是判过几次。**
 //! 拿它去挡 `put`，是把**观察**当成了**证据**。
 
+mod common;
+use common::run_关 as run;
+use jpp::ActionRegistry;
 use jpp::conformal::Certificate;
 use jpp::effects::{
     CalibStore, EffectError, FnPort, JudgeResult, LiteralMode, Ports, Provenance, Refusal, Sample,
 };
 use jpp::ledger::Ledger;
 use jpp::value::Answer;
-use jpp::{ActionRegistry, run};
 use jpp::{lower, syntax::parse};
 
 /// 判断恒给 `p`、不该生成、不该问人（步 15c：原 `impl Client` 的桩改为三个闭包端口）

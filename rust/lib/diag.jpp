@@ -1,0 +1,58 @@
+// 题的诊断：需要判断器的那部分（步 26，B47、B13；核心讨论结论 :29、:41）。
+//
+// 诊断分三层，都只给建议，不改程序走向（批 9 裁定 :42、:136「只提示，不改走向」）：
+//   1. 零成本的自动诊断：diag_notes(q) 经宿主变换 transform("diagnose", …) 跑同一份 B13 静态规则，返回
+//      [{code, message, fix}]，不发判断调用；transform 记账（12 §2.8），每次一条账本条目，重放从账本取
+//      （主会话裁定 2026-09-29 第二十条）。运行中生成的题发出前，运行时还会自动过一遍同一份规则，
+//      结果进报告的 trace.warnings（检查期见过的字面题不重复报；只提示，不记账）。
+//   2. 判断器诊断（本文件）：两道字面题，把被诊断的题面当材料（B4：题面可作另一道题的材料），输出契约值（B17），
+//      可再交给 sieve、by_q 等继续组合；未决随契约值交出（J-05）。不用「有助于判断吗」这类元题（E8：无区分力）。
+//   3. 大模型建议：suggest_rewrite，只在显式调用时发一次 gen，产物是材料（B18），由判断器再读。
+// Nature（结论 :29）：「一部分是自动的建议，一部分是大模型理解后的建议。大部分是自动建议，因为这个没有成本。」
+//
+// 两道诊断题的题面固定，被诊断的题放在状态里：校准键固定、同批可合；每道被诊断的题一个状态。
+// 这两道题在 JEV 上有没有区分力按理论假定（字面题），真机另测（结论 :41；过程记录 工程-步26.md §一·7）。
+
+let diag_two_judgments_q = test("这道题里是否有两个或更多需要分别回答的判断？", "diag-two-judgments");
+let diag_in_material_q = test("上下文里那道题问的东西，这段材料里有没有？", "diag-in-material");
+
+// 题的材料形（宿主变换 diagnose 的输入）：题型、题面，由题式填出的另带模板与填法
+fn diag_mat(q) {
+    if q.template == unit { mat({op: q.op, text: q.text}) }
+    else { mat({op: q.op, text: q.text, template: q.template, fill: q.fill}) }
+}
+
+// 零成本的自动诊断：[{code, message, fix}]，没有问题为空列表。记账，不发判断调用。
+fn diag_notes(q) { content(transform("diagnose", diag_mat(q))) }
+
+// 卡在哪几个码：[code]
+fn diag_codes(q) { map(diag_notes(q), fn(n) { n.code }) }
+
+// 契约值加上固定修法文字（自动建议，零成本）：detail.advice；其余字段原样
+fn diag_advise(o, what, advice) {
+    outcome({value: o.value, pending: o.pending, evidence: o.evidence, resume: o.resume,
+             detail: with(with(o.detail, "diagnosis", what), "advice", advice)})
+}
+
+// 这题里有两个判断吗：qs 是题的列表。act 的元素 = 藏了两个判断的题（元素的材料就是那道题的题面，qi 不变，
+// 位置 pos 对应 qs 的下标）；ignore = 一题一判；未决的在 pending。
+fn diag_two_judgments(qs) !{judge} {
+    let o = sieve(map(qs, fn(q) { state(mat(q.text)) }), diag_two_judgments_q);
+    diag_advise(o, "two_judgments",
+                "act 的题藏了两个判断：拆成两道题，再用三值合取（all / 逐元素 ∧）组合")
+}
+
+// 题问的东西在面前的材料里吗：qs 是题的列表，m 是要拿这些题去判的材料。act = 材料里有；ignore = 材料里没有。
+fn diag_in_material(qs, m) !{judge} {
+    let o = sieve(map(qs, fn(q) { state(m, {ctx: [mat(q.text)]}) }), diag_in_material_q);
+    diag_advise(o, "in_material",
+                "ignore 的题问的东西不在这段材料里：换材料，或先问缺哪类信息、取来补进材料再判")
+}
+
+// 大模型建议（显式调用才发）：按诊断结果改写题面。notes 是 diagnose(q) 的结果或调用者自己写的说明列表。
+// 返回 gen 的输出（材料列表，第一项是改写后的题面）；改写后的题再过 diagnose 与本文件的诊断，由作者决定用不用。
+fn suggest_rewrite(q, notes) !{gen} {
+    let why = join(map(notes, fn(n) { if has(n, "code") { n.code + "：" + n.fix } else { text(n) } }), "\n");
+    gen("下面第一段是一道交给判断器的是非题题面，第二段是对它的诊断。按诊断改写题面：只输出改写后的一道题面，不要解释。",
+        [mat(q.text), mat(why)], 1, 0)
+}

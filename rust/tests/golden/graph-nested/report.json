@@ -1,4 +1,91 @@
 {
+  "action_facts": {
+    "bm25_topk": {
+      "conditions": [],
+      "reason": "纯 Rust 计算：只读入参、返回新值，不碰宿主与外部系统",
+      "reversibility": "reversible"
+    },
+    "check_tests": {
+      "conditions": [
+        "沙箱：sandbox-exec"
+      ],
+      "reason": "运行被测代码与断言；在调用专属临时目录内运行，操作系统沙箱把写限定在该目录、拒绝一切网络，调用结束整目录丢弃。读宿主文件不隔离；CPU、内存、进程数不限",
+      "reversibility": "reversible"
+    },
+    "embed_topk": {
+      "conditions": [
+        "写 ~/.cache/jpp-embed 下的缓存文件（可再生）"
+      ],
+      "reason": "读入文本、起 Python 子进程算向量；会写可再生缓存 ~/.cache/jpp-embed，不改用户数据；删掉缓存即回到运行前",
+      "reversibility": "reversible"
+    },
+    "exec_py": {
+      "conditions": [
+        "沙箱：sandbox-exec"
+      ],
+      "reason": "运行给定的 Python 代码；在调用专属临时目录内运行，操作系统沙箱把写限定在该目录、拒绝一切网络，调用结束整目录丢弃。读宿主文件不隔离；CPU、内存、进程数不限",
+      "reversibility": "reversible"
+    },
+    "exec_sql": {
+      "conditions": [
+        "沙箱：sandbox-exec"
+      ],
+      "reason": "只读打开数据库（mode=ro + PRAGMA query_only + 授权回调只放行 SELECT，任何语句都改不了库）；在调用专属临时目录内运行，操作系统沙箱把写限定在该目录、拒绝一切网络，调用结束整目录丢弃。读宿主文件不隔离；CPU、内存、进程数不限",
+      "reversibility": "reversible"
+    },
+    "graph:components": {
+      "conditions": [],
+      "reason": "纯函数：只读入参、返回新值，不碰宿主与外部系统",
+      "reversibility": "reversible"
+    },
+    "graph:cycles": {
+      "conditions": [],
+      "reason": "纯函数：只读入参、返回新值，不碰宿主与外部系统",
+      "reversibility": "reversible"
+    },
+    "graph:matching": {
+      "conditions": [],
+      "reason": "纯函数：只读入参、返回新值，不碰宿主与外部系统",
+      "reversibility": "reversible"
+    },
+    "graph:max_clique": {
+      "conditions": [],
+      "reason": "纯函数：只读入参、返回新值，不碰宿主与外部系统",
+      "reversibility": "reversible"
+    },
+    "graph:max_flow": {
+      "conditions": [],
+      "reason": "纯函数：只读入参、返回新值，不碰宿主与外部系统",
+      "reversibility": "reversible"
+    },
+    "graph:set_cover": {
+      "conditions": [],
+      "reason": "纯函数：只读入参、返回新值，不碰宿主与外部系统",
+      "reversibility": "reversible"
+    },
+    "graph:shortest_path": {
+      "conditions": [],
+      "reason": "纯函数：只读入参、返回新值，不碰宿主与外部系统",
+      "reversibility": "reversible"
+    },
+    "read_json": {
+      "conditions": [],
+      "reason": "只读一个文件并解析，不写任何东西",
+      "reversibility": "reversible"
+    },
+    "record_check": {
+      "conditions": [],
+      "reason": "只把一条记录追加到本次运行的内存检查表（进报告 local_checks），不碰宿主文件与外部系统；进程结束即消失",
+      "reversibility": "reversible"
+    },
+    "write_json": {
+      "conditions": [
+        "path 指向已存在文件时原内容丢失；指向新路径时留下新文件"
+      ],
+      "reason": "创建或覆盖 path 指向的宿主文件；运行时不备份原内容，也没有删除或还原的动作，写完就无法由运行时撤回",
+      "reversibility": "irreversible"
+    }
+  },
   "backend": "fixed-0",
   "cost": {
     "asks": 0,
@@ -15,7 +102,7 @@
         "$.pending[1].exit",
         "$.pending[3].exit"
       ],
-      "key": "1fe90e291a86fc7c184ad1ed"
+      "key": "50e22570c3b950f5974cdbe4"
     },
     {
       "exit": "unsure(band)",
@@ -24,7 +111,7 @@
         "$.pending[0].exit",
         "$.pending[2].exit"
       ],
-      "key": "407a8679f38286f9251b846d"
+      "key": "c966425ea7ae1a3588282f6b"
     }
   ],
   "entry": [],
@@ -37,7 +124,7 @@
       "key": "graph-can-do",
       "pos": 0,
       "releases": false,
-      "site": 4688
+      "site": 4723
     },
     {
       "exit": "act",
@@ -47,7 +134,7 @@
       "key": "graph-can-do",
       "pos": 1,
       "releases": false,
-      "site": 4688
+      "site": 4723
     },
     {
       "exit": "act",
@@ -57,7 +144,7 @@
       "key": "graph-can-do",
       "pos": 2,
       "releases": false,
-      "site": 4688
+      "site": 4723
     },
     {
       "exit": "act",
@@ -67,7 +154,7 @@
       "key": "graph-can-do",
       "pos": 3,
       "releases": false,
-      "site": 4688
+      "site": 4723
     },
     {
       "exit": "act",
@@ -77,7 +164,7 @@
       "key": "graph-can-do",
       "pos": 4,
       "releases": false,
-      "site": 4688
+      "site": 4723
     },
     {
       "exit": "act",
@@ -87,7 +174,7 @@
       "key": "graph-can-do",
       "pos": 5,
       "releases": false,
-      "site": 4688
+      "site": 4723
     },
     {
       "exit": "ignore",
@@ -97,7 +184,7 @@
       "key": "graph-can-do",
       "pos": 6,
       "releases": false,
-      "site": 4688
+      "site": 4723
     },
     {
       "exit": "ignore",
@@ -107,7 +194,7 @@
       "key": "graph-can-do",
       "pos": 7,
       "releases": false,
-      "site": 4688
+      "site": 4723
     },
     {
       "exit": "unsure(band)",
@@ -117,7 +204,7 @@
       "key": "graph-can-do",
       "pos": 8,
       "releases": false,
-      "site": 4688
+      "site": 4723
     },
     {
       "exit": "unsure(band)",
@@ -127,7 +214,7 @@
       "key": "graph-can-do",
       "pos": 9,
       "releases": false,
-      "site": 4688
+      "site": 4723
     },
     {
       "exit": "act",
@@ -177,7 +264,7 @@
       "key": "graph-merge",
       "pos": 0,
       "releases": false,
-      "site": 4688
+      "site": 4723
     },
     {
       "exit": "act",
@@ -187,7 +274,7 @@
       "key": "graph-merge",
       "pos": 1,
       "releases": false,
-      "site": 4688
+      "site": 4723
     },
     {
       "exit": "ignore",
@@ -197,7 +284,7 @@
       "key": "graph-merge",
       "pos": 2,
       "releases": false,
-      "site": 4688
+      "site": 4723
     },
     {
       "exit": "ignore",
@@ -207,7 +294,7 @@
       "key": "graph-merge",
       "pos": 3,
       "releases": false,
-      "site": 4688
+      "site": 4723
     },
     {
       "exit": "ignore",
@@ -217,7 +304,7 @@
       "key": "graph-merge",
       "pos": 4,
       "releases": false,
-      "site": 4688
+      "site": 4723
     },
     {
       "exit": "act",
@@ -227,13 +314,31 @@
       "key": "graph-merge",
       "pos": 5,
       "releases": false,
-      "site": 4688
+      "site": 4723
     }
   ],
   "fixture_description": "Synthetic fixed observations for graph-nested.jpp (step 25d, B148): the graph of graph-interval, a team-level question on the decided pairs, and a merge graph whose nodes are those pairs.",
   "local_checks": [],
   "mode": "fixed observations; no model API requests",
   "pending": [],
+  "plan": {
+    "calls": {
+      "kind": "at_least",
+      "lo": 0
+    },
+    "cost_usd": {
+      "kind": "at_least",
+      "lo": 0.0
+    },
+    "latency_s": {
+      "kind": "unknown",
+      "reason": "untested:concurrency.latency_s.p95"
+    },
+    "layers": {
+      "kind": "at_least",
+      "lo": 0
+    }
+  },
   "questions": [
     {
       "kind": "attr",
@@ -258,134 +363,134 @@
     "events": [
       {
         "cost": 0.0,
-        "key": "00b54f18e83b4517f1bdacf1",
+        "key": "6114cf9a97d18a3b46fdd860",
         "kind": "judge",
         "note": "「a 描述的这项任务，b 这个人能接下来吗？」",
         "replayed": false,
         "site": {
-          "end": 4708,
-          "start": 4688
+          "end": 4743,
+          "start": 4723
         }
       },
       {
         "cost": 0.0,
-        "key": "06f5b98b4acfe85afce7a73e",
+        "key": "9606071a5d3a9bed427c9981",
         "kind": "judge",
         "note": "「a 描述的这项任务，b 这个人能接下来吗？」",
         "replayed": false,
         "site": {
-          "end": 4708,
-          "start": 4688
+          "end": 4743,
+          "start": 4723
         }
       },
       {
         "cost": 0.0,
-        "key": "70c34daeb2c0c156947f021d",
+        "key": "7bbe431dc1327475a58d49d8",
         "kind": "judge",
         "note": "「a 描述的这项任务，b 这个人能接下来吗？」",
         "replayed": false,
         "site": {
-          "end": 4708,
-          "start": 4688
+          "end": 4743,
+          "start": 4723
         }
       },
       {
         "cost": 0.0,
-        "key": "9fe465e9ec093c1e41027d58",
+        "key": "159d52e622aab167ce4f222a",
         "kind": "judge",
         "note": "「a 描述的这项任务，b 这个人能接下来吗？」",
         "replayed": false,
         "site": {
-          "end": 4708,
-          "start": 4688
+          "end": 4743,
+          "start": 4723
         }
       },
       {
         "cost": 0.0,
-        "key": "84d2a2bcdd1786a663bc8021",
+        "key": "c3f8a4bcb0b0edff6eeb2bfb",
         "kind": "judge",
         "note": "「a 描述的这项任务，b 这个人能接下来吗？」",
         "replayed": false,
         "site": {
-          "end": 4708,
-          "start": 4688
+          "end": 4743,
+          "start": 4723
         }
       },
       {
         "cost": 0.0,
-        "key": "361f884305a5952bd1b5643d",
+        "key": "690e2b05530ba6acfba7d2fb",
         "kind": "judge",
         "note": "「a 描述的这项任务，b 这个人能接下来吗？」",
         "replayed": false,
         "site": {
-          "end": 4708,
-          "start": 4688
+          "end": 4743,
+          "start": 4723
         }
       },
       {
         "cost": 0.0,
-        "key": "2f8e9c131ae515870ba0511e",
+        "key": "2e4bf2494732a391bdb47ef0",
         "kind": "judge",
         "note": "「a 描述的这项任务，b 这个人能接下来吗？」",
         "replayed": false,
         "site": {
-          "end": 4708,
-          "start": 4688
+          "end": 4743,
+          "start": 4723
         }
       },
       {
         "cost": 0.0,
-        "key": "e11e91a37d91e0631a84c924",
+        "key": "3e6c3f11c10dbdf7c94ca75d",
         "kind": "judge",
         "note": "「a 描述的这项任务，b 这个人能接下来吗？」",
         "replayed": false,
         "site": {
-          "end": 4708,
-          "start": 4688
+          "end": 4743,
+          "start": 4723
         }
       },
       {
         "cost": 0.0,
-        "key": "407a8679f38286f9251b846d",
+        "key": "c966425ea7ae1a3588282f6b",
         "kind": "judge",
         "note": "「a 描述的这项任务，b 这个人能接下来吗？」",
         "replayed": false,
         "site": {
-          "end": 4708,
-          "start": 4688
+          "end": 4743,
+          "start": 4723
         }
       },
       {
         "cost": 0.0,
-        "key": "1fe90e291a86fc7c184ad1ed",
+        "key": "50e22570c3b950f5974cdbe4",
         "kind": "judge",
         "note": "「a 描述的这项任务，b 这个人能接下来吗？」",
         "replayed": false,
         "site": {
-          "end": 4708,
-          "start": 4688
+          "end": 4743,
+          "start": 4723
         }
       },
       {
         "cost": 0.0,
-        "key": "e38d07a6ab45951464e2a63a",
+        "key": "d87fd891026c2c0a72ef1b6b",
         "kind": "do",
         "note": "graph:matching",
         "replayed": false,
         "site": {
-          "end": 9928,
-          "start": 9850
+          "end": 9963,
+          "start": 9885
         }
       },
       {
         "cost": 0.0,
-        "key": "d89e2209b31eb04313013d82",
+        "key": "28591dc6c494739df44a5fd0",
         "kind": "do",
         "note": "graph:matching",
         "replayed": false,
         "site": {
-          "end": 9928,
-          "start": 9850
+          "end": 9963,
+          "start": 9885
         }
       },
       {
@@ -434,95 +539,95 @@
       },
       {
         "cost": 0.0,
-        "key": "28bce30ac2a79fc0939cf508",
+        "key": "85d8c9deff0c28aa589dbd16",
         "kind": "judge",
         "note": "「a 与 b 两组分工能合并成一个小组、互相补位吗？」",
         "replayed": false,
         "site": {
-          "end": 4708,
-          "start": 4688
+          "end": 4743,
+          "start": 4723
         }
       },
       {
         "cost": 0.0,
-        "key": "d9185ecdaa90a89bdfc09763",
+        "key": "3a2f7578bd2cd2d8f038c108",
         "kind": "judge",
         "note": "「a 与 b 两组分工能合并成一个小组、互相补位吗？」",
         "replayed": false,
         "site": {
-          "end": 4708,
-          "start": 4688
+          "end": 4743,
+          "start": 4723
         }
       },
       {
         "cost": 0.0,
-        "key": "1eccd18e52bf79b6e7c86e7d",
+        "key": "248bf7dbcc6778eb0ed243e1",
         "kind": "judge",
         "note": "「a 与 b 两组分工能合并成一个小组、互相补位吗？」",
         "replayed": false,
         "site": {
-          "end": 4708,
-          "start": 4688
+          "end": 4743,
+          "start": 4723
         }
       },
       {
         "cost": 0.0,
-        "key": "a8482005d0d412ed46859d39",
+        "key": "6d95030d533492ce5e600ed9",
         "kind": "judge",
         "note": "「a 与 b 两组分工能合并成一个小组、互相补位吗？」",
         "replayed": false,
         "site": {
-          "end": 4708,
-          "start": 4688
+          "end": 4743,
+          "start": 4723
         }
       },
       {
         "cost": 0.0,
-        "key": "1e35637d7981a9436927a34a",
+        "key": "97b6df0e1c71f41b155690ff",
         "kind": "judge",
         "note": "「a 与 b 两组分工能合并成一个小组、互相补位吗？」",
         "replayed": false,
         "site": {
-          "end": 4708,
-          "start": 4688
+          "end": 4743,
+          "start": 4723
         }
       },
       {
         "cost": 0.0,
-        "key": "a9bb2a1537cf13f96ec65f76",
+        "key": "f2455ae5c2b158c7df5154b4",
         "kind": "judge",
         "note": "「a 与 b 两组分工能合并成一个小组、互相补位吗？」",
         "replayed": false,
         "site": {
-          "end": 4708,
-          "start": 4688
+          "end": 4743,
+          "start": 4723
         }
       },
       {
         "cost": 0.0,
-        "key": "a57895ed5d5166db5b4abce0",
+        "key": "c0d06375f403c57f1d1a2aaf",
         "kind": "do",
         "note": "graph:matching",
         "replayed": false,
         "site": {
-          "end": 9928,
-          "start": 9850
+          "end": 9963,
+          "start": 9885
         }
       },
       {
         "cost": 0.0,
-        "key": "fa99c7213676e1d4ec9dcb0d",
+        "key": "8bc98a19295af2ff57ad5158",
         "kind": "do",
         "note": "graph:matching",
         "replayed": false,
         "site": {
-          "end": 9928,
-          "start": 9850
+          "end": 9963,
+          "start": 9885
         }
       }
     ],
     "warnings": [
-      "W-window-untested: @4688 画像没有测过窗口（window），对象长度不核；超窗的语境可能接管读数而无痕",
+      "W-window-untested: @4723 画像没有测过窗口（window），对象长度不核；超窗的语境可能接管读数而无痕",
       "W-window-untested: @1428 画像没有测过窗口（window），对象长度不核；超窗的语境可能接管读数而无痕",
       "returned_unsure: unsure(band)"
     ]
@@ -606,7 +711,7 @@
               "a": "任务：做数据看板",
               "b": "小王：数据分析，常做报表"
             },
-            "key": "407a8679f38286f9251b846d",
+            "key": "c966425ea7ae1a3588282f6b",
             "left": "任务：做数据看板",
             "pos": 8,
             "q": {
@@ -664,7 +769,7 @@
               "a": "任务：写单元测试",
               "b": "小陈：测试开发，熟悉单元测试框架"
             },
-            "key": "1fe90e291a86fc7c184ad1ed",
+            "key": "50e22570c3b950f5974cdbe4",
             "left": "任务：写单元测试",
             "pos": 9,
             "q": {
@@ -719,7 +824,7 @@
           "a": "任务：做数据看板",
           "b": "小王：数据分析，常做报表"
         },
-        "key": "407a8679f38286f9251b846d",
+        "key": "c966425ea7ae1a3588282f6b",
         "left": "任务：做数据看板",
         "pos": 8,
         "q": {
@@ -753,7 +858,7 @@
           "a": "任务：写单元测试",
           "b": "小陈：测试开发，熟悉单元测试框架"
         },
-        "key": "1fe90e291a86fc7c184ad1ed",
+        "key": "50e22570c3b950f5974cdbe4",
         "left": "任务：写单元测试",
         "pos": 9,
         "q": {

@@ -87,7 +87,7 @@ fn 程序(守卫与动作: &str) -> String {
 
 fn 放行(src: &str) {
     let v = 跑(src).unwrap_or_else(|e| panic!("应放行，却被拒：{e}\n{src}"));
-    assert_eq!(v, Json::from("已发"), "{src}");
+    assert_eq!(v["content"], Json::from("已发"), "{src}");
 }
 
 fn 拒(src: &str) {
@@ -95,7 +95,7 @@ fn 拒(src: &str) {
     assert!(e.contains("J-08"), "{e}");
 }
 
-const 发: &str = r#"content(do("发邮件", [], 0))"#;
+const 发: &str = r#"(do("发邮件", [], 0))"#;
 
 #[test]
 fn j08_1_字面true没有证据() {

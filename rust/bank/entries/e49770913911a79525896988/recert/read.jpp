@@ -1,0 +1,23 @@
+// 步 27a · 置换重跑：与 27a-准备 同名程序只差题式记录里的 permute: true（B64，步 15f），材料逐字节相同。
+// 27a 准备 · F3（归类 · K 候选为程序写定的标签 · 可算真值）：取真机读数用于认证。
+// 一条材料一道题（一个填法）；读数经 key_of 回接材料编号，不走 --from-ledger 清单（B107 未修）。
+budget {calls: 70, cost: 0.05, depth: 256};
+
+let which = form("select", "这段话里直接写出了下列哪一个{kind}的名字？", {calib: "cls-which-mentioned", over_kind: "labels", permute: true});
+let cities = ["北京", "上海", "广州", "成都"];
+let countries = ["日本", "法国", "巴西", "埃及"];
+
+fn labels_for(kind) { if kind == "城市" { cities } else { countries } }
+
+fn one(x) !{judge} {
+    let r = judge(state(mat(x.text), {over: labels_for(x.kind)}), fill(which, {kind: x.kind}));
+    handle(cut(r), {
+        pick: fn(k) { {id: x.id, key: key_of(r), exit: "pick", open: []} },
+        unsure: fn(u) { {id: x.id, key: key_of(r), exit: "unsure", open: [u]} }
+    })
+}
+
+let rows = map(input.items, fn(x) !{judge} { one(x) });
+
+{rows: map(rows, fn(x) { {id: x.id, key: x.key, exit: x.exit} }),
+ pending: fold(rows, [], fn(acc, x) { concat(acc, x.open) })}

@@ -255,7 +255,7 @@ fn input派生的守卫放行不了不可逆do() {
     let d = scratch("j08");
     let prog = |mat_expr: &str| {
         format!(
-            "budget {{calls: 2, cost: 1}};\nlet ok = handle(cut(judge(state(mat({mat_expr})), test(\"行吗\", \"k\"))), {{\n    act: fn() {{ true }}, ignore: fn() {{ false }}, unsure: fn(u) {{ consume(u, \"drop\"); false }}}});\nif ok {{ content(do(\"write_json\", [\"out.json\", {{done: true}}], 0)) }} else {{ \"没写\" }}\n"
+            "budget {{calls: 2, cost: 1}};\nlet ok = handle(cut(judge(state(mat({mat_expr})), test(\"行吗\", \"k\"))), {{\n    act: fn() {{ true }}, ignore: fn() {{ false }}, unsure: fn(u) {{ consume(u, \"drop\"); false }}}});\nif ok {{ (do(\"write_json\", [\"out.json\", {{done: true}}], 0)) }} else {{ \"没写\" }}\n"
         )
     };
     fs::write(d.join("in.jpp"), prog("input.a")).unwrap();
@@ -347,7 +347,7 @@ fn input派生的守卫放行不了不可逆do() {
 #[test]
 fn m_input_trusted让静态j08也放行() {
     let d = scratch("j08-trusted");
-    let prog = "budget {calls: 2, cost: 1};\nlet ok = handle(cut(judge(state(mat(input.a)), test(\"行吗\", \"k\"))), {\n    act: fn() { true }, ignore: fn() { false }, unsure: fn(u) { consume(u, \"drop\"); false }});\nif ok { content(do(\"write_json\", [\"out.json\", {done: true}], 0)) } else { \"没写\" }\n";
+    let prog = "budget {calls: 2, cost: 1};\nlet ok = handle(cut(judge(state(mat(input.a)), test(\"行吗\", \"k\"))), {\n    act: fn() { true }, ignore: fn() { false }, unsure: fn(u) { consume(u, \"drop\"); false }});\nif ok { (do(\"write_json\", [\"out.json\", {done: true}], 0)) } else { \"没写\" }\n";
     fs::write(d.join("in.jpp"), prog).unwrap();
     fs::write(d.join("in.json"), r#"{"a": "hello"}"#).unwrap();
     fs::write(d.join("nofx.json"), json!({"observations": [{"on": ["hello"], "op": "test", "text": "行吗", "calib": "k", "answer": {"Noul": 0.95}}]}).to_string()).unwrap();

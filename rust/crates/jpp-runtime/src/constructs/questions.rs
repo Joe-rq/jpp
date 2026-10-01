@@ -45,8 +45,11 @@ impl<'a> Interp<'a> {
         let evidence = evidence_of(args.get(2), sp)?;
         let (presupposition, request) = question_decl_of(args.get(2), op, sp)?;
         let permute = permute_of(args.get(2), op, sp)?;
+        lacks_of(args.get(2), false, sp)?;
         let labels = labels_of(args.get(2), op, sp)?;
-        Ok(caps.issue_question().question(
+        // 步 23b：超窗裂变的声明 `{fission: "approx"}`（不进题哈希）
+        let fission = fission_of(args.get(2), op, sp)?;
+        let q = caps.issue_question().question(
             op,
             t,
             c,
@@ -55,7 +58,8 @@ impl<'a> Interp<'a> {
             request,
             permute,
             labels,
-        ))
+        );
+        Ok(caps.issue_question().with_fission(q, fission))
     }
     #[allow(unused_variables)]
     pub(crate) fn b_measure(
@@ -220,9 +224,61 @@ impl<'a> Interp<'a> {
             }
         };
         let labels = labels_of(Some(&args[2]), op, sp)?;
-        Ok(caps
+        // 裁定十九、B192（步 28）：答案块上的签名 {on: {act?: 签名, ignore?: 签名}}，只收是非题式；
+        // 不进 form_hash，跟着题式值走，出题库 derive 按它派生下一题
+        let on = match args[2].get("on") {
+            None | Some(Value::Unit) => None,
+            Some(v) if matches!(v, Value::Record(_)) => {
+                let Value::Record(r) = &v else { unreachable!() };
+                if op != Op::Test {
+                    return err(
+                        Some("E-rt-question"),
+                        "on（答案块上的签名）只收是非题式：是非题判出 act / ignore 即选中那一块（裁定十九）",
+                        sp,
+                    );
+                }
+                if let Some((k, _)) = r
+                    .iter()
+                    .find(|(k, v)| !(k == "act" || k == "ignore") || !matches!(v, Value::Record(_)))
+                {
+                    return err(
+                        Some("E-rt-question"),
+                        format!("on 只收 {{act?: 签名记录, ignore?: 签名记录}}，「{k}」不合"),
+                        sp,
+                    );
+                }
+                Some(v.clone())
+            }
+            Some(other) => {
+                return err(
+                    Some("E-rt-question"),
+                    format!(
+                        "on 要是记录 {{act?: 签名, ignore?: 签名}}，收到 {}",
+                        other.type_name()
+                    ),
+                    sp,
+                );
+            }
+        };
+        // 步 23b：超窗裂变的声明，不进 form_hash，由 fill 带到题上
+        let fission = fission_of(Some(&args[2]), op, sp)?;
+        // 裁定五十一：拿不准时可能缺的信息类别，不进 form_hash，由 fill 带到题上
+        let lacks = lacks_of(Some(&args[2]), true, sp)?;
+        let v = caps
             .issue_question()
-            .finish_form(f, permute, over_kind, labels))
+            .finish_form(f, permute, over_kind, labels);
+        let v = caps.issue_question().with_fission(v, fission);
+        match (on, &v) {
+            (sig, Value::Form(rf)) if sig.is_some() || !lacks.is_empty() => {
+                let mut f2 = (**rf).clone();
+                if let Some(sig) = sig {
+                    f2.on = Some(jpp_value::value::FormSig(std::rc::Rc::new(sig)));
+                }
+                f2.lacks = lacks;
+                Ok(Value::Form(std::rc::Rc::new(f2)))
+            }
+            _ => Ok(v),
+        }
     }
     #[allow(unused_variables)]
     pub(crate) fn b_fill(
@@ -244,8 +300,32 @@ impl<'a> Interp<'a> {
                 )
             }
         };
-        // fill(题式, {槽: 值, …}) → 题。值按 text() 渲染；Int/Float/Bool/Text 以外的值不能填进题面。
-        arity(2)?;
+        // fill(题式, {槽: 值, …}[, {from: 出口 | [出口…]}]) → 题。值按 text() 渲染；Int/Float/Bool/Text 以外的值
+        // 不能填进题面。第三个参数（步 28 K1）声明这道题由哪个出口派生：出口的账本键经分派处的来源合并进题的
+        // from_key（B59、B84，与 test/select/measure 的选项记录同一条路），判断条目的 parents 与 hop 由此算。
+        if n != 3 {
+            arity(2)?;
+        }
+        if let Some(opts) = args.get(2) {
+            let ok = match opts {
+                Value::Record(r) => r.iter().all(|(k, v)| {
+                    k == "from"
+                        && match v {
+                            Value::Exit(_) => true,
+                            Value::List(l) => l.iter().all(|x| matches!(x, Value::Exit(_))),
+                            _ => false,
+                        }
+                }),
+                _ => false,
+            };
+            if !ok {
+                return err(
+                    Some("E-rt-question"),
+                    "fill 的第三个参数只收 {from: 出口} 或 {from: [出口…]}：声明这道题由哪个出口派生",
+                    sp,
+                );
+            }
+        }
         let Value::Form(f) = &args[0] else {
             return err(
                 Some("E-rt-question"),

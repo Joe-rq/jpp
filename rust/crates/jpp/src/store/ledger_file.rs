@@ -9,8 +9,8 @@
 //! 只依赖 `jpp_ledger` 与 `store::Blob`）
 
 use jpp_ledger::{
-    Durability, Entry, Header, HeaderCompare, Ledger, LedgerError, LedgerPort, encode_head,
-    line_hash,
+    Durability, Entry, Header, HeaderCompare, Ledger, LedgerError, LedgerPort, TraceCtx,
+    encode_head, line_hash,
 };
 use serde_json::Value as Json;
 
@@ -111,6 +111,9 @@ impl<B: Blob> LedgerPort for LedgerFile<B> {
     fn end_layer(&mut self) -> Result<(), LedgerError> {
         self.sync()
     }
+    fn set_trace(&mut self, ctx: Option<TraceCtx>) {
+        self.ledger.set_trace(ctx)
+    }
 }
 
 #[cfg(test)]
@@ -143,6 +146,7 @@ mod tests {
             Entry::Intent {
                 key: "intent:e".into(),
                 at: 1,
+                attempt: None,
             },
             Durability::Now,
         )
