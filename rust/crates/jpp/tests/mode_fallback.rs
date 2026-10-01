@@ -5,6 +5,8 @@
 //! 查找链是 题键 → 题式键 → 冷（类键一级见 B34，步 20）。本文件原来钉的是回退行为，
 //! 步 11b-2 起改钉「不回退」：有模式级记录也仍是冷，且不留来源。
 
+// 伴随题「最缺哪类」是 K 选一：替身经 common::伴随中性judge 给伴随元题中性读数（Z0398 返修，过程记录 5.23）
+mod common;
 use jpp::effects::{CalibStore, LiteralMode};
 use jpp::ledger::Ledger;
 use jpp::value::Answer;
@@ -17,7 +19,7 @@ mod 桩 {
     /// 判断恒给 `p`，不该生成、不该问人（步 15c：原 `impl Client` 的桩改为三个闭包端口）
     pub fn 定值端口(p: f64) -> Ports<'static> {
         Ports::new()
-            .with(FnPort::judge("fixed-0", move |_s, qs| {
+            .with(crate::common::伴随中性judge("fixed-0", move |_s, qs| {
                 Ok(JudgeResult {
                     answers: qs.iter().map(|_| Answer::Noul(p)).collect(),
                     tokens: 0,

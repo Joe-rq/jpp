@@ -49,7 +49,7 @@ fn 跑(材料: &str, 带指纹: bool) -> Result<(Json, Vec<String>), String> {
         r#"
 budget {{calls: 4, cost: 1, depth: 8}};
 handle(cut(judge(state(mat({材料:?})), test("该发吗", "k"))), {{
-    act: fn() {{ content(do("发邮件", [], 0)) }},
+    act: fn() {{ (do("发邮件", [], 0)) }},
     ignore: fn() {{ "没发" }},
     unsure: fn(u) {{ consume(u, "drop"); "没发" }}}})
 "#
@@ -96,7 +96,7 @@ fn 范围外的act不放行不可逆do() {
 #[test]
 fn 范围内照常放行() {
     let (v, w) = 跑("他把旧自行车卖了，打算换一辆折叠车上下班。", true).expect("范围内该放行");
-    assert_eq!(v, json!("已发"));
+    assert_eq!(v["content"], json!("已发"));
     assert!(!w.iter().any(|x| x.starts_with("W-calib-scope")), "{w:?}");
 }
 

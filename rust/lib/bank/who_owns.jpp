@@ -1,0 +1,5 @@
+// 题库条目 who_owns（第二批 C22，归类 · K 个字面标签 · 语义题式；旧规矩：Opus 生成材料、Sonnet 标注、Fable 盲复核 110 条全覆盖）。
+// 条目说明：bank/entries/<form_hash>/条目.md（含口径已知张力与「拆分 / 合并栏」的下一版模板候选）。两序读数（permute: true，B64）。
+// 用法：judge(state(mat(事项), {over: 候选（名称加职责范围）}), fill(who_owns, {role: 候选的称谓}))。
+let who_owns = form("select", "下面这件事应由下列哪一个{role}负责处理？",
+    {calib: "cls-who-owns", over_kind: "labels", permute: true});

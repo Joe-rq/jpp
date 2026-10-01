@@ -51,9 +51,26 @@ fn 跑(body: &str, ports: Ports<'_>) -> Result<Json, String> {
     let mut calib = CalibStore::new();
     calib.put("k", 0.75, 0.25, 50, "上岗", Some(0.05)).unwrap();
     let mut l = Ledger::new();
-    run(&program, ports, &calib, &ActionRegistry::new(), &mut l)
-        .map(|o| o.value_json())
-        .map_err(|e| e.render())
+    let o = run(&program, ports, &calib, &ActionRegistry::new(), &mut l).map_err(|e| e.render())?;
+    match 违规为错(&o) {
+        Some(e) => Err(e),
+        None => Ok(o.value_json()),
+    }
+}
+
+/// G2（步 35）：违规不再是运行期错误；测试辅助把违规转成错误文本（带「违规」与原报文），断言按新形态核
+fn 违规为错(o: &jpp::Outcome) -> Option<String> {
+    (!o.violations.is_empty()).then(|| {
+        format!(
+            "违规 {} 笔（单次形态，原运行期 J-05）：{}",
+            o.violations.len(),
+            o.violations
+                .iter()
+                .map(|v| v.message.as_str())
+                .collect::<Vec<_>>()
+                .join("；")
+        )
+    })
 }
 
 const 缺席预算: &str = r#"budget {calls: 4, cost: 0, depth: 16, absent: {retry: 0, backoff: 0, then: "conservative"}};"#;
@@ -84,7 +101,11 @@ fn a_缺席项进unobserved不进undecided() {
 fn b_缺席时只交undecided报运行期j05() {
     let body = format!("{缺席预算}\n{两个未决}\n{{review: undecided(o)}}");
     let e = 跑(&body, 缺席端口()).expect_err("缺席项没有交出");
-    assert!(e.contains("J-05"), "{e}");
+    // G2：原断言「运行期 J-05」，改为程序结束记违规（单次形态），两笔缺席项各一笔
+    assert!(
+        e.contains("违规 2 笔") && e.contains("未消费的 unsure(absent)"),
+        "{e}"
+    );
 }
 
 #[test]

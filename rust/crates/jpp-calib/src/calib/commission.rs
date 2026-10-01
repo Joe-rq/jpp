@@ -546,6 +546,7 @@ impl CalibStore {
                 .iter()
                 .map(|s| (s.p.expect("已滤"), s.label == Some(1), s.stratum.clone()))
                 .collect(),
+            众数: 带标注.iter().map(|s| s.mode_share).collect(),
             label_fp: 标注集指纹(&带标注),
             lsrc: rec.label_source.clone(),
             op: Op::Test,
@@ -699,7 +700,7 @@ impl CalibStore {
             &sel,
             grade,
         );
-        Ok(self.单侧上岗(key, cert, &pre.按条(), pre.op, delta))
+        Ok(self.单侧上岗(key, cert, &pre, delta))
     }
 
     /// K 元单侧认证共用的前置：同一种 select / measure 样本；δ 取该题型的 δ。
@@ -745,22 +746,19 @@ impl CalibStore {
                 .iter()
                 .map(|s| (s.p.expect("已滤"), s.label == Some(1), s.stratum.clone()))
                 .collect(),
+            众数: 带标注.iter().map(|s| s.mode_share).collect(),
             label_fp: 标注集指纹(&带标注),
             lsrc: rec.label_source.clone(),
             op,
         })
     }
 
-    pub(super) fn 单侧上岗(
-        &mut self,
-        key: &str,
-        cert: Cert,
-        按条: &[(f64, bool)],
-        op: Op,
-        delta: f64,
-    ) -> Cert {
-        let mut 全体: Vec<(f64, bool)> = 按条.to_vec();
-        全体.sort_by(|a, b| a.0.total_cmp(&b.0).then(a.1.cmp(&b.1)));
+    /// K 元单侧证书落进记录，并在全体带标注样本上测 unsure 率。**众数取样本自己的**（Z0308）：
+    /// 原先这里传空表，select 记录的率不论读数恒为 1；两序读数的众数随样本进记录后，率与 cut 同口径
+    /// （众数空 → untested、< 1 → tie、≥ 1 且 p ≥ hi + δ → pick）。率是计数除以条数，与样本顺序无关。
+    pub(super) fn 单侧上岗(&mut self, key: &str, cert: Cert, pre: &前置, delta: f64) -> Cert {
+        let 全体 = pre.按条();
+        let op = pre.op;
         let r = self.records.get_mut(key).expect("刚读过");
         r.certs.insert(cert.addr(), cert.clone());
         r.hi = cert.hi;
@@ -768,7 +766,7 @@ impl CalibStore {
         r.lower = None;
         r.status = "上岗".into();
         r.fixture = false;
-        r.unsure_rate = 经验unsure率(&全体, &[], Some(op), cert.hi, 0.0, Some(delta));
+        r.unsure_rate = 经验unsure率(&全体, &pre.众数, Some(op), cert.hi, 0.0, Some(delta));
         r.unsure_rate_delta = Some(delta);
         cert
     }
@@ -778,6 +776,8 @@ impl CalibStore {
 pub(super) struct 前置 {
     pub(super) delta: f64,
     pub(super) 条目: Vec<(f64, bool, Option<String>)>,
+    /// 与 `条目` 同序的置换众数占比（样本的 `mode_share`；没测为空）。只用于测 unsure 率（Z0308），不参与选线
+    pub(super) 众数: Vec<Option<f64>>,
     pub(super) label_fp: String,
     pub(super) lsrc: LabelSource,
     pub(super) op: Op,

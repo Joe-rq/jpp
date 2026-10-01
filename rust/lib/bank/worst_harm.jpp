@@ -1,0 +1,6 @@
+// 题库条目 worst_harm（第二批 C02，程度 · 单对象 · 固定四档 · 语义题式；B36-2：Astra 写材料、Sonnet 标注、Opus 盲复核全覆盖）。
+// 条目说明：bank/entries/<form_hash>/条目.md。档位固定并进 form_hash，改档即新题式（B1）；档位顺序即 at 出口的下标顺序。
+// 用法：judge(state(mat(操作描述)), fill(worst_harm, {}))。
+let worst_harm = form("measure", "如果这项操作出了差错，最坏会造成多大的损害？",
+    {calib: "deg-worst-harm",
+     scale: ["几乎没有损害", "轻微，容易补救", "严重，但事后可以弥补", "严重，且难以挽回"]});

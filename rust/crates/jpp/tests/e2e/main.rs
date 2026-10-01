@@ -6,6 +6,9 @@
 //! - [`ledger_required`]：CLI 对有不可逆 `do` 的程序要求 `--ledger-out`（`E-ledger-required`，
 //!   主会话 2026-09-25 对步 18b 的裁定）。
 
+// 伴随题「最缺哪类」是 K 选一：替身经 common::伴随中性judge 给中性读数（Z0398 返修）
 mod cache;
+#[path = "../common/mod.rs"]
+mod common;
 mod ledger_required;
 mod resume;

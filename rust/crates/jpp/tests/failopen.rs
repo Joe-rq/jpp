@@ -148,7 +148,7 @@ let 洗白了 = {派生};
 let 可以发吗 = handle(cut(judge(state(洗白了), test("该发吗", "k"))), {{
     act: fn() {{ true }}, ignore: fn() {{ false }},
     unsure: fn(u) {{ consume(u, "drop"); false }}}});
-{{r: if 可以发吗 {{ content(do("发邮件", [], 0)) }} else {{ "没发" }}}}
+{{r: if 可以发吗 {{ (do("发邮件", [], 0)) }} else {{ "没发" }}}}
 "#
     )
 }
@@ -184,7 +184,7 @@ let f = do("外部失败", [], 0);
 let 可以发吗 = handle(cut(judge(state(mat(f)), test("该发吗", "k"))), {
     act: fn() { true }, ignore: fn() { false },
     unsure: fn(u) { consume(u, "drop"); true }});
-{r: if 可以发吗 { content(do("发邮件", [], 0)) } else { "没发" }}
+{r: if 可以发吗 { (do("发邮件", [], 0)) } else { "没发" }}
 "#;
     let (out, 日志) = 跑(src, 0.9, Passes::default());
     let e = out
@@ -205,9 +205,9 @@ let 干净 = mat("源码里写的另一句话" + "，与外部内容无关");
 let 可以发吗 = handle(cut(judge(state(干净), test("该发吗", "k"))), {
     act: fn() { true }, ignore: fn() { false },
     unsure: fn(u) { consume(u, "drop"); false }});
-{r: if 可以发吗 { content(do("发邮件", [], 0)) } else { "没发" }, x: len(拆了)}
+{r: if 可以发吗 { (do("发邮件", [], 0)) } else { "没发" }, x: len(拆了)}
 "#;
     let (out, _) = 跑(src, 0.9, Passes::default());
     let out = out.unwrap_or_else(|e| panic!("无关字面量不该被拦：{e}"));
-    assert_eq!(out.value_json()["r"], serde_json::json!("已发"));
+    assert_eq!(out.value_json()["r"]["content"], serde_json::json!("已发"));
 }

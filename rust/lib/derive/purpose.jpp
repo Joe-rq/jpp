@@ -1,0 +1,563 @@
+// 从一句目的出第一批题（Z0511，线 A N1；主会话裁定六十三）：唤出（elicit.jpp）的第二个入口。
+//
+// 串法：目的 → 抽模块（一次 gen，产物带 taint，B58）→ 目的没说的模块由系统补（守则 purpose_fill）→
+// 每个谓词先查已认证题式（lib/bank/catalog.jpp，同题类 + 谓词语义，B118 口径）→ 没命中的唤出（同一份守则、
+// 同一套候选解析与第⓪段、同一个 derive_form 零槽题式、同一个闸门）→ 组装 → 对每个材料项问同一批题 → 按切法落成字段。
+// 生成器调用数 = 1 + 没命中题库的谓词数，与材料项个数无关（Z0511 ①）；目的的每个子请求在每一项的返回记录里
+// 成一个字段（Z0511 ②）。守则与提示词都在 rules.jpp，任务无关；本文件不含任何任务的字段名或候选。
+// 预注册、复核返修附录与施工记录：地基/过程记录/工程-Z0511-目的出题.md。
+//
+// 目的明说的约束唤出（裁定六十三第 2 条，复核返修）：抽模块对每个谓词的切法、候选、档位各标来源（cut_from、
+// over_from、scale_from：purpose 或 system）。来源是目的的，组装直接用目的给的；唤出候选与之不符在闸门第⓪段拒
+// （cut-mismatch / over-mismatch / scale-mismatch），不许覆盖。来源是系统的，用唤出给的，sources 里如实记。
+// 首批读数与出口随抽模块的 gen 不可信（第 3 条）：唤出路的题面来自生成产物；题库命中路的题由 fill(题式, {}, {from:
+// 选中那次判断的出口}) 造，taint 随那次判断（它判的是生成产物 mat(谓词)）。
+//
+// purpose_run(purpose, items, opts) -> 契约值
+//   purpose  目的（文字）
+//   items    [{on: 材料, ref?: 材料}]（与 chain 的条目同形；ref 是参照，进参照槽）
+//   opts     {elicit_n?: 每个谓词唤出几道候选（缺省 4）, calib?: 唤出题式的标签前缀（缺省 "purpose"）,
+//             sample?: 候选在前几项材料上各过一次闸门（缺省 3）, judge_diag?: 闸门第③段（缺省真）}
+//   value    每项一个 {item: 材料, fields: {字段名: 值}, trust: {字段名: "trusted" | "untrusted"}}（Z0558，只记录不拦）：是非题 true / false；K 选一取选中的候选；程度题取档名；
+//            有序（切法 ordered）取全部项上同一道题读数的分档名次（1 起，并列同档）；未决为 unit。
+//            缺席的项（预算停发等）不参与分档，名次只在读到的项之间排，缺席项名次为 unit、出口随 pending 转交
+//   pending  未决（J-05）：字段的未决出口、闸门第③段的未决。字段未决先走默认链（N-T6：问缺哪类 → 配了取法就取 → 再判），
+//            再判成已决的落字段；默认链放弃的记 detail.dropped，不进这里；其余（转交、缺席类、不可补）照旧在这里
+//   detail   {version, modules, sources, preds: [{field, cut, cut_from, over_from, scale_from}],
+//             bank: [{pred, kind, how, hit?}], elicit: {calls, rejected}, gate_items: [项下标],
+//             questions: [{field, cut, q, op, from, lacks}], fields, fields_missing, warnings, gate_notes, error?}
+import "rules.jpp";
+import "node.jpp";
+import "elicit.jpp";
+import "gate.jpp";
+import "premise.jpp";
+import "../skeletons/select_material.jpp";
+import "../bank/catalog.jpp";
+import "../outcome.jpp";
+import "../compose/carry.jpp";
+
+// 材料的顶层字段名：从数据读出，程序不写死；材料不是记录时为空。只取第 0 项的字段名——各项形状不同时，
+// 别的项独有的字段不会出现在抽模块的提示里（复核 H）
+fn purpose_shape(items) {
+    if len(items) == 0 { [] } else {
+        let c = content(items[0].on);
+        if starts_with(to_json(c), "{") { keys(c) } else { [] }
+    }
+}
+
+fn purpose_op(cut_name) { if cut_name == "k_ary" { "select" } else if cut_name == "ordered" { "measure" } else { "test" } }
+
+// 模块取值：没有或为 null 都当没说
+fn purpose_get(m, k) { if has(m, k) && m[k] != unit { m[k] } else { unit } }
+
+fn purpose_list(x) { x != unit && starts_with(to_json(x), "[") }
+
+// 来源标记：明写 "purpose" 才算目的说了，明写别的算系统补的；没标记为 unlabeled（Z0558：不再默认当 system）。
+// 后两种都不约束唤出，但分开记，读者看得出是生成器没标
+fn purpose_from(p, k) {
+    if !has(p, k) || p[k] == unit { "unlabeled" } else if text(p[k]) == "purpose" { "purpose" } else { "system" }
+}
+
+// 候选或档位标 purpose 时由代码核（Z0558）：每一项都要在目的原文里逐字出现，否则改记 system 并给一条 W-purpose-label。
+// 比较前两边都归一（Z0596）：全角 ASCII 与全角空格折半角、再小写（NFKC 的这一段；圈码、合字等其余兼容映射不做）；
+// 单字候选：英文字母或数字按两侧词界；中文单字只认与同表另一项相邻的出现（Z0634，见 purpose_found）
+fn purpose_verify(purpose, from, xs, what, pid) {
+    let hay = purpose_norm(purpose);
+    let miss = filter(xs, fn(x) {
+        let n = purpose_norm(x);
+        !purpose_found(hay, n, filter(map(xs, fn(y) { purpose_norm(y) }), fn(y) { y != n && y != "" }))
+    });
+    if from != "purpose" || len(miss) == 0 { {from: from, warn: []} }
+    else { {from: "system", warn: [{code: "W-purpose-label", pred: pid, what: what, not_in_purpose: miss}]} }
+}
+
+fn contains_text(hay, needle) { len(split(hay, needle)) > 1 }
+
+// 全角 ASCII（！到～）→ 半角的字面量表（Z0596；不加内置）
+fn purpose_fold() { {"！": "!", "＂": "\"", "＃": "#", "＄": "$", "％": "%", "＆": "&", "＇": "'", "（": "(", "）": ")", "＊": "*", "＋": "+", "，": ",", "－": "-", "．": ".", "／": "/", "０": "0", "１": "1", "２": "2", "３": "3", "４": "4", "５": "5", "６": "6", "７": "7", "８": "8", "９": "9", "：": ":", "；": ";", "＜": "<", "＝": "=", "＞": ">", "？": "?", "＠": "@", "Ａ": "A", "Ｂ": "B", "Ｃ": "C", "Ｄ": "D", "Ｅ": "E", "Ｆ": "F", "Ｇ": "G", "Ｈ": "H", "Ｉ": "I", "Ｊ": "J", "Ｋ": "K", "Ｌ": "L", "Ｍ": "M", "Ｎ": "N", "Ｏ": "O", "Ｐ": "P", "Ｑ": "Q", "Ｒ": "R", "Ｓ": "S", "Ｔ": "T", "Ｕ": "U", "Ｖ": "V", "Ｗ": "W", "Ｘ": "X", "Ｙ": "Y", "Ｚ": "Z", "［": "[", "＼": "\\", "］": "]", "＾": "^", "＿": "_", "｀": "`", "ａ": "a", "ｂ": "b", "ｃ": "c", "ｄ": "d", "ｅ": "e", "ｆ": "f", "ｇ": "g", "ｈ": "h", "ｉ": "i", "ｊ": "j", "ｋ": "k", "ｌ": "l", "ｍ": "m", "ｎ": "n", "ｏ": "o", "ｐ": "p", "ｑ": "q", "ｒ": "r", "ｓ": "s", "ｔ": "t", "ｕ": "u", "ｖ": "v", "ｗ": "w", "ｘ": "x", "ｙ": "y", "ｚ": "z", "｛": "{", "｜": "|", "｝": "}", "～": "~", "　": " "} }
+
+fn purpose_norm(t) {
+    let f = purpose_fold();
+    lower(join(map(chars(t), fn(c) { if has(f, c) { f[c] } else { c } }), ""))
+}
+
+fn purpose_alnum(c) { c != "" && regex_match(c, "^[a-z0-9]$") }
+
+// 中文单字两项之间的连接（Z0634）：空白与至少一个列举分隔符（归一后的 、,;/）或连词；冒号、括号、句号不算
+fn purpose_link() { "\\s*(?:(?:[、,;/]|或|和|与|及|到|至|还是)\\s*)+" }
+
+// 正则元字符转义（候选原样拼进正则）
+fn purpose_re_esc(t) {
+    let meta = chars("\\.+*?()|[]{}^$");
+    join(map(chars(t), fn(c) { if contains(meta, c) { "\\" + c } else { c } }), "")
+}
+
+// 归一后的 needle 在 hay 里出现过：多字按子串；英文单字母按两侧词界；
+// 中文单字只认与同表另一项（others）相邻的出现：两者之间只隔空白、分隔符或连词，且至少有一个分隔符或连词。
+// 文本首尾不算界，单独出现的单字判不在（Z0634 复核收紧，宁漏勿误认）
+fn purpose_found(hay, needle, others) {
+    if needle == "" { false }
+    else if len(chars(needle)) > 1 { contains_text(hay, needle) }
+    else {
+        // 英文单字母（数字同）按两侧词界：前后都不是 ASCII 字母或数字才算（汉字、标点、空白、首尾都算界；Z0596 复核）
+        let ascii = purpose_alnum(needle);
+        let parts = split(hay, needle);
+        let idx = derive_idx(parts);
+        let alt = "(?:" + join(map(others, fn(o) { purpose_re_esc(o) }), "|") + ")";
+        len(filter(slice(idx, 0, len(parts) - 1), fn(i) {
+            if ascii {
+                let a = chars(parts[i]);
+                let b = chars(parts[i + 1]);
+                let before = if len(a) == 0 { "" } else { a[len(a) - 1] };
+                let after = if len(b) == 0 { "" } else { b[0] };
+                !purpose_alnum(before) && !purpose_alnum(after)
+            } else if len(others) == 0 { false }
+            else {
+                // 前后取整段原文（不用切开的段：相邻两次出现之间的空段不是首尾）
+                let pre = join(slice(parts, 0, i + 1), needle);
+                let post = join(slice(parts, i + 1, len(parts)), needle);
+                regex_match(pre, alt + purpose_link() + "$") || regex_match(post, "^" + purpose_link() + alt)
+            }
+        })) > 0
+    }
+}
+
+// 空候选不合形（Z0596）：去掉首尾空白后为空的项拿掉并记一条；拿掉后不足两项的当没给；保留的项去首尾空白（Z0634）
+fn purpose_clean(xs, what, pid) {
+    let empty = filter(xs, fn(x) { trim(x) == "" });
+    let kept = map(filter(xs, fn(x) { trim(x) != "" }), fn(x) { trim(x) });
+    {xs: if len(kept) >= 2 { kept } else { [] },
+     warn: if len(empty) == 0 { [] } else { [{code: "W-purpose-empty-option", pred: pid, what: what, removed: len(empty)}] }}
+}
+
+// 谓词规范化：[{id, text, cut, cut_from, over, over_from, scale, scale_from, request, field}]；不合形的丢掉
+fn purpose_preds(m, purpose) {
+    let ps = if purpose_list(purpose_get(m, "predicates")) { m.predicates } else { [] };
+    let ok = filter(ps, fn(p) { starts_with(to_json(p), "{") && has(p, "text") && p.text != unit && derive_bracefree(text(p.text)) });
+    let names = fold(derive_idx(ok), [], fn(acc, i) {
+        let p = ok[i];
+        let f = if has(p, "field") && p.field != unit && text(p.field) != "" { text(p.field) } else { "p" + text(i) };
+        append(acc, if contains(acc, f) { f + "_" + text(i) } else { f })
+    });
+    map(derive_idx(ok), fn(i) {
+        let p = ok[i];
+        let cut0 = if has(p, "cut") && p.cut != unit { text(p.cut) } else { "" };
+        let cut1 = if cut0 == "k_ary" || cut0 == "ordered" || cut0 == "binary" { cut0 } else { "binary" };
+        let oc = purpose_clean(if has(p, "over") && purpose_list(p.over) { map(p.over, fn(x) { text(x) }) } else { [] }, "over", "p" + text(i));
+        let sc = purpose_clean(if has(p, "scale") && purpose_list(p.scale) { map(p.scale, fn(x) { text(x) }) } else { [] }, "scale", "p" + text(i));
+        let over = oc.xs;
+        let scale = sc.xs;
+        let ov = purpose_verify(purpose, if len(over) >= 2 { purpose_from(p, "over_from") } else { "none" }, over, "over", "p" + text(i));
+        let sv = purpose_verify(purpose, if len(scale) >= 2 { purpose_from(p, "scale_from") } else { "none" }, scale, "scale", "p" + text(i));
+        {id: "p" + text(i), text: text(p.text), cut: cut1,
+         cut_from: if cut0 == cut1 { purpose_from(p, "cut_from") } else { "missing" },
+         over: over, over_from: ov.from,
+         scale: scale, scale_from: sv.from, warn: concat(concat(oc.warn, sc.warn), concat(ov.warn, sv.warn)),
+         request: if has(p, "request") && p.request != unit { text(p.request) } else { "one" },
+         field: names[i]}
+    })
+}
+
+// 十个模块各自的来源：purpose（目的里有）/ system（系统补，守则 purpose_fill）/ system:none（系统也没补）/ missing
+fn purpose_sources(m, preds, items) {
+    let R = derive_rules();
+    let said = fn(k) { purpose_get(m, k) != unit };
+    let has_ref = len(items) > 0 && has(items[0], "ref");
+    let fill_src = fn(k) {
+        if said(k) { "purpose" } else if starts_with(R.purpose_fill[k], "missing") { R.purpose_fill[k] }
+        else if R.purpose_fill[k] == "" { "system:none" } else { "system" }
+    };
+    {material: if said("material") { "purpose" } else { "missing" },
+     predicate: if len(preds) > 0 { "purpose" } else { "missing" },
+     cut: if len(preds) == 0 { "missing" } else if len(filter(preds, fn(p) { p.cut_from != "purpose" })) == 0 { "purpose" }
+          else if len(filter(preds, fn(p) { p.cut_from == "unlabeled" })) > 0 { "unlabeled" } else { "system" },
+     request: if said("request") || (len(preds) > 0 && len(filter(preds, fn(p) { p.request != "one" && p.request != "all" })) == 0) { "purpose" } else { "missing" },
+     presupposition: fill_src("presupposition"),
+     context: fill_src("context"),
+     reference: if said("reference") { "purpose" } else if has_ref { "system" } else { "system:none" },
+     budget: fill_src("budget"),
+     unsure: fill_src("unsure"),
+     done: if said("done") { "purpose" } else { "missing" }}
+}
+
+// 抽模块：一次生成，提示里只有目的与材料的字段名，不含任何一项材料
+fn purpose_modules(purpose, items) {
+    let R = derive_rules();
+    let raw = gen(R.purpose_prompt(purpose, purpose_shape(items)), [], 1, 0);
+    let m = if is_fail(raw) { raw } else if len(raw) == 0 { fail("生成器没有给出模块") } else { derive_spec(raw[0]) };
+    if is_fail(m) || !starts_with(to_json(m), "{") { {ok: false, why: "parse", m: {}} } else { {ok: true, why: "", m: m} }
+}
+
+// 两个列表作集合是否相同
+fn purpose_same_set(a, b) {
+    len(a) == len(b) && len(filter(a, fn(x) { !contains(b, x) })) == 0 && len(filter(b, fn(x) { !contains(a, x) })) == 0
+}
+
+// 目的明说的切法、候选、档位对唤出候选的约束：不符的码，空文本 = 相符
+fn purpose_mismatch(p, s) {
+    if purpose_stated(p.cut_from) && s.op != purpose_op(p.cut) { "cut-mismatch" }
+    else if purpose_stated(p.over_from) && s.op == "select" && !purpose_same_set(map(s.over, fn(x) { text(x) }), p.over) { "over-mismatch" }
+    else if purpose_stated(p.scale_from) && s.op == "measure" && to_json(map(s.scale, fn(x) { text(x) })) != to_json(p.scale) { "scale-mismatch" }
+    else { "" }
+}
+
+// 查题库：同题类（B76 的 q.kind，由谓词的临时题得出）+ 谓词语义（判断器 K 选一，候选是题式题面加「都不是」）
+fn purpose_bank(p, opts) {
+    let R = derive_rules();
+    // 切法未知（完成条件补出的谓词，Z0559）时三种题型都查：每种题型各造一道临时题取题类，同题类同题型的合在一起
+    let ops = if p.cut == "" { ["test", "select", "measure"] } else { [purpose_op(p.cut)] };
+    let kinds = map(ops, fn(op) {
+        let probe_extra = if op == "measure" && len(p.scale) >= 2 { {scale: p.scale} } else if op == "measure" { {scale: ["低", "高"]} } else { {} };
+        {op: op, kind: fill(derive_form(op, p.text, probe_extra, opts), {}).kind}
+    });
+    let kind = join(map(kinds, fn(x) { x.kind }), "|");
+    let cands = filter(bank_catalog(), fn(e) { len(filter(kinds, fn(x) { x.kind == e.kind && x.op == e.op })) > 0 });
+    if len(cands) == 0 { {pred: p.id, kind: kind, how: "no-same-kind", q: unit, key: unit} } else {
+        let over = append(map(cands, fn(e) { e.form.template }), R.bank_none);
+        let bq = select(R.bank_match_text, "bank-match");
+        let r = judge(state(mat(p.text), {over: over}), bq);
+        let e = cut(r);
+        let lab = exit_kind(e);
+        if starts_with(lab, "pick(") {
+            let k = derive_index(lab);
+            if k >= len(cands) { {pred: p.id, kind: kind, how: "none", q: unit, key: key_of(r)} }
+            else {
+                let c = filter(cands, fn(x) { x.slug == cands[k].slug })[0];
+                // 题随选中它的那次判断带 taint：那次判的是生成产物 mat(谓词)（裁定六十三第 3 条）
+                if len(c.form.slots) == 0 { {pred: p.id, kind: kind, how: "bank", hit: c.slug, q: fill(c.form, {}, {from: e}), key: key_of(r)} }
+                else { {pred: p.id, kind: kind, how: "needs-params:B0479", hit: c.slug, q: unit, key: key_of(r)} }
+            }
+        } else {
+            // 拿不准是不是同一件事：路由到唤出（这就是它的去向）。没观察到的（预算停发、缺席等）不能按 branch 销账
+            // （E-drop-unobserved），照样走唤出，出口随返回值转交（Z0860 复核返修时发现，同 Z0558）
+            if premise_absent({exit: e}) { {pred: p.id, kind: kind, how: "unsure", q: unit, key: key_of(r), pend: [element(mat(p.text), e, {pos: 0, q: bq})]} }
+            else { consume(e, "branch"); {pred: p.id, kind: kind, how: "unsure", q: unit, key: key_of(r)} }
+        }
+    }
+}
+
+// 唤出（目的入口）：一个谓词一次生成，与材料项无关；每道候选在前几项材料上各成一个节点过闸门。
+// 节点 id = 谓词.候选@项
+fn purpose_elicit(m, p, samples, opts) {
+    let R = derive_rules();
+    let count = if has(opts, "elicit_n") { opts.elicit_n } else { 4 };
+    let raw = gen(R.purpose_elicit_prompt(to_json(m), p.text, if p.cut == "" { R.purpose_cut_unknown } else { p.cut }), [], count, 0);
+    if is_fail(raw) { [] } else {
+        let specs = map(raw, fn(x) { derive_spec(x) });
+        fold(derive_idx(specs), [], fn(acc, k) {
+            let s = specs[k];
+            let bad0 = derive_spec_bad(s);
+            let bad = if bad0 != "" { bad0 } else { purpose_mismatch(p, s) };
+            concat(acc, map(derive_idx(samples), fn(j) {
+                let id = p.id + "." + text(k) + "@" + text(j);
+                let base = {by: "elicit", parent: p.id, cand: k};
+                if bad != "" {
+                    derive_node(id, samples[j], test("（坏候选）" + to_json(content(raw[k])), derive_calib(opts)), with(base, "bad", bad))
+                } else {
+                    let q = fill(derive_form(s.op, text(s.text), with(derive_spec_extra(s), "lacks", R.lacks.elicit), opts), {});
+                    if s.op == "select" { derive_node(id, samples[j], q, with(base, "over", map(s.over, fn(x) { text(x) }))) }
+                    else { derive_node(id, samples[j], q, base) }
+                }
+            }))
+        })
+    }
+}
+
+// 一个谓词取哪道候选（样本闸门，复核返修 Z0511 条件 3）：题面上的拒因（形状、静态、结构、藏两判）任一样本命中即拒；
+// 「在材料里」只在全部样本都判没有时才拒。被并入的节点跟着它并进的那个节点算。过了的候选里取信息值最高的一道
+// （闸门按父谓词分组排好序，取第一个过了的）
+fn purpose_pick(p, nodes, g, merged, full) {
+    let pass_ids = map(g.pass, fn(c) { c.id });
+    let rej_of = fn(id) { filter(g.rejected, fn(r) { r.id == id }) };
+    let target = fn(id) { let mm = filter(merged, fn(x) { x.id == id }); if len(mm) == 0 { id } else { mm[0].into } };
+    let text_bad = fn(id) {
+        len(filter(rej_of(target(id)), fn(r) { r.stage != "judge-diag" || contains(r.codes, "two-judgments") })) > 0
+    };
+    let absent = fn(id) { len(filter(rej_of(target(id)), fn(r) { r.stage == "judge-diag" && contains(r.codes, "not-in-material") })) > 0 };
+    let mine = filter(nodes, fn(n) { n.parent == p.id });
+    let cands = fold(mine, [], fn(acc, n) { if contains(acc, n.cand) { acc } else { append(acc, n.cand) } });
+    let ok = filter(cands, fn(k) {
+        let ns = filter(mine, fn(n) { n.cand == k });
+        // 「在材料里」只在样本覆盖了全部材料项、且全部判没有时才拒（Z0558：样本没覆盖全部时不足以判「没有」）
+        len(filter(ns, fn(n) { text_bad(n.id) })) == 0 && (!full || len(filter(ns, fn(n) { !absent(n.id) })) > 0)
+    });
+    // 排序：该候选（或它并进的节点）在 g.pass 里最早出现的位置
+    let pos = fn(k) {
+        let ids = map(filter(mine, fn(n) { n.cand == k }), fn(n) { target(n.id) });
+        let i0 = fold(derive_idx(g.pass), -1, fn(b, i) { if b < 0 && contains(ids, g.pass[i].id) { i } else { b } });
+        // 样本内都判「材料里没有」而没拒的（Z0558）不在 g.pass 里，排在过了的候选之后，按候选序
+        if i0 >= 0 { i0 } else { len(g.pass) + k }
+    };
+    let ranked = ok;
+    let best = fold(ranked, -1, fn(b, k) { if b < 0 || pos(k) < pos(b) { k } else { b } });
+    if best < 0 { unit } else {
+        let n0 = filter(mine, fn(n) { n.cand == best })[0];
+        let t = target(n0.id);
+        let node = if t == n0.id { n0 } else { filter(nodes, fn(n) { n.id == t })[0] };
+        let ns = filter(mine, fn(n) { n.cand == best });
+        let ab = len(filter(ns, fn(n) { absent(n.id) }));
+        {q: node.q, over: if purpose_stated(p.over_from) { p.over } else if has(node, "over") { node.over } else { [] },
+         note: if !full && ab == len(ns) { {field: p.field, q: node.q.text, samples: len(ns), absent: ab} } else { unit }}
+    }
+}
+
+// 名次：order 的分档里第几档（1 起）
+fn purpose_rank(tiers, j) { fold(derive_idx(tiers), 0, fn(acc, t) { if contains(tiers[t], j) { t + 1 } else { acc } }) }
+
+fn purpose_run(purpose, items0, opts0) {
+    let R = derive_rules();
+    let opts = if has(opts0, "calib") { opts0 } else { with(opts0, "calib", "purpose") };
+    let pm = purpose_modules(purpose, items0);
+    let preds0 = if pm.ok { purpose_preds(pm.m, purpose) } else { [] };
+    // 完成条件列了、谓词没覆盖的字段（Z0535）：先判是不是某个已有谓词换了个名字（Z0559），是就作别名；
+    // 不是（或拿不准）才补一个谓词，切法未知不填、来源 system，不约束唤出
+    let done0 = if pm.ok && purpose_list(purpose_get(pm.m, "done")) { map(pm.m.done, fn(x) { text(x) }) } else { [] };
+    let have = map(preds0, fn(p) { p.field });
+    let lack0 = fold(done0, [], fn(acc, f) { if contains(have, f) || contains(acc, f) || !derive_bracefree(f) { acc } else { append(acc, f) } });
+    let alias_of = map(lack0, fn(f) {
+        if len(preds0) == 0 { {field: f, to: unit, key: unit} } else {
+            let aq = select(R.purpose_alias_text, "purpose-alias");
+            let r = judge(state(mat(f), {over: append(map(preds0, fn(p) { p.text }), R.bank_none)}), aq);
+            let e = cut(r);
+            let lab = exit_kind(e);
+            if starts_with(lab, "pick(") && derive_index(lab) < len(preds0) {
+                {field: f, to: filter(preds0, fn(p) { p.field == preds0[derive_index(lab)].field })[0].field, key: key_of(r), t: taint(e)}
+            } else if starts_with(lab, "pick(") { {field: f, to: unit, key: key_of(r)} }
+            else if premise_absent({exit: e}) { {field: f, to: unit, key: key_of(r), pend: [element(mat(f), e, {pos: 0, q: aq})]} }
+            else { consume(e, "branch"); {field: f, to: unit, key: key_of(r)} }
+        }
+    });
+    let aliases = filter(alias_of, fn(a) { a.to != unit });
+    let lack = map(filter(alias_of, fn(a) { a.to == unit }), fn(a) { a.field });
+    let preds = concat(preds0, map(derive_idx(lack), fn(i) {
+        {id: "p" + text(len(preds0) + i), text: R.purpose_missing_field(lack[i]), cut: "", cut_from: "system",
+         over: [], over_from: "none", scale: [], scale_from: "none", request: "one", field: lack[i], added: "done", warn: []}
+    }));
+    let sources = purpose_sources(pm.m, preds0, items0);
+    let done = if purpose_list(purpose_get(pm.m, "done")) { map(pm.m.done, fn(x) { text(x) }) } else { [] };
+    let info0 = {entry: "purpose", modules: pm.m, sources: sources, aliases: aliases, alias_keys: map(alias_of, fn(a) { a.key }),
+                 extra_pending: carry([], fold(alias_of, [], fn(acc, a) { if has(a, "pend") { concat(acc, a.pend) } else { acc } }), "purpose:alias"),
+                 done: done, decl: {}, sel: unit, marks: [], premise: unit,
+                 error: if !pm.ok { "modules:" + pm.why } else if len(preds) == 0 { "no-predicate" } else { "no-item" }};
+    if len(preds) == 0 || len(items0) == 0 { purpose_core(preds, items0, derive_idx(items0), opts, info0) } else {
+        // 前提（B0470）：目的没说前提时派生字面前提题，select_material 一层层筛；判过线的（与未决的，select 照旧存活）才纳入深判。
+        // 目的自己说了前提的，这一版照旧派生（抽出的前提文字只作提示，不直接成题），派生不出就全部纳入。
+        // 只接目的入口：派生要吃目的原文，作者入口没有目的原文（B0478 rebase，复核要求）
+        let pre = purpose_premises(purpose, map(preds, fn(p) { p.text }), items0, opts);
+        // Z0860 ①：代码谓词已在全部项上执行（零判断），按层序先筛；每项记到淘汰它的那层为止，标记带 by: "code"
+        let code = pre.code;
+        let code_out = map(derive_idx(items0), fn(j) {
+            fold(derive_idx(code), -1, fn(b, li) { if b < 0 && code[li].exits[j] == "ignore" { li } else { b } })
+        });
+        let code_marks = map(derive_idx(items0), fn(j) {
+            let upto = if code_out[j] < 0 { len(code) } else { code_out[j] + 1 };
+            map(slice(derive_idx(code), 0, upto), fn(li) {
+                {layer: li, q: code[li].q, exit: code[li].exits[j], source_key: code[li].key, reused: false, by: "code"}
+            })
+        });
+        let code_layers = map(derive_idx(code), fn(li) {
+            let alive = filter(derive_idx(items0), fn(j) { code_out[j] < 0 || code_out[j] >= li });
+            {q: code[li].q, by: "code", alive: len(alive), asked: 0, reused: 0,
+             act: len(filter(alive, fn(j) { code[li].exits[j] == "act" })), ignore: len(filter(alive, fn(j) { code[li].exits[j] == "ignore" })),
+             unsure: len(filter(alive, fn(j) { code[li].exits[j] == "unknown" }))}
+        });
+        let cix = filter(derive_idx(items0), fn(j) { code_out[j] < 0 });
+        // 判断类前提只对代码层存活的项问（select_material 的站点与抽样检验同一个，样本项同键复用）
+        let sel = if len(pre.premises) == 0 || len(cix) == 0 { unit } else { select_material(purpose, map(cix, fn(j) { items0[j].on }), pre.premises, {}) };
+        let alive_hs = if sel == unit { [] } else { map(sel.value, fn(v) { v.item.hash }) };
+        let kept_ix = if sel == unit { cix } else { filter(cix, fn(j) { contains(alive_hs, items0[j].on.hash) }) };
+        let sel_marks = fn(m) {
+            let a = filter(sel.value, fn(v) { v.item.hash == m.hash });
+            let ms = if len(a) > 0 { a[0].marks } else { filter(sel.detail.excluded, fn(x) { x.item.hash == m.hash })[0].marks };
+            map(ms, fn(x) { with(x, "layer", x.layer + len(code)) })
+        };
+        let marks = map(derive_idx(items0), fn(j) {
+            if sel != unit && code_out[j] < 0 { concat(code_marks[j], sel_marks(items0[j].on)) } else { code_marks[j] }
+        });
+        // 样本未决（Z0860 复核返修）：留下的前提的样本未决，同键已在全量层 pending 里的由它承担（B162 记 Handoff）；
+        // 不在的（这一层没轮到它；没观察到的没有账本键，一律算不在）判过而拿不准的 drop、缺席类转交；弃掉的前提的缺席类（pre.carry）一并转交
+        let full_keys = if sel == unit { [] } else { map(sel.pending, fn(e) { key_of(e.exit) }) };
+        let leftover = fold(pre.premises, [], fn(acc, p) { concat(acc, filter(p.probe_pending, fn(e) { key_of(e.exit) == "" || !contains(full_keys, key_of(e.exit)) })) });
+        let probe_carry = carry([], concat(pre.carry, premise_settle(leftover)), "premise-probe");
+        let any = len(code) > 0 || sel != unit || len(probe_carry) > 0;
+        let premise_detail = {derived: pre.derived, passed: map(pre.premises, fn(x) { x.q }), code: map(code, fn(c) { {q: c.q, spec: c.spec, key: c.key} }),
+                              rejected: pre.rejected, dropped: pre.dropped, rounds: pre.rounds,
+                              layers: concat(code_layers, if sel == unit { [] } else { sel.detail.per_layer }),
+                              excluded: len(items0) - len(kept_ix), reason: pre.reason};
+        let info = with(with(with(info0, "sel", if any { {pending: concat(if sel == unit { [] } else { sel.pending }, probe_carry), evidence: if sel == unit { [] } else { sel.evidence }} } else { unit }),
+                                 "premise", premise_detail),
+                        "marks", if any { marks } else { [] });
+        purpose_core(preds, items0, kept_ix, opts, info)
+    }
+}
+
+// 目的明说的（purpose）与作者填的（author）同等约束：照用，不许唤出或别处覆盖（B0478）
+fn purpose_stated(from) { from == "purpose" || from == "author" }
+
+// 题库没命中时，作者入口按守则组装题（功能一，B0478）：题面 = 守则按切法组装的谓词；题式声明带档位、前提、证据槽、
+// 拿不准时缺哪类；不调生成器。decl：{presupposition?, evidence?}（模块级，每道题同一份）
+fn purpose_assemble(p, decl, opts) {
+    let R = derive_rules();
+    let op = purpose_op(p.cut);
+    let e0 = with(decl, "lacks", R.lacks.modules);
+    let e1 = if op == "measure" { with(e0, "scale", p.scale) } else { e0 };
+    fill(derive_form(op, R.assemble_text(p.cut, p.text), e1, opts), {})
+}
+
+// 一道题的输入（B0478）：状态用了哪些槽；语境与候选的原文（材料本身在 value 的 item 里）
+fn purpose_input(x, items) {
+    let it = if len(items) == 0 { {} } else { items[0] };
+    let slots = concat(concat(["on"], if has(it, "ref") { ["ref"] } else { [] }),
+                       concat(if has(it, "ctx") { ["ctx"] } else { [] }, if x.op == "select" { ["over"] } else { [] }));
+    let a = {field: x.field, slots: slots};
+    let b = if has(it, "ctx") { with(a, "ctx", content(it.ctx)) } else { a };
+    if x.op == "select" { with(b, "over", x.over) } else { b }
+}
+
+// 两个入口共用的核心（B0478）：查题库 → 题库没命中时出题（目的入口唤出过闸门；作者入口按守则组装，不唤出、
+// 不过闸门，意图汇编 11a）→ 每项建节点同批判 → 有序分档 → 落字段 → 契约值。
+// items0 是全部材料项，kept_ix 是纳入深判的项在 items0 里的下标（目的入口经前提筛选，作者入口全部）；
+// 返回值每项一行、按原顺序，下标（pending 的 pos、gate_items）一律指 items0 的原始位置（B0470）。
+// info：{entry: "purpose" | "author", modules, sources, aliases: [{field, to, t?}], alias_keys, done, decl, error,
+//        sel: select_material 的契约值 | unit, marks: [每项的前提标记]（sel 为 unit 时空）, premise: 前提明细 | unit}
+fn purpose_core(preds, items0, kept_ix, opts, info) {
+    let R = derive_rules();
+    let aliases = info.aliases;
+    let author = info.entry == "author";
+    let sel = info.sel;
+    let items = map(kept_ix, fn(j) { items0[j] });
+    let pinfo = map(preds, fn(p) { {field: p.field, cut: p.cut, cut_from: p.cut_from, over_from: p.over_from, scale_from: p.scale_from,
+                                   from: if has(p, "added") { "done" } else { "modules" }} });
+    let base_detail = {version: R.version, entry: info.entry, modules: info.modules, sources: info.sources, preds: pinfo, bank: [],
+                       elicit: {calls: 0, rejected: []}, gate_items: [], questions: [], inputs: [], fields: [], fields_missing: []};
+    let with_premise = fn(d) { if info.premise == unit { d } else { with(d, "premise", info.premise) } };
+    let extra_pend = if has(info, "extra_pending") { info.extra_pending } else { [] };
+    if len(preds) == 0 || len(items0) == 0 {
+        outcome({value: [], pending: extra_pend, evidence: [], detail: with(base_detail, "error", info.error)})
+    } else if len(items) == 0 {
+        // 一项都没纳入：不再查题库、唤出、深判；每项照样一行（淘汰它的那次判断在 premise 里）
+        outcome({value: map(derive_idx(items0), fn(j) { {item: items0[j].on, fields: {}, trust: {}, premise: info.marks[j], excluded: true} }),
+                 pending: concat(sel.pending, extra_pend), evidence: sel.evidence,
+                 detail: with(with_premise(base_detail), "error", "all-excluded")})
+    } else {
+        // 查题库
+        let bank = map(preds, fn(p) { purpose_bank(p, opts) });
+        let todo = filter(derive_idx(preds), fn(i) { bank[i].q == unit });
+        // 唤出（目的入口）：没命中的谓词各一次；候选在前 sample 项上各过一次闸门
+        let n_sample = if author { 0 } else { min(len(items), if has(opts, "sample") { opts.sample } else { 3 }) };
+        let gate_items = range(0, n_sample);
+        let samples = slice(items, 0, n_sample);
+        let nodes = if author { [] } else { fold(todo, [], fn(acc, i) { concat(acc, purpose_elicit(info.modules, preds[i], samples, opts)) }) };
+        let gm = if len(nodes) == 0 { unit } else { derive_gate_memo(nodes, with(opts, "width", len(nodes)), derive_memo0()) };
+        let g = if gm == unit { {pass: [], rejected: [], evidence: [], pending: [], unchosen: []} } else { gm.gate };
+        let merged = if gm == unit { [] } else { gm.merged };
+        let qs = map(derive_idx(preds), fn(i) {
+            let p = preds[i];
+            if bank[i].q != unit {
+                {field: p.field, cut: p.cut, q: bank[i].q, op: bank[i].q.op, over: p.over, from: "bank"}
+            } else if author {
+                let q = purpose_assemble(p, info.decl, opts);
+                {field: p.field, cut: p.cut, q: q, op: q.op, over: p.over, from: "assemble"}
+            } else {
+                let got = purpose_pick(p, nodes, g, merged, n_sample >= len(items));
+                if got == unit { {field: p.field, cut: p.cut, q: unit, op: "", over: [], from: "none"} }
+                else { {field: p.field, cut: p.cut, q: got.q, op: got.q.op, over: got.over, from: "elicit", note: got.note} }
+            }
+        });
+        let live = filter(derive_idx(qs), fn(i) { qs[i].q != unit });
+        // 组装后对每一项问同一批题：同一状态上的题同一次调用（K 选一的候选在状态里，另成一次）；
+        // 两个谓词拿到同一道题时同键只判一次，两个字段共用这个读数
+        let rs = map(derive_idx(items), fn(j) {
+            map(live, fn(i) {
+                let extra = if qs[i].op == "select" { {over: qs[i].over} } else { {} };
+                let n = derive_node("i" + text(j) + "." + qs[i].field, items[j], qs[i].q, extra);
+                judge(n.st, n.q)
+            })
+        });
+        // 有序切法：全部项上同一道题的读数分档
+        let tiers = map(derive_idx(live), fn(k) {
+            if qs[live[k]].cut == "ordered" { order(map(rs, fn(row) { row[k] })) } else { [] }
+        });
+        let rows = map(derive_idx(items), fn(j) {
+            fold(derive_idx(live), {fields: {}, pend: [], trust: {}, dropped: [], extra: []}, fn(acc0, k) {
+                let qq = qs[live[k]];
+                if qq.cut == "ordered" {
+                    // 名次的可信标记取这一项那次读数：切一次作探测，只读 taint，探测出口按 drop 记账（不参与路由）
+                    let probe = cut(rs[j][k]);
+                    let t = taint(probe);
+                    let lab = exit_kind(probe);
+                    // 读数缺席（预算停发、深度、时延、缺席）的不能 drop：名次记 unit，探测出口随 pending 转交（Z0558 复核）；
+                    // 判过而拿不准的（并列等）是探测，照旧按 drop 记账
+                    let absent = starts_with(lab, "unsure") && contains(["absent", "budget", "depth", "latency", "deadline"], unsure_cause(probe));
+                    if absent {
+                        with(with(with(acc0, "fields", with(acc0.fields, qq.field, unit)), "trust", with(acc0.trust, qq.field, t)), "pend",
+                             carry(acc0.pend, [element(items[j].on, probe, {pos: kept_ix[j], q: qq.q})], "purpose:" + qq.field))
+                    } else {
+                        if starts_with(lab, "unsure") { consume(probe, "drop") } else { unit };
+                        with(with(acc0, "fields", with(acc0.fields, qq.field, purpose_rank(tiers[k], j))), "trust", with(acc0.trust, qq.field, t))
+                    }
+                } else {
+                    let e0 = cut(rs[j][k]);
+                    // 字段未决先走默认链（N-T6，Z0514 的 unsure_default，与 handle 缺 unsure 臂同一份实现与记账）：
+                    // 再判成已决就用新出口落字段；放弃的不进 pending、记 detail.dropped；其余照旧转交
+                    let d = if starts_with(exit_kind(e0), "unsure") { unsure_default(e0) } else { {exit: e0, end: "none"} };
+                    let e = d.exit;
+                    let lab = exit_kind(e);
+                    let acc1 = if key_of(e) != key_of(e0) { with(acc0, "extra", append(acc0.extra, key_of(e))) } else { acc0 };
+                    let acc = with(acc1, "trust", with(acc1.trust, qq.field, taint(e)));
+                    if d.end == "drop" {
+                        with(with(acc, "fields", with(acc.fields, qq.field, unit)), "dropped",
+                             append(acc.dropped, {pos: kept_ix[j], field: qq.field, exit: lab}))
+                    } else if starts_with(lab, "unsure") {
+                        with(with(acc, "fields", with(acc.fields, qq.field, unit)), "pend",
+                             carry(acc.pend, [element(items[j].on, e, {pos: kept_ix[j], q: qq.q})], "purpose:" + qq.field))
+                    } else if starts_with(lab, "pick(") {
+                        with(acc, "fields", with(acc.fields, qq.field, qq.over[derive_index(lab)]))
+                    } else if starts_with(lab, "at(") {
+                        with(acc, "fields", with(acc.fields, qq.field, qq.q.scale[derive_index(lab)]))
+                    } else { with(acc, "fields", with(acc.fields, qq.field, lab == "act")) }
+                }
+            })
+        });
+        let done = info.done;
+        let fields = concat(map(live, fn(i) { qs[i].field }),
+                            map(filter(aliases, fn(a) { len(filter(live, fn(i) { qs[i].field == a.to })) > 0 }), fn(a) { a.field }));
+        // 别名字段：与它指向的谓词字段同值、同可信标记
+        let with_alias = fn(rec) { fold(aliases, rec, fn(acc, a) { if has(acc, a.to) { with(acc, a.field, acc[a.to]) } else { acc } }) };
+        // 别名字段的可信标记：被指向字段的与别名那次判断出口的，取较不可信的（Z0596）
+        let trust_alias = fn(rec) { fold(aliases, rec, fn(acc, a) {
+            if has(acc, a.to) { with(acc, a.field, if acc[a.to] == "untrusted" || a.t == "untrusted" { "untrusted" } else { "trusted" }) } else { acc }
+        }) };
+        // 每项一行、按原顺序；有前提时每行带 premise（各层标记），淘汰的项 excluded: true、没有字段（B0470）
+        let row_of = fn(j0) {
+            let k = fold(derive_idx(kept_ix), -1, fn(b, i) { if kept_ix[i] == j0 { i } else { b } });
+            let it = items0[j0];
+            let base = if k < 0 { {item: it.on, fields: {}, trust: {}} }
+                       else { {item: it.on, fields: with_alias(rows[k].fields), trust: trust_alias(rows[k].trust)} };
+            if sel == unit { base } else if k < 0 { with(with(base, "premise", info.marks[j0]), "excluded", true) }
+            else { with(base, "premise", info.marks[j0]) }
+        };
+        outcome({value: map(derive_idx(items0), row_of),
+                 pending: concat(concat(concat(fold(rows, [], fn(acc, r) { concat(acc, r.pend) }), carry([], g.pending, "purpose:gate")),
+                                 if sel == unit { [] } else { sel.pending }),
+                                 concat(extra_pend,
+                                        carry([], fold(bank, [], fn(acc, b) { if has(b, "pend") { concat(acc, b.pend) } else { acc } }), "purpose:bank"))),
+                 evidence: concat(concat(concat(filter(concat(map(bank, fn(b) { b.key }), info.alias_keys), fn(k) { k != unit }), g.evidence),
+                                  concat(fold(rs, [], fn(acc, row) { concat(acc, map(row, fn(r) { key_of(r) })) }),
+                                         fold(rows, [], fn(acc, r) { concat(acc, r.extra) }))),
+                                  if sel == unit { [] } else { sel.evidence }),
+                 detail: with_premise({version: R.version, entry: info.entry, modules: info.modules, sources: info.sources, preds: pinfo,
+                          bank: map(bank, fn(b) { if has(b, "hit") { {pred: b.pred, kind: b.kind, how: b.how, hit: b.hit} } else { {pred: b.pred, kind: b.kind, how: b.how} } }),
+                          elicit: {calls: if author { 0 } else { len(todo) }, rejected: g.rejected}, gate_items: map(gate_items, fn(i) { kept_ix[i] }),
+                          questions: map(qs, fn(x) { {field: x.field, cut: x.cut, q: if x.q == unit { unit } else { x.q.text }, op: x.op, from: x.from,
+                                                      lacks: if x.q == unit { [] } else { x.q.lacks }} }),
+                          inputs: map(live, fn(i) { purpose_input(qs[i], items) }),
+                          fields: fields, fields_missing: filter(done, fn(f) { !contains(fields, f) }),
+                          warnings: fold(preds, [], fn(acc, p) { concat(acc, p.warn) }),
+                          aliases: map(aliases, fn(a) { {field: a.field, to: a.to} }),
+                          // 样本没覆盖全部项、样本内都判「材料里没有」而没拒的候选（Z0596：写明是哪道、样本结论）
+                          gate_notes: map(filter(qs, fn(x) { has(x, "note") && x.note != unit }), fn(x) { x.note }),
+                          // 字段未决经默认链放弃的（N-T6）：[{pos, field, exit}]
+                          dropped: fold(rows, [], fn(acc, r) { concat(acc, r.dropped) })})})
+    }
+}

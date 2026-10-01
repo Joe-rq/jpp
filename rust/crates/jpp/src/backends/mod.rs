@@ -7,6 +7,7 @@
 //! 不再按某个后端的名字写死。
 
 pub mod claude_p;
+pub mod claude_p_judge;
 pub mod jev;
 pub mod stub;
 
@@ -50,8 +51,9 @@ impl PartialEq for BackendSpec {
     }
 }
 
-/// 注册表：一个后端一行。
-pub const REGISTRY: &[&BackendSpec] = &[&jev::SPEC, &stub::SPEC];
+/// 注册表：一个后端一行。V1-4 验证加一行：`claude_p_judge`（预注册
+/// `地基/规划/验证/预注册-V1-4.md`，提交 `d927ffe24`）。
+pub const REGISTRY: &[&BackendSpec] = &[&jev::SPEC, &stub::SPEC, &claude_p_judge::SPEC];
 
 /// 按 `--backend` 取值找后端。
 pub fn by_name(name: &str) -> Option<&'static BackendSpec> {

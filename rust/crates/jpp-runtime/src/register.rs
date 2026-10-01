@@ -41,6 +41,32 @@ impl<'a> Interp<'a> {
         d
     }
 
+    /// 运行期诊断闸门（步 26，B47）：题发出前过一遍 B13 规则，只诊断检查期没见过的题，每道题每趟一次。
+    /// 结果只进 `trace.warnings`，题照发、走向不变（批 9 裁定 :42、:136「只提示，不改走向」）。
+    /// 调用点两处：本文件的 `judge`（直接判断、`sieve`、`literalize` 等都经它）与 `register_speculative`（提前登记）。
+    pub(crate) fn 过闸(&mut self, qs: &[Rc<Question>], sp: Span) {
+        let Some(gate) = self.gate else {
+            return;
+        };
+        for q in qs {
+            if !self.gated.insert(q.hash.clone()) {
+                continue;
+            }
+            let gq = jpp_ir::diag_gate::GateQuestion {
+                op: q.op.fixture_name(),
+                text: &q.text,
+                template: q.template.as_deref(),
+                fill: q.fill.as_deref(),
+            };
+            for n in gate.gate(&gq) {
+                self.trace.warn(format!(
+                    "{}: 运行期诊断 @{} {}「{}」：{}。修法：{}",
+                    n.code, sp.start, gq.op, q.text, n.message, n.fix
+                ));
+            }
+        }
+    }
+
     pub(crate) fn judge(
         &mut self,
         state: &Rc<State>,
@@ -56,6 +82,12 @@ impl<'a> Interp<'a> {
                 );
             }
         }
+        // 超窗裂变（步 23b）：开关开、画像测过窗口、题声明了 `fission: "approx"`、材料超窗四者同时成立才切，
+        // 否则原路径逐字节不变（`fission.rs`）
+        if let Some(rs) = self.裂变判断(state, qs, sp)? {
+            return Ok(rs);
+        }
+        self.过闸(qs, sp);
         if state.has_fail {
             let rs: Vec<Rc<Reading>> = qs
                 .iter()
@@ -122,13 +154,36 @@ impl<'a> Interp<'a> {
             })
             .collect();
         self.note_kinds(state, qs, &readings);
+        // 裁定四十九 (c)：声明了裂变而画像没测窗口的读数带 `window_untested`（`fission.rs`）
+        self.记窗口未测(qs, &readings);
+        // G5 附录二：真站点登记编号（缺席记录的读数身份）
+        for r in &readings {
+            self.记真登记(r);
+        }
         let mut missing = vec![];
         for (i, k) in keys.iter().enumerate() {
             // 真站点走到了一个推测过的键：这次推测用上了
             if self.speculated.contains(k) {
                 self.speculation_used.insert(k.clone());
             }
-            if let Some(Entry::Judge {
+            // G5（裁定五十九第 16 条；附录二）：审计重放里，最后一趟这道题第 m 次真登记记着缺席的，照那一条复现（不取
+            // 答案），走刷新的缺席复现；最后一趟之后写的答案不用
+            let 先缺 = self.audit.on
+                && match self
+                    .真登记序
+                    .get(&readings[i].id)
+                    .and_then(|m| self.重放记录(k, *m))
+                {
+                    Some(记录键) => {
+                        self.重放缺席键.insert(readings[i].id, 记录键);
+                        true
+                    }
+                    None => false,
+                };
+            let 越界 = self.audit.on && self.重放答案越界(k);
+            if 先缺 || 越界 {
+                missing.push(i);
+            } else if let Some(Entry::Judge {
                 answer,
                 cost,
                 call,
@@ -160,24 +215,32 @@ impl<'a> Interp<'a> {
             } else if qs[i].op == Op::Select && state.over.is_empty() {
                 // **没有候选**（B3）：K 选一的 over 槽是空的，问了也没有可选的——不发，出口 Unsure(no_candidate)，
                 // 去向是调生成器补候选，不同于 tie / insufficient。
-                self.absent_marks.insert(k.clone(), "no_candidate".into());
+                self.标缺席(&readings[i], k, "no_candidate");
                 self.trace.warn(format!("W-no-candidate: @{} 选择题「{}」没有候选（over 为空），出口 Unsure(no_candidate)", sp.start, qs[i].text));
             } else if self.判断复用(k, &readings[i], sp, format!("「{}」", qs[i].text)) {
                 // 步 19（B40、B151）：按缓存键复用了本运行已答的或跨运行缓存里的读数，不进待发
             } else {
                 missing.push(i);
             }
+            // C2c：判断依赖记在登记处的当前帧（代码单元帧或程序帧）：答了的 `Answered`，进待发的 `Pending`
+            let 已答 = !missing.contains(&i);
+            self.单元记题依赖(k, 已答);
         }
         // 窗口检查（J-14 / 12:117）：对象槽内单段按 text_slots，槽间按 json_slots。
         // 超窗不报错只留痕——它不是算错，是**读数被语境接管而无人察觉**
         // （档案：「≈1,000 token 带主张语境下翻转 60.7%，读数被语境接管」）。
         // 与 Python `_check_window` 同为 warn。
-        self.check_window(state, sp);
+        // 伴随题（B0492 S5）与原题同一状态，原题登记时已核过，不再重复告警
+        if !self.伴随中 {
+            self.check_window(state, sp);
+        }
         // J-14 运行期面（B62/I-10，步 24b）：单个 Mat 的 JSON 内容本身在顶层塞了一个多元素
         // 列表、题面又像是按编号或键引用其中之一——检查器看不见这种写法，静态面只查 `on` 实参
         // 个数。warn 级：不阻塞，只是「读数可能被语境接管（H8 串扰）而无人察觉」的提示，与上面
         // 窗口检查同一性质。
-        self.check_multi_object(state, qs, sp);
+        if !self.伴随中 {
+            self.check_multi_object(state, qs, sp);
+        }
         // B155（步 15i）：候选是 `{label, text}` 记录时线上按标签名排序发出，正逆两序发不出来——
         // `{permute: true}` 在这道题上不生效（端口不发第二遍、不记置换测量），出口因此不会是 `Pick`。
         // 说清楚原因，免得作者照 J-15 的修法去声明置换却看不到效果。依据：B155、B64
@@ -192,6 +255,12 @@ impl<'a> Interp<'a> {
                 sp.start
             ));
         }
+        // Z0556：语言自己发的元题（伴随题、默认链的「为什么拿不准」）记下读数号，刷新时答案形状不符就降级而不中止
+        if self.伴随中 || self.元题登记 > 0 {
+            for r in &readings {
+                self.元题.insert(r.id);
+            }
+        }
         if !missing.is_empty() {
             self.pending.push(PendingJudge {
                 state: state.clone(),
@@ -202,9 +271,13 @@ impl<'a> Interp<'a> {
                 site: sp,
                 speculative: false,
                 lifted: false,
+                site_id: self.站点表.get(&sp.start).copied(),
             });
         }
-        Ok(readings.into_iter().map(Value::Reading).collect())
+        let rs: Vec<Value> = readings.into_iter().map(Value::Reading).collect();
+        // 伴随题（B0492 S5）：没有可信记录的题在同一状态上另登记一组伴随题
+        self.登记伴随(state, qs, &rs, sp)?;
+        Ok(rs)
     }
 
     /// 记下每个读数的精化题类（B76，步 12e-2）：题 × 状态槽形。
@@ -261,8 +334,25 @@ impl<'a> Interp<'a> {
             return Ok(());
         };
         for step in &lp.steps {
-            let Stmt::Let { name, value, .. } = &b.statements[step.index] else {
-                break;
+            // Z0613：计划按节点号索引、步里存块内下标；先核对这一步确实落在本块同一条 `let` 上。对不上说明计划不是按
+            // 这个块算的（曾因序言与程序节点号重叠而越界 panic），报错，不静默跳过
+            let (name, value) = match b.statements.get(step.index) {
+                Some(Stmt::Let { name, value, .. }) if value.id == step.node => (name, value),
+                other => {
+                    let 实际 = match other {
+                        Some(Stmt::Let { value, .. }) => format!("值节点 {}", value.id.0),
+                        Some(_) => "不是 let".to_string(),
+                        None => format!("块只有 {} 条语句", b.statements.len()),
+                    };
+                    return err(
+                        Some("E-rt-plan"),
+                        format!(
+                            "提升计划与正在求值的块对不上：第 {} 句应是值节点 {} 的 let，实际{实际}（计划不是按这个块算的）",
+                            step.index, step.node.0
+                        ),
+                        b.span,
+                    );
+                }
             };
             let view = RtEnv(env.clone());
             if self.hooks.may_effect(value, &view, Reach::World) {
@@ -482,14 +572,28 @@ impl<'a> Interp<'a> {
                 return None; // 禁自指的站点不推
             }
         }
+        // 超窗裂变（步 23b）：声明了裂变的题在块上提前登记，与真站点走到时的块同键；没声明的照整篇
+        if let Some(blocks) = self.裂变推测块(state, qs) {
+            let (声明, 未声明): (Vec<Rc<Question>>, Vec<Rc<Question>>) =
+                qs.iter().cloned().partition(|q| q.fission.is_some());
+            let mut 有 = false;
+            if !未声明.is_empty() {
+                有 |= self.register_speculative(state, &未声明, sp).is_some();
+            }
+            for b in &blocks {
+                有 |= self.register_speculative(b, &声明, sp).is_some();
+            }
+            return 有.then_some(());
+        }
+        self.过闸(qs, sp);
         let keys: Vec<String> = qs
             .iter()
             .map(|q| self.judge_key_of(&state.hash, &q.hash, q.op.phys(), sp.start))
             .collect();
         let mut items = vec![];
         for (q, k) in qs.iter().zip(&keys) {
-            // 账本里已经有 = 不用推
-            if self.账本查(k).is_some() {
+            // 账本里已经有 = 不用推；按缓存键能复用 = 也不用推（真站点走到时当场取回，不发请求）
+            if self.账本查(k).is_some() || self.判断可复用(k) {
                 continue;
             }
             // 这一层已经登记过同一个键 = 不重复推
@@ -537,6 +641,7 @@ impl<'a> Interp<'a> {
             site: sp,
             speculative: true,
             lifted: false,
+            site_id: self.站点表.get(&sp.start).copied(),
         });
         Some(())
     }

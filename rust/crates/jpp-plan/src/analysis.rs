@@ -62,6 +62,7 @@ const 可提前求值的内置: &[&str] = &[
     "exit_kind",
     "unsure_cause",
     "untested",
+    "near_boundary",
     "line_source",
     "cert",
     "is_fail",

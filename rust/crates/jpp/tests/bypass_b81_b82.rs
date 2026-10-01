@@ -59,7 +59,25 @@ fn 跑(body: &str) -> Result<(Json, u64), String> {
     let mut l = Ledger::new();
     let out = run(&program, 定值端口(), &calib, &ActionRegistry::new(), &mut l)
         .map_err(|e| format!("{e:?}"))?;
+    if let Some(e) = 违规为错(&out) {
+        return Err(e);
+    }
     Ok((out.value_json(), out.cost.calls))
+}
+
+/// G2（步 35）：违规不再是运行期错误；测试辅助把违规转成错误文本（带「违规」与原报文），断言按新形态核
+fn 违规为错(o: &jpp::Outcome) -> Option<String> {
+    (!o.violations.is_empty()).then(|| {
+        format!(
+            "违规 {} 笔（单次形态，原运行期 J-05）：{}",
+            o.violations.len(),
+            o.violations
+                .iter()
+                .map(|v| v.message.as_str())
+                .collect::<Vec<_>>()
+                .join("；")
+        )
+    })
 }
 
 #[test]
@@ -68,8 +86,8 @@ fn j05_投影掉出口且不返回pending_运行期报错() {
 let o = sieve(["甲", "拿不准的乙"], test("行吗？", "k1"));
 {review: map(undecided(o), fn(p) { {index: p.index, cause: p.cause} })}"#)
     .expect_err("投影掉 exit 的记录不是转移（B81 (c)、13 §3）");
-    // 依据：B81 (c)；13 §3「只读原因文本不构成处理」
-    assert!(e.contains("J-05"), "{e}");
+    // 依据：B81 (c)；13 §3「只读原因文本不构成处理」。G2：原断言运行期 J-05，改为程序结束记违规
+    assert!(e.contains("违规 1 笔") && e.contains("unsure(band)"), "{e}");
 }
 
 #[test]
@@ -93,8 +111,8 @@ let o = sieve(["甲", "乙", "丙"], test("行吗？", "k1"));
         )
     };
     let e = 跑(&body("{review: undecided(o)}")).expect_err("未观察的项漏交");
-    // 依据：B81 (c)（`undecided` 与 `unobserved` 都要交出）
-    assert!(e.contains("J-05"), "{e}");
+    // 依据：B81 (c)（`undecided` 与 `unobserved` 都要交出）。G2：原断言运行期 J-05，改为程序结束记违规
+    assert!(e.contains("违规") && e.contains("unsure(budget)"), "{e}");
     let (v, _) =
         跑(&body("{review: undecided(o), unobserved: unobserved(o)}")).expect("两份都交出");
     assert!(

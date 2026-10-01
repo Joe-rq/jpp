@@ -11,6 +11,7 @@
 //! 依据：`12`:151、J-15；`jpp-core/INTERFACE.md` §四·二·七·五；B63；过程记录 `工程-修复-folio重放.md`。
 
 mod common;
+use common::{run, run_replay};
 use std::cell::RefCell;
 
 use jpp::effects::{CalibStore, EffectError, FnPort, JudgeResult, Ports, Selection};
@@ -18,7 +19,7 @@ use jpp::interp::ActionRegistry;
 use jpp::ledger::{Entry, Ledger};
 use jpp::value::Answer;
 use jpp::{lower, syntax::parse};
-use jpp::{run, run_replay};
+
 use serde_json::{Value as Json, json};
 
 /// 按题面里的标记答题：`[pick]` 高 p、众数一致；`[tie]` 高 p、众数不一致；`[band]` 低 p、一致；
@@ -26,7 +27,7 @@ use serde_json::{Value as Json, json};
 /// （步 15c：原 `impl Client` 的桩改为三个闭包端口）
 fn 桩端口<'a>(禁发: bool, calls: &'a RefCell<u64>) -> Ports<'a> {
     Ports::new()
-        .with(FnPort::judge("m", move |s, qs| {
+        .with(common::伴随中性judge("m", move |s, qs| {
             assert!(!禁发, "重放发出了调用");
             *calls.borrow_mut() += 1;
             let mut answers = vec![];
@@ -183,7 +184,7 @@ fn 每种k元出口重放与首跑相同() {
     // 没有线（k-none）与停岗（k-drift）都按判断器的回答走，select 出 pick、measure 出 at
     assert_eq!(
         v1,
-        json!({"pick": "pick", "tie": "tie", "band": "band", "untested": "untested", "cold": "pick",
+        json!({"pick": "pick", "tie": "tie", "band": "band", "untested": "cold", "cold": "pick",
                "drift": "pick", "no_candidate": "no_candidate", "at": "at", "mband": "band", "mcold": "at"}),
     );
     assert_eq!(v2, v1, "重放的出口与首跑不同");
@@ -201,8 +202,11 @@ fn 置换测量成对进账本_未测不写() {
         if let Entry::Judge {
             answer: Answer::Choice(_),
             perm,
+            calib_ref,
             ..
         } = e
+            // 伴随题「最缺哪类」也是 K 选一，不在本测试之列（过程记录 5.23）
+            && !format!("{calib_ref:?}").contains("unsure-companion-material")
         {
             match perm {
                 Some(pm) => {
@@ -297,8 +301,9 @@ fn 旧账本没有置换字段照读() {
     .map_err(|e| e.render())
     .unwrap();
     let v = o.value_json();
-    assert_eq!(v["pick"], "untested");
-    assert_eq!(v["tie"], "untested");
+    // 步 36 G3（裁定六十六）：没测置换的原因是 cold
+    assert_eq!(v["pick"], "cold");
+    assert_eq!(v["tie"], "cold");
     assert_eq!(v["at"], "at", "measure 不用置换，不受影响");
 }
 

@@ -13,11 +13,13 @@
 //! 而且路由真的不同——`tie` 的既定去向是「逐候选 noul」，**而 K-noul 路径本来就是
 //! 逐候选 noul，路过去是空转**。
 
+mod common;
+use common::run;
 use std::cell::RefCell;
 
+use jpp::ActionRegistry;
 use jpp::effects::{CalibStore, FnPort, JevClient, Ports};
 use jpp::ledger::Ledger;
-use jpp::{ActionRegistry, run};
 use jpp::{lower, syntax::parse};
 use serde_json::{Value as Json, json};
 
@@ -26,7 +28,7 @@ use serde_json::{Value as Json, json};
 /// 模拟**测了、正逆两序选了不同的候选**（K=2 上判据是二值的）。
 /// 步 15c：原 `impl Client` 的桩改为闭包端口（生成/问人程序不会调用，未注册）。
 fn 不发置换端口(inner: &RefCell<JevClient>, mode_share: Option<f64>) -> Ports<'_> {
-    Ports::new().with(FnPort::judge("jev-1.13.0", move |s, qs| {
+    Ports::new().with(common::伴随中性judge("jev-1.13.0", move |s, qs| {
         let mut r = inner.borrow_mut().judge(s, qs)?;
         // K-noul 路径上 mode_share 无从谈起：它是 None，不是 0 也不是 1
         r.mode_share = qs.iter().map(|_| mode_share).collect();
@@ -130,8 +132,8 @@ fn 没测过那一位对handler可见() {
     println!("【没测】{v}");
     assert_eq!(
         v["原因"],
-        json!("untested"),
-        "路由键要是通用的 untested（五个载体共用一条路由），不是每个载体一条"
+        json!("cold"),
+        "步 36 G3（裁定六十六）：路由键是 cold（保守线加标记），untested 只作正交位"
     );
     assert_eq!(
         v["未测"],
@@ -140,7 +142,7 @@ fn 没测过那一位对handler可见() {
     );
     assert_eq!(
         v["出口"],
-        json!("unsure(untested:permutation)"),
+        json!("unsure(cold|untested:permutation)"),
         "审计面（程序自己带进返回值的 exit_kind）要带着那一位"
     );
 }

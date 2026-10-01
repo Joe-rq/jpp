@@ -19,6 +19,7 @@
 
 mod exec;
 mod graph;
+mod graph_cycles;
 mod io;
 mod retrieval;
 mod sandbox;
@@ -52,6 +53,94 @@ pub struct SandboxProfile {
     pub undo: &'static str,
 }
 
+/// 动作可撤回性的三个取值（C-7，Z0173）。
+///
+/// **「可撤回」的定义**：运行完动作后，用户可见的宿主状态能回到运行前，不需要动作之外的手段（备份、
+/// 人工、对方系统配合）。用户不可见、可再生的副产物（缓存、调用专属临时目录）不破坏可撤回，但理由里
+/// 必须如实写出。出处：J-08 的语义（只有不可逆动作才要放行，`guard.rs::release`）；B55（不可逆动作先写
+/// 意向，因为可能已完成而无法确认）；B164（可撤回性由隔离机制成立：写限定在调用专属临时目录，调用结束整
+/// 目录丢弃）；主控 2026-09-29 裁定（定义改为「用户可见的宿主状态能回到运行前」）。
+///
+/// - `Reversible`：定义成立；
+/// - `Irreversible`：至少一种成功运行会留下运行时无法撤回的宿主或外部状态；
+/// - `DependsOnArgs`：成立与否取决于调用参数或外部系统，静态无法定，`conditions` 写明取决于什么。
+///   目前 14 个内置动作没有一个属于此类（`exec_sql` 的授权回调拒绝一切非 SELECT，任何语句都改不了库，
+///   所以是可撤回，不是「视语句而定」）；词汇表保留它，给宿主登记的动作（画像 `actions` 分表、B2 的世界动作）用。
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Reversibility {
+    Reversible,
+    Irreversible,
+    DependsOnArgs,
+}
+
+impl Reversibility {
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Reversibility::Reversible => "reversible",
+            Reversibility::Irreversible => "irreversible",
+            Reversibility::DependsOnArgs => "depends_on_args",
+        }
+    }
+    /// 与 J-08 布尔的映射：只有 `Reversible` 为真；拿不准（`DependsOnArgs`）按可能不可逆，与今天
+    /// 「动作名不是字面量按可能不可逆处理」一致。
+    pub fn as_bool(self) -> bool {
+        self == Reversibility::Reversible
+    }
+}
+
+/// 一个动作的可撤回性事实：三值、理由（为什么）、成立条件（在什么前提下成立，可为空）。
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct UndoFact {
+    pub kind: Reversibility,
+    pub reason: String,
+    pub conditions: Vec<String>,
+}
+
+fn yes(reason: &str, conditions: &[&str]) -> UndoFact {
+    UndoFact {
+        kind: Reversibility::Reversible,
+        reason: reason.to_string(),
+        conditions: conditions.iter().map(|c| c.to_string()).collect(),
+    }
+}
+
+fn no(reason: &str, conditions: &[&str]) -> UndoFact {
+    UndoFact {
+        kind: Reversibility::Irreversible,
+        reason: reason.to_string(),
+        conditions: conditions.iter().map(|c| c.to_string()).collect(),
+    }
+}
+
+/// 执行器动作的事实：由沙箱探测派生（B164），与 `executor_reversible()` 同一来源。
+fn executor(name: &str) -> UndoFact {
+    let kind = sandbox::kind();
+    let what = match name {
+        "exec_sql" => {
+            "只读打开数据库（mode=ro + PRAGMA query_only + 授权回调只放行 SELECT，任何语句都改不了库）"
+        }
+        "check_tests" => "运行被测代码与断言",
+        _ => "运行给定的 Python 代码",
+    };
+    if kind == sandbox::SandboxKind::None {
+        UndoFact {
+            kind: Reversibility::Irreversible,
+            reason: format!(
+                "{what}；本机探测不到操作系统沙箱，以普通子进程运行，代码可写宿主文件、可联网，运行时无法撤回"
+            ),
+            conditions: vec!["探测不到 sandbox-exec（macOS）或 bwrap（Linux）".into()],
+        }
+    } else {
+        UndoFact {
+            kind: Reversibility::Reversible,
+            reason: format!(
+                "{what}；在调用专属临时目录内运行，操作系统沙箱把写限定在该目录、拒绝一切网络，调用结束整目录丢弃。读宿主文件不隔离；CPU、内存、进程数不限"
+            ),
+            conditions: vec![format!("沙箱：{}", kind.as_str())],
+        }
+    }
+}
+
 /// 表里的一行。
 pub struct HostAction {
     /// `do` 的动作名
@@ -60,7 +149,11 @@ pub struct HostAction {
     pub usage: &'static str,
     /// 可逆（J-08：不可逆动作要放行）。执行器动作（`sandbox.is_some()`）的这一位是派生值
     /// （`sandbox.kind != "none"`），不再单独声明；其余动作照常手写。
+    /// C-7 之后它与 [`HostAction::undo`] 的三值一致（`Reversible` ⇔ 真），测试逐项断言。
     pub reversible: bool,
+    /// 如实的可撤回性事实（C-7，Z0173）：三值、理由、成立条件。只是事实与记录：J-08、`--guard`、
+    /// 意向账本仍只读上面的布尔，不读它，不据此加任何默认限制（意图汇编 11a）。
+    pub undo: UndoFact,
     /// 输出 taint 声明（B37、`12` §2.11）
     pub taint_out: TaintOut,
     /// 每次执行的固定费用
@@ -94,6 +187,7 @@ pub fn builtin_actions() -> &'static [HostAction] {
                 name: "record_check",
                 usage: "record_check",
                 reversible: true,
+                undo: yes("只把一条记录追加到本次运行的内存检查表（进报告 local_checks），不碰宿主文件与外部系统；进程结束即消失", &[]),
                 taint_out: TaintOut::Inherit,
                 cost: 0.0,
                 run: io::record_check,
@@ -103,6 +197,7 @@ pub fn builtin_actions() -> &'static [HostAction] {
                 name: "read_json",
                 usage: "read_json(path)",
                 reversible: true,
+                undo: yes("只读一个文件并解析，不写任何东西", &[]),
                 taint_out: TaintOut::Untrusted,
                 cost: 0.0,
                 run: io::read_json,
@@ -112,6 +207,7 @@ pub fn builtin_actions() -> &'static [HostAction] {
                 name: "write_json",
                 usage: "write_json(path,value)",
                 reversible: false,
+                undo: no("创建或覆盖 path 指向的宿主文件；运行时不备份原内容，也没有删除或还原的动作，写完就无法由运行时撤回", &["path 指向已存在文件时原内容丢失；指向新路径时留下新文件"]),
                 taint_out: TaintOut::Inherit,
                 cost: 0.0,
                 run: io::write_json,
@@ -123,6 +219,7 @@ pub fn builtin_actions() -> &'static [HostAction] {
                 name: "graph:matching",
                 usage: "graph:matching(graph)",
                 reversible: true,
+                undo: yes("纯函数：只读入参、返回新值，不碰宿主与外部系统", &[]),
                 taint_out: TaintOut::Inherit,
                 cost: 0.0,
                 run: graph::matching,
@@ -132,6 +229,7 @@ pub fn builtin_actions() -> &'static [HostAction] {
                 name: "graph:shortest_path",
                 usage: "graph:shortest_path(graph)",
                 reversible: true,
+                undo: yes("纯函数：只读入参、返回新值，不碰宿主与外部系统", &[]),
                 taint_out: TaintOut::Inherit,
                 cost: 0.0,
                 run: graph::shortest_path,
@@ -141,6 +239,7 @@ pub fn builtin_actions() -> &'static [HostAction] {
                 name: "graph:max_clique",
                 usage: "graph:max_clique(graph)",
                 reversible: true,
+                undo: yes("纯函数：只读入参、返回新值，不碰宿主与外部系统", &[]),
                 taint_out: TaintOut::Inherit,
                 cost: 0.0,
                 run: graph::max_clique,
@@ -150,6 +249,7 @@ pub fn builtin_actions() -> &'static [HostAction] {
                 name: "graph:components",
                 usage: "graph:components(graph)",
                 reversible: true,
+                undo: yes("纯函数：只读入参、返回新值，不碰宿主与外部系统", &[]),
                 taint_out: TaintOut::Inherit,
                 cost: 0.0,
                 run: graph::components,
@@ -159,6 +259,7 @@ pub fn builtin_actions() -> &'static [HostAction] {
                 name: "graph:set_cover",
                 usage: "graph:set_cover(graph)",
                 reversible: true,
+                undo: yes("纯函数：只读入参、返回新值，不碰宿主与外部系统", &[]),
                 taint_out: TaintOut::Inherit,
                 cost: 0.0,
                 run: graph::set_cover,
@@ -168,9 +269,22 @@ pub fn builtin_actions() -> &'static [HostAction] {
                 name: "graph:max_flow",
                 usage: "graph:max_flow(graph)",
                 reversible: true,
+                undo: yes("纯函数：只读入参、返回新值，不碰宿主与外部系统", &[]),
                 taint_out: TaintOut::Inherit,
                 cost: 0.0,
                 run: graph::max_flow,
+                sandbox: None,
+            },
+            // T0（步 39，Z0454）：S14 扩展点加的第七个图算法动作，找经过指定节点的有向简单环，按节点集合交出
+            // （契约与六项隐性知识见 `graph_cycles.rs` 头注与 `地基/过程记录/工程-T0-夹具端口.md`）。
+            HostAction {
+                name: "graph:cycles",
+                usage: "graph:cycles(graph)",
+                reversible: true,
+                undo: yes("纯函数：只读入参、返回新值，不碰宿主与外部系统", &[]),
+                taint_out: TaintOut::Inherit,
+                cost: 0.0,
+                run: graph_cycles::cycles,
                 sandbox: None,
             },
             // 比赛 R2a（2026-09-25/26）：执行器（`exec_py`/`check_tests`，B164 起 `reversible`
@@ -180,6 +294,7 @@ pub fn builtin_actions() -> &'static [HostAction] {
                 name: "exec_py",
                 usage: "exec_py(code,stdin,timeout_s)",
                 reversible: executor_reversible(),
+                undo: executor("exec_py"),
                 taint_out: TaintOut::Untrusted,
                 cost: 0.0,
                 run: exec::exec_py,
@@ -189,6 +304,7 @@ pub fn builtin_actions() -> &'static [HostAction] {
                 name: "check_tests",
                 usage: "check_tests(code,tests,timeout_s)",
                 reversible: executor_reversible(),
+                undo: executor("check_tests"),
                 taint_out: TaintOut::Untrusted,
                 cost: 0.0,
                 run: exec::check_tests,
@@ -198,6 +314,7 @@ pub fn builtin_actions() -> &'static [HostAction] {
                 name: "embed_topk",
                 usage: "embed_topk(texts,query,k)",
                 reversible: true,
+                undo: yes("读入文本、起 Python 子进程算向量；会写可再生缓存 ~/.cache/jpp-embed，不改用户数据；删掉缓存即回到运行前", &["写 ~/.cache/jpp-embed 下的缓存文件（可再生）"]),
                 taint_out: TaintOut::Inherit,
                 cost: 0.0,
                 run: retrieval::embed_topk,
@@ -207,6 +324,7 @@ pub fn builtin_actions() -> &'static [HostAction] {
                 name: "bm25_topk",
                 usage: "bm25_topk(query,corpus,k)",
                 reversible: true,
+                undo: yes("纯 Rust 计算：只读入参、返回新值，不碰宿主与外部系统", &[]),
                 taint_out: TaintOut::Inherit,
                 cost: 0.0,
                 run: retrieval::bm25_topk,
@@ -219,6 +337,7 @@ pub fn builtin_actions() -> &'static [HostAction] {
                 name: "exec_sql",
                 usage: "exec_sql(db,sql)",
                 reversible: executor_reversible(),
+                undo: executor("exec_sql"),
                 taint_out: TaintOut::Untrusted,
                 cost: 0.0,
                 run: exec::exec_sql,
@@ -239,7 +358,37 @@ pub fn register_all(registry: &mut ActionRegistry, ctx: &Ctx, replay_only: bool)
             }
             run(&ctx, args)
         });
+        // C-7：事实同时进注册表，`.jpp` 的 `action_fact(name)` 读它
+        registry.describe_undo(
+            a.name,
+            crate::interp::ActionUndo {
+                reversibility: a.undo.kind.as_str().to_string(),
+                reason: a.undo.reason.clone(),
+                conditions: a.undo.conditions.clone(),
+            },
+        );
     }
+}
+
+/// 一个动作的事实 JSON：`{reversibility, reason, conditions}`（与 `.jpp` 里 `action_fact(name)` 同形）。
+pub fn action_fact_json(a: &HostAction) -> Json {
+    serde_json::json!({
+        "reversibility": a.undo.kind.as_str(),
+        "reason": a.undo.reason,
+        "conditions": a.undo.conditions,
+    })
+}
+
+/// 整张事实表的 JSON（C-7）：动作名 → 事实。`names` 给出时只取这些名字（未登记的忽略）；`None` 取全部。
+/// 报告的 `action_facts` 一节由它生成。
+pub fn action_facts_json(names: Option<&[String]>) -> Json {
+    let mut m = serde_json::Map::new();
+    for a in builtin_actions() {
+        if names.is_none_or(|ns| ns.iter().any(|n| n == a.name)) {
+            m.insert(a.name.to_string(), action_fact_json(a));
+        }
+    }
+    Json::Object(m)
 }
 
 /// 已知动作的事实表（步 24c）：不依赖用户输入或实际 `ActionRegistry`（`check` 不构造它），
@@ -329,6 +478,20 @@ mod tests {
             assert_eq!(sb.fs, "tmpdir");
             assert!(!sb.net);
             assert_eq!(sb.undo, "discard-tmpdir");
+        }
+    }
+
+    /// C-7：三值与 J-08 布尔一致，逐项有理由。
+    #[test]
+    fn 三值与布尔一致且逐项有理由() {
+        for a in builtin_actions() {
+            assert_eq!(
+                a.undo.kind.as_bool(),
+                a.reversible,
+                "{}: 三值与布尔不一致",
+                a.name
+            );
+            assert!(!a.undo.reason.trim().is_empty(), "{}: 理由不能空", a.name);
         }
     }
 

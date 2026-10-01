@@ -3,13 +3,14 @@
   "cost": {
     "asks": 0,
     "calls": 0,
-    "replayed": 2,
+    "replayed": 12,
     "tokens": 0,
     "usd": 0.0
   },
   "entry": [],
   "exits": [
     {
+      "delta_unknown": true,
       "exit": "ignore",
       "grade": "Answer",
       "index": 0,
@@ -19,6 +20,7 @@
       "site": 466
     },
     {
+      "delta_unknown": true,
       "exit": "ignore",
       "grade": "Answer",
       "index": 1,
@@ -29,9 +31,97 @@
     }
   ],
   "fixture_description": "Real JEV readings recorded 2026-09-23 (进展/2026-09-23/live/truth-truth-pending-live-ledger.json), replayed as fixed observations for the golden gate.",
+  "improve": [
+    {
+      "companions": [
+        {
+          "key": "7d0a59ececd957d6fec18b98",
+          "kind": "unsure-companion-premise",
+          "p": 0.5
+        },
+        {
+          "key": "bf8a2a3641c73a7588fb209c",
+          "kind": "diag-two-judgments",
+          "p": 0.5
+        },
+        {
+          "key": "7063db43bf299d652518d18d",
+          "kind": "unsure-companion-cut",
+          "p": 0.5
+        },
+        {
+          "key": "f7bd07c2f8c6dcfb4c91762d",
+          "kind": "unsure-companion-reference",
+          "p": 0.5
+        },
+        {
+          "key": "27d8889697622e4f6bd4b972",
+          "kind": "unsure-companion-material",
+          "p": 0.25,
+          "pick": null
+        }
+      ],
+      "key": "55a4b76fcf6dba9b7c357435",
+      "lacks": null,
+      "q": "这段话是否提到了钢琴？"
+    },
+    {
+      "companions": [
+        {
+          "key": "4d85e2f55b6f2bd6f8b22811",
+          "kind": "unsure-companion-premise",
+          "p": 0.5
+        },
+        {
+          "key": "be4b701eb5ccf7d32b0db412",
+          "kind": "diag-two-judgments",
+          "p": 0.5
+        },
+        {
+          "key": "8fd137a2347d0c1d76218f0b",
+          "kind": "unsure-companion-cut",
+          "p": 0.5
+        },
+        {
+          "key": "44ab23a311767b8485521a84",
+          "kind": "unsure-companion-reference",
+          "p": 0.5
+        },
+        {
+          "key": "2b6a797c0334f7f3bc865dad",
+          "kind": "unsure-companion-material",
+          "p": 0.25,
+          "pick": null
+        }
+      ],
+      "key": "9656e0a4a995785c4fe93725",
+      "lacks": null,
+      "q": "这段话是否提到了钢琴？"
+    }
+  ],
   "local_checks": [],
   "mode": "replay; no model API requests",
   "pending": [],
+  "plan": {
+    "calls": {
+      "hi": 6,
+      "kind": "known",
+      "lo": 0
+    },
+    "cost_usd": {
+      "kind": "unknown",
+      "reason": "price_not_given"
+    },
+    "latency_s": {
+      "kind": "unknown",
+      "reason": "untested:concurrency.latency_s.p95"
+    },
+    "layers": {
+      "hi": 2,
+      "kind": "known",
+      "lo": 0
+    }
+  },
   "questions": [
     {
       "fill": {
@@ -41,6 +131,51 @@
       "kind": "attr",
       "q": "c3ba62228369b670cc9b0c55",
       "template": "这段话是否提到了{concept}？"
+    },
+    {
+      "fill": {
+        "q": "这段话是否提到了钢琴？"
+      },
+      "form_hash": "54315f241f66412e88607f2d",
+      "kind": "attr",
+      "q": "090997f4886dc01f5e2e6e8b",
+      "template": "题「{q}」的前提在这份材料上成立吗？"
+    },
+    {
+      "fill": {
+        "q": "这段话是否提到了钢琴？"
+      },
+      "form_hash": "cd4d3fd600f3459fa6b03c89",
+      "kind": "attr",
+      "q": "2ef0db2e22344118e0eb172a",
+      "template": "题「{q}」里是否有两个或更多需要分别回答的判断？"
+    },
+    {
+      "fill": {
+        "q": "这段话是否提到了钢琴？"
+      },
+      "form_hash": "18c6093988df2ab3840b661c",
+      "kind": "attr",
+      "q": "b0f35c7706040966930ec73b",
+      "template": "把题「{q}」按更细的情形分开问，会比整体问更容易答准吗？"
+    },
+    {
+      "fill": {
+        "q": "这段话是否提到了钢琴？"
+      },
+      "form_hash": "d8ff506d5be24dd56b495116",
+      "kind": "attr",
+      "q": "02be9a87c96b87c36dda90e2",
+      "template": "判断题「{q}」需要的参照对象和语境，这段材料里给够了吗？"
+    },
+    {
+      "fill": {
+        "q": "这段话是否提到了钢琴？"
+      },
+      "form_hash": "2ec36692b44a45c1e23fbea6",
+      "kind": "class",
+      "q": "e49e8715c44e9002883958da",
+      "template": "题「{q}」要判得更明确，最缺哪一类信息？"
     }
   ],
   "replay": true,
@@ -62,9 +197,119 @@
       },
       {
         "cost": 0.0,
+        "key": "7d0a59ececd957d6fec18b98",
+        "kind": "judge",
+        "note": "「题「这段话是否提到了钢琴？」的前提在这份材料上成立吗？」",
+        "replayed": true,
+        "site": {
+          "end": 510,
+          "start": 466
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "bf8a2a3641c73a7588fb209c",
+        "kind": "judge",
+        "note": "「题「这段话是否提到了钢琴？」里是否有两个或更多需要分别回答的判断？」",
+        "replayed": true,
+        "site": {
+          "end": 510,
+          "start": 466
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "7063db43bf299d652518d18d",
+        "kind": "judge",
+        "note": "「把题「这段话是否提到了钢琴？」按更细的情形分开问，会比整体问更容易答准吗？」",
+        "replayed": true,
+        "site": {
+          "end": 510,
+          "start": 466
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "f7bd07c2f8c6dcfb4c91762d",
+        "kind": "judge",
+        "note": "「判断题「这段话是否提到了钢琴？」需要的参照对象和语境，这段材料里给够了吗？」",
+        "replayed": true,
+        "site": {
+          "end": 510,
+          "start": 466
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "27d8889697622e4f6bd4b972",
+        "kind": "judge",
+        "note": "「题「这段话是否提到了钢琴？」要判得更明确，最缺哪一类信息？」",
+        "replayed": true,
+        "site": {
+          "end": 510,
+          "start": 466
+        }
+      },
+      {
+        "cost": 0.0,
         "key": "9656e0a4a995785c4fe93725",
         "kind": "judge",
         "note": "「这段话是否提到了钢琴？」",
+        "replayed": true,
+        "site": {
+          "end": 510,
+          "start": 466
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "4d85e2f55b6f2bd6f8b22811",
+        "kind": "judge",
+        "note": "「题「这段话是否提到了钢琴？」的前提在这份材料上成立吗？」",
+        "replayed": true,
+        "site": {
+          "end": 510,
+          "start": 466
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "be4b701eb5ccf7d32b0db412",
+        "kind": "judge",
+        "note": "「题「这段话是否提到了钢琴？」里是否有两个或更多需要分别回答的判断？」",
+        "replayed": true,
+        "site": {
+          "end": 510,
+          "start": 466
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "8fd137a2347d0c1d76218f0b",
+        "kind": "judge",
+        "note": "「把题「这段话是否提到了钢琴？」按更细的情形分开问，会比整体问更容易答准吗？」",
+        "replayed": true,
+        "site": {
+          "end": 510,
+          "start": 466
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "44ab23a311767b8485521a84",
+        "kind": "judge",
+        "note": "「判断题「这段话是否提到了钢琴？」需要的参照对象和语境，这段材料里给够了吗？」",
+        "replayed": true,
+        "site": {
+          "end": 510,
+          "start": 466
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "2b6a797c0334f7f3bc865dad",
+        "kind": "judge",
+        "note": "「题「这段话是否提到了钢琴？」要判得更明确，最缺哪一类信息？」",
         "replayed": true,
         "site": {
           "end": 510,

@@ -18,7 +18,7 @@ use serde_json::{Value as Json, json};
 /// 判断恒给 0.95，不该生成、不该问人（步 15c：原 `impl Client` 的桩改为三个闭包端口，计数搬到调用处）
 fn 桩端口<'a>(calls: &'a RefCell<u64>) -> Ports<'a> {
     Ports::new()
-        .with(FnPort::judge("m", move |_s, qs| {
+        .with(common::伴随中性judge("m", move |_s, qs| {
             *calls.borrow_mut() += 1;
             Ok(JudgeResult {
                 answers: qs.iter().map(|_| Answer::Noul(0.95)).collect(),
@@ -64,7 +64,7 @@ fn 放行(材料: &str) -> String {
         r#"
 budget {{calls: 4, cost: 1, depth: 8}};
 handle(cut(judge(state(mat({材料:?})), test("该发吗", "k"))), {{
-    act: fn() {{ content(do("发邮件", [], 0)) }},
+    act: fn() {{ (do("发邮件", [], 0)) }},
     ignore: fn() {{ "没发" }},
     unsure: fn(u) {{ consume(u, "drop"); "没发" }}}})
 "#
@@ -212,7 +212,7 @@ fn b75_范围内类线不放行() {
     let mut calib = CalibStore::new();
     common::certified(&mut calib, "k", 0.8, 0.2, 50);
     let (v, _, _) = 跑(&放行(短句), &calib).expect("题级认证线放行");
-    assert_eq!(v, json!("已发"));
+    assert_eq!(v["content"], json!("已发"));
 }
 
 /// 只凭账本重放：类线出口 0 调用、结果相同。

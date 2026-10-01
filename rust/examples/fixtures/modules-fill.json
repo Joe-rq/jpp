@@ -1,0 +1,211 @@
+{
+ "description": "Synthetic fixed observations for modules-fill.jpp (construction check only; not model evaluation). B0478: the author fills the modules only; both predicates miss the question bank (\"none of these\"), so the rules assemble a measure question (three levels) and a select question (four candidates); reference goes to the ref slot, context to ctx, presupposition to the form.",
+ "observations": [
+  {
+   "on": [
+    "这套房满足租客需求的程度"
+   ],
+   "over": [
+    "这段话里说的{thing}还剩多少？",
+    "如果这项操作出了差错，最坏会造成多大的损害？",
+    "都不是"
+   ],
+   "op": "select",
+   "text": "这段话要判断的事，和下列哪一道已认证的题问的是同一件事？",
+   "calib": "bank-match",
+   "answer": {
+    "Choice": [
+     0.0,
+     0.0,
+     1.0
+    ]
+   }
+  },
+  {
+   "on": [
+    "这套房对这位租客最大的不合适之处"
+   ],
+   "over": [
+    "这段话里直接写出了下列哪一个{kind}的名字？",
+    "下面这件事应由下列哪一个{role}负责处理？",
+    "现在要达成的目标是：{goal}。根据眼下的情况，下面哪一步最该先做？",
+    "这句话说的是下列哪一个{kind}？",
+    "都不是"
+   ],
+   "op": "select",
+   "text": "这段话要判断的事，和下列哪一道已认证的题问的是同一件事？",
+   "calib": "bank-match",
+   "answer": {
+    "Choice": [
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     1.0
+    ]
+   }
+  },
+  {
+   "ctx": [
+    "北京，十月看房"
+   ],
+   "on": [
+    "一室一厅，月租四千，离地铁五百米，朝北"
+   ],
+   "ref": [
+    "租客：预算五千以内，每天地铁通勤，喜欢朝南"
+   ],
+   "op": "measure",
+   "text": "就这份材料来说，这套房满足租客需求的程度落在哪一档？",
+   "calib": "modules:bcbfc8ff514c4be3b336b293",
+   "scale": [
+    "不满足",
+    "部分满足",
+    "满足"
+   ],
+   "answer": {
+    "Score": [
+     0.2,
+     0.6,
+     0.2
+    ]
+   }
+  },
+  {
+   "ctx": [
+    "北京，十月看房"
+   ],
+   "on": [
+    "一室一厅，月租四千，离地铁五百米，朝北"
+   ],
+   "over": [
+    "价格",
+    "通勤",
+    "采光",
+    "没有明显不合适"
+   ],
+   "ref": [
+    "租客：预算五千以内，每天地铁通勤，喜欢朝南"
+   ],
+   "op": "select",
+   "text": "就这份材料来说，这套房对这位租客最大的不合适之处是下列哪一项？",
+   "calib": "modules:cfe8b16caae3db04ea2d4fe0",
+   "answer": {
+    "Choice": [
+     0.1,
+     0.7,
+     0.1,
+     0.1
+    ]
+   }
+  },
+  {
+   "ctx": [
+    "北京，十月看房"
+   ],
+   "on": [
+    "两室，月租六千，离地铁两公里，朝南"
+   ],
+   "ref": [
+    "租客：预算五千以内，每天地铁通勤，喜欢朝南"
+   ],
+   "op": "measure",
+   "text": "就这份材料来说，这套房满足租客需求的程度落在哪一档？",
+   "calib": "modules:bcbfc8ff514c4be3b336b293",
+   "scale": [
+    "不满足",
+    "部分满足",
+    "满足"
+   ],
+   "answer": {
+    "Score": [
+     0.1,
+     0.2,
+     0.7
+    ]
+   }
+  },
+  {
+   "ctx": [
+    "北京，十月看房"
+   ],
+   "on": [
+    "两室，月租六千，离地铁两公里，朝南"
+   ],
+   "over": [
+    "价格",
+    "通勤",
+    "采光",
+    "没有明显不合适"
+   ],
+   "ref": [
+    "租客：预算五千以内，每天地铁通勤，喜欢朝南"
+   ],
+   "op": "select",
+   "text": "就这份材料来说，这套房对这位租客最大的不合适之处是下列哪一项？",
+   "calib": "modules:cfe8b16caae3db04ea2d4fe0",
+   "answer": {
+    "Choice": [
+     0.7,
+     0.1,
+     0.1,
+     0.1
+    ]
+   }
+  },
+  {
+   "ctx": [
+    "北京，十月看房"
+   ],
+   "on": [
+    "开间，月租三千，离地铁一百米，无窗"
+   ],
+   "ref": [
+    "租客：预算五千以内，每天地铁通勤，喜欢朝南"
+   ],
+   "op": "measure",
+   "text": "就这份材料来说，这套房满足租客需求的程度落在哪一档？",
+   "calib": "modules:bcbfc8ff514c4be3b336b293",
+   "scale": [
+    "不满足",
+    "部分满足",
+    "满足"
+   ],
+   "answer": {
+    "Score": [
+     0.7,
+     0.2,
+     0.1
+    ]
+   }
+  },
+  {
+   "ctx": [
+    "北京，十月看房"
+   ],
+   "on": [
+    "开间，月租三千，离地铁一百米，无窗"
+   ],
+   "over": [
+    "价格",
+    "通勤",
+    "采光",
+    "没有明显不合适"
+   ],
+   "ref": [
+    "租客：预算五千以内，每天地铁通勤，喜欢朝南"
+   ],
+   "op": "select",
+   "text": "就这份材料来说，这套房对这位租客最大的不合适之处是下列哪一项？",
+   "calib": "modules:cfe8b16caae3db04ea2d4fe0",
+   "answer": {
+    "Choice": [
+     0.1,
+     0.1,
+     0.7,
+     0.1
+    ]
+   }
+  }
+ ]
+}

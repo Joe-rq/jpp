@@ -1,8 +1,9 @@
 //! 诊断层（B13）：只读题面字面量的题式诊断。全部是告警（`W-diag-*`），不阻止运行。
 //!
 //! 分工：`b13.rs` 是规则本体 [`diagnose_question`]，输入一道题的字面信息，不依赖运行时；
-//! 本文件把程序里的题字面量收集出来喂给它（`Checker::diagnose`）。需要判断器的「前提在材料里
-//! 被做出了吗」留到 `21` 步 26；「问的东西在面前材料里吗」的**形状面**（B51-R2 静态消费者，
+//! 本文件把程序里的题字面量收集出来喂给它（`Checker::diagnose`）。`gate.rs`（步 26，B47）是运行期闸门：
+//! 同一份规则经 `jpp_ir::diag_gate::QuestionGate` 交给运行时，只诊断检查期没见过的题；需判断器的诊断
+//! 写在 `lib/diag.jpp`（步 26）。原注：需要判断器的「前提在材料里被做出了吗」留到 `21` 步 26；「问的东西在面前材料里吗」的**形状面**（B51-R2 静态消费者，
 //! `shape_check`）步 24g 已接入 `kind.rs::scan` 的判断站点遍历，不需要判断器。
 //!
 //! `kind.rs` 是题类推断的检查器一侧（B76，步 12e-1）：题字面量的基础类、判断站点上的精化类、
@@ -11,10 +12,17 @@
 //!
 //! 依据：`12` §3 J-17 后「诊断层规则集第一批（B13）」；B 栏 B13 及其两次补充；B76；B51-R2。
 
+/// 诊断规则集（B13 静态规则：触发词表、报文与修法文字）的版本。改任何一条规则都要改这里：
+/// `jpp-lib::lib_version` 把它算进账本头 `lib_version`，旧账本重放时比对头报 `W-header`
+/// （主会话裁定 2026-09-29 第十五条；20-v2 B45）。报文也算：`.jpp` 的 `diagnose` 把它交回程序。
+pub const RULES_VERSION: &str = "b13-3";
+
 pub mod b13;
+pub mod gate;
 pub mod kind;
 
 pub use b13::{DiagCx, QuestionLit, diagnose_fill, diagnose_question, shape_check};
+pub use gate::RuntimeGate;
 pub use kind::{KindSite, question_kinds};
 
 use crate::*;

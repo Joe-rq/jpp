@@ -12,6 +12,10 @@ impl<'a> Interp<'a> {
 
     pub(crate) fn eval_block(&mut self, b: &Block, env: &Env) -> R<Value> {
         let env = env_child(env);
+        // 伴随题（B0492 S5）：第一次进块就是程序体，记下它的环境（`lib/unsure.jpp` 的 `unsure_companions` 在这里）
+        if self.顶层环境.is_none() && self.frames.len() == 1 {
+            self.顶层环境 = Some(env.clone());
+        }
         // lift 提前登记过的语句下标：它们的绑定已经做好，轮到时跳过
         let mut lifted: HashSet<usize> = HashSet::new();
         for (i, s) in b.statements.iter().enumerate() {
@@ -119,6 +123,10 @@ impl<'a> Interp<'a> {
                 // 检视点（B94）：条件里的惰性出口先解析
                 let c = self.eval(condition, env)?;
                 let c = self.检视(c)?;
+                // 未决值传播（B0492 S3）：条件未决，两支都不执行，表达式的值是它
+                if let Value::Duty(_) = c {
+                    return Ok(c);
+                }
                 // 刷新点：分支要在已知信息上走，不能让未发出的判断跨过分支边界（12 §2.2:129）
                 self.flush("if")?;
                 match c {
@@ -154,6 +162,10 @@ impl<'a> Interp<'a> {
                 } else {
                     v
                 };
+                // 未决值传播（B0492 S3）：取未决值的字段，结果是它
+                if let Value::Duty(_) = v {
+                    return Ok(v);
+                }
                 match &v {
                     Value::Record(_) => {
                         let 拟合中 = self.拟合中 > 0;
@@ -236,6 +248,14 @@ impl<'a> Interp<'a> {
                 } else {
                     v
                 };
+                // 未决值传播（B0492 S3）：值或下标未决，结果是它
+                let ds: Vec<Rc<Exit>> = [&v, &i]
+                    .into_iter()
+                    .filter_map(crate::undecided::未决)
+                    .collect();
+                if !ds.is_empty() {
+                    return Ok(self.合并未决(ds, sp));
+                }
                 match (&v, &i) {
                     (Value::List(l), Value::Int(k, _)) => {
                         let k = *k;
@@ -274,6 +294,10 @@ impl<'a> Interp<'a> {
             K::Unary { op, value } => {
                 let v = self.eval(value, env)?;
                 let v = self.检视(v)?;
+                // 未决值传播（B0492 S3）
+                if let Value::Duty(_) = v {
+                    return Ok(v);
+                }
                 // B84：一元运算输出带操作数的标签（taint 同 B33）
                 let t = v.prov();
                 match (op, &v) {
@@ -297,6 +321,24 @@ impl<'a> Interp<'a> {
                 if op == "&&" || op == "||" {
                     let l = self.eval(left, env)?;
                     let l = self.检视(l)?;
+                    // 未决值传播（B0492 S3）：强 Kleene。左侧未决时右侧照求：`U && false = false`、`U || true = true`，
+                    // 右侧是另一边的真值元（`U && true`、`U || false`）时结果是 U，两侧都未决则合并
+                    if let Value::Duty(ld) = &l {
+                        let ld = ld.clone();
+                        let r = self.eval(right, env)?;
+                        let r = self.检视(r)?;
+                        return match (op, &r) {
+                            ("&&", Value::Bool(false, t, _)) => {
+                                Ok(Value::Bool(false, t.clone(), GuardEv::EMPTY))
+                            }
+                            ("||", Value::Bool(true, t, _)) => {
+                                Ok(Value::Bool(true, t.clone(), GuardEv::EMPTY))
+                            }
+                            (_, Value::Bool(..)) => Ok(l),
+                            (_, Value::Duty(rd)) => Ok(self.合并未决(vec![ld, rd.clone()], sp)),
+                            _ => err(Some("E-rt-type"), format!("{op} 右侧要 Bool"), right.span),
+                        };
+                    }
                     return match (op, &l) {
                         // J-08 守卫证据（`20` v2 §3.1）：`&&` 取两侧的并，`||` 清空。
                         // 短路的 `false` 不放行任何东西，证据清空；短路的 `true ||` 同样清空。
@@ -311,6 +353,8 @@ impl<'a> Interp<'a> {
                             let r = self.eval(right, env)?;
                             let r = self.检视(r)?;
                             match r {
+                                // 未决值传播（B0492 S3）：`true && U`、`false || U` 的结果是 U
+                                Value::Duty(_) => Ok(r),
                                 Value::Bool(b, rt, rg) => Ok(Value::Bool(
                                     b,
                                     prov_join(&lt, &rt),
@@ -360,6 +404,14 @@ impl<'a> Interp<'a> {
 
     /// 二元运算。B33：输出 taint = ∨ 两侧（显式数据流）；列表拼接是搬运，元素保留自身的位。
     pub(crate) fn binop(&mut self, op: &str, l: Value, r: Value, sp: Span) -> R<Value> {
+        // 未决值传播（B0492 S3）：比较、算术、拼接依赖两侧内容，任一侧未决结果就是它，两侧都未决则合并
+        let ds: Vec<Rc<Exit>> = [&l, &r]
+            .into_iter()
+            .filter_map(crate::undecided::未决)
+            .collect();
+        if !ds.is_empty() {
+            return Ok(self.合并未决(ds, sp));
+        }
         // B84：输出标签 = 两侧 join（taint ∨ 同 B33，sources ∪）
         let t = prov_join(&l.prov(), &r.prov());
         let 搬运 = op == "+" && matches!((&l, &r), (Value::List(_), Value::List(_)));
@@ -569,7 +621,13 @@ impl<'a> Interp<'a> {
         }
     }
 
-    pub(crate) fn call_closure(&mut self, c: &Rc<Closure>, args: Vec<Value>, sp: Span) -> R<Value> {
+    /// 闭包调用的本体（C2c 起由 `cells.rs::call_closure` 包一层：成代码单元的调用经单元图）。
+    pub(crate) fn call_closure_body(
+        &mut self,
+        c: &Rc<Closure>,
+        args: Vec<Value>,
+        sp: Span,
+    ) -> R<Value> {
         let f = &c.function;
         if args.len() != f.parameters.len() {
             return err(
@@ -600,17 +658,17 @@ impl<'a> Interp<'a> {
             }
             c.linear_called.set(true);
         }
-        let max_depth = self.budget.depth.unwrap_or(DEFAULT_DEPTH);
+        // G4b（裁定六十四、Z0525）：递归只受程序声明的 budget.depth 限（没声明取引擎默认），不被余额的 depth_cap 收紧
+        let max_depth = self.递归上限();
         if self.depth >= max_depth {
-            return err(
-                Some("J-06"),
-                format!(
-                    "调用深度超过 {max_depth}（递归无界）。修法：用 loop(bound, …) 或提高 budget.depth"
-                ),
-                sp,
-            );
+            // C-3：上限被上游收紧时报文说清（主控答复第 3 条 (乙)），否则与改前逐字相同
+            return err(Some("J-06"), self.深度超限报文(max_depth), sp);
         }
         self.depth += 1;
+        self.深度峰 = self.深度峰.max(self.depth);
+        let 名 = c.name.clone().unwrap_or_else(|| "<fn>".into());
+        // G2 附录三（Z0564）：欠账记号的帧主人带实参哈希，同一函数不同实参的两次调用记号不同
+        let 主人 = format!("{名}#{}", crate::violation::实参哈希(&args));
         let env = env_child(&c.env);
         for (p, a) in f.parameters.iter().zip(args) {
             env_define(&env, &p.name, a);
@@ -621,10 +679,12 @@ impl<'a> Interp<'a> {
             .map(|t| t.mentions("Exit"))
             .unwrap_or(false);
         self.frames.push(Frame {
-            name: c.name.clone().unwrap_or_else(|| "<fn>".into()),
+            name: 名,
             exits: vec![],
             cuts: vec![],
             returns_exit,
+            过桥: 0,
+            主人,
         });
         let result = self.eval_block(&f.body, &env);
         // 帧返回前解析本帧的惰性出口（B94）：J-05 与 Fn¹ 按出口种类核
@@ -679,16 +739,12 @@ impl<'a> Interp<'a> {
                 transferred.push(e.clone());
                 self.frame().exits.push(e);
             } else {
-                return err(
-                    Some("J-05"),
-                    format!(
-                        "{} 返回前有未消费的 {}，而且它没出现在返回值里——最后一份承接信息被丢掉了。{}",
-                        frame.name,
-                        e.label(),
-                        self.j05_fix(&e)
-                    ),
-                    e.site,
-                );
+                // G2（`12` R9，主控定第 1 条）：函数返回前丢了、不在返回值里的未决不再当场报 J-05；这笔欠账挂到调用者那一帧、
+                // 继续往上交，程序结束时还欠着才记违规（报文说明它最初在哪个函数返回前丢的）
+                self.丢失处
+                    .entry(e.id)
+                    .or_insert_with(|| frame.name.clone());
+                self.frame().exits.push(e);
             }
         }
         if !transferred.is_empty() {

@@ -83,7 +83,9 @@ fn 跑(
     let calib = CalibStore::new();
     let acts = ActionRegistry::new();
     let mut l = ledger;
-    let mut s = Session::new(ports, &calib, &acts).with_gen(gen_model.map(String::from), None);
+    let mut s = Session::new(ports, &calib, &acts)
+        .with_companions(jpp::interp::CompanionMode::Off)
+        .with_gen(gen_model.map(String::from), None);
     if let Some(c) = cache {
         s = s.with_cache(c);
     }
@@ -272,9 +274,16 @@ fn 目录(名: &str) -> PathBuf {
 }
 
 fn jpp(d: &Path, args: &[&str]) -> (bool, String) {
+    // 伴随题（B0492 S5，主控路 3）：`run` 与伴随题无关，按开关显式关掉
+    let 关 = args.first() == Some(&"run"); // 数缓存命中条数，固定关（主控 2026-09-30：第二类）
     let o = Command::new(env!("CARGO_BIN_EXE_jpp"))
         .current_dir(d)
         .args(args)
+        .args(if 关 {
+            &["--companions", "off"][..]
+        } else {
+            &[][..]
+        })
         .output()
         .unwrap();
     (
@@ -429,4 +438,59 @@ fn g_cli_cache_读错误报错() {
     );
     assert!(err.contains("不存在，按空缓存"), "{err}");
     let _ = std::fs::remove_dir_all(&d);
+}
+
+/// (h) 推测发出的判断也查缓存（说话 v2 实测：全部命中缓存却照样发出请求、照样计费，2026-09-27）。
+/// 循环里下一轮的判断会被推测提前发出；推测若不查缓存，缓存命中省不下调用。
+const 循环: &str = r#"
+budget {calls: 40, cost: 0, depth: 64};
+fn step(acc, i) !{judge} {
+    let ms = map(["甲", "乙", "丙"], fn(w) { mat({已说: acc.s, 块: w}) });
+    let rs = map(ms, fn(m) { judge(state(m), test("接得上吗", "k")) });
+    let ok = map(rs, fn(r) { handle(cut(r), {act: fn() { 1 }, ignore: fn() { 0 }, unsure: fn(u) { consume(u, "drop"); 0 }}) });
+    {s: acc.s + text(sum(ok)), left: acc.left - 1}
+}
+iterate(3, {s: "", left: 3}, step, fn(acc) { acc.left }).value.s
+"#;
+
+#[test]
+fn h_推测也查缓存() {
+    let (判, 生) = (Cell::new(0), Cell::new(0));
+    let 首 = 跑(
+        循环,
+        端口(&判, &生, "gen-a"),
+        Ledger::new(),
+        None,
+        None,
+        false,
+    );
+    assert!(判.get() >= 1);
+    let ix = CacheIndex::build(&[("first.jsonl".to_string(), 首.ledger)]);
+    let (判, 生) = (Cell::new(0), Cell::new(0));
+    let 再 = 跑(
+        循环,
+        端口(&判, &生, "gen-a"),
+        Ledger::new(),
+        Some(&ix),
+        None,
+        false,
+    );
+    assert_eq!(再.value, 首.value);
+    let c = 再.cache.expect("cache 一节");
+    assert_eq!(
+        判.get(),
+        0,
+        "全部命中缓存，不该有任何请求（含推测）；命中 {:?}",
+        c.hits
+    );
+    assert_eq!(c.requests["judge"], 0);
+    assert_eq!(c.hits["judge"], 9);
+}
+/// 伴随题开关（B0492 S5，主控 2026-09-30 路 3）：与伴随题无关的测试显式关掉；`JPP_TEST_COMPANIONS=on` 整体开着跑
+fn 伴随() -> jpp::interp::CompanionMode {
+    if std::env::var("JPP_TEST_COMPANIONS").is_ok_and(|v| v == "on") {
+        jpp::interp::CompanionMode::Same
+    } else {
+        jpp::interp::CompanionMode::Off
+    }
 }

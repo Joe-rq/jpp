@@ -60,19 +60,19 @@ pub(crate) struct 合成请求<'r> {
     pub 吸收标签: &'r str,
 }
 
-fn 未决原因(分量: &[ExitKind]) -> Option<String> {
-    let us: Vec<&String> = 分量
+fn 未决原因(分量: &[ExitKind]) -> Option<Why> {
+    let us: Vec<&Why> = 分量
         .iter()
         .filter_map(|k| match k {
-            ExitKind::Unsure(c) => Some(c),
+            ExitKind::Unsure(w) => Some(w),
             _ => None,
         })
         .collect();
     // B131 (4)：缺席类（没观察到）优先，否则第一个未决分量的原因
     us.iter()
-        .find(|c| 缺席类原因.contains(&c.as_str()))
+        .find(|w| w.cause.is_absent_class())
         .or(us.first())
-        .map(|c| (*c).clone())
+        .map(|w| (*w).clone())
 }
 
 /// 合成的种类（纯函数，B131 表）。分量类型不符规则时报错。
@@ -130,10 +130,10 @@ pub(crate) fn 合成种类(r: &规则, 分量: &[ExitKind]) -> Result<ExitKind, 
             }
             // B3：没有候选 → no_candidate；有候选、全部否定 → rejected_all
             if 分量.is_empty() {
-                return Ok(ExitKind::Unsure("no_candidate".into()));
+                return Ok(ExitKind::Unsure(Why::of(UnsureCause::NoCandidate)));
             }
             if 分量.iter().all(|x| *x == ExitKind::Ignore) {
-                return Ok(ExitKind::Unsure("rejected_all".into()));
+                return Ok(ExitKind::Unsure(Why::of(UnsureCause::RejectedAll)));
             }
             let mut n = 0;
             for x in 分量 {
@@ -421,7 +421,7 @@ mod tests {
     use super::*;
 
     fn u(c: &str) -> ExitKind {
-        ExitKind::Unsure(c.into())
+        ExitKind::Unsure(Why::of(UnsureCause::parse(c).expect("测试用成员原因")))
     }
     use ExitKind::{Act as A, At, Ignore as I, Pick};
 

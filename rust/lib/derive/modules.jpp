@@ -1,0 +1,155 @@
+// 作者填模块（B0478，功能一；裁定四、裁定六十三）：作者在 .jpp 里填十个模块，语言按 rules.jpp 的守则组装成题和输入。
+//
+// 模块记录与目的入口（purpose.jpp，Z0511）要生成器输出的记录同形，两个入口只差这条记录由谁填：
+//   {material: [{on: 材料, ref?: 材料}], predicates: [{text, cut, over?, scale?, request?, field?}],
+//    request?, presupposition?, context?, reference?, budget?, unsure?, done?}
+// 规范、核对之后交给 purpose_core（两个入口共用）：查题库 → 题库没命中时按守则组装（不唤出、不过闸门，意图汇编 11a）→
+// 每项同一批题 → 有序分档 → 落字段 → 契约值。作者填的值与目的明说的值同等约束（purpose_stated）。
+//
+// 十个模块落在哪（预注册 地基/过程记录/工程-B0478-作者填模块.md 第三节）：材料 → 状态 on；谓词 + 切法 → 题面与题型；
+// 候选 → 状态 over；档位、前提、证据槽、拿不准缺哪类 → 题式声明；参照 → 状态 ref；语境 → 状态 ctx；
+// 请求、预算、拿不准去向 → 只记来源；完成条件 → 输出字段名。
+// 缺必填模块即报错（运行停下，报文带码与修法，先于任何效应）；其余由系统补，来源记在 detail.sources，
+// 补的规则读同一张 R.purpose_fill，作者入口不同的项在 R.author_fill（前提：目的入口由 B0470 从目的原文派生并筛材料，
+// 作者入口没有目的原文，作者没填前提就记 not-derived，题式不带前提、账本里没有前提题）。
+//
+// modules_run(m, opts) -> 契约值（形状同 purpose_run；detail.entry 为 "author"，detail.inputs 写每道题的输入槽）
+//   opts  {calib?: 组装题式的标签前缀（缺省 "modules"）}
+import "rules.jpp";
+import "node.jpp";
+import "purpose.jpp";
+
+fn modules_names() { ["material", "predicates", "request", "presupposition", "context", "reference", "budget", "unsure", "done"] }
+fn modules_pred_names() { ["text", "cut", "over", "scale", "request", "field"] }
+
+// 报错：库的现有写法（tree.jpp、search.jpp）——取不存在的键，报文即错误，运行停下
+fn modules_fail(msg) { let e = {}; e[msg] }
+
+fn modules_said(m, k) { has(m, k) && m[k] != unit }
+
+fn modules_is_text(x) { starts_with(to_json(x), "\"") }
+fn modules_is_list(x) { starts_with(to_json(x), "[") }
+// 记录（不是材料）：材料的 JSON 以 "content" 键起头，记录的键按字母序排
+fn modules_is_record(x) { let j = to_json(x); starts_with(j, "{") && !starts_with(j, "{\"content\":") }
+fn modules_mat(x) { if modules_is_text(x) { mat(x) } else { x } }
+
+// 材料项：{on: 材料, ref?: 材料}
+fn modules_item_ok(x) {
+    if !modules_is_record(x) { false }
+    else { has(x, "on") && len(filter(keys(x), fn(k) { k != "on" && k != "ref" })) == 0 }
+}
+
+// 候选或档位：去首尾空白，空项拿掉
+fn modules_opts(p, k) {
+    if !has(p, k) || p[k] == unit || !modules_is_list(p[k]) { [] }
+    else { map(filter(p[k], fn(x) { modules_is_text(x) && trim(x) != "" }), fn(x) { trim(x) }) }
+}
+
+// 一个谓词：缺文字、切法、候选、档位即报错；返回与 purpose_preds 同形的谓词记录，来源记 author
+fn modules_pred(p, i) {
+    let pid = "第 " + text(i) + " 个谓词";
+    if !modules_is_record(p) || !has(p, "text") || p.text == unit || !modules_is_text(p.text) || trim(p.text) == "" {
+        modules_fail("E-module-missing: " + pid + "缺「谓词」的文字（predicates[" + text(i) + "].text）。修法：写一句要对每个材料项判断的事，例如 {text: \"……\", cut: \"binary\"}")
+    } else if !derive_bracefree(p.text) {
+        modules_fail("E-module-missing: " + pid + "的文字带花括号，组装时会被读成槽。修法：去掉花括号")
+    } else {
+        let unknown = filter(keys(p), fn(k) { !contains(modules_pred_names(), k) });
+        if len(unknown) > 0 {
+            modules_fail("E-module-unknown: " + pid + "有不认得的键 " + to_json(unknown) + "。谓词只收 " + to_json(modules_pred_names()))
+        } else if !has(p, "cut") || p.cut == unit || !contains(["binary", "k_ary", "ordered"], text(p.cut)) {
+            modules_fail("E-module-missing: " + pid + "缺「切法」（cut）或不是 binary / k_ary / ordered 之一。修法：判是否写 binary，从几个候选里挑一个写 k_ary，排先后、分高低写 ordered")
+        } else {
+            let cut_name = text(p.cut);
+            let over = modules_opts(p, "over");
+            let scale = modules_opts(p, "scale");
+            if cut_name == "k_ary" && len(over) < 2 {
+                modules_fail("E-module-missing: " + pid + "切法是 k_ary，缺「候选」（over，至少两项）。修法：列出互不重叠的候选；B0479 落地后可由系统补")
+            } else if cut_name == "ordered" && len(scale) < 2 {
+                modules_fail("E-module-missing: " + pid + "切法是 ordered，缺「档位」（scale，至少两档，从低到高）。修法：列出档位；B0479 落地后可由系统补")
+            } else if has(p, "request") && p.request != unit && !contains(["one", "all"], text(p.request)) {
+                modules_fail("E-module-bad: " + pid + "的请求（request）只收 one 或 all，收到 " + to_json(p.request))
+            } else {
+                {id: "p" + text(i), text: trim(p.text), cut: cut_name, cut_from: "author",
+                 over: if cut_name == "k_ary" { over } else { [] }, over_from: if cut_name == "k_ary" { "author" } else { "none" },
+                 scale: if cut_name == "ordered" { scale } else { [] }, scale_from: if cut_name == "ordered" { "author" } else { "none" },
+                 request: if has(p, "request") && p.request != unit { text(p.request) } else { "one" },
+                 req_from: if has(p, "request") && p.request != unit { "author" } else { "system" },
+                 field: if has(p, "field") && p.field != unit && trim(text(p.field)) != "" { trim(text(p.field)) } else { "p" + text(i) },
+                 warn: []}
+            }
+        }
+    }
+}
+
+// 补模块的来源：作者填了记 author；没填按 R.purpose_fill（与目的入口同一张表）
+fn modules_fill_src(m, k) {
+    let R = derive_rules();
+    if modules_said(m, k) { "author" } else if has(R.author_fill, k) { R.author_fill[k] }
+    else if starts_with(R.purpose_fill[k], "missing") { R.purpose_fill[k] }
+    else if R.purpose_fill[k] == "" { "system:none" } else { "system" }
+}
+
+// 核对与规范：缺必填模块即报错，否则返回 {preds, items, decl, sources, done}
+fn modules_check(m) {
+    if !modules_is_record(m) {
+        modules_fail("E-module-bad: modules_run 的第一个参数要是模块记录 {material, predicates, …}")
+    } else {
+        let unknown = filter(keys(m), fn(k) { !contains(modules_names(), k) });
+        if len(unknown) > 0 {
+            modules_fail("E-module-unknown: 模块记录有不认得的键 " + to_json(unknown) + "。十个模块的键是 " + to_json(modules_names()) + "（切法、候选、档位写在每个谓词里）")
+        } else if !modules_said(m, "material") || !modules_is_list(m.material) || len(m.material) == 0 {
+            modules_fail("E-module-missing: 缺「材料」模块（material）。修法：material: [{on: 材料, ref?: 参照材料}, …]，至少一项")
+        } else if len(filter(m.material, fn(x) { !modules_item_ok(x) })) > 0 {
+            modules_fail("E-module-bad: 材料项要写成 {on: 材料, ref?: 参照材料}，不能有别的键")
+        } else if !modules_said(m, "predicates") || !modules_is_list(m.predicates) || len(m.predicates) == 0 {
+            modules_fail("E-module-missing: 缺「谓词」模块（predicates）。修法：predicates: [{text: 要对每个材料项判断的事, cut: \"binary\" | \"k_ary\" | \"ordered\"}]，至少一个")
+        } else if modules_said(m, "request") && !contains(["one", "all"], text(m.request)) {
+            modules_fail("E-module-bad: 请求（request）只收 one 或 all，收到 " + to_json(m.request))
+        } else {
+            let preds = map(derive_idx(m.predicates), fn(i) { modules_pred(m.predicates[i], i) });
+            let fields = map(preds, fn(p) { p.field });
+            let dup = filter(derive_idx(fields), fn(i) { contains(slice(fields, 0, i), fields[i]) });
+            if len(dup) > 0 {
+                modules_fail("E-module-bad: 两个谓词用了同一个字段名「" + fields[dup[0]] + "」。修法：给每个谓词不同的 field")
+            } else {
+                let done = if modules_said(m, "done") { if modules_is_list(m.done) { map(m.done, fn(x) { text(x) }) } else { [text(m.done)] } } else { fields };
+                let stray = filter(done, fn(f) { !contains(fields, f) });
+                if len(stray) > 0 {
+                    modules_fail("E-module-done: 完成条件（done）列了「" + join(stray, "」「") + "」，没有谓词的 field 对应。修法：给对应的谓词写这个 field，或从 done 里删掉")
+                } else {
+                    let refm = if modules_said(m, "reference") { modules_mat(m.reference) } else { unit };
+                    let ctxm = if modules_said(m, "context") { modules_mat(m.context) } else { unit };
+                    let items = map(m.material, fn(x) {
+                        let a = {on: x.on};
+                        let b = if has(x, "ref") { with(a, "ref", x.ref) } else if refm != unit { with(a, "ref", refm) } else { a };
+                        if ctxm != unit { with(b, "ctx", ctxm) } else { b }
+                    });
+                    let all_ref = len(filter(items, fn(x) { !has(x, "ref") })) == 0;
+                    let d0 = if modules_said(m, "presupposition") { {presupposition: text(m.presupposition)} } else { {} };
+                    let decl = if all_ref { with(d0, "evidence", ["ref"]) } else { d0 };
+                    let item_ref = len(filter(m.material, fn(x) { !has(x, "ref") })) == 0;
+                    {preds: preds, items: items, decl: decl, done: done,
+                     sources: {material: "author", predicate: "author", cut: "author",
+                               request: if modules_said(m, "request") || len(filter(preds, fn(p) { p.req_from != "author" })) == 0 { "author" } else { "system" },
+                               presupposition: modules_fill_src(m, "presupposition"),
+                               context: modules_fill_src(m, "context"),
+                               reference: if modules_said(m, "reference") { "author" } else if item_ref { "system" } else { "system:none" },
+                               budget: modules_fill_src(m, "budget"),
+                               unsure: modules_fill_src(m, "unsure"),
+                               done: if modules_said(m, "done") { "author" } else { "system" }}}
+                }
+            }
+        }
+    }
+}
+
+fn modules_run(m, opts0) {
+    let opts = if has(opts0, "calib") { opts0 } else { with(opts0, "calib", "modules") };
+    let c = modules_check(m);
+    // 模块回显：材料只记项数（材料本身在 value 的 item 里）
+    let echo = fold(keys(m), {}, fn(acc, k) { if k == "material" { with(acc, k, len(m.material)) } else { with(acc, k, m[k]) } });
+    // 不派生前提、不筛材料：全部项纳入（kept_ix 为全部下标），返回值没有 premise 明细与每行 premise 标记
+    purpose_core(c.preds, c.items, derive_idx(c.items), opts,
+                 {entry: "author", modules: echo, sources: c.sources, aliases: [], alias_keys: [], done: c.done, decl: c.decl, error: "",
+                  sel: unit, marks: [], premise: unit})
+}

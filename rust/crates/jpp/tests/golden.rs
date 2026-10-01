@@ -79,6 +79,9 @@ struct Case {
     resume_ledger: Option<String>,
     /// 清单项的额外命令行参数（步 20j-2：`--release-on-declared`）；首跑与重放都带
     args: Vec<String>,
+    /// 能力画像（相对 `rust-jpp/` 的路径；步 23b）：清单项带 `profile` 时首跑与重放都加 `--profile <仓库根>/<路径>`，
+    /// 引用仓库里的画像原件，不放副本。窗口等画像字段的金样（`window-over`）靠它触发已测窗口的告警。
+    profile: Option<String>,
     expect_error: bool,
     /// 清单里登记的重放不成功（停机或分歧）及原因；未登记的用例重放必须成功。
     replay_exception: Option<String>,
@@ -111,6 +114,7 @@ fn cases() -> Vec<Case> {
                 .as_array()
                 .map(|a| a.iter().map(|x| x.as_str().unwrap().to_string()).collect())
                 .unwrap_or_default(),
+            profile: c["profile"].as_str().map(String::from),
             expect_error: c["expect"] == "error",
             replay_exception: c["replay"].as_str().map(String::from),
         })
@@ -124,9 +128,17 @@ fn scratch() -> PathBuf {
 }
 
 fn jpp(cwd: &Path, args: &[String]) -> std::process::Output {
+    // C2b（步 41）：`JPP_TEST_CELLS=off` 时关掉单元图跑全部金样（H1a 对照臂），金样不重录、必须逐字节相同
+    let mut args = args.to_vec();
+    if args.first().is_some_and(|a| a == "run")
+        && std::env::var("JPP_TEST_CELLS").is_ok_and(|v| v == "off")
+    {
+        args.push("--cells".into());
+        args.push("off".into());
+    }
     Command::new(env!("CARGO_BIN_EXE_jpp"))
         .current_dir(cwd)
-        .args(args)
+        .args(&args)
         .output()
         .unwrap()
 }
@@ -137,6 +149,10 @@ fn base_args(c: &Case) -> Vec<String> {
     if let Some(f) = &c.fixtures {
         a.push("--fixtures".into());
         a.push(r.join(f).display().to_string());
+    }
+    if let Some(p) = &c.profile {
+        a.push("--profile".into());
+        a.push(r.join(p).display().to_string());
     }
     a.extend(c.args.iter().cloned());
     a
@@ -429,4 +445,117 @@ fn projection_is_sensitive_to_each_field() {
     let mut r = report.clone();
     r["pending"][0]["detail"] = json!("另一段说明");
     assert_eq!(project(&r), p);
+}
+
+/// C2c-5（步 41，附录二 A2.8）：全部金样用例开着单元图跑一遍、报告带 `--cells-stats`，加总单元计数。一次性测量，
+/// 不进门禁：`cargo test -p jpp --test golden -- --ignored c2c_金样单元计数 --nocapture`。
+#[test]
+#[ignore]
+fn c2c_金样单元计数() {
+    let base = scratch().join("c2c-stats");
+    let mut sum: std::collections::BTreeMap<String, u64> = Default::default();
+    let mut rows = vec![];
+    for c in cases() {
+        if c.expect_error {
+            continue;
+        }
+        let tmp = base.join(&c.name);
+        let _ = fs::remove_dir_all(&tmp);
+        fs::create_dir_all(&tmp).unwrap();
+        for (name, body) in &c.files {
+            fs::write(tmp.join(name), body).unwrap();
+        }
+        let mut args = base_args(&c);
+        if let Some(cal) = &c.calib {
+            args.push("--calib".into());
+            args.push(root().join(cal).display().to_string());
+        }
+        if let Some(from) = &c.resume_from {
+            args.push("--resume".into());
+            args.push(base.join(from).join("ledger.json").display().to_string());
+        }
+        if let Some(seed) = &c.resume_ledger {
+            args.push("--resume".into());
+            args.push(root().join(seed).display().to_string());
+        }
+        args.extend([
+            "--ledger-out".into(),
+            "ledger.json".into(),
+            "--output".into(),
+            "report.json".into(),
+        ]);
+        // 先关着单元图跑一趟作对照（在另一个目录，续跑用例的上一段账本取关着那一趟的）
+        let off_dir = base.join(format!("{}-off", c.name));
+        let _ = fs::remove_dir_all(&off_dir);
+        fs::create_dir_all(&off_dir).unwrap();
+        for (name, body) in &c.files {
+            fs::write(off_dir.join(name), body).unwrap();
+        }
+        let mut off_args = args.clone();
+        if let Some(from) = &c.resume_from {
+            let i = off_args.iter().position(|a| a == "--resume").unwrap();
+            off_args[i + 1] = base
+                .join(format!("{from}-off"))
+                .join("ledger.json")
+                .display()
+                .to_string();
+        }
+        off_args.extend(["--cells".into(), "off".into()]);
+        let out = jpp(&off_dir, &off_args);
+        assert!(
+            out.status.success(),
+            "{}（关）：{}",
+            c.name,
+            String::from_utf8_lossy(&out.stderr)
+        );
+        args.push("--cells-stats".into());
+        let out = jpp(&tmp, &args);
+        assert!(
+            out.status.success(),
+            "{}：{}",
+            c.name,
+            String::from_utf8_lossy(&out.stderr)
+        );
+        let mut report: Value =
+            serde_json::from_str(&fs::read_to_string(tmp.join("report.json")).unwrap()).unwrap();
+        let cells_v = report["cells"].take();
+        if let Some(m) = report.as_object_mut() {
+            m.remove("cells");
+        }
+        let off: Value = serde_json::from_str(&normalize(
+            &fs::read_to_string(off_dir.join("report.json")).unwrap(),
+            &off_dir,
+        ))
+        .unwrap();
+        let on: Value = serde_json::from_str(&normalize(&report.to_string(), &tmp)).unwrap();
+        if on != off {
+            rows.push(format!("!! {} 开关报告不同", c.name));
+        }
+        let ledger_on = normalize(&fs::read_to_string(tmp.join("ledger.json")).unwrap(), &tmp);
+        let ledger_off = normalize(
+            &fs::read_to_string(off_dir.join("ledger.json")).unwrap(),
+            &off_dir,
+        );
+        if ledger_on != ledger_off {
+            rows.push(format!("!! {} 开关账本不同", c.name));
+        }
+        report["cells"] = cells_v;
+        let cells = &report["cells"];
+        for k in [
+            "code_cells",
+            "code_hits",
+            "code_computed",
+            "unkeyable",
+            "impure",
+            "judge_cells",
+            "ledger_cells",
+        ] {
+            *sum.entry(k.to_string()).or_default() += cells[k].as_u64().unwrap_or(0);
+        }
+        rows.push(format!("{} {}", c.name, cells));
+    }
+    for r in &rows {
+        eprintln!("{r}");
+    }
+    eprintln!("合计 {sum:?}");
 }

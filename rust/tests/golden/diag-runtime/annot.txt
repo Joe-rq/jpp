@@ -1,0 +1,324 @@
+ir v1
+budget calls=12 cost=0.01 depth=64 escalate=- unsure=- latency_p95=- absent=-
+block 1035..1556
+  let diag_two_judgments_q : -
+    #0 construct test @0 3233..3329
+      #1 text "这道题里是否有两个或更多需要分别回答的判断？"
+      #2 text "diag-two-judgments"
+  let diag_in_material_q : -
+    #3 construct test @1 3356..3447
+      #4 text "上下文里那道题问的东西，这段材料里有没有？"
+      #5 text "diag-in-material"
+  fn-stmt diag_mat
+    #6 fn (q:-) -> - effects=- ; {"effect":{"known":[],"open":false},"summary":{"may_touch_world":false,"may_refresh":false},"duty_kind":null,"refresh_point":false}
+      block 3581..3723
+        result
+          #7 if @2 3587..3721
+            cond:
+              #8 binary ==
+                #9 field .template
+                  #10 name q
+                #11 unit
+            block 3609..3642
+              result
+                #12 call 3611..3640
+                  callee:
+                    #13 name mat
+                  #14 record 3615..3639
+                    op:
+                      #15 field .op
+                        #16 name q
+                    text:
+                      #17 field .text
+                        #18 name q
+            block 3652..3721
+              result
+                #19 call 3654..3719
+                  callee:
+                    #20 name mat
+                  #21 record 3658..3718
+                    op:
+                      #22 field .op
+                        #23 name q
+                    text:
+                      #24 field .text
+                        #25 name q
+                    template:
+                      #26 field .template
+                        #27 name q
+                    fill:
+                      #28 field .fill
+                        #29 name q
+  fn-stmt diag_notes
+    #30 fn (q:-) -> - effects=- ; {"effect":{"known":[],"open":true},"summary":{"may_touch_world":true,"may_refresh":true},"duty_kind":null,"refresh_point":false}
+      block 3855..3902
+        result
+          #31 call 3857..3900
+            callee:
+              #32 name content
+            #33 effect transform @3 3865..3899 ; {"effect":{"known":["transform"],"open":false},"summary":null,"duty_kind":null,"refresh_point":false}
+              f:
+                #34 text "diagnose"
+              args:
+                #35 call 3887..3898
+                  callee:
+                    #36 name diag_mat
+                  #37 name q
+  fn-stmt diag_codes
+    #38 fn (q:-) -> - effects=- ; {"effect":{"known":[],"open":true},"summary":{"may_touch_world":true,"may_refresh":true},"duty_kind":null,"refresh_point":false}
+      block 3952..3992
+        result
+          #39 call @4 3954..3990
+            callee:
+              #40 name map
+            #41 call 3958..3971
+              callee:
+                #42 name diag_notes
+              #43 name q
+            #45 fn (n:-) -> - effects=-
+              block 3979..3989
+                result
+                  #46 field .code
+                    #47 name n
+  fn-stmt diag_advise
+    #48 fn (o:-, what:-, advice:-) -> - effects=- ; {"effect":{"known":[],"open":false},"summary":{"may_touch_world":false,"may_refresh":false},"duty_kind":null,"refresh_point":false}
+      block 4130..4303
+        result
+          #49 construct outcome @5 4136..4301
+            #50 record 4144..4300
+              value:
+                #51 field .value
+                  #52 name o
+              pending:
+                #53 field .pending
+                  #54 name o
+              evidence:
+                #55 field .evidence
+                  #56 name o
+              resume:
+                #57 field .resume
+                  #58 name o
+              detail:
+                #59 call 4242..4299
+                  callee:
+                    #60 name with
+                  #61 call 4247..4280
+                    callee:
+                      #62 name with
+                    #63 field .detail
+                      #64 name o
+                    #65 text "diagnosis"
+                    #66 name what
+                  #67 text "advice"
+                  #68 name advice
+  fn-stmt diag_two_judgments
+    #69 fn (qs:-) -> - effects=[judge] ; {"effect":{"known":["judge"],"open":false},"summary":{"may_touch_world":false,"may_refresh":false},"duty_kind":null,"refresh_point":false}
+      block 4579..4816
+        let o : -
+          #70 construct sieve @6 4593..4659
+            #71 call @7 4599..4636
+              callee:
+                #72 name map
+              #73 name qs
+              #75 fn (q:-) -> - effects=-
+                block 4613..4635
+                  result
+                    #76 state @8 4615..4633
+                      on:
+                        #77 call 4621..4632
+                          callee:
+                            #78 name mat
+                          #79 field .text
+                            #80 name q
+            #81 name diag_two_judgments_q
+        result
+          #82 call 4665..4814
+            callee:
+              #83 name diag_advise
+            #84 name o
+            #85 text "two_judgments"
+            #86 text "act 的题藏了两个判断：拆成两道题，再用三值合取（all / 逐元素 ∧）组合"
+  fn-stmt diag_in_material
+    #87 fn (qs:-, m:-) -> - effects=[judge] ; {"effect":{"known":["judge"],"open":false},"summary":{"may_touch_world":false,"may_refresh":false},"duty_kind":null,"refresh_point":false}
+      block 5007..5266
+        let o : -
+          #88 construct sieve @9 5021..5097
+            #89 call @10 5027..5076
+              callee:
+                #90 name map
+              #91 name qs
+              #93 fn (q:-) -> - effects=-
+                block 5041..5075
+                  result
+                    #94 state @11 5043..5073
+                      on:
+                        #95 name m
+                      opts:
+                        #96 record 5052..5072
+                          ctx:
+                            #97 list 5058..5071
+                              #98 call 5059..5070
+                                callee:
+                                  #99 name mat
+                                #100 field .text
+                                  #101 name q
+            #102 name diag_in_material_q
+        result
+          #103 call 5103..5264
+            callee:
+              #104 name diag_advise
+            #105 name o
+            #106 text "in_material"
+            #107 text "ignore 的题问的东西不在这段材料里：换材料，或先问缺哪类信息、取来补进材料再判"
+  fn-stmt suggest_rewrite
+    #108 fn (q:-, notes:-) -> - effects=[gen] ; {"effect":{"known":["gen"],"open":false},"summary":{"may_touch_world":false,"may_refresh":true},"duty_kind":null,"refresh_point":false}
+      block 5610..5940
+        let why : -
+          #109 call 5626..5721
+            callee:
+              #110 name join
+            #111 call @12 5631..5714
+              callee:
+                #112 name map
+              #113 name notes
+              #115 fn (n:-) -> - effects=-
+                block 5648..5713
+                  result
+                    #116 if @13 5650..5711
+                      cond:
+                        #117 call 5653..5667
+                          callee:
+                            #118 name has
+                          #119 name n
+                          #120 text "code"
+                      block 5668..5694
+                        result
+                          #121 binary +
+                            #122 binary +
+                              #123 field .code
+                                #124 name n
+                              #125 text "："
+                            #126 field .fix
+                              #127 name n
+                      block 5700..5711
+                        result
+                          #128 call 5702..5709
+                            callee:
+                              #129 name text
+                            #130 name n
+            #131 text "\n"
+        result
+          #132 effect gen @14 5727..5938 ; {"effect":{"known":["gen"],"open":false},"summary":null,"duty_kind":null,"refresh_point":false}
+            prompt:
+              #133 text "下面第一段是一道交给判断器的是非题题面，第二段是对它的诊断。按诊断改写题面：只输出改写后的一道题面，不要解释。"
+            ctx:
+              #134 list 5908..5931
+                #135 call 5909..5920
+                  callee:
+                    #136 name mat
+                  #137 field .text
+                    #138 name q
+                #139 call 5922..5930
+                  callee:
+                    #140 name mat
+                  #141 name why
+            n:
+              #142 int 1
+            retry_seq:
+              #143 int 0
+  let note : -
+    #144 call 1090..1154
+      callee:
+        #145 name mat
+      #146 text "我上个月去了成都出差，顺便见了老朋友。"
+  let made : -
+    #147 effect gen @15 1167..1260 ; {"effect":{"known":["gen"],"open":false},"summary":null,"duty_kind":null,"refresh_point":false}
+      prompt:
+        #148 text "为下面这段话出三道是非题，每行一道，只输出题面。"
+      ctx:
+        #149 list 1247..1253
+          #150 name note
+      n:
+        #151 int 1
+      retry_seq:
+        #152 int 0
+  let texts : -
+    #153 call 1274..1303
+      callee:
+        #154 name split
+      #155 call 1280..1296
+        callee:
+          #156 name content
+        #157 index
+          #158 name made
+          #159 int 0
+      #160 text "\n"
+  let qs : -
+    #161 call @16 1314..1356
+      callee:
+        #162 name map
+      #163 name texts
+      #165 fn (t:-) -> - effects=-
+        block 1331..1355
+          result
+            #166 construct test @17 1333..1353
+              #167 name t
+              #168 text "diag-demo"
+  let answered : -
+    #169 construct sieve @18 1374..1391
+      #170 list 1380..1386
+        #171 name note
+      #172 name qs
+  result
+    #173 record 1393..1556
+      auto:
+        #174 call @19 1400..1452
+          callee:
+            #175 name map
+          #176 name qs
+          #178 fn (q:-) -> - effects=-
+            block 1414..1451
+              result
+                #179 record 1416..1449
+                  q:
+                    #180 field .text
+                      #181 name q
+                  codes:
+                    #182 call 1435..1448
+                      callee:
+                        #183 name diag_codes
+                      #184 name q
+      two_judgments:
+        #185 call 1470..1492
+          callee:
+            #186 name diag_two_judgments
+          #187 name qs
+      in_material:
+        #188 call 1508..1534
+          callee:
+            #189 name diag_in_material
+          #190 name qs
+          #191 name note
+      answered:
+        #192 name answered
+sites 20
+  @0 #0 construct:test 3233..3329 fn=- in=-
+  @1 #3 construct:test 3356..3447 fn=- in=-
+  @2 #7 if 3587..3721 fn=#6 in=-
+  @3 #33 effect:transform 3865..3899 fn=#30 in=-
+  @4 #39 hof:map 3954..3990 fn=#38 in=-
+  @5 #49 construct:outcome 4136..4301 fn=#48 in=-
+  @6 #70 construct:sieve 4593..4659 fn=#69 in=-
+  @7 #71 hof:map 4599..4636 fn=#69 in=@6
+  @8 #76 state 4615..4633 fn=#75 in=@7
+  @9 #88 construct:sieve 5021..5097 fn=#87 in=-
+  @10 #89 hof:map 5027..5076 fn=#87 in=@9
+  @11 #94 state 5043..5073 fn=#93 in=@10
+  @12 #111 hof:map 5631..5714 fn=#108 in=-
+  @13 #116 if 5650..5711 fn=#115 in=@12
+  @14 #132 effect:gen 5727..5938 fn=#108 in=-
+  @15 #147 effect:gen 1167..1260 fn=- in=-
+  @16 #161 hof:map 1314..1356 fn=- in=-
+  @17 #166 construct:test 1333..1353 fn=#165 in=@16
+  @18 #169 construct:sieve 1374..1391 fn=- in=-
+  @19 #174 hof:map 1400..1452 fn=- in=-

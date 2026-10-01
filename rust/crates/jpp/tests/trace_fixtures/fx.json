@@ -1,0 +1,9 @@
+{
+  "description": "C-2 证明示例的固定观察：ping 与 pong 互相把返回值当入口值，每段一次判断。",
+  "calibrations": [{"key": "k", "hi": 0.75, "lo": 0.25, "n": 1, "status": "上岗", "delta": 0.05}],
+  "observations": [
+    {"on": ["start"], "op": "test", "text": "ping 这段话行吗", "calib": "k", "answer": {"Noul": 0.9}},
+    {"on": ["ping-是"], "op": "test", "text": "pong 这段话行吗", "calib": "k", "answer": {"Noul": 0.9}},
+    {"on": ["pong-是"], "op": "test", "text": "ping 这段话行吗", "calib": "k", "answer": {"Noul": 0.9}}
+  ]
+}

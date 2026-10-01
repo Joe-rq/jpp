@@ -74,7 +74,7 @@ budget {{calls: 4, cost: 1, depth: 8}};
 let r = sieve(["一段程序自己写的材料", "另一段程序自己写的材料"], test("该发吗", "k"));
 let a = {聚合};
 {{sent: handle({守卫}, {{
-    act: fn() {{ content(do("发邮件", [], 0)) }},
+    act: fn() {{ (do("发邮件", [], 0)) }},
     ignore: fn() {{ "不发" }},
     unsure: fn(u) {{ u }}
 }}), pending: a.pending}}
@@ -109,7 +109,7 @@ budget {calls: 4, cost: 1, depth: 8};
 let r = sieve(["一段程序自己写的材料", "另一段程序自己写的材料"], test("该发吗", "k"));
 let t = tally(r);
 let ok = handle(t.value.exists, {act: fn() { true }, ignore: fn() { false }, unsure: fn(u) { consume(u, "drop"); false }});
-{sent: if ok { content(do("发邮件", [], 0)) } else { "不发" }, pending: t.pending}
+{sent: if ok { (do("发邮件", [], 0)) } else { "不发" }, pending: t.pending}
 "#;
     let e = 跑(src, 线::夹具).expect_err("聚合出口不是放行判定");
     assert!(e.contains("J-08"), "{e}");
@@ -120,10 +120,10 @@ let ok = handle(t.value.exists, {act: fn() { true }, ignore: fn() { false }, uns
 fn e_正式线上的聚合出口放行_分量合取() {
     for 守卫 in ["a.value.exists", "a.value.all"] {
         let v = 跑(&程序("tally(r)", 守卫), 线::正式).expect("分量全是正式线：放行");
-        assert_eq!(v["sent"], Json::from("已发"), "{守卫}");
+        assert_eq!(v["sent"]["content"], Json::from("已发"), "{守卫}");
     }
     let v = 跑(&程序("first_k(r, 1)", "a.value.exit"), 线::正式).expect("同上");
-    assert_eq!(v["sent"], Json::from("已发"));
+    assert_eq!(v["sent"]["content"], Json::from("已发"));
 }
 
 /// 正式线 k 与试用线 t 都在库里（(h)(i) 用）
@@ -143,7 +143,7 @@ fn 跑两线(src: &str) -> Result<Json, String> {
 }
 
 const 发臂: &str =
-    r#"{act: fn() { content(do("发邮件", [], 0)) }, ignore: fn() { "不发" }, unsure: fn(u) { u }}"#;
+    r#"{act: fn() { (do("发邮件", [], 0)) }, ignore: fn() { "不发" }, unsure: fn(u) { u }}"#;
 
 /// (h) 一个分量是试用线：合取为假，整体不放行。
 #[test]
@@ -182,13 +182,13 @@ fn f_对照_正式线上直接切出的出口放行() {
     let src = r#"
 budget {calls: 4, cost: 1, depth: 8};
 handle(cut(judge(state(mat("一段程序自己写的材料")), test("该发吗", "k"))), {
-    act: fn() { content(do("发邮件", [], 0)) },
+    act: fn() { (do("发邮件", [], 0)) },
     ignore: fn() { "不发" },
     unsure: fn(u) { u }
 })
 "#;
     let v = 跑(src, 线::正式).expect("正式线、可信材料上的 act 出口放行不可逆 do");
-    assert_eq!(v, Json::from("已发"));
+    assert_eq!(v["content"], Json::from("已发"));
     // 同一程序换成夹具线，直接切出的出口被拒：本文件的线等级确实起作用
     let e = 跑(src, 线::夹具).expect_err("夹具线上直接切出的出口不放行");
     assert!(e.contains("J-08"), "{e}");

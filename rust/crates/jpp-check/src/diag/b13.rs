@@ -258,15 +258,18 @@ fn two_judgments(text: &str, what: &str, span: Span) -> Option<Diagnostic> {
     let 是否 = text.matches("是否").count();
     let 连接 = ["并且", "而且"].iter().find(|w| text.contains(*w));
     let 既又 = text.contains('既') && text.contains('又');
-    if 是否 < 2 && 连接.is_none() && !既又 {
+    let 英文 = two_judgments_en(text);
+    if 是否 < 2 && 连接.is_none() && !既又 && 英文.is_none() {
         return None;
     }
     let why = if 是否 >= 2 {
         format!("出现 {是否} 处「是否」")
     } else if let Some(w) = 连接 {
         format!("用「{w}」连接两个条件")
-    } else {
+    } else if 既又 {
         "用「既…又…」连接两个条件".to_string()
+    } else {
+        英文.unwrap_or_default()
     };
     // 依据：B13（12 §3 J-17 后「诊断层规则集第一批」）
     Some(Diagnostic::warning(
@@ -374,7 +377,11 @@ fn meta(text: &str, what: &str, span: Span) -> Option<Diagnostic> {
         "helpful",
         "useful for",
     ];
-    let hit = 元题.iter().find(|w| contains_ci(text, w))?;
+    let hit = 元题
+        .iter()
+        .find(|w| contains_ci(text, w))
+        .map(|w| w.to_string())
+        .or_else(|| meta_shape(text))?;
     // 依据：B13（12 §3 J-17 后「诊断层规则集第一批」）
     Some(Diagnostic::warning(
         "W-diag-meta",
@@ -383,6 +390,88 @@ fn meta(text: &str, what: &str, span: Span) -> Option<Diagnostic> {
         ),
         span,
     ))
+}
+
+// ---------------------------------------------------------------- 按题面形状（Z0534）
+
+/// 英文单词（小写，按非字母数字切开）
+fn words_en(text: &str) -> Vec<String> {
+    text.to_lowercase()
+        .split(|c: char| !c.is_ascii_alphanumeric())
+        .filter(|w| !w.is_empty())
+        .map(String::from)
+        .collect()
+}
+
+/// 元题的形状：问「这份东西对某个判断有没有用」。英文要帮助类词**直接支配**判断动词（Z0534 复核收窄）：
+/// `help` / `helps` / `helping` 紧接判断动词，或中间只隔一个 `to`；`helpful` / `useful` / `relevant` / `informative`
+/// 后接 `for` / `in` / `to` 再紧接判断动词。判断类只留动词形——answer 与名词 decision、judgment 在真题里常指
+/// 别人的回答、决定（「Does the response help answer…」「relevant to the court's decision」），不算。
+/// 已知误报：「Did the manager help decide the budget?」与「help decide」这类元题形状相同，分不开。
+/// 中文按字面：帮助、有用、用处之一与判断、回答、决定、确定、评估之一同时出现。返回命中的那一段（给报文用）
+fn meta_shape(text: &str) -> Option<String> {
+    const 判: &[&str] = &[
+        "judge",
+        "judging",
+        "decide",
+        "deciding",
+        "determine",
+        "determining",
+        "assess",
+        "assessing",
+        "evaluate",
+        "evaluating",
+    ];
+    let ws = words_en(text);
+    let at = |i: usize| ws.get(i).map(|w| w.as_str()).unwrap_or("");
+    for i in 0..ws.len() {
+        let w = at(i);
+        if ["help", "helps", "helping"].contains(&w) {
+            if 判.contains(&at(i + 1)) {
+                return Some(format!("{w} {}", at(i + 1)));
+            }
+            if at(i + 1) == "to" && 判.contains(&at(i + 2)) {
+                return Some(format!("{w} to {}", at(i + 2)));
+            }
+        }
+        if ["helpful", "useful", "relevant", "informative"].contains(&w)
+            && ["for", "in", "to"].contains(&at(i + 1))
+            && 判.contains(&at(i + 2))
+        {
+            return Some(format!("{w} {} {}", at(i + 1), at(i + 2)));
+        }
+    }
+    const 帮中: &[&str] = &["帮助", "有用", "用处"];
+    const 判中: &[&str] = &["判断", "回答", "决定", "确定", "评估"];
+    let a = 帮中.iter().find(|w| text.contains(*w))?;
+    let b = 判中.iter().find(|w| text.contains(*w))?;
+    Some(format!("{a}…{b}"))
+}
+
+/// 英文一题两问的形状：两处 whether；both … and；and / or 之后紧跟一个以助动词开头的第二个问句（助动词后还有词作主语）。
+/// 名词、形容词并列（and 后没有助动词）不算
+fn two_judgments_en(text: &str) -> Option<String> {
+    const 助: &[&str] = &[
+        "is", "are", "was", "were", "does", "do", "did", "has", "have", "had", "can", "could",
+        "will", "would", "should", "may", "might",
+    ];
+    let ws = words_en(text);
+    let whether = ws.iter().filter(|w| w.as_str() == "whether").count();
+    if whether >= 2 {
+        return Some(format!("出现 {whether} 处「whether」"));
+    }
+    if let Some(i) = ws.iter().position(|w| w == "both") {
+        if ws[i + 1..].iter().any(|w| w == "and") {
+            return Some("用「both … and」连接两个条件".to_string());
+        }
+    }
+    for i in 0..ws.len() {
+        if (ws[i] == "and" || ws[i] == "or") && i + 2 < ws.len() && 助.contains(&ws[i + 1].as_str())
+        {
+            return Some(format!("用「{} {}」起第二个问句", ws[i], ws[i + 1]));
+        }
+    }
+    None
 }
 
 // ---------------------------------------------------------------- 助手

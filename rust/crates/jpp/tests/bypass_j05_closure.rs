@@ -82,10 +82,11 @@ fn 唯一路径的方法调用两次是j05() {
 
 #[test]
 fn 唯一路径的方法丢弃是j05并指出那个方法() {
-    let Err((rule, msg)) = 跑(&唯一路径.replace("TAIL", "1")) else {
-        panic!("唯一路径被丢弃应当报 J-05")
-    };
-    assert_eq!(rule.as_deref(), Some("J-05"));
+    // G2（步 35）：原断言「运行期错误 J-05」，改为程序结束记一笔违规（单次形态），报文照旧指出唯一路径
+    let o = 跑(&唯一路径.replace("TAIL", "1"))
+        .unwrap_or_else(|e| panic!("违规不再是运行期错误：{e:?}"));
+    assert_eq!(o.violations.len(), 1, "唯一路径被丢弃记一笔违规");
+    let msg = &o.violations[0].message;
     assert!(msg.contains("Fn¹"), "报文要说出唯一路径是哪个方法：{msg}");
     assert!(
         msg.find("转交").unwrap() < msg.find("drop").unwrap(),
@@ -96,10 +97,14 @@ fn 唯一路径的方法丢弃是j05并指出那个方法() {
 #[test]
 fn 用掉的唯一路径不再算转交() {
     // 调用一次、丢掉那次的结果、再把方法本身返回：方法不能再调用，经它「可达」只是字面上的
-    let Err((rule, _)) = 跑(&唯一路径.replace("TAIL", "let a = k();\nk")) else {
-        panic!("用掉的 Fn¹ 不是责任的路径，应当报 J-05")
-    };
-    assert_eq!(rule.as_deref(), Some("J-05"));
+    // G2（步 35）：原断言「运行期错误 J-05」，改为程序结束记一笔违规
+    let o = 跑(&唯一路径.replace("TAIL", "let a = k();\nk"))
+        .unwrap_or_else(|e| panic!("违规不再是运行期错误：{e:?}"));
+    assert_eq!(
+        o.violations.len(),
+        1,
+        "用掉的 Fn¹ 不是责任的路径，记一笔违规"
+    );
 }
 
 #[test]

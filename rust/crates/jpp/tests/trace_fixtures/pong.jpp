@@ -1,0 +1,4 @@
+// C-2 证明示例的另一半：见 ping.jpp。
+budget {calls: 2, cost: 1};
+let e = cut(judge(state(mat(input.a)), test("pong 这段话行吗", "k")));
+handle(e, {act: fn() { "pong-是" }, ignore: fn() { "pong-否" }, unsure: fn(u) { consume(u, "drop"); "pong-未决" }})

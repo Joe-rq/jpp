@@ -1,4 +1,18 @@
 {
+  "action_facts": {
+    "read_json": {
+      "conditions": [],
+      "reason": "只读一个文件并解析，不写任何东西",
+      "reversibility": "reversible"
+    },
+    "write_json": {
+      "conditions": [
+        "path 指向已存在文件时原内容丢失；指向新路径时留下新文件"
+      ],
+      "reason": "创建或覆盖 path 指向的宿主文件；运行时不备份原内容，也没有删除或还原的动作，写完就无法由运行时撤回",
+      "reversibility": "irreversible"
+    }
+  },
   "backend": "fixed-0",
   "cost": {
     "asks": 0,
@@ -32,6 +46,24 @@
       }
     }
   ],
+  "plan": {
+    "calls": {
+      "kind": "at_least",
+      "lo": 0
+    },
+    "cost_usd": {
+      "kind": "unknown",
+      "reason": "price_not_given"
+    },
+    "latency_s": {
+      "kind": "unknown",
+      "reason": "untested:concurrency.latency_s.p95"
+    },
+    "layers": {
+      "kind": "at_least",
+      "lo": 0
+    }
+  },
   "questions": [
     {
       "kind": "attr",

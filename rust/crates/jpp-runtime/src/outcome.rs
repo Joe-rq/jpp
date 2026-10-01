@@ -14,8 +14,31 @@ impl<'a> Interp<'a> {
     ) -> Result<Outcome, RtError> {
         self.plan = plan;
         self.hooks = hooks;
+        // 步 30 / B0488：读数站点的 `span.start → SiteId` 表（层内挑选取下游层数用）；同一起点多个候选的不收
+        {
+            use jpp_ir::ir::{ConsumeHow, SiteKind};
+            let mut 重: HashSet<usize> = HashSet::new();
+            for s in &program.sites.sites {
+                let 读数 = match &s.kind {
+                    SiteKind::Effect(e) => jpp_effects::spec(*e).produces_reading,
+                    SiteKind::Consume(ConsumeHow::Literalize) | SiteKind::Construct(_) => true,
+                    _ => false,
+                };
+                if !读数 {
+                    continue;
+                }
+                if self.站点表.insert(s.span.start, s.id).is_some() {
+                    重.insert(s.span.start);
+                }
+            }
+            for k in 重 {
+                self.站点表.remove(&k);
+            }
+        }
         // 放行把关只有一个来源：`Program.entry.guard`（意图汇编 11a），检查器读同一位
         self.guard = program.entry.guard;
+        // 「无作者去向」站点（B0492 S2c）：检查器算好、编译时写进 IR
+        self.默认链站点 = program.unsure_default_sites.clone();
         // B155（步 15i）：账本头记的渲染版本与本二进制不同时——只凭账本重放按旧版本算判断键（不发请求，
         // 旧账本照样命中），新头也写旧版本（重放写出的账本头与键一致，能再次重放），另报 `W-header` 说明
         // 本二进制的渲染版本不同；续接会发新请求，同一账本混两种渲染违反 B48，拒绝。依据：B155、B48、B30
@@ -52,10 +75,33 @@ impl<'a> Interp<'a> {
         // 账本 v3（步 18a，B124）：头在 run() 入口定稿、之后不再改；命中的校准记录在 `CalibUsed` 条目，
         // 入口与当前校准视图逐键比（比对函数在 `jpp-ledger`，B77 的两种场合、B83 的报文都在那里）。
         let calib = self.calib;
+        // C-3：进门收紧（审计重放取账本头里的余额，其余取宿主给的）；账本头的 `budget` 仍记程序声明，余额另记 `carry`
+        let 声明 = self.budget.clone();
+        // G4b 附录一：审计重放写回头时照抄原账本的 `depth_cap_default`（在换头之前取）
+        let 旧头深度默认 = self
+            .ledger
+            .view()
+            .header
+            .as_ref()
+            .and_then(|h| h.depth_cap_default);
+        let 本趟 = self.进门收紧();
+        // C-3 D1：这一趟没带余额、账本头记着本段余额时，新头照抄旧头的余额与段起点（不清掉）。这一趟不写 `Spent`，
+        // 它的花费在下一趟被认成「未记」：下一趟带余额时按旧文件处理、补结清，整场上限不会因为漏传一趟而丢掉
+        let 旧头余额 = if 本趟.is_none() {
+            self.ledger
+                .view()
+                .header
+                .as_ref()
+                .and_then(|h| h.carry.clone().map(|c| (c, h.carry_from)))
+        } else {
+            None
+        };
+        // 本段的进门余额：交回余额按它从账本算（续跑时它是这一轮首趟的余额，不是本趟的剩余）
+        let 进门余额 = 本趟.as_ref().map(|t| t.segment.clone());
         let 头告警 = self.ledger.open_run(
             Header::new(
-                self.budget.calls,
-                self.budget.cost,
+                声明.calls,
+                声明.cost,
                 &self.model_id,
                 // B155：只凭账本重放旧渲染的账本时写账本的版本（与键一致），其余是 `RENDER_VERSION`
                 &self.render,
@@ -74,7 +120,29 @@ impl<'a> Interp<'a> {
             .with_gen(
                 self.复用.gen_model.clone(),
                 self.复用.gen_profile_hash.clone(),
-            ),
+            )
+            // 标准库与题库版本（步 27，B48）：没装载时都为 None，账本逐字节不变
+            .with_versions(
+                self.复用.lib_version.clone(),
+                self.复用.bank_version.clone(),
+            )
+            .with_carry(
+                本趟
+                    .as_ref()
+                    .map(|t| t.segment.record().clone())
+                    .or_else(|| 旧头余额.as_ref().map(|(c, _)| c.clone())),
+                本趟
+                    .as_ref()
+                    .map(|t| t.from)
+                    .or_else(|| 旧头余额.as_ref().and_then(|(_, f)| *f)),
+            )
+            // G4b（裁定六十四）：本趟用到引擎默认（带余额，或程序没声明 budget.depth）时记下它，重放以它为准；
+            // 附录一：审计重放写回的头照抄原账本这一项（原来没有就不补写）
+            .with_depth_cap_default(if self.audit.on {
+                旧头深度默认
+            } else {
+                (本趟.is_some() || 声明.depth.is_none()).then_some(self.深度默认())
+            }),
             场合,
             &|k: &str| calib.record_json(k),
         );
@@ -94,6 +162,12 @@ impl<'a> Interp<'a> {
             }
             Err(e) => return Err(self.账本写不进(&e, program.span)),
         }
+        // C-3：前一趟被杀、花费没被记上时，开跑前补一条结清（交回余额不会在后面的续跑里长回来）
+        if let Err(Fault::Error(e)) = self.记结清(&本趟) {
+            return Err(e);
+        }
+        // G4（裁定五十九第 7、17 条，裁定六十二第 1 条）：上游传来的深度已到上限时不再「整轮不开跑」——`进门收紧` 置
+        // `深度停`，这一趟照常求值，判断一律不发（`Unsure(depth)`、`Unasked`、`Stop`），效应产出失败值，欠账照常结算
         // `budget.escalate` 是**问人的总次数上限**，不是「每次运行 k 次」（12:177、:180
         // 「恢复 = 从头重跑…ask 的答案作为账本条目参与重放」）。核上限时要把账本里**已经问过**的
         // 那些算进去——否则上限 2 在三轮恢复里能问到 6 次人。问人是最贵的效应，这个方向是多花钱。
@@ -122,6 +196,8 @@ impl<'a> Interp<'a> {
             exits: vec![],
             cuts: vec![],
             returns_exit: true,
+            过桥: 0,
+            主人: String::new(),
         });
         let env = env_child(&root_env());
         // 宿主入口参数（B105）：绑定在程序最外层之外，程序自己的同名 `let` 照常遮蔽它。
@@ -149,16 +225,28 @@ impl<'a> Interp<'a> {
                 .insert(bound.hash.clone(), m.name.clone());
             env_define(&env, &m.name, Value::Mat(Rc::new(bound)));
         }
-        // 运行时读 IR（步 12c）；步 12d 起入参就是降级产出的 IR
-        let result = self.eval_block(&program.body, &env).and_then(|v| {
+        // 伴随题序言（B0492 S5，主控 2026-09-30 路 A）：程序体之前求值，取标准题式
+        // C2b：序言求值之后开程序单元的这一次尝试（序言不进单元图，3.8；每趟开新宿主纪元，C2a 复核第 1 条）
+        let result = self
+            .求值序言()
+            .map(|_| self.单元开尝试(program))
+            .and_then(|_| self.eval_block(&program.body, &env))
+            .and_then(|v| {
             // 刷新点：程序结束（登记了却没人读的判断，到这里也要发出并记账）
             self.flush("end")?;
             // 程序返回前解析顶层帧的惰性出口（B94：返回值离开程序是检视点）
             self.解析本帧()?;
             // B160：程序结束收齐在飞的生成（结束的刷新已把登记着的交出），层内条目按登记序入账
             self.收层()?;
-            // 推错的那些：推测花了调用、花了预算，**花掉的必须留痕**。
-            let 没用上: Vec<&String> = self.speculated.iter().filter(|k| !self.speculation_used.contains(*k)).collect();
+            // G2（B200）：按有无违规结算推迟的不可逆 `do`。随返回值交出它的值不算「同一次运行里读它」——那是把要做的事
+            // 写进结论；结算后句柄填上动作的产出（扣下的填失败值），返回值里看得到
+            let 有违规 = self.预判违规(&v);
+            self.结算推迟(有违规)?;
+            // 推错的那些：推测花了调用、花了预算，**花掉的必须留痕**。只报「发出、跨状态、没用上」三者同时成立的
+            // （B51-C1、`21`:291，步 22 / B0487）：`speculated` 由刷新维护为发出了的跨状态推测键（`flush.rs`），
+            // 同状态并进真站点调用的、因预算没发出的不在里面。例子按键排序，报文不随哈希集迭代序变
+            let mut 没用上: Vec<&String> = self.speculated.iter().filter(|k| !self.speculation_used.contains(*k)).collect();
+            没用上.sort();
             if !没用上.is_empty() {
                 let n = 没用上.len();
                 let 例 = 没用上.iter().take(3).map(|k| 头(k, 8)).collect::<Vec<_>>().join(", ");
@@ -176,17 +264,42 @@ impl<'a> Interp<'a> {
         let result = match result {
             Err(Fault::Error(e)) => {
                 let _ = self.收层();
+                // G2 附录三（Z0564）：没走到结算的推迟动作写 Withheld(error)；写不进去不盖过原错
+                let _ = self.扣下推迟(jpp_ledger::WithheldCause::Error);
+                // G5 附录二：趟标记（三条路都写）
+                self.写趟标记();
                 let _ = self.层末落盘();
                 Err(Fault::Error(e))
             }
             r @ Err(Fault::Halt(_)) => {
                 let _ = self.收层();
+                // G2 附录三（Z0564）：挂起时没走到结算的推迟动作写 Withheld(suspended)，续接时照常再推迟
+                self.扣下推迟(jpp_ledger::WithheldCause::Suspended)
+                    .and_then(|_| {
+                        self.写趟标记();
+                        self.层末落盘()
+                    })
+                    .and(r)
+            }
+            r => {
+                self.写趟标记();
                 self.层末落盘().and(r)
             }
-            r => self.层末落盘().and(r),
         };
         // 步 19：复用计数先取出（下面两臂会把 self 的字段移走）
         let 复用 = self.复用统计();
+        // C-3：交给下一轮的余额（下面两臂会把 self 的字段移走，先算）
+        // 本轮花费进账本（三条路都写；出错这条路写不进也照报原错），交回余额从账本算——与失败后、重放时同一个算法
+        // Z0384 R11：账本头记着本段余额、这一趟没带余额时也写（照抄了旧头），这一趟的花费照记进本段
+        if (进门余额.is_some() || 旧头余额.is_some())
+            && let Err(Fault::Error(e)) = self.记花费(true)
+            && !matches!(result, Err(Fault::Error(_)))
+        {
+            return Err(e);
+        }
+        let 交回 = 进门余额.as_ref().map(|c| c.after_round(self.ledger.view()));
+        // 伴随题的报告段（B0492 S5）：下面两臂会把 self 的字段移走，先算
+        let 伴随报告 = self.伴随报告();
         match result {
             Ok(v) => {
                 let frame = self.frames.pop().unwrap();
@@ -195,6 +308,8 @@ impl<'a> Interp<'a> {
                 // B162：责任按账本键计，同键的另一个持有者在返回值里或键已解除即有去向
                 let 值键 = crate::duty::值里的键(&v);
                 let mut returned = vec![];
+                // C-1：随返回值交到程序结果的未决，按 frame.exits 的顺序记 Handoff
+                let mut 交出: Vec<Rc<Exit>> = vec![];
                 for e in frame
                     .exits
                     .iter()
@@ -212,6 +327,7 @@ impl<'a> Interp<'a> {
                                 e.consumed.set(true);
                                 *e.consumed_by.borrow_mut() = "returned:view".into();
                                 returned.push(e.label());
+                                交出.push(e.clone());
                                 continue;
                             }
                             None => {}
@@ -221,20 +337,45 @@ impl<'a> Interp<'a> {
                         e.consumed.set(true);
                         *e.consumed_by.borrow_mut() = "returned".into();
                         returned.push(e.label());
+                        交出.push(e.clone());
                     } else {
-                        return Err(RtError::new(
-                            Some("J-05"),
-                            format!(
-                                "程序结束时有未消费的 {}（题 {}）。{}",
-                                e.label(),
-                                头(&e.q_hash, 8),
-                                self.j05_fix(e)
-                            ),
-                            e.site,
-                        ));
+                        // G2（`12` R9 单次形态，主控定第 1、2 条）：不再报运行期 J-05，记一笔违规，值照带
+                        let e = e.clone();
+                        self.记一笔违规(&e);
+                    }
+                }
+                // C-1：Handoff 写在最后一次落盘之后，这里补落一次；G2：违规写在转交之后，扣下的推迟动作写在违规之后
+                // （附录三：Violation 在引用它的 Withheld 之前）
+                if !交出.is_empty() || !self.违规.is_empty() || !self.推迟.is_empty() {
+                    self.记转交(&交出);
+                    self.写违规账();
+                    if let Err(Fault::Error(e)) =
+                        self.扣下推迟(jpp_ledger::WithheldCause::Violation)
+                    {
+                        return Err(e);
+                    }
+                    match self.层末落盘() {
+                        Err(Fault::Error(e)) => return Err(e),
+                        Err(Fault::Halt(_)) | Ok(()) => {}
                     }
                 }
                 self.drop_then_return(&v, &in_value);
+                // C2b：程序单元这一次尝试有结论，按 R2 发布（只在内存里；违规已在上面记下，这一版落「未决（violation）」）
+                self.单元结束尝试(Some(&v));
+                let 单元 = self.单元统计();
+                // 审计重放核去向事件（主控 2026-09-29，W-replay-duty）：程序结束的转交已写完之后核
+                self.核重放去向();
+                // J-05 默认链（B0492 S2）：仍未决的（记账放弃或转交）一趟报一次，带条数
+                let 未决 = self
+                    .默认链记录
+                    .iter()
+                    .filter(|r| r["end"] != "decided")
+                    .count();
+                if 未决 > 0 {
+                    self.trace.warn(format!(
+                        "W-unsure-default: {未决} 个未决没写去向，走了语言的默认链（问缺哪类信息、取来再判）仍拿不准：判过而拿不准的已记账放弃，没观察到的随值交出（值被丢掉则记违规）。逐条见报告 unsure_default 段。要自己定去向，给 handle 写 unsure 臂"
+                    ));
+                }
                 if !returned.is_empty() {
                     self.trace
                         .warn(format!("returned_unsure: {}", returned.join(", ")));
@@ -269,30 +410,55 @@ impl<'a> Interp<'a> {
                     },
                     budget: self.预算停.clone(),
                     cache: 复用,
+                    carry: 交回,
+                    selections: self.挑选记录,
+                    unsure_default: std::mem::take(&mut self.默认链记录),
+                    improve: 伴随报告,
+                    orders: std::mem::take(&mut self.并档记录),
+                    violations: std::mem::take(&mut self.违规)
+                        .into_iter()
+                        .map(|v| v.report)
+                        .collect(),
+                    settle_failed: std::mem::take(&mut self.结算失败),
+                    cells: 单元,
                 })
             }
-            Err(Fault::Halt(p)) => Ok(Outcome {
-                // 挂起等人工回答（ask）：已交出的生成先取回记账（步 15h-2），续接时从账本取
-                value: {
-                    let _ = self.收层();
-                    None
-                },
-                pending: vec![p],
-                trace: self.trace,
-                cost: self.cost,
-                returned_unsure: vec![],
-                duties: vec![],
-                layers: self.layers,
-                evidence: self.evidence,
-                exits: self.exit_grades,
-                questions: self.questions,
-                suspend_candidates: {
-                    let mut v: Vec<String> = self.drift_reported.iter().cloned().collect();
-                    v.sort();
-                    v
-                },
-                budget: self.预算停.clone(),
-                cache: 复用,
+            Err(Fault::Halt(p)) => Ok({
+                self.核重放去向();
+                // C2b：挂起的这一次尝试没有结论，发布「进行中」
+                self.单元结束尝试(None);
+                let 单元 = self.单元统计();
+                Outcome {
+                    // 挂起等人工回答（ask）：已交出的生成先取回记账（步 15h-2），续接时从账本取
+                    value: {
+                        let _ = self.收层();
+                        None
+                    },
+                    pending: vec![p],
+                    trace: self.trace,
+                    cost: self.cost,
+                    returned_unsure: vec![],
+                    duties: vec![],
+                    layers: self.layers,
+                    evidence: self.evidence,
+                    exits: self.exit_grades,
+                    questions: self.questions,
+                    suspend_candidates: {
+                        let mut v: Vec<String> = self.drift_reported.iter().cloned().collect();
+                        v.sort();
+                        v
+                    },
+                    budget: self.预算停.clone(),
+                    cache: 复用,
+                    carry: 交回,
+                    selections: self.挑选记录,
+                    unsure_default: std::mem::take(&mut self.默认链记录),
+                    improve: 伴随报告,
+                    orders: self.并档记录,
+                    violations: vec![],
+                    settle_failed: vec![],
+                    cells: 单元,
+                }
             }),
             Err(Fault::Error(e)) => {
                 // 运行期出错：已交出的生成照样收齐入账（钱已经花了，`13` §5；B160），没交出的不交；收层本身的错不盖过原错
@@ -411,7 +577,12 @@ impl<'a> Interp<'a> {
                 };
                 if !calls.contains(&id) {
                     calls.push(id);
-                    usd += cost;
+                    // 合批只在首条记费（L7 2026-09-28）：有调用号的按整次调用的费用计，不看这一条自己的 cost
+                    usd += if *call == 0 {
+                        *cost
+                    } else {
+                        self.调用费(*call).max(*cost)
+                    };
                 }
             }
         }

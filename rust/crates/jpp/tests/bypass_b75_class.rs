@@ -4,6 +4,8 @@
 //! 类线出口守卫不可逆 `do` → J-08 拒。
 //! 依据：B75（`地基/附注/2026-09-24-评估①裁定.md` §五；`12` §2.2 B34 条、§2.3 混合样本条；`20` §3.4、§3.8）；`21` 步 20f。
 
+// 伴随题「最缺哪类」是 K 选一：替身经 common::伴随中性judge 给伴随元题中性读数（Z0398 返修，过程记录 5.23）
+mod common;
 use jpp::effects::{CalibStore, EffectError, FnPort, JudgeResult, Ports};
 use jpp::interp::{ActionRegistry, TaintOut};
 use jpp::ledger::Ledger;
@@ -15,7 +17,7 @@ use serde_json::{Value as Json, json};
 /// 判断恒给 0.97，不该生成、不该问人（步 15c：原 `impl Client` 的桩改为三个闭包端口；无状态，故 'static）
 fn 桩端口() -> Ports<'static> {
     Ports::new()
-        .with(FnPort::judge("m", |_s, qs| {
+        .with(common::伴随中性judge("m", |_s, qs| {
             Ok(JudgeResult {
                 answers: qs.iter().map(|_| Answer::Noul(0.97)).collect(),
                 tokens: 0,

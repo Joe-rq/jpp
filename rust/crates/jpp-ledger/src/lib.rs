@@ -8,6 +8,14 @@
 //! v2（步 7 至 18c）报 `E-ledger-v2`，经 `jpp::store::migrations::ledger_v2` 迁移（`jpp ledger-migrate`，
 //! 或 CLI 读入时在内存里迁移），旧二进制在标签 `ledger-v2-archive`；v1 报 `E-ledger-archived`，
 //! 用标签 `ledger-v1-archive` 的二进制重放。
+//!
+//! **格式 v5（步 34 V5，B196）**：一次声明骨架 v1 的全部事件（`12` §2.13 R13，冻结清单 §4.1）：不定输入
+//! `Attempt`、`Flush`、`HostEvent`、`Merge`、`Opaque`、`Transparent`；契约性结果 `Publish`、`Duty`、`Violation`、
+//! `Unasked`、`Stop`、`Withheld`（B200）。结构在 [`skeleton`] 模块。本步只声明，运行时照旧写 v4 的条目，
+//! 新事件由 C3、G2、G4 开始写。删 `Halt`（从未构造，由 `Stop` 取代）。账本头的 schema 就是头行 `version`；
+//! `HeaderCompared` 加 `trace`、`segments`、`key_version`（为空不写）。`CarryRecord` 的 `depth_at` 改名 `hop`
+//! （旧名照读）、加 `round`。v3、v4 照读不迁移，v4 旧二进制在标签 `ledger-v4-archive`。
+//! 过程记录 `地基/过程记录/工程-V5-账本格式.md`。
 //! 依据：`20` §2.3 `jpp-ledger`、§3.7、§九 账本行；`21` §三·4 步 7、E5；B40、B59、B61。
 //!
 //! **步 10（R）**：自 `jpp-core::ledger` 原样搬成 crate `jpp-ledger`（只依赖 `jpp-ir`、`jpp-value`），
@@ -29,15 +37,30 @@ mod port;
 pub use port::{Durability, LedgerError, LedgerPort};
 
 pub use jpp_ir::key::{
-    CacheKey, CalibRef, EffectKey, JudgeKey, RENDER_VERSION, effect_key, judge_key,
+    CacheKey, CalibRef, EffectKey, JudgeKey, RENDER_VERSION, SpanId, TraceCtx, TraceId, effect_key,
+    judge_key,
+};
+mod tree;
+pub use tree::{SpanNode, TraceGroup, TraceTree, Untraced};
+pub mod skeleton;
+pub use skeleton::{
+    AttemptRef, DebtMark, Duty, DutyClass, DutyForm, FlushCall, FlushQuestion, FrameKind,
+    MergeKind, OpaqueDecl, Peek, PortRead, PubState, Segment, Snapshot, StopCause, VersionAt, Via,
+    WithheldCause,
 };
 
-/// 账本格式版本（步 18a 起 3）。
-pub const LEDGER_VERSION: u32 = 3;
+/// 账本格式版本（步 18a 起 3；C-1 起 4：加未决去向事件的六个变体；C-2 的追踪字段并进同一个 v4：
+/// 行外壳 `{seq, prev, entry, trace}` 的 `trace` 可缺省，没有它的 v4 账本照读，见 [`EntryLine`]；
+/// 步 34 V5 起 5：骨架事件一次声明，B196）。头行的 `version` 就是冻结清单 §4.1 账本头的 `schema`。
+pub const LEDGER_VERSION: u32 = 5;
+/// 本二进制照读的旧版本：v3、v4 的条目集合是 v5 的子集（`Halt` 从未构造），不迁移（C-1 Z0207 第 1 条；V5）。
+pub const LEDGER_READS_AS_IS: [u32; 2] = [3, 4];
 /// v1 账本的归档标签：只由这个标签处的二进制重放（`21` E5）。
 pub const V1_ARCHIVE_TAG: &str = "ledger-v1-archive";
 /// v2 账本的归档标签（步 18a 格式变更前，`21` E5）。v2 另有迁移（`jpp::store::migrations::ledger_v2`）。
 pub const V2_ARCHIVE_TAG: &str = "ledger-v2-archive";
+/// v4 二进制的归档标签（步 34 V5 格式变更前，`21` E5）。v4 账本本二进制照读，标签只为留住 v4 二进制。
+pub const V4_ARCHIVE_TAG: &str = "ledger-v4-archive";
 
 /// 一条来源边（账本 v3 的 `output_mat.sources`，B84、B92）：直接来源读数的账本键、边的种类、题哈希。
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -71,8 +94,8 @@ pub struct PermMeasure {
 }
 
 /// 账本条目。每个变体的字段集合是封闭的：解码遇未知字段报错并指名（`12` §2.11「无声吞掉一个字段」通则）。
-/// `reused_from`、`Intent`、`Halt` 先存在、恒为空或不产生，由步 19、18b、22 填；`calib_ref` 的
-/// `key`/`kind`/`fill` 由 20a-2 填（B124，账本格式不再变，`21` ET1）。
+/// `reused_from`、`Intent` 先存在、恒为空或不产生，由步 19、18b 填；`calib_ref` 的
+/// `key`/`kind`/`fill` 由 20a-2 填（B124，账本格式不再变，`21` ET1）。`Halt` 在 V5 删去（从未构造，B93；由 `Stop` 取代）。
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub enum Entry {
@@ -82,6 +105,9 @@ pub enum Entry {
         /// 结构化键；宿主手写的条目可以没有。
         jkey: Option<JudgeKey>,
         answer: Answer,
+        /// 这次调用的 token 与费用。**合批（一次调用多道题，`merged_by: fuse`）只在同调用号的第一条记整次调用的
+        /// tokens/cost，其余记 0**（L7 2026-09-28）：按条目相加即实际花费；按调用号去重的读者取同调用号的最大值
+        /// ——2026-09-28 之前的账本每条都记整次费用，取最大对新旧账本都对。
         tokens: u64,
         cost: f64,
         model_id: String,
@@ -132,9 +158,16 @@ pub enum Entry {
         ekey: Option<EffectKey>,
         answer: Option<Answer>,
     },
-    /// 不可逆 `do` 的写前意向（B55，`20` §4.3）。步 18 启用，v2 不产生。
-    Intent { key: String, at: u64 },
-    /// 判断器缺席或超时（B32）：重放据此照记的原因给出，不再发。
+    /// 不可逆 `do` 的写前意向（B55，`20` §4.3）。步 18 启用，v2 不产生。B200：`--guard` 下不可逆 `do` 推迟到尝试结算后，
+    /// 到达执行点只记它；`attempt` 是那次尝试（V5 留位，G2 起填；为空不写）。
+    Intent {
+        key: String,
+        at: u64,
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        attempt: Option<AttemptRef>,
+    },
+    /// 判断器缺席或超时（B32）：重放据此照记的原因给出，不再发。原因以 `fail` 开头（如 `fail:shape`，Z0556）表示
+    /// 端口答了但答案不可用（形状不符），不是判断器缺席：它不属缺席类，可以放弃（Z0594）。
     Absent {
         key: String,
         jkey: Option<JudgeKey>,
@@ -144,9 +177,11 @@ pub enum Entry {
         /// 只记在一组的第一题上，其余为 0。
         #[serde(default)]
         attempts: u64,
+        /// 这次缺席所属的读数：这道题本趟第几次由真站点登记（从 1 起；G5 附录二，格式上的加法）。只有原因为 `absent`
+        /// 的记录写；推测、提升登记的缺席与旧账本为空。审计重放按它配读数，不按登记顺序
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        nth: Option<u32>,
     },
-    /// 预算停机（`20` §4.3）。步 22 启用，v2 不产生。
-    Halt { reason: String, layer: u32 },
     /// 实际命中的校准记录（B83 第 6 条、B124；账本 v3 起离开头行）：`cut` 查到某键的记录时，
     /// 该键在账本里最后一条的哈希与本次不同（或没有）才追加一条。重放与续接按键取最后一条。
     /// 不进键索引（`key()` 为空）。
@@ -155,6 +190,223 @@ pub enum Entry {
         hash: String,
         record: Json,
     },
+    /// 以下六种是未决去向事件（C-1，账本 v4；裁定纸面阶段第五节「共 2」：每种去向在账本里是不同类型的事件）。
+    /// 都不进键索引（`key()` 为空）。字段一律可缺省（之后 C-2 往 v4 里加字段，旧条目照读）。
+    /// 前五种（`Drop`、`Refine`、`Enrich`、`Handoff`、`Escalate`）是责任去向：`of` 是这次新解除（`Handoff`：新交出）
+    /// 的**责任键**，一趟运行里每个责任键至多出现在这五种的一条里。`Reselect` 不在此列：它的 `of` 是**读数键**，
+    /// 记的是已决 pick 被代码谓词改选；没有可行候选时同一个键之后还会有一条责任去向（`Unsure(infeasible)` 的去处）。
+    /// `site` 是去向动作发生处的源码偏移，逐变体见各自的注释（不是 `JudgeKey.site` 的判断站点；判断由 `of` 指出）。
+    /// 显式丢弃：`consume(u, "drop")`；`site` 是 `consume` 调用点。
+    Drop {
+        #[serde(default, skip_serializing_if = "Vec::is_empty")]
+        of: Vec<String>,
+        #[serde(default)]
+        cause: String,
+        #[serde(default)]
+        site: usize,
+    },
+    /// 细化：`how` 是 `branch`（`consume(u, "branch")`）、`literalize`（重问），或默认链里被再判取代（`default`）；
+    /// `to` 是接替它的判断的账本键（有才写）。`site` 是 `consume` / `literalize` 调用点。
+    Refine {
+        #[serde(default, skip_serializing_if = "Vec::is_empty")]
+        of: Vec<String>,
+        #[serde(default)]
+        cause: String,
+        #[serde(default)]
+        site: usize,
+        #[serde(default)]
+        how: String,
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        to: Option<String>,
+    },
+    /// 补信息：默认链的一轮（`need` 类别、第几轮、取到没有、问类别那道 select 的账本键）。`site` 在 S2 定。
+    Enrich {
+        #[serde(default, skip_serializing_if = "Vec::is_empty")]
+        of: Vec<String>,
+        #[serde(default)]
+        cause: String,
+        #[serde(default)]
+        site: usize,
+        #[serde(default)]
+        need: String,
+        #[serde(default)]
+        round: u32,
+        #[serde(default)]
+        got: bool,
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        asked_by: Option<String>,
+    },
+    /// 转交：未决随返回值交到 `to`（今天只有 `program`：程序结果）。中途经函数返回不写。`site` 是出口的站点。
+    /// 预算停机没观察到的项没有账本键，`of` 为空。
+    Handoff {
+        #[serde(default, skip_serializing_if = "Vec::is_empty")]
+        of: Vec<String>,
+        #[serde(default)]
+        cause: String,
+        #[serde(default)]
+        site: usize,
+        #[serde(default)]
+        to: String,
+    },
+    /// 升级：`escalate(u, …)` 交给人；`ask` 是问人那条 `Ask` 的账本键。`site` 是 `escalate` 调用点。
+    /// 它写在问人之前：问人因 `budget.escalate` 挂起时，`ask` 指的 `Ask` 条目暂时还不在账本里，续跑问到时补上。
+    Escalate {
+        #[serde(default, skip_serializing_if = "Vec::is_empty")]
+        of: Vec<String>,
+        #[serde(default)]
+        cause: String,
+        #[serde(default)]
+        site: usize,
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        ask: Option<String>,
+    },
+    /// 改选／跳过（C-4 `feasible`）：`of` 是读数的账本键；`from` 原 pick，`chosen` 改选到的候选
+    /// （没有可行候选时空，出口 `Unsure(infeasible)`），`skipped` 是被否决的候选与概率。`site` 是 `cut` 站点。
+    Reselect {
+        #[serde(default, skip_serializing_if = "Vec::is_empty")]
+        of: Vec<String>,
+        #[serde(default)]
+        site: usize,
+        #[serde(default)]
+        from: usize,
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        chosen: Option<usize>,
+        #[serde(default, skip_serializing_if = "Vec::is_empty")]
+        skipped: Vec<Skipped>,
+    },
+    /// 本轮实际花费（C-3，主控 Z0171 第二轮答复）：带上游余额时，或账本头记着本段余额而这一趟没带余额时（Z0384 R11），
+    /// 由运行时写，一轮结束时一条（正常返回、挂起、运行期错误三条路都写；审计重放不写）。交回余额按它算（`jpp_runtime::BudgetCarry::after_round`），所以首跑、
+    /// 失败后与只凭账本重放给出同一份余额。`secs` 是本轮判断调用的累计时延（账本里记的判断时延，不是重放的实际耗时）；
+    /// `started: false` = 上游深度已到上限、整轮没开跑。不进键索引（`key()` 为空）。
+    Spent {
+        calls: u64,
+        usd: f64,
+        secs: f64,
+        asks: u64,
+        started: bool,
+    },
+    /// 效应因参数里有未决值没发出（B0492 S3，J-05 草案 (5a)）：`kind` 是效应名，`of` 是那份未决的责任键，
+    /// `site` 是效应调用点。与 `Reselect` 一样不是责任去向，不计入「每键至多一条」。
+    Skip {
+        #[serde(default, skip_serializing_if = "Vec::is_empty")]
+        of: Vec<String>,
+        #[serde(default)]
+        kind: String,
+        #[serde(default)]
+        site: usize,
+        /// 所在尝试（V5 留位，C3 起填；为空不写）
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        attempt: Option<AttemptRef>,
+    },
+    /// 只收紧的余额记录（C-3 Z0384）：续跑时宿主给的余额（没开重新授权）在某一项上小于账本剩余，开跑前写这一条，
+    /// 本段剩余从这里起逐项不超过它（`secs` 为空 = 时延不设限）。它只会收紧，不触「新段只靠显式开关」；交回余额按
+    /// 本段依次扣 `Spent`、遇它取小算出，重放照账本复现。不进键索引（`key()` 为空）。
+    CarryCap {
+        calls: u64,
+        usd: f64,
+        secs: Option<f64>,
+        asks: u64,
+        /// 深度上限（Z0384 复核 R2-a：宿主给的深度上限更小时，交回也取小）
+        depth_cap: u32,
+    },
+
+    // ── 账本 v5（步 34 V5，B196）：骨架事件。本步只声明，运行时不写；C3、G2、G4 起写。都不进键索引。 ──
+    // 不定输入（R6 (a)、R13、冻结清单 §4.1 (a)）
+    /// 一次尝试的不定输入（B196）：纪元、版本快照、立刻读的版本、过时依赖。
+    Attempt {
+        program: String,
+        n: u64,
+        host_epoch: u64,
+        flush_epoch: u64,
+        #[serde(default)]
+        snapshot: Snapshot,
+        #[serde(default, skip_serializing_if = "Vec::is_empty")]
+        peeks: Vec<Peek>,
+        #[serde(default, skip_serializing_if = "Vec::is_empty")]
+        stale: Vec<String>,
+    },
+    /// 一个刷新点发出的全部调用（R11 第 3、7 条）；读数在同键的 `Judge` 条目里。`flushed_at` 为 Z0403 留位，
+    /// 是内容，不进重放比对。
+    Flush {
+        f: u64,
+        calls: Vec<FlushCall>,
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        flushed_at: Option<String>,
+    },
+    /// 宿主事件：宿主纪元加一，定时的拍也是它（R12）。
+    HostEvent { epoch: u64, event: Json },
+    /// 多写者合并顺序（R7）：线上字段名 `type`。
+    Merge {
+        attempt: AttemptRef,
+        cell: String,
+        key: String,
+        hash: String,
+        version: u64,
+        #[serde(rename = "type")]
+        kind: MergeKind,
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        cause: Option<String>,
+    },
+    /// 不透明（或未声明）宿主动作在某个世界纪元上的结果，重放从这里取（R8）。
+    Opaque {
+        key: String,
+        world_epoch: u64,
+        decl: OpaqueDecl,
+        value: Json,
+    },
+    /// 透明宿主动作的结果哈希，重放照算比对（R8）。
+    Transparent {
+        key: String,
+        port_reads: Vec<PortRead>,
+        hash: String,
+    },
+    // 契约性结果（R6 (b)、R13、§4.1 (b)），都带 `attempt`
+    /// 程序单元的新一版（R2）；`cause` 只在 `unsure` 时有（如 `violation`、`deadline`）。
+    Publish {
+        attempt: AttemptRef,
+        version: u64,
+        state: PubState,
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        cause: Option<String>,
+        hash: String,
+    },
+    /// 去向的规范形式（B196，四类六形式加记号）。v4 的六种去向事件是旧形式，照读照写，互转见 [`Duty`]。
+    Duty(Duty),
+    /// 有结论时还欠着的一笔未决（R9），一笔一条。同一判断（同键）的几个视图没人接只记这一笔（B162；Z0593）：
+    /// 主记号在 `mark`，其余视图的记号在 `also`（格式上的加法，没有合并时不写）。
+    Violation {
+        attempt: AttemptRef,
+        mark: DebtMark,
+        #[serde(default, skip_serializing_if = "Vec::is_empty")]
+        also: Vec<DebtMark>,
+    },
+    /// 题没有发出（R13）：不是缺席，也不是读数。`key` 是题内容键；字段名 `reason` 取冻结清单 §4.1（V5 复核 A1）。
+    Unasked {
+        attempt: AttemptRef,
+        key: String,
+        payer: String,
+        reason: StopCause,
+    },
+    /// 预算、深度或截止到限：只停发，程序不停（R11 第 4 条、R16）。
+    Stop {
+        attempt: AttemptRef,
+        cause: StopCause,
+    },
+    /// B200：`--guard` 下不可逆 `do` 这一趟没有执行（有违规、挂起或出错，见 [`WithheldCause`]）；`key` 是那条
+    /// `Intent` 的键。同键 `Intent` 可以在它之后再出现一次（下一趟再到达执行点，G2 附录三）。
+    Withheld {
+        attempt: AttemptRef,
+        key: String,
+        cause: WithheldCause,
+    },
+}
+
+/// `Reselect` 里一个被否决的候选：下标与判断器给它的概率。
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct Skipped {
+    pub k: usize,
+    pub p: f64,
 }
 
 impl Entry {
@@ -216,8 +468,43 @@ impl Entry {
             | Entry::Ask { key, .. }
             | Entry::Intent { key, .. }
             | Entry::Absent { key, .. } => key,
-            Entry::Halt { .. } | Entry::CalibUsed { .. } => "",
+            Entry::CalibUsed { .. }
+            | Entry::Drop { .. }
+            | Entry::Refine { .. }
+            | Entry::Enrich { .. }
+            | Entry::Handoff { .. }
+            | Entry::Escalate { .. }
+            | Entry::Reselect { .. }
+            | Entry::Spent { .. }
+            | Entry::CarryCap { .. }
+            | Entry::Skip { .. }
+            | Entry::Attempt { .. }
+            | Entry::Flush { .. }
+            | Entry::HostEvent { .. }
+            | Entry::Merge { .. }
+            | Entry::Opaque { .. }
+            | Entry::Transparent { .. }
+            | Entry::Publish { .. }
+            | Entry::Duty(_)
+            | Entry::Violation { .. }
+            | Entry::Unasked { .. }
+            | Entry::Stop { .. }
+            | Entry::Withheld { .. } => "",
         }
+    }
+    /// 是不是未决去向事件（C-1 的六种、`Skip`，与 V5 的规范形式 `Duty`）。
+    pub fn is_duty_event(&self) -> bool {
+        matches!(
+            self,
+            Entry::Drop { .. }
+                | Entry::Refine { .. }
+                | Entry::Enrich { .. }
+                | Entry::Handoff { .. }
+                | Entry::Escalate { .. }
+                | Entry::Reselect { .. }
+                | Entry::Skip { .. }
+                | Entry::Duty(_)
+        )
     }
 }
 
@@ -231,6 +518,28 @@ pub const DECLARED_PREFIX: &str = "declared:";
 pub struct BudgetRecord {
     pub calls: u64,
     pub cost: f64,
+}
+
+/// 上游交下来的整场余额（C-3，主控 Z0171；裁定纸面阶段第五节「共 1」）：还剩多少调用、多少钱、多少时延预算
+/// （判断调用的累计秒数，不是墙钟截止时间）、多少次问人，深度已到第几层、上限多少。记在账本头里，只凭账本重放
+/// 从这里取、不从宿主取（B35：首跑在哪里停，重放就在哪里停）；续跑时记而不比（与 `budget` 一样）。
+/// 运行时的包装是 `jpp_runtime::BudgetCarry`；命令行 `--carry-in`/`--carry-out` 的文件也是这个形状。
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct CarryRecord {
+    pub calls: u64,
+    pub cost: f64,
+    /// 时延预算余额（秒）；`None` = 不设限
+    pub latency_p95: Option<f64>,
+    pub escalate: u64,
+    /// 深度已到第几层（V5：原名 `depth_at`，旧名照读）。G4 之前计法不变：调用栈深度与跨运行跳数是同一个计数、
+    /// 一轮交回加一；G4 起只按跨程序触发链计（`12` R11 第 5 条）。深度检查读它。
+    #[serde(alias = "depth_at")]
+    pub hop: u32,
+    /// 续跑计数（V5 留位，R11 第 5 条「续跑不计」深度，另记在这里）；G4 之前恒为 0。
+    #[serde(default)]
+    pub round: u32,
+    pub depth_cap: u32,
 }
 
 /// 账本头的比对集合：**唯一定义处**，十字段，任一不同报 `W-header`、不承诺重放一致（J-18）。
@@ -264,6 +573,15 @@ pub struct HeaderCompared {
     /// 生成器画像的哈希（步 19，主会话 2026-09-26：与判断器画像同一套，不同报 `W-header`）。为空不写。
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub gen_profile_hash: Option<String>,
+    /// 追踪编号（V5，裁定五十九第 21a 条：比对集合并上 `trace`）。C4 起写；为空不写。
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub trace: Option<TraceId>,
+    /// 本账本里的段与父段（冻结清单 §4.1 账本头；V5）。续接只会加段：旧的是新的前缀即不算不同。为空不写。
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub segments: Vec<Segment>,
+    /// 键版本（裁定三十七，V5 留位；落地时再填）。为空不写。
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub key_version: Option<String>,
 }
 
 /// 账本头比对的场合（B77，`12` J-18 行）：同一份账本被读回来时是哪种用法。
@@ -340,6 +658,24 @@ impl HeaderCompared {
             o(&self.gen_profile_hash),
             o(&new.gen_profile_hash),
         );
+        // V5（裁定五十九第 21a 条，取并集）：`schema` 由解码的版本闸承担（读不了的版本直接拒，照读的 v3、v4
+        // 与 v5 同族）；`trace`、`key_version` 两种场合都比；`segments` 旧的是新的前缀即不算不同（续接只加段）。
+        let t = |x: &Option<TraceId>| {
+            x.as_ref()
+                .map(|t| t.as_str().to_string())
+                .unwrap_or_else(|| "（无）".into())
+        };
+        s("trace", t(&self.trace), t(&new.trace));
+        s("key_version", o(&self.key_version), o(&new.key_version));
+        if !new.segments.starts_with(&self.segments) {
+            let segs = |v: &[Segment]| {
+                v.iter()
+                    .map(|x| x.seg.as_str().to_string())
+                    .collect::<Vec<_>>()
+                    .join(",")
+            };
+            d.push(("segments", segs(&self.segments), segs(&new.segments)));
+        }
         d
     }
 }
@@ -349,6 +685,16 @@ impl HeaderCompared {
 pub struct Header {
     pub budget: BudgetRecord,
     pub compared: HeaderCompared,
+    /// 上游余额（C-3）：宿主给了才有；为空不写，旧账本与金样逐字节不变。不进比对字段
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub carry: Option<CarryRecord>,
+    /// 本轮开跑时账本已有的条目数（C-3）：交回余额只认它之后的 `Spent`（续跑账本里有前几趟的）。随 `carry` 一起写
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub carry_from: Option<u64>,
+    /// 引擎默认深度上限（G4b，裁定六十四，`12` R11 第 5 条）：本趟用到引擎默认时（带余额，或程序没声明
+    /// `budget.depth`）写；重放以它为准、不读引擎配置。为空不写，并进 v5（C-3 `CarryCap` 同一先例），不进比对集合
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub depth_cap_default: Option<u32>,
 }
 
 impl Header {
@@ -378,8 +724,25 @@ impl Header {
                 entry_hash: None,
                 gen_model: None,
                 gen_profile_hash: None,
+                trace: None,
+                segments: vec![],
+                key_version: None,
             },
+            carry: None,
+            carry_from: None,
+            depth_cap_default: None,
         }
+    }
+    /// 引擎默认深度上限（G4b）：`None` 与不调相同
+    pub fn with_depth_cap_default(mut self, d: Option<u32>) -> Header {
+        self.depth_cap_default = d;
+        self
+    }
+    /// 上游余额（C-3）：`None` 与不调相同
+    pub fn with_carry(mut self, c: Option<CarryRecord>, from: Option<u64>) -> Header {
+        self.carry_from = c.as_ref().and(from);
+        self.carry = c;
+        self
     }
     pub fn with_profile_hash(mut self, h: Option<String>) -> Header {
         self.compared.profile_hash = h;
@@ -402,6 +765,13 @@ impl Header {
     pub fn with_gen(mut self, model: Option<String>, profile_hash: Option<String>) -> Header {
         self.compared.gen_model = model;
         self.compared.gen_profile_hash = profile_hash;
+        self
+    }
+    /// 标准库与题库的版本（步 27，B48）：`lib_version` 是本次运行装载的标准库文件的内容哈希，`bank_version`
+    /// 是 `bank.json` 的 `version`；没装载对应文件时为 `None`（账本逐字节不变）。两件事不挤一个字段。
+    pub fn with_versions(mut self, lib: Option<String>, bank: Option<String>) -> Header {
+        self.compared.lib_version = lib;
+        self.compared.bank_version = bank;
         self
     }
     pub fn model_id(&self) -> &str {
@@ -427,6 +797,11 @@ pub struct Ledger {
     /// 由 [`Ledger::put`] 与 [`Ledger::rebuild_index`] 维护，只读；写入只经 [`Ledger::note_calib_used`]。
     /// 只凭账本重放时（不给 `--calib` / `--fixtures`），宿主用这里补回当时的线，出口因此逐字节一致。
     pub calib_used: BTreeMap<String, Json>,
+    /// 每条条目的追踪上下文（C-2）：与 `entries` 同序，可以比 `entries` 短（旧账本、直接往 `entries` 推的条目
+    /// 没有）；缺的按无追踪算。只经 [`Ledger::put`] 系列写入，只读经 [`Ledger::trace_at`]。
+    traces: Vec<Option<TraceCtx>>,
+    /// 此后追加的条目盖的上下文（[`Ledger::set_trace`]）；`None` = 不盖章。
+    cur_trace: Option<TraceCtx>,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -436,12 +811,18 @@ struct HeadLine {
     header: Option<Header>,
 }
 
+/// 账本一行：`{seq, prev, entry}` 加可缺省的 `trace`（C-2：这一条属于哪条调用链、哪一段、谁调起的这一段）。
+/// 追踪字段放行外壳，不放进 [`Entry`] 各变体：`Entry` 的结构体字面量遍布 `jpp-runtime`，往变体里加字段要改十个
+/// 运行时文件，而追踪身份不是条目本体（主控 Z0245 定）。`trace` 是行文本的一部分，所以进 `prev` 链：改任何一行
+/// （不是最后一行）的 `trace`，下一行的链就对不上，`decode` 拒收。没有 `trace` 的旧 v4 账本照读（值为空）。
 #[derive(Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 struct EntryLine {
     seq: u64,
     prev: String,
     entry: Entry,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    trace: Option<TraceCtx>,
 }
 
 /// 解码时的截断报告：末行半写被丢掉。
@@ -477,11 +858,12 @@ pub fn encode_head(header: &Option<Header>) -> String {
 }
 
 /// 第 `seq` 条（从 1 起）的行文本（不含换行）；`prev` 是上一行的 [`line_hash`]（首条对头行）。
-pub fn encode_entry(seq: u64, prev: &str, e: &Entry) -> String {
+pub fn encode_entry(seq: u64, prev: &str, e: &Entry, trace: Option<&TraceCtx>) -> String {
     serde_json::to_string(&EntryLine {
         seq,
         prev: prev.to_string(),
         entry: e.clone(),
+        trace: trace.cloned(),
     })
     .expect("账本条目可序列化")
 }
@@ -615,6 +997,20 @@ impl Ledger {
     pub fn get(&self, key: &str) -> Option<&Entry> {
         self.index.get(key).map(|i| &self.entries[*i])
     }
+    /// 键索引指向的条目下标（同键多条时是最后一条）
+    pub fn position(&self, key: &str) -> Option<usize> {
+        self.index.get(key).copied()
+    }
+    /// 同键最后一条 `Intent` 之后有没有同键 `Withheld`（B55 按位置判，G2 附录三）：有 = 那一趟确知没有执行；
+    /// 没有、也没有结果 = 结果未知。键不是 `Intent` 时为 `false`。
+    pub fn intent_withheld(&self, intent_key: &str) -> bool {
+        match self.index.get(intent_key) {
+            Some(&i) if matches!(self.entries[i], Entry::Intent { .. }) => self.entries[i + 1..]
+                .iter()
+                .any(|e| matches!(e, Entry::Withheld { key, .. } if key == intent_key)),
+            _ => false,
+        }
+    }
     /// 唯一的追加入口：同键已有即不写（账本是审计物不是缓存）。
     pub fn put(&mut self, e: Entry) {
         let k = e.key().to_string();
@@ -630,10 +1026,12 @@ impl Ledger {
                 serde_json::json!({"hash": hash, "record": record}),
             );
         }
-        self.entries.push(e);
+        self.push_stamped(e);
     }
-    /// 已问未答的 `ask` 在续跑时得到了答案：**另起一条**（只增，不改旧条目），索引指向新条目。
-    /// 只接受「旧条目是同键的未答 `Ask`、新条目是已答 `Ask`」这一种情形。
+    /// 同键另起一条（只增，不改旧条目），索引指向新条目。只接受两种情形：
+    /// - 已问未答的 `ask` 在续跑时得到了答案：旧条目是同键的未答 `Ask`、新条目是已答 `Ask`；
+    /// - 被扣下的不可逆 `do` 下一趟再到达执行点（G2 附录三，主控 Z0564 后的 B55 决定）：旧条目是同键 `Intent`、
+    ///   它之后有同键 `Withheld`，新条目是 `Intent`。每一趟因此有自己的意向，执行后被杀仍能认出「结果未知」。
     pub fn put_answer(&mut self, e: Entry) {
         let k = e.key().to_string();
         let replaces_unanswered = matches!(self.get(&k), Some(Entry::Ask { answer: None, .. }));
@@ -644,11 +1042,44 @@ impl Ledger {
                 ..
             }
         );
-        if !(replaces_unanswered && is_answer) {
+        let 再意向 = matches!(&e, Entry::Intent { .. }) && self.intent_withheld(&k);
+        if !(replaces_unanswered && is_answer) && !再意向 {
             return self.put(e);
         }
         self.index.insert(k, self.entries.len());
+        self.push_stamped(e);
+    }
+    /// 追加一条并盖上当前段的追踪上下文（[`Ledger::set_trace`]）；`traces` 先补齐到 `entries` 的长度。
+    fn push_stamped(&mut self, e: Entry) {
+        self.traces.resize(self.entries.len(), None);
         self.entries.push(e);
+        self.traces.push(self.cur_trace.clone());
+    }
+    /// 设此后追加的条目所属的一段（C-2）。`None` = 不盖章。已有的条目不改。
+    pub fn set_trace(&mut self, ctx: Option<TraceCtx>) {
+        self.cur_trace = ctx;
+    }
+    /// 当前段的上下文（[`Ledger::set_trace`] 设的）。
+    pub fn current_trace(&self) -> Option<&TraceCtx> {
+        self.cur_trace.as_ref()
+    }
+    /// 第 `i` 条（0 起）条目的追踪上下文；没有（旧账本、没盖章）为 `None`。
+    pub fn trace_at(&self, i: usize) -> Option<&TraceCtx> {
+        self.traces.get(i).and_then(|t| t.as_ref())
+    }
+    /// 账本里最后一条带追踪上下文的条目的上下文（续跑推导新段、审计重放沿用它）。
+    pub fn last_trace(&self) -> Option<&TraceCtx> {
+        self.traces.iter().rev().find_map(|t| t.as_ref())
+    }
+    /// 账本里出现过的不同段的个数（续跑序号：新段的推导带它，仍是确定的）。
+    pub fn span_count(&self) -> usize {
+        let mut seen: Vec<&SpanId> = vec![];
+        for t in self.traces.iter().flatten() {
+            if !seen.contains(&&t.span) {
+                seen.push(&t.span);
+            }
+        }
+        seen.len()
     }
     /// 命中记录（`CalibUsed` 条目按键取最后一条）的集合哈希（B77）。
     pub fn calib_used_hash(&self) -> String {
@@ -660,6 +1091,10 @@ impl Ledger {
     }
     pub fn len(&self) -> usize {
         self.entries.len()
+    }
+    /// 账本里与 `e` 完全相同的条目有几条（C-1：续跑、重放同一程序时去向事件按出现次数比，不重复写）。
+    pub fn count_same(&self, e: &Entry) -> usize {
+        self.entries.iter().filter(|x| *x == e).count()
     }
     pub fn is_empty(&self) -> bool {
         self.entries.is_empty()
@@ -685,14 +1120,14 @@ impl Ledger {
         let mut prev = prev.to_string();
         let mut lines = vec![];
         for (i, e) in self.entries.iter().enumerate().skip(start) {
-            let line = encode_entry(i as u64 + 1, &prev, e);
+            let line = encode_entry(i as u64 + 1, &prev, e, self.trace_at(i));
             prev = line_hash(&line);
             lines.push(line);
         }
         (lines, prev)
     }
 
-    /// v3 解码。返回账本与截断报告（末行半写时）。v1 报 `E-ledger-archived`；v2 报 `E-ledger-v2`
+    /// v5 解码（v3、v4 照读）。返回账本与截断报告（末行半写时）。v1 报 `E-ledger-archived`；v2 报 `E-ledger-v2`
     /// （迁移见 `jpp::store::migrations::ledger_v2`）；链断、未知字段、完整行解析失败报 `E-ledger-corrupt`
     /// 并指出行号。
     pub fn decode(text: &str) -> Result<(Ledger, Option<Truncated>), String> {
@@ -717,7 +1152,17 @@ impl Ledger {
             && j.get("version").and_then(Json::as_u64) == Some(2)
         {
             return Err(format!(
-                "E-ledger-v2: 这是 v2 格式的账本（步 7 至 18c）。修法：jpp ledger-migrate <本文件> <输出> 改写为 v3（CLI 读入时也会在内存里迁移）；旧二进制在标签 {V2_ARCHIVE_TAG}"
+                "E-ledger-v2: 这是 v2 格式的账本（步 7 至 18c）。修法：jpp ledger-migrate <本文件> <输出> 改写为 v5（CLI 读入时也会在内存里迁移）；旧二进制在标签 {V2_ARCHIVE_TAG}"
+            ));
+        }
+        // 依据：V5 预注册 §五（更新的二进制写的账本报清楚的错，不跳过）。在严格解析头行之前看版本：
+        // 新版本的头可能多出本二进制不认识的字段，先报「更新」而不是「读不成」。
+        if let Ok(j) = serde_json::from_str::<Json>(first)
+            && let Some(v) = j.get("version").and_then(Json::as_u64)
+            && v > LEDGER_VERSION as u64
+        {
+            return Err(format!(
+                "E-ledger-newer: 账本版本 {v}，比本二进制（v{LEDGER_VERSION}）新，是更新的二进制写的。修法：用写它的二进制读"
             ));
         }
         // 依据：20 §九 账本行「未知字段拒绝」「链哈希断裂 → decode 拒绝」；12 §2.11 无声吞字段通则
@@ -728,10 +1173,10 @@ impl Ledger {
                 format!("E-ledger-corrupt: 第 1 行（头行）读不成：{e}")
             }
         })?;
-        if head.version != LEDGER_VERSION {
-            // 依据：21 E5（每次格式变更在上一提交打归档标签，旧格式只由对应二进制重放）
+        if head.version != LEDGER_VERSION && !LEDGER_READS_AS_IS.contains(&head.version) {
+            // 依据：21 E5（每次格式变更在上一提交打归档标签，旧格式只由对应二进制重放）；C-1（v3 照读）
             return Err(format!(
-                "E-ledger-archived: 账本版本 {}，本二进制只读 v{LEDGER_VERSION}。修法：v1 用标签 {V1_ARCHIVE_TAG} 处的二进制重放，v2 用 jpp ledger-migrate 迁移",
+                "E-ledger-archived: 账本版本 {}，本二进制只读 v{LEDGER_VERSION}（v3、v4 照读）。修法：v1 用标签 {V1_ARCHIVE_TAG} 处的二进制重放，v2 用 jpp ledger-migrate 迁移",
                 head.version
             ));
         }
@@ -754,8 +1199,18 @@ impl Ledger {
                     });
                     break;
                 }
-                // 依据：20 §九 账本行（完整行读不成即拒绝，只有末行半写截断）
-                Err(e) => return Err(format!("E-ledger-corrupt: 第 {} 行读不成：{e}", i + 1)),
+                // 依据：20 §九 账本行（完整行读不成即拒绝，只有末行半写截断）；V5：不认识的条目种类加一句提示
+                Err(e) => {
+                    let hint = if e.to_string().contains("unknown variant") {
+                        "（不认识的条目种类：可能是更新的二进制写的，用写它的二进制读）"
+                    } else {
+                        ""
+                    };
+                    return Err(format!(
+                        "E-ledger-corrupt: 第 {} 行读不成：{e}{hint}",
+                        i + 1
+                    ));
+                }
             };
             if el.prev != prev || el.seq != l.entries.len() as u64 + 1 {
                 return Err(format!(
@@ -764,7 +1219,9 @@ impl Ledger {
                 ));
             }
             prev = line_hash(line);
+            l.traces.resize(l.entries.len(), None);
             l.entries.push(el.entry);
+            l.traces.push(el.trace);
         }
         l.rebuild_index();
         Ok((l, truncated))
@@ -920,6 +1377,7 @@ mod b55_tests {
         l.put(Entry::Intent {
             key: "intent:e1".into(),
             at: 1,
+            attempt: None,
         });
         l.put(Entry::effect_keyed("e1".into(), "do", Json::from(1), 0.0));
         l
@@ -972,5 +1430,47 @@ mod b55_tests {
         p.append_calib_used("k", "h2", Json::Null).unwrap();
         assert!(p.end_layer().is_ok());
         assert_eq!(l.len(), 4, "未答、已答、两条命中记录");
+    }
+
+    /// G2 附录三 W-5：被扣下的意向下一趟再写一条同键 `Intent`（索引指向新条目）；没被扣下的同键 `Intent` 仍不追加；
+    /// 编码—解码往返逐字节相同，重载后索引仍指向最后一条
+    #[test]
+    fn 扣下之后同键意向另起一条_往返索引指向最后一条() {
+        let at = |n| AttemptRef {
+            program: "P".into(),
+            n,
+        };
+        let 意向 = |n| Entry::Intent {
+            key: "intent:e".into(),
+            at: 0,
+            attempt: Some(at(n)),
+        };
+        let mut l = Ledger::new();
+        l.set_header(Header::new(1, 1.0, "m", "r1", "h"));
+        let p: &mut dyn LedgerPort = &mut l;
+        p.append(意向(1), Durability::Now).unwrap();
+        // 没被扣下：同键第二条不追加（有意向无结果 = 结果未知，不能被新意向盖掉）
+        p.append(意向(9), Durability::Now).unwrap();
+        assert_eq!(l.len(), 1);
+        assert!(!l.intent_withheld("intent:e"));
+        l.put_answer(Entry::Withheld {
+            attempt: at(1),
+            key: "intent:e".into(),
+            cause: WithheldCause::Suspended,
+        });
+        assert!(l.intent_withheld("intent:e"));
+        l.put_answer(意向(2));
+        assert_eq!(l.len(), 3);
+        assert_eq!(l.get("intent:e"), Some(&意向(2)));
+        assert!(
+            !l.intent_withheld("intent:e"),
+            "新意向之后没有 Withheld：这一趟的结果未知"
+        );
+        let s = l.encode();
+        let (d, t) = Ledger::decode(&s).unwrap();
+        assert!(t.is_none());
+        assert_eq!(d.encode(), s);
+        assert_eq!(d.get("intent:e"), Some(&意向(2)));
+        assert!(!d.intent_withheld("intent:e"));
     }
 }

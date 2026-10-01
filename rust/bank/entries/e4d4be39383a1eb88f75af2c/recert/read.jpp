@@ -1,0 +1,18 @@
+// 27a 准备 · F5（程度 · 单对象 · 可算真值）：取真机读数用于认证。
+// 一条材料一道题（一个填法）；读数经 key_of 回接材料编号，不走 --from-ledger 清单（B107 未修）。
+budget {calls: 70, cost: 0.05, depth: 256};
+
+let left = form("measure", "这段话里说的{thing}还剩多少？", {calib: "deg-amount-left", scale: ["已经没有了", "只剩一点", "还有很多"]});
+
+fn one(x) !{judge} {
+    let r = judge(state(mat(x.text)), fill(left, {thing: x.thing}));
+    handle(cut(r), {
+        at: fn(level) { {id: x.id, key: key_of(r), exit: "at", open: []} },
+        unsure: fn(u) { {id: x.id, key: key_of(r), exit: "unsure", open: [u]} }
+    })
+}
+
+let rows = map(input.items, fn(x) !{judge} { one(x) });
+
+{rows: map(rows, fn(x) { {id: x.id, key: x.key, exit: x.exit} }),
+ pending: fold(rows, [], fn(acc, x) { concat(acc, x.open) })}

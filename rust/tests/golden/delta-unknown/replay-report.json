@@ -1,0 +1,103 @@
+{
+  "backend": "fixed-0",
+  "cost": {
+    "asks": 0,
+    "calls": 0,
+    "replayed": 2,
+    "tokens": 0,
+    "usd": 0.0
+  },
+  "entry": [],
+  "exits": [
+    {
+      "delta_source": "none",
+      "delta_unknown": true,
+      "exit": "act",
+      "grade": "Fixture",
+      "item": "1af933f542a5",
+      "key": "ticket-followup",
+      "releases": false,
+      "site": 834
+    }
+  ],
+  "fixture_description": "Z0425：校准记录故意不写 delta，走「有线且记录没有 δ」这条路径（假结果，只为钉住行为）",
+  "local_checks": [],
+  "mode": "replay; no model API requests",
+  "orders": [
+    {
+      "site": 984,
+      "tol": 0.0,
+      "tol_source": "unknown"
+    }
+  ],
+  "pending": [],
+  "plan": {
+    "calls": {
+      "kind": "at_least",
+      "lo": 0
+    },
+    "cost_usd": {
+      "kind": "unknown",
+      "reason": "price_not_given"
+    },
+    "latency_s": {
+      "kind": "unknown",
+      "reason": "untested:concurrency.latency_s.p95"
+    },
+    "layers": {
+      "kind": "at_least",
+      "lo": 0
+    }
+  },
+  "questions": [
+    {
+      "kind": "attr",
+      "q": "c206e1041a3c7544a87d4e6b"
+    }
+  ],
+  "replay": true,
+  "resumed": false,
+  "returned_unsure": [],
+  "status": "returned",
+  "trace": {
+    "events": [
+      {
+        "cost": 0.0,
+        "key": "6c54e4001bb9f183a99b5da0",
+        "kind": "judge",
+        "note": "「这张工单需要人工跟进吗？」",
+        "replayed": true,
+        "site": {
+          "end": 738,
+          "start": 666
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "11ea7997c83a3485a67c7e64",
+        "kind": "judge",
+        "note": "「这张工单需要人工跟进吗？」",
+        "replayed": true,
+        "site": {
+          "end": 817,
+          "start": 748
+        }
+      }
+    ],
+    "warnings": [
+      "W-window-untested: @666 画像没有测过窗口（window），对象长度不核；超窗的语境可能接管读数而无痕",
+      "W-window-untested: @748 画像没有测过窗口（window），对象长度不核；超窗的语境可能接管读数而无痕"
+    ]
+  },
+  "value": {
+    "cut": "跟进",
+    "tiers": [
+      [
+        0
+      ],
+      [
+        1
+      ]
+    ]
+  }
+}

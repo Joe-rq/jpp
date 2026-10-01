@@ -3,6 +3,15 @@
 # Limit build/test parallelism when several tracks build at once on this machine.
 [build]
 jobs = 3
+# 编译缓存：sccache（本机 brew，sg 上在 ~/.cargo/bin 并链到 /usr/local/bin）。见 地基/过程记录/工具链-sccache.md
+rustc-wrapper = "sccache"
+# 占盘（2026-09-30 夜，Nature 明令施工卫生）：每份 worktree / scratchpad 副本各编一份 target/debug 10–14 GB，
+# 其中 incremental 约 4 GB、deps 里的调试信息占大头。关增量、调试信息只留行号表，每份约减半；
+# 改一行后的重编变慢是接受的代价。worktree 合入即删 target/（AGENTS.md 施工卫生条）。
+incremental = false
+
+[profile.dev]
+debug = "line-tables-only"
 
 [env]
 RUST_TEST_THREADS = "4"

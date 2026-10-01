@@ -10,7 +10,7 @@ use std::time::{Duration, Instant};
 
 use jpp::effects::{CalibStore, JevClient, JevPorts};
 use jpp::ledger::Ledger;
-use jpp::{ActionRegistry, lower, run, syntax::parse};
+use jpp::{ActionRegistry, lower, run, run_replay, syntax::parse};
 use serde_json::{Value as Json, json};
 
 /// 前 `挂` 次请求各睡 `睡` 毫秒（模拟挂起），之后立刻答 0.9
@@ -80,10 +80,30 @@ fn 一直挂起_保守策略出口转absent_可重放() {
     assert_eq!(o.cost.calls, 3, "首发 + 重试 2，各计一次");
     assert_eq!(请求, 3);
     assert!(l.encode().contains("E-timeout"), "缺席账记下超时原因");
-    // 重放：账本里已记缺席，不再发请求
-    let (o2, 请求2, _) = 跑(&src, 0, 0, 超时, &mut l);
+    // 只凭账本重放（审计）：账本里已记缺席，不再发请求
+    let program = lower(&parse(&src).expect("解析")).expect("lower");
+    let mut calib = CalibStore::new();
+    calib.put("k", 0.65, 0.35, 50, "上岗", Some(0.05)).unwrap();
+    let n = Arc::new(AtomicU64::new(0));
+    let mut c = JevPorts::new(JevClient::with_timed_transport(
+        "jev-1.13.0",
+        超时,
+        传输(0, 0, n.clone()),
+    ));
+    let o2 = run_replay(
+        &program,
+        c.ports(),
+        &calib,
+        &ActionRegistry::new(),
+        &mut l.clone(),
+    )
+    .map_err(|e| e.render());
     assert_eq!(o2.expect("重放").value_json()["c"], json!("absent"));
-    assert_eq!(请求2, 0);
+    assert_eq!(n.load(Ordering::SeqCst), 0);
+    // G5（步 38，裁定五十九第 16 条、六十一 (b)，推翻 PR #48）：续跑重发缺席的题，传输恢复后得到答案
+    let (o3, 请求3, _) = 跑(&src, 0, 0, 超时, &mut l);
+    assert_eq!(o3.expect("续跑").value_json(), json!("act"));
+    assert_eq!(请求3, 1);
 }
 
 /// (c) then: fail → E-rt-absent，报文带 E-timeout。
@@ -96,7 +116,7 @@ fn 一直挂起_fail策略报e_rt_absent() {
 }
 
 /// (d) 不声明 absent：超时是网络类错误（现场稳定性三修，改前即 E-rt-client），按隐含策略重试 2 次（退避 1 秒、
-/// 2 秒）、每次计费，用尽转 Unsure(absent)，程序照常；缺席账记下 E-timeout；只凭账本（续跑式）不再发时出口相同。
+/// 2 秒）、每次计费，用尽转 Unsure(absent)，程序照常；缺席账记下 E-timeout。
 #[test]
 fn 不声明absent_超时按隐含策略转absent() {
     let mut l = Ledger::new();

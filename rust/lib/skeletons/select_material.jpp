@@ -1,0 +1,123 @@
+// 选材料（步 29，B20 第 1 种；主控:B0460）：给定目的，按前提题链一层层筛材料，每层的答案作为标记留在材料上。
+//
+// **临时存储，骨架最终裁定后换。** 标记住在宿主装的料库里（`jpp::store::FileMatStore` 是最简单的文件实现），
+// 经两个宿主变换读写：`transform("mat_marks", …)`、`transform("mat_mark", …)`（`jpp-lib/src/marks.rs`）。
+// 宿主没装料库时读为空、写为空操作，本库自然退化为每层照发。
+//
+// 设计（12 料库行 B20、核心讨论结论第九、十轮、验证清单 V2-1 默认分支）：
+//   - 材料按有没有用进入判断，不按像不像；相似度只作前置压缩，由调用方在传入 pool 之前做，本库不做也不依赖；
+//   - 不问元题（「这段对判断 Q 有帮助吗」），只问字面前提题；
+//   - 每层的答案留在材料上（键 = 材料哈希 × 前提题字面），与目的无关，别的目的的程序问到同一道字面前提题时
+//     直接读到，不再发这一问（账本里少发的题）；
+//   - 人只给目的和范围（pool）；前提题链由人从题库指定（B50，本版不自动预处理）；
+//   - 「存活的材料对目的 Q 怎么判」是下游的事，本库只交存活材料，不替下游判。
+//
+// select_material(purpose, pool, premises, opts) -> 契约值
+//   （B0470 起入口名改为 select_material：叫 select 会盖住内置的 K 选一题构造，导入它的程序就不能再出 K 选一题
+//    （N7 / Z0513）。旧名 select 留在 select.jpp，只给已有的调用方用）
+//   purpose   目的（文字）。只用来记账（标记里的 first_purpose）；不进任何判断的题面
+//   pool      候选材料（[Mat]）。推荐每份是具名字段记录 mat({…})
+//   premises  前提题链：[{q: Text, question?: 题, calib?: Text, line?: 线}]，字面题，顺序即层序
+//             q      题面（字面前提题，是非题）
+//             question  已造好的是非题（B0470：由目的派生的前提题带题式与 taint）；给了就用它，不再由 q 现造
+//             calib  校准标签，缺省 "select-premise"
+//             line   这一层的作者声明线（cut 的第二参，如 {declare: {hi: 0.9, lo: 0.1}}）；缺省取 opts.line
+//   opts      {line?: 线                 各层缺省的作者声明线；都不给时按 cut 的缺省规则（p > 0.5 留、< 0.5 淘、= 0.5 未决）
+//              max_layers?: Int          最多走几层，缺省走完题链
+//              reuse?: Bool              先读标记、已决的不再问，缺省 true
+//              mark?: Bool               把本层新问出的答案写成标记，缺省 true}
+//   层        第 i 层对当前存活的每份材料问第 i 道前提题（同一层同一道题、不同材料，同一批提交，运行时合批）：
+//             act 留、ignore 淘、unsure 保留并记入 pending（意图汇编 7c、11a：拿不准不当作没用，也不替作者默认丢弃）。
+//             复用只认已决标记（act、ignore）；未决标记不复用，重问（拿不准就该再问、补信息）。
+//   终止      题链走完；存活为空（后面的层不发，记 reason "empty"）；到 max_layers（reason "bound"）。
+// 返回（B17 契约值）：
+//   value     存活材料，按 pool 顺序，每个元素 {item: 材料, marks: [{layer, q, exit, source_key, reused}]}：
+//             该材料在各层拿到的答案（复用的与新问的都在，source_key 是产生答案的判断的账本键——复用时是当初那次运行的键）
+//   pending   未决元素（每个经过的层记在 via，J-05）；没观察到的（预算、缺席）也在这里，且不写标记
+//   evidence  本次运行各层发出的判断的账本键（复用的不在，它们没发）
+//   detail    {reason: "chain_done" | "empty" | "bound", layers: 走了几层,
+//              per_layer: [{q, alive, asked, reused, act, ignore, unsure}], purpose, stored: 料库有没有存下标记,
+//              excluded: 被淘汰的材料 [{item, marks, layer, q, exit, source_key}]，按 pool 顺序；后四项取淘汰它的那条标记（B0470）}
+import "../outcome.jpp";
+import "../compose/carry.jpp";
+
+fn select_material(purpose, pool, premises, opts) {
+    let reuse = if has(opts, "reuse") { opts.reuse } else { true };
+    let write = if has(opts, "mark") { opts.mark } else { true };
+    let cap = if has(opts, "max_layers") { min(opts.max_layers, len(premises)) } else { len(premises) };
+    let chain = slice(premises, 0, cap);
+    let hashes_of = fn(ms) { map(ms, fn(m) { m.hash }) };
+    let asked_q = fn(p) {
+        if has(p, "question") { p.question } else { test(p.q, if has(p, "calib") { p.calib } else { "select-premise" }) }
+    };
+    let line_of = fn(p) { if has(p, "line") { p.line } else if has(opts, "line") { opts.line } else { unit } };
+    let judge_layer = fn(ms, p) {
+        let q = asked_q(p);
+        let l = line_of(p);
+        if len(ms) == 0 { unit }
+        else if l == unit { sieve(ms, q) }
+        else { sieve(ms, q, {line: l}) }
+    };
+    let step = fn(acc, p) {
+        let alive = acc.alive;
+        let hs = hashes_of(alive);
+        // 读：本层每份材料在这道字面前提题上有没有已决标记
+        let found = if reuse && len(alive) > 0 {
+            content(transform("mat_marks", mat({premise: p.q, mats: hs})))
+        } else { [] };
+        let hit = filter(found, fn(f) { f.found && (f.exit == "act" || f.exit == "ignore") });
+        let hit_hs = map(hit, fn(f) { f.hash });
+        let ask_ms = filter(alive, fn(m) { !contains(hit_hs, m.hash) });
+        let o = judge_layer(ask_ms, p);
+        let acts = if o == unit { [] } else { accepted(o) };
+        let ignores = if o == unit { [] } else { ignored(o) };
+        let unsure_ok = if o == unit { [] } else { undecided(o) };
+        let unsure_all = if o == unit { [] } else { o.pending };
+        // 新问出的答案：已决与判过的未决写标记；没观察到的（budget、absent、latency）不写
+        let fresh = concat(concat(
+            map(acts, fn(e) { {mat: e.item.hash, exit: "act", source_key: e.key, item: e.item} }),
+            map(ignores, fn(e) { {mat: e.item.hash, exit: "ignore", source_key: e.key, item: e.item} })),
+            map(unsure_ok, fn(e) { {mat: e.item.hash, exit: "unsure:" + e.cause, source_key: e.key, item: e.item} }));
+        let w = if write && len(fresh) > 0 {
+            content(transform("mat_mark", mat({purpose: purpose, premise: p.q,
+                marks: map(fresh, fn(f) { {mat: f.mat, exit: f.exit, source_key: f.source_key} })})))
+        } else { {written: 0, stored: acc.stored} };
+        // 本层每份材料拿到的答案，接在它此前的标记后面
+        let layer_no = len(acc.layers);
+        let entries = concat(
+            map(hit, fn(f) { {mat: f.hash, m: {layer: layer_no, q: p.q, exit: f.exit, source_key: f.source_key, reused: true}} }),
+            map(fresh, fn(f) { {mat: f.mat, m: {layer: layer_no, q: p.q, exit: f.exit, source_key: f.source_key, reused: false}} }));
+        let marks = fold(entries, acc.marks, fn(mk, en) {
+            with(mk, en.mat, append(if has(mk, en.mat) { mk[en.mat] } else { [] }, en.m))
+        });
+        // 淘汰：复用的 ignore 与新问出的 ignore；其余（act、未决、没观察到）存活
+        let out_hs = concat(map(filter(hit, fn(f) { f.exit == "ignore" }), fn(f) { f.hash }),
+                            map(ignores, fn(e) { e.item.hash }));
+        let survivors = filter(alive, fn(m) { !contains(out_hs, m.hash) });
+        let n_act = len(acts) + len(filter(hit, fn(f) { f.exit == "act" }));
+        let n_ign = len(ignores) + len(filter(hit, fn(f) { f.exit == "ignore" }));
+        let rec = {q: p.q, alive: len(alive), asked: len(ask_ms), reused: len(hit),
+                   act: n_act, ignore: n_ign, unsure: len(unsure_all)};
+        {alive: survivors, marks: marks, layers: append(acc.layers, rec),
+         pending: carry(acc.pending, unsure_all, "select#" + text(layer_no)),
+         evidence: if o == unit { acc.evidence } else { concat(acc.evidence, o.evidence) },
+         stored: acc.stored || (write && len(fresh) > 0 && w.stored)}
+    };
+    // 存活为空后不再发后面的层：把空层跳过（不记 per_layer）
+    let r = fold(chain, {alive: pool, marks: {}, layers: [], pending: [], evidence: [], stored: false},
+                 fn(acc, p) { if len(acc.alive) == 0 { acc } else { step(acc, p) } });
+    let reason = if len(r.alive) == 0 && len(r.layers) < len(chain) { "empty" }
+                 else if cap < len(premises) { "bound" }
+                 else { "chain_done" };
+    let marks_of = fn(m) { if has(r.marks, m.hash) { r.marks[m.hash] } else { [] } };
+    let value = map(r.alive, fn(m) { {item: m, marks: marks_of(m)} });
+    let alive_hs = hashes_of(r.alive);
+    let excluded = map(filter(pool, fn(m) { !contains(alive_hs, m.hash) }), fn(m) {
+        let mk = marks_of(m);
+        let last = mk[len(mk) - 1];
+        {item: m, marks: mk, layer: last.layer, q: last.q, exit: last.exit, source_key: last.source_key}
+    });
+    outcome({value: value, pending: r.pending, evidence: r.evidence,
+             detail: {reason: reason, layers: len(r.layers), per_layer: r.layers,
+                      purpose: purpose, stored: r.stored, excluded: excluded}})
+}

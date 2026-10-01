@@ -1,0 +1,21 @@
+// 唤出：确定性派生长不出题时，由生成器按同一套守则出候选，候选过同一个验题闸门（步 28，B0468、B45）。
+//
+// 作者的题「这份提案可行吗？」带声明线 {hi: 0.7, lo: 0.3}，读数落在线之间（band）。这是属性类是非题，
+// 没有确定性的字面拆法，所以打开 elicit：生成器按 lib/derive/rules.jpp 的守则（十个模块）出五个候选，
+// 每个候选过验题闸门：
+//   ① 静态诊断 transform("diagnose", …)（每个候选一条账本条目）：c1 是元题、c2 一题两问，被拒；
+//   ③ 判断器诊断 lib/diag.jpp：c5 问的东西不在材料里，被拒；
+//   ④⑤ 按信息值取前 width = 1 个：K 选一（三块）胜过是非题（两块），c4 发出，c3 记为「过闸门未入选」。
+// 被拒的与未入选的都不发出。原出口照判断器的回答走（仍是 band），唤出的题是追加的下一跳。
+// 固定观察的读数与生成器输出是合成的，只检查构造，不代表模型表现。
+import "../lib/derive/chain.jpp";
+budget {calls: 20, cost: 0, depth: 512};
+
+let first = fn(item) { {q: test("这份提案可行吗？", "elicit-root"), line: {declare: {hi: 0.7, lo: 0.3}}} };
+let items = [{on: mat("提案：三个月做一个社区团购小程序，预算 20 万，团队两人；资金来自天使投资。")}];
+
+let r = chain(items, first, 3, {elicit: true, elicit_n: 5, width: 1});
+{value: map(r.value, fn(v) { {by: v.by, path: map(v.path, fn(p) { p.by + "：" + p.q + " → " + exit_kind(p.exit) })} }),
+ pending: r.pending, hops: r.detail.hops,
+ rejected: map(r.detail.rejected, fn(x) { {q: x.q, by: x.by, stage: x.stage, codes: x.codes} }),
+ unchosen: map(r.detail.unchosen, fn(x) { x.q }), version: r.detail.version}

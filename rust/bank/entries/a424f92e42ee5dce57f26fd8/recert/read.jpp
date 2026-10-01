@@ -1,0 +1,19 @@
+// 第二批 C26 · 表述指向哪个候选（归类 · K 个候选，路 B 不声明 over_kind · 语义题式）：取真机读数用于认证。
+// 题式带 permute: true（B64）：真机每题发正序、逆序两次，读数取均值。
+// 材料经 `jpp run --input input.json` 交入：input.items[i] = {id, text, kind, over}，text 是说话人的一句话，id 是不透明编号。
+budget {calls: 170, cost: 0.05, depth: 256};
+
+let refers_to = form("select", "这句话说的是下列哪一个{kind}？", {calib: "cls-refers-to", permute: true});
+
+fn one(x) !{judge} {
+    let r = judge(state(mat(x.text), {over: x.over}), fill(refers_to, {kind: x.kind}));
+    handle(cut(r), {
+        pick: fn(k) { {id: x.id, key: key_of(r), exit: "pick", open: []} },
+        unsure: fn(u) { {id: x.id, key: key_of(r), exit: "unsure", open: [u]} }
+    })
+}
+
+let rows = map(input.items, fn(x) !{judge} { one(x) });
+
+{rows: map(rows, fn(x) { {id: x.id, key: x.key, exit: x.exit} }),
+ pending: fold(rows, [], fn(acc, x) { concat(acc, x.open) })}

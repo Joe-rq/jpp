@@ -26,8 +26,8 @@ fn jpp(d: &Path, args: &[&str]) -> (bool, String) {
     )
 }
 
-const 写文件: &str =
-    "budget {calls: 2, cost: 0};\nis_fail(do(\"write_json\", [\"out.json\", 1], 0))\n";
+// G2（步 35）：`--guard` 下不可逆 do 推迟到结论之后，同一次运行里不能读它的结果（原写 `is_fail(do(…))`）；改为随返回值交出
+const 写文件: &str = "budget {calls: 2, cost: 0};\ndo(\"write_json\", [\"out.json\", 1], 0)\n";
 
 #[test]
 fn 不可逆动作_不给账本文件即停_给了照常() {
@@ -165,8 +165,10 @@ fn 引ground同形结构_动作名不可逆时仍要求账本() {
         !ok && err.contains("E-ledger-required") && err.contains("write_json"),
         "{err}"
     );
+    // G2（步 35，B200）：`ground` 形是「执行后再判」——守卫下同一次运行里读了不可逆 do 的结果，报
+    // E-guard-irreversible-midway，动作不执行（原断言「给了账本照常执行」；本条原意测 E-ledger-required，上一段不变）
     let (ok, err) = jpp(&d, &["run", "p.jpp", "--ledger-out", "l.jsonl", "--guard"]);
-    assert!(ok, "{err}");
-    assert!(d.join("out.json").exists());
+    assert!(!ok && err.contains("E-guard-irreversible-midway"), "{err}");
+    assert!(!d.join("out.json").exists());
     let _ = std::fs::remove_dir_all(&d);
 }

@@ -1,0 +1,1242 @@
+{
+  "backend": "fixed-0",
+  "cost": {
+    "asks": 0,
+    "calls": 0,
+    "replayed": 54,
+    "tokens": 0,
+    "usd": 0.0
+  },
+  "entry": [],
+  "exits": [
+    {
+      "declared": {
+        "hi": 0.7,
+        "lo": 0.3,
+        "site": 6936
+      },
+      "evidence": {
+        "certified": null,
+        "errors_at_line": null,
+        "labelled": 0,
+        "near_line": {
+          "count": 1,
+          "share": 1.0,
+          "window": 0.2
+        }
+      },
+      "exit": "unsure(band)",
+      "grade": "Declared",
+      "item": "454e7411a4fa",
+      "key": "elicit-root",
+      "releases": false,
+      "site": 6936
+    },
+    {
+      "delta_unknown": true,
+      "exit": "ignore",
+      "grade": "Answer",
+      "index": 0,
+      "item": "c2ea736165f9",
+      "pos": 0,
+      "releases": false,
+      "site": 73803
+    },
+    {
+      "delta_unknown": true,
+      "exit": "ignore",
+      "grade": "Answer",
+      "index": 1,
+      "item": "338852eeba71",
+      "pos": 1,
+      "releases": false,
+      "site": 73803
+    },
+    {
+      "delta_unknown": true,
+      "exit": "ignore",
+      "grade": "Answer",
+      "index": 2,
+      "item": "6e2072d92cf5",
+      "pos": 2,
+      "releases": false,
+      "site": 73803
+    },
+    {
+      "delta_unknown": true,
+      "exit": "act",
+      "grade": "Answer",
+      "index": 0,
+      "item": "65a7bbd37d36",
+      "pos": 0,
+      "releases": false,
+      "site": 74231
+    },
+    {
+      "delta_unknown": true,
+      "exit": "act",
+      "grade": "Answer",
+      "index": 1,
+      "item": "63caff23f0c7",
+      "pos": 1,
+      "releases": false,
+      "site": 74231
+    },
+    {
+      "delta_unknown": true,
+      "exit": "ignore",
+      "grade": "Answer",
+      "index": 2,
+      "item": "ed6f150538f8",
+      "pos": 2,
+      "releases": false,
+      "site": 74231
+    },
+    {
+      "exit": "pick(1)",
+      "grade": "Answer",
+      "item": "e904b1a4bd8f",
+      "releases": false,
+      "site": 6960
+    }
+  ],
+  "fixture_description": "Synthetic fixed observations and generator output for derive-elicit.jpp (construction check only; not model evaluation). Step 28: the author's attribute question falls in the declared band, has no deterministic refinement, so the generator proposes five candidates; two are rejected by static diagnosis, one by the judge diagnosis, and width 1 keeps the three-way select over the yes/no question.",
+  "improve": [
+    {
+      "companions": [
+        {
+          "key": "c2771ad94bcddda6399f0070",
+          "kind": "unsure-companion-premise",
+          "p": 0.5
+        },
+        {
+          "key": "876e03860c5c7e3bbc2d9836",
+          "kind": "diag-two-judgments",
+          "p": 0.5
+        },
+        {
+          "key": "3ef53d9707d648c5e757cdaf",
+          "kind": "unsure-companion-cut",
+          "p": 0.5
+        },
+        {
+          "key": "eb72407c77b7411190e28975",
+          "kind": "unsure-companion-reference",
+          "p": 0.5
+        },
+        {
+          "key": "5ae9eea5cb0830ccedafab03",
+          "kind": "unsure-companion-material",
+          "p": 0.25,
+          "pick": null
+        }
+      ],
+      "key": "bc49d6ecda19349a66d50e02",
+      "lacks": null,
+      "q": "这份提案可行吗？"
+    },
+    {
+      "companions": [
+        {
+          "key": "e4a49edbfd57b94df8847498",
+          "kind": "unsure-companion-premise",
+          "p": 0.5
+        },
+        {
+          "key": "ac9fda1171dbb2209f568e4e",
+          "kind": "diag-two-judgments",
+          "p": 0.5
+        },
+        {
+          "key": "cea8f1995c99b73db6be568c",
+          "kind": "unsure-companion-cut",
+          "p": 0.5
+        },
+        {
+          "key": "e84a1829a3aeb27a7b7a8e02",
+          "kind": "unsure-companion-reference",
+          "p": 0.5
+        },
+        {
+          "key": "afff66e5f297ef916f21bbc4",
+          "kind": "unsure-companion-material",
+          "p": 0.25,
+          "pick": null
+        }
+      ],
+      "key": "7a916a9f0d81723afde97174",
+      "lacks": null,
+      "q": "这道题里是否有两个或更多需要分别回答的判断？"
+    },
+    {
+      "companions": [
+        {
+          "key": "a7f8185cd9e4037b084d0542",
+          "kind": "unsure-companion-premise",
+          "p": 0.5
+        },
+        {
+          "key": "cf82580aceee70c44da0ea8c",
+          "kind": "diag-two-judgments",
+          "p": 0.5
+        },
+        {
+          "key": "032b019996ece4a2c7aae73e",
+          "kind": "unsure-companion-cut",
+          "p": 0.5
+        },
+        {
+          "key": "416db98da83fdf057af4f967",
+          "kind": "unsure-companion-reference",
+          "p": 0.5
+        },
+        {
+          "key": "7b7a2db8327880c1c27cf671",
+          "kind": "unsure-companion-material",
+          "p": 0.25,
+          "pick": null
+        }
+      ],
+      "key": "685e2bd6eebdadbb23b74340",
+      "lacks": null,
+      "q": "这道题里是否有两个或更多需要分别回答的判断？"
+    },
+    {
+      "companions": [
+        {
+          "key": "053f8b434d4b630f21733ac0",
+          "kind": "unsure-companion-premise",
+          "p": 0.5
+        },
+        {
+          "key": "a3998203b2df8b6a70e9104c",
+          "kind": "diag-two-judgments",
+          "p": 0.5
+        },
+        {
+          "key": "78083c1d969f3f6a0b7fa28c",
+          "kind": "unsure-companion-cut",
+          "p": 0.5
+        },
+        {
+          "key": "03fed17fb35a2262f82ff8c3",
+          "kind": "unsure-companion-reference",
+          "p": 0.5
+        },
+        {
+          "key": "e0fba7c0b9de75b5a59d5578",
+          "kind": "unsure-companion-material",
+          "p": 0.25,
+          "pick": null
+        }
+      ],
+      "key": "3062e1be61ad2a2ace261fd7",
+      "lacks": null,
+      "q": "这道题里是否有两个或更多需要分别回答的判断？"
+    },
+    {
+      "companions": [
+        {
+          "key": "c849bb31fd9fccd65ebe15d3",
+          "kind": "unsure-companion-premise",
+          "p": 0.5
+        },
+        {
+          "key": "de8977085a81577186d40d6a",
+          "kind": "diag-two-judgments",
+          "p": 0.5
+        },
+        {
+          "key": "d3180d2c1b34200ff1b3ed4c",
+          "kind": "unsure-companion-cut",
+          "p": 0.5
+        },
+        {
+          "key": "c5918f192b8f8a7a52acf6f9",
+          "kind": "unsure-companion-reference",
+          "p": 0.5
+        },
+        {
+          "key": "bd98bfb48a49f2f8604e98e1",
+          "kind": "unsure-companion-material",
+          "p": 0.25,
+          "pick": null
+        }
+      ],
+      "key": "90453c70f75c0ba082ae06f2",
+      "lacks": null,
+      "q": "上下文里那道题问的东西，这段材料里有没有？"
+    },
+    {
+      "companions": [
+        {
+          "key": "206bc2a051983ae0c613ba2b",
+          "kind": "unsure-companion-premise",
+          "p": 0.5
+        },
+        {
+          "key": "ed02a494a369791e5a30f6fe",
+          "kind": "diag-two-judgments",
+          "p": 0.5
+        },
+        {
+          "key": "c916fcd85065e5964a5f7491",
+          "kind": "unsure-companion-cut",
+          "p": 0.5
+        },
+        {
+          "key": "7db0667315f74e3239b6f717",
+          "kind": "unsure-companion-reference",
+          "p": 0.5
+        },
+        {
+          "key": "60b58d7a5d4babfc485c4235",
+          "kind": "unsure-companion-material",
+          "p": 0.25,
+          "pick": null
+        }
+      ],
+      "key": "cde318fba22e13db72b18c89",
+      "lacks": null,
+      "q": "上下文里那道题问的东西，这段材料里有没有？"
+    },
+    {
+      "companions": [
+        {
+          "key": "9895de5b8158e375c0aa12a5",
+          "kind": "unsure-companion-premise",
+          "p": 0.5
+        },
+        {
+          "key": "44d34524facf98088ac24aca",
+          "kind": "diag-two-judgments",
+          "p": 0.5
+        },
+        {
+          "key": "81b2ed2b252156af19955657",
+          "kind": "unsure-companion-cut",
+          "p": 0.5
+        },
+        {
+          "key": "e78e8c1dd268c0b851230913",
+          "kind": "unsure-companion-reference",
+          "p": 0.5
+        },
+        {
+          "key": "28335cd9f4c0b8d8f8faff83",
+          "kind": "unsure-companion-material",
+          "p": 0.25,
+          "pick": null
+        }
+      ],
+      "key": "91b225bff4c01a0be5e0f668",
+      "lacks": null,
+      "q": "上下文里那道题问的东西，这段材料里有没有？"
+    },
+    {
+      "companions": [
+        {
+          "key": "6bb0e581e54df182eb2102cb",
+          "kind": "unsure-companion-premise",
+          "p": 0.5
+        },
+        {
+          "key": "a1eee6d57000964183b13bf8",
+          "kind": "diag-two-judgments",
+          "p": 0.5
+        },
+        {
+          "key": "a14584e0ff774c3ed79b156d",
+          "kind": "unsure-companion-cut",
+          "p": 0.5
+        },
+        {
+          "key": "d2674b2678bb43fa27caa741",
+          "kind": "unsure-companion-reference",
+          "p": 0.5
+        },
+        {
+          "key": "b6a446c3577cafd481b0bcb1",
+          "kind": "unsure-companion-material",
+          "p": 0.25,
+          "pick": null
+        }
+      ],
+      "key": "4f79c7aa924d765462ace0d4",
+      "lacks": null,
+      "q": "提案最大的风险来自哪一方面？"
+    }
+  ],
+  "local_checks": [],
+  "mode": "replay; no model API requests",
+  "pending": [],
+  "plan": {
+    "calls": {
+      "kind": "at_least",
+      "lo": 0
+    },
+    "cost_usd": {
+      "kind": "unknown",
+      "reason": "price_not_given"
+    },
+    "latency_s": {
+      "kind": "unknown",
+      "reason": "untested:concurrency.latency_s.p95"
+    },
+    "layers": {
+      "kind": "at_least",
+      "lo": 0
+    }
+  },
+  "questions": [
+    {
+      "kind": "attr",
+      "q": "a0b49b0f6ffcb9905fcb47ea"
+    },
+    {
+      "fill": {
+        "q": "这份提案可行吗？"
+      },
+      "form_hash": "54315f241f66412e88607f2d",
+      "kind": "attr",
+      "q": "f4adc64289d264238aa3ae0a",
+      "template": "题「{q}」的前提在这份材料上成立吗？"
+    },
+    {
+      "fill": {
+        "q": "这份提案可行吗？"
+      },
+      "form_hash": "cd4d3fd600f3459fa6b03c89",
+      "kind": "attr",
+      "q": "29037c0392ee1d6f729a45f7",
+      "template": "题「{q}」里是否有两个或更多需要分别回答的判断？"
+    },
+    {
+      "fill": {
+        "q": "这份提案可行吗？"
+      },
+      "form_hash": "18c6093988df2ab3840b661c",
+      "kind": "attr",
+      "q": "3b508d54fbf8935f5d934078",
+      "template": "把题「{q}」按更细的情形分开问，会比整体问更容易答准吗？"
+    },
+    {
+      "fill": {
+        "q": "这份提案可行吗？"
+      },
+      "form_hash": "d8ff506d5be24dd56b495116",
+      "kind": "attr",
+      "q": "9eb126e7aa6dab57a3686dc7",
+      "template": "判断题「{q}」需要的参照对象和语境，这段材料里给够了吗？"
+    },
+    {
+      "fill": {
+        "q": "这份提案可行吗？"
+      },
+      "form_hash": "2ec36692b44a45c1e23fbea6",
+      "kind": "class",
+      "q": "a44b33e9f61f114b69425c01",
+      "template": "题「{q}」要判得更明确，最缺哪一类信息？"
+    },
+    {
+      "kind": "attr",
+      "q": "3bb383eebc0557004f6369d9"
+    },
+    {
+      "fill": {
+        "q": "这道题里是否有两个或更多需要分别回答的判断？"
+      },
+      "form_hash": "54315f241f66412e88607f2d",
+      "kind": "attr",
+      "q": "e6a0736db12145d977b112c4",
+      "template": "题「{q}」的前提在这份材料上成立吗？"
+    },
+    {
+      "fill": {
+        "q": "这道题里是否有两个或更多需要分别回答的判断？"
+      },
+      "form_hash": "cd4d3fd600f3459fa6b03c89",
+      "kind": "attr",
+      "q": "396ca407f9a2e2118679c1a9",
+      "template": "题「{q}」里是否有两个或更多需要分别回答的判断？"
+    },
+    {
+      "fill": {
+        "q": "这道题里是否有两个或更多需要分别回答的判断？"
+      },
+      "form_hash": "18c6093988df2ab3840b661c",
+      "kind": "attr",
+      "q": "8941b37a9b4a18d68149d690",
+      "template": "把题「{q}」按更细的情形分开问，会比整体问更容易答准吗？"
+    },
+    {
+      "fill": {
+        "q": "这道题里是否有两个或更多需要分别回答的判断？"
+      },
+      "form_hash": "d8ff506d5be24dd56b495116",
+      "kind": "attr",
+      "q": "b111bf7350447341528ae82a",
+      "template": "判断题「{q}」需要的参照对象和语境，这段材料里给够了吗？"
+    },
+    {
+      "fill": {
+        "q": "这道题里是否有两个或更多需要分别回答的判断？"
+      },
+      "form_hash": "2ec36692b44a45c1e23fbea6",
+      "kind": "class",
+      "q": "1f733df9f15c54621768e65b",
+      "template": "题「{q}」要判得更明确，最缺哪一类信息？"
+    },
+    {
+      "kind": "attr",
+      "q": "13a875842ad4488dc2dd1f73"
+    },
+    {
+      "fill": {
+        "q": "上下文里那道题问的东西，这段材料里有没有？"
+      },
+      "form_hash": "54315f241f66412e88607f2d",
+      "kind": "attr",
+      "q": "0f85c68a1b07b20b10bf0516",
+      "template": "题「{q}」的前提在这份材料上成立吗？"
+    },
+    {
+      "fill": {
+        "q": "上下文里那道题问的东西，这段材料里有没有？"
+      },
+      "form_hash": "cd4d3fd600f3459fa6b03c89",
+      "kind": "attr",
+      "q": "d8c9ab1e3f0111720e6c20f2",
+      "template": "题「{q}」里是否有两个或更多需要分别回答的判断？"
+    },
+    {
+      "fill": {
+        "q": "上下文里那道题问的东西，这段材料里有没有？"
+      },
+      "form_hash": "18c6093988df2ab3840b661c",
+      "kind": "attr",
+      "q": "addd846f6163a2488f92990b",
+      "template": "把题「{q}」按更细的情形分开问，会比整体问更容易答准吗？"
+    },
+    {
+      "fill": {
+        "q": "上下文里那道题问的东西，这段材料里有没有？"
+      },
+      "form_hash": "d8ff506d5be24dd56b495116",
+      "kind": "attr",
+      "q": "29234b6445637016bf60715d",
+      "template": "判断题「{q}」需要的参照对象和语境，这段材料里给够了吗？"
+    },
+    {
+      "fill": {
+        "q": "上下文里那道题问的东西，这段材料里有没有？"
+      },
+      "form_hash": "2ec36692b44a45c1e23fbea6",
+      "kind": "class",
+      "q": "3cbd70d83a7cec5a525c5b08",
+      "template": "题「{q}」要判得更明确，最缺哪一类信息？"
+    },
+    {
+      "fill": {},
+      "form_hash": "a301ee1e69920194207c36ed",
+      "kind": "class",
+      "q": "125260d858ac0b530c1d73f0",
+      "template": "提案最大的风险来自哪一方面？"
+    },
+    {
+      "fill": {
+        "q": "提案最大的风险来自哪一方面？"
+      },
+      "form_hash": "54315f241f66412e88607f2d",
+      "kind": "attr",
+      "q": "c4e2bbc583098873c422bd9c",
+      "template": "题「{q}」的前提在这份材料上成立吗？"
+    },
+    {
+      "fill": {
+        "q": "提案最大的风险来自哪一方面？"
+      },
+      "form_hash": "cd4d3fd600f3459fa6b03c89",
+      "kind": "attr",
+      "q": "dbf57474552b3ac6dbf69844",
+      "template": "题「{q}」里是否有两个或更多需要分别回答的判断？"
+    },
+    {
+      "fill": {
+        "q": "提案最大的风险来自哪一方面？"
+      },
+      "form_hash": "18c6093988df2ab3840b661c",
+      "kind": "attr",
+      "q": "2350090aae9d0758c76096a0",
+      "template": "把题「{q}」按更细的情形分开问，会比整体问更容易答准吗？"
+    },
+    {
+      "fill": {
+        "q": "提案最大的风险来自哪一方面？"
+      },
+      "form_hash": "d8ff506d5be24dd56b495116",
+      "kind": "attr",
+      "q": "007115a58c6a30c1ea34480f",
+      "template": "判断题「{q}」需要的参照对象和语境，这段材料里给够了吗？"
+    },
+    {
+      "fill": {
+        "q": "提案最大的风险来自哪一方面？"
+      },
+      "form_hash": "2ec36692b44a45c1e23fbea6",
+      "kind": "class",
+      "q": "283448d1008f74063e4dd28f",
+      "template": "题「{q}」要判得更明确，最缺哪一类信息？"
+    }
+  ],
+  "replay": true,
+  "resumed": false,
+  "returned_unsure": [],
+  "status": "returned",
+  "trace": {
+    "events": [
+      {
+        "cost": 0.0,
+        "key": "bc49d6ecda19349a66d50e02",
+        "kind": "judge",
+        "note": "「这份提案可行吗？」",
+        "replayed": true,
+        "site": {
+          "end": 8127,
+          "start": 8111
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "c2771ad94bcddda6399f0070",
+        "kind": "judge",
+        "note": "「题「这份提案可行吗？」的前提在这份材料上成立吗？」",
+        "replayed": true,
+        "site": {
+          "end": 8127,
+          "start": 8111
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "876e03860c5c7e3bbc2d9836",
+        "kind": "judge",
+        "note": "「题「这份提案可行吗？」里是否有两个或更多需要分别回答的判断？」",
+        "replayed": true,
+        "site": {
+          "end": 8127,
+          "start": 8111
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "3ef53d9707d648c5e757cdaf",
+        "kind": "judge",
+        "note": "「把题「这份提案可行吗？」按更细的情形分开问，会比整体问更容易答准吗？」",
+        "replayed": true,
+        "site": {
+          "end": 8127,
+          "start": 8111
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "eb72407c77b7411190e28975",
+        "kind": "judge",
+        "note": "「判断题「这份提案可行吗？」需要的参照对象和语境，这段材料里给够了吗？」",
+        "replayed": true,
+        "site": {
+          "end": 8127,
+          "start": 8111
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "5ae9eea5cb0830ccedafab03",
+        "kind": "judge",
+        "note": "「题「这份提案可行吗？」要判得更明确，最缺哪一类信息？」",
+        "replayed": true,
+        "site": {
+          "end": 8127,
+          "start": 8111
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "f148dea6408426182f0e757d",
+        "kind": "gen",
+        "note": "下面这道题判不下来（原因：unsure(band)）：「这份提案可行吗？」。请提出更字面、更容易从材料里直接判断的下一道题，写成 JSON 对象，一个候选一个对象：{\"op\": \"test\" 或 \"select\", \"text\": 题面, \"over\": [候选…]（select 才有）, \"presupposition\": 前提（可省）, \"evidence\": [要用到的参照槽，如 \"ref\"]（可省）, \"request\": 请求（可省；是非题 \"whether\"，K 选一 \"one\"）}。题面里不要用花括号。出题守则，按十个模块逐项想：材料——只问面前这份材料里能看到的东西；谓词——一道题只判一件事，不要把两个条件连在一起，也不要问「这份材料有没有帮助判断」这类关于判断本身的题；切法——是非题问能答是或否的事，K 选一给出互不重叠的候选；请求——说清要选一个还是全部；前提——题默认成立的事写进 presupposition；语境——需要的背景写进题面，不指望读题的人自己补；参照——比较时写明和什么比，要对照参照材料才能判的写 evidence；预算——判断很便宜，能判的都出成题，不为省调用合并或删掉有用的题；拿不准去向——这道题判不下来时程序会把它细化成更字面的子题、问缺哪类信息补上再判、或带原因转交，所以题面要写清判断依据落在材料的哪一部分，拿不准时最该补的是哪类信息；完成条件——每道题的答案都要让原题的可能答案变少。",
+        "replayed": true,
+        "site": {
+          "end": 57653,
+          "start": 57602
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "9582dce16d4234bf02a69516",
+        "kind": "transform",
+        "note": "",
+        "replayed": true,
+        "site": {
+          "end": 61664,
+          "start": 61607
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "e0c552d6ecab65d5dee4b400",
+        "kind": "transform",
+        "note": "",
+        "replayed": true,
+        "site": {
+          "end": 61664,
+          "start": 61607
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "e6343452ff003f75dfd62858",
+        "kind": "transform",
+        "note": "",
+        "replayed": true,
+        "site": {
+          "end": 61664,
+          "start": 61607
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "596df50e0fd38e67502cbfca",
+        "kind": "transform",
+        "note": "",
+        "replayed": true,
+        "site": {
+          "end": 61664,
+          "start": 61607
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "3b0e0331167ecd9de991b1bf",
+        "kind": "transform",
+        "note": "",
+        "replayed": true,
+        "site": {
+          "end": 61664,
+          "start": 61607
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "7a916a9f0d81723afde97174",
+        "kind": "judge",
+        "note": "「这道题里是否有两个或更多需要分别回答的判断？」",
+        "replayed": true,
+        "site": {
+          "end": 73869,
+          "start": 73803
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "e4a49edbfd57b94df8847498",
+        "kind": "judge",
+        "note": "「题「这道题里是否有两个或更多需要分别回答的判断？」的前提在这份材料上成立吗？」",
+        "replayed": true,
+        "site": {
+          "end": 73869,
+          "start": 73803
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "ac9fda1171dbb2209f568e4e",
+        "kind": "judge",
+        "note": "「题「这道题里是否有两个或更多需要分别回答的判断？」里是否有两个或更多需要分别回答的判断？」",
+        "replayed": true,
+        "site": {
+          "end": 73869,
+          "start": 73803
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "cea8f1995c99b73db6be568c",
+        "kind": "judge",
+        "note": "「把题「这道题里是否有两个或更多需要分别回答的判断？」按更细的情形分开问，会比整体问更容易答准吗？」",
+        "replayed": true,
+        "site": {
+          "end": 73869,
+          "start": 73803
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "e84a1829a3aeb27a7b7a8e02",
+        "kind": "judge",
+        "note": "「判断题「这道题里是否有两个或更多需要分别回答的判断？」需要的参照对象和语境，这段材料里给够了吗？」",
+        "replayed": true,
+        "site": {
+          "end": 73869,
+          "start": 73803
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "afff66e5f297ef916f21bbc4",
+        "kind": "judge",
+        "note": "「题「这道题里是否有两个或更多需要分别回答的判断？」要判得更明确，最缺哪一类信息？」",
+        "replayed": true,
+        "site": {
+          "end": 73869,
+          "start": 73803
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "685e2bd6eebdadbb23b74340",
+        "kind": "judge",
+        "note": "「这道题里是否有两个或更多需要分别回答的判断？」",
+        "replayed": true,
+        "site": {
+          "end": 73869,
+          "start": 73803
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "a7f8185cd9e4037b084d0542",
+        "kind": "judge",
+        "note": "「题「这道题里是否有两个或更多需要分别回答的判断？」的前提在这份材料上成立吗？」",
+        "replayed": true,
+        "site": {
+          "end": 73869,
+          "start": 73803
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "cf82580aceee70c44da0ea8c",
+        "kind": "judge",
+        "note": "「题「这道题里是否有两个或更多需要分别回答的判断？」里是否有两个或更多需要分别回答的判断？」",
+        "replayed": true,
+        "site": {
+          "end": 73869,
+          "start": 73803
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "032b019996ece4a2c7aae73e",
+        "kind": "judge",
+        "note": "「把题「这道题里是否有两个或更多需要分别回答的判断？」按更细的情形分开问，会比整体问更容易答准吗？」",
+        "replayed": true,
+        "site": {
+          "end": 73869,
+          "start": 73803
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "416db98da83fdf057af4f967",
+        "kind": "judge",
+        "note": "「判断题「这道题里是否有两个或更多需要分别回答的判断？」需要的参照对象和语境，这段材料里给够了吗？」",
+        "replayed": true,
+        "site": {
+          "end": 73869,
+          "start": 73803
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "7b7a2db8327880c1c27cf671",
+        "kind": "judge",
+        "note": "「题「这道题里是否有两个或更多需要分别回答的判断？」要判得更明确，最缺哪一类信息？」",
+        "replayed": true,
+        "site": {
+          "end": 73869,
+          "start": 73803
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "3062e1be61ad2a2ace261fd7",
+        "kind": "judge",
+        "note": "「这道题里是否有两个或更多需要分别回答的判断？」",
+        "replayed": true,
+        "site": {
+          "end": 73869,
+          "start": 73803
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "053f8b434d4b630f21733ac0",
+        "kind": "judge",
+        "note": "「题「这道题里是否有两个或更多需要分别回答的判断？」的前提在这份材料上成立吗？」",
+        "replayed": true,
+        "site": {
+          "end": 73869,
+          "start": 73803
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "a3998203b2df8b6a70e9104c",
+        "kind": "judge",
+        "note": "「题「这道题里是否有两个或更多需要分别回答的判断？」里是否有两个或更多需要分别回答的判断？」",
+        "replayed": true,
+        "site": {
+          "end": 73869,
+          "start": 73803
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "78083c1d969f3f6a0b7fa28c",
+        "kind": "judge",
+        "note": "「把题「这道题里是否有两个或更多需要分别回答的判断？」按更细的情形分开问，会比整体问更容易答准吗？」",
+        "replayed": true,
+        "site": {
+          "end": 73869,
+          "start": 73803
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "03fed17fb35a2262f82ff8c3",
+        "kind": "judge",
+        "note": "「判断题「这道题里是否有两个或更多需要分别回答的判断？」需要的参照对象和语境，这段材料里给够了吗？」",
+        "replayed": true,
+        "site": {
+          "end": 73869,
+          "start": 73803
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "e0fba7c0b9de75b5a59d5578",
+        "kind": "judge",
+        "note": "「题「这道题里是否有两个或更多需要分别回答的判断？」要判得更明确，最缺哪一类信息？」",
+        "replayed": true,
+        "site": {
+          "end": 73869,
+          "start": 73803
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "90453c70f75c0ba082ae06f2",
+        "kind": "judge",
+        "note": "「上下文里那道题问的东西，这段材料里有没有？」",
+        "replayed": true,
+        "site": {
+          "end": 74307,
+          "start": 74231
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "c849bb31fd9fccd65ebe15d3",
+        "kind": "judge",
+        "note": "「题「上下文里那道题问的东西，这段材料里有没有？」的前提在这份材料上成立吗？」",
+        "replayed": true,
+        "site": {
+          "end": 74307,
+          "start": 74231
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "de8977085a81577186d40d6a",
+        "kind": "judge",
+        "note": "「题「上下文里那道题问的东西，这段材料里有没有？」里是否有两个或更多需要分别回答的判断？」",
+        "replayed": true,
+        "site": {
+          "end": 74307,
+          "start": 74231
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "d3180d2c1b34200ff1b3ed4c",
+        "kind": "judge",
+        "note": "「把题「上下文里那道题问的东西，这段材料里有没有？」按更细的情形分开问，会比整体问更容易答准吗？」",
+        "replayed": true,
+        "site": {
+          "end": 74307,
+          "start": 74231
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "c5918f192b8f8a7a52acf6f9",
+        "kind": "judge",
+        "note": "「判断题「上下文里那道题问的东西，这段材料里有没有？」需要的参照对象和语境，这段材料里给够了吗？」",
+        "replayed": true,
+        "site": {
+          "end": 74307,
+          "start": 74231
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "bd98bfb48a49f2f8604e98e1",
+        "kind": "judge",
+        "note": "「题「上下文里那道题问的东西，这段材料里有没有？」要判得更明确，最缺哪一类信息？」",
+        "replayed": true,
+        "site": {
+          "end": 74307,
+          "start": 74231
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "cde318fba22e13db72b18c89",
+        "kind": "judge",
+        "note": "「上下文里那道题问的东西，这段材料里有没有？」",
+        "replayed": true,
+        "site": {
+          "end": 74307,
+          "start": 74231
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "206bc2a051983ae0c613ba2b",
+        "kind": "judge",
+        "note": "「题「上下文里那道题问的东西，这段材料里有没有？」的前提在这份材料上成立吗？」",
+        "replayed": true,
+        "site": {
+          "end": 74307,
+          "start": 74231
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "ed02a494a369791e5a30f6fe",
+        "kind": "judge",
+        "note": "「题「上下文里那道题问的东西，这段材料里有没有？」里是否有两个或更多需要分别回答的判断？」",
+        "replayed": true,
+        "site": {
+          "end": 74307,
+          "start": 74231
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "c916fcd85065e5964a5f7491",
+        "kind": "judge",
+        "note": "「把题「上下文里那道题问的东西，这段材料里有没有？」按更细的情形分开问，会比整体问更容易答准吗？」",
+        "replayed": true,
+        "site": {
+          "end": 74307,
+          "start": 74231
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "7db0667315f74e3239b6f717",
+        "kind": "judge",
+        "note": "「判断题「上下文里那道题问的东西，这段材料里有没有？」需要的参照对象和语境，这段材料里给够了吗？」",
+        "replayed": true,
+        "site": {
+          "end": 74307,
+          "start": 74231
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "60b58d7a5d4babfc485c4235",
+        "kind": "judge",
+        "note": "「题「上下文里那道题问的东西，这段材料里有没有？」要判得更明确，最缺哪一类信息？」",
+        "replayed": true,
+        "site": {
+          "end": 74307,
+          "start": 74231
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "91b225bff4c01a0be5e0f668",
+        "kind": "judge",
+        "note": "「上下文里那道题问的东西，这段材料里有没有？」",
+        "replayed": true,
+        "site": {
+          "end": 74307,
+          "start": 74231
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "9895de5b8158e375c0aa12a5",
+        "kind": "judge",
+        "note": "「题「上下文里那道题问的东西，这段材料里有没有？」的前提在这份材料上成立吗？」",
+        "replayed": true,
+        "site": {
+          "end": 74307,
+          "start": 74231
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "44d34524facf98088ac24aca",
+        "kind": "judge",
+        "note": "「题「上下文里那道题问的东西，这段材料里有没有？」里是否有两个或更多需要分别回答的判断？」",
+        "replayed": true,
+        "site": {
+          "end": 74307,
+          "start": 74231
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "81b2ed2b252156af19955657",
+        "kind": "judge",
+        "note": "「把题「上下文里那道题问的东西，这段材料里有没有？」按更细的情形分开问，会比整体问更容易答准吗？」",
+        "replayed": true,
+        "site": {
+          "end": 74307,
+          "start": 74231
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "e78e8c1dd268c0b851230913",
+        "kind": "judge",
+        "note": "「判断题「上下文里那道题问的东西，这段材料里有没有？」需要的参照对象和语境，这段材料里给够了吗？」",
+        "replayed": true,
+        "site": {
+          "end": 74307,
+          "start": 74231
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "28335cd9f4c0b8d8f8faff83",
+        "kind": "judge",
+        "note": "「题「上下文里那道题问的东西，这段材料里有没有？」要判得更明确，最缺哪一类信息？」",
+        "replayed": true,
+        "site": {
+          "end": 74307,
+          "start": 74231
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "4f79c7aa924d765462ace0d4",
+        "kind": "judge",
+        "note": "「提案最大的风险来自哪一方面？」",
+        "replayed": true,
+        "site": {
+          "end": 8127,
+          "start": 8111
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "6bb0e581e54df182eb2102cb",
+        "kind": "judge",
+        "note": "「题「提案最大的风险来自哪一方面？」的前提在这份材料上成立吗？」",
+        "replayed": true,
+        "site": {
+          "end": 8127,
+          "start": 8111
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "a1eee6d57000964183b13bf8",
+        "kind": "judge",
+        "note": "「题「提案最大的风险来自哪一方面？」里是否有两个或更多需要分别回答的判断？」",
+        "replayed": true,
+        "site": {
+          "end": 8127,
+          "start": 8111
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "a14584e0ff774c3ed79b156d",
+        "kind": "judge",
+        "note": "「把题「提案最大的风险来自哪一方面？」按更细的情形分开问，会比整体问更容易答准吗？」",
+        "replayed": true,
+        "site": {
+          "end": 8127,
+          "start": 8111
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "d2674b2678bb43fa27caa741",
+        "kind": "judge",
+        "note": "「判断题「提案最大的风险来自哪一方面？」需要的参照对象和语境，这段材料里给够了吗？」",
+        "replayed": true,
+        "site": {
+          "end": 8127,
+          "start": 8111
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "b6a446c3577cafd481b0bcb1",
+        "kind": "judge",
+        "note": "「题「提案最大的风险来自哪一方面？」要判得更明确，最缺哪一类信息？」",
+        "replayed": true,
+        "site": {
+          "end": 8127,
+          "start": 8111
+        }
+      }
+    ],
+    "warnings": [
+      "W-window-untested: @8111 画像没有测过窗口（window），对象长度不核；超窗的语境可能接管读数而无痕",
+      "W-window-untested: @73803 画像没有测过窗口（window），对象长度不核；超窗的语境可能接管读数而无痕",
+      "W-window-untested: @74231 画像没有测过窗口（window），对象长度不核；超窗的语境可能接管读数而无痕"
+    ]
+  },
+  "value": {
+    "hops": 2,
+    "pending": [],
+    "rejected": [
+      {
+        "by": "elicit",
+        "codes": [
+          "W-diag-meta"
+        ],
+        "q": "这份材料有助于判断提案是否可行吗？",
+        "stage": "static"
+      },
+      {
+        "by": "elicit",
+        "codes": [
+          "W-diag-two-judgments"
+        ],
+        "q": "提案的成本是否合理，并且周期是否可行？",
+        "stage": "static"
+      },
+      {
+        "by": "elicit",
+        "codes": [
+          "not-in-material"
+        ],
+        "q": "提案作者做过同类项目吗？",
+        "stage": "judge-diag"
+      }
+    ],
+    "unchosen": [
+      "提案里写明了资金来源吗？"
+    ],
+    "value": [
+      {
+        "by": "elicit",
+        "path": [
+          "author：这份提案可行吗？ → unsure(band)",
+          "elicit：提案最大的风险来自哪一方面？ → pick(1)"
+        ]
+      }
+    ],
+    "version": "derive-14"
+  }
+}

@@ -6,7 +6,7 @@
 每条命令都加 `--guard`，与基线提交上的金样文件比较。
 
 允许的差别只有把关位本身带来的：
-- 账本头 `compared.entry_hash`（把关位进哈希），以及由它带动的各条目 `prev` 链；
+- 账本头 `compared.entry_hash`（把关位进哈希），以及由它带动的各条目 `prev` 链与行外壳的 `trace`（C-2：默认追踪编号由入口参数哈希推导，基线提交的金样里没有这个字段）；
 - 报告顶层 `guard: true`；
 - 从翻转前录的种子账本续跑时，账本头 `entry_hash` 不同带出的那一条 `W-header`。
 其余字段不同即报差异。基线提交缺省为 `git merge-base HEAD main`（翻转之前的 main）。
@@ -65,6 +65,9 @@ def strip_ledger(text: str):
         if i == 0 and 'header' in j:
             j['header']['compared'].pop('entry_hash', None)
         j.pop('prev', None)
+        # C-2：账本行外壳的追踪字段（默认开，基线提交的金样里没有）；追踪编号由程序标识与入口参数哈希推导，
+        # 而把关位进入口参数哈希，所以 --guard 下它必然不同，与把关无关的语义
+        j.pop('trace', None)
         out.append(j)
     return out
 

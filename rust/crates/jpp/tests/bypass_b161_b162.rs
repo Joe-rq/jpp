@@ -215,10 +215,22 @@ fn 同键消费两次_报_w_duty_twice() {
     );
 }
 
+/// 同键两处都没有作者去向：B0492 起不再是 J-05，而是同一判断的一组 cut 都标上走默认链（过程记录 5.18，主控 2026-09-30
+/// 路 2）——第一处走完链记账，第二处对同一键再记账时被 W-duty-twice 挡住。`--guard` 下不走链，运行期仍是 J-05
+/// （`unsure_default::s2c_guard下不走链_运行期j05`）
 #[test]
-fn 同键都不处理_报_j05() {
+fn 同键都不处理_走默认链_第二处报_w_duty_twice() {
     let x = 跑(&format!("{同键}1\n"));
-    assert!(x.r.unwrap_err().contains("[J-05]"));
+    assert!(x.r.is_ok(), "{:?}", x.r);
+    assert_eq!(
+        x.告警
+            .iter()
+            .filter(|w| w.starts_with("W-duty-twice:"))
+            .count(),
+        1,
+        "{:?}",
+        x.告警
+    );
 }
 
 #[test]

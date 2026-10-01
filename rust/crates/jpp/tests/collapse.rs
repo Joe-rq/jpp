@@ -118,7 +118,7 @@ fn 出口的taint对jpp可见() {
     /// 判断恒给 0.99，不该生成、不该问人（步 15c：原 `impl Client` 的桩改为三个闭包端口；无状态，故 'static）
     fn 桩端口() -> Ports<'static> {
         Ports::new()
-            .with(FnPort::judge("m", |_s, qs| {
+            .with(common::伴随中性judge("m", |_s, qs| {
                 Ok(JudgeResult {
                     answers: qs.iter().map(|_| Answer::Noul(0.99)).collect(),
                     tokens: 0,
@@ -190,7 +190,7 @@ fn 读taint不能替代可信判断() {
     /// 判断恒给 0.99，不该生成、不该问人（步 15c：原 `impl Client` 的桩改为三个闭包端口；无状态，故 'static）
     fn 桩端口() -> Ports<'static> {
         Ports::new()
-            .with(FnPort::judge("m", |_s, qs| {
+            .with(common::伴随中性judge("m", |_s, qs| {
                 Ok(JudgeResult {
                     answers: qs.iter().map(|_| Answer::Noul(0.99)).collect(),
                     tokens: 0,
@@ -239,7 +239,7 @@ fn 读taint不能替代可信判断() {
     let e1 = 跑(r#"
 budget {calls: 2, cost: 0, depth: 8};
 let e = cut(judge(state(do("取外部", [], 0)), test("行吗","k")));
-if taint(e) == "untrusted" { content(do("发出去", [], 0)) } else { "没做" }
+if taint(e) == "untrusted" { (do("发出去", [], 0)) } else { "没做" }
 "#)
     .expect_err("**读标签不是可信判断**");
     assert!(e1.contains("J-08"), "{e1}");
@@ -249,7 +249,7 @@ if taint(e) == "untrusted" { content(do("发出去", [], 0)) } else { "没做" }
 budget {calls: 2, cost: 0, depth: 8};
 let e = cut(judge(state(do("取外部", [], 0)), test("行吗","k")));
 let t = taint(e) == "untrusted";
-if t { content(do("发出去", [], 0)) } else { "没做" }
+if t { (do("发出去", [], 0)) } else { "没做" }
 "#)
     .expect_err("绕一层布尔绑定也不行");
     assert!(e2.contains("J-08"), "{e2}");
@@ -261,11 +261,11 @@ let 脏判 = handle(cut(judge(state(do("取外部", [], 0)), test("行吗","k"))
     act: fn(){true}, ignore: fn(){false}, unsure: fn(u){consume(u,"drop");false}});
 let 净判 = handle(cut(judge(state(do("取内部", [], 0)), test("行吗","k"))), {
     act: fn(){true}, ignore: fn(){false}, unsure: fn(u){consume(u,"drop");false}});
-if 脏判 && 净判 { content(do("发出去", [], 0)) } else { "没做" }
+if 脏判 && 净判 { (do("发出去", [], 0)) } else { "没做" }
 "#);
-    assert_eq!(
-        ok.as_deref(),
-        Ok("\"发了\""),
+    // G2（步 35）：守卫下不可逆 do 推迟到结论之后执行，随返回值交出的是结算后的产出（材料，内容是动作的输出）
+    assert!(
+        matches!(ok.as_deref(), Ok(s) if s.contains("\"content\":\"发了\"")),
         "**合取一个真的可信判断就该放行**：{ok:?}"
     );
 }
@@ -286,7 +286,7 @@ fn 指纹不出来的transform输出不进账本() {
     /// 判断恒给 0.9，不该生成、不该问人（步 15c：原 `impl Client` 的桩改为三个闭包端口；无状态，故 'static）
     fn 桩端口() -> Ports<'static> {
         Ports::new()
-            .with(FnPort::judge("m", |_s, qs| {
+            .with(common::伴随中性judge("m", |_s, qs| {
                 Ok(JudgeResult {
                     answers: qs.iter().map(|_| Answer::Noul(0.9)).collect(),
                     tokens: 0,

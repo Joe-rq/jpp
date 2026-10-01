@@ -1,5 +1,5 @@
 {
- "about": "步 0 门禁：每个示例一次固定观察运行的金样（21 §二·1）。字段：source 源码；fixtures 固定观察；calib 校准记录目录；files 运行目录里预置的文件；resume_from 从某个用例的账本续跑；expect=error 表示预期失败，金样为规范化后的 stderr。",
+ "about": "步 0 门禁：每个示例一次固定观察运行的金样（21 §二·1）。字段：source 源码；fixtures 固定观察；calib 校准记录目录；files 运行目录里预置的文件；resume_from 从某个用例的账本续跑；expect=error 表示预期失败，金样为规范化后的 stderr；profile 能力画像（相对 rust-jpp/，引用原件，步 23b）。",
  "cases": [
   {
    "name": "adaptive",
@@ -238,7 +238,9 @@
    "source": "examples/declare-refund.jpp",
    "fixtures": "examples/fixtures/declare-refund-accept.json",
    "calib": "tests/golden/_calib/declare-refund",
-   "args": ["--release-on-declared"]
+   "args": [
+    "--release-on-declared"
+   ]
   },
   {
    "name": "declare-stat",
@@ -246,9 +248,44 @@
    "fixtures": "examples/fixtures/declare-stat.json"
   },
   {
+   "name": "diag-runtime",
+   "source": "examples/diag-runtime.jpp",
+   "fixtures": "examples/fixtures/diag-runtime.json"
+  },
+  {
    "name": "declare-fit",
    "source": "examples/declare-fit.jpp",
    "fixtures": "examples/fixtures/declare-fit.json"
+  },
+  {
+   "name": "window-over",
+   "source": "examples/window-over.jpp",
+   "fixtures": "examples/fixtures/window-over.json",
+   "profile": "profiles/jev-1.13.0.json"
+  },
+  {
+   "name": "window-over@untested",
+   "source": "examples/window-over.jpp",
+   "fixtures": "examples/fixtures/window-over.json"
+  },
+  {
+   "name": "feasible-pick",
+   "source": "examples/feasible-pick.jpp",
+   "fixtures": "examples/fixtures/feasible-pick.json"
+  },
+  {
+   "name": "window-over-approx",
+   "source": "examples/window-over-approx.jpp",
+   "fixtures": "examples/fixtures/window-over-approx.json",
+   "profile": "profiles/jev-1.13.0.json"
+  },
+  {
+   "name": "window-over-approx@untested",
+   "source": "examples/window-over-approx.jpp",
+   "fixtures": "examples/fixtures/window-over-approx.json",
+   "args": [
+    "--guard"
+   ]
   },
   {
    "name": "error-missing-budget",
@@ -258,7 +295,11 @@
   {
    "name": "error-outcome-dropped",
    "source": "examples/errors/outcome-dropped.jpp",
-   "expect": "error"
+   "expect": "error",
+   "args": [
+    "--guard"
+   ],
+   "fixtures": "examples/fixtures/outcome-dropped.json"
   },
   {
    "name": "error-question-field-typo",
@@ -274,6 +315,37 @@
    "name": "error-type-mismatch",
    "source": "examples/errors/type-mismatch.jpp",
    "expect": "error"
+  },
+  {
+   "name": "derive-chain",
+   "source": "examples/derive-chain.jpp",
+   "fixtures": "examples/fixtures/derive-chain.json"
+  },
+  {
+   "name": "derive-elicit",
+   "source": "examples/derive-elicit.jpp",
+   "fixtures": "examples/fixtures/derive-elicit.json"
+  },
+  {
+   "name": "modules-fill",
+   "source": "examples/modules-fill.jpp",
+   "fixtures": "examples/fixtures/modules-fill.json"
+  },
+  {
+   "name": "unsure-default",
+   "source": "examples/unsure-default.jpp",
+   "fixtures": "examples/fixtures/unsure-default.json"
+  },
+  {
+   "name": "delta-unknown",
+   "source": "examples/delta-unknown.jpp",
+   "fixtures": "examples/fixtures/delta-unknown.json"
+  },
+  {
+   "name": "delta-unknown@profile",
+   "source": "examples/delta-unknown.jpp",
+   "fixtures": "examples/fixtures/delta-unknown.json",
+   "profile": "profiles/jev-1.13.0.json"
   }
  ]
 }

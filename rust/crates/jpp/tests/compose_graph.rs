@@ -89,6 +89,20 @@ fn 跑一(body: &str, 边: &[(&str, &str, f64)], 重放: bool) -> 跑结果 {
         );
         it.passes = Passes::default();
         match it.run(&program) {
+            // G2（步 35）：违规不再是运行期错误；这里把它转成带「[J-05] 违规」的错误文本，原断言按新形态核
+            Ok(o) if !o.violations.is_empty() => (
+                Err(format!(
+                    "[J-05] 违规 {} 笔：{}",
+                    o.violations.len(),
+                    o.violations
+                        .iter()
+                        .map(|v| v.message.as_str())
+                        .collect::<Vec<_>>()
+                        .join("；")
+                )),
+                o.trace.warnings.clone(),
+                o.layers.len(),
+            ),
             Ok(o) => (Ok(o.value_json()), o.trace.warnings.clone(), o.layers.len()),
             Err(e) => (Err(e.render()), vec![], 0),
         }
@@ -341,8 +355,9 @@ fn 未决的两种返回形状() {
                 x.告警
             );
         } else {
+            // G2：原断言运行期 J-05，改为程序结束记违规
             assert!(
-                x.r.as_ref().unwrap_err().contains("[J-05]"),
+                x.r.as_ref().unwrap_err().contains("[J-05] 违规"),
                 "{名}：{:?}",
                 x.r
             );
@@ -372,7 +387,8 @@ let t = interval(g, "shortest_path", {{source: 0, target: 3}});
     };
     let 只hi = 跑(&程序("pending: t.hi.pending"), 边);
     let e = 只hi.r.as_ref().unwrap_err();
-    assert!(e.contains("[J-05]"), "{e}");
+    // G2：原断言运行期 J-05，改为程序结束记违规
+    assert!(e.contains("[J-05] 违规"), "{e}");
     let 带g = 跑(&程序("pending: concat(t.hi.pending, g.pending)"), 边);
     assert_eq!(值(&带g)["differs"], j("[[1, 2]]"));
 }

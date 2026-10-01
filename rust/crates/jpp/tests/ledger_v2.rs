@@ -71,8 +71,8 @@ fn 链断拒绝() {
 #[test]
 fn 未知字段拒绝() {
     let text = 样本().encode();
-    // 账本 v3（步 18a）：版本号随格式改为 3
-    let bad = text.replacen("\"version\":3,", "\"version\":3,\"extra\":1,", 1);
+    // 账本 v3（步 18a）：版本号随格式改为 3；v4（C-1）改为 4
+    let bad = text.replacen("\"version\":5,", "\"version\":5,\"extra\":1,", 1); // 步 34 V5 起 5
     let e = Ledger::decode(&bad).expect_err("头行多一个字段要被拒");
     assert!(e.starts_with("E-ledger-corrupt"), "{e}");
 }

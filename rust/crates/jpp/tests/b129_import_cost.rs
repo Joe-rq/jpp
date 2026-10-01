@@ -208,8 +208,8 @@ fn 代价线证书与出口() {
 #[test]
 fn 正式代价线放行_试用代价线不放行() {
     let (正式, _) = 代价库(50);
-    let o = 跑(&程序(带代价, "content(do(\"退款\", [], 0))"), &正式, 0.95).unwrap();
-    assert_eq!(o.value_json(), json!("已退"));
+    let o = 跑(&程序(带代价, "(do(\"退款\", [], 0))"), &正式, 0.95).unwrap();
+    assert_eq!(o.value_json()["content"], json!("已退"));
     assert_eq!(o.exits[0]["releases"], json!(true));
 
     // 20 对零错：正式 α 0.1 的上界约 0.206 不过，试用 α 0.25 过（B72）
@@ -221,7 +221,7 @@ fn 正式代价线放行_试用代价线不放行() {
     assert_eq!(o.value_json(), json!("act"));
     assert_eq!(o.exits[0]["grade"], json!("Trial"));
     assert_eq!(o.exits[0]["releases"], json!(false));
-    let e = 跑(&程序(带代价, "content(do(\"退款\", [], 0))"), &试用, 0.95)
+    let e = 跑(&程序(带代价, "(do(\"退款\", [], 0))"), &试用, 0.95)
         .expect_err("试用代价线不放行不可逆 do");
     assert!(e.contains("J-08"), "{e}");
 }

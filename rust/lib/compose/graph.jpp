@@ -15,7 +15,7 @@
 fn graph_materials(xs) { map(pair(map(xs, fn(x) { [x, x] })).value, fn(r) { r.item.a }) }
 
 // 未决里「没观察到」的那一类（与 lib/outcome.jpp 的 unobserved_cause 同一集合，B95）
-fn graph_unobserved(c) { c == "budget" || c == "absent" || c == "latency" }
+fn graph_unobserved(c) { c == "absent" || c == "budget" || c == "depth" || c == "latency" || c == "deadline" }
 
 // 候选下标对判边，组成图。ij 是 [[i, j]]，left/right 是两端的节点列表，off 是右端节点号的偏移；
 // opts.line（B128 补齐）原样交给判边的 sieve，只在给了时才传选项（不给线的程序与改前相同，旧二进制照样能跑）
@@ -138,20 +138,60 @@ fn on_graph(g, algo, args, mode) -> Record<Exit> {
     }
 }
 
-// 区间：已决图与乐观图各跑一次。differs = 乐观产物用到的未决边（已决产物按定义不用未决边）。
-// complete：两次都跑成；same：跑成且 differs 为空，即结论不依赖未决边。
+// 一个算法结果里全部并列解用到的边下标（used 里的下标）：动作报的 ties 每项与主解同形（C-8）。
+// components 的划分唯一，没有并列；没有 ties 字段的结果（旧动作、没跑成）算空。
+fn graph_tie_edges(algo, out) {
+    if !has(out, "ties") { [] } else {
+        fold(out.ties, [], fn(acc, t) {
+            concat(acc, if algo == "matching" { map(t.pairs, fn(p) { p.edge_index }) } else {
+                if algo == "shortest_path" { map(t.path_edges, fn(x) { x.edge_index }) } else {
+                    if algo == "max_clique" { t.edge_indices } else { [] }
+                }
+            })
+        })
+    }
+}
+
+// 动作报的并列个数：没跑成或没有 tie_count 字段算 0
+fn graph_tie_count(d) {
+    if has(d, "result") && has(d.result, "tie_count") { d.result.tie_count } else { 0 }
+}
+
+// 动作报的 ties 是否列全：没跑成或没有该字段按列全算（没有并列可漏）
+fn graph_ties_complete(d) {
+    if has(d, "result") && has(d.result, "ties_complete") { d.result.ties_complete } else { true }
+}
+
+// 区间：已决图与乐观图各跑一次。differs = 乐观产物用到的未决边（已决产物按定义不用未决边），
+// 并列的最优解（同样好的另一个团、另一条最短路、另一组匹配）用到的未决边也算进去——只看主解会漏掉它们，
+// same 会误报为真（案例 01 第 3 条，C-8）。
+// complete：两次都跑成；same：跑成、并列都列全、且 differs 为空，即结论不依赖未决边。并列没列全（并列超过动作的枚举
+// 上限 64，或 set_cover 走贪心）时 differs 只看得到被列出的并列解，可能漏掉只出现在没列出的并列解里的未决边，
+// 所以 same 不判真（复核 Z0173-Z0174 缺口 1，Z0205）：为假的意思是「无法证明不依赖」，不是「依赖」；
+// 读 ties_complete 可分辨原因，differs 为空而 same 为假就是这一种。
+// unique：两次的最优解都唯一且动作把并列列全了；tie_count_lo / tie_count_hi 是两次各有几个并列最优解，
+// ties_complete 是两次的并列都列全了（动作有枚举上限，超过时为假）。
 // exit = 乐观产物出口的 compose(…, "all")；alpha_bound、n_unknown 取 cert(exit)（B161 联合界：所用边证书 α 之和封顶 1，
 // 无证书的边按 1 计并计入 n_unknown）
 fn interval(g, algo, args) -> Record<Exit> {
     let lo = on_graph(g, algo, args, "decided");
     let hi = on_graph(g, algo, args, "optimistic");
-    let open = fold(concat(hi.value, hi.pending), [], fn(acc, p) {
+    let open0 = fold(concat(hi.value, hi.pending), [], fn(acc, p) {
         concat(acc, filter(map(p.edges, fn(e) { e.eid }), fn(k) { !contains(acc, k) }))
+    });
+    let used_hi = concat(g.edges, g.pending);
+    let tie_idx = if has(hi.detail, "result") { graph_tie_edges(algo, hi.detail.result) } else { [] };
+    let open = fold(tie_idx, open0, fn(acc, k) {
+        if contains(acc, used_hi[k].eid) { acc } else { append(acc, used_hi[k].eid) }
     });
     let differs = filter(g.pending, fn(e) { contains(open, e.eid) });
     let complete = !has(lo.detail, "failed") && !has(hi.detail, "failed");
     let x = compose(map(concat(hi.value, hi.pending), fn(p) { p.exit }), "all");
     let c = cert(x);
-    {lo: lo, hi: hi, exit: x, differs: differs, complete: complete, same: complete && len(differs) == 0,
+    let n_lo = graph_tie_count(lo.detail);
+    let n_hi = graph_tie_count(hi.detail);
+    let full = graph_ties_complete(lo.detail) && graph_ties_complete(hi.detail);
+    {lo: lo, hi: hi, exit: x, differs: differs, complete: complete, same: complete && full && len(differs) == 0,
+     unique: complete && full && n_lo <= 1 && n_hi <= 1, tie_count_lo: n_lo, tie_count_hi: n_hi, ties_complete: full,
      alpha_bound: c.alpha_bound, n_unknown: c.n_unknown}
 }

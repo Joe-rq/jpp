@@ -392,7 +392,12 @@ let 包 = 看(mat("a"));
         &ActionRegistry::new(),
         &mut ledger,
     ) {
-        Err(e) => assert!(e.render().contains("J-05"), "该是 J-05：{}", e.render()),
+        // G2（步 35）：原断言「运行期 J-05」，改为程序结束记一笔违规（单次形态），值照带
+        Ok(out) if !out.violations.is_empty() => {
+            assert_eq!(out.violations.len(), 1);
+            assert_eq!(out.value_json(), serde_json::json!({"只要状态": "unsure"}));
+        }
+        Err(e) => panic!("违规不再是运行期错误：{}", e.render()),
         Ok(out) => panic!(
             "只取了 状态 字段、把带着未决的 待 字段丢了，这是最后一份承接信息：{:?} / returned_unsure={:?}",
             out.value_json(),

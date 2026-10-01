@@ -75,7 +75,7 @@ fn 读数不能做比较() {
 /// J-05：出口绑定之后再没被提到 = 静默丢弃。
 #[test]
 fn 未消费的出口是错() {
-    let binding = bind("e", call("unsure", vec![text("材料不够")]));
+    let binding = bind("e", call("unsure", vec![text("insufficient")]));
     let at = let_span(&binding);
     let program = program(Some(budget(1, 8)), vec![binding], int(0));
     let report = check(&program);
@@ -150,9 +150,10 @@ fn program_returning_exit() -> jpp::Program {
     )
 }
 
-/// J-05 的静态穷尽面：臂表缺 unsure 去向。
+/// J-05 的静态穷尽面：臂表缺 unsure 去向。B0492 S2 起不再是错：未决走语言的默认链，检查器只报提示
+/// `N-unsure-default`（Z0207 第 6 条；`--guard` 只在运行期恢复 J-05 错，见 `unsure_default.rs`）。
 #[test]
-fn handle缺unsure臂是错() {
+fn handle缺unsure臂是提示() {
     let arms = rec(vec![("act", int(1)), ("ignore", int(0))]);
     let at = arms.span;
     let program = program(
@@ -173,10 +174,16 @@ fn handle缺unsure臂是错() {
         call("handle", vec![name("e"), arms]),
     );
     let report = check(&program);
+    assert!(
+        report.find("J-05").is_none(),
+        "缺 unsure 臂不再是 J-05 错：\n{}",
+        report.render()
+    );
     let d = report
-        .find("J-05")
-        .unwrap_or_else(|| panic!("应当报 J-05：\n{}", report.render()));
+        .find("N-unsure-default")
+        .unwrap_or_else(|| panic!("应当报提示 N-unsure-default：\n{}", report.render()));
     assert_eq!(d.span, at);
+    assert!(report.errors().is_empty(), "{}", report.render());
 }
 
 /// E5：有界循环必带 bound，而且 bound 要是正整数。

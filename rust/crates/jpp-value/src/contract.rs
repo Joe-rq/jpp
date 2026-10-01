@@ -34,6 +34,11 @@ pub fn pending_entry(element: Value, exit: &Value) -> Value {
         Value::Exit(e) | Value::Duty(e) => Value::text(&e.cause()),
         _ => Value::Unit,
     };
+    // 步 36 G3：`cause` 只写原因名；原因有细节（缺的槽、失败文字）时另加 `detail`
+    let detail = match exit {
+        Value::Exit(e) | Value::Duty(e) => e.detail().map(Value::text),
+        _ => None,
+    };
     match element {
         Value::Record(fs) if fs.iter().any(|(k, _)| k == "exit") => {
             if fs.iter().any(|(k, _)| k == "cause") {
@@ -41,10 +46,21 @@ pub fn pending_entry(element: Value, exit: &Value) -> Value {
             } else {
                 let mut v: Vec<(String, Value)> = fs.iter().cloned().collect();
                 v.push(("cause".into(), cause));
+                if let Some(d) = detail
+                    && !fs.iter().any(|(k, _)| k == "detail")
+                {
+                    v.push(("detail".into(), d));
+                }
                 Value::record(v)
             }
         }
-        _ => Value::record(vec![("exit".into(), exit.clone()), ("cause".into(), cause)]),
+        _ => {
+            let mut v = vec![("exit".into(), exit.clone()), ("cause".into(), cause)];
+            if let Some(d) = detail {
+                v.push(("detail".into(), d));
+            }
+            Value::record(v)
+        }
     }
 }
 

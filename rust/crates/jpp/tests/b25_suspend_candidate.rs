@@ -14,7 +14,7 @@ use serde_json::Value as Json;
 /// 判断恒给 `p`，问人恒「还没答」，不该生成（步 15c：原 `impl Client` 的桩改为三个闭包端口）
 fn 定值端口<'a>(p: f64, calls: &'a RefCell<u64>) -> Ports<'a> {
     Ports::new()
-        .with(FnPort::judge("fixed-0", move |_s, qs| {
+        .with(common::伴随中性judge("fixed-0", move |_s, qs| {
             *calls.borrow_mut() += 1;
             Ok(JudgeResult {
                 answers: qs.iter().map(|_| Answer::Noul(p)).collect(),
@@ -34,7 +34,7 @@ fn 定值端口<'a>(p: f64, calls: &'a RefCell<u64>) -> Ports<'a> {
 const 发信: &str = r#"
 budget {calls: 2, cost: 0, depth: 8};
 let e = cut(judge(state(mat("内部材料")), test("可以发吗", "k")));
-handle(e, {act: fn() { content(do("发邮件", [], 0)) },
+handle(e, {act: fn() { (do("发邮件", [], 0)) },
            ignore: fn() { "没发" },
            unsure: fn(u) { consume(u, "drop"); "没发" }})
 "#;

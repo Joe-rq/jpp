@@ -66,7 +66,7 @@ fn 跑(src: &str) -> Result<Json, String> {
     跑在(src, &mut Ledger::new())
 }
 
-const 发: &str = r#"content(do("发邮件", [], 0))"#;
+const 发: &str = r#"(do("发邮件", [], 0))"#;
 
 /// 第一跳用键 `第一` 从两份字面材料里筛，第二跳在被选出的材料上用正式线 `k2` 判断，act 臂里发。
 fn 两跳(第一: &str, 第二跳材料: &str) -> String {
@@ -85,7 +85,7 @@ fn a_试用线选出的材料上正式线判断不放行() {
 #[test]
 fn b_两跳都是正式线放行() {
     assert_eq!(
-        跑(&两跳("k", "r.value[0].item")).unwrap(),
+        跑(&两跳("k", "r.value[0].item")).unwrap()["content"],
         Json::from("已发")
     );
 }
@@ -110,7 +110,7 @@ fn d_谱系只收紧判断证据_经ask照常放行() {
     let v = run(&program, ports, &库(), &动作表(), &mut Ledger::new())
         .map(|o| o.value_json())
         .map_err(|e| e.render());
-    assert_eq!(v.unwrap(), Json::from("已发"));
+    assert_eq!(v.unwrap()["content"], Json::from("已发"));
 }
 
 #[test]
@@ -120,7 +120,7 @@ fn e_值依赖边同样传递() {
         .expect_err("值依赖边上的试用线祖先同样断谱系");
     assert!(e.contains("J-08") && e.contains("Trial"), "{e}");
     assert_eq!(
-        跑(&两跳("k", "mat(content(r.value[0].item) + \"！\")")).unwrap(),
+        跑(&两跳("k", "mat(content(r.value[0].item) + \"！\")")).unwrap()["content"],
         Json::from("已发")
     );
 }
@@ -142,7 +142,7 @@ fn g_本趟出口表里没有的祖先键_无法证明即不放行() {
         "budget {{calls: 4, cost: 1, depth: 8}};\nhandle(cut(judge(state(mat(\"甲\")), test(\"该发吗\", \"k\"))), {{act: fn() {{ {发} }}, ignore: fn() {{ \"不发\" }}, unsure: fn(u) {{ consume(u, \"drop\"); \"不发\" }}}})\n"
     );
     let mut l = Ledger::new();
-    assert_eq!(跑在(&src, &mut l).unwrap(), Json::from("已发"));
+    assert_eq!(跑在(&src, &mut l).unwrap()["content"], Json::from("已发"));
     let mut 改了 = 0;
     for e in l.entries.iter_mut() {
         if let Entry::Judge { parents, .. } = e {

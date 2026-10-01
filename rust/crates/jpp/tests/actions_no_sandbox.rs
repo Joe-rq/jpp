@@ -103,7 +103,9 @@ if ok { content(do("exec_py", ["print(1)", "", 5], 0)) } else { "没做" }
     assert!(!ok && err.contains("J-08"), "{err}");
     let (ok, err) = jpp_forced_no_sandbox(&d, &["check", "p.jpp"]);
     assert!(ok && !err.contains("J-08"), "默认不拦：{err}");
-    let 顶层 = "budget {calls: 2, cost: 0, depth: 8};\ncontent(do(\"exec_py\", [\"print(1+1)\", \"\", 5], 0))\n";
+    // G2（步 35）：`--guard` 下不可逆 do 推迟到结论之后，同一次运行里不能读它的结果；随返回值交出，结算后报告里看得到
+    let 顶层 =
+        "budget {calls: 2, cost: 0, depth: 8};\n(do(\"exec_py\", [\"print(1+1)\", \"\", 5], 0))\n";
     fs::write(d.join("q.jpp"), 顶层).unwrap();
     let (ok, err) = jpp_forced_no_sandbox(&d, &["run", "q.jpp", "--guard"]);
     assert!(!ok && err.contains("E-ledger-required"), "{err}");
@@ -121,7 +123,7 @@ if ok { content(do("exec_py", ["print(1)", "", 5], 0)) } else { "没做" }
     );
     assert!(ok, "{err}");
     let r: Value = serde_json::from_str(&fs::read_to_string(d.join("r.json")).unwrap()).unwrap();
-    assert_eq!(r["value"]["stdout"], "2\n", "{r}");
+    assert_eq!(r["value"]["content"]["stdout"], "2\n", "{r}");
     let _ = fs::remove_dir_all(&d);
 }
 

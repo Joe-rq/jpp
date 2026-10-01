@@ -6,17 +6,17 @@
 
 mod common;
 
+use common::run;
 use jpp::effects::{CalibStore, FnPort, JudgeResult, Ports};
 use jpp::interp::{ActionRegistry, TaintOut};
 use jpp::ledger::{Entry, Ledger};
-use jpp::run;
 use jpp::value::{Answer, State, Taint, Value};
 use jpp::{lower, syntax::parse};
 use serde_json::Value as Json;
 
 /// 判断器：按材料原文回读数（未列出的材料回 0.5）
 fn 端口<'a>(表: Vec<(&'static str, Answer)>) -> Ports<'a> {
-    Ports::new().with(FnPort::judge("m", move |s: &State, qs| {
+    Ports::new().with(common::伴随中性judge("m", move |s: &State, qs| {
         let 原文 =
             s.on.first()
                 .or_else(|| s.over.first())
@@ -439,7 +439,7 @@ fn k1_改声明线后重放报告头不同() {
     assert_eq!(l.calib_used[声明键[0]]["record"]["line"], "declared");
     // 数不变：不报
     let mut 同 = l.clone();
-    let o = jpp::run_replay(
+    let o = common::run_replay(
         &入账程序(r#", {declare: {hi: 0.7, lo: 0.3}}"#),
         端口(vec![]),
         &c,
@@ -454,7 +454,7 @@ fn k1_改声明线后重放报告头不同() {
     );
     // 改成 0.8：报
     let mut 改 = l.clone();
-    let o = jpp::run_replay(
+    let o = common::run_replay(
         &入账程序(r#", {declare: {hi: 0.8, lo: 0.3}}"#),
         端口(vec![]),
         &c,
@@ -549,6 +549,7 @@ fn 会话跑(
     let a = 动作表();
     let mut l = Ledger::new();
     let o = jpp::Session::new(端口(表), &c, &a)
+        .with_companions(common::伴随())
         .run(&编译(src, entry), entry, &mut l)
         .map_err(|e| e.render())?;
     Ok((
@@ -753,6 +754,7 @@ fn l_重放换开关报告头不同() {
         let c = CalibStore::new();
         let a = 动作表();
         jpp::Session::new(端口(vec![]), &c, &a)
+            .with_companions(common::伴随())
             .replay(&编译(src, &接受入口(接受)), &接受入口(接受), &mut l)
             .unwrap()
             .trace
@@ -867,7 +869,7 @@ fn n_随机线按哈希去重() {
         o.trace.warnings
     );
     let mut 重 = l.clone();
-    let r = jpp::run_replay(
+    let r = common::run_replay(
         &随机线程序("rand(7, k)"),
         端口(vec![]),
         &c,
@@ -885,7 +887,7 @@ fn n_随机线按哈希去重() {
     // 重放不再追加已有的同哈希记录（B124 按键取最后一条只够单线；多线按哈希查全部条目）
     assert_eq!(声明条数(&重), 3, "重放后账本里的声明记录");
     let mut 换 = l.clone();
-    let r = jpp::run_replay(
+    let r = common::run_replay(
         &随机线程序("rand(8, k)"),
         端口(vec![]),
         &c,

@@ -1,0 +1,17 @@
+// 判断之后按代码谓词取可行候选（C-4，cut 的 feasible 选项）。
+// 一块工地要选下一道工序：判断器对三道工序读出概率并按回答选 pick，但世界有代码就能定的事实——地基已经浇过、砌墙要先有
+// 地基、装窗要先有墙（意图汇编 7a：代码能定的不问判断器，也不让宿主事后补齐）。作者写 feasible: fn(k) { 布尔 }，k 是候选在
+// over 里的下标；已决的 pick 不可行时，cut 顺着概率从高到低取第一个可行的候选，被跳过的候选与概率记在报告 exits 行的
+// feasible 字段（路 A；账本事件分类型落地后写进账本），改选后的出口等级降为 Answer。全部不可行出 unsure(infeasible)，
+// 由作者消费。判断器的读数不改，只改出口；谓词是代码，不调效应，不多花一次判断。
+budget {calls: 2, cost: 0.01, depth: 16};
+let steps = ["浇筑地基", "砌一层墙", "装窗"];
+let requires = ["", "浇筑地基", "砌一层墙"];
+let done = ["浇筑地基"];
+let 可行 = fn(k) { !contains(done, steps[k]) && (requires[k] == "" || contains(done, requires[k])) };
+
+let r = judge(state(mat("工地现况：场地已平整，地基浇好，墙体尚未开砌。"), {over: map(steps, fn(s) { mat(s) })}),
+              select("下一道工序做哪一项？", "site-next"));
+handle(cut(r, {feasible: 可行}), {
+    pick: fn(k) { {下一步: steps[k], 序号: k} },
+    unsure: fn(u) { consume(u, "drop"); {下一步: unit, 序号: -1} }})

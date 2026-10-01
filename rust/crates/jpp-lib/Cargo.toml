@@ -1,0 +1,12 @@
+[package]
+name = "jpp-lib"
+version = "0.1.0"
+edition = "2024"
+license = "MIT"
+description = "J++ S library, Rust side (L5): host registration of `diagnose` and the standard-library version `lib_version`"
+
+[dependencies]
+jpp-ir = { path = "../jpp-ir" }
+jpp-effects = { path = "../jpp-effects" }
+jpp-check = { path = "../jpp-check" }
+serde_json = "1"

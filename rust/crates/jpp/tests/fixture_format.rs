@@ -63,7 +63,8 @@ fn select_reaches_pick_when_the_fixture_records_permutations() {
     let with = run(SELECT, &select_fixture(true), &d);
     assert_eq!(with["value"]["picked"], 1, "{with}");
     let without = run(SELECT, &select_fixture(false), &d);
-    assert_eq!(without["value"]["unsure"], "untested", "{without}");
+    // 步 36 G3（裁定六十六）：没测置换的原因是 cold，untested 是正交位
+    assert_eq!(without["value"]["unsure"], "cold", "{without}");
 }
 
 /// K7：同一提示、不同 ctx 的两次 `gen` 各得各的输出；不带 ctx 的旧写法仍按提示命中。

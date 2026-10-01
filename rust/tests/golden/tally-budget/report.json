@@ -49,6 +49,27 @@
   "local_checks": [],
   "mode": "fixed observations; no model API requests",
   "pending": [],
+  "plan": {
+    "calls": {
+      "hi": 15,
+      "kind": "known",
+      "lo": 1
+    },
+    "cost_usd": {
+      "hi": 0.0,
+      "kind": "known",
+      "lo": 0.0
+    },
+    "latency_s": {
+      "kind": "unknown",
+      "reason": "untested:concurrency.latency_s.p95"
+    },
+    "layers": {
+      "hi": 5,
+      "kind": "known",
+      "lo": 1
+    }
+  },
   "questions": [
     {
       "kind": "attr",
@@ -61,6 +82,129 @@
     "unsure(band)",
     "unsure(budget)",
     "unsure(budget)"
+  ],
+  "selections": [
+    {
+      "arm": "critical_path+value_density",
+      "groups": [
+        {
+          "class": "real",
+          "downstream": 0,
+          "est_usd": null,
+          "keys": [
+            {
+              "key": "price",
+              "n": null,
+              "seen": 0,
+              "u": null,
+              "u_run": null,
+              "unsure": 0
+            }
+          ],
+          "pos": 0,
+          "questions": 1,
+          "same_state_spec": 0,
+          "send": true,
+          "site": 453,
+          "site_id": 11,
+          "value": 0.0
+        },
+        {
+          "class": "real",
+          "downstream": 0,
+          "est_usd": null,
+          "keys": [
+            {
+              "key": "price",
+              "n": null,
+              "seen": 0,
+              "u": null,
+              "u_run": null,
+              "unsure": 0
+            }
+          ],
+          "pos": 1,
+          "questions": 1,
+          "same_state_spec": 0,
+          "send": true,
+          "site": 453,
+          "site_id": 11,
+          "value": 0.0
+        },
+        {
+          "class": "real",
+          "downstream": 0,
+          "est_usd": null,
+          "keys": [
+            {
+              "key": "price",
+              "n": null,
+              "seen": 0,
+              "u": null,
+              "u_run": null,
+              "unsure": 0
+            }
+          ],
+          "pos": 2,
+          "questions": 1,
+          "same_state_spec": 0,
+          "send": true,
+          "site": 453,
+          "site_id": 11,
+          "value": 0.0
+        },
+        {
+          "class": "real",
+          "downstream": 0,
+          "est_usd": null,
+          "keys": [
+            {
+              "key": "price",
+              "n": null,
+              "seen": 0,
+              "u": null,
+              "u_run": null,
+              "unsure": 0
+            }
+          ],
+          "pos": 3,
+          "questions": 1,
+          "same_state_spec": 0,
+          "send": false,
+          "site": 453,
+          "site_id": 11,
+          "value": 0.0
+        },
+        {
+          "class": "real",
+          "downstream": 0,
+          "est_usd": null,
+          "keys": [
+            {
+              "key": "price",
+              "n": null,
+              "seen": 0,
+              "u": null,
+              "u_run": null,
+              "unsure": 0
+            }
+          ],
+          "pos": 4,
+          "questions": 1,
+          "same_state_spec": 0,
+          "send": false,
+          "site": 453,
+          "site_id": 11,
+          "value": 0.0
+        }
+      ],
+      "layer": 1,
+      "left": {
+        "calls": 3,
+        "usd": 0.01
+      },
+      "need": 5
+    }
   ],
   "status": "returned",
   "trace": {

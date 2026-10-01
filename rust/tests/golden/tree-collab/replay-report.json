@@ -3,7 +3,7 @@
   "cost": {
     "asks": 0,
     "calls": 0,
-    "replayed": 12,
+    "replayed": 67,
     "tokens": 0,
     "usd": 0.0
   },
@@ -184,41 +184,784 @@
     }
   ],
   "fixture_description": "题树 walk 的固定观察（批 8 T6，B185，意图汇编 7c）。生成器输出仿冒烟 3 真机的形状：add 写成列表、根节点把当事人 a、b 也写进 add、need 混有词表外的类别、节点带 unsure 叶；validate_tree_with 规范后剔除这些并记在 dropped。节点按声明线 0.7 / 0.3 切：N1 0.86、N2 0.78、N3 0.76 走 act；N4 首判 0.52 未决，「最缺哪一类」在词表内的两类里二选一 [0.72, 0.28] 选中 c 的配送覆盖范围，补进 known 表的内容后 N4 0.84 走 act；N5 0.55 未决，它的 need 全在词表外、规范后为空，不补，沿 unsure 支到叶。N6 0.20 没走到，缺省的 all 模式与 N1 同一批发出，所以也有观察。归因的金额题：叶材料本身（基线）[0.05, 0.25, 0.7]、去掉 c [0.3, 0.45, 0.25]、去掉 d [0.1, 0.4, 0.5]，去掉 c 后落到最低一档且低于基线，关键成员是 c。读数是合成的，只验证程序结构，不是模型评测。",
+  "improve": [
+    {
+      "companions": [
+        {
+          "key": "97c57f35cf5699d0b50a9cf1",
+          "kind": "unsure-companion-premise",
+          "p": 0.5
+        },
+        {
+          "key": "ebeae7db0fe9847d542d9c14",
+          "kind": "diag-two-judgments",
+          "p": 0.5
+        },
+        {
+          "key": "8f60a5ae20579abafb43f825",
+          "kind": "unsure-companion-cut",
+          "p": 0.5
+        },
+        {
+          "key": "df0c211655649ed8b4cc82d1",
+          "kind": "unsure-companion-reference",
+          "p": 0.5
+        },
+        {
+          "key": "900b69ee339e151be2ae923a",
+          "kind": "unsure-companion-material",
+          "p": 0.25,
+          "pick": null
+        }
+      ],
+      "key": "75689c3d26234f0f79c791ae",
+      "lacks": null,
+      "q": "a 和 b 适合一起合作吗？"
+    },
+    {
+      "companions": [
+        {
+          "key": "d55e94581b1335f1fc1f7b7f",
+          "kind": "unsure-companion-premise",
+          "p": 0.5
+        },
+        {
+          "key": "2a1bcb8d551d25c628f6d1ce",
+          "kind": "diag-two-judgments",
+          "p": 0.5
+        },
+        {
+          "key": "c1bae92733659569942c723c",
+          "kind": "unsure-companion-cut",
+          "p": 0.5
+        },
+        {
+          "key": "2746e5bce3868387d68a7d8b",
+          "kind": "unsure-companion-reference",
+          "p": 0.5
+        },
+        {
+          "key": "91ca4188692b24517a1acd05",
+          "kind": "unsure-companion-material",
+          "p": 0.25,
+          "pick": null
+        }
+      ],
+      "key": "98f4060aa81e9782cae3697a",
+      "lacks": null,
+      "q": "如果 a 把手上的小区订单数据透露给 b，会推进两人合作吗？"
+    },
+    {
+      "companions": [
+        {
+          "key": "3fe9f37550b74527f4b0b28b",
+          "kind": "unsure-companion-premise",
+          "p": 0.5
+        },
+        {
+          "key": "fd7fadac3da56814dad9978b",
+          "kind": "diag-two-judgments",
+          "p": 0.5
+        },
+        {
+          "key": "fa5818bf4d68a1d5f3af7b24",
+          "kind": "unsure-companion-cut",
+          "p": 0.5
+        },
+        {
+          "key": "0644630a8e38e0f83823ec08",
+          "kind": "unsure-companion-reference",
+          "p": 0.5
+        },
+        {
+          "key": "8a94e7c1d410379cba7e5c09",
+          "kind": "unsure-companion-material",
+          "p": 0.25,
+          "pick": null
+        }
+      ],
+      "key": "562b450b2b4608629e9d307e",
+      "lacks": null,
+      "q": "c 加入后，三个人的合作会比只有 a 和 b 时更紧密吗？"
+    },
+    {
+      "companions": [
+        {
+          "key": "ddc7c55c4b9b56f913779689",
+          "kind": "unsure-companion-premise",
+          "p": 0.5
+        },
+        {
+          "key": "ad09319ea987bea451cb61dd",
+          "kind": "diag-two-judgments",
+          "p": 0.5
+        },
+        {
+          "key": "52c097680cefcf22d3b20e04",
+          "kind": "unsure-companion-cut",
+          "p": 0.5
+        },
+        {
+          "key": "9c97ff316955c2e124036b4f",
+          "kind": "unsure-companion-reference",
+          "p": 0.5
+        },
+        {
+          "key": "77a48697579d6cd009506323",
+          "kind": "unsure-companion-material",
+          "p": 0.25,
+          "pick": null
+        }
+      ],
+      "key": "87129c7edf7e4572d000962e",
+      "lacks": null,
+      "q": "c 加入后，这次合作的金额会变大吗？"
+    },
+    {
+      "companions": [
+        {
+          "key": "8d10a4bc4dab750b63ad6b82",
+          "kind": "unsure-companion-premise",
+          "p": 0.5
+        },
+        {
+          "key": "13cd700ab083175d30bfadc7",
+          "kind": "diag-two-judgments",
+          "p": 0.5
+        },
+        {
+          "key": "a221c3a5943168f08c3fde4f",
+          "kind": "unsure-companion-cut",
+          "p": 0.5
+        },
+        {
+          "key": "59271aaa6e6cb62d78f0a903",
+          "kind": "unsure-companion-reference",
+          "p": 0.5
+        },
+        {
+          "key": "0f64bc6c6d6c130d718b7afb",
+          "kind": "unsure-companion-material",
+          "p": 0.25,
+          "pick": null
+        }
+      ],
+      "key": "7c0227034fadcf59ba9a2f57",
+      "lacks": null,
+      "q": "金额变大主要来自 c 把配送扩到更多小区吗？"
+    },
+    {
+      "companions": [
+        {
+          "key": "c52fa2fcbe11b7357ceec01d",
+          "kind": "unsure-companion-premise",
+          "p": 0.5
+        },
+        {
+          "key": "898caf7eb6b0ba82454ab5d5",
+          "kind": "diag-two-judgments",
+          "p": 0.5
+        },
+        {
+          "key": "37ee4ae0603c96b0a94fc44b",
+          "kind": "unsure-companion-cut",
+          "p": 0.5
+        },
+        {
+          "key": "01f1ea86f51fc23a21c8233c",
+          "kind": "unsure-companion-reference",
+          "p": 0.5
+        },
+        {
+          "key": "defe53ecc026a0480d2c3353",
+          "kind": "unsure-companion-material",
+          "p": 0.25,
+          "pick": null
+        }
+      ],
+      "key": "dd8a390ed75073f37692def5",
+      "lacks": null,
+      "q": "要把这道题判得更明确：「金额变大主要来自 c 把配送扩到更多小区吗？」。材料里最缺下面哪一类信息？"
+    },
+    {
+      "companions": [
+        {
+          "key": "5f11ccdbe07b470066dd3388",
+          "kind": "unsure-companion-premise",
+          "p": 0.5
+        },
+        {
+          "key": "3f241f7bb56948afe4841a9e",
+          "kind": "diag-two-judgments",
+          "p": 0.5
+        },
+        {
+          "key": "578795e115d465e1b33a90c3",
+          "kind": "unsure-companion-cut",
+          "p": 0.5
+        },
+        {
+          "key": "2970ce478d0d10ff03d58d74",
+          "kind": "unsure-companion-reference",
+          "p": 0.5
+        },
+        {
+          "key": "96dd4abc2f98272f825d17f8",
+          "kind": "unsure-companion-material",
+          "p": 0.25,
+          "pick": null
+        }
+      ],
+      "key": "b988f2f80da845e36627b147",
+      "lacks": null,
+      "q": "金额变大主要来自 c 把配送扩到更多小区吗？"
+    },
+    {
+      "companions": [
+        {
+          "key": "b44b64a594c8ccfa26013b11",
+          "kind": "unsure-companion-premise",
+          "p": 0.5
+        },
+        {
+          "key": "06614ac0feea2c089cfebbea",
+          "kind": "diag-two-judgments",
+          "p": 0.5
+        },
+        {
+          "key": "387ada279f5f8121ed65d658",
+          "kind": "unsure-companion-cut",
+          "p": 0.5
+        },
+        {
+          "key": "62b81f253906f8c5b5a20704",
+          "kind": "unsure-companion-reference",
+          "p": 0.5
+        },
+        {
+          "key": "6a59a0c4ca6dee1bf6c9f4e4",
+          "kind": "unsure-companion-material",
+          "p": 0.25,
+          "pick": null
+        }
+      ],
+      "key": "d1d401e07c09c5ea628aa0a9",
+      "lacks": null,
+      "q": "再加入 d 后，合作金额会继续变大吗？"
+    },
+    {
+      "companions": [
+        {
+          "key": "01370744cb51269fd4945f97",
+          "kind": "unsure-companion-premise",
+          "p": 0.5
+        },
+        {
+          "key": "91d0686221cf9bf9bdf3dec0",
+          "kind": "diag-two-judgments",
+          "p": 0.5
+        },
+        {
+          "key": "2923fb750756919e2fa4b717",
+          "kind": "unsure-companion-cut",
+          "p": 0.5
+        },
+        {
+          "key": "8e1c958320b15f1c188d2dbc",
+          "kind": "unsure-companion-reference",
+          "p": 0.5
+        },
+        {
+          "key": "ede85d866aa30096fb0fffa0",
+          "kind": "unsure-companion-material",
+          "p": 0.25,
+          "pick": null
+        }
+      ],
+      "key": "7e8ac9657a8e441dfb46dda8",
+      "lacks": null,
+      "q": "这几个人一起做，这次合作能做成的生意金额有多大？"
+    },
+    {
+      "companions": [
+        {
+          "key": "99ff8080353dff986549afbd",
+          "kind": "unsure-companion-premise",
+          "p": 0.5
+        },
+        {
+          "key": "1b67b9e2acede5b5f3fa0b45",
+          "kind": "diag-two-judgments",
+          "p": 0.5
+        },
+        {
+          "key": "8810e71a78a0341eaa137cf1",
+          "kind": "unsure-companion-cut",
+          "p": 0.5
+        },
+        {
+          "key": "eef3820131ebe65ccaf697aa",
+          "kind": "unsure-companion-reference",
+          "p": 0.5
+        },
+        {
+          "key": "645b838bc48989a70dcc942a",
+          "kind": "unsure-companion-material",
+          "p": 0.25,
+          "pick": null
+        }
+      ],
+      "key": "1695ac77851c80e7b30a08cf",
+      "lacks": null,
+      "q": "这几个人一起做，这次合作能做成的生意金额有多大？"
+    },
+    {
+      "companions": [
+        {
+          "key": "f81f07820c27ecf90fd017ec",
+          "kind": "unsure-companion-premise",
+          "p": 0.5
+        },
+        {
+          "key": "e9acfe52071d01153b728ede",
+          "kind": "diag-two-judgments",
+          "p": 0.5
+        },
+        {
+          "key": "5deb1be0bcf42c7a10093fd5",
+          "kind": "unsure-companion-cut",
+          "p": 0.5
+        },
+        {
+          "key": "b071935c2296cfb4773915ac",
+          "kind": "unsure-companion-reference",
+          "p": 0.5
+        },
+        {
+          "key": "be716c5faabb90212f0c1f71",
+          "kind": "unsure-companion-material",
+          "p": 0.25,
+          "pick": null
+        }
+      ],
+      "key": "cbec2bd8d473d894c5849378",
+      "lacks": null,
+      "q": "这几个人一起做，这次合作能做成的生意金额有多大？"
+    }
+  ],
   "local_checks": [],
   "mode": "replay; no model API requests",
   "pending": [],
+  "plan": {
+    "calls": {
+      "kind": "at_least",
+      "lo": 0
+    },
+    "cost_usd": {
+      "kind": "unknown",
+      "reason": "price_not_given"
+    },
+    "latency_s": {
+      "kind": "unknown",
+      "reason": "untested:concurrency.latency_s.p95"
+    },
+    "layers": {
+      "kind": "at_least",
+      "lo": 0
+    }
+  },
   "questions": [
     {
       "kind": "attr",
       "q": "b5b298965bc3ee301835e6c4"
     },
     {
+      "fill": {
+        "q": "a 和 b 适合一起合作吗？"
+      },
+      "form_hash": "54315f241f66412e88607f2d",
+      "kind": "attr",
+      "q": "05ab382ad3ee49055658936a",
+      "template": "题「{q}」的前提在这份材料上成立吗？"
+    },
+    {
+      "fill": {
+        "q": "a 和 b 适合一起合作吗？"
+      },
+      "form_hash": "cd4d3fd600f3459fa6b03c89",
+      "kind": "attr",
+      "q": "e2fe9651743bf9d07c3c3c55",
+      "template": "题「{q}」里是否有两个或更多需要分别回答的判断？"
+    },
+    {
+      "fill": {
+        "q": "a 和 b 适合一起合作吗？"
+      },
+      "form_hash": "18c6093988df2ab3840b661c",
+      "kind": "attr",
+      "q": "754dc154e5451f48679675c5",
+      "template": "把题「{q}」按更细的情形分开问，会比整体问更容易答准吗？"
+    },
+    {
+      "fill": {
+        "q": "a 和 b 适合一起合作吗？"
+      },
+      "form_hash": "d8ff506d5be24dd56b495116",
+      "kind": "attr",
+      "q": "af77722ef40b382b429c1fec",
+      "template": "判断题「{q}」需要的参照对象和语境，这段材料里给够了吗？"
+    },
+    {
+      "fill": {
+        "q": "a 和 b 适合一起合作吗？"
+      },
+      "form_hash": "2ec36692b44a45c1e23fbea6",
+      "kind": "class",
+      "q": "53f7ceb218f7f22ad91ee027",
+      "template": "题「{q}」要判得更明确，最缺哪一类信息？"
+    },
+    {
       "kind": "attr",
       "q": "064f0a930d5065b220156a1c"
+    },
+    {
+      "fill": {
+        "q": "如果 a 把手上的小区订单数据透露给 b，会推进两人合作吗？"
+      },
+      "form_hash": "54315f241f66412e88607f2d",
+      "kind": "attr",
+      "q": "9cc322b29328d0939ee7dc73",
+      "template": "题「{q}」的前提在这份材料上成立吗？"
+    },
+    {
+      "fill": {
+        "q": "如果 a 把手上的小区订单数据透露给 b，会推进两人合作吗？"
+      },
+      "form_hash": "cd4d3fd600f3459fa6b03c89",
+      "kind": "attr",
+      "q": "0c16c25674157cb1c79d40ee",
+      "template": "题「{q}」里是否有两个或更多需要分别回答的判断？"
+    },
+    {
+      "fill": {
+        "q": "如果 a 把手上的小区订单数据透露给 b，会推进两人合作吗？"
+      },
+      "form_hash": "18c6093988df2ab3840b661c",
+      "kind": "attr",
+      "q": "4edce181b4d612f17d224d65",
+      "template": "把题「{q}」按更细的情形分开问，会比整体问更容易答准吗？"
+    },
+    {
+      "fill": {
+        "q": "如果 a 把手上的小区订单数据透露给 b，会推进两人合作吗？"
+      },
+      "form_hash": "d8ff506d5be24dd56b495116",
+      "kind": "attr",
+      "q": "82150eaa93861ba9c6dfdb65",
+      "template": "判断题「{q}」需要的参照对象和语境，这段材料里给够了吗？"
+    },
+    {
+      "fill": {
+        "q": "如果 a 把手上的小区订单数据透露给 b，会推进两人合作吗？"
+      },
+      "form_hash": "2ec36692b44a45c1e23fbea6",
+      "kind": "class",
+      "q": "84af258133cd77c302e68d64",
+      "template": "题「{q}」要判得更明确，最缺哪一类信息？"
     },
     {
       "kind": "attr",
       "q": "ef82712b4169520920616fe5"
     },
     {
+      "fill": {
+        "q": "c 加入后，三个人的合作会比只有 a 和 b 时更紧密吗？"
+      },
+      "form_hash": "54315f241f66412e88607f2d",
+      "kind": "attr",
+      "q": "cfc8aa751f8c5cfb49b4c8cf",
+      "template": "题「{q}」的前提在这份材料上成立吗？"
+    },
+    {
+      "fill": {
+        "q": "c 加入后，三个人的合作会比只有 a 和 b 时更紧密吗？"
+      },
+      "form_hash": "cd4d3fd600f3459fa6b03c89",
+      "kind": "attr",
+      "q": "741b1042a2116dfc752356c5",
+      "template": "题「{q}」里是否有两个或更多需要分别回答的判断？"
+    },
+    {
+      "fill": {
+        "q": "c 加入后，三个人的合作会比只有 a 和 b 时更紧密吗？"
+      },
+      "form_hash": "18c6093988df2ab3840b661c",
+      "kind": "attr",
+      "q": "355b2ae2c7f8a888a558f878",
+      "template": "把题「{q}」按更细的情形分开问，会比整体问更容易答准吗？"
+    },
+    {
+      "fill": {
+        "q": "c 加入后，三个人的合作会比只有 a 和 b 时更紧密吗？"
+      },
+      "form_hash": "d8ff506d5be24dd56b495116",
+      "kind": "attr",
+      "q": "035d607c64d6235701e4ccc0",
+      "template": "判断题「{q}」需要的参照对象和语境，这段材料里给够了吗？"
+    },
+    {
+      "fill": {
+        "q": "c 加入后，三个人的合作会比只有 a 和 b 时更紧密吗？"
+      },
+      "form_hash": "2ec36692b44a45c1e23fbea6",
+      "kind": "class",
+      "q": "35544e09af73cc6472436513",
+      "template": "题「{q}」要判得更明确，最缺哪一类信息？"
+    },
+    {
       "kind": "attr",
       "q": "7abbb46f5bd2673bc2ef2168"
+    },
+    {
+      "fill": {
+        "q": "c 加入后，这次合作的金额会变大吗？"
+      },
+      "form_hash": "54315f241f66412e88607f2d",
+      "kind": "attr",
+      "q": "4e7fdffbf9b6a32ba027a037",
+      "template": "题「{q}」的前提在这份材料上成立吗？"
+    },
+    {
+      "fill": {
+        "q": "c 加入后，这次合作的金额会变大吗？"
+      },
+      "form_hash": "cd4d3fd600f3459fa6b03c89",
+      "kind": "attr",
+      "q": "47a054d18d84e921498c22e1",
+      "template": "题「{q}」里是否有两个或更多需要分别回答的判断？"
+    },
+    {
+      "fill": {
+        "q": "c 加入后，这次合作的金额会变大吗？"
+      },
+      "form_hash": "18c6093988df2ab3840b661c",
+      "kind": "attr",
+      "q": "8f4f31769397c5aea8346d7b",
+      "template": "把题「{q}」按更细的情形分开问，会比整体问更容易答准吗？"
+    },
+    {
+      "fill": {
+        "q": "c 加入后，这次合作的金额会变大吗？"
+      },
+      "form_hash": "d8ff506d5be24dd56b495116",
+      "kind": "attr",
+      "q": "d4f97c4a94c265cc55a12523",
+      "template": "判断题「{q}」需要的参照对象和语境，这段材料里给够了吗？"
+    },
+    {
+      "fill": {
+        "q": "c 加入后，这次合作的金额会变大吗？"
+      },
+      "form_hash": "2ec36692b44a45c1e23fbea6",
+      "kind": "class",
+      "q": "bf5a2afd1c8ab0404e332721",
+      "template": "题「{q}」要判得更明确，最缺哪一类信息？"
     },
     {
       "kind": "attr",
       "q": "765fe3ba2afe95005ff41545"
     },
     {
+      "fill": {
+        "q": "金额变大主要来自 c 把配送扩到更多小区吗？"
+      },
+      "form_hash": "54315f241f66412e88607f2d",
+      "kind": "attr",
+      "q": "8b266e7955b9d7daa376bdfd",
+      "template": "题「{q}」的前提在这份材料上成立吗？"
+    },
+    {
+      "fill": {
+        "q": "金额变大主要来自 c 把配送扩到更多小区吗？"
+      },
+      "form_hash": "cd4d3fd600f3459fa6b03c89",
+      "kind": "attr",
+      "q": "2219f6b8fbcf96cfcaae8449",
+      "template": "题「{q}」里是否有两个或更多需要分别回答的判断？"
+    },
+    {
+      "fill": {
+        "q": "金额变大主要来自 c 把配送扩到更多小区吗？"
+      },
+      "form_hash": "18c6093988df2ab3840b661c",
+      "kind": "attr",
+      "q": "922d1acfd1172fd362000ffa",
+      "template": "把题「{q}」按更细的情形分开问，会比整体问更容易答准吗？"
+    },
+    {
+      "fill": {
+        "q": "金额变大主要来自 c 把配送扩到更多小区吗？"
+      },
+      "form_hash": "d8ff506d5be24dd56b495116",
+      "kind": "attr",
+      "q": "2f0265162f4541f5edf5a3b6",
+      "template": "判断题「{q}」需要的参照对象和语境，这段材料里给够了吗？"
+    },
+    {
+      "fill": {
+        "q": "金额变大主要来自 c 把配送扩到更多小区吗？"
+      },
+      "form_hash": "2ec36692b44a45c1e23fbea6",
+      "kind": "class",
+      "q": "d056a6e120da7538832059e3",
+      "template": "题「{q}」要判得更明确，最缺哪一类信息？"
+    },
+    {
       "kind": "class",
       "q": "082bc140616187d8aaf07140"
+    },
+    {
+      "fill": {
+        "q": "要把这道题判得更明确：「金额变大主要来自 c 把配送扩到更多小区吗？」。材料里最缺下面哪一类信息？"
+      },
+      "form_hash": "54315f241f66412e88607f2d",
+      "kind": "attr",
+      "q": "8f61fe3416d22ba78225c5ab",
+      "template": "题「{q}」的前提在这份材料上成立吗？"
+    },
+    {
+      "fill": {
+        "q": "要把这道题判得更明确：「金额变大主要来自 c 把配送扩到更多小区吗？」。材料里最缺下面哪一类信息？"
+      },
+      "form_hash": "cd4d3fd600f3459fa6b03c89",
+      "kind": "attr",
+      "q": "dd24c74df6a0a0428690367d",
+      "template": "题「{q}」里是否有两个或更多需要分别回答的判断？"
+    },
+    {
+      "fill": {
+        "q": "要把这道题判得更明确：「金额变大主要来自 c 把配送扩到更多小区吗？」。材料里最缺下面哪一类信息？"
+      },
+      "form_hash": "18c6093988df2ab3840b661c",
+      "kind": "attr",
+      "q": "81cf7b912ee5de90f796f9e7",
+      "template": "把题「{q}」按更细的情形分开问，会比整体问更容易答准吗？"
+    },
+    {
+      "fill": {
+        "q": "要把这道题判得更明确：「金额变大主要来自 c 把配送扩到更多小区吗？」。材料里最缺下面哪一类信息？"
+      },
+      "form_hash": "d8ff506d5be24dd56b495116",
+      "kind": "attr",
+      "q": "768e5ce663e367f3b659a607",
+      "template": "判断题「{q}」需要的参照对象和语境，这段材料里给够了吗？"
+    },
+    {
+      "fill": {
+        "q": "要把这道题判得更明确：「金额变大主要来自 c 把配送扩到更多小区吗？」。材料里最缺下面哪一类信息？"
+      },
+      "form_hash": "2ec36692b44a45c1e23fbea6",
+      "kind": "class",
+      "q": "05fe40e31a02cd8674ef14d4",
+      "template": "题「{q}」要判得更明确，最缺哪一类信息？"
     },
     {
       "kind": "attr",
       "q": "6c9962b43f833a63406760de"
     },
     {
+      "fill": {
+        "q": "再加入 d 后，合作金额会继续变大吗？"
+      },
+      "form_hash": "54315f241f66412e88607f2d",
+      "kind": "attr",
+      "q": "ce2f02386ea3531246b068c0",
+      "template": "题「{q}」的前提在这份材料上成立吗？"
+    },
+    {
+      "fill": {
+        "q": "再加入 d 后，合作金额会继续变大吗？"
+      },
+      "form_hash": "cd4d3fd600f3459fa6b03c89",
+      "kind": "attr",
+      "q": "df0e4558e12645c31aed719f",
+      "template": "题「{q}」里是否有两个或更多需要分别回答的判断？"
+    },
+    {
+      "fill": {
+        "q": "再加入 d 后，合作金额会继续变大吗？"
+      },
+      "form_hash": "18c6093988df2ab3840b661c",
+      "kind": "attr",
+      "q": "40ce476ab1a6252e597584b1",
+      "template": "把题「{q}」按更细的情形分开问，会比整体问更容易答准吗？"
+    },
+    {
+      "fill": {
+        "q": "再加入 d 后，合作金额会继续变大吗？"
+      },
+      "form_hash": "d8ff506d5be24dd56b495116",
+      "kind": "attr",
+      "q": "f947325da69a5b158f9c5f61",
+      "template": "判断题「{q}」需要的参照对象和语境，这段材料里给够了吗？"
+    },
+    {
+      "fill": {
+        "q": "再加入 d 后，合作金额会继续变大吗？"
+      },
+      "form_hash": "2ec36692b44a45c1e23fbea6",
+      "kind": "class",
+      "q": "3d0d4e70afb4eafec03ac113",
+      "template": "题「{q}」要判得更明确，最缺哪一类信息？"
+    },
+    {
       "kind": "degree",
       "q": "1397efce79bffc70270a0299"
+    },
+    {
+      "fill": {
+        "q": "这几个人一起做，这次合作能做成的生意金额有多大？"
+      },
+      "form_hash": "54315f241f66412e88607f2d",
+      "kind": "attr",
+      "q": "0ecc5c0578a7395f0d1848fd",
+      "template": "题「{q}」的前提在这份材料上成立吗？"
+    },
+    {
+      "fill": {
+        "q": "这几个人一起做，这次合作能做成的生意金额有多大？"
+      },
+      "form_hash": "cd4d3fd600f3459fa6b03c89",
+      "kind": "attr",
+      "q": "0b2d940a9bceae8fec52a769",
+      "template": "题「{q}」里是否有两个或更多需要分别回答的判断？"
+    },
+    {
+      "fill": {
+        "q": "这几个人一起做，这次合作能做成的生意金额有多大？"
+      },
+      "form_hash": "18c6093988df2ab3840b661c",
+      "kind": "attr",
+      "q": "78ed44d6fe9b963344d8bdd1",
+      "template": "把题「{q}」按更细的情形分开问，会比整体问更容易答准吗？"
+    },
+    {
+      "fill": {
+        "q": "这几个人一起做，这次合作能做成的生意金额有多大？"
+      },
+      "form_hash": "d8ff506d5be24dd56b495116",
+      "kind": "attr",
+      "q": "21faf8e08982f3d3b49b0e94",
+      "template": "判断题「{q}」需要的参照对象和语境，这段材料里给够了吗？"
+    },
+    {
+      "fill": {
+        "q": "这几个人一起做，这次合作能做成的生意金额有多大？"
+      },
+      "form_hash": "2ec36692b44a45c1e23fbea6",
+      "kind": "class",
+      "q": "52cc67d53f6a920b363eb1c7",
+      "template": "题「{q}」要判得更明确，最缺哪一类信息？"
     }
   ],
   "replay": true,
@@ -253,9 +996,119 @@
       },
       {
         "cost": 0.0,
+        "key": "97c57f35cf5699d0b50a9cf1",
+        "kind": "judge",
+        "note": "「题「a 和 b 适合一起合作吗？」的前提在这份材料上成立吗？」",
+        "replayed": true,
+        "site": {
+          "end": 29853,
+          "start": 29837
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "ebeae7db0fe9847d542d9c14",
+        "kind": "judge",
+        "note": "「题「a 和 b 适合一起合作吗？」里是否有两个或更多需要分别回答的判断？」",
+        "replayed": true,
+        "site": {
+          "end": 29853,
+          "start": 29837
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "8f60a5ae20579abafb43f825",
+        "kind": "judge",
+        "note": "「把题「a 和 b 适合一起合作吗？」按更细的情形分开问，会比整体问更容易答准吗？」",
+        "replayed": true,
+        "site": {
+          "end": 29853,
+          "start": 29837
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "df0c211655649ed8b4cc82d1",
+        "kind": "judge",
+        "note": "「判断题「a 和 b 适合一起合作吗？」需要的参照对象和语境，这段材料里给够了吗？」",
+        "replayed": true,
+        "site": {
+          "end": 29853,
+          "start": 29837
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "900b69ee339e151be2ae923a",
+        "kind": "judge",
+        "note": "「题「a 和 b 适合一起合作吗？」要判得更明确，最缺哪一类信息？」",
+        "replayed": true,
+        "site": {
+          "end": 29853,
+          "start": 29837
+        }
+      },
+      {
+        "cost": 0.0,
         "key": "98f4060aa81e9782cae3697a",
         "kind": "judge",
         "note": "「如果 a 把手上的小区订单数据透露给 b，会推进两人合作吗？」",
+        "replayed": true,
+        "site": {
+          "end": 29853,
+          "start": 29837
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "d55e94581b1335f1fc1f7b7f",
+        "kind": "judge",
+        "note": "「题「如果 a 把手上的小区订单数据透露给 b，会推进两人合作吗？」的前提在这份材料上成立吗？」",
+        "replayed": true,
+        "site": {
+          "end": 29853,
+          "start": 29837
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "2a1bcb8d551d25c628f6d1ce",
+        "kind": "judge",
+        "note": "「题「如果 a 把手上的小区订单数据透露给 b，会推进两人合作吗？」里是否有两个或更多需要分别回答的判断？」",
+        "replayed": true,
+        "site": {
+          "end": 29853,
+          "start": 29837
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "c1bae92733659569942c723c",
+        "kind": "judge",
+        "note": "「把题「如果 a 把手上的小区订单数据透露给 b，会推进两人合作吗？」按更细的情形分开问，会比整体问更容易答准吗？」",
+        "replayed": true,
+        "site": {
+          "end": 29853,
+          "start": 29837
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "2746e5bce3868387d68a7d8b",
+        "kind": "judge",
+        "note": "「判断题「如果 a 把手上的小区订单数据透露给 b，会推进两人合作吗？」需要的参照对象和语境，这段材料里给够了吗？」",
+        "replayed": true,
+        "site": {
+          "end": 29853,
+          "start": 29837
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "91ca4188692b24517a1acd05",
+        "kind": "judge",
+        "note": "「题「如果 a 把手上的小区订单数据透露给 b，会推进两人合作吗？」要判得更明确，最缺哪一类信息？」",
         "replayed": true,
         "site": {
           "end": 29853,
@@ -275,9 +1128,119 @@
       },
       {
         "cost": 0.0,
+        "key": "3fe9f37550b74527f4b0b28b",
+        "kind": "judge",
+        "note": "「题「c 加入后，三个人的合作会比只有 a 和 b 时更紧密吗？」的前提在这份材料上成立吗？」",
+        "replayed": true,
+        "site": {
+          "end": 29853,
+          "start": 29837
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "fd7fadac3da56814dad9978b",
+        "kind": "judge",
+        "note": "「题「c 加入后，三个人的合作会比只有 a 和 b 时更紧密吗？」里是否有两个或更多需要分别回答的判断？」",
+        "replayed": true,
+        "site": {
+          "end": 29853,
+          "start": 29837
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "fa5818bf4d68a1d5f3af7b24",
+        "kind": "judge",
+        "note": "「把题「c 加入后，三个人的合作会比只有 a 和 b 时更紧密吗？」按更细的情形分开问，会比整体问更容易答准吗？」",
+        "replayed": true,
+        "site": {
+          "end": 29853,
+          "start": 29837
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "0644630a8e38e0f83823ec08",
+        "kind": "judge",
+        "note": "「判断题「c 加入后，三个人的合作会比只有 a 和 b 时更紧密吗？」需要的参照对象和语境，这段材料里给够了吗？」",
+        "replayed": true,
+        "site": {
+          "end": 29853,
+          "start": 29837
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "8a94e7c1d410379cba7e5c09",
+        "kind": "judge",
+        "note": "「题「c 加入后，三个人的合作会比只有 a 和 b 时更紧密吗？」要判得更明确，最缺哪一类信息？」",
+        "replayed": true,
+        "site": {
+          "end": 29853,
+          "start": 29837
+        }
+      },
+      {
+        "cost": 0.0,
         "key": "87129c7edf7e4572d000962e",
         "kind": "judge",
         "note": "「c 加入后，这次合作的金额会变大吗？」",
+        "replayed": true,
+        "site": {
+          "end": 29853,
+          "start": 29837
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "ddc7c55c4b9b56f913779689",
+        "kind": "judge",
+        "note": "「题「c 加入后，这次合作的金额会变大吗？」的前提在这份材料上成立吗？」",
+        "replayed": true,
+        "site": {
+          "end": 29853,
+          "start": 29837
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "ad09319ea987bea451cb61dd",
+        "kind": "judge",
+        "note": "「题「c 加入后，这次合作的金额会变大吗？」里是否有两个或更多需要分别回答的判断？」",
+        "replayed": true,
+        "site": {
+          "end": 29853,
+          "start": 29837
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "52c097680cefcf22d3b20e04",
+        "kind": "judge",
+        "note": "「把题「c 加入后，这次合作的金额会变大吗？」按更细的情形分开问，会比整体问更容易答准吗？」",
+        "replayed": true,
+        "site": {
+          "end": 29853,
+          "start": 29837
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "9c97ff316955c2e124036b4f",
+        "kind": "judge",
+        "note": "「判断题「c 加入后，这次合作的金额会变大吗？」需要的参照对象和语境，这段材料里给够了吗？」",
+        "replayed": true,
+        "site": {
+          "end": 29853,
+          "start": 29837
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "77a48697579d6cd009506323",
+        "kind": "judge",
+        "note": "「题「c 加入后，这次合作的金额会变大吗？」要判得更明确，最缺哪一类信息？」",
         "replayed": true,
         "site": {
           "end": 29853,
@@ -297,9 +1260,119 @@
       },
       {
         "cost": 0.0,
+        "key": "8d10a4bc4dab750b63ad6b82",
+        "kind": "judge",
+        "note": "「题「金额变大主要来自 c 把配送扩到更多小区吗？」的前提在这份材料上成立吗？」",
+        "replayed": true,
+        "site": {
+          "end": 29853,
+          "start": 29837
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "13cd700ab083175d30bfadc7",
+        "kind": "judge",
+        "note": "「题「金额变大主要来自 c 把配送扩到更多小区吗？」里是否有两个或更多需要分别回答的判断？」",
+        "replayed": true,
+        "site": {
+          "end": 29853,
+          "start": 29837
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "a221c3a5943168f08c3fde4f",
+        "kind": "judge",
+        "note": "「把题「金额变大主要来自 c 把配送扩到更多小区吗？」按更细的情形分开问，会比整体问更容易答准吗？」",
+        "replayed": true,
+        "site": {
+          "end": 29853,
+          "start": 29837
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "59271aaa6e6cb62d78f0a903",
+        "kind": "judge",
+        "note": "「判断题「金额变大主要来自 c 把配送扩到更多小区吗？」需要的参照对象和语境，这段材料里给够了吗？」",
+        "replayed": true,
+        "site": {
+          "end": 29853,
+          "start": 29837
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "0f64bc6c6d6c130d718b7afb",
+        "kind": "judge",
+        "note": "「题「金额变大主要来自 c 把配送扩到更多小区吗？」要判得更明确，最缺哪一类信息？」",
+        "replayed": true,
+        "site": {
+          "end": 29853,
+          "start": 29837
+        }
+      },
+      {
+        "cost": 0.0,
         "key": "dd8a390ed75073f37692def5",
         "kind": "judge",
         "note": "「要把这道题判得更明确：「金额变大主要来自 c 把配送扩到更多小区吗？」。材料里最缺下面哪一类信息？」",
+        "replayed": true,
+        "site": {
+          "end": 33573,
+          "start": 33514
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "c52fa2fcbe11b7357ceec01d",
+        "kind": "judge",
+        "note": "「题「要把这道题判得更明确：「金额变大主要来自 c 把配送扩到更多小区吗？」。材料里最缺下面哪一类信息？」的前提在这份材料上成立吗？」",
+        "replayed": true,
+        "site": {
+          "end": 33573,
+          "start": 33514
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "898caf7eb6b0ba82454ab5d5",
+        "kind": "judge",
+        "note": "「题「要把这道题判得更明确：「金额变大主要来自 c 把配送扩到更多小区吗？」。材料里最缺下面哪一类信息？」里是否有两个或更多需要分别回答的判断？」",
+        "replayed": true,
+        "site": {
+          "end": 33573,
+          "start": 33514
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "37ee4ae0603c96b0a94fc44b",
+        "kind": "judge",
+        "note": "「把题「要把这道题判得更明确：「金额变大主要来自 c 把配送扩到更多小区吗？」。材料里最缺下面哪一类信息？」按更细的情形分开问，会比整体问更容易答准吗？」",
+        "replayed": true,
+        "site": {
+          "end": 33573,
+          "start": 33514
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "01f1ea86f51fc23a21c8233c",
+        "kind": "judge",
+        "note": "「判断题「要把这道题判得更明确：「金额变大主要来自 c 把配送扩到更多小区吗？」。材料里最缺下面哪一类信息？」需要的参照对象和语境，这段材料里给够了吗？」",
+        "replayed": true,
+        "site": {
+          "end": 33573,
+          "start": 33514
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "defe53ecc026a0480d2c3353",
+        "kind": "judge",
+        "note": "「题「要把这道题判得更明确：「金额变大主要来自 c 把配送扩到更多小区吗？」。材料里最缺下面哪一类信息？」要判得更明确，最缺哪一类信息？」",
         "replayed": true,
         "site": {
           "end": 33573,
@@ -319,9 +1392,119 @@
       },
       {
         "cost": 0.0,
+        "key": "5f11ccdbe07b470066dd3388",
+        "kind": "judge",
+        "note": "「题「金额变大主要来自 c 把配送扩到更多小区吗？」的前提在这份材料上成立吗？」",
+        "replayed": true,
+        "site": {
+          "end": 29853,
+          "start": 29837
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "3f241f7bb56948afe4841a9e",
+        "kind": "judge",
+        "note": "「题「金额变大主要来自 c 把配送扩到更多小区吗？」里是否有两个或更多需要分别回答的判断？」",
+        "replayed": true,
+        "site": {
+          "end": 29853,
+          "start": 29837
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "578795e115d465e1b33a90c3",
+        "kind": "judge",
+        "note": "「把题「金额变大主要来自 c 把配送扩到更多小区吗？」按更细的情形分开问，会比整体问更容易答准吗？」",
+        "replayed": true,
+        "site": {
+          "end": 29853,
+          "start": 29837
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "2970ce478d0d10ff03d58d74",
+        "kind": "judge",
+        "note": "「判断题「金额变大主要来自 c 把配送扩到更多小区吗？」需要的参照对象和语境，这段材料里给够了吗？」",
+        "replayed": true,
+        "site": {
+          "end": 29853,
+          "start": 29837
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "96dd4abc2f98272f825d17f8",
+        "kind": "judge",
+        "note": "「题「金额变大主要来自 c 把配送扩到更多小区吗？」要判得更明确，最缺哪一类信息？」",
+        "replayed": true,
+        "site": {
+          "end": 29853,
+          "start": 29837
+        }
+      },
+      {
+        "cost": 0.0,
         "key": "d1d401e07c09c5ea628aa0a9",
         "kind": "judge",
         "note": "「再加入 d 后，合作金额会继续变大吗？」",
+        "replayed": true,
+        "site": {
+          "end": 29853,
+          "start": 29837
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "b44b64a594c8ccfa26013b11",
+        "kind": "judge",
+        "note": "「题「再加入 d 后，合作金额会继续变大吗？」的前提在这份材料上成立吗？」",
+        "replayed": true,
+        "site": {
+          "end": 29853,
+          "start": 29837
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "06614ac0feea2c089cfebbea",
+        "kind": "judge",
+        "note": "「题「再加入 d 后，合作金额会继续变大吗？」里是否有两个或更多需要分别回答的判断？」",
+        "replayed": true,
+        "site": {
+          "end": 29853,
+          "start": 29837
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "387ada279f5f8121ed65d658",
+        "kind": "judge",
+        "note": "「把题「再加入 d 后，合作金额会继续变大吗？」按更细的情形分开问，会比整体问更容易答准吗？」",
+        "replayed": true,
+        "site": {
+          "end": 29853,
+          "start": 29837
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "62b81f253906f8c5b5a20704",
+        "kind": "judge",
+        "note": "「判断题「再加入 d 后，合作金额会继续变大吗？」需要的参照对象和语境，这段材料里给够了吗？」",
+        "replayed": true,
+        "site": {
+          "end": 29853,
+          "start": 29837
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "6a59a0c4ca6dee1bf6c9f4e4",
+        "kind": "judge",
+        "note": "「题「再加入 d 后，合作金额会继续变大吗？」要判得更明确，最缺哪一类信息？」",
         "replayed": true,
         "site": {
           "end": 29853,
@@ -341,9 +1524,119 @@
       },
       {
         "cost": 0.0,
+        "key": "01370744cb51269fd4945f97",
+        "kind": "judge",
+        "note": "「题「这几个人一起做，这次合作能做成的生意金额有多大？」的前提在这份材料上成立吗？」",
+        "replayed": true,
+        "site": {
+          "end": 5841,
+          "start": 5818
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "91d0686221cf9bf9bdf3dec0",
+        "kind": "judge",
+        "note": "「题「这几个人一起做，这次合作能做成的生意金额有多大？」里是否有两个或更多需要分别回答的判断？」",
+        "replayed": true,
+        "site": {
+          "end": 5841,
+          "start": 5818
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "2923fb750756919e2fa4b717",
+        "kind": "judge",
+        "note": "「把题「这几个人一起做，这次合作能做成的生意金额有多大？」按更细的情形分开问，会比整体问更容易答准吗？」",
+        "replayed": true,
+        "site": {
+          "end": 5841,
+          "start": 5818
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "8e1c958320b15f1c188d2dbc",
+        "kind": "judge",
+        "note": "「判断题「这几个人一起做，这次合作能做成的生意金额有多大？」需要的参照对象和语境，这段材料里给够了吗？」",
+        "replayed": true,
+        "site": {
+          "end": 5841,
+          "start": 5818
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "ede85d866aa30096fb0fffa0",
+        "kind": "judge",
+        "note": "「题「这几个人一起做，这次合作能做成的生意金额有多大？」要判得更明确，最缺哪一类信息？」",
+        "replayed": true,
+        "site": {
+          "end": 5841,
+          "start": 5818
+        }
+      },
+      {
+        "cost": 0.0,
         "key": "1695ac77851c80e7b30a08cf",
         "kind": "judge",
         "note": "「这几个人一起做，这次合作能做成的生意金额有多大？」",
+        "replayed": true,
+        "site": {
+          "end": 5841,
+          "start": 5818
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "99ff8080353dff986549afbd",
+        "kind": "judge",
+        "note": "「题「这几个人一起做，这次合作能做成的生意金额有多大？」的前提在这份材料上成立吗？」",
+        "replayed": true,
+        "site": {
+          "end": 5841,
+          "start": 5818
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "1b67b9e2acede5b5f3fa0b45",
+        "kind": "judge",
+        "note": "「题「这几个人一起做，这次合作能做成的生意金额有多大？」里是否有两个或更多需要分别回答的判断？」",
+        "replayed": true,
+        "site": {
+          "end": 5841,
+          "start": 5818
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "8810e71a78a0341eaa137cf1",
+        "kind": "judge",
+        "note": "「把题「这几个人一起做，这次合作能做成的生意金额有多大？」按更细的情形分开问，会比整体问更容易答准吗？」",
+        "replayed": true,
+        "site": {
+          "end": 5841,
+          "start": 5818
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "eef3820131ebe65ccaf697aa",
+        "kind": "judge",
+        "note": "「判断题「这几个人一起做，这次合作能做成的生意金额有多大？」需要的参照对象和语境，这段材料里给够了吗？」",
+        "replayed": true,
+        "site": {
+          "end": 5841,
+          "start": 5818
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "645b838bc48989a70dcc942a",
+        "kind": "judge",
+        "note": "「题「这几个人一起做，这次合作能做成的生意金额有多大？」要判得更明确，最缺哪一类信息？」",
         "replayed": true,
         "site": {
           "end": 5841,
@@ -360,12 +1653,66 @@
           "end": 5841,
           "start": 5818
         }
+      },
+      {
+        "cost": 0.0,
+        "key": "f81f07820c27ecf90fd017ec",
+        "kind": "judge",
+        "note": "「题「这几个人一起做，这次合作能做成的生意金额有多大？」的前提在这份材料上成立吗？」",
+        "replayed": true,
+        "site": {
+          "end": 5841,
+          "start": 5818
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "e9acfe52071d01153b728ede",
+        "kind": "judge",
+        "note": "「题「这几个人一起做，这次合作能做成的生意金额有多大？」里是否有两个或更多需要分别回答的判断？」",
+        "replayed": true,
+        "site": {
+          "end": 5841,
+          "start": 5818
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "5deb1be0bcf42c7a10093fd5",
+        "kind": "judge",
+        "note": "「把题「这几个人一起做，这次合作能做成的生意金额有多大？」按更细的情形分开问，会比整体问更容易答准吗？」",
+        "replayed": true,
+        "site": {
+          "end": 5841,
+          "start": 5818
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "b071935c2296cfb4773915ac",
+        "kind": "judge",
+        "note": "「判断题「这几个人一起做，这次合作能做成的生意金额有多大？」需要的参照对象和语境，这段材料里给够了吗？」",
+        "replayed": true,
+        "site": {
+          "end": 5841,
+          "start": 5818
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "be716c5faabb90212f0c1f71",
+        "kind": "judge",
+        "note": "「题「这几个人一起做，这次合作能做成的生意金额有多大？」要判得更明确，最缺哪一类信息？」",
+        "replayed": true,
+        "site": {
+          "end": 5841,
+          "start": 5818
+        }
       }
     ],
     "warnings": [
       "W-window-untested: @29837 画像没有测过窗口（window），对象长度不核；超窗的语境可能接管读数而无痕",
       "W-window-untested: @33514 画像没有测过窗口（window），对象长度不核；超窗的语境可能接管读数而无痕",
-      "W-drop-vs-escalate: 显式丢弃了未决责任 unsure(band)（题 765fe3ba）；drop 合法且已记账，但只有 escalate 会把它交给人",
       "W-window-untested: @5818 画像没有测过窗口（window），对象长度不核；超窗的语境可能接管读数而无痕",
       "returned_unsure: unsure(band)"
     ]

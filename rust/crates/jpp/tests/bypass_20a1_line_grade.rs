@@ -95,7 +95,7 @@ handle(cut(judge(state(mat("顾客说要退款")), test("该退吗", "k"))), {
 const 放行: &str = r#"
 budget {calls: 4, cost: 1, depth: 8};
 handle(cut(judge(state(mat("顾客说要退款")), test("该退吗", "k"))), {
-    act: fn() { content(do("退款", [], 0)) },
+    act: fn() { (do("退款", [], 0)) },
     ignore: fn() { "没退" },
     unsure: fn(u) { consume(u, "drop"); "没退" }})
 "#;
@@ -126,7 +126,7 @@ fn provisional_routes_but_never_releases() {
 #[test]
 fn same_record_without_provisional_gate_releases() {
     let o = 跑(放行, &库(false)).expect("正式线放行");
-    assert_eq!(o.value_json(), json!("已退"));
+    assert_eq!(o.value_json()["content"], json!("已退"));
     assert_eq!(o.exits[0]["grade"], json!("Certified"));
     assert_eq!(o.exits[0]["releases"], json!(true));
 }

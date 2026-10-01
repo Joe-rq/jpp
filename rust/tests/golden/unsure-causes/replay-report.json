@@ -37,7 +37,7 @@
       "key": "cand",
       "pos": 0,
       "releases": false,
-      "site": 4673
+      "site": 4801
     },
     {
       "exit": "ignore",
@@ -47,7 +47,7 @@
       "key": "cand",
       "pos": 1,
       "releases": false,
-      "site": 4673
+      "site": 4801
     },
     {
       "exit": "act",
@@ -57,7 +57,7 @@
       "key": "cand",
       "pos": 0,
       "releases": false,
-      "site": 4810
+      "site": 4938
     },
     {
       "exit": "ignore",
@@ -67,13 +67,31 @@
       "key": "cand",
       "pos": 1,
       "releases": false,
-      "site": 4810
+      "site": 4938
     }
   ],
   "fixture_description": "Synthetic fixed observations for unsure-causes.jpp (construction check only; not model evaluation). The calibration record is hand-written to exercise routing, not calibration.",
   "local_checks": [],
   "mode": "replay; no model API requests",
   "pending": [],
+  "plan": {
+    "calls": {
+      "kind": "at_least",
+      "lo": 0
+    },
+    "cost_usd": {
+      "kind": "unknown",
+      "reason": "price_not_given"
+    },
+    "latency_s": {
+      "kind": "unknown",
+      "reason": "untested:concurrency.latency_s.p95"
+    },
+    "layers": {
+      "kind": "at_least",
+      "lo": 0
+    }
+  },
   "questions": [
     {
       "kind": "attr",
@@ -110,57 +128,57 @@
       },
       {
         "cost": 0.0,
-        "key": "6766e3fa917b9c50747bcad9",
+        "key": "c8b3ff812ab08272bbd0538d",
         "kind": "judge",
         "note": "「这个候选是否会写 Rust？」",
         "replayed": true,
         "site": {
-          "end": 4692,
-          "start": 4673
+          "end": 4820,
+          "start": 4801
         }
       },
       {
         "cost": 0.0,
-        "key": "b404722ba7b1dc7ccfc230d6",
+        "key": "2d4fc519a6a95c215792f814",
         "kind": "judge",
         "note": "「这个候选是否会写 Rust？」",
         "replayed": true,
         "site": {
-          "end": 4692,
-          "start": 4673
+          "end": 4820,
+          "start": 4801
         }
       },
       {
         "cost": 0.0,
-        "key": "972cd313deb3ff0647bafdca",
+        "key": "18afabb9a7f179add2c50793",
         "kind": "gen",
         "note": "写两份会写 Rust 的候选人简介",
         "replayed": true,
         "site": {
-          "end": 4837,
-          "start": 4816
+          "end": 4965,
+          "start": 4944
         }
       },
       {
         "cost": 0.0,
-        "key": "164188c21363535693101df0",
+        "key": "f36d25c6e8e3e420f4409632",
         "kind": "judge",
         "note": "「这个候选是否会写 Rust？」",
         "replayed": true,
         "site": {
-          "end": 4841,
-          "start": 4810
+          "end": 4969,
+          "start": 4938
         }
       },
       {
         "cost": 0.0,
-        "key": "4f0a42287390332e27ad5fa4",
+        "key": "58a638946f7d929fad068563",
         "kind": "judge",
         "note": "「这个候选是否会写 Rust？」",
         "replayed": true,
         "site": {
-          "end": 4841,
-          "start": 4810
+          "end": 4969,
+          "start": 4938
         }
       }
     ],
@@ -169,9 +187,9 @@
       "W-untyped-transfer: find 把 unsure(rejected_all) 装在返回值里交了出去，但返回类型没提 Exit，调用者从签名上看不出自己收到了一份未决。修法：把返回类型标为含 Exit（如 `-> Exit`、`-> Record<Exit>`）",
       "W-untyped-transfer: find 把 unsure(no_candidate) 装在返回值里交了出去，但返回类型没提 Exit，调用者从签名上看不出自己收到了一份未决。修法：把返回类型标为含 Exit（如 `-> Exit`、`-> Record<Exit>`）",
       "W-drop-vs-escalate: 显式丢弃了未决责任 unsure(rejected_all)（题 first_k）；drop 合法且已记账，但只有 escalate 会把它交给人",
-      "W-window-untested: @4673 画像没有测过窗口（window），对象长度不核；超窗的语境可能接管读数而无痕",
+      "W-window-untested: @4801 画像没有测过窗口（window），对象长度不核；超窗的语境可能接管读数而无痕",
       "W-drop-vs-escalate: 显式丢弃了未决责任 unsure(no_candidate)（题 first_k）；drop 合法且已记账，但只有 escalate 会把它交给人",
-      "W-window-untested: @4810 画像没有测过窗口（window），对象长度不核；超窗的语境可能接管读数而无痕"
+      "W-window-untested: @4938 画像没有测过窗口（window），对象长度不核；超窗的语境可能接管读数而无痕"
     ]
   },
   "value": {
@@ -188,7 +206,7 @@
           "content": "戊：维护过 Rust 网络库",
           "mat": "1cbd2ca2b0ce848b790b3a2b",
           "origin": [
-            "gen:972cd313deb3ff0647bafdca"
+            "gen:18afabb9a7f179add2c50793"
           ],
           "taint": "Trusted"
         }

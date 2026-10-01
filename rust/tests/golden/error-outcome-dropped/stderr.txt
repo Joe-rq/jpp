@@ -1,4 +1,14 @@
-<ROOT>/examples/errors/outcome-dropped.jpp:4:1: J-05: 契约值 r 绑定之后再没被提到：它的未决清单（pending）随包转移给了你，丢掉它就是静默丢弃未决（13 §3）。修法：转交——返回它，或返回 undecided(r) 与 unobserved(r)（或 r.pending），或交给下一个构造；契约值不能整份 drop（B95），确实不进入输出的项才逐项丢
+<ROOT>/examples/errors/outcome-dropped.jpp:4:1: N-unsure-default: r 绑定之后再没被提到：这里拿不准的项没有作者给的去向，运行时在这个站点当场走语言的默认链——问缺哪类信息、从 unsure_source 声明的来源取来再判，仍拿不准就记账放弃，逐条进报告 unsure_default 段。要自己定去向，handle 它或把它（契约值的 pending）放进返回值；开 --guard 时这里在运行期是 J-05 错
 let r = sieve(notes, test("这段话给出了具体价格吗？", "price"));
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-<ROOT>/examples/errors/outcome-dropped.jpp: check failed (1 errors)
+档案：未加载，画像字段全部未测（线与 δ 只从校准记录取）；校准记录：0 条（仅来自 --fixtures）
+<ROOT>/examples/errors/outcome-dropped.jpp:4:9: W-window-untested: @271 画像没有测过窗口（window），对象长度不核；超窗的语境可能接管读数而无痕
+let r = sieve(notes, test("这段话给出了具体价格吗？", "price"));
+        ^
+<ROOT>/examples/errors/outcome-dropped.jpp:4:9: W-delta-unknown: @271 无线是非题按判断器的回答出了多数块，画像没有 δ（两段都没测或没加载画像）：分不出读数离边界近不近，不补信息，出口带 delta_unknown，不作放行不可逆 do 的可信合取项（裁定五十六）。修法【需接线人】：给画像测 delta.noul.mid
+let r = sieve(notes, test("这段话给出了具体价格吗？", "price"));
+        ^
+<ROOT>/examples/errors/outcome-dropped.jpp:4:9: J-05: 程序结束时有未消费的 unsure(tie)（题 f3fefeea）。修法：转交——把它放进返回值（来自契约值 o 的写 undecided(o) 与 unobserved(o)，或 o.pending；元素投影保留 exit 字段），具名函数的返回类型标为含 Exit；或 handle 它、在 unsure 臂 escalate(u, …) 交给人、literalize(u, …) 重问；consume(…, "drop") 排最后，只用于不进入任何输出、不参与路由的题
+let r = sieve(notes, test("这段话给出了具体价格吗？", "price"));
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+违规 1 笔：本次结论为未决（violation），值照带；退出码 3

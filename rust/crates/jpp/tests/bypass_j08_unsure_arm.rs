@@ -58,9 +58,9 @@ const 程序: &str = r#"
 budget {calls: 2, cost: 1, depth: 8};
 let m = mat("一段程序自己写的材料");
 handle(cut(judge(state(m), test("该发吗", "k"))), {
-    act: fn() { content(do("发邮件", [], 0)) },
+    act: fn() { (do("发邮件", [], 0)) },
     ignore: fn() { "不发" },
-    unsure: fn(u) { consume(u, "drop"); content(do("发邮件", [], 0)) }
+    unsure: fn(u) { consume(u, "drop"); (do("发邮件", [], 0)) }
 })
 "#;
 
@@ -74,7 +74,7 @@ fn a_正式线可信材料上的未决出口不放行unsure臂里的不可逆do(
 #[test]
 fn b_对照_同一条线同一份材料切出act时act臂放行() {
     let v = 跑(程序, 0.95).expect("正式线、可信材料上的 act 出口放行不可逆 do");
-    assert_eq!(v, Json::from("已发"));
+    assert_eq!(v["content"], Json::from("已发"));
 }
 
 /// 同一缺陷的第二条路：unsure 臂返回字面量 `true`，再用它守卫。步 16-0 前 let 旁路表把这次求值里
@@ -86,7 +86,7 @@ let ok = handle(cut(judge(state(m), test("该发吗", "k"))), {
     act: fn() { true }, ignore: fn() { true },
     unsure: fn(u) { consume(u, "drop"); true }
 });
-if ok { content(do("发邮件", [], 0)) } else { "不发" }
+if ok { (do("发邮件", [], 0)) } else { "不发" }
 "#;
 
 #[test]

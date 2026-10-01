@@ -9,4 +9,6 @@ description = "J++ ledger (L3): append-only JSONL hash-chained ledger, header, b
 jpp-ir = { path = "../jpp-ir" }
 jpp-value = { path = "../jpp-value" }
 serde = { version = "1", features = ["derive"] }
-serde_json = "1"
+# float_roundtrip（V5 复核 S1）：解码浮点正确舍入，读回再写逐字节相同。jpp-calib 自步 20c 已开、经 cargo 统一，
+# 但不带 jpp-calib 的构建（单独 -p jpp-ledger、只嵌 jpp-runtime 的宿主）拿不到；解码方自己声明，读出的数与 CLI 一致。
+serde_json = { version = "1", features = ["float_roundtrip"] }

@@ -1,0 +1,5 @@
+// C-2 证明示例的一半：ping 读入口值，问一道题，把结论当返回值交给宿主；宿主把它作为 pong 的入口值。
+// 两个程序只有题面和返回文字不同，各自只为让每段账本里有自己的判断条目。
+budget {calls: 2, cost: 1};
+let e = cut(judge(state(mat(input.a)), test("ping 这段话行吗", "k")));
+handle(e, {act: fn() { "ping-是" }, ignore: fn() { "ping-否" }, unsure: fn(u) { consume(u, "drop"); "ping-未决" }})

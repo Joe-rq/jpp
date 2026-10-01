@@ -1,10 +1,10 @@
 # 公开快照说明 / About this public snapshot
 
-`rust/` 是研究树 `地基/rust-jpp` 的公开快照。最近一次同步（2026-09-27）取研究区提交 `418cbebd`，分三段提交（PR #37 的评审修复各自单独成提交）；此前的同步取过 `85e28bfc`（2026-09-25）。目录一一对应：研究树里的 `X` 就是这里的 `rust/X`。同步用 `tools/sync-rust-from-research.sh`，它只取已提交的内容。
+`rust/` 是研究树 `地基/rust-jpp` 的公开快照。最近一次同步（2026-10-01）取研究区提交 `f92e1179`（此前一次取 `418cbebd`，2026-09-27；更早取过 `85e28bfc`，2026-09-25）。这一次同步还把 `src/foundation/jv/` 与 `src/foundation/profile/`（Python 参照内核与画像）及 `tests/foundation_jv/` 里随画像加「中段 δ」改动的四个测试按同一提交补齐，否则跨内核对照测试 `cross_kernel.rs` 读到的是旧画像。目录一一对应：研究树里的 `X` 就是这里的 `rust/X`。同步用 `tools/sync-rust-from-research.sh`，它只取已提交的内容。
 
 **本次同步里的一次重命名（研究树步 14a，B74）**：`crates/jpp-core`（AST、检查器、解释器、效应、账本、保形）与 `crates/jpp-cli`（`jpp` 二进制）合并改名为单个 crate `crates/jpp`（lib 目标 + bin 目标）。原 `crates/jpp-core/tests/fixtures/calib_legacy/` 与 `crates/jpp-core/tests/known_defects.rs` 这两个只在公开侧的文件随之手工搬到 `crates/jpp/tests/`（见下节），`tools/sync-rust-from-research.sh` 的 KEEP 列表与两处路径改写已同步更新；README、ROADMAP、CI 工作流与文档里 `-p jpp-cli` 的调用改为 `-p jpp`，`crates/jpp-core/INTERFACE.md` 等链接改指向 `crates/jpp/INTERFACE.md`。历史文档（`rust/前端需求-来自核实.md` 等标了具体研究区提交号的稽核记录）保留旧路径原样，不追溯改写。
 
-`rust/` is a public snapshot of the research tree `地基/rust-jpp`. This sync takes research commit `85e28bfc` (2026-09-25); the previous sync reached research commit `9716e61b` (2026-09-24). Paths map one to one: `X` in the research tree is `rust/X` here. `tools/sync-rust-from-research.sh` performs the sync from committed content only.
+`rust/` is a public snapshot of the research tree `地基/rust-jpp`. This sync takes research commit `f92e1179` (2026-10-01); the previous sync took `418cbebd` (2026-09-27), and the one before that `85e28bfc` (2026-09-25). It also brings `src/foundation/jv/`, `src/foundation/profile/` (the Python reference kernel and the judge profile) and four tests in `tests/foundation_jv/` up to the same commit, because the profile gained a mid-band δ; without it the cross-kernel test `cross_kernel.rs` reads the old profile. Paths map one to one: `X` in the research tree is `rust/X` here. `tools/sync-rust-from-research.sh` performs the sync from committed content only.
 
 **A rename landed in this sync (research-tree step 14a, ruling B74)**: `crates/jpp-core` (AST, checker, interpreter, effects, ledger, conformal) and `crates/jpp-cli` (the `jpp` binary) merged into a single crate `crates/jpp` (a lib target plus a bin target). The two public-only files that used to live under `crates/jpp-core/tests/` — `fixtures/calib_legacy/` and `known_defects.rs` — were moved by hand to `crates/jpp/tests/` as part of this sync (see below); `tools/sync-rust-from-research.sh`'s KEEP list and its two path rewrites were updated to match. README, ROADMAP, the CI workflow and other docs now call `-p jpp` instead of `-p jpp-cli`, and links to `crates/jpp-core/INTERFACE.md` now point at `crates/jpp/INTERFACE.md`. Historical documents that cite a specific research-tree commit (e.g. `rust/前端需求-来自核实.md`) keep their original paths as written, unchanged retroactively.
 
@@ -12,22 +12,26 @@
 
 - 研究区的过程记录、黑板、附注在 `rust-jpp` 目录之外，任何一次同步都不带。
 - `COORDINATION.md`：代理之间的分工与协作登记。
+- `发行说明-待发布.md`：发行说明草稿，引用研究区私有路径；内容整理进 `docs/progress.md`。
+- `scripts/cargoq`、`scripts/cargoq-stale-repro`、`scripts/train.sh`、`scripts/test-companions-on`：依赖研究机的远端编译机与合入流程。公开仓直接用 `cargo`；要开伴随题跑全量，设环境变量 `JPP_TEST_COMPANIONS=on`。
 - `probes/scope/语义R-带材料.jsonl`：含人工抽检的逐条标注。`probes/scope/` 里读它的脚本（`find_items.py`、`class_check.py`、`rule_gradient.py`）在这里跑不起来；由它导出的校准记录只含汇总数（抽检条数与一致率）。
 
 - Process logs, the blackboard and the research notes live outside `rust-jpp` and are never synced.
 - `COORDINATION.md`: agent ownership and coordination entries.
+- `发行说明-待发布.md`: a release-notes draft that cites private research paths; its content is folded into `docs/progress.md`.
+- `scripts/cargoq`, `scripts/cargoq-stale-repro`, `scripts/train.sh`, `scripts/test-companions-on`: they depend on the research machine's remote build host and merge workflow. Use plain `cargo` here; to run the suite with companion questions on, set `JPP_TEST_COMPANIONS=on`.
 - `probes/scope/语义R-带材料.jsonl`: contains per-item human spot-check labels. The scripts in `probes/scope/` that read it (`find_items.py`, `class_check.py`, `rule_gradient.py`) cannot run here; calibration records derived from it carry only aggregates (spot-check count and agreement rate).
 
 ## 只在公开侧的文件与改写 / Public-only files and rewrites
 
 - `.gitignore`、`crates/jpp/tests/fixtures/calib_legacy/`（旧格式校准记录夹具）、`crates/jpp/tests/known_defects.rs`（PR #20 评审要求的溢出源码区间断言）、`scripts/ci_public.sh` 与 `scripts/doc_snippets.py`（GitHub CI 用）、本文件。
 - 测试里指向研究区 `foundation/profile/profiles/` 的路径改为本仓的 `src/foundation/profile/profiles/`；`calib_load.rs` 改读上面的旧格式夹具。
-- 读研究区实验原始数据的两个测试（`e_alloc.rs`、`jev_client.rs` 的置换一致率）在这里读不到数据，打印「跳过」后返回。
+- 读研究区实验原始数据的两个测试（`e_alloc.rs`、`jev_client.rs` 的置换一致率）在这里读不到数据，打印「跳过」后返回。`ablation/plan.rs` 的 `第二版_题库三条是非题式` 读研究区 `题库/第二批/C01/calib110`，这里没有，跳过这一条，其余两条读 `bank/entries/` 照常断言。
 - `probes/scope/rule_gradient.py` 的仓库根目录与 `probes/scope/result.json` 里记录的 `--calib` 路径，原是研究区的本机绝对路径，改成相对路径；这两个文件不被测试或金样读取。
 
 - `.gitignore`, `crates/jpp/tests/fixtures/calib_legacy/` (legacy-format calibration fixtures), `crates/jpp/tests/known_defects.rs` (the overflow source-span assertion requested in the PR #20 review), `scripts/ci_public.sh` and `scripts/doc_snippets.py` (used by GitHub CI), and this file.
 - Test paths into the research `foundation/profile/profiles/` point at this repo's `src/foundation/profile/profiles/`; `calib_load.rs` reads the legacy fixtures above.
-- Two tests that read raw research experiment data (`e_alloc.rs` and the permutation-agreement test in `jev_client.rs`) find no data here, print a skip notice and return.
+- Two tests that read raw research experiment data (`e_alloc.rs` and the permutation-agreement test in `jev_client.rs`) find no data here, print a skip notice and return. In `ablation/plan.rs` the test `第二版_题库三条是非题式` reads the research tree's `题库/第二批/C01/calib110`, which is not here; that row is skipped and the other two (read from `bank/entries/`) assert as before.
 - The repository root in `probes/scope/rule_gradient.py` and the `--calib` paths recorded in `probes/scope/result.json` were absolute paths on a research machine; they are rewritten as relative paths. Neither file is read by the tests or goldens.
 
 ## 注释里的研究区路径 / Research paths in comments

@@ -11,6 +11,8 @@
 //! 2026-09-23 起前端接上了 `budget {unsure: …}`（规则批 B32 施工时一并接线），
 //! 由 `前端写得出budget_unsure` 钉住。
 
+// 伴随题「最缺哪类」是 K 选一：替身经 common::伴随中性judge 给伴随元题中性读数（Z0398 返修，过程记录 5.23）
+mod common;
 use jpp::effects::{CalibStore, FnPort, JudgeResult, LiteralMode, Ports, Sample};
 use jpp::value::{Answer, Question, State};
 use std::cell::Cell;
@@ -128,17 +130,20 @@ fn 报在任何模型调用之前() {
     assert!(r.find("J-10").is_some(), "只检查就报得出来");
 
     let calls = Cell::new(0u64);
-    let ports = Ports::new().with(FnPort::judge("m", |_s: &State, qs: &[&Question]| {
-        calls.set(calls.get() + 1);
-        Ok(JudgeResult {
-            answers: qs.iter().map(|_| Answer::Noul(0.9)).collect(),
-            tokens: 0,
-            cost: 0.0,
-            mode_share: vec![],
-            perms: vec![],
-            confidence: vec![],
-        })
-    }));
+    let ports = Ports::new().with(common::伴随中性judge(
+        "m",
+        |_s: &State, qs: &[&Question]| {
+            calls.set(calls.get() + 1);
+            Ok(JudgeResult {
+                answers: qs.iter().map(|_| Answer::Noul(0.9)).collect(),
+                tokens: 0,
+                cost: 0.0,
+                mode_share: vec![],
+                perms: vec![],
+                confidence: vec![],
+            })
+        },
+    ));
     let mut l = jpp::ledger::Ledger::new();
     let out = jpp::run(&p, ports, &c, &jpp::interp::ActionRegistry::new(), &mut l).expect("跑得完");
     assert!(calls.get() > 0, "前提：跑起来真的会发调用");

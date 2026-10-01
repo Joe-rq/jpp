@@ -159,7 +159,7 @@ fn 选中证书(j: &mut Json) -> &mut Json {
 const 放行: &str = r#"
 budget {calls: 4, cost: 1, depth: 8};
 handle(cut(judge(state(mat("顾客说要退款")), test("该退吗", "k"))), {
-    act: fn() { content(do("退款", [], 0)) },
+    act: fn() { (do("退款", [], 0)) },
     ignore: fn() { "没退" },
     unsure: fn(u) { consume(u, "drop"); "没退" }})
 "#;
@@ -202,7 +202,7 @@ fn fixed_sequence_record_reproduces_unchanged() {
     assert!(s.load_report.is_empty(), "{:?}", s.load_report);
     assert_eq!(s.records["k"], raw.records["k"]);
     let o = 跑(&s).expect("正式线放行");
-    assert_eq!(o.value_json(), json!("已退"));
+    assert_eq!(o.value_json()["content"], json!("已退"));
     assert_eq!(o.exits[0]["grade"], json!("Certified"));
 }
 
@@ -246,7 +246,7 @@ fn old_certificate_gets_delta_written_back_idempotently() {
     );
     let o = 跑(&s).expect("写回 δ 后放行");
     assert!(o.exits[0].get("delta_unknown").is_none(), "{:?}", o.exits);
-    assert_eq!(o.value_json(), json!("已退"));
+    assert_eq!(o.value_json()["content"], json!("已退"));
     // 未经 load 的同一记录（直接给运行时）仍是 δ 未知：不放行（B104-1）
     let e = 跑(&old).expect_err("δ 未知不放行");
     assert!(e.contains("J-08"), "{e}");

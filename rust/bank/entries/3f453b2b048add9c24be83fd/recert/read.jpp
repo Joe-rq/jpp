@@ -1,0 +1,21 @@
+// 第二批 C22 · 该由谁负责（归类 · K 个字面标签 · 语义题式）：取真机读数用于认证。
+// 题式带 permute: true（B64）：真机每题发正序、逆序两次，读数取均值。
+// 一条材料一道题；读数经 key_of 回接材料编号，不走 --from-ledger 清单（B107 未修）。
+// 材料经 `jpp run --input input.json` 交入：input.items[i] = {id, text, role, over}，id 是不透明编号。
+budget {calls: 250, cost: 0.05, depth: 256};
+
+let who_owns = form("select", "下面这件事应由下列哪一个{role}负责处理？",
+    {calib: "cls-who-owns", over_kind: "labels", permute: true});
+
+fn one(x) !{judge} {
+    let r = judge(state(mat(x.text), {over: x.over}), fill(who_owns, {role: x.role}));
+    handle(cut(r), {
+        pick: fn(k) { {id: x.id, key: key_of(r), exit: "pick", open: []} },
+        unsure: fn(u) { {id: x.id, key: key_of(r), exit: "unsure", open: [u]} }
+    })
+}
+
+let rows = map(input.items, fn(x) !{judge} { one(x) });
+
+{rows: map(rows, fn(x) { {id: x.id, key: x.key, exit: x.exit} }),
+ pending: fold(rows, [], fn(acc, x) { concat(acc, x.open) })}

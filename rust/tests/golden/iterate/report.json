@@ -330,6 +330,24 @@
   "local_checks": [],
   "mode": "fixed observations; no model API requests",
   "pending": [],
+  "plan": {
+    "calls": {
+      "kind": "at_least",
+      "lo": 1
+    },
+    "cost_usd": {
+      "kind": "at_least",
+      "lo": 0.0
+    },
+    "latency_s": {
+      "kind": "unknown",
+      "reason": "untested:concurrency.latency_s.p95"
+    },
+    "layers": {
+      "kind": "at_least",
+      "lo": 1
+    }
+  },
   "questions": [
     {
       "kind": "attr",

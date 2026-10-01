@@ -680,10 +680,13 @@ fn d1_替身判断器跑全部示例() {
     // 未消费的 unsure，运行期 J-05（程序自身对冷出口的处理，不是替身的问题；过程记录 §三）。
     // 步 15h-1 新增金样用例 `gen-choose` 也调 gen，替身不生成，同 lifecycle 一类停下；
     // 步 25c 的三个 `search-*` 用例与步 25c-2 的 `search-rank` 的 propose 包 gen，同一类；
-    // 批 8 T6 的 `tree-collab` 由 gen 生成题树，同一类；批 8 T1 的 `search-keep` 的 propose 包 gen，同一类
+    // 批 8 T6 的 `tree-collab` 由 gen 生成题树，同一类；批 8 T1 的 `search-keep` 的 propose 包 gen，同一类；
+    // 步 26 的 `diag-runtime` 由 gen 出题，同一类；步 28 的 `derive-elicit` 由 gen 唤出候选题，同一类
     assert_eq!(
         停名,
         vec![
+            "derive-elicit",
+            "diag-runtime",
             "gen-choose",
             "lifecycle",
             "search-bound",
@@ -730,7 +733,17 @@ fn d1_替身判断器跑全部示例() {
     // 步 13a-1 加 spec-fixture-miss（替身判断器对全部题都答，推测组不报错）：31 → 32。
     // 步 20j-4 加 declare-fit（声明式拟合，不靠校准记录），替身上跑得完：32 → 33
     // B187 默认相信判断器：pair-team 跑得完，partial、tally 改成各臂都走得通后也跑得完：33 → 35
-    assert_eq!(跑完.len(), 35);
+    // 步 23b 加 window-over、window-over@untested（超窗金样，同程序带/不带画像），替身上跑得完：35 → 37
+    // C-4 的 feasible-pick 进金样（一次判断、无 gen，未决出口由作者 consume 掉），替身上跑得完：37 → 38
+    // 步 28 加 derive-chain（连环题，派生题的读数照替身的回答走），替身上跑得完：38 → 39
+    // （预注册 `地基/过程记录/工程-步28.md` 没列到这一处，属漏列，在此补记）
+    // 步 23b 裂变 pass 加 window-over-approx（声明 fission: "approx" 的超窗金样），替身上跑得完：39 → 40
+    // Z0364 加 window-over-approx@untested（同示例不给画像、带 --guard，覆盖 window_untested 行），替身上跑得完：40 → 41
+    // B0492 S2c 加 unsure-default（一个 handle 都不写，未决在 sieve 站点走默认链），替身上跑得完：41 → 42
+    // Z0425 加 delta-unknown、delta-unknown@profile（有线且记录没有 δ 的金样，同程序带/不带画像），替身上跑得完：42 → 44
+    // B0478 加 modules-fill（作者填模块、守则组装，无 gen），替身上跑得完：44 → 45
+    // （预注册 `地基/过程记录/工程-B0478-作者填模块.md` 第七节预测 9 没列到这一处，属漏列，在此补记）
+    assert_eq!(跑完.len(), 45);
 }
 
 /// (D2) 校准不跨判断器（`12` B60：校准键含 `model`）：带 jev 校准记录的用例在替身判断器上跑，

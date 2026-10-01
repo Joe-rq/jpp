@@ -22,6 +22,10 @@ pub fn plan(b: &Block, from: usize) -> Option<LiftPlan> {
     let mut used = BTreeSet::new();
     names_in(head_state, &mut used);
 
+    // 被越过（只越过、不求值）的语句绑定的名字：此刻还没有值（或还是外层的旧值）。之后的语句只要值表达式
+    // 里（题面、选项记录、状态）用到其中任何一个，就算不出来，不能提前求值（Z0160：`let e = cut(r)` 之后的
+    // `judge(…, test(exit_kind(e), …))` 曾被提前登记，运行期报 `E-rt-name`）。
+    let mut skipped: BTreeSet<String> = BTreeSet::new();
     let mut steps = vec![];
     for (j, st) in b.statements.iter().enumerate().skip(from + 1) {
         let Stmt::Let { name, value, .. } = st else {
@@ -33,13 +37,21 @@ pub fn plan(b: &Block, from: usize) -> Option<LiftPlan> {
         }
         let lift = match judged_state(value) {
             // 同状态（结构相同的表达式）才提；不同状态的层合并没有消费者，不做
-            Some(s2) if same_shape(s2, head_state) => true,
+            // 但这一句要用被越过的句子绑定的名字：算不出来，也越过（它自己的真站点再登记）
+            Some(s2) if same_shape(s2, head_state) => {
+                let mut deps = BTreeSet::new();
+                names_in(value, &mut deps);
+                deps.is_disjoint(&skipped)
+            }
             // 不是 judge、也不碰状态里的名字：跳过它继续往后看
             None if !used.contains(name.as_str()) => false,
             _ => break,
         };
         // 这一句重新绑定了状态里用到的名字：后面的同名状态已经不是同一个了
         let stop_after = used.contains(name.as_str());
+        if !lift {
+            skipped.insert(name.clone());
+        }
         steps.push(LiftStep {
             index: j,
             node: value.id,

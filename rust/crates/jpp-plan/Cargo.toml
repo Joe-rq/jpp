@@ -8,3 +8,11 @@ description = "J++ planning (L3): pass switches, static trigger plans, runtime h
 [dependencies]
 jpp-ir = { path = "../jpp-ir" }
 jpp-effects = { path = "../jpp-effects" }
+
+[dev-dependencies]
+jpp-syntax = { path = "../jpp-syntax" }
+serde_json = "1"
+
+[[test]]
+name = "ablation"
+path = "tests/ablation/main.rs"

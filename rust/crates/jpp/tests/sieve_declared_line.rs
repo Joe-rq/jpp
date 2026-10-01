@@ -18,6 +18,8 @@
 //! （act 高、ignore 低、恰好 0.5 并列出 `unsure(tie)`，等级 `Answer`）；【放行】断言与 `W-declared-line` 的计数
 //! 在 `--guard` 下断言（本文件的宿主入口都开 `--guard`，(h) 末尾另加不开把关的对照）。
 
+// 伴随题「最缺哪类」是 K 选一：替身经 common::伴随中性judge 给伴随元题中性读数（Z0398 返修，过程记录 5.23）
+mod common;
 use jpp::effects::{CalibStore, FnPort, JudgeResult, Ports};
 use jpp::interp::{ActionRegistry, TaintOut};
 use jpp::ledger::Ledger;
@@ -66,7 +68,7 @@ fn 边表(_q: &str, m: &str) -> f64 {
 }
 
 fn 端口(t: 表) -> Ports<'static> {
-    Ports::new().with(FnPort::judge(
+    Ports::new().with(common::伴随中性judge(
         "live-shaped",
         move |s: &State, qs: &[&Question]| {
             let text = s.on_text();

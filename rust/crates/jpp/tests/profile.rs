@@ -41,6 +41,8 @@ fn 从档案读出的线与delta与python一致() {
         "冷键的保守线要从档案 lines.safety_default 来"
     );
 
+    // Z0361 / Z0389：Python 的 `delta_for` 改取中段后，两内核语言用的 δ 同值——Rust 的 `delta` 对 Python oracle；
+    // 两边都按 `delta.<题式>.mid.immediate.p99` 这组路径取（oracle 的 `delta_paths`）。尾段 `delta_tail` 只作记录，对画像 JSON
     let d = &want["delta"];
     assert_eq!(
         p.delta.get().copied(),
@@ -49,7 +51,19 @@ fn 从档案读出的线与delta与python一致() {
             d["choice"].as_f64().unwrap(),
             d["score"].as_f64().unwrap()
         )),
-        "δ 要从档案 delta.<题式>.immediate.p99 来（choice 走 choice_prob_chosen）"
+        "两内核的 δ（中段）要同值（choice 走 choice_prob_chosen）"
+    );
+    assert_eq!(
+        want["delta_paths"]["noul"],
+        serde_json::json!(["delta", "noul", "mid", "immediate", "p99"]),
+        "Python 取的也是中段路径"
+    );
+    let j: Json = serde_json::from_str(&std::fs::read_to_string(&path).unwrap()).unwrap();
+    let tail = |k: &str| j["delta"][k]["immediate"]["p99"].as_f64().unwrap();
+    assert_eq!(
+        p.delta_tail.get().copied(),
+        Some((tail("noul"), tail("choice_prob_chosen"), tail("score"))),
+        "尾段 δ 从档案 delta.<题式>.immediate.p99 来，只作记录"
     );
 
     // 步 15d-2：没有代码兜底值可比（`Profile::default` 已删）；未测画像两项都是未测

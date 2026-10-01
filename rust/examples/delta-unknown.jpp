@@ -1,0 +1,14 @@
+// 有线、记录没有 δ（Z0425 金样，裁定四十四、五十六）：夹具的校准记录不写 delta。
+// 不带画像跑：画像也没有 δ，照线切、不加迁移带，出口带 delta_unknown（来源 none），不放行；order 不并档，报告 orders 行 tol_source: unknown。
+// 带发行画像跑：取画像中段 δ（是非 0.1281）加带，0.66 落进 0.60 + δ 以内出 band，出口带 delta_unknown（来源 profile_mid）；
+// order 按 0.1281 并档，0.66 与 0.58 同档，orders 行 tol_source: profile。
+budget {calls: 4, cost: 0, depth: 8};
+let q = test("这张工单需要人工跟进吗？", "ticket-followup");
+let a = judge(state(mat("客户第三次来信，说退款还没到账。")), q);
+let b = judge(state(mat("客户来信说问题已经解决，谢谢。")), q);
+let e = handle(cut(a), {
+    act: fn() { "跟进" },
+    ignore: fn() { "不跟进" },
+    unsure: fn(u) { consume(u, "drop"); unsure_cause(u) }
+});
+{cut: e, tiers: order([a, b])}

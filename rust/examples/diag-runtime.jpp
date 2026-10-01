@@ -1,0 +1,21 @@
+// 运行中生成的题过诊断（步 26，B47；lib/diag.jpp）。生成器对一段材料出三道是非题，程序逐道造题：
+//   1. 发出前运行时自动过一遍 B13 静态规则，结果在报告的 trace.warnings（带「运行期诊断」字样），只提示、不拦题；
+//   2. diag_codes：同一份规则经宿主变换 diagnose，零判断调用、记账，程序拿到每道题卡在哪几个码；
+//   3. 两条判断器诊断：这题里有两个判断吗、题问的东西在这段材料里吗，各返回契约值；
+//   4. 照常拿三道题去判材料——诊断不改走向，拿不准的随返回值交出（J-05）。
+// 本金样（夹具）：三道题分别卡 W-diag-mention-scope、W-diag-two-judgments、W-diag-open-question；
+// 两个判断 act 1 项、在材料里 ignore 1 项（第 3 道问的天数材料里没有）；作答 act 2 项、未决 1 项。
+// 调用：生成 1 次，判断 7 次（两个判断 3、在材料里 3、作答 1 次合批）。
+import "../lib/diag.jpp";
+budget {calls: 12, cost: 0.01, depth: 64};
+
+let note = mat("我上个月去了成都出差，顺便见了老朋友。");
+let made = gen("为下面这段话出三道是非题，每行一道，只输出题面。", [note], 1, 0);
+let texts = split(content(made[0]), "\n");
+let qs = map(texts, fn(t) { test(t, "diag-demo") });
+
+let answered = sieve([note], qs);
+{auto: map(qs, fn(q) { {q: q.text, codes: diag_codes(q)} }),
+ two_judgments: diag_two_judgments(qs),
+ in_material: diag_in_material(qs, note),
+ answered: answered}

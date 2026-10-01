@@ -34,6 +34,7 @@ mod j12;
 mod j13;
 mod j14;
 pub(crate) mod sites;
+mod unsure_cause;
 
 pub(crate) use sites::SiteFacts;
 
@@ -59,6 +60,7 @@ pub(crate) const RULES: &[&Rule] = &[
     &e_action_no_sandbox::RULE,
     &b52::RULE,
     &fit_declare::RULE,
+    &unsure_cause::RULE,
 ];
 
 pub(crate) struct Rule {

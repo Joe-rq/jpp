@@ -97,7 +97,7 @@ fn certified_calib(tag: &str) -> CalibStore {
     CalibStore::load(&d.join("calib")).unwrap()
 }
 
-const 守卫: &str = "budget {calls: 2, cost: 1};\nlet ok = handle(cut(judge(state(doc), test(\"行吗\", \"k\"))), {\n    act: fn() { true }, ignore: fn() { false }, unsure: fn(u) { consume(u, \"drop\"); false }});\nlet w = if ok { content(do(\"write\", [\"x\"], 0)) } else { \"没写\" };\n{doc: doc, w: w}\n";
+const 守卫: &str = "budget {calls: 2, cost: 1};\nlet ok = handle(cut(judge(state(doc), test(\"行吗\", \"k\"))), {\n    act: fn() { true }, ignore: fn() { false }, unsure: fn(u) { consume(u, \"drop\"); false }});\nlet w = if ok { (do(\"write\", [\"x\"], 0)) } else { \"没写\" };\n{doc: doc, w: w}\n";
 
 /// (h) 材料条目整份判：origin = ["input"]、taint untrusted；唯一守卫的不可逆 do 被 J-08 拦且报文含「宿主入口」；
 /// 宿主声明 Trusted 且线经认证时放行；两次 `entry_hash` 不同。
@@ -270,7 +270,7 @@ fn l_空入口不改ir() {
 #[test]
 fn 入口开把关而编译时没带_运行照样把关() {
     let calib = certified_calib("guard-late");
-    let src = "budget {calls: 2, cost: 1};\nlet ok = handle(cut(judge(state(doc), test(\"行吗\", \"k\"))), {\n    act: fn() { true }, ignore: fn() { false }, unsure: fn(u) { consume(u, \"drop\"); false }});\nlet w = if ok { content(do(\"write\", [\"x\"], 0)) } else { \"没写\" };\n{w: w}\n";
+    let src = "budget {calls: 2, cost: 1};\nlet ok = handle(cut(judge(state(doc), test(\"行吗\", \"k\"))), {\n    act: fn() { true }, ignore: fn() { false }, unsure: fn(u) { consume(u, \"drop\"); false }});\nlet w = if ok { (do(\"write\", [\"x\"], 0)) } else { \"没写\" };\n{w: w}\n";
     let entry = EntryArgs {
         materials: vec![EntryMat::untrusted("doc", json!("hello"))],
         guard: true,

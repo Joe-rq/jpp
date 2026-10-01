@@ -13,7 +13,7 @@ use std::fmt;
 
 use serde_json::Value as Json;
 
-use crate::{Entry, Header, HeaderCompare, Ledger};
+use crate::{Entry, Header, HeaderCompare, Ledger, TraceCtx};
 
 /// 一条条目什么时候落盘（B55）。
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -51,6 +51,9 @@ pub trait LedgerPort {
     ) -> Result<Option<String>, LedgerError>;
     /// 层末：把缓着的条目落盘。
     fn end_layer(&mut self) -> Result<(), LedgerError>;
+    /// 设此后追加的条目所属的一段（C-2）：宿主（`Session`）在运行前调用，条目在行外壳的 `trace` 里带着它。
+    /// `None` = 不盖章。已在账本里的条目不改。
+    fn set_trace(&mut self, ctx: Option<TraceCtx>);
     /// 记下一次校准记录命中（B124）：该键最后一条 `CalibUsed` 的哈希与本次相同则不追加。
     fn append_calib_used(
         &mut self,
@@ -92,5 +95,8 @@ impl LedgerPort for Ledger {
     }
     fn end_layer(&mut self) -> Result<(), LedgerError> {
         Ok(())
+    }
+    fn set_trace(&mut self, ctx: Option<TraceCtx>) {
+        Ledger::set_trace(self, ctx)
     }
 }

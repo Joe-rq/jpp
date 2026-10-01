@@ -68,6 +68,9 @@ pub(crate) struct ReuseState<'a> {
     /// 生成器模型与画像哈希（宿主给了真实生成器时才有；头定稿时写入）
     pub(crate) gen_model: Option<String>,
     pub(crate) gen_profile_hash: Option<String>,
+    /// 标准库与题库版本（步 27，B48）：宿主装载了才有；头定稿时写入
+    pub(crate) lib_version: Option<String>,
+    pub(crate) bank_version: Option<String>,
     pub(crate) stats: CacheStats,
 }
 
@@ -89,6 +92,13 @@ impl<'a> Interp<'a> {
     pub fn with_gen(mut self, model: Option<String>, profile_hash: Option<String>) -> Self {
         self.复用.gen_model = model;
         self.复用.gen_profile_hash = profile_hash;
+        self
+    }
+
+    /// 标准库与题库版本（步 27，B48）：进账本头的 `lib_version`、`bank_version`（`W-header` 比对）。
+    pub fn with_versions(mut self, lib: Option<String>, bank: Option<String>) -> Self {
+        self.复用.lib_version = lib;
+        self.复用.bank_version = bank;
         self
     }
 
@@ -135,6 +145,10 @@ impl<'a> Interp<'a> {
         Some((d, spec))
     }
 
+    pub(crate) fn 判断缓存键_pub(&self, key: &str) -> Option<(String, CacheKey)> {
+        self.判断缓存键(key)
+    }
+
     fn 判断缓存键(&self, key: &str) -> Option<(String, CacheKey)> {
         let ck = self.judge_keys.get(key)?.cache_key();
         Some((ck.digest(), ck))
@@ -148,12 +162,34 @@ impl<'a> Interp<'a> {
         perm: Option<PermMeasure>,
         confidence: Option<f64>,
     ) {
-        if let Some((d, _)) = self.判断缓存键(key) {
+        if let Some((d, ck)) = self.判断缓存键(key) {
+            // C2b：单元图开着时记进判断单元（先到先得），关着时记进同运行复用表
+            if self.单元记判断(&ck, key, a, perm, confidence) {
+                return;
+            }
             self.复用
                 .judges
                 .entry(d)
                 .or_insert_with(|| (key.to_string(), a.clone(), perm, confidence));
         }
+    }
+
+    /// 这把账本键按缓存键能不能复用（只查，不填答案、不记账）。推测发出前用它：能复用的判断不推测，
+    /// 等真站点走到时由 `判断复用` 当场取回——否则推测先把请求发出去，缓存命中省不下调用与费用（说话 v2 实测，2026-09-27）。
+    pub(crate) fn 判断可复用(&self, key: &str) -> bool {
+        if self.audit.on {
+            return false;
+        }
+        let Some((d, ck)) = self.判断缓存键(key) else {
+            return false;
+        };
+        self.单元有判断(&ck)
+            .unwrap_or_else(|| self.复用.judges.contains_key(&d))
+            || self
+                .复用
+                .cross
+                .and_then(|c| c.get(&ck))
+                .is_some_and(|hit| 判断记录的答案(&hit).is_some())
     }
 
     /// 判断登记时账本按账本键没有命中：按缓存键查本运行表与跨运行缓存。命中即填答案、写复用条目，返回 `true`。
@@ -170,16 +206,20 @@ impl<'a> Interp<'a> {
         let Some((d, ck)) = self.判断缓存键(key) else {
             return false;
         };
-        let (answer, perm, confidence, from, 同运行) =
-            if let Some((k0, a, p, c)) = self.复用.judges.get(&d) {
-                (a.clone(), *p, *c, k0.clone(), true)
-            } else if let Some(hit) = self.复用.cross.and_then(|c| c.get(&ck))
-                && let Some((a, p, c)) = 判断记录的答案(&hit)
-            {
-                (a, p, c, format!("ext:{}", hit.source), false)
-            } else {
-                return false;
-            };
+        // C2b：本运行先查判断单元（单元图关着时查同运行复用表），再查持久层（跨运行缓存）
+        let 本运行 = match self.单元读判断(&ck) {
+            Some(hit) => hit,
+            None => self.复用.judges.get(&d).cloned(),
+        };
+        let (answer, perm, confidence, from, 同运行) = if let Some((k0, a, p, c)) = 本运行 {
+            (a, p, c, k0, true)
+        } else if let Some(hit) = self.复用.cross.and_then(|c| c.get(&ck))
+            && let Some((a, p, c)) = 判断记录的答案(&hit)
+        {
+            (a, p, c, format!("ext:{}", hit.source), false)
+        } else {
+            return false;
+        };
         self.fill_from_record(r, answer.clone(), perm, confidence);
         let jkey = self.judge_keys.get(key).cloned();
         self.记账(
@@ -192,7 +232,7 @@ impl<'a> Interp<'a> {
                 cost: 零费用,
                 model_id: self.model_id.clone(),
                 call: 0,
-                calib_ref: Some(Box::new(CalibRef::declared(&r.calib))),
+                calib_ref: Some(self.judge_calib_ref(r)),
                 layer: 0,
                 merged_by: None,
                 parents: vec![],
@@ -221,6 +261,10 @@ impl<'a> Interp<'a> {
         let Some((d, _)) = self.效应缓存键(key, model) else {
             return;
         };
+        // C2b：单元图开着时记进账本求值体的代码单元（先到先得），关着时记进同运行复用表
+        if self.单元记效应(&d, key) {
+            return;
+        }
         self.复用
             .effects
             .entry(d)
@@ -234,19 +278,21 @@ impl<'a> Interp<'a> {
             return None;
         }
         let (d, spec) = self.效应缓存键(key, model)?;
-        let (output, output_mat, from, 同运行) =
-            if let Some(k0) = self.复用.effects.get(&d).cloned() {
-                match self.账本查(&k0) {
-                    Some(Entry::Effect {
-                        output, output_mat, ..
-                    }) => (output.clone(), output_mat.clone(), k0, true),
-                    _ => return None,
-                }
-            } else {
-                let hit = self.复用.cross?.get_effect(&d)?;
-                let (o, m) = 效应记录的输出(&hit)?;
-                (o, m, format!("ext:{}", hit.source), false)
-            };
+        let (output, output_mat, from, 同运行) = if let Some(k0) = self
+            .单元读效应(&d)
+            .unwrap_or_else(|| self.复用.effects.get(&d).cloned())
+        {
+            match self.账本查(&k0) {
+                Some(Entry::Effect {
+                    output, output_mat, ..
+                }) => (output.clone(), output_mat.clone(), k0, true),
+                _ => return None,
+            }
+        } else {
+            let hit = self.复用.cross?.get_effect(&d)?;
+            let (o, m) = 效应记录的输出(&hit)?;
+            (o, m, format!("ext:{}", hit.source), false)
+        };
         let s = &mut self.复用.stats;
         *s.hits.entry(spec.name.to_string()).or_default() += 1;
         // 生成是请求，省下一次；变换是本地方法调用，不是请求

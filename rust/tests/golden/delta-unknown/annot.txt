@@ -1,0 +1,77 @@
+ir v1
+budget calls=4 cost=0 depth=8 escalate=- unsure=- latency_p95=- absent=-
+block 547..998
+  let q : -
+    #0 construct test @0 593..656
+      #1 text "这张工单需要人工跟进吗？"
+      #2 text "ticket-followup"
+  let a : -
+    #3 effect judge @1 666..738 ; {"effect":{"known":["judge"],"open":false},"summary":null,"duty_kind":null,"refresh_point":false}
+      state:
+        #4 state @2 672..734
+          on:
+            #5 call 678..733
+              callee:
+                #6 name mat
+              #7 text "客户第三次来信，说退款还没到账。"
+      questions:
+        #8 name q
+  let b : -
+    #9 effect judge @3 748..817 ; {"effect":{"known":["judge"],"open":false},"summary":null,"duty_kind":null,"refresh_point":false}
+      state:
+        #10 state @4 754..813
+          on:
+            #11 call 760..812
+              callee:
+                #12 name mat
+              #13 text "客户来信说问题已经解决，谢谢。"
+      questions:
+        #14 name q
+  let e : -
+    #15 handle @5 827..966
+      exit:
+        #16 cut @6 834..840
+          reading:
+            #17 name a
+      arms:
+        #18 record 842..965
+          act:
+            #20 fn () -> - effects=-
+              block 858..870
+                result
+                  #21 text "跟进"
+          ignore:
+            #23 fn () -> - effects=-
+              block 889..904
+                result
+                  #24 text "不跟进"
+          unsure:
+            #26 fn (u:-) -> - effects=-
+              block 924..963
+                #27 consume @7 926..944
+                  #28 name u
+                  #29 text "drop"
+                result
+                  #30 call 946..961
+                    callee:
+                      #31 name unsure_cause
+                    #32 name u
+  result
+    #33 record 968..998
+      cut:
+        #34 name e
+      tiers:
+        #35 construct order @8 984..997
+          #36 list 990..996
+            #37 name a
+            #38 name b
+sites 9
+  @0 #0 construct:test 593..656 fn=- in=-
+  @1 #3 effect:judge 666..738 fn=- in=-
+  @2 #4 state 672..734 fn=- in=-
+  @3 #9 effect:judge 748..817 fn=- in=-
+  @4 #10 state 754..813 fn=- in=-
+  @5 #15 handle 827..966 fn=- in=-
+  @6 #16 cut 834..840 fn=- in=-
+  @7 #27 consume:consume 926..944 fn=#26 in=-
+  @8 #35 construct:order 984..997 fn=- in=-

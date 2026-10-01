@@ -56,6 +56,13 @@ pub struct LabelRow {
     /// `select` / `measure` 行必填：那次读数的 argmax（判断器挑中的候选或档位索引）
     #[serde(default)]
     pub pick: Option<usize>,
+    /// `select` 行可给：那次读数的置换测量（B64 两序，`perms` 个置换、众数占比 `mode_share`），**两者成对**
+    /// （`Sample` 的规矩：`mode_share` 不许裸记）。它随样本进记录，`unsure_rate` 按 cut 的判据用它（Z0308）：
+    /// 没给 = 没测置换，cut 出 `untested`，率里记未决。复核行不得带（它是读数的一部分，由标注行回接）
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub perms: Option<usize>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub mode_share: Option<f64>,
     /// 这条材料的文本（被判断对象，即 `on` 槽）。一键的进线行全部带文本时，记录写认证范围的
     /// 材料指纹（B68）；部分带、部分不带时不写指纹并告警
     #[serde(default)]
@@ -533,6 +540,29 @@ pub fn import_labels(
             }
             _ => {}
         }
+        // Z0308：置换测量成对、只在 select 行（cut 只在 select 上看众数，B64）
+        match (r.perms, r.mode_share) {
+            (None, None) => {}
+            (Some(_), Some(_)) if op != "select" => {
+                return Err(format!(
+                    "第 {} 行：{op} 行不收 perms / mode_share（置换测量只属于 select，B64）",
+                    i + 1
+                ));
+            }
+            (Some(k), Some(s)) if k >= 1 && (0.0..=1.0).contains(&s) => {}
+            (Some(k), Some(s)) => {
+                return Err(format!(
+                    "第 {} 行：perms 须 ≥ 1、mode_share 须在 0..=1，收到 perms {k}、mode_share {s}",
+                    i + 1
+                ));
+            }
+            _ => {
+                return Err(format!(
+                    "第 {} 行：perms 与 mode_share 须成对给（众数占比不许裸记）",
+                    i + 1
+                ));
+            }
+        }
         if let Some(prev) = key_ops.insert(key.clone(), op).filter(|p| *p != op) {
             return Err(format!(
                 "第 {} 行：键 {key} 混了 {prev} 与 {op} 两种题型：不同尺不可比，一条记录只能认一个题型",
@@ -783,8 +813,9 @@ pub fn import_labels(
                     Sample {
                         p: Some(r.p),
                         label: Some(u8::from(*lab)),
-                        perms: 0,
-                        mode_share: None,
+                        // Z0308：两序读数的置换测量随样本进记录（没测为 0 / 空，与 cut 的 untested 同口径）
+                        perms: r.perms.unwrap_or(0),
+                        mode_share: r.mode_share,
                         mode: LiteralMode::default(),
                         phys: match op {
                             "select" => "choice",
@@ -820,8 +851,12 @@ pub fn import_labels(
         }
         // 步 15d-2：按 δ 平移的认证要记录带 δ。记录没有时取宿主装进来的画像的 δ 先验（CLI：`--profile`）；
         // 画像也没有就报错，不回退到任何默认值（B73「数字只住画像」）。依据：21 步 15d-2
+        // `op` 是语义操作名（test / select / measure，`row_op` 已校验），按操作名反查；反查不到就报错，
+        // 不兜底成 test（Z0238：原先交给物理名的反查，select / measure 被静默当成 test，拿到 noul 的 δ）
         if store.records.get(&key).is_some_and(|r| r.delta.is_none()) {
-            let 题型 = crate::calib::反查题型_pub(op).unwrap_or(jpp_value::value::Op::Test);
+            let 题型 = crate::calib::操作名反查题型(op).ok_or_else(|| {
+                format!("键 {key}：op {op:?} 反查不到题型，取不了 δ 先验（只认 test / select / measure）")
+            })?;
             match store.profile.delta_prior(题型) {
                 Some(d) => {
                     let _ = store.set_delta(&key, d);

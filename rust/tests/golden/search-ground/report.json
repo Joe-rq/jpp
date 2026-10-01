@@ -1,4 +1,13 @@
 {
+  "action_facts": {
+    "exec_sql": {
+      "conditions": [
+        "沙箱：sandbox-exec"
+      ],
+      "reason": "只读打开数据库（mode=ro + PRAGMA query_only + 授权回调只放行 SELECT，任何语句都改不了库）；在调用专属临时目录内运行，操作系统沙箱把写限定在该目录、拒绝一切网络，调用结束整目录丢弃。读宿主文件不隔离；CPU、内存、进程数不限",
+      "reversibility": "reversible"
+    }
+  },
   "backend": "fixed-0",
   "cost": {
     "asks": 0,
@@ -54,6 +63,24 @@
   "local_checks": [],
   "mode": "fixed observations; no model API requests",
   "pending": [],
+  "plan": {
+    "calls": {
+      "kind": "at_least",
+      "lo": 0
+    },
+    "cost_usd": {
+      "kind": "at_least",
+      "lo": 0.0
+    },
+    "latency_s": {
+      "kind": "unknown",
+      "reason": "untested:concurrency.latency_s.p95"
+    },
+    "layers": {
+      "kind": "at_least",
+      "lo": 0
+    }
+  },
   "questions": [
     {
       "kind": "attr",
@@ -81,68 +108,68 @@
       },
       {
         "cost": 0.0,
-        "key": "f61c7b2cddbabcfdac6f0b5c",
+        "key": "340642fc39907310552d0fe5",
         "kind": "do",
         "note": "exec_sql",
         "replayed": true,
         "site": {
-          "end": 24484,
-          "start": 24456
+          "end": 24612,
+          "start": 24584
         }
       },
       {
         "cost": 0.0,
-        "key": "67874756da2337a2d1cb789f",
+        "key": "4b4339851b8b98de5890ce01",
         "kind": "transform",
         "note": "",
         "replayed": true,
         "site": {
-          "end": 24566,
-          "start": 24525
+          "end": 24694,
+          "start": 24653
         }
       },
       {
         "cost": 0.0,
-        "key": "34a4cddedf502289207b2272",
+        "key": "18f32f43a0520e2e435101db",
         "kind": "do",
         "note": "exec_sql",
         "replayed": true,
         "site": {
-          "end": 24484,
-          "start": 24456
+          "end": 24612,
+          "start": 24584
         }
       },
       {
         "cost": 0.0,
-        "key": "94a6613e38deb7b0d4e3ae80",
+        "key": "8e2633a0fbeadfbb28f98e3e",
         "kind": "transform",
         "note": "",
         "replayed": true,
         "site": {
-          "end": 24566,
-          "start": 24525
+          "end": 24694,
+          "start": 24653
         }
       },
       {
         "cost": 0.0,
-        "key": "84ea4818307e73dbda014d58",
+        "key": "1503db34e9d948882784c77d",
         "kind": "do",
         "note": "exec_sql",
         "replayed": true,
         "site": {
-          "end": 24484,
-          "start": 24456
+          "end": 24612,
+          "start": 24584
         }
       },
       {
         "cost": 0.0,
-        "key": "607d98deb2b7a52477831ecc",
+        "key": "c4e9d98fa73a4fbc09c25918",
         "kind": "transform",
         "note": "",
         "replayed": true,
         "site": {
-          "end": 24566,
-          "start": 24525
+          "end": 24694,
+          "start": 24653
         }
       },
       {
@@ -180,68 +207,68 @@
       },
       {
         "cost": 0.0,
-        "key": "9e14371b2fdd191bec25d198",
+        "key": "87f8f56ea77048ede10260e3",
         "kind": "do",
         "note": "exec_sql",
         "replayed": true,
         "site": {
-          "end": 24484,
-          "start": 24456
+          "end": 24612,
+          "start": 24584
         }
       },
       {
         "cost": 0.0,
-        "key": "62067d3b5a41b2d64b0c99f2",
+        "key": "9d22cafdcec6852cc71c8f1c",
         "kind": "transform",
         "note": "",
         "replayed": true,
         "site": {
-          "end": 24566,
-          "start": 24525
+          "end": 24694,
+          "start": 24653
         }
       },
       {
         "cost": 0.0,
-        "key": "efeb04192db8c21e2f549b4b",
+        "key": "3a86a54717b8fc728f09ecfe",
         "kind": "do",
         "note": "exec_sql",
         "replayed": true,
         "site": {
-          "end": 24484,
-          "start": 24456
+          "end": 24612,
+          "start": 24584
         }
       },
       {
         "cost": 0.0,
-        "key": "40eef6cea3158b8adc90a761",
+        "key": "8b27d3b3bea485318f558968",
         "kind": "transform",
         "note": "",
         "replayed": true,
         "site": {
-          "end": 24566,
-          "start": 24525
+          "end": 24694,
+          "start": 24653
         }
       },
       {
         "cost": 0.0,
-        "key": "350546c65e7b8bc7d8578729",
+        "key": "c4fe7c3d76e790b9b44fb2c9",
         "kind": "do",
         "note": "exec_sql",
         "replayed": true,
         "site": {
-          "end": 24484,
-          "start": 24456
+          "end": 24612,
+          "start": 24584
         }
       },
       {
         "cost": 0.0,
-        "key": "e52f7b861abfb3d7366579dd",
+        "key": "0d4c5d137dc94512081f4e86",
         "kind": "transform",
         "note": "",
         "replayed": true,
         "site": {
-          "end": 24566,
-          "start": 24525
+          "end": 24694,
+          "start": 24653
         }
       },
       {
@@ -286,7 +313,7 @@
           },
           "mat": "56c7de58d8b29ddbf0aeaa55",
           "origin": [
-            "transform:94a6613e38deb7b0d4e3ae80"
+            "transform:8e2633a0fbeadfbb28f98e3e"
           ],
           "taint": "Untrusted"
         },
@@ -302,7 +329,7 @@
           },
           "mat": "0019dd255ca066f914473c45",
           "origin": [
-            "transform:40eef6cea3158b8adc90a761"
+            "transform:8b27d3b3bea485318f558968"
           ],
           "taint": "Untrusted"
         },
@@ -327,7 +354,7 @@
         },
         "mat": "0b1ddae91e38bf2fda2f4ea0",
         "origin": [
-          "transform:62067d3b5a41b2d64b0c99f2"
+          "transform:9d22cafdcec6852cc71c8f1c"
         ],
         "taint": "Untrusted"
       }
@@ -360,7 +387,7 @@
           },
           "mat": "2637a1036cf94d0581e5b0f8",
           "origin": [
-            "transform:607d98deb2b7a52477831ecc"
+            "transform:c4e9d98fa73a4fbc09c25918"
           ],
           "taint": "Untrusted"
         },
@@ -395,7 +422,7 @@
         },
         "mat": "c5ea0a2f8c8920abe6e164d3",
         "origin": [
-          "transform:67874756da2337a2d1cb789f"
+          "transform:4b4339851b8b98de5890ce01"
         ],
         "taint": "Untrusted"
       },
@@ -413,7 +440,7 @@
         },
         "mat": "eb1aa08e2803b7dd219d5006",
         "origin": [
-          "transform:e52f7b861abfb3d7366579dd"
+          "transform:0d4c5d137dc94512081f4e86"
         ],
         "taint": "Untrusted"
       }
@@ -436,7 +463,7 @@
           },
           "mat": "2637a1036cf94d0581e5b0f8",
           "origin": [
-            "transform:607d98deb2b7a52477831ecc"
+            "transform:c4e9d98fa73a4fbc09c25918"
           ],
           "taint": "Untrusted"
         },

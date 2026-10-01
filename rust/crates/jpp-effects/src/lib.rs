@@ -11,9 +11,11 @@
 
 pub mod builtin_ports;
 pub mod kinds;
+pub mod material;
 pub mod port;
 pub mod profile;
 pub mod spec;
+pub mod transform_table;
 pub mod view;
 pub mod views;
 
@@ -23,6 +25,7 @@ pub use builtin_ports::{
 };
 pub use jpp_ir::key::{EffectId, EffectInstance};
 pub use kinds::{ALL, PORTED, by_name, find, spec};
+pub use material::{CategoryStore, MaterialSource};
 pub use port::{
     CallInput, EffectCall, EffectError, EffectOut, EffectPort, GenResult, JudgeResult, Ports,
     Ticket, argmax_index,
@@ -32,4 +35,5 @@ pub use profile::{
     Window, behavior_hash, hash16, profile_hash, profile_schema,
 };
 pub use spec::*;
+pub use transform_table::{HostTaint, HostTransform, TransformTable};
 pub use views::*;

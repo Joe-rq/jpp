@@ -8,7 +8,7 @@ use jpp_value::stat::Stat;
 /// `cut` 的策略参数（B129 三式；步 20j-1）：`cost` 代价、`alpha` 可接受假放行率、`declare` 作者声明线；
 /// `stat` 是线切在读数的哪个统计量上（B153、B154，步 20j-3）。`cost`/`alpha` 的线只来自记录（p_max 上的证书）；
 /// `declare` 按作者写的数切（B128）。
-#[derive(Clone, Debug, Default, PartialEq)]
+#[derive(Clone, Debug, Default)]
 pub(crate) struct CutOpts {
     pub cost: Option<(f64, f64)>,
     pub alpha: Option<f64>,
@@ -16,6 +16,20 @@ pub(crate) struct CutOpts {
     pub declare: Option<DeclaredLine>,
     /// 统计量；缺省 `max`
     pub stat: Stat,
+    /// 作者的可行性谓词 `fn(k) -> Bool`（C-4）：已决 `pick(k)` 之后，按它取最高概率的可行候选；
+    /// 只在 K 选一、`stat` 缺省时有意义（`核选项` 核）。谓词是代码，求值时禁效应
+    pub feasible: Option<Rc<Closure>>,
+}
+
+/// 一次改选的记录（C-4）：`from` 是判断器已决的 pick，`chosen` 是改选结果（`None` = 没有可行候选），
+/// `skipped` 是被谓词否决的候选（下标，概率）按检验顺序。
+#[derive(Clone, Debug)]
+pub(crate) struct 改选记录 {
+    pub from: usize,
+    pub chosen: Option<usize>,
+    pub skipped: Vec<(usize, f64)>,
+    /// C-1：读数的账本键（`Reselect` 事件的 `of`）
+    pub of: String,
 }
 
 /// `键读数` 的组键（B128 `near_line` 的分母）：`max` 组就是校准键（与 20j-1 同），其他统计量另起一组
@@ -29,7 +43,7 @@ fn 读数组键(key: &str, stat: &Stat) -> String {
 
 /// 出口的臂族（`Exit.op`，`handle` 按它取臂）：出口种类由 `cut` 站点的选项定（B153 (1)）。`max` 按读数的题型；
 /// 其他统计量配 `{hi, lo}` 为 test 型，配 `cuts` 为 at 型。
-fn 出口族(op: Op, stat: &Stat, line: Option<&DeclaredLine>) -> Op {
+pub(crate) fn 出口族(op: Op, stat: &Stat, line: Option<&DeclaredLine>) -> Op {
     if stat.is_max() {
         op
     } else if line.is_some_and(|l| l.is_cuts()) {
@@ -77,7 +91,8 @@ impl<'a> Interp<'a> {
         _ra: &crate::caps::Cap<crate::caps::ReadAnswer>,
         rs: &[Rc<Reading>],
         stat: &Stat,
-        tie: Option<f64>,
+        // 并档容差由调用者按统计量定好（`argmax` 0、`expect` 取作者的 `tie`、概率型取 `并档容差`；Z0425）
+        tol: f64,
     ) -> Result<Vec<Vec<usize>>, jpp_value::stat::StatError> {
         let mut ok: Vec<(usize, f64)> = vec![];
         let mut failed: Vec<usize> = vec![];
@@ -95,11 +110,7 @@ impl<'a> Interp<'a> {
                 None => failed.push(i),
             }
         }
-        let tol = match stat {
-            Stat::Argmax => f64::default(),
-            Stat::Expect => tie.unwrap_or_default(),
-            _ => self.order_delta(rs),
-        };
+        let _ = stat;
         let mut tiers = 分档(ok, tol);
         if !failed.is_empty() {
             tiers.push(failed);
@@ -114,6 +125,7 @@ impl<'a> Interp<'a> {
         &self,
         _ra: &crate::caps::Cap<crate::caps::ReadAnswer>,
         r: &Rc<Reading>,
+        tol: f64,
     ) -> Vec<Vec<usize>> {
         let a = if r.fail.is_some() {
             None
@@ -121,19 +133,56 @@ impl<'a> Interp<'a> {
             self.answer_of(r)
         };
         match a {
-            Some(Answer::Choice(v)) => 分档(
-                v.into_iter().enumerate().collect(),
-                self.order_delta(std::slice::from_ref(r)),
-            ),
+            Some(Answer::Choice(v)) => 分档(v.into_iter().enumerate().collect(), tol),
             _ => vec![(0..r.over_len).collect()],
         }
     }
 
-    /// 并列的容差取这条线的 δ（步 15d-2：只从记录取）；记录没有 δ 时不并列（只有完全相等才并列）
-    fn order_delta(&self, rs: &[Rc<Reading>]) -> f64 {
-        rs.first()
-            .and_then(|r| self.calib.line_delta(&self.calib.line(&r.calib)))
-            .unwrap_or_default()
+    /// `order` / `candidate_tiers` 的并档容差（Z0425，按裁定四十四、四十五、五十六对齐 `cut` 与裂变）：
+    /// 先取这条线记录的 δ（`line_delta`）；没有再取画像中段 δ（按读数题型）；画像缺 mid 报 `E-delta-mid`；
+    /// 都没有就不并档（只有完全相等才同档）。
+    /// order 只产出分档、不产出出口，没有「放行」可拦，所以不给读数或出口置 `delta_unknown`：这次并档用了什么容差、
+    /// 从哪来，写进报告的 `orders` 行（`site`、`tol`、`tol_source` = record | profile | unknown），`--guard` 下
+    /// `unknown` 每站点每趟报一次 `W-delta-unknown`。并档是否可信看报告的 `orders` 行；由这些分档下游算出的出口
+    /// 不继承这一位（主控 2026-09-30 定读法甲）。
+    pub(crate) fn 并档容差(&mut self, rs: &[Rc<Reading>], sp: Span) -> R<f64> {
+        let Some(r) = rs.first() else {
+            return Ok(0.0);
+        };
+        let (tol, 来源) = if let Some(d) = self.calib.line_delta(&self.calib.line(&r.calib)) {
+            (d, "record")
+        } else if self.calib.profile().delta_mid_missing() {
+            return err(
+                Some("E-delta-mid"),
+                format!(
+                    "@{} order 要按 δ 并档，这条线的记录没有 δ，而画像测了 δ、中段 δ（delta.<题型>.mid）却不全。\
+                     尾段 δ 用满信心材料测得，偏小，不能代替中段（裁定四十五）。修法【需接线人】：用覆盖中段读数的材料重测 δ，\
+                     写进画像 delta.<题型>.mid（jpp profile check 列缺项）；或给记录一个 δ",
+                    sp.start
+                ),
+                sp,
+            );
+        } else if let Some(d) = self.calib.profile().delta_prior(r.op) {
+            (d, "profile")
+        } else {
+            (0.0, "unknown")
+        };
+        let 行 = json!({"site": sp.start, "tol": tol, "tol_source": 来源});
+        if !self.并档记录.contains(&行) {
+            self.并档记录.push(行);
+        }
+        if 来源 == "unknown"
+            && self
+                .unknown_reported
+                .insert(format!("W-delta-unknown\u{1f}order@{}", sp.start))
+        {
+            // 依据：裁定五十六；Z0425
+            self.线等级告警(format!(
+                "W-delta-unknown: @{} order 要按 δ 并档，记录没有 δ、画像也没有 δ（两段都没测或没加载画像）：不并档（只有完全相等才同档），见报告 orders 行（裁定五十六）。修法【需接线人】：给画像测 delta.<题型>.mid，或给记录一个 δ",
+                sp.start
+            ));
+        }
+        Ok(tol)
     }
 
     /// `untested` 是 **J-15 的那一位**，与 `kind` 正交：`kind` 决定路由，它只回答
@@ -194,10 +243,15 @@ impl<'a> Interp<'a> {
             line_source,
             site: sp,
         }));
+        let 帧号 = 帧
+            .filter(|i| *i < self.frames.len())
+            .unwrap_or(self.frames.len().saturating_sub(1));
         match 帧.and_then(|i| self.frames.get_mut(i)) {
             Some(f) => f.exits.push(e.clone()),
             None => self.frame().exits.push(e.clone()),
         }
+        // G2：欠账记号的成分在出口建出时记下（帧种类、主人、过桥种类、帧内第几次）
+        self.记记号(e.id, 帧号);
         Value::Exit(e)
     }
 
@@ -212,8 +266,8 @@ impl<'a> Interp<'a> {
                 sp,
             )
         };
-        match v {
-            Value::Reading(r) => Ok(vec![r.clone()]),
+        let out = match v {
+            Value::Reading(r) => vec![r.clone()],
             Value::List(l) => {
                 let mut out = vec![];
                 for x in l.iter() {
@@ -222,10 +276,21 @@ impl<'a> Interp<'a> {
                         other => return bad(other.type_name()),
                     }
                 }
-                Ok(out)
+                out
             }
-            other => bad(other.type_name()),
+            other => return bad(other.type_name()),
+        };
+        // 超窗裂变的合成读数（步 23b）只供 `cut` 合回：块读数跨题不可比，拿它当整篇读数用会把块当整篇
+        if out.iter().any(|r| self.是合成读数(r)) {
+            return err(
+                Some("E-rt-arg"),
+                format!(
+                    "{who} 收到超窗裂变的合成读数（题声明了 fission: \"approx\"）：它只能经 cut 按题的操作合回，没有可读的整篇读数。修法：先 cut 再用出口，或不声明 fission"
+                ),
+                sp,
+            );
         }
+        Ok(out)
     }
 
     /// **漂移告警**（`12`:649「漂移监控（无标签：读数分布偏移 + 保形覆盖跌落告警）」）。
@@ -319,6 +384,7 @@ impl<'a> Interp<'a> {
             alpha: opts.alpha,
             declare: opts.declare,
             stat: opts.stat,
+            feasible: opts.feasible,
             site: sp,
             id,
             frame: self.frames.len() - 1,
@@ -342,6 +408,7 @@ impl<'a> Interp<'a> {
             alpha: c.alpha,
             declare: c.declare.clone(),
             stat: c.stat.clone(),
+            feasible: c.feasible.clone(),
         };
         let v = self.cut(&c.reading, c.calib.as_deref(), opts, c.site);
         self.出口预定 = None;
@@ -438,11 +505,25 @@ impl<'a> Interp<'a> {
         opts: CutOpts,
         sp: Span,
     ) -> R<Value> {
+        // 超窗裂变的合成读数（步 23b）：逐块过桥再按题的操作合回（`fission.rs`）
+        if let Some(f) = self.裂变表.get(&r.id).cloned() {
+            return self.裂变合回(&f, calib_key, opts, sp);
+        }
         let 已记 = self.exit_grades.len();
+        let opts_for_trigger = opts.clone();
         let stat = opts.stat.clone();
+        // 步 30（Z0385）：这次过桥线实际切出口的那条记录的键，由 `cut_inner` 在线与证书都定下后返回；没有线、按判断器
+        // 回答走、可行改选改了出口的为 None。不经共享字段：作者 `feasible` 谓词里再调 `cut` 不会串
+        let mut 命中: Option<String> = None;
         let v = match opts.declare.clone() {
-            Some(line) => self.cut_declared(r, calib_key, &line, &stat, sp)?,
-            None if stat.is_max() => self.cut_inner(r, calib_key, opts, sp)?,
+            Some(line) => {
+                self.cut_declared(r, calib_key, &line, &stat, opts.feasible.as_ref(), sp)?
+            }
+            None if stat.is_max() => {
+                let (v, h) = self.cut_inner(r, calib_key, opts, sp)?;
+                命中 = h;
+                v
+            }
             // B153 (1)：别的统计量不借 p_max 上的认证线
             None => self.cut_stat_cold(r, calib_key, &stat, sp)?,
         };
@@ -457,6 +538,19 @@ impl<'a> Interp<'a> {
             }
         }
         if let Value::Exit(e) = &v {
+            // 步 30 / B0488：本趟逐键计数（读数进「接下来先问什么」）：有答案的读数，每条只计一次
+            // B 段：键取线实际切出口的那条记录（查找链里命中的题键、题式键或类键；主控 B0488 缺口 12）。作者声明线、冷、
+            // 停岗、fit、非 max 统计量切出的读数没有命中记录，不计
+            if let Some(命中) = 命中
+                && self.answer_of(r).is_some()
+                && self.键计数已记.insert(r.id)
+            {
+                let c = self.键计数.entry(命中).or_default();
+                c.0 += 1;
+                if matches!(e.kind, ExitKind::Unsure(_)) {
+                    c.1 += 1;
+                }
+            }
             *e.ledger_key.borrow_mut() = r.ledger_key.clone();
             // 看 p 之前就返回的出口（J-09 证据不足）没用上线：等级 Cold（步 20f 逐出口记线等级）
             if self.exit_grades.len() == 已记 {
@@ -480,19 +574,44 @@ impl<'a> Interp<'a> {
                     row["confidence"] = json!(c);
                 }
             }
+            // 裁定四十九 (c)（Z0364）：声明了裂变而画像没测窗口的读数，出口置正交位 `window_untested`：
+            // 出口照常路由，不单独放行不可逆 `do`。告警只对放行把关有意义，`--guard` 开时才报（意图汇编 11a）
+            if self.窗口未测读数.contains(&r.id) {
+                e.window_untested.set(true);
+                if let Some(&行) = self.exit_rows.get(&e.id)
+                    && let Some(row) = self.exit_grades.get_mut(行)
+                {
+                    row["window_untested"] = Json::Bool(true);
+                    row["releases"] = Json::Bool(e.releases());
+                }
+                if self.guard
+                    && self
+                        .unknown_reported
+                        .insert(format!("W-untested-window@{}", sp.start))
+                {
+                    self.trace.warn(format!(
+                        "W-untested: @{} window 在本次路径上没有被测量：画像没有测过窗口，题声明了 fission: \"approx\" 却无法按窗切，材料超窗与否不可证（H6，A7：不取「最小已知值」）。出口 {} 照常路由，不作放行不可逆 do 的可信合取项。修法【宿主】：给画像补测窗口（window）；或去掉题上的 fission 声明",
+                        sp.start,
+                        e.label()
+                    ));
+                }
+            }
             // 谱系放行（B72-4，步 17b）：本趟出口表登记这个出口（函数在 guard.rs，运行时轨）
             self.登记出口放行(e);
         }
-        Ok(v)
+        // J-05 默认链的读数触发（B0492 S2b，草案第三稿改法 3）：无线、读数离边界近时先补信息再定出口
+        self.读数触发(v, r, calib_key, &opts_for_trigger, 已记, sp)
     }
 
+    /// 返回（出口, 线实际切出口的那条记录的键）。后者在线与证书（代价线、α 线）都定下后才定，取出口报告行 `key` 同一个
+    /// 所用记录；没有线、按判断器回答走、可行改选改了出口的为 `None`（步 30 Z0385；Z0378「冷的不计」）
     pub(crate) fn cut_inner(
         &mut self,
         r: &Reading,
         calib_key: Option<&str>,
         opts: CutOpts,
         sp: Span,
-    ) -> R<Value> {
+    ) -> R<(Value, Option<String>)> {
         let (cost, alpha) = (opts.cost, opts.alpha);
         // 刷新点（12 §2.2:129）：cut 要读答案，所以先把这一层发出去
         self.flush("cut")?;
@@ -522,14 +641,17 @@ impl<'a> Interp<'a> {
         // 它拦的是「模型对一道没有证据可依的题照样给出一个自信的 p」——那个 p 会照常过线变成 Act。
         // 这是唯一一处**在看 p 之前**就把它挡住的检查，所以排在 taint 与过线之前。
         if let Some(missing) = r.missing_evidence.first() {
-            return Ok(self.new_exit(
-                ExitKind::Unsure(format!("insufficient:{missing}")),
+            return Ok((
+                self.new_exit(
+                    ExitKind::Unsure(Why::with(UnsureCause::Insufficient, missing.clone())),
+                    None,
+                    r.op,
+                    &r.q_hash,
+                    &r.state_hash,
+                    r.state_taint,
+                    sp,
+                ),
                 None,
-                r.op,
-                &r.q_hash,
-                &r.state_hash,
-                r.state_taint,
-                sp,
             ));
         }
         // 12:150「出口 taint 继承状态 taint」、§2.11「cut 继承」。
@@ -757,7 +879,7 @@ impl<'a> Interp<'a> {
                 _ => &链.question,
             }
         };
-        // 步 15d-2：δ 只从记录取（`line_delta`）。B187（批 9 第 12 格）：记录没有 δ 时取画像 δ（按题型，画像没测取 0），
+        // 步 15d-2：δ 只从记录取（`line_delta`）。B187（批 9 第 12 格）：记录没有 δ 时取画像 δ（按题型；画像没有 δ 时照线切、不加带，裁定五十六），
         // 置出口记录位 `delta_unknown`，按线正常切（原来出 `Unsure(untested)`，载体 `Delta`）
         let 记录带宽 = match (&代价证书, alpha) {
             // B129（步 20j-1）：α 选出的证书，δ 按它算
@@ -768,22 +890,33 @@ impl<'a> Interp<'a> {
             _ => self.calib.line_delta(&所用链(&线源).rec),
         };
         let 带宽未记 = 线.is_some() && 记录带宽.is_none();
-        let delta = 记录带宽.or_else(|| {
-            let d = self.calib.profile().delta.value;
-            Some(d.map_or(0.0, |(noul, choice, score)| match r.op {
-                Op::Test => noul,
-                Op::Measure => score,
-                _ => choice,
-            }))
-        });
+        // 裁定四十四、四十五：画像 δ 取中段（`delta_prior`）；画像测了尾段却没有中段 → 报错，不退回尾段
+        if 线.is_some() && 记录带宽.is_none() && self.calib.profile().delta_mid_missing() {
+            return err(
+                Some("E-delta-mid"),
+                format!(
+                    "@{} 这条线的校准记录没有 δ，要取画像 δ，而画像只有尾段 δ（delta.<题型>.immediate）、没有中段 δ（delta.<题型>.mid）。\
+                     尾段 δ 用满信心材料测得，线附近偏小，不能用于 cut（裁定四十五）。修法【需接线人】：用覆盖中段读数的材料重测 δ，\
+                     写进画像 delta.<题型>.mid（jpp profile check 列缺项）；或给记录一个 δ（calib-import 带新画像重新导入）",
+                    sp.start
+                ),
+                sp,
+            );
+        }
+        // 画像完全没有 δ（两段都没测或没加载画像）：照线切、不加迁移带（线是作者或证书给的，意图汇编 11；不替未测的
+        // δ 编数去加宽带），出口带 `delta_unknown`、不放行，`--guard` 下报 `W-delta-unknown`（裁定五十六，主控板 Z0412 读法乙）
+        let 画像无带宽 = 记录带宽.is_none() && self.calib.profile().delta_prior(r.op).is_none();
+        let delta =
+            记录带宽.or_else(|| Some(self.calib.profile().delta_prior(r.op).unwrap_or(0.0)));
         // 停岗（题级或所选代价证书所在记录）：线不可用即没有线（B187：`cause` 删 `drift`，漂移只进记录）
         let _ = 代价停岗;
         // 意图汇编 11a、B187：没有线时按判断器的回答走（作者要的 cost / alpha 证书没有时也一样，另报 J-15 载体）
-        let 需要答案 = r.fail.is_none() && !self.absent_marks.contains_key(&r.ledger_key);
+        let 缺席 = self.缺席因(r);
+        let 需要答案 = r.fail.is_none() && 缺席.is_none();
         let 回答路径 = 需要答案 && 线.is_none();
         let (kind, untested) = jpp_value::bridge::decide(&jpp_value::bridge::CutInput {
             fail: r.fail.as_deref(),
-            absent: self.absent_marks.get(&r.ledger_key).map(String::as_str),
+            absent: 缺席.as_deref(),
             line: 线,
             cost_requested: 代价缺线,
             alpha_requested: alpha.is_some(),
@@ -795,6 +928,11 @@ impl<'a> Interp<'a> {
             delta,
             mode_share: r.mode_share.get(),
         });
+        // C-4：已决 pick 之后按作者的代码谓词改选。改选后的出口不再由这条线担保（线担保的是原 pick），
+        // 等级按判断器的回答加代码的选择算 `Answer`，不留线来源
+        let 原回答路径 = 回答路径;
+        let (kind, 改选) = self.可行改选(r, opts.feasible.as_ref(), kind, sp)?;
+        let 回答路径 = 回答路径 || 改选.is_some();
         // 每条既有路由各加一句「若该量未测，取保守项并**告警**」（`12` §2.11）。
         // `cold` 本来就取保守线，缺的是那句告警——**没有告警，「用了保守线」与「线本来就这么宽」
         // 在痕迹上分不开**，跟兜底档案 `hash` 必须是 `None` 是同一条。
@@ -821,7 +959,7 @@ impl<'a> Interp<'a> {
         if let Some((carrier, 修法)) = untested.as_ref().filter(|_| 报) {
             // 作者要的证书线没有（cost / alpha）时出口按判断器的回答走，不是「取保守项」（B187）
             let 走向 = match &kind {
-                ExitKind::Unsure(c) => format!("按 J-15 取保守项（出口 {c}）"),
+                ExitKind::Unsure(w) => format!("按 J-15 取保守项（出口 {}）", w.text()),
                 other if 回答路径 => format!("出口按判断器的回答走（{other:?}）"),
                 other => format!("出口 {other:?}"),
             };
@@ -832,7 +970,8 @@ impl<'a> Interp<'a> {
         }
         // **没用上线的出口不留来源**（fail / 缺席 / 回答路径）：留一个来源就是谎称有线。
         let 留痕 = if 回答路径
-            || matches!(kind, ExitKind::Unsure(ref c) if c == "absent" || c == "latency" || c == "no_candidate" || c.starts_with("fail:"))
+            // 步 36 G3：与改前同一集合（`fail` 只认带细节的，即读数本身是 Fail 的那一类）
+            || matches!(kind, ExitKind::Unsure(ref w) if matches!(w.cause, UnsureCause::Absent | UnsureCause::Latency | UnsureCause::NoCandidate) || (w.cause == UnsureCause::Fail && w.detail.is_some()))
         {
             String::new()
         } else {
@@ -889,6 +1028,7 @@ impl<'a> Interp<'a> {
             留痕,
             sp,
         );
+        let mut 命中: Option<String> = None;
         if let Value::Exit(e) = &出口 {
             // 依据：B75（类线出口可路由、不放行不可逆 do）；步 20a-1 起并入 `LineGrade::Class`
             let 类线 = 线源.starts_with("类级") && !e_line_empty(&e.line_source);
@@ -996,11 +1136,26 @@ impl<'a> Interp<'a> {
             // B187（批 9 第 12 格）：记录没有 δ、按画像 δ 切的线，记录位 `delta_unknown` 置真（只是记录）
             if 带宽未记 && !e_line_empty(&e.line_source) {
                 e.delta_unknown.set(true);
+                if 画像无带宽
+                    && self
+                        .unknown_reported
+                        .insert(format!("W-delta-unknown\u{1f}profile:{key}"))
+                {
+                    // 依据：裁定五十六（主控板 Z0412）
+                    self.线等级告警(format!(
+                        "W-delta-unknown: @{} 键 {key} 的记录没有 δ，画像也没有 δ（两段都没测或没加载画像）：照线切、不加迁移带，出口不作放行不可逆 do 的可信合取项（裁定五十六）。修法【需接线人】：给画像测 delta.<题型>.mid，或给记录一个 δ",
+                        sp.start
+                    ));
+                }
             }
             // 逐出口记线等级（步 20f；步 20a-1 起为 `LineGrade`，优先序见其文档）。
             // 出口不进账本，重放时按账本头的记录重算出同一张表。
             let 用线 = !e_line_empty(&e.line_source);
             let 所用 = 所用链(&线源);
+            // 步 30（Z0385）：线实际切出口的记录键，与报告行 `key` 同一个；回答路径与改选不留线来源，`用线` 为假
+            if 用线 && !回答路径 {
+                命中 = Some(所用.key.clone());
+            }
             // B19 修订的临时上岗门控，或有效 α 超过试用 α（B89 解读 (b)，步 20c）
             let 临时 = 所用
                 .rec
@@ -1061,6 +1216,9 @@ impl<'a> Interp<'a> {
                 // B120 (b)（步 20h-2）：材料编号（状态哈希前 12 位）；`sieve` 另补 `index`、`pos`
                 "item": 材料摘要(&r.state_hash),
             });
+            if let Some(f) = &改选 {
+                self.记改选(&mut rec, f, !原回答路径, sp);
+            }
             if 用线 {
                 rec["key"] = Json::String(所用.key.clone());
             }
@@ -1072,13 +1230,20 @@ impl<'a> Interp<'a> {
             }
             if e.delta_unknown.get() {
                 rec["delta_unknown"] = Json::Bool(true);
+                // Z0425：分开这一位的来源——记录没有 δ、已按画像中段加带（profile_mid）；画像也没有 δ、照线切没加带
+                // （none，裁定五十六）；旧证书没记认证带宽（cert_unrecorded，B104-1）
+                rec["delta_source"] = Json::from(match (带宽未记, 画像无带宽) {
+                    (true, true) => "none",
+                    (true, false) => "profile_mid",
+                    _ => "cert_unrecorded",
+                });
             }
             if e.scope_unknown.get() {
                 rec["scope_unknown"] = Json::Bool(true);
             }
             self.exit_grades.push(rec);
         }
-        Ok(出口)
+        Ok((出口, 命中))
     }
 }
 
@@ -1109,718 +1274,5 @@ fn 含惰性出口(v: &Value) -> bool {
     }
 }
 
-/// 作者声明线（B128，步 20j-1）：`cut(r, {declare: {hi, lo?}})`。
-impl<'a> Interp<'a> {
-    /// 声明分支：按作者写的数切，不查记录定线、不看停岗、不平移 δ、不取严（B128）。判序：J-09 证据不足
-    /// → Fail → 缺席 → 过线（`test`：p ≥ hi 为 act、p ≤ lo 为 ignore，其间 band；K 元：p_max ≥ hi 出
-    /// pick / at，否则 band；`select` 的置换众数规则照旧）。等级 `Declared`；声明线以 `CalibUsed` 入账（B142）。
-    /// 步 20j-3：`stat` 不是 `max` 时先经 `stat_of` 取统计量再过线（`{hi, lo}` 出 test 型出口，`cuts` 出
-    /// `At(ℓ)`，出口的臂族随之，B153）；两端开闭按 `closed`（B165）。
-    pub(crate) fn cut_declared(
-        &mut self,
-        r: &Reading,
-        calib_key: Option<&str>,
-        line: &DeclaredLine,
-        stat: &Stat,
-        sp: Span,
-    ) -> R<Value> {
-        self.flush("cut")?;
-        let key = calib_key.unwrap_or(&r.calib).to_string();
-        let 族 = 出口族(r.op, stat, Some(line));
-        if let Some(missing) = r.missing_evidence.first() {
-            return Ok(self.new_exit(
-                ExitKind::Unsure(format!("insufficient:{missing}")),
-                None,
-                族,
-                &r.q_hash,
-                &r.state_hash,
-                r.state_taint,
-                sp,
-            ));
-        }
-        let absent = self.absent_marks.get(&r.ledger_key).cloned();
-        let 用线 = r.fail.is_none() && absent.is_none();
-        let 判序 = |answer: Option<Answer>| {
-            jpp_value::bridge::decide(&jpp_value::bridge::CutInput {
-                fail: r.fail.as_deref(),
-                absent: absent.as_deref(),
-                line: Some((line.hi, line.lo)),
-                cost_requested: false,
-                alpha_requested: false,
-                answer,
-                // 声明线按写的数用：不平移 δ（B128）
-                delta: Some(jpp_value::stat::DECLARED_DELTA),
-                mode_share: r.mode_share.get(),
-            })
-        };
-        let (kind, untested) = if !用线 {
-            判序(None)
-        } else {
-            let a = self.answer_of(r).expect("刷新之后答案必然在");
-            if stat.is_max() && r.op != Op::Test {
-                // K 元单侧线：置换众数规则照旧；上端开（B165）时 p_max 须严格越过 hi
-                let p = jpp_value::stat::stat_of(&a, &Stat::Max, None).unwrap_or(f64::MIN);
-                match 判序(Some(a)) {
-                    (ExitKind::Pick(_) | ExitKind::At(_), _)
-                        if !line.closed_hi && !jpp_value::stat::beyond_up(p, line.hi) =>
-                    {
-                        (ExitKind::Unsure("band".into()), None)
-                    }
-                    k => k,
-                }
-            } else {
-                let c = self.置信(r, &a);
-                let s = match jpp_value::stat::stat_of(&a, stat, c) {
-                    Ok(s) => s,
-                    Err(jpp_value::stat::StatError::Options(m)) => {
-                        return err(Some("E-cut-options"), format!("cut 的 stat：{m}"), sp);
-                    }
-                    Err(jpp_value::stat::StatError::Unavailable(m)) => {
-                        // 依据：B154 (3)（不静默退回 p_max）
-                        return err(
-                            Some("E-stat-unavailable"),
-                            format!(
-                                "@{} cut 的 stat: \"confidence\" 取不到数：{m}。修法：换一个随答案报 confidence 的判断器（画像 H9 reports_confidence: true），或在夹具观察里给 confidence（B154）",
-                                sp.start
-                            ),
-                            sp,
-                        );
-                    }
-                };
-                (jpp_value::bridge::past_declared(s, line), None)
-            }
-        };
-        if let Some((carrier, 修法)) = &untested {
-            self.trace.warn(format!(
-                "W-untested: @{} {carrier} 在本次路径上没有被测量，按 J-15 取保守项（出口 {}）。{修法}",
-                sp.start,
-                match &kind {
-                    ExitKind::Unsure(c) => c.clone(),
-                    other => format!("{other:?}"),
-                }
-            ));
-        }
-        let 线源 = if 用线 {
-            let mut s = if line.is_cuts() {
-                format!("作者声明·cuts={:?}", line.cuts)
-            } else {
-                format!("作者声明·hi={}·lo={}", line.hi, line.lo)
-            };
-            if let Some(c) = line.closed_json() {
-                s += &format!("·closed={c}");
-            }
-            if !stat.is_max() {
-                s += &format!("·stat={}", stat.to_json());
-            }
-            s
-        } else {
-            String::new()
-        };
-        let 出口 = self.new_exit_from(
-            kind,
-            untested.map(|(carrier, _)| carrier),
-            族,
-            &r.q_hash,
-            &r.state_hash,
-            r.state_taint,
-            线源,
-            sp,
-        );
-        if let Value::Exit(e) = &出口
-            && 用线
-        {
-            self.note_declared(&key, sp.start, line, stat);
-            e.grade.set(Some(LineGrade::Declared));
-            // 宿主接受作者声明线放行（B128，步 20j-2）：在写报告行、登记谱系之前置位（两处都读 `releases()`）
-            let 接受 = self.entry.accept.declared_lines;
-            e.host_accepts_declared.set(接受);
-            let evidence = self.声明证据(&key, r, line, stat);
-            let n = evidence["labelled"].as_u64().unwrap_or(0);
-            // J-08 拒绝报文的「宿主未声明接受作者线」补句只对未接受的出口成立
-            if !接受 {
-                self.声明出口.insert(
-                    e.id,
-                    format!("@{} {}，标注 {n} 条", sp.start, 声明说明(line, stat)),
-                );
-            }
-            // 报告的 `declared`：线的数、站点与非缺省端位（缺省值不写，20j-1 的行逐字节不变）
-            let mut declared = line.numbers_json();
-            declared.insert("site".into(), json!(sp.start));
-            if let Some(c) = line.closed_json() {
-                declared.insert("closed".into(), c);
-            }
-            self.exit_grades.push(json!({
-                "site": sp.start, "exit": e.label(), "grade": LineGrade::Declared.name(), "releases": e.releases(),
-                "item": 材料摘要(&r.state_hash), "key": key,
-                "declared": declared,
-                "evidence": evidence,
-            }));
-        }
-        Ok(出口)
-    }
-
-    /// `stat` 不是 `max` 而没有 `declare`（B153 (1)、B154 (2)）：认证在 p_max 上的线对别的统计量无效，不借，不查记录
-    /// （不调 `note_calib`）。B187（批 9 第 2 格）：`mass` 按概率和的多数块走（> 0.5 act、< 0.5 ignore、恰等于 0.5 为
-    /// `Unsure(tie)`），等级 `Answer`；别的统计量不写线在 `cut` 解析时已报 `E-cut-options`，走不到这里。
-    /// 判序：J-09 证据不足 → Fail → 缺席 → 按回答。
-    pub(crate) fn cut_stat_cold(
-        &mut self,
-        r: &Reading,
-        calib_key: Option<&str>,
-        stat: &Stat,
-        sp: Span,
-    ) -> R<Value> {
-        self.flush("cut")?;
-        let key = calib_key.unwrap_or(&r.calib).to_string();
-        let 族 = 出口族(r.op, stat, None);
-        if let Some(missing) = r.missing_evidence.first() {
-            return Ok(self.new_exit(
-                ExitKind::Unsure(format!("insufficient:{missing}")),
-                None,
-                族,
-                &r.q_hash,
-                &r.state_hash,
-                r.state_taint,
-                sp,
-            ));
-        }
-        let absent = self.absent_marks.get(&r.ledger_key).cloned();
-        let 回答路径 = r.fail.is_none() && absent.is_none();
-        let (kind, untested) = if !回答路径 {
-            jpp_value::bridge::decide(&jpp_value::bridge::CutInput {
-                fail: r.fail.as_deref(),
-                absent: absent.as_deref(),
-                line: None,
-                cost_requested: false,
-                alpha_requested: false,
-                answer: None,
-                delta: None,
-                mode_share: None,
-            })
-        } else if matches!(stat, Stat::Mass(_)) {
-            let a = self.answer_of(r).expect("刷新之后答案必然在");
-            let s = match jpp_value::stat::stat_of(&a, stat, None) {
-                Ok(s) => s,
-                Err(jpp_value::stat::StatError::Options(m))
-                | Err(jpp_value::stat::StatError::Unavailable(m)) => {
-                    // 依据：B153（mass 的块须是合法选项下标）；B187（没有线的 mass 按回答走）
-                    return err(Some("E-cut-options"), format!("cut 的 stat：{m}"), sp);
-                }
-            };
-            // 概率和是「答案落在这几块里」的概率：按它的多数块走（B187）
-            (
-                jpp_value::bridge::follow_answer(&Answer::Noul(s), None),
-                None,
-            )
-        } else {
-            jpp_value::bridge::cold_for_stat(stat)
-        };
-        // 依据：B153 (1)（认证线在 p_max 上，对别的统计量无效，不借）、B130（冷出口告警一趟一键一条）
-        let 报 = untested.is_some()
-            && self.unknown_reported.insert(format!(
-                "W-untested-calib_line\u{1f}{key}\u{1f}{}",
-                stat.to_json()
-            ));
-        if let Some((carrier, 修法)) = untested.as_ref().filter(|_| 报) {
-            // 依据：J-15（未测取保守并带修法）；B153 (1)
-            self.trace.warn(format!(
-                "W-untested: @{} {carrier} 在本次路径上没有被测量，按 J-15 取保守项（出口 {}）。{修法}",
-                sp.start,
-                match &kind {
-                    ExitKind::Unsure(c) => c.clone(),
-                    other => format!("{other:?}"),
-                }
-            ));
-        }
-        let 出口 = self.new_exit_from(
-            kind,
-            untested.map(|(carrier, _)| carrier),
-            族,
-            &r.q_hash,
-            &r.state_hash,
-            r.state_taint,
-            String::new(),
-            sp,
-        );
-        if let Value::Exit(e) = &出口 {
-            let 等级 = if 回答路径 {
-                LineGrade::Answer
-            } else {
-                LineGrade::Cold
-            };
-            e.grade.set(Some(等级));
-            self.exit_grades.push(json!({
-                "site": sp.start, "exit": e.label(), "grade": 等级.name(), "releases": e.releases(),
-                "item": 材料摘要(&r.state_hash), "key": key,
-            }));
-        }
-        Ok(出口)
-    }
-
-    /// `cut(Score, …)`（B153 (2)，步 20j-4）：声明式拟合的结果只走声明分支，按作者写的数切，等级 `Declared`
-    /// （放行经 `--release-on-declared`）；不带 `declare` 即冷（本版不查记录）。输入不可用时出对应的未决。
-    /// 出口的账本键是合成键 `fit:<fit_hash>#<id>`，谱系放行经旁表追到各输入读数（B72-4）。
-    /// 依据：B153 (2)（地基/附注/2026-09-26-批6裁定.md §一）；B128；B142
-    pub(crate) fn cut_score(&mut self, s: &Rc<Score>, opts: CutOpts, sp: Span) -> R<Value> {
-        let key = format!("fit:{}", s.fit_hash);
-        let 合成键 = format!("fit:{}#{}", s.fit_hash, s.id);
-        self.拟合谱系
-            .borrow_mut()
-            .insert(合成键.clone(), s.input_keys.clone());
-        let 值 = self.拟合表.borrow().get(&s.id).copied();
-        let line = opts.declare.clone();
-        let 族 = if line.as_ref().is_some_and(|l| l.is_cuts()) {
-            Op::Measure
-        } else {
-            Op::Test
-        };
-        let (kind, untested) = match (&s.fail, &line, 值) {
-            (Some(f), _, _) => (ExitKind::Unsure(f.clone()), None),
-            (None, Some(l), Some(v)) => (jpp_value::bridge::past_declared(v, l), None),
-            _ => (
-                ExitKind::Unsure("cold".into()),
-                Some((
-                    "calib_line".to_string(),
-                    "修法【作者可改】：声明式拟合没有认证通道（本版不查记录，B153），拟合分数也不是判断器的回答；按你的数切写 cut(s, {declare: {hi: …, lo: …}})（B128）".to_string(),
-                )),
-            ),
-        };
-        // 依据：J-15（未测取保守并带修法）；B130（冷出口告警一趟一键一条）
-        let 报 = untested.is_some()
-            && self
-                .unknown_reported
-                .insert(format!("W-untested-calib_line\u{1f}{key}"));
-        if let Some((carrier, 修法)) = untested.as_ref().filter(|_| 报) {
-            // 依据：J-15；B153 (2)（声明式拟合不查记录）
-            self.trace.warn(format!(
-                "W-untested: @{} {carrier} 在本次路径上没有被测量，按 J-15 取保守项（出口 cold）。{修法}",
-                sp.start
-            ));
-        }
-        let 用线 = s.fail.is_none() && line.is_some() && 值.is_some();
-        let 线源 = match (&line, 用线) {
-            (Some(l), true) => format!("作者声明·fit={}·{}", s.fit_hash, l.describe()),
-            _ => String::new(),
-        };
-        let 出口 = self.new_exit_from(
-            kind,
-            untested.map(|(carrier, _)| carrier),
-            族,
-            &format!("fit:{}", s.fit_hash),
-            &s.state_hash,
-            s.taint,
-            线源,
-            sp,
-        );
-        let Value::Exit(e) = &出口 else {
-            return Ok(出口);
-        };
-        *e.ledger_key.borrow_mut() = 合成键;
-        let 已记 = self.exit_grades.len();
-        let 基本 = json!({
-            "site": sp.start, "item": 材料摘要(&s.state_hash), "key": key,
-            "fit": s.fit_hash, "inputs": s.inputs,
-        });
-        let mut row = 基本;
-        if let (true, Some(l), Some(v)) = (用线, &line, 值) {
-            self.note_declared_with(
-                &key,
-                sp.start,
-                l,
-                &Stat::Max,
-                Some((&s.fit_hash, &s.inputs)),
-            );
-            e.grade.set(Some(LineGrade::Declared));
-            let 接受 = self.entry.accept.declared_lines;
-            e.host_accepts_declared.set(接受);
-            if !接受 {
-                self.声明出口.insert(
-                    e.id,
-                    format!("@{} fit={} {}", sp.start, s.fit_hash, l.describe()),
-                );
-            }
-            let mut declared = l.numbers_json();
-            declared.insert("site".into(), json!(sp.start));
-            if let Some(c) = l.closed_json() {
-                declared.insert("closed".into(), c);
-            }
-            row["declared"] = Json::Object(declared);
-            // 声明式拟合没有标注与认证线：`near_line` 在运行结束时按本趟同拟合的数算
-            row["evidence"] = json!({
-                "labelled": 0, "errors_at_line": Json::Null,
-                "near_line": {"window": 声明窗口, "count": 0, "share": 0.0},
-                "certified": Json::Null,
-            });
-            self.键读数.entry(key.clone()).or_default().push(v);
-        } else {
-            e.grade.set(Some(LineGrade::Cold));
-        }
-        row["exit"] = json!(e.label());
-        row["grade"] = json!(e.grade.get().map(|g| g.name()).unwrap_or("Cold"));
-        row["releases"] = json!(e.releases());
-        self.exit_grades.push(row);
-        self.exit_rows.insert(e.id, 已记);
-        self.登记出口放行(e);
-        Ok(出口)
-    }
-
-    /// 读数的自报置信度（B154）：判断器随答案报了（本趟发出或从账本取回）就用它；没报而判断实例是固定观察
-    /// 端口时取夹具缺省 p_max（B154 (1)「缺省 = p_max」；只凭账本重放用账本头的 model_id，同为固定端口）；
-    /// 其他判断器没报即没有（不退回 p_max，B154 (3)）。
-    pub(crate) fn 置信(&self, r: &Reading, a: &Answer) -> Option<f64> {
-        if let Some(c) = self.置信表.borrow().get(&r.id) {
-            return Some(*c);
-        }
-        if r.model_id == jpp_effects::FIXED_MODEL {
-            return jpp_value::stat::stat_of(a, &Stat::Max, None).ok();
-        }
-        None
-    }
-
-    /// 声明线入账（B142，步 20j-1）：追加 `CalibUsed`，键 `declared:<校准键>@<站点>`，记录
-    /// `{line: "declared", hi, lo, site}`；本趟同键只记一次。续接或重放时账本已有该键而数不同，报 `W-header`
-    /// （并列、不拒绝，与 B83 换线同）。依据：B142（地基/附注/2026-09-25-库层批4裁定.md §五）
-    /// 步 20j-3：记录加 `stat`（不是 `max` 才写）、`cuts`（代替 `hi`/`lo`）、`closed`（不是全闭才写）；缺省值不写，
-    /// 20j-1 记下的普通声明线记录哈希不变（旧账本续接、重放不因本步报 `W-header`）。
-    pub(crate) fn note_declared(
-        &mut self,
-        key: &str,
-        site: usize,
-        line: &DeclaredLine,
-        stat: &Stat,
-    ) {
-        self.note_declared_with(key, site, line, stat, None)
-    }
-
-    /// 同 [`Self::note_declared`]；声明式拟合（B153 (2)，步 20j-4）另写 `fit` 与 `inputs`，键为 `declared:fit:<fit_hash>@<站点>`
-    pub(crate) fn note_declared_with(
-        &mut self,
-        key: &str,
-        site: usize,
-        line: &DeclaredLine,
-        stat: &Stat,
-        拟合: Option<(&str, &[String])>,
-    ) {
-        let k = format!("{}{key}@{site}", jpp_ledger::DECLARED_PREFIX);
-        // 站点走到过（`声明站点核对` 据此跳过）；去重按记录哈希，见下
-        self.本趟已记校准.insert(k.clone());
-        let mut m = serde_json::Map::new();
-        m.insert("line".into(), json!("declared"));
-        if let Some((fit, inputs)) = 拟合 {
-            m.insert("fit".into(), json!(fit));
-            m.insert("inputs".into(), json!(inputs));
-        }
-        m.extend(line.numbers_json());
-        m.insert("site".into(), json!(site));
-        if !stat.is_max() {
-            m.insert("stat".into(), stat.to_json());
-        }
-        if let Some(c) = line.closed_json() {
-            m.insert("closed".into(), c);
-        }
-        let record = Json::Object(m);
-        let h = jpp_value::value::hash_of(&[&record.to_string()]);
-        // B175 (3)（步 20j-3 追加 (8)）：按记录哈希去重——同一站点每个不同的线（例如 `hi: rand(seed, k)`）各记一条，
-        // 同一个线只记一次
-        if !self.本趟已记声明.insert((k.clone(), h.clone())) {
-            return;
-        }
-        // 续接与重放：账本里该键有同哈希的条目即一致，不再追加（`记校准` 只看该键最后一条，多线时会重复追加）。
-        // 旧记录 = 该键哈希不是本趟记过的条目（本趟自己写的不算旧，首跑的第二个线不报）；没有同哈希而有旧记录才报，
-        // 每键每趟一条（空哈希作「已报」标记，真哈希不会是空串）
-        let (同, 旧) = {
-            let 本趟: HashSet<&str> = self
-                .本趟已记声明
-                .iter()
-                .filter(|(kk, _)| kk == &k)
-                .map(|(_, hh)| hh.as_str())
-                .collect();
-            let mut 同 = false;
-            let mut 旧 = None;
-            for e in &self.ledger.view().entries {
-                if let Entry::CalibUsed { key, hash, record } = e
-                    && key == &k
-                {
-                    if hash == &h {
-                        同 = true;
-                    } else if !本趟.contains(hash.as_str()) {
-                        旧 = Some(record.clone());
-                    }
-                }
-            }
-            (同, 旧)
-        };
-        if 同 {
-            return;
-        }
-        if let Some(old) = 旧
-            && self.本趟已记声明.insert((k.clone(), String::new()))
-        {
-            // 依据：B142 (3)；J-18（账本头不同即不承诺重放一致）
-            self.trace.warn(format!(
-                "W-header: 账本头不同，不承诺重放一致：declared 旧 {} 新 {} @{site}（B142）",
-                记录说明(&old),
-                声明说明(line, stat)
-            ));
-        }
-        // 步 18b：经账本端口追加（与 `note_calib` 同一条路，层末落盘）；端口报错先记下，层末报 `E-ledger-io`
-        self.记校准(&k, &h, record);
-    }
-
-    /// `CalibUsed` 入账（B124：账本里该键最后一条的哈希相同就不写）。步 15h-3：生成的层开着时进层，按登记序
-    /// 入账（B160）；校准键本趟只到这里一次（`本趟已记校准`）；声明键按记录哈希去重，同站点多线各到一次（20j-3 (8)），层按登记序逐条落盘、不按键合并。
-    fn 记校准(&mut self, key: &str, hash: &str, record: Json) {
-        if self.ledger.view().calib_used_same(key, hash) {
-            return;
-        }
-        self.登记记账(Entry::CalibUsed {
-            key: key.to_string(),
-            hash: hash.to_string(),
-            record,
-        });
-    }
-
-    /// 运行结束时（B142 (3)）：账本里有 `declared:` 键、而程序里该站点已没有声明，报 `W-header`。
-    /// 「该站点仍有声明」按静态看：该站点的 `cut` 带含 `declare` 的记录字面量，或参数不是字面量（可能仍有
-    /// 声明，按有计，零误报）。本趟走到过的站点已在 [`Self::note_declared`] 比过，这里跳过。
-    pub(crate) fn 声明站点核对(&mut self, program: &jpp_ir::ir::Program) {
-        use jpp_ir::ir::{Host, Node};
-        let mut 可能有声明: HashSet<usize> = HashSet::new();
-        jpp_ir::ir::walk(&program.body, &mut |e| {
-            if let Node::Cut { rest, .. } = &e.node {
-                let 有 = rest.iter().any(|a| match &a.node {
-                    Node::Host(Host::Record(fs)) => fs.iter().any(|(k, _)| k == "declare"),
-                    Node::Host(Host::Text(_)) => false,
-                    _ => true,
-                });
-                if 有 {
-                    可能有声明.insert(e.span.start);
-                }
-            }
-        });
-        let 旧: Vec<(String, Json)> = self
-            .ledger
-            .view()
-            .calib_used
-            .iter()
-            .filter(|(k, _)| {
-                k.starts_with(jpp_ledger::DECLARED_PREFIX) && !self.本趟已记校准.contains(*k)
-            })
-            .map(|(k, v)| (k.clone(), v["record"].clone()))
-            .collect();
-        for (_, r) in 旧 {
-            let site = r["site"].as_u64().unwrap_or_default() as usize;
-            if !可能有声明.contains(&site) {
-                // 依据：B142 (3)
-                self.trace.warn(format!(
-                    "W-header: 账本头不同，不承诺重放一致：declared 旧 {} 新 无 @{site}（程序里该站点已没有声明线，B142）",
-                    记录说明(&r)
-                ));
-            }
-        }
-    }
-
-    /// 声明线旁的证据（B128；`20` v2 §4.4 第 9 条）：同键记录只读。证据记录取查找链上第一条有线的记录
-    /// （题级 → 题式级 → 类级），都没有取题键记录。`near_line` 在运行结束时由 [`Self::声明证据定稿`] 填。
-    /// 步 20j-3：同键标注样本是 p_max 上的，`stat` 不是 `max`（或 `cuts` 线）时无从核，`errors_at_line` 为 `null`
-    /// （`labelled` 照数，`certified` 照给作对照）；开端（B165）按严格比较数错。
-    fn 声明证据(&self, key: &str, r: &Reading, line: &DeclaredLine, stat: &Stat) -> Json {
-        let 链 = self.calib.chain(key, r.form_hash.as_deref());
-        let 有线 =
-            |l: &jpp_effects::views::Link| matches!(l.rec.status.as_str(), "上岗" | "停岗候选");
-        let 层们 = [
-            (Some(&链.question), "题级"),
-            (链.form.as_ref(), "题式级"),
-            (链.class.as_ref(), "类级"),
-        ];
-        let 有线层 = 层们
-            .iter()
-            .find_map(|(l, 层)| l.filter(|l| 有线(l)).map(|l| (l, *层)));
-        let 证据键 = 有线层.map_or(链.question.key.as_str(), |(l, _)| l.key.as_str());
-        let 样本 = self.calib.labelled(证据键);
-        let 单侧 = r.op != Op::Test;
-        let 可核 = stat.is_max() && !line.is_cuts();
-        let 上 = |p: f64| {
-            if line.closed_hi {
-                jpp_value::stat::decided_up(p, line.hi, jpp_value::stat::DECLARED_DELTA)
-            } else {
-                jpp_value::stat::beyond_up(p, line.hi)
-            }
-        };
-        let 下 = |p: f64| {
-            if line.closed_lo {
-                jpp_value::stat::decided_down(p, line.lo, jpp_value::stat::DECLARED_DELTA)
-            } else {
-                jpp_value::stat::beyond_down(p, line.lo)
-            }
-        };
-        let 错 = 样本
-            .iter()
-            .filter(|(p, 对)| {
-                if 上(*p) {
-                    !对
-                } else {
-                    !单侧 && 下(*p) && *对
-                }
-            })
-            .count();
-        let certified = match 有线层 {
-            Some((l, 层)) => {
-                json!({"hi": l.rec.hi, "lo": l.rec.lo, "grade": 记录等级名(&l.rec, 层), "key": l.key})
-            }
-            None => Json::Null,
-        };
-        json!({
-            "labelled": 样本.len(),
-            "errors_at_line": if 样本.is_empty() || !可核 { Json::Null } else { json!(错) },
-            "near_line": {"window": 声明窗口, "count": 0, "share": 0.0},
-            "certified": certified,
-        })
-    }
-
-    /// 运行结束时填 `near_line`（本趟该键全部切过的读数里，落在线 ±0.2 内的条数与占比）并发
-    /// `W-declared-line`（一趟一键一条）。依据：B128；`20` v2 §4.4 第 9 条
-    pub(crate) fn 声明证据定稿(&mut self) {
-        let 接受 = self.entry.accept.declared_lines;
-        let mut 已报 = HashSet::new();
-        let mut 告警 = vec![];
-        for row in self.exit_grades.iter_mut() {
-            // 线的数：`{hi, lo}` 或 `cuts`（步 20j-3）；不是声明行即跳过
-            let d = &row["declared"];
-            let (线们, 线文) = match (d["hi"].as_f64(), d["lo"].as_f64(), d["cuts"].as_array()) {
-                (Some(hi), Some(lo), _) => (vec![hi, lo], format!("hi={hi} lo={lo}")),
-                (_, _, Some(c)) => (
-                    c.iter().filter_map(|x| x.as_f64()).collect::<Vec<f64>>(),
-                    format!("cuts={}", d["cuts"]),
-                ),
-                _ => continue,
-            };
-            let 线文 = match d.get("closed") {
-                Some(c) => format!("{线文} closed={c}"),
-                None => 线文,
-            };
-            let key = row["key"].as_str().unwrap_or_default().to_string();
-            // 统计量（行上只在不是 max 时有）：`键读数` 的组与告警去重都按（键，统计量）
-            let 统计量 = row.get("stat").cloned();
-            let 组键 = match &统计量 {
-                Some(s) => format!("{key}\u{1f}{s}"),
-                None => key.clone(),
-            };
-            let ps = self.键读数.get(&组键).cloned().unwrap_or_default();
-            let 近 = |x: f64, 线: f64| (x - 线).abs() <= 声明窗口 + jpp_value::stat::BOUNDARY_EPS;
-            let count = ps
-                .iter()
-                .filter(|x| 线们.iter().any(|线| 近(**x, *线)))
-                .count();
-            let share = if ps.is_empty() {
-                0.0
-            } else {
-                (count as f64 / ps.len() as f64 * 1e4).round() / 1e4
-            };
-            row["evidence"]["near_line"] =
-                json!({"window": 声明窗口, "count": count, "share": share});
-            if 已报.insert(组键) {
-                let ev = &row["evidence"];
-                // 步 20j-2：宿主接受与否写进末句。意图汇编 11a：只在开放行把关（--guard）时说放行，默认不说
-                let 放行 = if !self.guard {
-                    ""
-                } else if 接受 {
-                    "；宿主已接受作者线放行（--release-on-declared），不可逆动作的后果由宿主担责"
-                } else {
-                    "；放行不可逆动作须宿主接受作者线（CLI：--release-on-declared）"
-                };
-                let 错 = match (ev["errors_at_line"].as_u64(), &统计量) {
-                    (Some(k), _) => format!("按此线切错 {k} 条"),
-                    (None, Some(s)) => format!("标注在 p_max 上，对 stat={s} 无从核"),
-                    (None, None) => "无标注可核".to_string(),
-                };
-                let 线文 = match &统计量 {
-                    Some(s) => format!("{线文} stat={s}"),
-                    None => 线文,
-                };
-                // 声明式拟合（B153 (3)，步 20j-4）：告警写拟合的身份
-                let 线文 = match row.get("fit").and_then(|f| f.as_str()) {
-                    Some(f) => format!("{线文} fit={f}"),
-                    None => 线文,
-                };
-                let 认证 = match ev["certified"].as_object() {
-                    Some(c) => format!(
-                        "同键认证线 hi={} lo={}（{}）",
-                        c["hi"],
-                        c["lo"],
-                        c["grade"].as_str().unwrap_or_default()
-                    ),
-                    None => "同键无认证线".to_string(),
-                };
-                // 依据：B128（地基/附注/2026-09-25-作者主权与策略表达裁定.md §一）
-                告警.push(format!(
-                    "W-declared-line: @{} 键 {key} 用作者声明线 {线文}（B128）：同键标注 {} 条，{错}；本趟线附近 ±{声明窗口} 的读数 {count}/{}（{share}）；{认证}。出口按你写的数路由，不作错误率保证{放行}",
-                    row["declared"]["site"],
-                    ev["labelled"],
-                    ps.len()
-                ));
-            }
-        }
-        for w in 告警 {
-            self.线等级告警(w);
-        }
-    }
-
-    /// 线等级与正交位的告警（B187 批 9 第 10 格）：数据已在报告 `exits` 行，默认不作告警；宿主开 `--guard` 时照发
-    /// （它们解释为什么不放行）。`W-drift`、`W-form-pending`、J-15 的 `W-untested` 不走这里。
-    pub(crate) fn 线等级告警(&mut self, w: String) {
-        if self.guard {
-            self.trace.warn(w);
-        }
-    }
-}
-
-/// `near_line` 的半宽：常量在 `jpp-value::stat` 的常量表（基线刷新 2026-09-26 挪入）
-use jpp_value::stat::NEAR_LINE_WINDOW as 声明窗口;
-
-/// 声明线的一段文字（J-08 拒绝报文、`W-header`）：`hi=0.7 lo=0.3`、`cuts=[0.5, 1.5]`，非缺省端位与统计量附后
-fn 声明说明(line: &DeclaredLine, stat: &Stat) -> String {
-    if stat.is_max() {
-        line.describe()
-    } else {
-        format!("{} stat={}", line.describe(), stat.to_json())
-    }
-}
-
-/// 账本里一条声明记录的文字（`W-header` 的「旧」）：与 [`声明说明`] 同形
-fn 记录说明(r: &Json) -> String {
-    let mut s = match r.get("cuts") {
-        Some(c) => format!("cuts={c}"),
-        None => format!("hi={} lo={}", r["hi"], r["lo"]),
-    };
-    if let Some(c) = r.get("closed") {
-        s += &format!(" closed={c}");
-    }
-    if let Some(x) = r.get("stat") {
-        s += &format!(" stat={x}");
-    }
-    s
-}
-
-/// 记录的线等级名（`evidence.certified.grade`）：夹具 / 类级 / 试用 / 临时上岗 / 题式级 / 题级，与出口等级同名
-fn 记录等级名(rec: &Lookup, 层: &str) -> &'static str {
-    let g = if rec.fixture_line() {
-        LineGrade::Fixture
-    } else if 层 == "类级" {
-        LineGrade::Class
-    } else if rec.selected.as_ref().is_some_and(|c| c.trial) {
-        LineGrade::Trial
-    } else if rec.selected.as_ref().is_some_and(|c| c.provisional)
-        || rec
-            .truth_gate
-            .as_ref()
-            .is_some_and(|g| g.starts_with("临时上岗"))
-    {
-        LineGrade::Provisional
-    } else if 层 == "题式级" {
-        LineGrade::Form
-    } else {
-        LineGrade::Certified
-    };
-    g.name()
-}
+// 声明线、冷读、打分与声明证据在子模块（C2a 拆出）
+mod declared;

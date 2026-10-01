@@ -1,0 +1,21 @@
+// 27a 准备 · F1（属性 · 单对象 · 可算真值）：取真机读数用于认证。
+// 一条材料一道题（一个填法），读数经 key_of 回接到材料编号，不走 --from-ledger 清单（B107 未修）。
+// 材料经 `jpp run --input materials.json` 交给程序：input.items[i] = {id, json, field}。
+budget {calls: 70, cost: 0.05, depth: 256};
+
+let has_field = form("test", "这个 JSON 是否有字段 {F}？（字段名必须完全一致）", {calib: "bank-l2-json-field"});
+
+fn one(x) !{judge} {
+    let r = judge(state(mat(x.json)), fill(has_field, {F: x.field}));
+    handle(cut(r), {
+        act: fn() { {id: x.id, key: key_of(r), exit: "act", open: []} },
+        ignore: fn() { {id: x.id, key: key_of(r), exit: "ignore", open: []} },
+        unsure: fn(u) { {id: x.id, key: key_of(r), exit: "unsure", open: [u]} }
+    })
+}
+
+let rows = map(input.items, fn(x) !{judge} { one(x) });
+
+{rows: map(rows, fn(x) { {id: x.id, key: x.key, exit: x.exit} }),
+ // 未决随返回值交出（J-05）
+ pending: fold(rows, [], fn(acc, x) { concat(acc, x.open) })}

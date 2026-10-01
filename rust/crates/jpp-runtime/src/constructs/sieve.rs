@@ -33,6 +33,9 @@ impl<'a> Interp<'a> {
         }
         // B93（步 22-0）：预算停机不再以 `Halt` 冒到这里，入口不必先把此前的登记单独发成一层
         let mut prepared: Vec<(Value, Value, Vec<Rc<Reading>>, Value)> = vec![];
+        // B0492 S2c：各元素的状态（「无作者去向」站点走默认链时记来历用）
+        let mut 状态们: Vec<Rc<State>> = vec![];
+        let 走链 = !self.guard && self.默认链站点.contains(&sp.start);
         for it in items {
             let (material, trail) = element_parts(it);
             let state = match &material {
@@ -58,24 +61,31 @@ impl<'a> Interp<'a> {
                 })
                 .collect();
             prepared.push((material, trail, rs, it.clone()));
+            状态们.push(state);
         }
         self.flush("sieve")?;
-        // B93：预算停发的读数由刷新标了 `budget`、记了缺席账；停止说明从缺席账取（首个停发的读数）
-        let 停发 = |me: &Self, r: &Reading| {
-            caps.ledger_read().absent_mark(me, &r.ledger_key) == Some("budget")
-        };
+        // B93：预算停发的读数由刷新标了 `budget`；G4：深度到限的标 `depth`。停止说明取停发那一刻留下的文字
+        // （G4 起不再从缺席账取：从未发出的题记「未问」，没有说明字段）
+        let 停因 = if self.深度停 { "depth" } else { "budget" };
+        let 停发 =
+            |me: &Self, r: &Reading| caps.ledger_read().absent_mark(me, r).as_deref() == Some(停因);
         let stopped: Option<String> = prepared
             .iter()
             .flat_map(|(_, _, rs, _)| rs.iter())
             .find(|r| 停发(self, r))
             .map(|r| {
-                match caps
-                    .ledger_read()
-                    .get(self, &format!("absent:{}", r.ledger_key))
-                {
-                    Some(Entry::Absent { detail, .. }) => detail.clone(),
-                    _ => String::new(),
-                }
+                self.停发说明
+                    .get(&r.ledger_key)
+                    .cloned()
+                    .unwrap_or_else(|| {
+                        match caps
+                            .ledger_read()
+                            .get(self, &format!("absent:{}", r.ledger_key))
+                        {
+                            Some(Entry::Absent { detail, .. }) => detail.clone(),
+                            _ => String::new(),
+                        }
+                    })
             });
         let (_, carried_spent) = caps.key_collect().since(self, m0);
         // B82（步 25-0）：一个契约值，元素集 = 材料 × 题（材料主序、题次序）；未决一份、证据取并、花费一份。
@@ -84,7 +94,7 @@ impl<'a> Interp<'a> {
         let n_unobserved = prepared
             .iter()
             .flat_map(|(_, _, rs, _)| rs.iter())
-            .filter(|r| caps.read_answer().answer_of(self, r).is_none() && r.fail.is_none())
+            .filter(|r| caps.read_answer().未观察(self, r))
             .count();
         // 切（与出口编号、告警）仍按题主序进行，与步 25-0 之前逐题造契约值时同一顺序；
         // 元素按材料主序放进产物（B82）。格子里记（流，元素）。
@@ -101,13 +111,18 @@ impl<'a> Interp<'a> {
                     fill: fills.map(|fs| fs[j].clone()),
                     key: r.ledger_key.clone(),
                 };
-                if caps.read_answer().answer_of(self, r).is_none() && r.fail.is_none() {
+                // 步 23b：超窗裂变的合成读数不算未观察，照常进 `cut` 按题的操作合回（复核 B0476 缺口 2）
+                if caps.read_answer().未观察(self, r) {
                     // 预算停机没问到：记为 Unsure(budget) 进未决清单（B17 取舍），不混进 ignore。
                     // 出口在这里直接造，与步 22-0 前相同（不进报告 `exits` 表）。已知旧问题（不在本步改）：
                     // 缺席策略 conservative 下没有答案的读数也走这里、记成 budget（过程记录 22-0 问题清单）
                     let ex = caps.issue_unsure().new_unsure(
                         self,
-                        "budget",
+                        if self.深度停 {
+                            UnsureCause::Depth
+                        } else {
+                            UnsureCause::Budget
+                        },
                         Op::Test,
                         &q.hash,
                         jpp_value::value::Taint::Trusted,
@@ -136,6 +151,20 @@ impl<'a> Interp<'a> {
                 let Value::Exit(e) = &exit else {
                     return err(Some("E-rt-arg"), "cut 没有给出出口", sp);
                 };
+                // B0492 S2c：「无作者去向」的 sieve 站点，未决元素当场走默认链（同一状态、同一道题、同一条线再判），
+                // 按最后那个出口分流
+                let 链后;
+                let e = if 走链 && e.is_unsure() {
+                    self.判断来历
+                        .insert(r.ledger_key.clone(), (状态们[i].clone(), q.clone()));
+                    self.切法来历
+                        .insert(r.ledger_key.clone(), (None, line.clone()));
+                    self.读数表.insert(r.ledger_key.clone(), r.clone());
+                    链后 = self.补信息链(e, sp)?;
+                    &链后
+                } else {
+                    e
+                };
                 // 元素构造写报告 `exits` 行的 `index`/`pos`（B120 (b)）与 `item` 的选择边（B84、B92：元素内容先于
                 // 读数存在，读数只决定选中了它）；元素记录的 exit 照 17a 保留
                 let 流 = match &e.kind {
@@ -151,13 +180,24 @@ impl<'a> Interp<'a> {
                     ExitKind::Unsure(_) => 2,
                     _ => return err(Some("E-rt-arg"), "是非题给出了非是非出口", sp),
                 };
-                格[i][j] = Some((流, self.调元素(source, e, 上下文())));
+                let mut 境 = 上下文();
+                if !Rc::ptr_eq(
+                    e,
+                    match &exit {
+                        Value::Exit(x) => x,
+                        _ => unreachable!(),
+                    },
+                ) {
+                    // 走过默认链：元素的键是最后那个出口的（B0492 S2c）
+                    境.key = e.ledger_key.borrow().clone();
+                }
+                格[i][j] = Some((流, self.调元素(source, e, 境)));
             }
             if let Some(detail) = &stopped {
                 if j == 0 && n_unobserved > 0 {
                     // 数的是未观察的元素（材料 × 题），步 25-0 起不再只数第一道题
                     // 依据：B17（预算未观察项记 Unsure(budget) 进未决清单）、B93（停止说明取自缺席账）
-                    self.trace.warn(format!("W-sieve-budget: 三路过滤在预算处停止，{} 个元素未观察，记为 Unsure(budget) 进未决清单（未计入 ignore）：{}", n_unobserved, detail));
+                    self.trace.warn(format!("W-sieve-budget: 三路过滤在{}处停止，{} 个元素未观察，记为 Unsure({停因}) 进未决清单（未计入 ignore）：{}", if self.深度停 { "深度上限" } else { "预算" }, n_unobserved, detail));
                 }
             }
         }
@@ -170,7 +210,7 @@ impl<'a> Interp<'a> {
         }
         let resume = match &stopped {
             Some(detail) => Value::record(vec![
-                ("reason".into(), Value::text("budget")),
+                ("reason".into(), Value::text(停因)),
                 ("detail".into(), Value::text(detail)),
                 (
                     "unobserved".into(),
@@ -372,7 +412,20 @@ pub(crate) fn 解析筛选项(名: &str, v: &Value, sp: Span) -> R<crate::bridge
             }
             match v.get("line") {
                 None => Ok(crate::bridge::CutOpts::default()),
-                Some(l @ Value::Record(_)) => crate::host_builtins::解析策略(&l, sp),
+                Some(l @ Value::Record(_)) => {
+                    let o = crate::host_builtins::解析策略(&l, sp)?;
+                    if o.feasible.is_some() {
+                        // C-4：sieve 逐项过滤是非题，读数没有候选；要按代码谓词筛，对结果用普通 filter
+                        return err(
+                            Some("E-cut-options"),
+                            format!(
+                                "{名} 只收是非题，没有候选可选：feasible 只用于 K 选一的 cut（在已决 pick 上改选）。判断之后要按代码筛，对结果用 filter（C-4）"
+                            ),
+                            sp,
+                        );
+                    }
+                    Ok(o)
+                }
                 Some(l @ (Value::Float(..) | Value::Int(..))) => 字面线(&l),
                 Some(other) => err(
                     Some("E-rt-arg"),

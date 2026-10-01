@@ -8,7 +8,7 @@ use std::cell::RefCell;
 use jpp::effects::{CalibStore, EffectError, FnPort, JudgeResult, Ports, Profile};
 use jpp::ledger::Ledger;
 use jpp::value::Answer;
-use jpp::{ActionRegistry, run};
+use jpp::{ActionRegistry, run, run_replay};
 use jpp::{lower, syntax::parse};
 
 /// 前 `坏` 次调用失败，之后返回 0.9；每次调用睡 `睡` 毫秒
@@ -91,21 +91,36 @@ fn 保守策略出口转未决并可重放() {
         o.cost.calls, 6,
         "逐次计费（选项 A）：3 站点 ×（首发 + 重试 1）"
     );
-    // 只凭账本重放：不再发，出口一致
+    // 只凭账本重放（审计）：不再发，出口一致
     let program = lower(&parse(&src).expect("解析")).expect("lower");
     let mut calib = CalibStore::new();
     calib.put("k", 0.65, 0.35, 50, "上岗", Some(0.05)).unwrap();
     let calls2 = RefCell::new(0u64);
-    let o2 = run(
+    let o2 = run_replay(
         &program,
         时好时坏(0, 0, &calls2),
         &calib,
         &ActionRegistry::new(),
-        &mut l,
+        &mut l.clone(),
     )
     .expect("重放");
     assert_eq!(o2.value_json()["v"], v);
     assert_eq!(*calls2.borrow(), 0, "缺席事件已记账，重放不发");
+    // G5（步 38，裁定五十九第 16 条、六十一 (b)，推翻 PR #48）：续跑重发缺席的题，判断器恢复后得到答案
+    let calls3 = RefCell::new(0u64);
+    let o3 = run(
+        &program,
+        时好时坏(0, 0, &calls3),
+        &calib,
+        &ActionRegistry::new(),
+        &mut l,
+    )
+    .expect("续跑");
+    assert_eq!(
+        o3.value_json()["v"],
+        serde_json::json!(["act", "act", "act"])
+    );
+    assert_eq!(*calls3.borrow(), 3, "三道缺席的题各重发一次");
 }
 
 #[test]
@@ -180,11 +195,30 @@ consume(e, "drop");
         ..Profile::untested()
     }
     .with_latency_p95(1.0, "测试");
+    // Z0157：检查器不再按上界拒（无 `E-latency`）；这个程序有一个必经判断，下界 1 层 × 1.0 > 0.5，
+    // 由规划器拒（`E-budget-plan`，J-07b 静态面）。`jpp check` 也调规划器，见 `z0157_latency_floor.rs`。
     let r = jpp::check::check_with_profile(&program, &profile);
     assert!(
-        r.diagnostics.iter().any(|d| d.rule == "E-latency"),
+        !r.diagnostics.iter().any(|d| d.rule == "E-latency"),
         "{:?}",
         r.diagnostics
+    );
+    let ctx = jpp::interp::PlanCtx {
+        ledger_empty: true,
+        cache_off: true,
+        judge_price: jpp::interp::JudgePrice::NotGiven,
+    };
+    let plan = jpp::interp::plan_with(
+        &program,
+        &jpp::interp::Passes::default(),
+        Some(&profile),
+        &ctx,
+    );
+    assert_eq!(
+        plan.rejected.as_ref().map(|d| d.code.as_str()),
+        Some("E-budget-plan"),
+        "{:?}",
+        plan.rejected
     );
     let r = jpp::check::check(&program);
     assert!(
@@ -318,6 +352,29 @@ fn absent_replay_stops_where_first_run_stopped() {
     );
     let 首停 = o1.budget.as_ref().expect("首跑预算停发").first_site;
     assert_eq!(o1.cost.calls, 3);
+    // G4（步 37，附录二 D-8 的直接证据，复核反例 D）：先一条「停下」；第 2 站点重试中途付不起的仍是缺席
+    // （attempts 2，调用已花）；第 3 站点从没发出的记「未问」
+    {
+        use jpp::ledger::Entry;
+        let 种类: Vec<String> = l
+            .entries
+            .iter()
+            .filter_map(|e| match e {
+                Entry::Stop { cause, .. } => Some(format!("Stop({cause:?})")),
+                Entry::Absent {
+                    cause, attempts, ..
+                } => Some(format!("Absent({cause},{attempts})")),
+                Entry::Unasked { reason, .. } => Some(format!("Unasked({reason:?})")),
+                _ => None,
+            })
+            .collect();
+        assert_eq!(
+            种类,
+            ["Stop(Budget)", "Absent(budget,2)", "Unasked(Budget)"],
+            "账本条目种类"
+        );
+    }
+    let 条目数 = l.entries.len();
     let calls2 = RefCell::new(0u64);
     let o2 = jpp::run_replay(
         &program,
@@ -334,4 +391,5 @@ fn absent_replay_stops_where_first_run_stopped() {
         "停在同一站点"
     );
     assert_eq!(*calls2.borrow(), 0, "重放不发");
+    assert_eq!(l.entries.len(), 条目数, "审计重放不重复写停下与未问");
 }

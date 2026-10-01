@@ -8,7 +8,7 @@ use std::cell::{Cell, RefCell};
 
 use jpp_ir::ir::Span;
 
-use crate::value::{Answer, Exit, ExitKind, Op, Taint};
+use crate::value::{Answer, Exit, ExitKind, Op, Taint, UnsureCause, Why};
 
 /// 出口的各部分（运行时查好的事实）。
 pub struct ExitParts {
@@ -55,6 +55,8 @@ pub fn issue(p: ExitParts) -> Exit {
         scope_out: Cell::new(false),
         delta_unknown: Cell::new(false),
         scope_unknown: Cell::new(false),
+        window_untested: Cell::new(false),
+        near_boundary: Cell::new(false),
         parts: RefCell::new(Vec::new()),
         host_accepts_declared: Cell::new(false),
         alpha: Cell::new(None),
@@ -76,8 +78,8 @@ pub struct CutInput<'a> {
     pub alpha_requested: bool,
     /// 刷新之后的答案（只在需要比线时读）
     pub answer: Option<Answer>,
-    /// 这条线的 δ（线附近 ±δ 为 band）。`None` = 记录没有 δ（`20` §3.9：出口一律 `Unsure(untested)`，
-    /// 载体 `Delta`；步 15d-2 起 δ 只从校准记录取，没有代码兜底）
+    /// 这条线的 δ（线附近 ±δ 为 band）。`None` = 记录没有 δ：照线切、不加迁移带（裁定五十六、五十七 (3)、
+    /// 六十六；步 36 G3 前这里出 `Unsure(untested)`、载体 `Delta`）
     pub delta: Option<f64>,
     /// 置换众数占比（`None` = 本次路径上没测过置换）
     pub mode_share: Option<f64>,
@@ -108,7 +110,7 @@ pub fn unique_argmax(v: &[f64]) -> Option<usize> {
 /// 不唯一）时判断器没有给出回答，出 `Unsure(tie)`。作者在 select 上声明了置换而正逆两序众数不一致
 /// （`mode_share < 1`）同样是 tie（与有线时同口径）；没声明置换不要求置换。等级由运行时记 `Answer`。
 pub fn follow_answer(a: &Answer, mode_share: Option<f64>) -> ExitKind {
-    let tie = || ExitKind::Unsure("tie".into());
+    let tie = || ExitKind::Unsure(Why::of(UnsureCause::Tie));
     match a {
         Answer::Noul(p) if *p > 0.5 => ExitKind::Act,
         Answer::Noul(p) if *p < 0.5 => ExitKind::Ignore,
@@ -124,11 +126,11 @@ pub fn follow_answer(a: &Answer, mode_share: Option<f64>) -> ExitKind {
 /// 证书没有时也按回答走，另带 J-15 载体（只是记录，告诉作者没找到他要的证书）。
 pub fn decide(i: &CutInput) -> (ExitKind, Untested) {
     if let Some(f) = i.fail {
-        return (ExitKind::Unsure(format!("fail:{f}")), None);
+        return (ExitKind::Unsure(Why::with(UnsureCause::Fail, f)), None);
     }
     if let Some(c) = i.absent {
         // B32：判断器缺席或超时，出口按 J-05 四条去向路由，不加新去向
-        return (ExitKind::Unsure(c.to_string()), None);
+        return (ExitKind::Unsure(Why::from_record(c)), None);
     }
     let Some((hi, lo)) = i.line else {
         let a = i.answer.as_ref().expect("回答路径：刷新之后答案必然在");
@@ -147,16 +149,9 @@ pub fn decide(i: &CutInput) -> (ExitKind, Untested) {
         };
         return (follow_answer(a, i.mode_share), 载体);
     };
-    // 依据：`20` §3.9 数值字段未测行为表「记录的 delta」行（步 15d-2）
-    let Some(delta) = i.delta else {
-        return (
-            ExitKind::Unsure("untested".into()),
-            Some((
-                "Delta".into(),
-                "修法【需接线人】：这条线的校准记录没有 δ；用 calib-import 带画像重新导入，或在夹具的 calibrations 里给出 delta（δ 只从记录取，B104、步 15d-2）".into(),
-            )),
-        );
-    };
+    // 有线没 δ 不是未决（裁定五十六、五十七 (3)、六十六；步 36 G3）：照线切、不加迁移带（按 δ = 0 比较）；
+    // 读数与出口上的 `delta_unknown` 由调用方置（运行时 `cut` 本来如此，这一支只有题库统计与测试走到）
+    let delta = i.delta.unwrap_or(0.0);
     match i.answer.as_ref().expect("刷新之后答案必然在") {
         // `12`:167「再过线，再 band（线附近 ±δ）」。裸的 `p >= hi` 是失败开放（跨内核对照照出，E-JPP-LIVE）。
         Answer::Noul(p) => {
@@ -166,28 +161,29 @@ pub fn decide(i: &CutInput) -> (ExitKind, Untested) {
             } else if crate::stat::decided_down(*p, lo, delta) {
                 (ExitKind::Ignore, None)
             } else {
-                (ExitKind::Unsure("band".into()), None)
+                (ExitKind::Unsure(Why::of(UnsureCause::Band)), None)
             }
         }
         // 12:151：Pick 要求置换众数一致；没测过（J-15）不是 tie（测了、不一致）。
         Answer::Choice(v) => {
             let (k, p) = argmax(v);
             match i.mode_share {
+                // 裁定六十六（步 36 G3）：原因 `cold`（线对这个站点不可用：保守线加标记），正交位 `untested:permutation`
                 None => (
-                    ExitKind::Unsure("untested".into()),
+                    ExitKind::Unsure(Why::of(UnsureCause::Cold)),
                     Some((
                         "permutation".into(),
                         // 依据：B64（步 15f：置换是 select 站点的测量声明）
                         "修法【作者可改】：在这道 select 题或它的题式上声明 {permute: true}（正逆两序，select 的调用数 ×2；B64）".into(),
                     )),
                 ),
-                Some(ms) if ms < 1.0 => (ExitKind::Unsure("tie".into()), None),
+                Some(ms) if ms < 1.0 => (ExitKind::Unsure(Why::of(UnsureCause::Tie)), None),
                 // 依据：B63（K 元划分的单侧线带 δ 迟滞：p_max ≥ hi + δ 才出 Pick）
                 Some(_) => {
                     if crate::stat::decided_up(p, hi, delta) {
                         (ExitKind::Pick(k), None)
                     } else {
-                        (ExitKind::Unsure("band".into()), None)
+                        (ExitKind::Unsure(Why::of(UnsureCause::Band)), None)
                     }
                 }
             }
@@ -198,7 +194,7 @@ pub fn decide(i: &CutInput) -> (ExitKind, Untested) {
             if crate::stat::decided_up(p, hi, delta) {
                 (ExitKind::At(l), None)
             } else {
-                (ExitKind::Unsure("band".into()), None)
+                (ExitKind::Unsure(Why::of(UnsureCause::Band)), None)
             }
         }
     }
@@ -335,7 +331,7 @@ pub fn past_declared(s: f64, l: &DeclaredLine) -> ExitKind {
     } else if 下 {
         ExitKind::Ignore
     } else {
-        ExitKind::Unsure("band".into())
+        ExitKind::Unsure(Why::of(UnsureCause::Band))
     }
 }
 
@@ -343,7 +339,7 @@ pub fn past_declared(s: f64, l: &DeclaredLine) -> ExitKind {
 /// 其他统计量在 `cut` 解析时报 `E-cut-options`；保留给旧测试与账本说明用。
 pub fn cold_for_stat(stat: &crate::stat::Stat) -> (ExitKind, Untested) {
     (
-        ExitKind::Unsure("cold".into()),
+        ExitKind::Unsure(Why::of(UnsureCause::Cold)),
         Some((
             "calib_line".into(),
             format!(
@@ -379,7 +375,7 @@ mod answer_route_tests {
         assert_eq!(输入(Answer::Noul(0.49), false, false).0, ExitKind::Ignore);
         assert_eq!(
             输入(Answer::Noul(0.5), false, false),
-            (ExitKind::Unsure("tie".into()), None)
+            (ExitKind::Unsure(Why::of(UnsureCause::Tie)), None)
         );
         // 没有 untested：回答路径不是「判据未测」
         assert_eq!(输入(Answer::Noul(0.9), false, false).1, None);
@@ -393,7 +389,7 @@ mod answer_route_tests {
         );
         assert_eq!(
             输入(Answer::Choice(vec![0.4, 0.4, 0.2]), false, false).0,
-            ExitKind::Unsure("tie".into())
+            ExitKind::Unsure(Why::of(UnsureCause::Tie))
         );
         assert_eq!(
             输入(Answer::Score(vec![0.1, 0.2, 0.7]), false, false).0,
@@ -401,12 +397,12 @@ mod answer_route_tests {
         );
         assert_eq!(
             输入(Answer::Score(vec![0.5, 0.5]), false, false).0,
-            ExitKind::Unsure("tie".into())
+            ExitKind::Unsure(Why::of(UnsureCause::Tie))
         );
         // 声明了置换而两序众数不一致：tie；没测置换不要求
         assert_eq!(
             follow_answer(&Answer::Choice(vec![0.2, 0.8]), Some(0.5)),
-            ExitKind::Unsure("tie".into())
+            ExitKind::Unsure(Why::of(UnsureCause::Tie))
         );
         assert_eq!(
             follow_answer(&Answer::Choice(vec![0.2, 0.8]), Some(1.0)),
@@ -414,7 +410,7 @@ mod answer_route_tests {
         );
         assert_eq!(
             follow_answer(&Answer::Choice(vec![]), None),
-            ExitKind::Unsure("tie".into())
+            ExitKind::Unsure(Why::of(UnsureCause::Tie))
         );
     }
 
@@ -444,10 +440,13 @@ mod answer_route_tests {
             })
             .0
         };
-        assert_eq!(base(Some("x"), None), ExitKind::Unsure("fail:x".into()));
+        assert_eq!(
+            base(Some("x"), None),
+            ExitKind::Unsure(Why::with(UnsureCause::Fail, "x"))
+        );
         assert_eq!(
             base(None, Some("absent")),
-            ExitKind::Unsure("absent".into())
+            ExitKind::Unsure(Why::of(UnsureCause::Absent))
         );
     }
 }
@@ -548,5 +547,65 @@ mod line_grade_tests {
         let t = issue(部件(None, Taint::Untrusted));
         t.grade.set(Some(LineGrade::Certified));
         assert!(t.releases() && !t.guard_trusted());
+    }
+}
+
+#[cfg(test)]
+mod g3_tests {
+    //! 步 36 G3（预注册附录二 U-1、U-2；裁定六十六）
+    use super::*;
+
+    fn 有线(answer: Answer, delta: Option<f64>, mode_share: Option<f64>) -> (ExitKind, Untested) {
+        decide(&CutInput {
+            fail: None,
+            absent: None,
+            line: Some((0.7, 0.3)),
+            cost_requested: false,
+            alpha_requested: false,
+            answer: Some(answer),
+            delta,
+            mode_share,
+        })
+    }
+
+    /// U-2：有线没 δ 不是未决，照线切、不加迁移带、不带载体
+    #[test]
+    fn u2_有线没delta照线切() {
+        assert_eq!(有线(Answer::Noul(0.7), None, None), (ExitKind::Act, None));
+        assert_eq!(
+            有线(Answer::Noul(0.3), None, None),
+            (ExitKind::Ignore, None)
+        );
+        assert_eq!(
+            有线(Answer::Noul(0.5), None, None),
+            (ExitKind::Unsure(Why::of(UnsureCause::Band)), None)
+        );
+        assert_eq!(
+            有线(Answer::Choice(vec![0.1, 0.9]), None, Some(1.0)),
+            (ExitKind::Pick(1), None)
+        );
+    }
+
+    /// U-1：select 有线、没测置换：原因 cold，载体 permutation
+    #[test]
+    fn u1_select未测置换为cold带正交位() {
+        let (k, u) = 有线(Answer::Choice(vec![0.1, 0.9]), Some(0.05), None);
+        assert_eq!(k, ExitKind::Unsure(Why::of(UnsureCause::Cold)));
+        assert_eq!(u.map(|x| x.0), Some("permutation".to_string()));
+    }
+
+    /// 细节进标签文字、不进原因名；账本读回的非成员原因按 absent（待定项 4）
+    #[test]
+    fn why的文字与读回() {
+        assert_eq!(
+            Why::with(UnsureCause::Insufficient, "ref").text(),
+            "insufficient:ref"
+        );
+        assert_eq!(Why::from_record("budget"), Why::of(UnsureCause::Budget));
+        assert_eq!(Why::from_record("spec_miss"), Why::of(UnsureCause::Absent));
+        assert_eq!(
+            Why::from_record("fail:x"),
+            Why::with(UnsureCause::Fail, "x")
+        );
     }
 }

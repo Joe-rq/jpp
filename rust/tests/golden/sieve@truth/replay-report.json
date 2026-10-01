@@ -344,6 +344,26 @@
   "local_checks": [],
   "mode": "replay; no model API requests",
   "pending": [],
+  "plan": {
+    "calls": {
+      "hi": 90,
+      "kind": "known",
+      "lo": 0
+    },
+    "cost_usd": {
+      "kind": "unknown",
+      "reason": "price_not_given"
+    },
+    "latency_s": {
+      "kind": "unknown",
+      "reason": "untested:concurrency.latency_s.p95"
+    },
+    "layers": {
+      "hi": 30,
+      "kind": "known",
+      "lo": 0
+    }
+  },
   "questions": [
     {
       "fill": {

@@ -191,12 +191,15 @@ impl<'a> Interp<'a> {
         let state_hash = hash_of(&[&["fit-states"][..], &状态[..]].concat());
         // 输入不可用：判序与读数的 cut 同（J-09 证据不足 → Fail → 缺席），取第一条
         let fail = rs.iter().find_map(|r| {
+            // 步 36 G3：原因是封闭枚举，细节另存
             if let Some(m) = r.missing_evidence.first() {
-                Some(format!("insufficient:{m}"))
+                Some(Why::with(UnsureCause::Insufficient, m.clone()))
             } else if let Some(f) = &r.fail {
-                Some(format!("fail:{f}"))
+                Some(Why::with(UnsureCause::Fail, f.clone()))
             } else {
-                caps.read_answer().absent_of(self, r)
+                caps.read_answer()
+                    .absent_of(self, r)
+                    .map(|c| Why::from_record(&c))
             }
         });
         let value = match &fail {

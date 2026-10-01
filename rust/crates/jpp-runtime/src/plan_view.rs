@@ -26,9 +26,13 @@ impl FnView for RtFn {
     fn env(&self) -> Rc<dyn EnvView> {
         Rc::new(RtEnv(self.0.env.clone()))
     }
+    /// 结构哈希加闭包实例地址：同一实例即同一份捕获（C2c 复核 K2，纯性判定的递归护栏与缓存按它）
+    fn instance(&self) -> String {
+        format!("{}@{:p}", self.0.hash, Rc::as_ptr(&self.0))
+    }
 }
 
-fn summary(v: &Value) -> ValueSummary {
+pub(crate) fn summary(v: &Value) -> ValueSummary {
     match v {
         Value::Builtin(b) => ValueSummary::Builtin(b.to_string()),
         Value::Fn(c) => ValueSummary::Fn(Rc::new(RtFn(c.clone()))),

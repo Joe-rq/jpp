@@ -27,6 +27,7 @@ core 负责共同程序表示、值与环境、静态检查、解释执行、效
 - **标注与认证**：`calib-import`、`commission`、证书、漂移与停岗（`calib-confirm`）。认证过的线进 `cut` 的查找链，出口等级随之是 `Certified` / `Form` 等；要语言担保错误率时用它（`alpha`、`cost` 是「只用认证线」的写法）。
 - **放行把关 `--guard`**（CLI `run` 与 `check`；库宿主 `EntryArgs.guard`，经 `decl()` 写进 `Program.entry.guard`，检查器与运行时都只读这一位）：开了之后 J-08 在检查期与运行期都生效（只有 `Certified` / `Form` 等级、正交位全清、材料可信的出口或 `ask` 才放行不可逆 `do`；`Answer`、`Declared` 未接受、`Fixture`、`Trial` 等都不放行）；线等级的说明照旧打印；有不可逆动作的程序必须给 `--ledger-out`（`E-ledger-required`）。`scripts/guard_baseline.py` 核对带 `--guard` 跑的金样与翻转前一致，`scripts/replay_scan.py --guard` 核对这种模式下只凭账本重放。开关只在为真时进 `entry_hash`、IR（`guard` 一行）与报告（`guard: true`），不开的哈希、`ir.txt`、报告与改前逐字节相同。
 - **`--release-on-declared`**：宿主接受作者声明线放行不可逆动作，只在 `--guard` 下有意义；不开把关时照旧可收、照旧进 `entry_hash` 与报告 `accept`，不改变任何行为。`W-declared-line` 只在开把关时说放行的那半句。
+- **宿主入口的目的、材料条目与料库**（B0472，CLI `run` 与 `check`）：`--purpose <text>` 填 `EntryArgs.purpose`，程序里以名字 `purpose` 绑定为不可信文本；`--mat <name>=<file>`（可重复）每个产一条材料条目，`.json` 按 JSON 读、其余按 UTF-8 文本读成一个字符串，绑定为 `Value::Mat`（不可信，`origin = ["input"]`），名字是标识符且不能是 `input`、`purpose`。两样都进 `entry_hash`，与库宿主给同样三样时逐字相同。`run --mat-store <dir>` 装文件料库（`FileMatStore`，等同 `Session::with_mat_store`），`lib/skeletons/select.jpp` 的标记落盘、跨运行复用；`--replay` 下不装。
 
 ## 一、程序表示（步 12d 起是 IR）
 
@@ -471,8 +472,8 @@ S 库 `lib/materials.jpp` 的 `review_material(opinion, about)`：把评审意�
 | 项 | 内容 |
 |---|---|
 | 文件 | JSONL 链式。首行 `{"version":2,"header":…,"calib_used":…}`；之后每条一行 `{"seq":n,"prev":<上一行的哈希>,"entry":…}` |
-| 头 | `{budget:{calls,cost}, compared:{model_id, render_version, handler_version, profile_hash, behavior_hash, calib_hash, calib_used_hash, lib_version, bank_version, ir_version, entry_hash}}`（十一字段，`calib_used_hash` 步 7b 加，B77）。比对只在 `HeaderCompared::diff_in`：只凭账本重放不比 `calib_hash`、续接全比（B77）；预算记录不比对（B61）；`W-header` 只列不同的字段。`entry_hash` 从步 14b-0 起有值：`jpp run --input <file.json>` 时为规范化 JSON 的哈希（`HostInput`，`run_with_input`），不带时为 null |
-| 条目 | `Judge` 带结构化键 `jkey`（`jpp_ir::key::JudgeKey`，`digest()` 与旧 `judge_key` 相同）、`calib_ref`（题声明的校准键）、`layer`、`merged_by`（一次调用多于一题记 `fuse`）、`parents`/`hop`/`reused_from`（恒空，步 17、19 填）。`Effect` 带 `ekey`、`output_mat`（恒空，步 17/18 填）。`Ask` 带 `ekey`；**已问未答也入账**（`answer: null`），重放照记的以 `Pending` 结束，续跑问到答案另起一条（`Ledger::put_answer`，只增）。`Absent`（取代原 `kind:"absent"` 的效应条目）。`Intent`、`Halt` 已定义、本版不产生 |
+| 头 | `{budget:{calls,cost}, compared:{model_id, render_version, handler_version, profile_hash, behavior_hash, calib_hash, calib_used_hash, lib_version, bank_version, ir_version, entry_hash}}`（十一字段，`calib_used_hash` 步 7b 加，B77）。比对只在 `HeaderCompared::diff_in`：只凭账本重放不比 `calib_hash`、续接全比（B77）；预算记录不比对（B61）；`W-header` 只列不同的字段。`entry_hash` 从步 14b-0 起有值：`jpp run --input <file.json>` 时为规范化 JSON 的哈希（`HostInput`，`run_with_input`），不带时为 null；B0472 起 CLI 的 `--purpose <text>`、`--mat <name>=<file>` 给的目的与材料条目按 `EntryArgs::hash` 同一算法进来（与库宿主逐字相同） |
+| 条目 | `Judge` 带结构化键 `jkey`（`jpp_ir::key::JudgeKey`，`digest()` 与旧 `judge_key` 相同）、`calib_ref`（题声明的校准键）、`layer`、`merged_by`（一次调用多于一题记 `fuse`）、`parents`/`hop`/`reused_from`（恒空，步 17、19 填）。`Effect` 带 `ekey`、`output_mat`（恒空，步 17/18 填）。`Ask` 带 `ekey`；**已问未答也入账**（`answer: null`），重放照记的以 `Pending` 结束，续跑问到答案另起一条（`Ledger::put_answer`，只增）。`Absent`（取代原 `kind:"absent"` 的效应条目；原因以 `fail` 开头，如 `fail:shape`，表示端口答了但答案不可用——语言自己发的元题回答形状不符时降级记它（Z0556），不是判断器缺席，不属缺席类、可以放弃，Z0594）。`Intent`、`Halt` 已定义、本版不产生（`Halt` 在 V5 删去，见 §三·四·九） |
 | 解码 | 末行半写 → 截断到最后一条完整条目，报 `W-ledger-truncated`（CLI 打到 stderr）；完整行读不成、链断、未知字段 → `E-ledger-corrupt` 指出行号；v1（整份 JSON）→ `E-ledger-archived`，用标签 `ledger-v1-archive` 处的二进制重放 |
 | `budget.escalate` | 上限数的是**已答**的 `Ask` 条目（与入账前一致） |
 
@@ -516,6 +517,83 @@ S 库 `lib/materials.jpp` 的 `review_material(opinion, about)`：把评审意�
 | 生成器身份 | `Session::with_gen(模型, 画像哈希)`：账本头 `gen_model`、`gen_profile_hash`（为空不写，两种场合都比，不同报 `W-header`）；生成物缓存键里的模型取 `gen_model`，为空取 `model_id`。CLI 给了 `--gen-model` 才设 |
 | 报告 | `Outcome.cache: Option<CacheStats>`，给了跨运行缓存或本趟有命中时为 `Some`：`{hits {judge, gen, transform}, same_run, cross_run, saved_calls, requests {judge, gen, do, ask}}`；CLI 报告出 `cache` 一节 |
 | 退役 | 15h-2 的 `--gen-cache`、`GenCache`、`Session::with_gen_cache` 删去，由本节取代 |
+
+## 三·四·九、账本 v5（工程步 34 V5，格式步，B196，2026-09-30）
+
+依据裁定六十一 B196、B200；`12` §2.13 R13、R11；冻结清单 §4.1；过程记录 `地基/过程记录/工程-V5-账本格式.md`。本步只声明，运行时照旧写 v4 的条目；新事件由 C3、G2、G4 开始写。v4 的二进制在标签 `ledger-v4-archive`。
+
+| 项 | 内容 |
+|---|---|
+| 文件 | 首行 `{"version":5,"header":…}`；头行的 `version` 就是冻结清单的 `schema`，不另设字段 |
+| 头 | `compared` 加 `trace`、`segments[{seg, parent}]`、`key_version`（为空不写）。比对取并集：`trace`、`key_version` 两种场合都比；`segments` 旧的是新的前缀即不算不同；`schema` 由解码版本闸承担 |
+| 余额 | `CarryRecord` 的 `depth_at` 改名 `hop`（旧名照读），加 `round`（恒为 0，G4 起计）；`--carry-in`/`--carry-out` 文件同形 |
+| 新条目（不定输入） | `Attempt`、`Flush`（每道题可选 `identity`）、`HostEvent`、`Merge`（线上字段 `type`）、`Opaque`、`Transparent` |
+| 新条目（契约性结果，都带 `attempt: {program, n}`） | `Publish`、`Duty`（去向的规范形式：`form` 是 `refine`/`enrich`/`reselect`/`escalate`/`drop_accounted`/`handoff` 之一连同各自载荷，类由形式推出；另有 `of`、`cause`（可缺省）、`site`、`marks`、`detail`）、`Violation`（`mark`）、`Unasked`（原因字段 `reason`）、`Stop`（原因字段 `cause`；两者取 `budget`/`depth`/`deadline`）、`Withheld`（B200） |
+| 欠账记号 | `DebtMark {frame: program\|code, owner, via: cut\|fit\|cut_score, nth, key, cause}`；摘要 `token()` 不上账本 |
+| 旧条目 | v4 六种去向事件保留为旧形式，照读照写；`Duty::from_legacy`/`to_legacy` 互转无损。`Intent`、`Skip` 加可缺省的 `attempt`。`Halt` 删去（从未构造，由 `Stop` 取代） |
+| 解码 | v3、v4 照读不迁移；版本高于本二进制报 `E-ledger-newer`；不认识的条目种类报 `E-ledger-corrupt` 指出行号与种类名并提示「可能是更新的二进制写的」 |
+
+## 三·四·十、深度口径（工程步 37 G4，2026-09-30）
+
+依据裁定五十九第 7、17 条，裁定六十二第 1 条；过程记录 `地基/过程记录/工程-G4-深度口径.md`。
+
+| 项 | 内容 |
+|---|---|
+| `hop`、`round` | `--carry-out` 交给下游：`hop` = 本趟 + 1，`round` 归 0；`--resume` 同一轮：`hop` 不变、`round` 取本段已跑的趟数。宿主事件触发的重跑留给 C4 |
+| J-06 | 调用栈每趟从 0 起算，只管递归，上限是程序声明的 `budget.depth`（没声明取引擎默认），不被余额的 `depth_cap` 收紧（G4b，裁定六十四） |
+| 跳数上限 | 停发条件 `hop ≥ min(声明的 budget.depth, depth_cap)`；声明更小时本段记一条只收紧深度的 `CarryCap`，交回 `depth_cap` 随之取小（G4b） |
+| `depth_cap_default` | 引擎默认深度上限（缺省 256，`Session::with_depth_cap_default` 可设）；本趟用到时（带余额或没声明 `budget.depth`）写进账本头，审计重放以账本头为准；账本头缺这一项（G4b 之前的账本）时审计重放取历史默认 256、写回的头不补写。根余额用 `BudgetCarry::session_with_default` 或 `Session::root_carry` 跟随引擎默认（G4b 附录一） |
+| 深度到限 | `hop ≥ depth_cap` 的一趟照常求值：判断不发，逐题 `Unsure(depth)`、每题一条 `Unasked{reason: depth}`；`gen`/`do` 失败值、不执行；`ask` 给 `Unsure(depth)`；整趟一条 `Stop{cause: depth}` 与一条 `W-budget`；报告 `budget.cause = "depth"`。`depth` 属缺席类，不能 drop |
+| 预算停发 | 从未发出的题记 `Unasked{reason: budget}`（不再记 `Absent(budget)`），第一次停发记 `Stop{cause: budget}`；重试中途付不起的仍记 `Absent(budget)` |
+| `attempt` | `{program: 本段 SpanId（无追踪时 "main"）, n: round + 1}`；审计重放不写 `Unasked`/`Stop` |
+
+## 三·四·十一、违规单次形态与守卫下推迟的不可逆 do（工程步 35 G2，2026-10-01）
+
+依据 `12` §2.13 R9、R13，裁定五十九第 3 条，裁定六十一 B200；过程记录 `地基/过程记录/工程-G2-违规单次形态.md`。
+
+| 项 | 内容 |
+|---|---|
+| 违规 | 程序结束时还欠着的未决（不在返回值里、没有同键去向）不再报运行期 J-05：值照带，`Outcome.violations` 逐笔（`ViolationReport{mark, site, message, token}`），账本每笔一条 `Violation{attempt, mark}`（审计重放不写）；报告 `status: "violation"`、`violations` 段；CLI stderr 逐笔打原 J-05 同形诊断行、末行汇总，退出码 3 |
+| 函数返回 | 具名函数返回前丢了、不在返回值里的未决不再当场报 J-05，挂到调用者一路交到程序结束；报文说明它在哪个函数返回前丢的 |
+| 守卫下缺 unsure 臂 | `handle` 只缺 unsure 臂：出口已决照常选臂；出口未决时作为未决值往下传，在返回值里即转交，没交出即记违规。缺别的臂仍是 J-05 |
+| 仍是 J-05 的 | Fn¹ 调两次、`consume` 契约值、未决当材料、`handle` 缺已决臂等写法错 |
+| 欠账记号 | `jpp_ledger::DebtMark`：帧 `program`（顶层）/`code`（函数帧）、主人（顶层取 `attempt.program`，函数帧取 `<函数名>#<实参哈希>`，附录三）、`via`（`cut`/`cut_score`）、帧内第几次、题内容键 `q_hash`、原因；摘要 `DebtMark::token()` |
+| 守卫下不可逆 do | 到达执行点核 J-08、写 `Intent{attempt}`，不执行，给「已推迟」值；程序有结论后无违规按序执行写 `Effect`，有违规写 `Withheld{cause: violation}` 不执行。同一次运行里读它的值报 `E-guard-irreversible-midway`（本步只在运行期报，静态检查另登 Z0508）；随返回值交出不算读，结算后填上产出或 `withheld` 失败值。不开 `--guard` 照旧立即执行 |
+| 挂起与出错（附录三，Z0564） | 这一趟挂起或运行期出错时，还没结算的推迟动作写 `Withheld{cause: suspended \| error}`，不执行。B55 按位置判：同一意向键最后一条 `Intent` 之后有 `Withheld` 算确知没执行，下一趟照常再推迟，并另写一条带本趟尝试引用的 `Intent`（账本格式放宽：同键 `Intent` 可在同键 `Withheld` 之后再出现，`Ledger::put_answer` 只收这一种与「未答 → 已答」的 `Ask`）。最后一条 `Intent` 之后既无 `Withheld` 也无 `Effect`，仍给 `unknown_outcome`、不重执行。不开守卫直接执行的那一路同样另写本趟 `Intent` |
+| 写账顺序 | 程序结束：`Handoff`、`Violation`、引用它的 `Withheld(violation)` 依次写 |
+| 违规按判断键合并（Z0593） | 同一判断（同一账本键）无论被切几次、经几条路径，没人接只记一笔违规（B162、裁定五十七）；先到的出口是主记号，其余视图的站点与记号列进报告 `violations[].also`、账本 `Violation.also`（格式上的加法，没有合并时不写）；没有判断键的按记号合并；同记号同站点不重复列。附录一：一笔恰好对应一个判断键，合成出口吸收了几个判断就在各自那一笔里各列一次，不把两个判断连成一笔；报告每行与 `also` 每项带 `judge_key`（这一笔的判断账本键，与题内容键 `key` 并列）。`also` 是 v5 内的加法、不升 v6：Z0593 之前的 v5 读者读到带 `also` 的账本报 `E-ledger-corrupt`（`deny_unknown_fields`） |
+| 推迟动作的预算（Z0565 ①） | 守卫下推迟、还没结算的不可逆 `do` 与登记了还没交出的生成同法计入预算核对的「已用」（每条 1 次调用、动作登记的费用）；结算执行后改计入 `cost`，扣下时释放。几个推迟动作合计超预算时，后到的在到达处预算停发（不写意向、给预算失败值），不再结算时一起执行 |
+| 结算后失败（Z0565 ②） | 推迟动作结算时执行失败：不算 J-12（结论已定，失败值随返回值交出）；账本 `Effect` 记失败；`Outcome.settle_failed` 与报告 `settle_failed` 段每条 `{site, action, detail}`（没有不写）；运行期告警 `W-settle-failed`；退出码不变。守卫下 `do` 复用了一条失败的不可逆记录（审计重放或同一账本再跑）同样列出、同样告警 |
+| `Via::Fit`（Z0565 ③） | 主语言没有从 `fit` 直接建出口的路径（`fit` 给 `Score`，出口由 `cut_score` 建，记 `cut_score`），所以欠账记号的 `via` 不会是 `fit`；这一值保留给 jpp-cell |
+
+## 三·四·十二、缺席可以再问（工程步 38 G5，2026-10-01）
+
+依据裁定五十九第 16 条、裁定六十一 (b)（推翻 PR #48）；过程记录 `地基/过程记录/工程-G5-缺席可再问.md`。
+
+| 项 | 内容 |
+|---|---|
+| 续跑 | 非审计时，首因 `absent` 的缺席不论处置都重发（原来 `conservative` 不重发）；`budget` 照旧重发，`latency` 照旧不重发（`Interp::缺席记录重发`） |
+| 同一趟再问 | 缺席按读数记（`标缺席`、`缺席因`）：已缺席的读数仍给 `Unsure(absent)`；同一内容键后来登记的读数照常进刷新、拿后来的答案 |
+| 账本 | 同键一条 `Absent`（`absent:<k>`）、一条 `Judge`（`<k>`）。判断器再次缺席（原因 `absent`，非审计）另记 `absent:<k>#<n>`，n 从 2 起按整本账本计（附录一，Z0573）；旧账本的 `absent:<k>` 即第 1 次。其余原因不编号 |
+| 读数身份（附录二，Z0580） | 每道题本趟由真站点登记的读数按先后编号（从 1 起；推测、提升登记不编号）。原因为 `absent` 的 `Absent` 带可选字段 `nth`＝它所属的真登记序号（一组里同键有真站点读数取它的，只有推测、提升读数的不写）。格式上的加法，旧账本没有这个字段 |
+| 趟标记（附录二，Z0580） | 非审计的每一趟结束时（正常结束、挂起、出错三条路），账本里已有原因为 `absent` 的缺席记录就写一条 `Attempt { program, n, host_epoch: 0, flush_epoch: 0, snapshot: 默认 }`，全复用的趟也写。账本里从没有这种缺席的不写（金样不变）；每趟都写留 C3 |
+| 审计重放 | 复现的是**最后一个完整结束（写了趟标记）的趟**，执行中被杀、没写标记的趟不在内。取最后一条 `Attempt`：这道题第 m 次真登记，若那一趟（与标记同一追踪段、在上一条标记之后、在它之前）有 `nth = m` 的 `absent` 记录，照这一条复现缺席（原因、说明、尝试次数取它）；否则取标记之前的答案，标记之后写的 `Judge` 不用；都没有照旧取 `absent:<k>`。账本里没有 `Attempt`（旧账本、从没缺席过的）照 G5 之前按键取 |
+| 重试与熔断（Z0540 口径，Z0580） | 每一趟（续跑、宿主事件后的新尝试）缺席的 B32 重试次数与熔断计数都从零起：新尝试是新的观察机会，花费由预算兜（`consecutive_absent` 每趟构造为 0）。C1 与原型今天不清零，C2 接主语言时对齐（Z0581） |
+
+## 三·四·十三、未决原因封闭化（工程步 36 G3，2026-10-01）
+
+依据 B197、`12` §2.3 第 188 行与 §2.13 R15、裁定六十六；过程记录 `地基/过程记录/工程-G3-原因封闭化.md`。
+
+| 项 | 内容 |
+|---|---|
+| 形状 | `ExitKind::Unsure(Why)`，`Why { cause: UnsureCause, detail: Option<String> }`；`UnsureCause` 是 `jpp_ir::cause` 的十六种（`jpp_value::value` 下照旧可达）。细节放原来拼在冒号后的东西：`insufficient` 缺的槽名、`fail` 的失败文字 |
+| 标签（冻结接口） | `exit_kind` / `Exit::label` 照旧：`unsure(<名>)`，有细节 `unsure(<名>:<细节>)`，带正交位 `unsure(<名>|untested:<载体>)`。`"unsure(<cause>"` 前缀是冻结接口（B197） |
+| 原因名 | `unsure_cause`、`Exit::cause()`、契约值与元素记录的 `cause`、账本去向事件（`Drop`/`Refine`/`Escalate`/`Handoff`/`Enrich`）的 `cause`、`DebtMark.cause`、题库统计的原因直方图：只写成员名，不带细节。契约值 `pending` 项有细节时另带 `detail` 字段；`Exit::detail()`、`Exit::why()` 取细节与整条 |
+| `unsure(text)` | `text` 须为十六种之一：字面量由检查器报 `E-unsure-cause`（错误），非字面量运行期报同一个码。传未决值重新包装照旧 |
+| `untested` | 不是原因，只是正交位。select 有线、没测置换：原因 `cold`、正交位 `untested:permutation`（裁定六十六）。有线没 δ 不出未决：照线切、不加迁移带（裁定五十六、五十七 (3)、六十六） |
+| 合并与读回 | 原因不同的未决值合并（`undecided`）取第一个缺席类原因，没有取第一个（原来记非成员 `merged`）；账本读回的非成员缺席原因（旧账本、`spec_miss`）进出口时按 `absent` |
+| 缺席类 | 一律按 `UnsureCause::is_absent_class()`（`absent, budget, depth, latency, deadline`） |
+| 默认链 | 可补组只有 `band`、`tie`；`insufficient` 显式不补（改前因带槽名从没匹配上；开启另登） |
 
 ## 三·五、执行模型：惰性登记 + 刷新点 + 分层
 
@@ -605,7 +683,9 @@ pub enum Error { Check(Report), Runtime(RtError) }   // 都带 Span，都能 ren
 
 `run` 先静态检查，有错就不执行。要绕过检查器单独试解释器用 `run_unchecked`（只给 core 自己的对照
 测试用）。也可以直接 `Interp::new(ports, ledger, calib, actions, budget).run(program)`——CLI 现在
-走的就是这条，预算要自己从 `program.budget` 取。
+走的就是这条，预算要自己从 `program.budget` 取。**不经 `Session`、直接嵌入 `Interp` 的宿主拿不到伴随题序言
+（`lib/unsure.jpp`）**：没有标准伴随题式，也没有通用类别表，默认链的候选第四级为空。要与 `Session` 一致，自己交：
+`Interp::with_prelude(jpp::session::unsure_prelude())`（Z0398 复核，过程记录 5.23）。
 
 ```rust
 pub struct Outcome {
@@ -1057,6 +1137,9 @@ CI 脚本 `scripts/grep_rt_codes.py` 计不带编号的站点（基线 0）。
 | `E-rt-client` | 外部组件报错（判断器客户端、`gen`、`ask`） |
 | `E-rt-answer` | 判断器答案的形状或条数与题不符 |
 | `E-rt-absent` | 判断器缺席且缺席策略为 `fail` |
+| `E-rt-plan` | 规划器的产物与正在求值的程序对不上（提升计划与块的语句不符），或要规划器算的值而解释器没接规划器钩子（如 `gate_info`；经 `jpp::run` / `Session` 跑） |
+
+另有宿主侧的 `E-prelude`（不是程序错误）：伴随题序言只许题式、列表与 `let` 这类常量定义，出现效应、`cut` 等就在运行入口报它、不求值——序言与用户程序共用从 0 起的节点号与源码偏移，发判断会串键（Z0622）。内置只放行纯数据的（造值的 `state`、`mat`、题与题式，列表、文本、数学与带种子随机）；`unsure_source`、`refine` 这类改运行时状态的、`print` 这类有输出的、读出口与账本的，引用就报（起别名、当实参传也算），因为序言调 `unsure_source` 会静默改写用户程序默认链的候选类别。不经 `Session` 自己交序言的宿主（`Interp::with_prelude`）同样受这道核。
 
 **机读出口**（步 9a）：`jpp check <f> --json` 在 stdout 出一个文档 `{file, ok, errors, warnings, diagnostics}`；
 `jpp run … --json` 报告不变，诊断（静态检查、运行期错误、`trace.warnings` 里带编号的告警）以 JSON Lines 写到 stderr，

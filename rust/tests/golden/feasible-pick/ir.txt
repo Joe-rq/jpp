@@ -1,0 +1,112 @@
+ir v1
+budget calls=2 cost=0.01 depth=16 escalate=- unsure=- latency_p95=- absent=-
+block 875..1531
+  let steps : -
+    #0 list 929..971
+      #1 text "浇筑地基"
+      #2 text "砌一层墙"
+      #3 text "装窗"
+  let requires : -
+    #4 list 988..1024
+      #5 text ""
+      #6 text "浇筑地基"
+      #7 text "砌一层墙"
+  let done : -
+    #8 list 1037..1053
+      #9 text "浇筑地基"
+  let 可行 : -
+    #11 fn (k:-) -> - effects=-
+      block 1074..1157
+        result
+          #12 binary &&
+            #13 unary !
+              #14 call 1077..1101
+                callee:
+                  #15 name contains
+                #16 name done
+                #17 index
+                  #18 name steps
+                  #19 name k
+            #20 binary ||
+              #21 binary ==
+                #22 index
+                  #23 name requires
+                  #24 name k
+                #25 text ""
+              #26 call 1127..1154
+                callee:
+                  #27 name contains
+                #28 name done
+                #29 index
+                  #30 name requires
+                  #31 name k
+  let r : -
+    #32 effect judge @0 1168..1365
+      state:
+        #33 state @1 1174..1295
+          on:
+            #34 call 1180..1256
+              callee:
+                #35 name mat
+              #36 text "工地现况：场地已平整，地基浇好，墙体尚未开砌。"
+          opts:
+            #37 record 1258..1294
+              over:
+                #38 call @2 1265..1293
+                  callee:
+                    #39 name map
+                  #40 name steps
+                  #42 fn (s:-) -> - effects=-
+                    block 1282..1292
+                      result
+                        #43 call 1284..1290
+                          callee:
+                            #44 name mat
+                          #45 name s
+      questions:
+        #46 construct select @3 1311..1364
+          #47 text "下一道工序做哪一项？"
+          #48 text "site-next"
+  result
+    #49 handle @4 1367..1531
+      exit:
+        #50 cut @5 1374..1400
+          reading:
+            #51 name r
+          #52 record 1381..1399
+            feasible:
+              #53 name 可行
+      arms:
+        #54 record 1402..1530
+          pick:
+            #56 fn (k:-) -> - effects=-
+              block 1420..1456
+                result
+                  #57 record 1422..1454
+                    下一步:
+                      #58 index
+                        #59 name steps
+                        #60 name k
+                    序号:
+                      #61 name k
+          unsure:
+            #63 fn (u:-) -> - effects=-
+              block 1476..1529
+                #64 consume @6 1478..1496
+                  #65 name u
+                  #66 text "drop"
+                result
+                  #67 record 1498..1527
+                    下一步:
+                      #68 unit
+                    序号:
+                      #69 unary -
+                        #70 int 1
+sites 7
+  @0 #32 effect:judge 1168..1365 fn=- in=-
+  @1 #33 state 1174..1295 fn=- in=-
+  @2 #38 hof:map 1265..1293 fn=- in=-
+  @3 #46 construct:select 1311..1364 fn=- in=-
+  @4 #49 handle 1367..1531 fn=- in=-
+  @5 #50 cut 1374..1400 fn=- in=-
+  @6 #64 consume:consume 1478..1496 fn=#63 in=-

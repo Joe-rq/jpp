@@ -1,0 +1,84 @@
+{
+  "asks": 0,
+  "calls": 29,
+  "effects": [],
+  "judge_registrations": 192,
+  "pending": [],
+  "returned_unsure": [],
+  "status": "returned",
+  "usd": 0.0,
+  "value": {
+    "hops": 5,
+    "pending": [],
+    "per_hop": [
+      {
+        "asked": 2,
+        "derived": 2,
+        "hop": 1,
+        "passed": 2,
+        "rejected": 0,
+        "unchosen": 0
+      },
+      {
+        "asked": 2,
+        "derived": 2,
+        "hop": 2,
+        "passed": 2,
+        "rejected": 0,
+        "unchosen": 0
+      },
+      {
+        "asked": 2,
+        "derived": 2,
+        "hop": 3,
+        "passed": 2,
+        "rejected": 0,
+        "unchosen": 0
+      },
+      {
+        "asked": 2,
+        "derived": 5,
+        "hop": 4,
+        "passed": 5,
+        "rejected": 0,
+        "unchosen": 0
+      },
+      {
+        "asked": 5,
+        "derived": 0,
+        "hop": 5,
+        "passed": 0,
+        "rejected": 0,
+        "unchosen": 0
+      }
+    ],
+    "rejected": [],
+    "unchosen": [],
+    "value": [
+      {
+        "by": "premise",
+        "conclusion": "前提不成立",
+        "path": [
+          "author：c 的加入会让 a 与 b 的合作更紧密吗？ → act",
+          "fill：已判「c 的加入会让 a 与 b 的合作更紧密吗？」为是；就这份材料来说，变化最大的方面最可能是哪一项？ → pick(0)",
+          "fill：就这份材料来说，「c 加入后，a 与 b 在___上的合作金额会怎样变化？」里的空（领域）填哪一项最贴切？ → pick(0)",
+          "fill：c 加入后，a 与 b 在硬件上的合作金额会怎样变化？ → unsure(insufficient:ref)",
+          "premise：是否a 与 b 已经在合作？ → ignore"
+        ],
+        "refined": null
+      },
+      {
+        "by": "refine",
+        "conclusion": null,
+        "path": [
+          "author：c 的加入会让 a 与 b 的合作更紧密吗？ → act",
+          "fill：已判「c 的加入会让 a 与 b 的合作更紧密吗？」为是；就这份材料来说，变化最大的方面最可能是哪一项？ → pick(0)",
+          "fill：就这份材料来说，「c 加入后，a 与 b 在___上的合作金额会怎样变化？」里的空（领域）填哪一项最贴切？ → pick(0)",
+          "fill：c 加入后，a 与 b 在硬件上的合作金额会怎样变化？ → unsure(band)"
+        ],
+        "refined": "略变大"
+      }
+    ],
+    "version": "derive-14"
+  }
+}

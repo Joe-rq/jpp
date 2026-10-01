@@ -10,7 +10,9 @@
 # 下面三类例外：
 #   1. 只在公开侧的文件（KEEP）：保留，不被删除。
 #   2. 不公开的文件（SKIP）：不复制。过程记录、黑板、附注不在 rust-jpp 目录里，本来就不会带上；
-#      这里列的是 rust-jpp 里面的协作记录与 Nature 人工抽检的逐条标注。
+#      这里列的是 rust-jpp 里面的协作记录、Nature 人工抽检的逐条标注，以及引用研究区私有路径的
+#      发行说明草稿（发行时整理进 docs/progress.md），以及依赖研究机远端编译机的 cargoq、合入列车 train.sh
+#      和包着 cargoq 的 test-companions-on（公开仓直接用 cargo；开伴随题跑全量设 JPP_TEST_COMPANIONS=on）。
 #   3. 可移植改写（PORT）：测试里指向研究工作区 `foundation/` 的路径改到本仓的 `src/foundation/`，
 #      读未公开运行目录的测试改读仓库内夹具。改写找不到原文时报错退出，提醒人工核对。
 # 跑完后在 rust/ 下执行 `cargo test --locked --workspace`，并用 `git status` 看清改动再提交。
@@ -36,6 +38,11 @@ KEEP=(
 SKIP=(
   /COORDINATION.md
   /probes/scope/语义R-带材料.jsonl
+  /发行说明-待发布.md
+  /scripts/cargoq
+  /scripts/cargoq-stale-repro
+  /scripts/train.sh
+  /scripts/test-companions-on
 )
 
 commit="$(git -C "$REPO" rev-parse --verify "$REV^{commit}")"
@@ -104,6 +111,20 @@ rewrite("crates/jpp/tests/b116_questions_out.rs",
         '''// 公开仓库副本：原路径指向研究工作区私有目录（评估/2026-09-24-V7固定序/），
     // 不在本仓库里；tools/sync-rust-from-research.sh 把这一行改写成仓库内夹具。
     let src = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/refund-do.jpp");''',
+        count=1, optional=True)
+
+# 2026-10-01：ablation/plan.rs 的「第二版_题库三条是非题式」读研究区 题库/第二批/C01/calib110（公开仓库没有），
+# 缺目录时打印「跳过」换下一条（与 e_alloc.rs 等读未公开数据的测试同一做法）；其余两条读 bank/entries/，照常断言。
+rewrite("crates/jpp/tests/ablation/plan.rs",
+        '''    for (name, d, want, want_sym) in dirs {
+        let s = CalibStore::load(&d).expect("装载");''',
+        '''    for (name, d, want, want_sym) in dirs {
+        if !d.exists() {
+            // 公开仓库没有研究区的 题库/第二批/ 校准目录：跳过这一条（tools/sync-rust-from-research.sh 改写）
+            eprintln!("跳过 {name}：校准目录 {} 不在本仓库", d.display());
+            continue;
+        }
+        let s = CalibStore::load(&d).expect("装载");''',
         count=1, optional=True)
 
 # 探针脚本与运行记录里的本机绝对路径改成相对路径（不被测试或金样读取；研究树改了之后这两条自动跳过）。

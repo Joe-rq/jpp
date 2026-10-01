@@ -795,7 +795,7 @@ consume(e, "drop");
     // 两者路由不同，而且在**账本**里不能是同一个值——账本是审计物。
     assert_eq!(
         out.value_json()["出口"],
-        serde_json::json!("unsure(untested:permutation)"),
+        serde_json::json!("unsure(cold|untested:permutation)"),
         "置换一致性没测过就不能声称通过，而且不能说成 tie：{:?}",
         out.value_json()
     );

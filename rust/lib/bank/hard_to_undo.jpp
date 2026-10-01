@@ -1,0 +1,4 @@
+// 题库条目 hard_to_undo（第二批 C01，属性 · 单对象 · 语义题式；真值为 Sonnet 标注加 Fable 盲复核全覆盖，认证集 110 条）。
+// 条目说明：bank/entries/01ca1dcc0da48e207916d997/条目.md（含「标注口径」栏与口径已知张力，B119）。
+// 用法：judge(state(mat(操作描述)), fill(hard_to_undo, {}))；材料是一项操作的一两句文字描述，是 = 难撤销。
+let hard_to_undo = form("test", "这项操作一旦执行，是否就很难或无法完全撤销？", {calib: "attr-hard-to-undo"});
