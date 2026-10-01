@@ -182,6 +182,43 @@ rewrite("crates/jpp-plan/tests/ablation/fission.rs",
 ''',
         count=1, optional=True)
 
+# 2026-10-01：报告里的 `action_facts` 写着宿主的操作系统沙箱（macOS 的 sandbox-exec、Linux 的 bwrap 或没有），随机器而变；
+# 研究树的金样在 macOS 上录制，GitHub CI（Linux）上 search-ground、graph-interval、graph-nested 三个金样的报告因此变红。
+# 公开仓库里比较金样时两边都去掉 `action_facts` 这一块（顶层键，两格缩进，到下一行 `  },` 为止）。
+rewrite("crates/jpp/tests/golden.rs",
+        '''/// 与金样逐字节比较；更新模式下写入。返回差异说明（空即一致）。
+fn check(dir: &Path, file: &str, actual: &str, diffs: &mut Vec<String>) {''',
+        '''/// 去掉报告里的 `action_facts` 块：它记着宿主的操作系统沙箱（macOS sandbox-exec、Linux bwrap 或没有），随机器而变，
+/// 金样在 macOS 上录制；公开仓库在 Linux CI 上比较时两边都去掉（tools/sync-rust-from-research.sh 改写）。
+fn strip_action_facts(text: &str) -> String {
+    let mut out = String::new();
+    let mut skipping = false;
+    for line in text.split_inclusive('\\n') {
+        let l = line.trim_end_matches('\\n');
+        if skipping {
+            if l == "  }," || l == "  }" {
+                skipping = false;
+            }
+            continue;
+        }
+        if l == "  \\"action_facts\\": {" {
+            skipping = true;
+            continue;
+        }
+        out.push_str(line);
+    }
+    out
+}
+
+/// 与金样逐字节比较；更新模式下写入。返回差异说明（空即一致）。
+fn check(dir: &Path, file: &str, actual: &str, diffs: &mut Vec<String>) {''', count=1, optional=True)
+rewrite("crates/jpp/tests/golden.rs",
+        '''        Ok(expected) if expected == actual => {}
+        Ok(expected) => {''',
+        '''        Ok(expected) if strip_action_facts(&expected) == strip_action_facts(actual) => {}
+        Ok(expected) => {
+            let (expected, actual) = (strip_action_facts(&expected), strip_action_facts(actual));''', count=1, optional=True)
+
 # 探针脚本与运行记录里的本机绝对路径改成相对路径（不被测试或金样读取；研究树改了之后这两条自动跳过）。
 rewrite("probes/scope/rule_gradient.py",
         'ROOT = pathlib.Path("/Users/nature/个人项目/jev")\nRJ = ROOT / "地基/rust-jpp"\nCAL = ROOT / "实测/校准题式-2026-09-23"',

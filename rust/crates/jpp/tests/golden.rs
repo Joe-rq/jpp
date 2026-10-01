@@ -158,6 +158,28 @@ fn base_args(c: &Case) -> Vec<String> {
     a
 }
 
+/// 去掉报告里的 `action_facts` 块：它记着宿主的操作系统沙箱（macOS sandbox-exec、Linux bwrap 或没有），随机器而变，
+/// 金样在 macOS 上录制；公开仓库在 Linux CI 上比较时两边都去掉（tools/sync-rust-from-research.sh 改写）。
+fn strip_action_facts(text: &str) -> String {
+    let mut out = String::new();
+    let mut skipping = false;
+    for line in text.split_inclusive('\n') {
+        let l = line.trim_end_matches('\n');
+        if skipping {
+            if l == "  }," || l == "  }" {
+                skipping = false;
+            }
+            continue;
+        }
+        if l == "  \"action_facts\": {" {
+            skipping = true;
+            continue;
+        }
+        out.push_str(line);
+    }
+    out
+}
+
 /// 与金样逐字节比较；更新模式下写入。返回差异说明（空即一致）。
 fn check(dir: &Path, file: &str, actual: &str, diffs: &mut Vec<String>) {
     let path = dir.join(file);
@@ -167,8 +189,9 @@ fn check(dir: &Path, file: &str, actual: &str, diffs: &mut Vec<String>) {
         return;
     }
     match fs::read_to_string(&path) {
-        Ok(expected) if expected == actual => {}
+        Ok(expected) if strip_action_facts(&expected) == strip_action_facts(actual) => {}
         Ok(expected) => {
+            let (expected, actual) = (strip_action_facts(&expected), strip_action_facts(actual));
             let line = expected
                 .lines()
                 .zip(actual.lines())
