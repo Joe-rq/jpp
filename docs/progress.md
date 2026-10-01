@@ -1,6 +1,114 @@
 # J++ progress / 项目进度
 
-Updated: 2026-09-27. This is a dated report, not an automatically updated dashboard.
+Updated: 2026-10-01. This is a dated report, not an automatically updated dashboard.
+
+## 2026-10-01 (sync): a program that is given only a purpose ran end to end on the real judge (line A, first target); cell-graph evaluation, premise derivation, CLI purpose/material entry, author-filled modules, premise three layers / 同步：只给一句目的的程序在真机上跑通（线 A 第一靶子）；单元图求值、前提派生、CLI 给目的与材料、作者填模块、前提三层
+
+> **What changed.** You can now hand J++ one sentence of purpose plus the material to be judged, and no question text, no candidate lists, no cut lines. `lib/derive/purpose.jpp` (`purpose_run`) pulls the modules out of the sentence with one generation, fills the modules the sentence did not state by written rules, looks each predicate up in the certified question bank, elicits questions for the ones the bank does not have, assembles them, asks the same batch of questions about every item, and returns one record per item with one field per sub-request.
+> **Effect.** On 2026-10-01 this ran on the real judge over 400 companies and one résumé, given one sentence: exit code 0, 1,634 calls, **$0.0857**, 446 s, zero hand-written question text in the source. Numbers and what did not hold are in section 2.
+> **How to use it.** `jpp run prog.jpp --purpose "<one sentence>" --mat companies=companies.json --mat resume=resume.md ...`; the program is five lines (section 3).
+>
+> **变了什么。** 现在可以只给 J++ 一句目的和要判断的材料，不写题面、不写候选、不写线。`lib/derive/purpose.jpp` 的 `purpose_run` 用一次生成从这句话里抽出模块，目的没说的模块按守则由系统补，每个谓词先查已认证题库，题库没有的再唤出题，组装后对每一项问同一批题，每项返回一条记录，目的里的每个子请求是其中一个字段。
+> **效果。** 2026-10-01 在真机上对 400 家公司和一份简历、只给一句目的跑通：退出码 0，1,634 次调用，**0.0857 美元**，446 秒，源码里没有手写题面。数字与没中的预测在第 2 节。
+> **怎么用。** 见第 3 节：`--purpose` 给目的，`--mat 名字=文件` 给材料。
+
+This sync takes private main from research-tree commit `418cbebd` (2026-09-27, the previous sync) through `f92e1179` (2026-10-01): 377 commits touching the Rust tree. 本次同步从 `418cbebd`（09-27，上次同步）到 `f92e1179`（10-01），Rust 树上 377 个提交。
+
+**1. What landed in the language / 语言里新增的东西**
+
+- **Purpose entry and premise derivation (B0470, Z0511, Z0860).** `purpose_run` generates once for the module extraction plus once per predicate the bank does not hold, so generator calls do not grow with the number of items. For each predicate the language also derives *premise* questions ("does the material state a hiring role?"), asked first so that items that cannot be judged are dropped before the expensive deep judgment. Z0860 (derive-14) splits premises into three layers: a premise code can decide runs as a code predicate (ledger entries `by: code`, no judge call); the generator sees a few sample values when it writes premises; a premise that needs judgment is tried on a sample first and dropped, then re-derived, if it does not split the sample. The first real run, described below, used the version before Z0860.
+- **CLI gives purpose and material (B0472).** `--purpose <text>` binds the name `purpose` (untrusted text); `--mat <name>=<file>` (repeatable) binds a material entry, `.json` read as JSON, anything else as text; `--mat-store <dir>` keeps material marks on disk across runs. All three go into the ledger's `entry_hash`, so a library host that supplies the same three produces the same hash.
+- **Author-filled modules (B0478).** `lib/derive/modules.jpp` (`modules_run`): an author fills up to ten modules (material, predicates with a cut kind, reference, context, premise, ...), writes no question text, and the language assembles the questions by the same rules; anything left blank is filled by the system and reported under `detail.sources`. See `examples/modules-fill.jpp`.
+- **Ties and undecided fields take the default chain (N-T6).** A field whose judgment comes back undecided, including a tie in a K-of-N choice, no longer goes straight to the caller: it first asks which kind of information is missing, fetches it if the host configured a way to, and rejudges. What the chain gives up on is recorded in `detail.dropped`.
+- **Cell-graph evaluation (C1, C2, C2b, C2c).** New crate `crates/jpp-cell`: source, code, judgment, program and multi-writer cells, dependency edges recorded at read time, dirty marking along reverse edges, and two-layer truncation (an unchanged input does not recompute; an unchanged memo hash does not recompute upstream). In C2c a call to a pure function becomes a code cell and is memoized; `--cells-stats` prints the counts.
+- **Also in this range (names only; semantics in `rust/crates/jpp/INTERFACE.md` and `rust/GUIDE.md`).** Ledger v5; companion questions and the default chain at undecided `cut`/`sieve` sites; fission of a judgment; carried budget balance with `--carry-reauthorize`; question-bank lifecycle (`jpp bank …`, `jpp bank-stats`, `jpp derive-admit`); `--explain`; a closed list of sixteen undecided causes; resume re-asks absent judgments.
+
+**Behaviour changes to know before upgrading / 升级前要知道的行为变化**
+
+- `order` on a question with no calibration record now merges readings within the profile's mid-δ (0.1281 yes/no, 0.0971 K-of-N for profile `jev-1.13.0`) into one tier; before, only exactly equal readings shared a tier. Programs that take `tiers[0][0]` as the winner can pick a different item. Give the question a calibrated line, or write `stat: "expect"` with your own `tie`, to opt out.
+- A judgment left undecided at the end of the program is no longer the runtime error J-05: the program returns normally, the report's `status` is `"violation"`, and the CLI exits with code 3 (0 success, 1 error, 2 usage). One violation is recorded per judgment even if several views of it were dropped.
+- Under `--guard`, an irreversible `do` is held until the program has its conclusion and runs only if there is no violation; reading its result in the same run is `E-guard-irreversible-midway`. Deferred actions count against the budget from the moment they arrive.
+- `unsure("…")` takes one of sixteen causes (`band, tie, insufficient, fail, budget, depth, latency, deadline, noprogress, rejected_all, no_candidate, absent, infeasible, cold, claim_conflict, violation`); anything else is `E-unsure-cause`. `unsure_cause(e)` returns the bare name; detail moved to a separate `detail` field.
+- Ledger and header formats gained fields (`rust/crates/jpp/INTERFACE.md` lists them); a ledger with the newer `also` field is rejected by a binary from before Z0593.
+
+- `order` 在没有校准记录的题上，读数相差不到画像中段 δ（`jev-1.13.0`：是非题 0.1281、K 选一 0.0971）并成一档，原来只有读数完全相等才同档；取 `tiers[0][0]` 当第一名的程序可能换人。要退出这个行为：给题认证一条线，或写 `stat: "expect"` 并给自己的 `tie`。
+- 程序结束时还欠着的未决不再是运行期错误 J-05：程序照常返回，报告 `status` 为 `"violation"`，CLI 退出码为 3（0 成功、1 出错、2 用法错）；同一判断的多个视图没人接，只记一笔。
+- `--guard` 下不可逆 `do` 推迟到程序有结论之后，没有违规才执行；同一次运行里读它的结果报 `E-guard-irreversible-midway`；推迟动作从到达起就占预算。
+- `unsure("…")` 的原因必须是上面十六种之一，否则 `E-unsure-cause`；`unsure_cause(e)` 只返回原因名，细节另放 `detail`。
+- 账本与头的格式有加字段，见 `rust/crates/jpp/INTERFACE.md`；带新字段 `also` 的账本，Z0593 之前的二进制读不了。
+
+**2. Line A, first target: real-machine result / 线 A 第一靶子：真机结果**
+
+*Target.* A job-matching task: 400 companies (whole records, no fields removed) and one résumé in the reference slot. The program is given one sentence of purpose and nothing else: "Here is my resume. Among these companies, find the ones most likely to invite me to a first interview, rank them, and for each one name the biggest reason it might not." The language turned that into two fields per company: `interview_likelihood`, an ordered question on 5 levels, and `main_risk`, a 5-way choice. The question bank had no match for either predicate, so both were elicited. All 4 generator calls were reused from an earlier dry run's cache; the real run generated nothing new.
+
+*Run.* Exit code 0, `returned`, 445.7 s. 1,634 calls (800 premise, 800 deep judgment, 32 gate diagnosis, 2 bank lookup), 2,040,487 input tokens, **$0.0857** against a $0.1 stop line set beforehand and a $0.5 ceiling. 9,804 judgments in the ledger, every one traceable to a source.
+
+*E1–E7, rechecked by a second agent from the raw ledger, spending nothing:*
+
+| # | Check | Result |
+|---|---|---|
+| E1 | no hand-written content in the source | holds: 0 literal questions, 0 candidate lists, 0 field-name or question-name hits in the program; 15 hits in the 23 library files, all generic identifiers (`stage`, `candidate`, `mismatch`, `resume`) |
+| E2 | real run completes | holds: exit 0, no panic, no `E-*` code |
+| E3 | one row per company | holds: 400 rows, both fields present; 9 `main_risk` cells empty (ties), each with a recorded destination |
+| E4 | every judgment traces to a source | holds: 9,804 of 9,804; the 4 reused generations match the dry run by key |
+| E5 | every undecided has a destination | holds with a reservation: 0 J-05; 10 pending, all with `via`; but the "ask what is missing → fetch → rejudge" path was **not exercised** (the 13 default-chain rows had no fetch route, the 9 ties were handed over without a missing-kind). E5 shows nothing was lost, not that the language went and got the missing piece |
+| E6 | cost | holds: $0.0857 ≤ $0.5; call, token and dollar totals equal the ledger sums |
+| E7 | quality floor | holds, with a reservation: the shortlist (68 companies) overlaps the earlier hand-written arm's top 20 in 16 (bar: ≥ 6; random expectation 3.4), and none of that arm's 50 worst companies reached the shortlist (bar: ≤ 5; random expectation 8.5). The bar is weak at a 68-company shortlist; the measured values are far from random. Both arms use the same judge, so this says the two question sets agree on that judge, not which is right |
+
+*Questions that carried a line.* 0 of 1,634 calls: every exit is graded `Answer` (no line, the judge's majority reading decides), against a pre-registered bound of under 10%.
+
+*Pre-registered predictions, checked as written (8 of 13 missed, and the premise-layer hypothesis H3 was overturned):*
+
+| Prediction | Result | |
+|---|---|---|
+| calls 660–1,140 | 1,634 | missed |
+| predicate-lookup and gate-diagnosis judgments 15–25 | 34 | missed (slightly high) |
+| premise-layer calls 500–700 | 800 | missed (at the ceiling) |
+| survivors after the first premise layer 160–260, after all layers 100–220 | 400, 400 | missed, **falsified** |
+| deep-judgment calls 100–220 | 800 | missed: nothing was filtered, and the two questions (ordered, K-of-N) are separate calls per company |
+| chained follow-up questions 40–150 | 0 | missed: the purpose entry has no chaining |
+| fetch-missing-information calls 0–40 | 0 | held |
+| generator calls 2–9 | 4 (all reused) | held |
+| undecided rate under 2% | 10 of 800 = 1.25% (`main_risk` alone 9 of 400 = 2.25%) | held, roughly |
+| share of readings landing in the "near the line" band 5–15% | 13 of 800 = 1.6% | missed (low) |
+| top-20 overlap with the hand-written arm 10–15 | 16 | missed (high) |
+| that arm's bottom 50 reaching the shortlist 0–3 | 0 | held |
+| cost $0.05–0.10 | $0.0857 | held; the controller's pre-run estimate of $0.02–0.05 was too low because it assumed half the companies would be filtered |
+| H3: the premise layer saves calls; overturned if under 30% of companies are filtered | 0% filtered; the layer cost 800 calls and $0.0247, 29% of the run | **overturned** (the secondary bar "at least 17 of the top 20 survive" held 20 of 20, but nothing was filtered, so it carries no information) |
+
+*System findings from the run / 系统发现:*
+
+1. A literal premise of the form "does the record state X" is useless on uniform structured records: the generator only sees field names, so the premise it writes most naturally is satisfied by every record. Code can decide whether a field is present, so it should not spend a judgment (intent 7a). This is what Z0860 addresses (see section 1); Z0860 has been tested and reviewed but **not yet re-run on the real judge**.
+2. The elicited question text names this dataset's fields (`hiring_for`, `description`, `size`, ...) because the module-extraction prompt shows the generator the material's field names. The source stays clean, but a differently-named dataset gets different question text and a different calibration identity; reuse across datasets needs the field names normalised out first.
+3. Ordered questions give 5 tiers: 68 / 264 / 1 / 25 / 42 companies. The top tier of 68 tie, and the shortlist is that tier. "Ranked in order" degraded to "bucketed in five"; a real ranking would need a within-tier order, which is a design question still open.
+
+**3. Usage: a program given only a purpose / 用法：只给目的的程序**
+
+Save this as `rust/examples/purpose-only.jpp` (it is not shipped; the import is relative to the program file). `jpp check` accepts it with the same switches as `run`: no static errors, 0 warnings.
+
+```
+import "../lib/derive/purpose.jpp";
+budget {calls: 5000, cost: 0.5, depth: 100000};
+let items = map(content(companies).items, fn(x) { {on: mat(x), ref: resume} });
+let r = purpose_run(purpose, items, {});
+{value: r.value, pending: r.pending, detail: r.detail}
+```
+
+```
+cd rust && cargo run --locked -p jpp -- run examples/purpose-only.jpp \
+  --purpose "Here is my resume. Among these companies, find the ones most likely to invite me to a first interview, rank them, and for each one name the biggest reason it might not." \
+  --mat companies=companies.json --mat resume=resume.md \
+  --backend live --model jev-1.13.0 --profile profiles/jev-1.13.0.json --confirm \
+  --gen-model sonnet --gen-profile profiles/gen-claude-p.json --cache .jpp-cache \
+  --output report.json --ledger-out ledger.jsonl
+```
+
+`companies.json` is `{"items": [ ... one record per company ... ]}`; `resume.md` is read as text. `purpose` and each `--mat` name are bound as untrusted values (a `--mat` name cannot be `input` or `purpose`). `r.value` has one record per item: `fields` holds one entry per sub-request of the purpose, `trust` marks each field trusted or untrusted; `r.detail.questions` lists every generated question with its source. `--cache <dir>` reuses generations and judgments across runs. **The live backend and the generator both call a model and spend money; `budget.cost` is the stop line, and a run priced above the confirm threshold needs `--confirm`.** This sync did not re-run the live example; the numbers in section 2 come from the 2026-10-01 run in the research tree. 本次同步没有重跑真机示例，第 2 节的数字来自研究树里 10-01 的那次运行。
+
+**Not included / 不包含.** The community and contest materials, the blackboard, agent notes and process records, per-company run data, the request ledger of the real run, and `发行说明-待发布.md` (a release-notes draft that cites private paths; its content is summarised in section 1) stay private. Machine-specific tools that need the research machine's remote build host (`scripts/cargoq`, `cargoq-stale-repro`, `train.sh`, `test-companions-on`) are not synced: use plain `cargo`, and set `JPP_TEST_COMPANIONS=on` to run the suite with companion questions on. `COORDINATION.md` and the human spot-check file stay excluded as before. 社区与比赛材料、黑板、附注与过程记录、逐家的运行数据、真机的请求账本，以及引用私有路径的 `发行说明-待发布.md`（内容在第 1 节概述）不公开；依赖研究机远端编译机的 `scripts/cargoq`、`cargoq-stale-repro`、`train.sh`、`test-companions-on` 不同步，公开仓直接用 `cargo`，要开伴随题跑全量设 `JPP_TEST_COMPANIONS=on`；`COORDINATION.md` 与人工抽检文件照旧不带。
+
+**Verification / 验证.** In `rust/`: `cargo check --locked --workspace --all-targets` is clean (run twice, once through the research machine's `cargoq`; only existing style warnings). This sync did **not** produce a full green `cargo test --workspace` run, and the number is not claimed here. What was run: a first full run reached 1,626 passed and found two failures, both sync defects fixed in this PR (`cross_kernel.rs` read an outdated judge profile under `src/foundation/`; `ablation/plan.rs` read a research-tree calibration directory that is not public, now skipped); after the fixes `cross_kernel` passes 4 of 4, `ablation/plan.rs` and the slow `modules_run` test (93 s in a debug build) pass, and a later partial run passed 447 tests with 0 failures before it was stopped. The research tree's own gate ran the full suite on the same Rust sources before this sync. Python: `pytest tests/foundation_jv` under Python 3.12 passes 475 tests (the sync brings the Python reference kernel and profile up to the same commit). Credential check on all 769 changed or added files: no key-shaped strings, no key/token assignments, and no occurrence of the value in `~/.typesafe-key`. 在 `rust/` 下：`cargo check --locked --workspace --all-targets` 干净（跑了两次，一次经研究机的 `cargoq`，只有既有的风格告警）。本次同步**没有**得到一次完整全绿的 `cargo test --workspace`，不在此声称数字。实际跑过的：第一次全量跑到 1,626 通过，暴露两处同步缺陷，本 PR 已修（`cross_kernel.rs` 读了 `src/foundation/` 下过时的画像；`ablation/plan.rs` 读研究区未公开的校准目录，现改为跳过）；修后 `cross_kernel` 4/4 通过，`ablation/plan.rs` 与慢测试 `modules_run`（debug 构建 93 秒）通过，之后一次部分运行 447 条 0 失败，随后被停止。研究区的门禁已对同一份 Rust 源码跑过全量。Python：`pytest tests/foundation_jv`（Python 3.12）475 条通过。凭据检查覆盖 769 个改动或新增文件：无密钥样式串、无 key/token 赋值、`~/.typesafe-key` 的值一次也没出现。
+
 
 ## 2026-09-27 (daily sync): the judge is trusted by default; judgment-division law, question trees, declared lines everywhere, call reuse, field-stability fixes, five PR #37 review fixes / 每日同步：默认相信判断器；判断分工定律、题树、声明线全面接入、调用结果复用、现场稳定性修复、PR #37 五条评审修复
 
