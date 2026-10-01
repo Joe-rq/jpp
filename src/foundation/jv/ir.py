@@ -570,13 +570,7 @@ class ReadingsVec(_NoArith):
         rs = [it[q_index] for it in self._items]
         for r in rs:
             r._need()
-        # 并档容差与 Rust `并档容差` 同口径（Z0425；跨内核对齐 Z0334 §二十四第 4 件）：先取记录 δ，没有再取画像中段
-        # （缺 mid 由 delta_for 报 E-delta-mid），都没有不并档（裁定五十六，不编数）
-        delta = 0.0
-        if rs:
-            rec = self.effect.rt.calib.get(rs[0].q.calib.key)
-            d = rec.delta if rec is not None and rec.delta is not None else self.effect.rt.delta_for(rs[0]._ans["phys"])
-            delta = d or 0.0
+        delta = self.effect.rt.delta_for(rs[0]._ans["phys"]) if rs else 0.0
         keyed = sorted(range(len(rs)), key=lambda k: -_rank_value(rs[k]._ans))
         tiers: list[list[int]] = []
         failed: list[int] = []

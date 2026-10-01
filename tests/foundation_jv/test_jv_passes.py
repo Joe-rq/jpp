@@ -181,14 +181,13 @@ def test_fission_measure_long_object_counts_exits():
 
 # ---------------------------------------------------------------- 保守线只从档案
 def test_cold_safety_lines_come_from_profile_not_constants():
-    # Z0361：画像 δ 改取中段（是非 0.1281），临时出口要过 0.75 + δ = 0.8781；读数由 0.8 改 0.9（原先按尾段 0.04 过 0.79）
-    client = jv.FakeClient(rule=lambda t, qid, q: {"type": "noul", "noul": 0.9})
+    client = jv.FakeClient(rule=lambda t, qid, q: {"type": "noul", "noul": 0.8})
     with rt_with(client=client) as rt:
         assert rt.safety_lines() == (0.75, 0.25)
         r = jv.judge(jv.state(on=jv.lit("x")), q_test(key="cold.key"))
         e = jv.cut(r[0])
-        # 冷键按回答走（B187，Z0334 §二十四第 4 件），不再用保守线出临时出口；保守线只剩 allocate 的不确定度在用
-        assert isinstance(e, jv.Act) and e.detail.get("answer") is True
+        assert isinstance(e, jv.Unsure) and e.cause == "cold" and isinstance(e.detail["provisional"], jv.Act)
+        e.__dict__["consumed"] = True
     prof = dict(rt.profile); prof = {k: v for k, v in prof.items() if k != "lines"}
     with jv.Runtime(client=client, profile=prof) as rt2:
         with warnings.catch_warnings(record=True) as w:
@@ -197,7 +196,8 @@ def test_cold_safety_lines_come_from_profile_not_constants():
         assert any("W-untested" in str(x.message) and "lines.safety_default" in str(x.message) for x in w)
         r = jv.judge(jv.state(on=jv.lit("x")), q_test(key="cold.key"))
         e = jv.cut(r[0])
-        assert isinstance(e, jv.Act) and e.detail.get("answer") is True   # 保守线缺不影响冷键 cut（按回答走）
+        assert isinstance(e.detail["provisional"], jv.Unsure)      # 无线 → 不给临时出口
+        e.__dict__["consumed"] = True
 
 
 # ---------------------------------------------------------------- jv plan

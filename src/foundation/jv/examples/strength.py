@@ -167,8 +167,7 @@ def fake_rule(text, qid, q):
 
 
 def calib_all(rt):
-    # δ 写进记录（Z0334 §二十四第 4 件：allocate 与 Rust 同，δ 只从记录取；0.1281 = 画像中段，与此前经画像兜底的有效值相同）
-    rt.calib.put("doc.含数字", hi=0.65, lo=0.35, n=100, status="上岗", set_id="conf-doc", unsure_rate=0.2, delta=0.1281)
+    rt.calib.put("doc.含数字", hi=0.65, lo=0.35, n=100, status="上岗", set_id="conf-doc", unsure_rate=0.2)
     rt.calib.put("ticket.退款", hi=0.65, lo=0.35, n=120, status="上岗", set_id="conf-B",
                  samples=_labeled_set(120), label_set_id="label-A")
     rt.calib.put("test.全过", hi=0.6, lo=0.3, n=60, status="上岗", set_id="conf-t")
