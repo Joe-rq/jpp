@@ -36,6 +36,8 @@ pub struct CacheArgs<'c> {
     /// 料库目录（B0472，`--mat-store`）：装文件料库（`FileMatStore`），`select` 的标记落盘、跨运行复用。
     /// 只凭账本重放不装（变换结果取自账本）
     pub mat_store: Option<std::path::PathBuf>,
+    /// 宿主登记的世界（Z0885，`--env`）：进动作上下文，`env:step` 按名字找命令
+    pub envs: Vec<(String, Vec<String>)>,
     /// 单元图开关（C2b，`--cells`）：`None` 用会话缺省（开）
     pub cells: Option<bool>,
     /// 报告带单元图统计（C2c，`--cells-stats`）
@@ -473,6 +475,7 @@ pub fn execute_with(
 ) -> Result<Value, jpp::Error> {
     let ctx = jpp::actions::Ctx {
         program_dir: program_dir.map(std::path::Path::to_path_buf),
+        envs: std::rc::Rc::new(cache.envs.iter().cloned().collect()),
         ..Default::default()
     };
     let mut actions = ActionRegistry::new();
@@ -661,9 +664,17 @@ pub fn execute_with(
         report["explain"] = v;
     }
     // C-7（Z0173）：程序里 `do` 用到的动作的可撤回性事实（三值、理由、成立条件）。只是如实的事实与记录，
-    // 不影响放行；只在程序有 `do` 站点时出现（动作名非字面量的站点列全表），没有 `do` 的程序输出逐字节不变
+    // 不影响放行；只在程序有 `do` 站点时出现（动作名非字面量的站点列全表），没有 `do` 的程序输出逐字节不变。
+    // 事实随宿主变的动作另放 `host.action_facts`（见下）
     if let Some(names) = action_names_used(program) {
-        report["action_facts"] = jpp::actions::action_facts_json(names.as_deref());
+        // Z0901：事实随宿主的操作系统沙箱变的动作（执行器三个）放进 `host` 块，金样比较排除 `host`；
+        // 没有用到这类动作的程序不出 `host`，报告逐字节不变
+        let (plain, host) = jpp::actions::action_facts_split(names.as_deref());
+        report["action_facts"] = plain;
+        if host.as_object().is_some_and(|m| !m.is_empty()) {
+            report["host"] =
+                json!({"sandbox": jpp::actions::host_sandbox_kind(), "action_facts": host});
+        }
     }
     // B162（步 25d）：同一判断被多个持有者带回时，按键列持有者；只在有时出现，默认输出逐字节不变
     if !outcome.duties.is_empty() {
@@ -676,6 +687,13 @@ pub fn execute_with(
     // 伴随题（B0492 S5）：「这道题怎样能更拿得准」，只在有时出现，默认输出逐字节不变
     if !outcome.improve.is_empty() {
         report["improve"] = json!(outcome.improve);
+    }
+    // 超窗次数（Z0918）：画像测过窗口时出现（各项可为 0），没测时不出，默认输出逐字节不变
+    if !outcome.named_unfetchable.is_null() {
+        report["named_unfetchable"] = outcome.named_unfetchable.clone();
+    }
+    if !outcome.window_over.is_null() {
+        report["window_over"] = outcome.window_over.clone();
     }
     // 停岗候选（B25）只在有时出现，默认输出逐字节不变
     if !outcome.suspend_candidates.is_empty() {

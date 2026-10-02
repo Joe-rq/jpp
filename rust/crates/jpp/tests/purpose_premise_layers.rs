@@ -97,7 +97,7 @@ fn 跑_全(
             prompts.borrow_mut().push(p.to_string());
             let i = *k.borrow();
             *k.borrow_mut() += 1;
-            rounds[i.min(rounds.len() - 1)].clone()
+            补if_false(rounds[i.min(rounds.len() - 1)].clone())
         } else if p.starts_with("下面是一段目的") {
             vec![模块()]
         } else {

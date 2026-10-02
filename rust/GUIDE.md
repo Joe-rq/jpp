@@ -145,6 +145,11 @@ if is_fail(v) { "格式不对" } else { v.field }
 2. **宿主动作**：环境状态留在宿主，登记一个动作 `env:step(env_json, action) → env_json'`
    （`reversible: true`、成本 0），结果进账本、重放不重算；物理引擎、第三方模拟器这类
    宿主已有的东西走这条，不必在 `.jpp` 里重写一遍它的转移规则。
+   已实现（Z0885，裁定六十九）：`jpp run p.jpp --env 名字=命令` 登记一个外部世界，程序里
+   `do("env:step", [{env: 名字, state: 上一步的 state 或 unit, action: 动作或 unit, reset?: 开局参数}], 0)`；
+   命令从 stdin 读一行 JSON 请求、往 stdout 写一行 JSON 结果 `{state, obs, actions, idle, done, hash?, result?}`，
+   两次调用之间不留状态。子进程在沙箱里跑时可逆、成本 0；账本每步一条，带进出内容与墙钟 `wall`（只记不进值），
+   按账本重放不再启动命令。
 3. **入口序列**：环境转移由 `--input` 里逐步给出的观测序列决定，程序只做每步的判断与
    动作选择，宿主按拍调用程序——不需要程序自己知道「下一步会怎样」。
 

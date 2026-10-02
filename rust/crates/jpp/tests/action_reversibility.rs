@@ -24,10 +24,11 @@ fn 取(name: &str) -> &'static jpp::actions::HostAction {
         .unwrap_or_else(|| panic!("{name} 应在表里"))
 }
 
-/// P7-1：15 行逐项有三值、有非空理由；本机有沙箱时分布 14 : 1 : 0（T0 加 `graph:cycles`，14 → 15）。
+/// P7-1：16 行逐项有三值、有非空理由；本机有沙箱时分布 15 : 1 : 0（T0 加 `graph:cycles`，14 → 15；Z0885 加
+/// `env:step`，15 → 16，可逆位按裁定六十九随沙箱派生）。
 #[test]
 fn 事实表逐项有值且分布如预注册() {
-    assert_eq!(builtin_actions().len(), 15);
+    assert_eq!(builtin_actions().len(), 16);
     for a in builtin_actions() {
         assert!(!a.undo.reason.trim().is_empty(), "{}: 理由不能空", a.name);
     }
@@ -44,18 +45,18 @@ fn 事实表逐项有值且分布如预注册() {
                 数(Reversibility::Irreversible),
                 数(Reversibility::DependsOnArgs)
             ),
-            (14, 1, 0)
+            (15, 1, 0)
         );
         assert_eq!(取("write_json").undo.kind, Reversibility::Irreversible);
     } else {
-        // P7-2 在本机没有沙箱时的同一断言：三个执行器翻成不可逆
+        // P7-2 在本机没有沙箱时的同一断言：三个执行器与 env:step 翻成不可逆
         assert_eq!(
             (
                 数(Reversibility::Reversible),
                 数(Reversibility::Irreversible),
                 数(Reversibility::DependsOnArgs)
             ),
-            (11, 4, 0)
+            (11, 5, 0)
         );
     }
 }
@@ -287,7 +288,7 @@ fn 无沙箱时执行器事实翻成不可逆() {
         assert!(o.status.success(), "{}", String::from_utf8_lossy(&o.stderr));
         let r: serde_json::Value =
             serde_json::from_slice(&std::fs::read(d.join("r.json")).unwrap()).unwrap();
-        r["action_facts"]["exec_py"].clone()
+        r["host"]["action_facts"]["exec_py"].clone()
     };
     let 无 = 跑(true);
     assert_eq!(无["reversibility"], "irreversible");
@@ -297,5 +298,32 @@ fn 无沙箱时执行器事实翻成不可逆() {
         assert_eq!(有["reversibility"], "reversible");
         assert!(有["conditions"][0].as_str().unwrap().starts_with("沙箱："));
     }
+    let _ = std::fs::remove_dir_all(&d);
+}
+
+/// Z0901：事实随宿主沙箱变的动作（执行器三个）进报告的 `host` 块，不在 `action_facts` 里；`host.sandbox` 写沙箱种类；
+/// 只用纯动作的程序没有 `host`。
+#[test]
+fn 执行器事实进host块且纯动作程序没有host() {
+    let d = 目录("hostblock");
+    std::fs::write(
+        d.join("p.jpp"),
+        "budget {calls: 2, cost: 0};\nis_fail(do(\"exec_py\", [\"print(1)\", \"\", 5], 0))\n",
+    )
+    .unwrap();
+    let r = jpp跑(&d, "p.jpp");
+    assert!(r["action_facts"].as_object().unwrap().is_empty(), "{r}");
+    assert_eq!(r["host"]["sandbox"], jpp::actions::host_sandbox_kind());
+    assert!(r["host"]["action_facts"]["exec_py"]["reversibility"].is_string());
+    assert_eq!(r["host"]["action_facts"].as_object().unwrap().len(), 1);
+
+    std::fs::write(
+        d.join("g.jpp"),
+        "budget {calls: 2, cost: 0};\nlet g = {edges: [{u: \"a\", v: \"b\"}], nodes: [\"a\", \"b\"]};\ncontent(do(\"graph:components\", [g], 0))\n",
+    )
+    .unwrap();
+    let r = jpp跑(&d, "g.jpp");
+    assert!(r.get("host").is_none(), "纯动作程序没有 host：{r}");
+    assert!(r["action_facts"].get("graph:components").is_some());
     let _ = std::fs::remove_dir_all(&d);
 }

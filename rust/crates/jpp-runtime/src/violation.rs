@@ -111,8 +111,8 @@ impl<'a> Interp<'a> {
             (
                 FrameKind::Code,
                 self.frames
-                    .get(帧)
-                    .map(|f| f.主人.clone())
+                    .get_mut(帧)
+                    .map(|f| f.主人.取())
                     .unwrap_or_default(),
             )
         };
@@ -407,6 +407,7 @@ impl<'a> Interp<'a> {
                 output,
                 cost,
                 reused_from: None,
+                wall: None,
             };
             self.即刻记账(结果, d.site)?;
             self.trace
@@ -478,9 +479,14 @@ impl<'a> Interp<'a> {
 /// 惰性的值按身份取、不按此刻是否已取回：未取回的生成取生成号，出口与惰性出口取出口号与题，不取「是否已消费」——
 /// 首跑与审计重放在同一次调用时取回的进度可能不同，记号要一致
 pub(crate) fn 实参哈希(args: &[Value]) -> String {
+    // Z0882：大实参按身份缓存这一分量（值不可变；子树有函数或句柄的不缓存，结果与重算相同）
     let hs: Vec<String> = args
         .iter()
-        .map(|a| jpp_ir::key::hash_of(&[&jpp_ir::key::canon(&指纹(a))]))
+        .map(|a| {
+            jpp_value::value::ident_cache::指纹哈希(a, || {
+                jpp_ir::key::hash_of(&[&jpp_ir::key::canon(&指纹(a))])
+            })
+        })
         .collect();
     let n = hs.len().to_string();
     let mut parts: Vec<&str> = vec!["frame/args", &n];
@@ -489,6 +495,7 @@ pub(crate) fn 实参哈希(args: &[Value]) -> String {
 }
 
 fn 指纹(v: &Value) -> Json {
+    jpp_value::value::ident_cache::记访问_容器(v);
     match v {
         Value::List(l) => Json::Array(l.iter().map(指纹).collect()),
         Value::Record(r) => {

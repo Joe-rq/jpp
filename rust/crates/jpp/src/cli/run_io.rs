@@ -558,6 +558,7 @@ pub fn run_checked(
                 companions: options.companions,
                 // B0472：`--mat-store` 装文件料库（重放分支不给：变换结果取自账本）
                 mat_store: options.mat_store.clone(),
+                envs: options.envs.clone(),
                 cells: options.cells,
                 cells_stats: options.cells_stats,
             },
@@ -984,6 +985,7 @@ mod tests {
             input: None,
             input_trusted: false,
             mat_store: None,
+            envs: Vec::new(),
             release_on_declared: false,
             guard: false,
             confirm: false,

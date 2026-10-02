@@ -488,6 +488,7 @@ impl<'a> Interp<'a> {
             output,
             cost: res.cost,
             reused_from: None,
+            wall: None,
         };
         (value, entry)
     }

@@ -36,7 +36,7 @@ pub struct Edge {
 /// 直接来源读数：账本键 → 边。`None` = 空集（不分配）。按键排序（D13.5：传播确定，重放逐字节）。
 /// 同一键两种边并存按值边计（B92）。
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
-pub struct Sources(Option<Rc<BTreeMap<String, Edge>>>);
+pub struct Sources(pub(crate) Option<Rc<BTreeMap<String, Edge>>>);
 
 impl Sources {
     pub fn empty() -> Sources {
@@ -145,6 +145,16 @@ impl Sources {
                 if Rc::ptr_eq(a, b) {
                     return self.clone();
                 }
+                // Z0882：大的来源集合按 (左, 右) 身份记住并集（集合不可变，结果与重算相同）
+                crate::value::ident_cache::并集(a, b, || self.union_slow(a, b))
+            }
+        }
+    }
+
+    fn union_slow(&self, a: &Rc<BTreeMap<String, Edge>>, b: &Rc<BTreeMap<String, Edge>>) -> Sources {
+        crate::value::ident_cache::记访问();
+        {
+            {
                 let mut m = (**a).clone();
                 let mut changed = false;
                 for (k, e) in b.iter() {

@@ -322,3 +322,15 @@ pub fn 跑_按提示_把关(
     把关.with(|c| c.set(false));
     r
 }
+
+/// 前提派生的候选补上 `if_false: {falls_to: "unanswerable"}`（derive-16、17、18：每道前提要自报不成立时落到哪；老测试不测这一项，缺的补 none，写了的不动）
+pub fn 补if_false(v: Vec<Json>) -> Vec<Json> {
+    v.into_iter()
+        .map(|mut x| {
+            if let Some(o) = x.as_object_mut() {
+                o.entry("if_false").or_insert(serde_json::json!({"falls_to": "unanswerable"}));
+            }
+            x
+        })
+        .collect()
+}

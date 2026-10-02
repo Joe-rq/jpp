@@ -1,13 +1,5 @@
 {
-  "action_facts": {
-    "exec_sql": {
-      "conditions": [
-        "沙箱：sandbox-exec"
-      ],
-      "reason": "只读打开数据库（mode=ro + PRAGMA query_only + 授权回调只放行 SELECT，任何语句都改不了库）；在调用专属临时目录内运行，操作系统沙箱把写限定在该目录、拒绝一切网络，调用结束整目录丢弃。读宿主文件不隔离；CPU、内存、进程数不限",
-      "reversibility": "reversible"
-    }
-  },
+  "action_facts": {},
   "backend": "fixed-0",
   "cost": {
     "asks": 0,

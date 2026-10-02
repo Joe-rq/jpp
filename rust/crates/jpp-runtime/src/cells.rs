@@ -12,6 +12,7 @@ use jpp_cell::{
     Attempt, CellGraph, CellValue, CodeStep, Ctx, DebtTok, JudgeSeen, PState, UnsureCause,
 };
 use jpp_ir::cell_key::{MethodIdentity, code_cell_key};
+use jpp_value::value::ident_cache;
 use jpp_ir::cell_key::{ProgramIdentity, effect_cell_key, judge_cell_key, program_cell_key};
 use jpp_ir::key::CacheKey;
 use jpp_ledger::PermMeasure;
@@ -368,7 +369,7 @@ impl<'a> Interp<'a> {
         if !open || self.拟合中 > 0 {
             return None;
         }
-        let Some(captured) = self.env_fingerprint(&c.env, &referenced_names(&c.function), 3) else {
+        let Some(captured) = self.单元捕获指纹(&c.env, &referenced_names(&c.function), 3) else {
             self.单元.as_mut().unwrap().计.不可键 += 1;
             return None;
         };
@@ -412,11 +413,49 @@ impl<'a> Interp<'a> {
         Some(code_cell_key(&m, &refs).id)
     }
 
-    /// 值的内容哈希（实参与记忆值；附录二 A2.2）：见 [`值哈希_用`]，函数值的捕获指纹按 `env_fingerprint`（深度 3）。
+    /// 值的内容哈希（实参与记忆值；附录二 A2.2）：见 [`值哈希_用`]；函数值的捕获指纹按 [`Interp::单元捕获指纹`]（深度 3）。
     fn 值哈希(&self, v: &Value) -> Option<String> {
-        值哈希_用(v, &|c| {
-            self.env_fingerprint(&c.env, &referenced_names(&c.function), 3)
-        })
+        值哈希_用(v, &|c| self.单元捕获指纹(&c.env, &referenced_names(&c.function), 3))
+    }
+
+    /// 代码单元键的捕获指纹（附录四）：遍历的名字、跳过与「不可键」的条件与 `env_fingerprint` 逐条相同（内置跳过；
+    /// 未取回的生成、读数、出口、惰性出口、责任、状态、题 → 不可键；函数值递归），每个值用按身份缓存的 [`值哈希_用`]；
+    /// 里面嵌着算不出哈希的东西（如列表里的读数）时退回规范 JSON（与 `env_fingerprint` 同口径，慢但罕见）。
+    /// `env_fingerprint` 本身不改：它还给 `transform` 的效应键用，改它会动账本键。
+    fn 单元捕获指纹(&self, env: &Env, names: &BTreeSet<String>, depth: u32) -> Option<String> {
+        let mut parts: Vec<String> = vec![];
+        for n in names {
+            let Some(v) = env_lookup(env, n) else {
+                continue;
+            };
+            match &v {
+                Value::Builtin(_) => continue,
+                Value::Fn(c) => {
+                    if depth == 0 {
+                        return None;
+                    }
+                    let inner = self.单元捕获指纹(&c.env, &referenced_names(&c.function), depth - 1)?;
+                    parts.push(format!("{n}=fn:{}:{inner}", c.hash));
+                }
+                Value::Gen(g) if g.value().is_none() => return None,
+                Value::Reading(_)
+                | Value::Exit(_)
+                | Value::Cut(_)
+                | Value::Duty(_)
+                | Value::State(_)
+                | Value::Question(_) => return None,
+                other => {
+                    let 内容 = match other {
+                        // 取回了的生成按结果算（与 `env_fingerprint` 的 `to_json` 同义）
+                        Value::Gen(g) => g.value().and_then(|x| self.值哈希(&x)),
+                        x => self.值哈希(x),
+                    };
+                    let h = 内容.unwrap_or_else(|| hash_of(&["cell/json", &canon(&other.to_json())]));
+                    parts.push(format!("{n}={h}"));
+                }
+            }
+        }
+        Some(hash_of(&parts.iter().map(|s| s.as_str()).collect::<Vec<_>>()))
     }
 
     /// 对闭包的一次调用，经单元图（附录二 A2.3、A2.5）：成单元的调用按键记忆；同一趟内只有第一次求值足迹为空、
@@ -485,13 +524,34 @@ pub(crate) fn 值哈希_用(
         指纹: &dyn Fn(&Rc<Closure>) -> Option<String>,
         out: &mut String,
     ) -> Option<()> {
+        // Z0882（附录四、五）：大节点在父节点里只写它自己的哈希，按身份缓存（子树有函数或句柄的不缓存、照算）。
+        // 写不写成哈希只取决于节点的种类与大小，即只取决于内容，所以内容相同则哈希相同、与是否命中缓存无关
+        if ident_cache::是大节点(v) {
+            let h = ident_cache::单元哈希(v, || {
+                let mut s = String::new();
+                go_inline(v, 指纹, &mut s)?;
+                Some(hash_of(&["cell/node", &s]))
+            });
+            out.push('#');
+            out.push_str(&h?);
+            return Some(());
+        }
+        go_inline(v, 指纹, out)
+    }
+    fn go_inline(
+        v: &Value,
+        指纹: &dyn Fn(&Rc<Closure>) -> Option<String>,
+        out: &mut String,
+    ) -> Option<()> {
         use std::fmt::Write;
+        ident_cache::记访问_容器(v);
         match v {
             Value::Unit => out.push('u'),
-            Value::Int(i, p) => write!(out, "i{i}|{p:?}").ok()?,
-            Value::Float(x, p) => write!(out, "f{}|{p:?}", x.to_bits()).ok()?,
-            Value::Bool(b, p, g) => write!(out, "b{b}|{p:?}|{g:?}").ok()?,
-            Value::Text(t, p) => write!(out, "t{t:?}|{p:?}").ok()?,
+            // 来源标签写成 taint 加来源集合的摘要（大集合按身份缓存，Z0882）：内容相同则相同
+            Value::Int(i, p) => write!(out, "i{i}|{}", 来源文(p)).ok()?,
+            Value::Float(x, p) => write!(out, "f{}|{}", x.to_bits(), 来源文(p)).ok()?,
+            Value::Bool(b, p, g) => write!(out, "b{b}|{}|{g:?}", 来源文(p)).ok()?,
+            Value::Text(t, p) => write!(out, "t{t:?}|{}", 来源文(p)).ok()?,
             Value::List(l) => {
                 out.push('[');
                 for x in l.iter() {
@@ -518,7 +578,7 @@ pub(crate) fn 值哈希_用(
             Value::State(s) => write!(out, "s{s:?}").ok()?,
             Value::Question(q) => write!(out, "q{q:?}").ok()?,
             Value::Form(f) => write!(out, "F{f:?}").ok()?,
-            Value::Fail(t, p) => write!(out, "x{t:?}|{p:?}").ok()?,
+            Value::Fail(t, p) => write!(out, "x{t:?}|{}", 来源文(p)).ok()?,
             Value::Stop(x) => {
                 out.push('S');
                 go(x, 指纹, out)?;
@@ -537,6 +597,11 @@ pub(crate) fn 值哈希_用(
     let mut s = String::new();
     go(v, 指纹, &mut s)?;
     Some(hash_of(&["cell/val", &s]))
+}
+
+/// 来源标签的文字（单元值哈希用）：taint 加来源集合的摘要。
+fn 来源文(p: &jpp_value::prov::Provenance) -> String {
+    format!("{:?}#{}", p.taint, ident_cache::来源集摘要(&p.sources))
 }
 
 #[cfg(test)]

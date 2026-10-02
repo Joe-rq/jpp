@@ -192,6 +192,7 @@ let kids = derive_premise(n, e, {});
     let v = r.out.value_json();
     assert_eq!(v["lacks"], json!(["材料", "语境"]));
     assert_eq!(v["lacks"], v["rules"]);
-    // 守则版本：Z0398 升到 derive-4，线 A 之后 Z0511、Z0511 返修、Z0535、Z0559 依次升到 derive-8，W-shadow 改名升到 derive-9，B0470 前提派生升到 derive-10，臂 3 空跑 3.1 的请求缺省值修补升到 derive-11，3.2 的前提题只看条目升到 derive-12，B0478 作者入口升到 derive-13，Z0860 前提三层升到 derive-14
-    assert_eq!(v["version"], "derive-14");
+    // 守则版本：Z0398 升到 derive-4，线 A 之后 Z0511、Z0511 返修、Z0535、Z0559 依次升到 derive-8，W-shadow 改名升到 derive-9，B0470 前提派生升到 derive-10，臂 3 空跑 3.1 的请求缺省值修补升到 derive-11，3.2 的前提题只看条目升到 derive-12，B0478 作者入口升到 derive-13，Z0860 前提三层升到 derive-14；第二靶子迭代：前提≠证据升到 derive-15，if_false 自报升到 derive-16，
+    // if_false 结构化并进账本升到 derive-17，协议值改名 unanswerable 升到 derive-18，裁定七十五过程入口不派生前提升到 derive-19
+    assert_eq!(v["version"], "derive-19");
 }

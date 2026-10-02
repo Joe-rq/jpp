@@ -45,7 +45,16 @@ pub(crate) struct 轮果 {
     fetched_by: Vec<&'static str>,
     /// insufficient 链末缺的证据槽（Z0589 返修，5.28 附录补）
     slot: Option<String>,
+    /// 走的是哪一路去取（报告 `route`，逐行分得开）：`missing-slot` 缺料直取（裁定七十六）、`companion` 按伴随题带外的
+    /// 诊断取（裁定七十七）、`why` 发了「为什么拿不准」；没走到取的不写
+    route: Option<&'static str>,
+    /// 伴随题点名的类别（「最缺哪类」选出的，或「参照与语境够吗」带外判否映射出的）；末端与 missed 求交计「点名类别无取法」
+    点名: Vec<String>,
 }
+
+/// 伴随题「参照与语境够吗」（`lib/unsure.jpp` 的 `unsure_companion_reference`）对应的两个类别（裁定七十七 (i)）：
+/// 它带外判否，诊断为缺这两类之一。名称与通用类别表 `unsure_lacks` 一致；同 `材料不缺` 写在运行时，不改序言
+const 参照与语境: [&str; 2] = ["参照", "语境"];
 
 /// 「为什么拿不准」那道 select 在类别之外的两个候选（草案 (2)）
 const 两可: &str = "不缺信息，事情本身两可";
@@ -270,14 +279,16 @@ impl<'a> Interp<'a> {
                 );
             }
         };
-        let 回 = |x: Rc<Exit>, end: &str| {
+        let 回 = |x: Rc<Exit>, end: &str, 缺: &[String]| {
             Value::record(vec![
                 ("exit".into(), Value::Exit(x)),
                 ("end".into(), Value::text(end)),
+                // 末端转交时缺的类别（路 C、取不到；Jpp 2026-10-02：调用方写进去向「缺<类别>、无取法」），别的结局为空
+                ("needed".into(), Value::list(缺.iter().map(|c| Value::text(c)).collect())),
             ])
         };
         if self.guard || !e.is_unsure() || e.consumed.get() || !可补(&e) {
-            return Ok(回(e, "none"));
+            return Ok(回(e, "none", &[]));
         }
         let f = self.补信息链(&e, sp)?;
         let end = if !f.is_unsure() {
@@ -289,7 +300,8 @@ impl<'a> Interp<'a> {
         } else {
             "handoff"
         };
-        Ok(回(f, end))
+        let 缺 = if end == "handoff" { std::mem::take(&mut self.末次缺) } else { vec![] };
+        Ok(回(f, end, &缺))
     }
 
     /// 「无作者去向」站点（S2c）：这个站点的 `cut` 当场走链，下游拿到的是最后那个出口（已决，或已记账的未决）
@@ -329,6 +341,11 @@ impl<'a> Interp<'a> {
         )?;
         let mut 果 = 果;
         let cur = 果.last.clone();
+        // 点名类别无取法（Jpp 2026-10-02）：伴随题点名的类别、这条链里没取到的，按类别计
+        for c in 果.点名.iter().filter(|c| 果.missed.contains(c)) {
+            *self.点名无取法.entry(c.clone()).or_insert(0) += 1;
+        }
+        self.末次缺.clear();
         if !cur.is_unsure() {
             self.记默认链(&原键, e, sp, &果, "decided");
             return Ok(cur);
@@ -369,6 +386,7 @@ impl<'a> Interp<'a> {
                 self.记转交(&[cur.clone()]);
                 self.登记解除(&cur, "默认链：转交", sp);
             }
+            self.末次缺 = 果.needed.clone();
             "handoff"
         };
         cur.consumed.set(true);
@@ -412,12 +430,16 @@ impl<'a> Interp<'a> {
             needed: vec![],
             fetched_by: vec![],
             slot: None,
+            route: None,
+            点名: vec![],
         };
         let mut 已取: Vec<String> = vec![];
         let mut round = 0u32;
         // 读数触发（原因给了）：没有取法时不发任何调用，只记 near_boundary（过程记录 5.19 第 9 条）
         let 触发 = 原因.is_some();
         let mut 伴随类别: Option<String> = None;
+        // 裁定七十七：伴随题带外给出的诊断（类别集合，按候选顺序）。有了它就只在这几类里取，取不到不再问「为什么」，到末端
+        let mut 诊断: Option<Vec<String>> = None;
         loop {
             let fetch = self.未决来源.as_ref().and_then(|(_, f)| f.clone());
             let key = cur.ledger_key.borrow().clone();
@@ -433,7 +455,11 @@ impl<'a> Interp<'a> {
             let (calib, opts) = self.切法来历.get(&key).cloned().unwrap_or_default();
             let (类别, 来源) = self.候选类别(&q);
             果.source.get_or_insert(来源);
-            let 候选: Vec<String> = 类别.into_iter().filter(|c| !已取.contains(c)).collect();
+            let 候选: Vec<String> = 类别
+                .into_iter()
+                .filter(|c| !已取.contains(c))
+                .filter(|c| 诊断.as_ref().is_none_or(|d| d.contains(c)))
+                .collect();
             // 账本里记过这道读数取来的材料（Z0494）也算有取法：重放不带料库与端口时照账本取
             let 有取法 = fetch.is_some()
                 || self.料库.is_some()
@@ -442,8 +468,20 @@ impl<'a> Interp<'a> {
             if 候选.is_empty() || (触发 && !有取法) {
                 break;
             }
+            // 缺料直取（裁定七十六，主控板 Z0933）：声明了证据槽而条目没有（cause insufficient）、候选来自题的 lacks 时，
+            // 原因已经确定——伴随题对缺料的题判「前提不成立」是在重复说同一件事。不按「题不清 / 两可」选路、不发「为什么」，
+            // 伴随题「最缺哪类」选出的先取，否则按 lacks 的顺序逐类取（取不到记 missed、取下一类）
+            let 缺料直取 = !触发
+                && 来源 == "lacks"
+                && cur.why().is_some_and(|w| w.cause == UnsureCause::Insufficient);
+            if 缺料直取 {
+                if round == 0 {
+                    伴随类别 = self.伴随最缺(&key);
+                    果.点名.extend(伴随类别.iter().cloned());
+                }
+                果.route.get_or_insert("missing-slot");
+            } else if round == 0 {
             // 伴随题（B0492 S5，草案 (2)「已有伴随题读数的，直接用」）：第一轮按伴随题读数选路；题不清、两可即停
-            if round == 0 {
                 match self.伴随路由(&key) {
                     Some(("unclear", _)) => {
                         果.why = Some("unclear");
@@ -453,18 +491,50 @@ impl<'a> Interp<'a> {
                         果.why = Some("ambiguous");
                         break;
                     }
-                    Some(("enrich", Some(c))) => 伴随类别 = Some(c),
+                    Some(("enrich", Some(c))) => {
+                        // 裁定七十七：「最缺哪类」带外选出了类别，就只取它
+                        诊断 = Some(vec![c.clone()]);
+                        果.点名.push(c.clone());
+                        伴随类别 = Some(c);
+                        果.route = Some("companion");
+                    }
+                    Some(("enrich-ref", _)) => {
+                        // 裁定七十七 (i)：「参照与语境够吗」带外判否，类别 = 候选里的参照、语境（按候选顺序）
+                        let d: Vec<String> = 候选.iter().filter(|c| 参照与语境.contains(&c.as_str())).cloned().collect();
+                        if d.is_empty() {
+                            // 诊断出的两类都不在候选里：没有可取的，到末端（needed 写这两类）
+                            果.needed.extend(参照与语境.iter().map(|s| s.to_string()));
+                            果.route = Some("companion");
+                            break;
+                        }
+                        果.点名.extend(d.iter().cloned());
+                        诊断 = Some(d);
+                        果.route = Some("companion");
+                    }
                     _ => {}
                 }
+            }
+            // 诊断定下的类别：只在这几类里取。过滤空了就到末端——取过的已记在 missed；一类都没轮到的（诊断的类别不在候选里），
+            // 把诊断的类别写进 needed，末端转交（裁定七十七：取不到不再问「为什么」）
+            let 候选: Vec<String> = 候选.into_iter().filter(|c| 诊断.as_ref().is_none_or(|d| d.contains(c))).collect();
+            if 候选.is_empty() {
+                if let Some(d) = &诊断
+                    && 果.fetched.is_empty()
+                    && 果.missed.is_empty()
+                {
+                    果.needed.extend(d.iter().cloned());
+                }
+                break;
             }
             // 问：伴随题「最缺哪类」第一轮已选出、且仍在候选里，直接用（裁定五十一，过程记录 5.23）；
             // 候选多于一类才问判断器（只有一类时代码能定，意图汇编 7a）
             let 已选 = 伴随类别.take().filter(|c| 候选.contains(c));
             let (need, asked_by) = if let Some(c) = 已选 {
                 (c, None)
-            } else if 候选.len() == 1 {
+            } else if 候选.len() == 1 || 缺料直取 || 诊断.is_some() {
                 (候选[0].clone(), None)
             } else {
+                果.route.get_or_insert("why");
                 果.asked.extend(候选.iter().cloned());
                 let mut over: Vec<Value> = 候选.iter().map(|c| Value::text(c)).collect();
                 over.push(Value::text(两可));
@@ -833,6 +903,9 @@ impl<'a> Interp<'a> {
         }
         if let Some(s) = &果.slot {
             row["slot"] = json!(s);
+        }
+        if let Some(r) = 果.route {
+            row["route"] = json!(r);
         }
         self.默认链记录.push(row);
     }

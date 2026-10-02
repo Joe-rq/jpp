@@ -264,8 +264,15 @@ impl<'a> Interp<'a> {
         (!并列).then_some(k)
     }
 
+    /// 伴随题「最缺哪类」选出的那一类（裁定七十六的缺料直取只用它定先取哪类，不用「题不清 / 两可」选路）
+    pub(crate) fn 伴随最缺(&self, key: &str) -> Option<String> {
+        let g = self.伴随.iter().find(|g| g.key == key)?;
+        self.最缺哪类(g).flatten()
+    }
+
     /// 默认链按伴随题读数选路：`("unclear", _)` 题不清；`("ambiguous", _)` 两可；`("enrich", 类别)` 去补——「最缺哪类」
-    /// 选出了类别就带上它（第一轮直接用，不再发「为什么」），没选出而参照不够时为 `None`（照旧发「为什么」）。
+    /// 选出了类别就带上它（第一轮直接用，不再发「为什么」）；`("enrich-ref", None)`：没选出类别而「参照与语境够吗」
+    /// 带外判否，诊断为缺参照或语境（裁定七十七 (i)）；`("enrich", None)`：带内没有信号（照旧发「为什么」）。
     /// 没有伴随题或读数不全时 `None`（过程记录 5.23）
     pub(crate) fn 伴随路由(&self, key: &str) -> Option<(&'static str, Option<String>)> {
         let g = self.伴随.iter().find(|g| g.key == key)?;
@@ -279,14 +286,36 @@ impl<'a> Interp<'a> {
         // 切法那道不进选路（主控 2026-09-30：H2 真机 34 条全在 0.72–0.83，没有区分力），只进 improve
         let (前, 谓, 参) = (p(前提)?, p(谓词)?, p(参照)?);
         let 缺 = self.最缺哪类(g).flatten();
-        Some(if 前 < 0.5 || 谓 > 0.5 {
+        // Z0912（主会话裁定七十三 (1)）：伴随题的裁决只在带外算数。读数落在 0.5 ± 画像中段 δ（`delta.noul.mid`）以内，
+        // 是判断器自己也拿不准、没有信号——不能当成「题不清」或「两可」，默认链照常走到下一步（发「为什么」、取、再判）。
+        // 与裁定六、七十二 (2) 同一规则：没有线的判断带内一律按拿不准处理，去掉手写的 0.5 线。
+        // 画像没测中段 δ 时照改前（按 0.5 分），不为元题中止程序
+        let Some(δ) = self.calib.profile().delta_prior(Op::Test) else {
+            return Some(if 前 < 0.5 || 谓 > 0.5 {
+                ("unclear", None)
+            } else if let Some(c) = 缺 {
+                ("enrich", Some(c))
+            } else if 参 < 0.5 {
+                ("enrich", None)
+            } else {
+                ("ambiguous", None)
+            });
+        };
+        let 带外否 = |p: f64| p < 0.5 - δ - jpp_value::stat::BOUNDARY_EPS;
+        let 带外是 = |p: f64| p > 0.5 + δ + jpp_value::stat::BOUNDARY_EPS;
+        Some(if 带外否(前) || 带外是(谓) {
             ("unclear", None)
         } else if let Some(c) = 缺 {
             ("enrich", Some(c))
-        } else if 参 < 0.5 {
-            ("enrich", None)
-        } else {
+        } else if 带外是(参) {
+            // 参照与语境确实给够了、又选不出缺哪类：两可
             ("ambiguous", None)
+        } else if 带外否(参) {
+            // 裁定七十七 (i)：「参照与语境够吗」有把握地判否，就是诊断——缺的是参照、语境之一，默认链按它去取，不问为什么
+            ("enrich-ref", None)
+        } else {
+            // 带内没有信号：照常往下走（发「为什么」）
+            ("enrich", None)
         })
     }
 

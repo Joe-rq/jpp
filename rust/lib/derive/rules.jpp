@@ -27,7 +27,7 @@ fn derive_module_rules() {
 }
 
 fn derive_rules() { {
-    version: "derive-14",
+    version: "derive-19",
 
     // 拿不准时可能缺的信息类别（裁定五十一）：按派生类型给，写进派生题式的 lacks，默认链的第二级候选。
     // 类别用守则模块的词；改这里要改 version
@@ -108,21 +108,38 @@ fn derive_rules() { {
     // 字面前提题问材料本身写明了什么，不问「这段材料对判断有没有帮助」那类元题（09：P7、#17、E-ENOUGH）。
     // 一次生成，与材料项个数无关；最多取 premise_max 道（每多一道，最多多一轮「每项一次」的判断）
     premise_max: 2,
+    // 哪类入口派生前提（裁定七十五）：只有批量入口（purpose_run）派生；过程入口（purpose_plan / purpose_drive）不派生。
+    // 依裁定七十一，前提只管「材料能不能回答这个目的」；过程入口每步的材料是世界按契约交回的整份观测，可判性由契约保证
+    // （缺的只会是 done 或空观测，走世界契约，不走前提），派出来的「材料里写明了某物吗」都是证据；候选每步才由世界给，
+    // 派生时拿不到，不成立时也没有可接的去处。按入口类型定，与任务无关
+    premise_process: false,
     // 提示里的「至多两道」与 premise_max 一致，改一处要改另一处
-    // Z0860（裁定六十八第①条）：shape 是字段名，samples 是等距抽取的几条记录取值（②），dropped 是上一轮没有区分度、被弃的前提
-    premise_prompt: fn(purpose, preds, shape, samples, dropped) {
+    // Z0860（裁定六十八第①条）：shape 是字段名，samples 是等距抽取的几条记录取值（②），dropped 是上一轮没有区分度、被弃的前提，
+    // evidence 是上一轮按「前提≠证据」弃掉的（derive-15，主会话 2026-10-02：前提与结果无关，不成立时目的仍能用某个候选作答的是证据）
+    // cands 是目的各个 K 选一谓词的候选原文（derive-16：每道前提附 if_false，主控 2026-10-02 定；
+    // derive-17：if_false 写成结构；derive-18：目的无法作答那一种改名 unanswerable，与候选同名的兜底分开，主会话 2026-10-02 裁定）
+    premise_prompt: fn(purpose, preds, shape, samples, dropped, evidence, cands) {
         "下面是一段目的：「" + purpose + "」。要对一批条目逐个判断：" + join(preds, "；") + "。"
         + "在细判之前，先用字面前提题筛掉不值得细判的条目：每道题问条目材料本身写明了什么（例如「材料里写明了某件事吗？」），"
         + "条目不满足它，就不必为这个目的再细判。不要问「这段材料对判断有没有帮助」「材料够不够判断」这类关于判断本身的题。"
+        + "前提必须与结果无关：不管各道题最后判成哪个答案，判断要成立都得先满足它。若一道前提不成立时目的仍能用某个候选作答，"
+        + "它就是那个答案的证据，不是前提，不要写。"
         + "判前提题时只看得到这一个条目自己的材料，看不到参照材料、用户，也看不到目的里提到的其他输入；"
         + "所以题面只问条目自己写明了什么，不要提参照、用户，也不要写「对照」「相符」「匹配」这类要拿别的材料比着才能答的说法。"
         + (if len(shape) == 0 { "" } else { "条目是结构化记录，字段：" + join(shape, "、") + "。" })
         + (if len(samples) == 0 { "" } else { "下面是从这批条目里等距取出的几条（只作参考，不代表全部）：" + join(samples, "；") + "。" })
         + "每道前提应当让一部分条目满足、一部分不满足；照样本看全都满足或全都不满足的，不要写。"
         + "只看某个字段的取值就能定的（字段有没有、是否等于某值、数值大小、列表里有没有某一项、文字里有没有某段字），"
-        + "写成代码谓词 {\"op\": \"code\", \"field\": 字段名, \"check\": \"has\" 或 \"eq\" 或 \"ne\" 或 \"lt\" 或 \"le\" 或 \"gt\" 或 \"ge\" 或 \"contains\", \"value\": 值（has 不要）}，"
-        + "由代码判，不交给判断器；要理解意思才能定的，写成是非题 {\"op\": \"test\", \"text\": 题面}。"
+        + "写成代码谓词 {\"op\": \"code\", \"field\": 字段名, \"check\": \"has\" 或 \"eq\" 或 \"ne\" 或 \"lt\" 或 \"le\" 或 \"gt\" 或 \"ge\" 或 \"contains\", \"value\": 值（has 不要）, \"if_false\": 见下}，"
+        + "由代码判，不交给判断器；要理解意思才能定的，写成是非题 {\"op\": \"test\", \"text\": 题面, \"if_false\": 见下}。"
+        + "每道都要写 if_false：这道前提不成立时，目的会落到哪个候选。"
+        + (if len(cands) == 0 { "目的没有列出候选，if_false 一律写 {\"falls_to\": \"unanswerable\"}。" }
+           else { "落到某个候选就写 {\"falls_to\": \"candidate\", \"value\": 候选原文}，候选原文照下列逐字抄一个（"
+                  + join(map(cands, fn(c) { "「" + c + "」" }), "") + "），它是那个答案的证据，会被弃掉；"
+                  + "不成立时材料不够判、目的无法作答，写 {\"falls_to\": \"unanswerable\"}。"
+                  + "表示「都不合适、不选任何一类」的兜底候选不是落点：那是材料够、判过之后的结果，不是材料不够判。" })
         + (if len(dropped) == 0 { "" } else { "下面这些前提在样本上没有区分度（全部满足或全部不满足），换别的：" + join(dropped, "；") + "。" })
+        + (if len(evidence) == 0 { "" } else { "下面这些在样本上的分法与某个候选一致，是那个答案的证据、不是前提，换别的：" + join(evidence, "；") + "。" })
         + "写出至多两道，按筛掉条目的多少从多到少排，一道一个 JSON 对象。题面里不要用花括号。"
     },
     // 代码谓词的检查（Z0860 ①）：has 字段在且非空；eq / ne 取值相等 / 不等；lt / le / gt / ge 数值比较；
@@ -135,6 +152,9 @@ fn derive_rules() { {
     premise_sample_min: 20,
     premise_sample_pct: 5,
     premise_rounds: 2,
+    // 前提≠证据（derive-15）：样本上有候选标签可比时，前提分出的满足 / 不满足两组与某个候选分出的是 / 不是这一类两组一致，
+    // 即 evidence_not_premise 弃掉；两组各至少 premise_evidence_min_side 项已决且有标签才比
+    premise_evidence_min_side: 2,
     // 查题库：谓词与已认证题式是不是同一件事（K 选一，候选是题式题面加「都不是」）
     // 完成条件列了、谓词没覆盖的字段：补一个谓词（Z0535），走同一条查题库 → 唤出的路
     purpose_missing_field: fn(f) { "目的要求结果里有「" + f + "」这一项：就每个条目给出这一项的答案" },
@@ -160,5 +180,10 @@ fn derive_rules() { {
     // 验题闸门第①段的阻断码：派生题命中即不发出（只作用于派生题，作者手写的题照旧只得到提示，意图汇编 11a）。
     // 码名与 jpp-check 静态诊断的 W-diag-* 对齐（主控答复：阻断表放在这里）。
     block_codes: ["W-diag-exclusion", "W-diag-two-judgments", "W-diag-open-question", "W-diag-meta",
-                  "W-diag-mention-scope", "W-diag-abstract-direct", "W-diag-fill"]
+                  "W-diag-mention-scope", "W-diag-abstract-direct", "W-diag-fill"],
+
+    // ———— 过程入口（Z0886，第三靶子预注册 §2.2）：世界接口每步要一个动作，系统补一个动作谓词 ————
+    // 候选来自过程（over_from: process），每步由世界给；谓词按守则组装（assemble_text 的 K 选一），不唤出
+    purpose_act_pred: fn(purpose) { "为了「" + purpose + "」，下一步最该做的动作" },
+    purpose_act_field: "act"
 } }
