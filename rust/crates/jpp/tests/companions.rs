@@ -518,3 +518,199 @@ fn 命令行重放的lib_version按账本头() {
     }
     let _ = std::fs::remove_dir_all(&d);
 }
+
+/// Z0912（裁定七十三 (1)）：带画像中段 δ（`delta.noul.mid` 0.1281）时，伴随题读数在 0.5 ± δ 内没有信号，
+/// 不能当成「题不清」或「两可」，默认链照常往下走（发「为什么」、取）；带外的照旧
+fn 带画像() -> CalibStore {
+    let p = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../profiles/jev-1.13.0.json");
+    let j: Json = serde_json::from_str(&std::fs::read_to_string(p).unwrap()).unwrap();
+    let mut calib = CalibStore::new();
+    calib.profile = jpp::effects::Profile::from_json(&j).unwrap();
+    calib
+}
+
+#[test]
+fn 伴随选路_带内没有信号_照常往下走() {
+    // 前提 0.45（带内）：改前判「题不清」不补；改后不算数，参照也在带内 → 发「为什么」去补
+    let 带内 = [
+        ("unsure-companion-premise", 0.45),
+        ("diag-two-judgments", 0.1),
+        ("unsure-companion-cut", 0.1),
+        ("unsure-companion-reference", 0.55),
+    ];
+    let r = 跑(走链, CompanionMode::Same, 0.5, &带内, 带画像());
+    assert_ne!(r.outcome.unsure_default[0]["why"], "unclear", "{:?}", r.outcome.unsure_default);
+    assert_ne!(r.outcome.unsure_default[0]["why"], "ambiguous", "{:?}", r.outcome.unsure_default);
+    assert!(为什么发了(&r.ledger), "带内无信号，照常发「为什么」");
+    // 同一组读数不带画像（δ 未知）：照改前，前提 0.45 < 0.5 判题不清
+    let r0 = 跑(走链, CompanionMode::Same, 0.5, &带内, CalibStore::new());
+    assert_eq!(r0.outcome.unsure_default[0]["why"], "unclear");
+}
+
+#[test]
+fn 伴随选路_带外照旧() {
+    let 带外 = [
+        ("unsure-companion-premise", 0.2),
+        ("diag-two-judgments", 0.1),
+        ("unsure-companion-cut", 0.1),
+        ("unsure-companion-reference", 0.9),
+    ];
+    let r = 跑(走链, CompanionMode::Same, 0.5, &带外, 带画像());
+    assert_eq!(r.outcome.unsure_default[0]["why"], "unclear");
+    assert!(!为什么发了(&r.ledger));
+}
+
+/// 裁定七十六（主控板 Z0933）：声明了证据槽而条目没有（`insufficient`）、候选来自题的 `lacks` 时，原因已经确定，
+/// 默认链不按伴随题的「题不清」选路、不发「为什么」，按 lacks 顺序逐类取；非缺料的未决照旧先问伴随题
+const 缺料链: &str = r#"unsure_source({fetch: fn(q, need, m) { if need == "参照" { mat("对方的过往合作记录") } else { fail("没有这一类") } }});
+let f = form("test", "这两方适合合作吗？", {calib: "k", evidence: ["ref"], lacks: ["材料", "参照"]});
+let e = cut(judge(state(mat("甲方与乙方的合作意向")), fill(f, {})));
+handle(e, {act: fn() { "合作" }, ignore: fn() { "不合作" }})
+"#;
+
+const 带内链: &str = r#"unsure_source({fetch: fn(q, need, m) { if need == "参照" { mat("对方的过往合作记录") } else { fail("没有这一类") } }});
+let f = form("test", "这两方适合合作吗？", {calib: "k", lacks: ["材料", "参照"]});
+let e = cut(judge(state(mat("甲方与乙方的合作意向")), fill(f, {})), {declare: {hi: 0.7, lo: 0.3}});
+handle(e, {act: fn() { "合作" }, ignore: fn() { "不合作" }})
+"#;
+
+/// 「前提成立」有把握地判否（0.1，中段 δ 之外）；其余伴随题在带内，「最缺哪类」没选出
+const 前提否: [(&str, f64); 4] = [
+    ("unsure-companion-premise", 0.1),
+    ("diag-two-judgments", 0.5),
+    ("unsure-companion-cut", 0.5),
+    ("unsure-companion-reference", 0.5),
+];
+
+#[test]
+fn 缺料直取_不问伴随题题不清() {
+    let r = 跑(缺料链, CompanionMode::Same, 0.9, &前提否, 带画像());
+    let ud = &r.outcome.unsure_default;
+    assert_eq!(ud.len(), 1, "{ud:?}");
+    assert_eq!(ud[0]["cause"], "insufficient", "{ud:?}");
+    assert_eq!(ud[0]["source"], "lacks", "{ud:?}");
+    assert_eq!(ud[0]["why"], Json::Null, "伴随题判「前提不成立」不再读成题不清：{ud:?}");
+    assert_eq!(ud[0]["missed"], json!(["材料"]), "按 lacks 顺序逐类取：{ud:?}");
+    assert_eq!(ud[0]["fetched"], json!(["参照"]), "{ud:?}");
+    assert_eq!(ud[0]["end"], "decided", "{ud:?}");
+    assert_eq!(ud[0]["asked"], json!([]), "{ud:?}");
+    assert!(!为什么发了(&r.ledger), "不发「为什么拿不准」");
+    // 这道题确实带了伴随题，「前提成立」读数是 0.1（不是没登记的中性读数）
+    let imp = r.outcome.improve.iter().find(|x| x["q"] == "这两方适合合作吗？").expect("原题有伴随题");
+    let p = imp["companions"].as_array().unwrap().iter().find(|c| c["kind"] == "unsure-companion-premise").unwrap();
+    assert_eq!(p["p"], json!(0.1), "{imp}");
+}
+
+#[test]
+fn 非缺料_照旧问伴随题() {
+    let r = 跑(带内链, CompanionMode::Same, 0.5, &前提否, 带画像());
+    let ud = &r.outcome.unsure_default;
+    assert_eq!(ud.len(), 1, "{ud:?}");
+    assert_ne!(ud[0]["cause"], "insufficient", "{ud:?}");
+    assert_eq!(ud[0]["why"], "unclear", "{ud:?}");
+    assert_eq!(ud[0]["fetched"], json!([]), "{ud:?}");
+}
+
+/// 裁定七十七（归 R-043）：伴随题在带外给出诊断，默认链就用它，不再串行问「为什么拿不准」；取不到直接到末端。
+/// 元题只在伴随题全在带内时才问。报告每行 `route` 分得开走的是哪一路
+const 三类链: &str = r#"unsure_source({need: ["材料", "语境", "参照"], fetch: fn(q, need, m) { "关于" + need + "的补充" }});
+let e = cut(judge(state(mat("甲方与乙方的合作意向")), test("这两方适合合作吗？", "k")));
+handle(e, {act: fn() { "合作" }, ignore: fn() { "不合作" }})
+"#;
+
+#[test]
+fn 七十七_带外选出类别_只取它_不问为什么() {
+    // 「最缺哪类」带外选出第二类「过往合作」；补后仍拿不准，也不再取别的类、不问为什么，到末端
+    let 选出 = [
+        ("unsure-companion-premise", 0.9),
+        ("unsure-companion-material", 1.0),
+        ("diag-two-judgments", 0.1),
+        ("unsure-companion-cut", 0.5),
+        ("unsure-companion-reference", 0.5),
+    ];
+    let r = 跑(走链, CompanionMode::Same, 0.5, &选出, 带画像());
+    let ud = &r.outcome.unsure_default;
+    assert_eq!(ud[0]["route"], "companion", "{ud:?}");
+    assert_eq!(ud[0]["fetched"], json!(["过往合作"]), "{ud:?}");
+    assert_eq!(ud[0]["asked"], json!([]), "{ud:?}");
+    assert!(!为什么发了(&r.ledger), "带外诊断出了类别，不再问为什么");
+}
+
+#[test]
+fn 七十七_参照与语境不够_按候选顺序取这两类_不问为什么() {
+    // 「最缺哪类」没选出，「参照与语境够吗」带外判否：只取语境、参照（候选顺序），不取材料，不问为什么
+    let 参照否 = [
+        ("unsure-companion-premise", 0.9),
+        ("diag-two-judgments", 0.1),
+        ("unsure-companion-cut", 0.5),
+        ("unsure-companion-reference", 0.2),
+    ];
+    let r = 跑(三类链, CompanionMode::Same, 0.5, &参照否, 带画像());
+    let ud = &r.outcome.unsure_default;
+    assert_eq!(ud[0]["route"], "companion", "{ud:?}");
+    assert_eq!(ud[0]["fetched"], json!(["语境", "参照"]), "{ud:?}");
+    assert_eq!(ud[0]["asked"], json!([]), "{ud:?}");
+    assert!(!为什么发了(&r.ledger), "带外判否就是诊断，不问为什么");
+}
+
+#[test]
+fn 七十七_伴随题全在带内_照旧问为什么() {
+    let 带内 = [
+        ("unsure-companion-premise", 0.55),
+        ("diag-two-judgments", 0.45),
+        ("unsure-companion-cut", 0.5),
+        ("unsure-companion-reference", 0.5),
+    ];
+    let r = 跑(三类链, CompanionMode::Same, 0.5, &带内, 带画像());
+    let ud = &r.outcome.unsure_default;
+    assert_eq!(ud[0]["route"], "why", "{ud:?}");
+    assert!(为什么发了(&r.ledger), "没有信号，照旧发「为什么」");
+}
+
+#[test]
+fn 七十六的行_route_写缺料直取() {
+    let r = 跑(缺料链, CompanionMode::Same, 0.9, &前提否, 带画像());
+    assert_eq!(r.outcome.unsure_default[0]["route"], "missing-slot", "{:?}", r.outcome.unsure_default);
+}
+
+/// 裁定七十七交叉情形（预注册 10.2 第 4a 条，主控读法，待 Jpp 确认）：「最缺哪类」选出参照、「参照与语境够吗」也带外判否，
+/// 参照取不到（只有语境取得到）：按「最缺哪类」这个更具体的诊断走，参照取不到就到末端，不改取语境、不问为什么
+#[test]
+fn 七十七_交叉_选出的取不到_不改取另一类() {
+    let 只有语境 = r#"unsure_source({need: ["材料", "语境", "参照"], fetch: fn(q, need, m) { if need == "语境" { "关于语境的补充" } else { fail("没有这一类") } }});
+let e = cut(judge(state(mat("甲方与乙方的合作意向")), test("这两方适合合作吗？", "k")));
+handle(e, {act: fn() { "合作" }, ignore: fn() { "不合作" }})
+"#;
+    let 交叉 = [
+        ("unsure-companion-premise", 0.9),
+        ("unsure-companion-material", 2.0),
+        ("diag-two-judgments", 0.1),
+        ("unsure-companion-cut", 0.5),
+        ("unsure-companion-reference", 0.2),
+    ];
+    let r = 跑(只有语境, CompanionMode::Same, 0.5, &交叉, 带画像());
+    let ud = &r.outcome.unsure_default;
+    assert_eq!(ud[0]["route"], "companion", "{ud:?}");
+    assert_eq!(ud[0]["fetched"], json!([]), "不改取语境：{ud:?}");
+    assert_eq!(ud[0]["missed"], json!(["参照"]), "{ud:?}");
+    assert_eq!(ud[0]["needed"], json!(["参照"]), "{ud:?}");
+    assert_eq!(ud[0]["end"], "handoff", "{ud:?}");
+    assert!(!为什么发了(&r.ledger));
+    // 点名类别无取法（Jpp 2026-10-02）：伴随题点名了参照、取不到，按类别计一次
+    assert_eq!(r.outcome.named_unfetchable, json!({"参照": 1}), "{:?}", r.outcome.named_unfetchable);
+}
+
+/// 点名了、取到了，不计「点名类别无取法」；没有点名的不出这一段
+#[test]
+fn 点名取到不计() {
+    let 选出 = [
+        ("unsure-companion-premise", 0.9),
+        ("unsure-companion-material", 1.0),
+        ("diag-two-judgments", 0.1),
+        ("unsure-companion-cut", 0.5),
+        ("unsure-companion-reference", 0.5),
+    ];
+    let r = 跑(走链, CompanionMode::Same, 0.5, &选出, 带画像());
+    assert_eq!(r.outcome.unsure_default[0]["fetched"], json!(["过往合作"]));
+    assert_eq!(r.outcome.named_unfetchable, Json::Null, "{:?}", r.outcome.named_unfetchable);
+}

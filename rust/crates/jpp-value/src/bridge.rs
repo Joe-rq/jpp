@@ -110,13 +110,31 @@ pub fn unique_argmax(v: &[f64]) -> Option<usize> {
 /// 不唯一）时判断器没有给出回答，出 `Unsure(tie)`。作者在 select 上声明了置换而正逆两序众数不一致
 /// （`mode_share < 1`）同样是 tie（与有线时同口径）；没声明置换不要求置换。等级由运行时记 `Answer`。
 pub fn follow_answer(a: &Answer, mode_share: Option<f64>) -> ExitKind {
+    follow_answer_delta(a, mode_share, None)
+}
+
+/// [`follow_answer`] 加上画像中段 δ（Z0912，主会话裁定七十二 (2)）：K 选一读数的前两项相差不超过 δ 即并列
+/// （`Unsure(tie)`，走默认链）——与 `order` 按中段 δ 并档同一规则，δ 是画像实测（`delta.<题型>.mid` p99），不是手写阈值。
+/// `delta` 为 `None` 或 0（画像没测中段 δ）时与改前相同：只有最大值恰好不唯一才并列。是非题与程度题不变
+/// （是非题带内由运行时的读数触发走默认链，裁定五十二 (a)）。
+/// 替代与放弃：「连续 k 拍拿不准才算」——k 是手写数，放弃（裁定七十二）。推翻条件：真机上并列拍占比远超 δ 的含义
+/// （画像 δ 测的是同一读数重问的抖动；若带内读数重问后多数稳定在同一候选，说明 δ 取大了，回到画像测法）
+pub fn follow_answer_delta(a: &Answer, mode_share: Option<f64>, delta: Option<f64>) -> ExitKind {
     let tie = || ExitKind::Unsure(Why::of(UnsureCause::Tie));
     match a {
         Answer::Noul(p) if *p > 0.5 => ExitKind::Act,
         Answer::Noul(p) if *p < 0.5 => ExitKind::Ignore,
         Answer::Noul(_) => tie(),
         Answer::Choice(_) if mode_share.is_some_and(|ms| ms < 1.0) => tie(),
-        Answer::Choice(v) => unique_argmax(v).map_or_else(tie, ExitKind::Pick),
+        Answer::Choice(v) => match (unique_argmax(v), delta.filter(|d| *d > 0.0)) {
+            (Some(k), Some(d)) if v.len() >= 2 => {
+                let mut s = v.clone();
+                s.sort_by(|x, y| y.partial_cmp(x).unwrap_or(std::cmp::Ordering::Equal));
+                // 与 order 并档同一容差比较（BOUNDARY_EPS 吸收两位小数读数的浮点误差）
+                if s[0] - s[1] <= d + crate::stat::BOUNDARY_EPS { tie() } else { ExitKind::Pick(k) }
+            }
+            (k, _) => k.map_or_else(tie, ExitKind::Pick),
+        },
         Answer::Score(v) => unique_argmax(v).map_or_else(tie, ExitKind::At),
     }
 }
@@ -147,7 +165,7 @@ pub fn decide(i: &CutInput) -> (ExitKind, Untested) {
         } else {
             None
         };
-        return (follow_answer(a, i.mode_share), 载体);
+        return (follow_answer_delta(a, i.mode_share, i.delta), 载体);
     };
     // 有线没 δ 不是未决（裁定五十六、五十七 (3)、六十六；步 36 G3）：照线切、不加迁移带（按 δ = 0 比较）；
     // 读数与出口上的 `delta_unknown` 由调用方置（运行时 `cut` 本来如此，这一支只有题库统计与测试走到）
@@ -367,6 +385,31 @@ mod answer_route_tests {
             delta: None,
             mode_share: None,
         })
+    }
+
+    /// Z0912（裁定七十二 (2)）：没有线的 K 选一，前两项差不超过画像中段 δ 即并列；δ 未知或为 0 时照改前（恰好相等才并列）
+    #[test]
+    fn 选择题没线_前两项差在中段δ内为并列() {
+        let tie = ExitKind::Unsure(Why::of(UnsureCause::Tie));
+        let v = Answer::Choice(vec![0.30, 0.22, 0.48]);
+        // 0.48 − 0.30 = 0.18 > 0.0971：照最大项
+        assert_eq!(follow_answer_delta(&v, None, Some(0.0971)), ExitKind::Pick(2));
+        let w = Answer::Choice(vec![0.30, 0.22, 0.38]);
+        // 0.38 − 0.30 = 0.08 ≤ 0.0971：并列
+        assert_eq!(follow_answer_delta(&w, None, Some(0.0971)), tie);
+        // 恰在 δ 上：并列（与 order 并档同一容差比较）
+        let x = Answer::Choice(vec![0.25, 0.35]);
+        assert_eq!(follow_answer_delta(&x, None, Some(0.10)), tie);
+        // δ 未知或为 0：照改前
+        assert_eq!(follow_answer_delta(&w, None, None), ExitKind::Pick(2));
+        assert_eq!(follow_answer_delta(&w, None, Some(0.0)), ExitKind::Pick(2));
+        // 是非题、程度题不受影响
+        assert_eq!(follow_answer_delta(&Answer::Noul(0.55), None, Some(0.2)), ExitKind::Act);
+        assert_eq!(follow_answer_delta(&Answer::Score(vec![0.3, 0.36, 0.34]), None, Some(0.2)), ExitKind::At(1));
+        // decide 的没线分支用上 δ
+        let i = CutInput { fail: None, absent: None, line: None, cost_requested: false, alpha_requested: false,
+                           answer: Some(w.clone()), delta: Some(0.0971), mode_share: None };
+        assert_eq!(decide(&i).0, tie);
     }
 
     #[test]

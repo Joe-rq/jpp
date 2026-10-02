@@ -674,6 +674,7 @@ impl<'a> Interp<'a> {
             .map(|m| m.tokens())
             .sum();
         if ctx + criteria > w.json_ctx {
+            self.超窗计数[2] += 1;
             self.trace.warn(format!(
                 "W-window: @{} 同材料一次请求的语境槽 {ctx} token 加各题候选 {criteria} token 超 JSON 槽已测窗口 {}（B155：候选随题走，按材料合批后一次请求的总量）",
                 sp.start, w.json_ctx
@@ -698,6 +699,7 @@ impl<'a> Interp<'a> {
         for m in &state.on {
             let t = m.tokens();
             if t > w.text {
+                self.超窗计数[0] += 1;
                 self.trace.warn(format!(
                     "W-window: @{} 对象槽内单段 {t} token 超已测窗口 {}（超窗的语境会接管读数，答案可能偏而无痕）",
                     sp.start, w.text
@@ -712,6 +714,7 @@ impl<'a> Interp<'a> {
             .map(|m| m.tokens())
             .sum();
         if ctx > w.json_ctx {
+            self.超窗计数[1] += 1;
             self.trace.warn(format!(
                 "W-window: @{} 语境槽 {ctx} token 超 JSON 槽已测窗口 {}（上限未测，超出即无依据）",
                 sp.start, w.json_ctx

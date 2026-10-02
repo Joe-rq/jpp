@@ -406,6 +406,7 @@ fn main() -> ExitCode {
     };
     if let Command::Run(r) = &mut command {
         r.mat_store = 入口开关.mat_store.take();
+        r.envs = std::mem::take(&mut 入口开关.envs);
     }
     match execute(command, questions_out, explain, 入口开关) {
         Ok(()) if VIOLATION_EXIT.load(std::sync::atomic::Ordering::SeqCst) => ExitCode::from(3),

@@ -81,8 +81,8 @@ fn 并列没配取法_照旧转交并带缺的类别() {
     assert_eq!(v["value"], json!([{"weak": null}]), "{v}");
     assert_eq!(
         v["pending"],
-        json!([{"cause": "tie", "via": ["purpose:weak"], "pos": 0}]),
-        "{v}"
+        json!([{"cause": "tie", "via": ["缺材料、无取法", "purpose:weak"], "pos": 0}]),
+        "去向写明缺哪类、无取法（Jpp 2026-10-02）：{v}"
     );
     assert_eq!(v["dropped"], json!([]), "{v}");
     let ud: Vec<&Json> = r

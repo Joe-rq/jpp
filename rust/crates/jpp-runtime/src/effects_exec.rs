@@ -306,6 +306,8 @@ impl<'a> Interp<'a> {
             )?;
         }
         // B51-R2（步 15d）：声明了输出形状的动作，返回后核基数与单项尺寸；违反即失败值
+        // Z0885：世界动作（`env:*`，B159 写法二）记这次执行的墙钟，供时延实测（记而不比，不进值）
+        let 墙钟起 = name.starts_with("env:").then(unix_seconds);
         let result = (action.f)(args).and_then(|v| match &action.mat_shape {
             Some(shape) => 形状核对(shape, &v.to_json()).map(|_| v),
             None => Ok(v),
@@ -323,6 +325,7 @@ impl<'a> Interp<'a> {
             output,
             cost: action.cost,
             reused_from: None,
+            wall: 墙钟起.map(|t0| [t0, unix_seconds()]),
         };
         // B55：不可逆动作的结果即刻落盘；可逆动作层末落盘
         if 要意向 {
@@ -441,6 +444,7 @@ impl<'a> Interp<'a> {
                 output: hit.output,
                 cost: reuse::零费用,
                 reused_from: Some(hit.reused_from),
+                wall: None,
             });
             self.trace
                 .push(s.name, &key, true, reuse::零费用, sp, prompt.into());
@@ -763,6 +767,7 @@ impl<'a> Interp<'a> {
                 output: hit.output.clone(),
                 cost: reuse::零费用,
                 reused_from: Some(hit.reused_from),
+                wall: None,
             });
             self.trace
                 .push(s.name, &key, true, reuse::零费用, sp, String::new());
@@ -840,6 +845,7 @@ impl<'a> Interp<'a> {
             output: content.clone(),
             cost: 0.0,
             reused_from: None,
+            wall: None,
         });
         self.记可复用效应(&key, "");
         self.trace.push(s.name, &key, false, 0.0, sp, String::new());
@@ -887,6 +893,14 @@ pub(crate) fn 形状核对(shape: &jpp_effects::MatShape, out: &Json) -> Result<
 }
 
 /// 动作执行结果 → 程序拿到的值（成功是材料，失败是带动作输出位的失败值）；立即执行与守卫下推迟后执行共用
+/// Unix 秒（墙钟）。只给账本的 `wall` 用，不进任何程序值（B157）。
+fn unix_seconds() -> f64 {
+    std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map(|d| d.as_secs_f64())
+        .unwrap_or(0.0)
+}
+
 pub(crate) fn 动作产出(
     name: &str,
     key: &str,

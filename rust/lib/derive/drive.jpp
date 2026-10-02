@@ -1,0 +1,163 @@
+// 对运行中的过程按步出题（Z0886，第二靶子缺口 N-T1；第三靶子预注册 §2.2–§2.4、§5.2：地基/规划/第三靶子-预注册-草稿.md）。
+//
+// 为什么：purpose_run 只对一批静态条目出题、落字段；行为编译（意图汇编 26、27）要的是一个随步变化的状态——
+// 判断定动作、动作改世界、世界给下一步的材料。这里与 purpose_run 走同一份代码（purpose.jpp 拆出的 purpose_head、
+// purpose_qs、purpose_judge_item、purpose_land），不复制：
+//   purpose_plan(purpose, samples, opts)  出题一次：抽模块 → 系统补「动作」谓词 → 查题库 → 唤出 → 闸门（不派生前提，见下）
+//   purpose_step(plan, item, pos)          每步判一个状态：前提（plan 带前提时；代码一路零花费、判断类逐层）→ 判断 → cut → 默认链 → 落字段
+//   purpose_drive(purpose, env, opts)      用 env:step（Z0885，B159 写法二）推进宿主登记的世界，每步 purpose_step；
+//                                          世界自报 effect 时，上一步所选的候选与 effect 进下一步的 ctx（Z0895）
+//
+// 动作谓词：世界每步要一个动作，系统补一个 K 选一谓词「为了〈目的〉，下一步最该做的动作」，候选来源 process——
+// 每步由世界的 actions 给，进状态 over 槽；题面按守则组装（不唤出、不过闸门），所以题式跨步不变（同一个 form_hash）。
+// 这一步没有动作（判断器并列、缺席、默认链放弃）时取世界声明的空动作 idle，未决随返回值转交（不沿用上一步的动作，
+// 也不静默若干步——那是作者的策略，不是语言的默认；跑偏第 10 条自查：理由是「这一步判断器没给回答」，不是不信任判断器）。
+//
+// 替代与放弃：每步重新出题（生成器调用随步数线性涨，T1 推翻条件）——放弃；动作谓词走唤出（生成器写题面、候选与世界
+// 接口对不上）——放弃，候选只能来自世界；把上一题的回答放进下一题的语境（题树沿出口往下走，7b）——这一圈不做（N-B3）。
+// 推翻条件：同一次运行里任一谓词的题式哈希不止一个，或生成器调用数随步数增长。
+//
+// 过程入口不派生前提（裁定七十五，守则 premise_process）：每步的材料是世界按契约交回的整份观测，可判性由契约保证，
+// 派出来的「写明了某物吗」都是证据；候选每步才由世界给、派生时拿不到，判不成立的步只能交空动作（第三靶子第三圈
+// 3g.z 出题预跑：一道这样的前提把 60 拍排除成空动作，N-B8、N-B9）。purpose_step 仍接受带前提的 plan。
+//
+// purpose_drive(purpose, env, opts) -> 契约值
+//   env    宿主 --env 登记的世界名
+//   opts   {reset: [开局参数…]（每个一局，依次跑；缺省 [unit]）, play?: [局下标…]（只推进这几局，出题仍用全部开局观测；缺省全部）, bound?: 总步数上限（缺省 1000，含每局开局那一步）,
+//           elicit_n?, sample?（闸门样本数，缺省 = 开局数）, calib?}
+//   value  {rows: [{match, step, action, by: "judge" | "idle" | "excluded" | "no-candidates", fields, trust, excluded, hash}],
+//          by：judge 动作来自判断；idle 判断器这一步没给回答（并列、缺席、默认链放弃），未决有去向；
+//          excluded 前提判这一步不纳入（已决的 ignore，不是未决；过程入口不派生前提，只在 plan 带前提时出现）；no-candidates 世界这一步没给候选
+//           results: [{match, steps, result, hash}]}
+//   pending  出题时的未决（闸门、查题库、前提探测的缺席类）与每步的未决（pos = 全程步号）
+//   detail   {plan: 出题明细, reason: iterate 停的原因, rounds, error?}
+import "purpose.jpp";
+
+// 世界的一步结果 → 条目：观测进材料、候选进 over
+fn drive_item(w) { {on: mat(w.obs), over: w.actions} }
+
+// 带上一步结果的条目（Z0895，第三靶子第二圈预注册 §1.1）：世界在这一步的返回里自报了 effect（上一步动作引起的事件，
+// 世界原样给、不是我们写的评价）时，把「上一步所选的候选 + effect」放进语境槽 ctx；世界不报 effect、或这是一局的
+// 第一步（prev 为 unit）时，与 drive_item 相同。ctx 对这一步所有题可见（谓词题、伴随题、每步前提）
+fn drive_item_prev(w, prev) {
+    if prev == unit || !has(w, "effect") { drive_item(w) }
+    else { {on: mat(w.obs), over: w.actions, ctx: mat({previous_action: prev, effect: w.effect})} }
+}
+
+fn purpose_plan(purpose, samples, opts0) {
+    let R = derive_rules();
+    let opts1 = if has(opts0, "sample") { opts0 } else { with(opts0, "sample", len(samples)) };
+    let h = purpose_head(purpose, samples, opts1);
+    let opts = h.opts;
+    let names = map(h.preds, fn(p) { p.field });
+    let fname = if contains(names, R.purpose_act_field) { R.purpose_act_field + "_" + text(len(h.preds)) } else { R.purpose_act_field };
+    let act = {id: "p" + text(len(h.preds)), text: R.purpose_act_pred(purpose), cut: "k_ary", cut_from: "system",
+               over: [], over_from: "process", scale: [], scale_from: "none", request: "one", field: fname, warn: [], added: "process"};
+    let preds = if len(filter(h.preds, fn(p) { p.over_from == "process" })) > 0 { h.preds } else { append(h.preds, act) };
+    // 前提≠证据（derive-15 起）：K 选一谓词的候选交给派生；候选来自过程的（每步由世界给）出题时还不知道，不交
+    let pre = if len(samples) == 0 || !R.premise_process { unit } else {
+        purpose_premises(purpose, map(preds, fn(p) { p.text }), samples, opts,
+                         map(filter(preds, fn(p) { len(p.over) > 0 }), fn(p) { {field: p.field, over: p.over} }))
+    };
+    let Q = purpose_qs(preds, samples, opts, h.info0);
+    // 前提的样本探测在出题时结算：过程每步的判断站点与探测不同键，探测出口没有后续承担者（判过而拿不准的 drop，缺席类转交）
+    let probe = if pre == unit { [] } else { premise_settle(fold(pre.premises, [], fn(acc, p) { concat(acc, p.probe_pending) })) };
+    let pend = concat(concat(carry([], Q.g.pending, "purpose:gate"),
+                             carry([], fold(Q.bank, [], fn(acc, b) { if has(b, "pend") { concat(acc, b.pend) } else { acc } }), "purpose:bank")),
+                      concat(if has(h.info0, "extra_pending") { h.info0.extra_pending } else { [] },
+                             carry([], concat(if pre == unit { [] } else { pre.carry }, probe), "premise-probe")));
+    {purpose: purpose, preds: preds, qs: Q.qs, live: Q.live, pre: pre, act_field: fname, pending: pend,
+     evidence: concat(filter(concat(map(Q.bank, fn(b) { b.key }), h.info0.alias_keys), fn(k) { k != unit }), Q.g.evidence),
+     detail: {version: R.version, entry: "process", modules: h.info0.modules, sources: h.info0.sources,
+              preds: map(preds, fn(p) { {field: p.field, cut: p.cut, cut_from: p.cut_from, over_from: p.over_from} }),
+              bank: map(Q.bank, fn(b) { if has(b, "hit") { {pred: b.pred, kind: b.kind, how: b.how, hit: b.hit} } else { {pred: b.pred, kind: b.kind, how: b.how} } }),
+              elicit: {calls: len(Q.todo), rejected: Q.g.rejected}, gate_items: Q.gate_items,
+              questions: map(Q.qs, fn(x) { {field: x.field, cut: x.cut, q: if x.q == unit { unit } else { x.q.text },
+                                            form: if x.q == unit { unit } else { x.q.hash }, op: x.op, from: x.from, over_from: x.over_from} }),
+              premise: if pre == unit { unit } else {
+                  {derived: pre.derived, passed: map(pre.premises, fn(x) { x.q }), code: map(pre.code, fn(c) { {q: c.q, spec: c.spec} }),
+                   rejected: pre.rejected, dropped: pre.dropped, rounds: pre.rounds, reason: pre.reason} },
+              warnings: fold(preds, [], fn(acc, p) { concat(acc, p.warn) }),
+              // 抽模块失败或一个谓词都没抽出（只剩系统补的动作谓词）时记下原因
+              error: if len(h.preds) == 0 { h.info0.error } else { unit }}}
+}
+
+// 一步：前提先筛（代码一路零花费；判断类逐层，判过线的才往下，拿不准的存活并转交，同 select_material），再判全部活题、落字段
+fn purpose_step(plan, item, pos) {
+    let code = if plan.pre == unit { [] } else { plan.pre.code };
+    let code_ex = fold(code, [], fn(acc, c) { append(acc, {layer: len(acc), q: c.q, by: "code", exit: premise_code_eval(c.spec, content(item.on))}) });
+    let code_out = len(filter(code_ex, fn(m) { m.exit == "ignore" })) > 0;
+    let prem = if code_out || plan.pre == unit { [] } else { plan.pre.premises };
+    let pr = fold(prem, {out: false, marks: [], pend: [], keys: []}, fn(acc, p) {
+        if acc.out { acc } else {
+            let r = judge(derive_state(item, {}), p.question);
+            let e = cut(r);
+            let lab = exit_kind(e);
+            let m = {layer: len(code_ex) + len(acc.marks), q: p.q, exit: lab, source_key: key_of(r)};
+            let acc1 = with(with(acc, "marks", append(acc.marks, m)), "keys", append(acc.keys, key_of(r)));
+            if lab == "ignore" { with(acc1, "out", true) }
+            else if starts_with(lab, "unsure") { with(acc1, "pend", carry(acc1.pend, [element(item.on, e, {pos: pos, q: p.question})], "purpose:premise")) }
+            else { acc1 }
+        }
+    });
+    let marks = concat(code_ex, pr.marks);
+    if code_out || pr.out {
+        {fields: {}, trust: {}, pend: pr.pend, dropped: [], keys: pr.keys, excluded: true, premise: marks}
+    } else {
+        let rs = purpose_judge_item(plan.qs, plan.live, item, pos);
+        let row = fold(derive_idx(plan.live), {fields: {}, pend: pr.pend, trust: {}, dropped: [], extra: []}, fn(acc0, k) {
+            let qq = plan.qs[plan.live[k]];
+            purpose_land(acc0, qq, rs[k], item, pos, if qq.cut == "ordered" { purpose_rank(order([rs[k]]), 0) } else { 0 })
+        });
+        {fields: row.fields, trust: row.trust, pend: row.pend, dropped: row.dropped, excluded: false, premise: marks,
+         keys: concat(concat(pr.keys, map(rs, fn(r) { key_of(r) })), row.extra)}
+    }
+}
+
+fn purpose_drive(purpose, env, opts) {
+    let resets = if has(opts, "reset") { opts.reset } else { [unit] };
+    let bound = if has(opts, "bound") { opts.bound } else { 1000 };
+    let opens = map(resets, fn(r) { do("env:step", [{env: env, state: unit, action: unit, reset: r}], 0) });
+    let bad = filter(opens, fn(o) { is_fail(o) });
+    if len(bad) > 0 {
+        outcome({value: {rows: [], results: []}, pending: [], evidence: [], detail: {error: "env-open", plan: unit}})
+    } else {
+        let ws = map(opens, fn(o) { content(o) });
+        let plan = purpose_plan(purpose, map(ws, fn(w) { drive_item(w) }), opts);
+        let f = plan.act_field;
+        // 这一趟走哪几局（下标指 reset 的位置）：出题用全部开局观测作样本，只推进 play 里的局。
+        // 宿主可以一局一趟地跑、每局之间看花费决定跑不跑下一局（第三靶子附录 9.2），出题与一趟跑全部时相同
+        let plays = if has(opts, "play") { opts.play } else { derive_idx(ws) };
+        let step = fn(acc, i) {
+            if acc.w.done {
+                let res = {match: plays[acc.k], steps: acc.s, result: if has(acc.w, "result") { acc.w.result } else { unit },
+                           hash: if has(acc.w, "hash") { acc.w.hash } else { unit }};
+                let k2 = acc.k + 1;
+                let acc2 = with(with(with(with(acc, "results", append(acc.results, res)), "k", k2), "s", 0), "n", acc.n + 1);
+                if k2 >= len(plays) { stop(acc2) } else { with(with(acc2, "w", ws[plays[k2]]), "prev", unit) }
+            } else {
+                // 世界这一步没给候选：不判，取空动作（by: no-candidates）
+                let none = len(acc.w.actions) == 0;
+                let row = if none { {fields: {}, trust: {}, pend: [], dropped: [], keys: [], excluded: false, premise: []} }
+                          else { purpose_step(plan, drive_item_prev(acc.w, acc.prev), acc.n) };
+                let picked = has(row.fields, f) && row.fields[f] != unit;
+                let a = if picked { row.fields[f] } else { acc.w.idle };
+                let o = do("env:step", [{env: env, state: acc.w.state, action: a}], 0);
+                let r = {match: plays[acc.k], step: acc.s, action: a, by: if picked { "judge" } else if none { "no-candidates" } else if row.excluded { "excluded" } else { "idle" },
+                         fields: row.fields, trust: row.trust,
+                         excluded: row.excluded, hash: if has(acc.w, "hash") { acc.w.hash } else { unit }};
+                let acc2 = with(with(with(with(with(with(acc, "rows", append(acc.rows, r)), "pend", concat(acc.pend, row.pend)),
+                                                "keys", concat(acc.keys, row.keys)), "dropped", concat(acc.dropped, row.dropped)),
+                                     "n", acc.n + 1), "s", acc.s + 1);
+                if is_fail(o) { stop(with(acc2, "error", "env-step")) } else { with(with(acc2, "w", content(o)), "prev", a) }
+            }
+        };
+        let init = {k: 0, s: 0, n: 0, w: ws[plays[0]], prev: unit, rows: [], results: [], pend: [], keys: [], dropped: [], error: unit};
+        let it = iterate(bound, init, step, fn(acc) { bound - acc.n });
+        let v = it.value;
+        outcome({value: {rows: v.rows, results: v.results},
+                 pending: concat(plan.pending, v.pend),
+                 evidence: concat(plan.evidence, v.keys),
+                 detail: {plan: plan.detail, reason: it.resume.reason, rounds: it.resume.rounds, dropped: v.dropped, error: v.error}})
+    }
+}

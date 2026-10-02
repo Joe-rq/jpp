@@ -44,7 +44,7 @@ fn 模块() -> Json {
 fn 生成(前提: Json) -> impl Fn(&str) -> Vec<Json> {
     move |p: &str| {
         if p.contains("字面前提题") {
-            vec![前提.clone()]
+            补if_false(vec![前提.clone()])
         } else if p.starts_with("下面是一段目的") {
             vec![模块()]
         } else {
@@ -212,7 +212,7 @@ fn 前提派生提示写明只看得到条目材料() {
     let r = 跑_按提示(&程序(), 读数, |p: &str| {
         提示.borrow_mut().push(p.to_string());
         if p.contains("字面前提题") {
-            vec![json!({"op": "test", "text": 前提题})]
+            补if_false(vec![json!({"op": "test", "text": 前提题})])
         } else if p.starts_with("下面是一段目的") {
             vec![模块带参照.clone()]
         } else {

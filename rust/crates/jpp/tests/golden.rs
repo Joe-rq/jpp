@@ -158,28 +158,6 @@ fn base_args(c: &Case) -> Vec<String> {
     a
 }
 
-/// 去掉报告里的 `action_facts` 块：它记着宿主的操作系统沙箱（macOS sandbox-exec、Linux bwrap 或没有），随机器而变，
-/// 金样在 macOS 上录制；公开仓库在 Linux CI 上比较时两边都去掉（tools/sync-rust-from-research.sh 改写）。
-fn strip_action_facts(text: &str) -> String {
-    let mut out = String::new();
-    let mut skipping = false;
-    for line in text.split_inclusive('\n') {
-        let l = line.trim_end_matches('\n');
-        if skipping {
-            if l == "  }," || l == "  }" {
-                skipping = false;
-            }
-            continue;
-        }
-        if l == "  \"action_facts\": {" {
-            skipping = true;
-            continue;
-        }
-        out.push_str(line);
-    }
-    out
-}
-
 /// 与金样逐字节比较；更新模式下写入。返回差异说明（空即一致）。
 fn check(dir: &Path, file: &str, actual: &str, diffs: &mut Vec<String>) {
     let path = dir.join(file);
@@ -189,9 +167,8 @@ fn check(dir: &Path, file: &str, actual: &str, diffs: &mut Vec<String>) {
         return;
     }
     match fs::read_to_string(&path) {
-        Ok(expected) if strip_action_facts(&expected) == strip_action_facts(actual) => {}
+        Ok(expected) if expected == actual => {}
         Ok(expected) => {
-            let (expected, actual) = (strip_action_facts(&expected), strip_action_facts(actual));
             let line = expected
                 .lines()
                 .zip(actual.lines())
@@ -209,6 +186,37 @@ fn check(dir: &Path, file: &str, actual: &str, diffs: &mut Vec<String>) {
 
 fn pretty(v: &Value) -> String {
     serde_json::to_string_pretty(v).unwrap() + "\n"
+}
+
+/// Z0901：报告里的 `host` 块记着随宿主变的环境事实（操作系统沙箱种类，以及事实随它变的执行器动作），
+/// 金样不存、比较不看。报告里有顶层 `host` 才去（去掉后按原样的缩进再序列化，末尾换行与原文一致）；
+/// 没有 `host` 的文本、不是 JSON 对象的文本原样返回。
+fn drop_host(text: &str) -> String {
+    let Ok(Value::Object(mut m)) = serde_json::from_str::<Value>(text) else {
+        return text.to_string();
+    };
+    if m.remove("host").is_none() {
+        return text.to_string();
+    }
+    let mut out = serde_json::to_string_pretty(&Value::Object(m)).unwrap();
+    if text.ends_with('\n') {
+        out.push('\n');
+    }
+    out
+}
+
+/// 去 `host` 的两种情形：有则去、无则原样。
+#[test]
+fn drop_host_只去顶层host() {
+    let with = "{\n  \"a\": 1,\n  \"host\": {\n    \"sandbox\": \"bwrap\"\n  }\n}\n";
+    assert_eq!(drop_host(with), "{\n  \"a\": 1\n}\n");
+    let without = "{\n  \"a\": {\"host\": 1}\n}";
+    assert_eq!(
+        drop_host(without),
+        without,
+        "嵌套的 host 不动，没有顶层 host 原样返回"
+    );
+    assert_eq!(drop_host("不是 JSON"), "不是 JSON");
 }
 
 /// 21 §二·1 第 2、3 条：全部示例的金样与重放。
@@ -258,7 +266,10 @@ fn examples_match_golden_and_replay() {
             c.name,
             String::from_utf8_lossy(&out.stderr)
         );
-        let report_text = normalize(&fs::read_to_string(tmp.join("report.json")).unwrap(), &tmp);
+        let report_text = drop_host(&normalize(
+            &fs::read_to_string(tmp.join("report.json")).unwrap(),
+            &tmp,
+        ));
         let ledger_text = normalize(&fs::read_to_string(tmp.join("ledger.json")).unwrap(), &tmp);
         let report: Value = serde_json::from_str(&report_text).unwrap();
         // 步 25e：从种子续跑的用例一次新调用都不许有——有就是种子过期（改了库或示例、键变了），
@@ -310,10 +321,10 @@ fn examples_match_golden_and_replay() {
             c.name,
             String::from_utf8_lossy(&rout.stderr)
         );
-        let rtext = normalize(
+        let rtext = drop_host(&normalize(
             &fs::read_to_string(rtmp.join("replay-report.json")).unwrap(),
             &tmp,
-        );
+        ));
         let replay: Value = serde_json::from_str(&rtext).unwrap();
         assert_eq!(replay["cost"]["calls"], 0, "{}：重放新增了调用", c.name);
         assert_eq!(replay["cost"]["asks"], 0, "{}：重放新增了提问", c.name);

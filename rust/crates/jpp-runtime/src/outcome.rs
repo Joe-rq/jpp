@@ -197,7 +197,7 @@ impl<'a> Interp<'a> {
             cuts: vec![],
             returns_exit: true,
             过桥: 0,
-            主人: String::new(),
+            主人: crate::帧主人::已算(String::new()),
         });
         let env = env_child(&root_env());
         // 宿主入口参数（B105）：绑定在程序最外层之外，程序自己的同名 `let` 照常遮蔽它。
@@ -300,6 +300,17 @@ impl<'a> Interp<'a> {
         let 交回 = 进门余额.as_ref().map(|c| c.after_round(self.ledger.view()));
         // 伴随题的报告段（B0492 S5）：下面两臂会把 self 的字段移走，先算
         let 伴随报告 = self.伴随报告();
+        let 点名报告 = if self.点名无取法.is_empty() {
+            Json::Null
+        } else {
+            serde_json::to_value(&self.点名无取法).unwrap_or(Json::Null)
+        };
+        // Z0918：超窗次数；画像没测窗口时不核窗口，计数无意义，报告不出
+        let 超窗报告 = if self.calib.profile().window().is_some() {
+            serde_json::json!({"text": self.超窗计数[0], "ctx": self.超窗计数[1], "group": self.超窗计数[2]})
+        } else {
+            Json::Null
+        };
         match result {
             Ok(v) => {
                 let frame = self.frames.pop().unwrap();
@@ -414,6 +425,8 @@ impl<'a> Interp<'a> {
                     selections: self.挑选记录,
                     unsure_default: std::mem::take(&mut self.默认链记录),
                     improve: 伴随报告,
+                    window_over: 超窗报告.clone(),
+                    named_unfetchable: 点名报告.clone(),
                     orders: std::mem::take(&mut self.并档记录),
                     violations: std::mem::take(&mut self.违规)
                         .into_iter()
@@ -454,6 +467,8 @@ impl<'a> Interp<'a> {
                     selections: self.挑选记录,
                     unsure_default: std::mem::take(&mut self.默认链记录),
                     improve: 伴随报告,
+                    window_over: 超窗报告.clone(),
+                    named_unfetchable: 点名报告.clone(),
                     orders: self.并档记录,
                     violations: vec![],
                     settle_failed: vec![],

@@ -17,6 +17,7 @@
 //! `工程-比赛R2a-exec_sql.md`（`exec_sql`）、`工程-执行器动作安全修补.md`（B164：沙箱、
 //! 动态 `reversible`、`E-action-no-sandbox`、`exec_sql` 的 `Fail(Denied)`）。
 
+mod env;
 mod exec;
 mod graph;
 mod graph_cycles;
@@ -30,6 +31,8 @@ use crate::interp::{ActionRegistry, TaintOut};
 use crate::value::Value;
 use serde_json::Value as Json;
 use std::sync::OnceLock;
+
+pub use env::parse_env_flag;
 use std::{cell::RefCell, rc::Rc};
 
 /// 动作运行时能碰到的宿主状态：`record_check` 的检查记录（进报告 `local_checks`），与程序文件所在目录。
@@ -39,6 +42,9 @@ pub struct Ctx {
     /// 程序文件所在目录（现场稳定性三修 (2)）：`read_json` 的相对路径先按它找，找不到再按当前目录。
     /// CLI 从程序路径填；库调用方不填时只按当前目录（与改前相同）。
     pub program_dir: Option<std::path::PathBuf>,
+    /// 宿主登记的世界（Z0885，`--env <名字>=<命令>`）：名字 → 命令（程序与参数）。`env:step` 按名字找命令；
+    /// 没登记的名字给失败值并列出已登记的
+    pub envs: Rc<std::collections::BTreeMap<String, Vec<String>>>,
 }
 
 /// 画像 `actions` 分表里执行器动作的 `sandbox` 描述（B164）：`kind` 是
@@ -343,8 +349,35 @@ pub fn builtin_actions() -> &'static [HostAction] {
                 run: exec::exec_sql,
                 sandbox: Some(executor_sandbox_profile()),
             },
+            // Z0885（B159 写法二，裁定六十九）：世界动作。协议无状态且子进程在沙箱内 → 可逆、成本 0；
+            // 无沙箱时与执行器同规则登记为不可逆。契约与六项隐性知识见 `env.rs` 头注
+            HostAction {
+                name: "env:step",
+                usage: "env:step({env,state,action,reset?})",
+                reversible: env::reversible(),
+                undo: env_undo(),
+                taint_out: TaintOut::Untrusted,
+                cost: 0.0,
+                run: env::env_step,
+                sandbox: Some(executor_sandbox_profile()),
+            },
         ]
     })
+}
+
+/// `env:step` 的可撤回性事实（裁定六十九，`12` §2.7 B159 附注）
+fn env_undo() -> UndoFact {
+    if env::reversible() {
+        yes(
+            "世界状态整份进出、环境进程两次调用之间不留状态（协议无状态），子进程在操作系统沙箱里跑（写限定在调用专属临时目录、断网）；同一输入必得同一输出，回到任一步只需拿那一步的状态重来",
+            &["环境遵守无状态协议（重放比对能报出同输入不同输出的环境）"],
+        )
+    } else {
+        no(
+            "本机探测不到操作系统沙箱，登记的环境命令以普通子进程运行，可写宿主文件、可联网，运行时无法撤回",
+            &["探测不到 sandbox-exec（macOS）或 bwrap（Linux）"],
+        )
+    }
 }
 
 /// 把表里的动作全部注册进 `registry`。只凭账本重放（`replay_only`）时动作一律不执行：
@@ -389,6 +422,30 @@ pub fn action_facts_json(names: Option<&[String]>) -> Json {
         }
     }
     Json::Object(m)
+}
+
+/// 把整张事实表按「事实是否随宿主变」拆成两份（Z0901）：`(不随宿主变, 随宿主变)`，各是 动作名 → 事实。
+/// 随宿主变的是表里带沙箱画像的动作（`exec_py`、`check_tests`、`exec_sql`：可逆与否、成立条件由本机的沙箱探测派生）；
+/// 其余动作的事实只由动作本身决定。`names` 同 [`action_facts_json`]。报告把前一份放 `action_facts`、
+/// 后一份放 `host.action_facts`，金样比较排除整个 `host`。
+pub fn action_facts_split(names: Option<&[String]>) -> (Json, Json) {
+    let (mut plain, mut host) = (serde_json::Map::new(), serde_json::Map::new());
+    for a in builtin_actions() {
+        if names.is_none_or(|ns| ns.iter().any(|n| n == a.name)) {
+            let m = if a.sandbox.is_some() {
+                &mut host
+            } else {
+                &mut plain
+            };
+            m.insert(a.name.to_string(), action_fact_json(a));
+        }
+    }
+    (Json::Object(plain), Json::Object(host))
+}
+
+/// 宿主的沙箱种类（`"sandbox-exec"`、`"bwrap"`、`"none"`），报告 `host.sandbox` 用。
+pub fn host_sandbox_kind() -> &'static str {
+    sandbox::kind().as_str()
 }
 
 /// 已知动作的事实表（步 24c）：不依赖用户输入或实际 `ActionRegistry`（`check` 不构造它），

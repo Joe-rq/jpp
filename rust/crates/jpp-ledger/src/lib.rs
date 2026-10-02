@@ -151,6 +151,11 @@ pub enum Entry {
         /// 复用条目 `cost` 为 0。为空不写，没有复用的账本逐字节不变。
         #[serde(default, skip_serializing_if = "Option::is_none")]
         reused_from: Option<String>,
+        /// 世界动作（`env:*`，B159 写法二；Z0885）这一次执行的墙钟：`[调用时刻, 返回时刻]`，Unix 秒。
+        /// 不定输入，记而不比（裁定五十九「账本记不定输入」）；不进程序的值（程序里没有时间，B157）。
+        /// 只有 `env:*` 动作填，其余为空不写，旧账本与金样逐字节不变。
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        wall: Option<[f64; 2]>,
     },
     /// 问人。`answer: None` = 已问未答：重放照样以 `Pending` 结束；续跑时再问，答案另起一条。
     Ask {
@@ -447,6 +452,7 @@ impl Entry {
             output_mat: None,
             cost,
             reused_from: None,
+            wall: None,
         }
     }
     /// 账本键另有来历（`repeat`、`absent` 的派生键）的效应记录。
@@ -459,6 +465,7 @@ impl Entry {
             output_mat: None,
             cost,
             reused_from: None,
+            wall: None,
         }
     }
     pub fn key(&self) -> &str {

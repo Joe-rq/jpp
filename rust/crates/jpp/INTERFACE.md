@@ -436,6 +436,7 @@ S 库 `lib/materials.jpp` 的 `review_material(opinion, about)`：把评审意�
   - 同一键已被消费后再消费，报 `W-duty-twice`，这次不再计账；
   - 被 `compose`、`tally` 吸收不算解除，责任转进合成出口；
   - 报告在同一键有两个及以上持有者被带回时列 `duties` 表（键、出口、持有者路径）。
+  - 报告 `action_facts`（只在程序有 `do` 站点时出现）列用到的动作的可撤回性事实 `{reversibility, reason, conditions}`；事实随宿主操作系统沙箱变的动作（`exec_py`、`check_tests`、`exec_sql`）另放顶层 `host`：`{sandbox: "sandbox-exec"|"bwrap"|"none", action_facts: {…}}`，没有用到这类动作的程序不出 `host`（Z0901）。金样比较排除 `host`。
 
 **合成出口的放行（步 25-9，B131、B140、B141）**：
 - 合成出口（`compose`、`tally`、`first_k` 签发的，带 `parts`）的 `releases()` ≡ 全部分量放行之合取。分量放行 = 它自己的 `releases()`，或它来自 `ask`（人答即真值）。
@@ -593,7 +594,7 @@ S 库 `lib/materials.jpp` 的 `review_material(opinion, about)`：把评审意�
 | `untested` | 不是原因，只是正交位。select 有线、没测置换：原因 `cold`、正交位 `untested:permutation`（裁定六十六）。有线没 δ 不出未决：照线切、不加迁移带（裁定五十六、五十七 (3)、六十六） |
 | 合并与读回 | 原因不同的未决值合并（`undecided`）取第一个缺席类原因，没有取第一个（原来记非成员 `merged`）；账本读回的非成员缺席原因（旧账本、`spec_miss`）进出口时按 `absent` |
 | 缺席类 | 一律按 `UnsureCause::is_absent_class()`（`absent, budget, depth, latency, deadline`） |
-| 默认链 | 可补组只有 `band`、`tie`；`insufficient` 显式不补（改前因带槽名从没匹配上；开启另登） |
+| 默认链 | 可补组：`band`、`tie`，以及缺 `ref` 或 `ctx` 槽的 `insufficient`（Z0589：取来的材料补进缺的槽）；别的槽的 `insufficient` 不补、链末转交。**未决 cause 为 `insufficient` 且候选类别来自题式 `lacks` 时，原因已定，默认链直接按 `lacks` 取：不问伴随题的「题不清 / 两可」、不发「为什么拿不准」；伴随题「最缺哪类」选出的先取，否则按 `lacks` 顺序逐类取（裁定七十六，Z0933）。** 其余未决先按伴随题选路：前提或「藏了两个判断」带外判题不清；**伴随题带外给出诊断就直接用，不再串行问「为什么拿不准」——「最缺哪类」选出了类别就只取它，没选出而「参照与语境够吗」带外判否就取候选里的参照、语境（按候选顺序）；诊断出的类别取不到，到末端（类别进 `needed`、转交），不再问为什么；「最缺哪类」选出了类别、「够吗」也判否时，按「最缺哪类」走，选出的那类取不到就到末端，不改取另一类（裁定七十七，归 R-043；交叉情形 Jpp 裁 (A)：映射到参照、语境只用于「最缺哪类」没选出类别的时候）。** 伴随题全在带内（没有信号）时才发「为什么拿不准」。报告 `unsure_default` 每行的 `route` 分得开走的是哪一路：`missing-slot`（七十六）、`companion`（七十七）、`why`（发了元题） |
 
 ## 三·五、执行模型：惰性登记 + 刷新点 + 分层
 

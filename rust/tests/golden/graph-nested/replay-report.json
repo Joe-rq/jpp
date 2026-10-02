@@ -5,32 +5,11 @@
       "reason": "纯 Rust 计算：只读入参、返回新值，不碰宿主与外部系统",
       "reversibility": "reversible"
     },
-    "check_tests": {
-      "conditions": [
-        "沙箱：sandbox-exec"
-      ],
-      "reason": "运行被测代码与断言；在调用专属临时目录内运行，操作系统沙箱把写限定在该目录、拒绝一切网络，调用结束整目录丢弃。读宿主文件不隔离；CPU、内存、进程数不限",
-      "reversibility": "reversible"
-    },
     "embed_topk": {
       "conditions": [
         "写 ~/.cache/jpp-embed 下的缓存文件（可再生）"
       ],
       "reason": "读入文本、起 Python 子进程算向量；会写可再生缓存 ~/.cache/jpp-embed，不改用户数据；删掉缓存即回到运行前",
-      "reversibility": "reversible"
-    },
-    "exec_py": {
-      "conditions": [
-        "沙箱：sandbox-exec"
-      ],
-      "reason": "运行给定的 Python 代码；在调用专属临时目录内运行，操作系统沙箱把写限定在该目录、拒绝一切网络，调用结束整目录丢弃。读宿主文件不隔离；CPU、内存、进程数不限",
-      "reversibility": "reversible"
-    },
-    "exec_sql": {
-      "conditions": [
-        "沙箱：sandbox-exec"
-      ],
-      "reason": "只读打开数据库（mode=ro + PRAGMA query_only + 授权回调只放行 SELECT，任何语句都改不了库）；在调用专属临时目录内运行，操作系统沙箱把写限定在该目录、拒绝一切网络，调用结束整目录丢弃。读宿主文件不隔离；CPU、内存、进程数不限",
       "reversibility": "reversible"
     },
     "graph:components": {

@@ -23,6 +23,8 @@ pub use jpp_ir::question_kind::{
 
 // 步 36 G3：按类型拆成子模块（只搬不改），`jpp_value::value::` 下的路径照旧
 mod env;
+/// 按值身份的缓存（Z0882）
+pub mod ident_cache;
 mod exit;
 mod material;
 mod question;
@@ -105,12 +107,15 @@ impl Value {
             }
             Value::Fail(_, p) => p.clone(),
             Value::Mat(m) => m.prov(),
-            Value::List(l) => l
-                .iter()
-                .fold(Provenance::trusted(), |a, x| prov_join(&a, &x.prov())),
-            Value::Record(fs) => fs
-                .iter()
-                .fold(Provenance::trusted(), |a, (_, x)| prov_join(&a, &x.prov())),
+            // Z0882：大的、子树没有函数与句柄的列表与记录按身份缓存并集（值不可变，结果与重算相同）
+            Value::List(l) => ident_cache::来源(self, || {
+                ident_cache::记访问();
+                l.iter().fold(Provenance::trusted(), |a, x| prov_join(&a, &x.prov()))
+            }),
+            Value::Record(fs) => ident_cache::来源(self, || {
+                ident_cache::记访问();
+                fs.iter().fold(Provenance::trusted(), |a, (_, x)| prov_join(&a, &x.prov()))
+            }),
             // B92：出口读出是值依赖边
             Value::Exit(e) => {
                 Provenance::new(e.taint, Sources::value(&e.ledger_key.borrow(), &e.q_hash))

@@ -164,11 +164,14 @@ fn 账本依次见抽模块_查题库_唤出_组装() {
     let mut seq: Vec<&str> = vec![];
     for e in &r.ledger.entries {
         match e {
-            Entry::Effect { ekey, .. } => {
+            Entry::Effect { ekey, output, .. } => {
                 let k = serde_json::to_value(ekey).unwrap();
                 let kind = k["kind"].as_str().unwrap_or("").to_string();
                 let parts = k["parts"].to_string();
-                if kind == "gen" && parts.contains("下面是一段目的") {
+                if kind == "transform" && output.get("by") == Some(&serde_json::json!("gen")) {
+                    // 前提派生的 if_false 记账（derive-17），在出题之前，不计入这里的顺序
+                    continue;
+                } else if kind == "gen" && parts.contains("下面是一段目的") {
                     seq.push("modules")
                 } else if kind == "gen" {
                     seq.push("elicit")
@@ -1094,4 +1097,40 @@ fn 来源核对_保留项去空白() {
     );
     assert_eq!(v["detail"]["preds"][0]["over_from"], "purpose", "{v}");
     assert_eq!(v["detail"]["warnings"], json!([]), "{v}");
+}
+
+/// 第二靶子空跑 3.2（主控 2026-10-02 定 (a)）：目的明说的候选必须全在，唤出可多出至多一项（常是兜底）；多出的记
+/// detail.over_extra，选中时照常落字段；多出两项、缺一项都在第⓪段拒
+#[test]
+fn 目的明说候选_唤出可多一项兜底() {
+    let 跑一次 = |over: Json, pick: usize| {
+        let m = json!({"material": "供应商", "predicates": [{"text": "这家供应商最主要的短板", "cut": "k_ary", "over": ["甲", "乙", "丙"],
+                       "cut_from": "purpose", "over_from": "purpose", "field": "weak"}], "done": ["weak"]});
+        let src = 程序_关键(2, 目的甲乙丙, "{value: map(r.value, fn(v) { v.fields }), detail: r.detail}");
+        let r = 跑_按提示(&src, move |t, _q, s| {
+            if t.contains("需要分别回答的判断") { Answer::Noul(0.1) }
+            else if t.contains("这段材料里有没有") { Answer::Noul(0.9) }
+            else if t.contains("已认证的题问的是同一件事") { let k = s.over.len(); let mut v = vec![0.0; k]; v[k - 1] = 1.0; Answer::Choice(v) }
+            else if t.contains("短板") && !s.over.is_empty() { let mut v = vec![0.02; s.over.len()]; v[pick.min(s.over.len() - 1)] = 0.9; Answer::Choice(v) }
+            else { Answer::Noul(0.5) }
+        }, move |p| {
+            if p.starts_with("下面是一段目的") { vec![m.clone()] }
+            else if p.contains("字面前提题") { vec![] }
+            else { vec![json!({"op": "select", "text": "这家供应商最主要的短板是哪一类？", "over": over.clone()})] }
+        }).unwrap_or_else(|e| panic!("{e}"));
+        r.out.value_json()
+    };
+    // 多一项兜底：收下，记 over_extra；选中兜底时照常落字段
+    let v = 跑一次(json!(["甲", "乙", "丙", "都不是"]), 3);
+    assert_eq!(v["detail"]["fields_missing"], json!([]), "{v}");
+    assert_eq!(v["detail"]["over_extra"][0]["field"], json!("weak"), "{v}");
+    assert_eq!(v["detail"]["over_extra"][0]["extra"], json!(["都不是"]), "{v}");
+    assert!(v["value"].as_array().unwrap().iter().all(|x| x["weak"] == json!("都不是")), "{v}");
+    // 多出两项、缺一项：第⓪段拒，字段没题
+    for over in [json!(["甲", "乙", "丙", "丁", "戊"]), json!(["甲", "乙", "都不是"])] {
+        let w = 跑一次(over.clone(), 0);
+        assert_eq!(w["detail"]["fields_missing"], json!(["weak"]), "{over} {w}");
+        assert!(w["detail"]["elicit"]["rejected"].as_array().unwrap().iter().any(|x| x["codes"] == json!(["over-mismatch"])), "{w}");
+        assert_eq!(w["detail"]["over_extra"], json!([]), "{w}");
+    }
 }

@@ -177,9 +177,11 @@ fn 跳数2_子题挂作细化() {
     }
 }
 
-/// 伴随题开着（强制开）：替身给伴随题中性读数，默认链判「题不清」不补，读数仍在带内 → 置位、派生，根题元素在 value
+/// 伴随题开着（强制开）：替身给伴随题中性读数（0.5）。Z0912（裁定七十三 (1)）起伴随题只在带外算数，带内没有信号，
+/// 默认链照常往下走：补材料、再判 0.9，已决、不在带内 → 不置位、不派生，根题元素是叶（refined 空）。
+/// 改前（按 0.5 分）中性读数判「两可」停下、不补，读数仍 0.55 → 置位派生；这条测试在 Z0912 之前的代码上失败
 #[test]
-fn 伴随题开着_不补_置位派生() {
+fn 伴随题开着_带内中性读数_照常补_补后成叶() {
     let 来源 = r#"unsure_source({need: ["材料"], fetch: fn(q, need, m) { "补来的材料" }});"#;
     let r = 跑_按提示_画像_伴随(
         &程序_跳(来源, 2, ""),
@@ -192,16 +194,12 @@ fn 伴随题开着_不补_置位派生() {
     let roots = 根题元素(&v);
     assert_eq!(roots.len(), 2, "{v}");
     for x in &roots {
-        assert_eq!(
-            x["near"],
-            json!(true),
-            "伴随题判题不清、不补，读数仍 0.55：{v}"
-        );
-        assert_eq!(
-            x["refined"],
-            json!([{"q": "方案的预算写清楚了吗？", "exit": "act"}]),
-            "{v}"
-        );
+        assert_eq!(x["near"], json!(false), "带内中性读数不停，补后 0.9：{v}");
+        assert_eq!(x["refined"], json!([]), "{v}");
     }
-    assert!(r.gens >= 1, "{v}");
+    assert!(
+        r.out.unsure_default.iter().all(|u| u["fetched"] == json!(["材料"]) && u["end"] == "decided"),
+        "{:?}",
+        r.out.unsure_default
+    );
 }
