@@ -274,12 +274,11 @@ impl Cap<SourceSelect> {
 impl Cap<ExitRow> {
     /// 给出口在报告 `exits` 表里的那一行写元素编号（B120 (b)）；出口没有行（不来自 `cut`）则不写
     pub(crate) fn stamp_row(&self, it: &mut Interp, exit_id: usize, index: i64, pos: usize) {
-        if let Some(&i) = it.exit_rows.get(&exit_id) {
-            if let Some(row) = it.exit_grades.get_mut(i) {
+        if let Some(&i) = it.exit_rows.get(&exit_id)
+            && let Some(row) = it.exit_grades.get_mut(i) {
                 row["index"] = serde_json::json!(index);
                 row["pos"] = serde_json::json!(pos);
             }
-        }
     }
 }
 
@@ -739,6 +738,12 @@ impl<'a> Interp<'a> {
     }
 }
 
+/// 内核的裂变合回（`fission.rs`，步 23b）签发派生是非题的入口：它不是 `constructs/` 下的构造，没有注册表条目，
+/// 令牌在这里按 `IssueQuestion` 一类铸一枚（B138：题值只经 `IssueQuestion` 签发；复核 B0476 第 5 条）。
+pub(crate) fn 裂变派生题(text: &str, calib: &str, hash: String, taint: Taint) -> Rc<Question> {
+    Cap::<IssueQuestion>::mint().derived_test(text, calib, hash, taint)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -855,10 +860,4 @@ mod tests {
             }
         }
     }
-}
-
-/// 内核的裂变合回（`fission.rs`，步 23b）签发派生是非题的入口：它不是 `constructs/` 下的构造，没有注册表条目，
-/// 令牌在这里按 `IssueQuestion` 一类铸一枚（B138：题值只经 `IssueQuestion` 签发；复核 B0476 第 5 条）。
-pub(crate) fn 裂变派生题(text: &str, calib: &str, hash: String, taint: Taint) -> Rc<Question> {
-    Cap::<IssueQuestion>::mint().derived_test(text, calib, hash, taint)
 }

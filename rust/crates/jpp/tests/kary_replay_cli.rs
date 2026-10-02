@@ -103,7 +103,8 @@ fn folio_只凭账本重放与首跑相同() {
     // 原来还跑一份范围探针的夹具（probes/scope/fixture-folio.json）：它只录了 form-topic 没有线、sieve 一条不收
     // 时走到的题。B187（批 9）起没有线按判断器的回答走，程序会往下走到夹具没录的题（固定观察缺记录即错），
     // 这份夹具不再能单独驱动 folio；K 元出口 band 的重放由下面这份自带线的夹具覆盖。
-    for (fx, calib) in [("probes/folio/fixture.json", None::<&str>)] {
+    {
+        let (fx, calib) = ("probes/folio/fixture.json", None::<&str>);
         let calib = calib.map(|c| r.join(c));
         let (r1, r2) = 首跑与重放_带输入(
             "folio",

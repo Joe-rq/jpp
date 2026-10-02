@@ -640,6 +640,7 @@ pub(crate) fn derived_of(args: &[Value]) -> BTreeSet<String> {
 ///    `cut`/`do`/`gen`/`ask`/`transform`…），或输出本身就带着该有的位（出口、材料、契约值）；
 /// 2. **只搬运元素**：输出的元素就是输入的元素（或用户函数的返回值），各带自身的位；
 ///    整体 ∨ 会把一个不可信元素的位抹到所有元素上（取字段 / 下标返回叶子自身的位，同一原则）。
+///
 /// 不在表上的内置（含将来新增的）一律按 ∨ 输入处理——**兜底往拒绝那边倒**。
 pub(crate) const 不做数据流合取的内置: &[&str] = &[
     // 效应边界与自带规则
@@ -942,10 +943,9 @@ pub(crate) fn element_parts(it: &Value) -> (Value, Value) {
         Some(Value::List(l)) => l.iter().cloned().collect(),
         _ => vec![],
     };
-    if let Some(e) = it.get("exit") {
-        if !matches!(e, Value::Unit) {
+    if let Some(e) = it.get("exit")
+        && !matches!(e, Value::Unit) {
             t.push(e);
         }
-    }
     (it.get("item").unwrap_or(Value::Unit), Value::list(t))
 }

@@ -1123,22 +1123,14 @@ pub fn versions_of<'a>(
     let mut lib: Vec<(String, Vec<u8>)> = vec![];
     let mut bank_root: Option<PathBuf> = None;
     for (path, bytes) in files {
-        let comps: Vec<_> = path.components().collect();
         // 最靠近文件的名为 lib 的祖先目录
-        let Some(li) = comps
-            .iter()
-            .rposition(|c| c.as_os_str() == "lib")
-            .filter(|i| *i + 1 < comps.len())
-        else {
+        let Some((rel, in_bank)) = jpp_syntax::loader::lib_rel(path) else {
             continue;
         };
-        let rel: PathBuf = comps[li + 1..].iter().collect();
-        if rel
-            .components()
-            .next()
-            .is_some_and(|c| c.as_os_str() == "bank")
-        {
+        if in_bank {
             if bank_root.is_none() {
+                let comps: Vec<_> = path.components().collect();
+                let li = comps.len() - rel.components().count() - 1;
                 let root: PathBuf = comps[..li].iter().collect();
                 bank_root = Some(root.join("bank"));
             }

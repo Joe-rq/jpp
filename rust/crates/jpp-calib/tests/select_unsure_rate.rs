@@ -57,7 +57,7 @@ fn 库() -> CalibStore {
 fn 读数(i: usize, n: usize) -> (f64, usize, usize) {
     let p = 0.55 + 0.45 * i as f64 / (n - 1) as f64;
     let truth = i % 3;
-    let pick = if p < 0.7 && i % 2 == 0 {
+    let pick = if p < 0.7 && i.is_multiple_of(2) {
         (truth + 1) % 3
     } else {
         truth

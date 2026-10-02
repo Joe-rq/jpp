@@ -1,0 +1,124 @@
+{
+  "asks": 0,
+  "calls": 21,
+  "effects": [
+    [
+      "do",
+      "env:step",
+      "58c4e67137563b85a3412c53",
+      false
+    ],
+    [
+      "do",
+      "env:step",
+      "e163f5c51441d3dda9b92d43",
+      false
+    ],
+    [
+      "gen",
+      "下面是一段目的：「控制数轴上的一个点，尽快走到目标位置。」。要判断的材料是一批同样形状的条目（每条的字段：goal、pos、t），每条可能还带一份参照材料。请把这段目的拆成出题守则的十个模块，写成一个 JSON 对象：{\"material\": 被判断的对象与参照各指什么, \"predicates\": [{\"text\": 要对每个条目判断的事, \"cut\": \"binary\" 或 \"k_ary\" 或 \"ordered\", \"over\": [候选…]（k_ary 才有）, \"scale\": [从低到高的档…]（ordered 才有）, \"request\": \"one\" 或 \"all\", \"cut_from\", \"over_from\", \"scale_from\": 各自是 \"purpose\"（目的原文说了）或 \"system\"（目的没说、你补的）, \"field\": 这件事的答案在结果里的名字（短的英文小写）}], \"request\": 请求, \"presupposition\": 前提, \"context\": 语境, \"reference\": 参照, \"budget\": 预算, \"unsure\": 拿不准去向, \"done\": [结果里每个条目要有的字段名]}。目的里没说的模块写 null，不要替目的补。谓词——目的要对每个条目判断几件事就写几个，一个谓词一件事；切法——判是否用 binary；从几个互不重叠的候选里挑一个用 k_ary；排先后、分高低用 ordered；候选与档位——目的里列了就照抄并标 purpose；目的没列时可以给出（k_ary 给互不重叠的候选，ordered 给三到五档），但要标 system，切法同理；请求——每个条目给一个答案写 one，要全部满足的写 all；完成条件——目的要求结果里有什么，就在 done 里列什么，每个名字对应一个谓词的 field。",
+      "9e0425159a69dd547433d7ea",
+      false
+    ],
+    [
+      "gen",
+      "下面是从一段目的里拆出的模块：{\"budget\":null,\"context\":null,\"done\":null,\"material\":\"数轴上的位置\",\"predicates\":[{\"cut\":\"binary\",\"cut_from\":\"system\",\"field\":\"far\",\"text\":\"离目标还远\"}],\"presupposition\":null,\"reference\":null,\"request\":null,\"unsure\":null}。请为其中这个谓词出一道交给判断器的题：「离目标还远」（切法：binary）。题会对每个条目各问一次，条目在材料里，参照材料（若有）在参照槽 ref。写成 JSON 对象，一个候选一个对象：{\"op\": \"test\" 或 \"select\" 或 \"measure\", \"text\": 题面, \"over\": [候选…]（select 才有）, \"scale\": [从低到高的档…]（measure 才有）, \"presupposition\": 前提（可省）, \"evidence\": [要用到的参照槽，如 \"ref\"]（可省）, \"request\": 这道题的请求（可省；是非题 \"whether\"，K 选一 \"one\"，程度题 \"degree\"；与上面模块里谓词的 one / all 不是一回事，那是每个条目要几个答案）}。题面里不要用花括号。出题守则，按十个模块逐项想：材料——只问面前这份材料里能看到的东西；谓词——一道题只判一件事，不要把两个条件连在一起，也不要问「这份材料有没有帮助判断」这类关于判断本身的题；切法——是非题问能答是或否的事，K 选一给出互不重叠的候选；请求——说清要选一个还是全部；前提——题默认成立的事写进 presupposition；语境——需要的背景写进题面，不指望读题的人自己补；参照——比较时写明和什么比，要对照参照材料才能判的写 evidence；预算——判断很便宜，能判的都出成题，不为省调用合并或删掉有用的题；拿不准去向——这道题判不下来时程序会把它细化成更字面的子题、问缺哪类信息补上再判、或带原因转交，所以题面要写清判断依据落在材料的哪一部分，拿不准时最该补的是哪类信息；完成条件——每道题的答案都要让原题的可能答案变少。",
+      "11772907c55e2f456d762818",
+      false
+    ],
+    [
+      "gen",
+      "下面是从一段目的里拆出的模块：{\"budget\":null,\"context\":null,\"done\":null,\"material\":\"数轴上的位置\",\"predicates\":[{\"cut\":\"binary\",\"cut_from\":\"system\",\"field\":\"far\",\"text\":\"离目标还远\"}],\"presupposition\":null,\"reference\":null,\"request\":null,\"unsure\":null}。请为其中这个谓词出一道交给判断器的题：「为了「控制数轴上的一个点，尽快走到目标位置。」，眼下最要紧的是哪一件事（从几件互不重叠的要紧的事里选一件）」（切法：k_ary）。题会对每个条目各问一次，条目在材料里，参照材料（若有）在参照槽 ref。写成 JSON 对象，一个候选一个对象：{\"op\": \"test\" 或 \"select\" 或 \"measure\", \"text\": 题面, \"over\": [候选…]（select 才有）, \"scale\": [从低到高的档…]（measure 才有）, \"presupposition\": 前提（可省）, \"evidence\": [要用到的参照槽，如 \"ref\"]（可省）, \"request\": 这道题的请求（可省；是非题 \"whether\"，K 选一 \"one\"，程度题 \"degree\"；与上面模块里谓词的 one / all 不是一回事，那是每个条目要几个答案）}。题面里不要用花括号。出题守则，按十个模块逐项想：材料——只问面前这份材料里能看到的东西；谓词——一道题只判一件事，不要把两个条件连在一起，也不要问「这份材料有没有帮助判断」这类关于判断本身的题；切法——是非题问能答是或否的事，K 选一给出互不重叠的候选；请求——说清要选一个还是全部；前提——题默认成立的事写进 presupposition；语境——需要的背景写进题面，不指望读题的人自己补；参照——比较时写明和什么比，要对照参照材料才能判的写 evidence；预算——判断很便宜，能判的都出成题，不为省调用合并或删掉有用的题；拿不准去向——这道题判不下来时程序会把它细化成更字面的子题、问缺哪类信息补上再判、或带原因转交，所以题面要写清判断依据落在材料的哪一部分，拿不准时最该补的是哪类信息；完成条件——每道题的答案都要让原题的可能答案变少。这个谓词是动作题「就这份材料来说，为了「控制数轴上的一个点，尽快走到目标位置。」，下一步最该做的动作是下列哪一项？」拿不准时先判的一件更小的事；动作题每一步的候选由世界给，开局那一步的候选是：[\"left\",\"right\",\"wait\"]。要紧的事比单个动作粗一层，几件之间互不重叠，每件都能用来判断某个动作是不是在做它。",
+      "23076d10ed4832421ce7f14a",
+      false
+    ],
+    [
+      "do",
+      "env:step",
+      "f5ec8793c3cc250292fecccc",
+      false
+    ],
+    [
+      "do",
+      "env:step",
+      "746ad5f728138ce00b30048b",
+      false
+    ],
+    [
+      "do",
+      "env:step",
+      "47bfe69aa2451765b276fec8",
+      false
+    ],
+    [
+      "do",
+      "env:step",
+      "c22fc7031b9652ddb098a809",
+      false
+    ],
+    [
+      "do",
+      "env:step",
+      "252f9973fa14dfcfc6bc8bd6",
+      false
+    ]
+  ],
+  "judge_registrations": 96,
+  "pending": [],
+  "returned_unsure": [],
+  "status": "returned",
+  "usd": 0.0,
+  "value": {
+    "pending": [],
+    "results": [
+      {
+        "hash": "f6ac4fddd4cbc841",
+        "match": 0,
+        "result": {
+          "reached": true
+        },
+        "steps": 3
+      },
+      {
+        "hash": "24008ff0ff29f29e",
+        "match": 1,
+        "result": {
+          "reached": true
+        },
+        "steps": 2
+      }
+    ],
+    "rows": [
+      {
+        "action": "right",
+        "by": "judge",
+        "match": 0,
+        "step": 0
+      },
+      {
+        "action": "right",
+        "by": "judge",
+        "match": 0,
+        "step": 1
+      },
+      {
+        "action": "right",
+        "by": "judge",
+        "match": 0,
+        "step": 2
+      },
+      {
+        "action": "left",
+        "by": "judge",
+        "match": 1,
+        "step": 0
+      },
+      {
+        "action": "left",
+        "by": "judge",
+        "match": 1,
+        "step": 1
+      }
+    ]
+  }
+}

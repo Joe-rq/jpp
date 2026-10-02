@@ -60,9 +60,9 @@ impl<'a> Interp<'a> {
         };
         match &args[1] {
             Value::Question(q) => {
-                let rs = self.judge(s, &[q.clone()], sp)?;
+                let rs = self.judge(s, std::slice::from_ref(q), sp)?;
                 // J-05 默认链再判要用（B0492 S2）
-                self.记判断来历(s, &[q.clone()], &rs);
+                self.记判断来历(s, std::slice::from_ref(q), &rs);
                 Ok(rs.into_iter().next().expect("单题一条"))
             }
             Value::List(l) => {

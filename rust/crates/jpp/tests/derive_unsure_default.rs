@@ -185,3 +185,128 @@ let u = unsure("fail");
         json!({"end": "none", "kind": "act", "u": "none"})
     );
 }
+
+/// 说明性断言（Jpp 2026-10-02）：`unsure_default(e, {end: "top"})` 的现状——末端按最大项行动，回 `end: "top"` 与最大项
+/// 下标。**这个行为不在契约内，只是锁住现状、不作承诺**：`{end: "top"}` 只供 lib 的过程入口（`lib/derive/drive.jpp`）用，
+/// INTERFACE.md 不写。B0630 起只认 lib 里的调用点（Z0943）：用户程序里调报 `E-rt-lib-only`，同一段放在 lib 目录里照常
+#[test]
+fn 不在契约内_锁住现状_end_top_只认lib调用点() {
+    let src = r#"budget {calls: 8, cost: 0, depth: 128};
+let e = cut(judge(state(mat("甲"), {over: [mat("a"), mat("b")]}), select("哪个", "k")));
+let d = unsure_default(e, {end: "top"});
+{kind0: exit_kind(e), end: d.end, top: d.top, top_of: d.top_of}
+"#;
+    let 读 = |t: &str, _q: &Question, _s: &State| if t == "哪个" { Answer::Choice(vec![0.5, 0.5]) } else { Answer::Noul(0.5) };
+    let e = 跑(src, 读, vec![]).err().expect("用户调用点不认");
+    assert!(e.contains("E-rt-lib-only"), "{e}");
+    let r = 跑_库(src, 读, vec![]).unwrap_or_else(|e| panic!("{e}"));
+    assert_eq!(
+        r.out.value_json(),
+        json!({"kind0": "unsure(tie)", "end": "top", "top": 0, "top_of": 2})
+    );
+}
+
+/// 说明性断言（Z0913 复核，照 end: top 那条）：`unsure_default(e, {end: "top", tree: {…}})` 的现状（B0630 起只认 lib 调用点，
+/// 用户程序里调报 `E-rt-lib-only`）——
+/// 题式 lacks 里写了「中间判断」时，默认链能走到它（为什么拿不准选中它）、问子题、按回答缩小候选再问，选中项按值映回原候选（orig）。**这个行为不在契约内，只是锁住现状、不作承诺**：
+/// tree 规格只供 lib 的过程入口（`lib/derive/drive.jpp`）用，INTERFACE.md 不写这个参数；B0630 之后只认 lib 里的调用点
+/// （Z0939/Z0943）
+#[test]
+fn 不在契约内_锁住现状_tree_只认lib调用点() {
+    let src = r#"budget {calls: 16, cost: 0, depth: 256};
+let st = state(mat("甲"), {over: [mat("a"), mat("b"), mat("c")]});
+let e = cut(judge(st, fill(form("select", "哪个", {calib: "k", lacks: ["材料", "中间判断"]}), {})));
+let tree = {s: select("先判哪件事", "ks"), s_over: ["事一", "事二"],
+            narrow: form("test", "做「{动作}」是在做「{要紧的事}」吗？", {calib: "kn"}), ctx_tpl: "{q}：{s}", mode: "narrow"};
+let d = unsure_default(e, {end: "top", tree: tree});
+{kind0: exit_kind(e), end: d.end, kind: exit_kind(d.exit), orig: if has(d, "orig") { d.orig } else { -1 }}
+"#;
+    // 固定关伴随题：伴随题的中性读数会先判两可停下，走不到「为什么」
+    let 读 = |t: &str, _q: &Question, s: &State| {
+        if t == "哪个" {
+            // 首问三项并列；缩小到 [a, c] 后再问选 c
+            if s.over.len() == 3 { Answer::Choice(vec![0.4, 0.4, 0.2]) } else { Answer::Choice(vec![0.1, 0.9]) }
+        } else if t.contains("为什么拿不准") {
+            let k = s.over.iter().position(|m| m.content.as_str() == Some("中间判断")).unwrap_or(0);
+            let mut v = vec![0.0; s.over.len()];
+            v[k] = 1.0;
+            Answer::Choice(v)
+        } else if t == "先判哪件事" {
+            Answer::Choice(vec![0.9, 0.1])
+        } else if t.contains("是在做") {
+            Answer::Noul(if t.contains("「b」") { 0.0 } else { 0.9 })
+        } else {
+            Answer::Noul(0.5)
+        }
+    };
+    let e = 跑_关(src, 读, vec![]).err().expect("用户调用点不认");
+    assert!(e.contains("E-rt-lib-only"), "{e}");
+    let r = 跑_关_库(src, 读, vec![]).unwrap_or_else(|e| panic!("{e}"));
+    assert_eq!(
+        r.out.value_json(),
+        json!({"kind0": "unsure(tie)", "end": "decided", "kind": "pick(1)", "orig": 2})
+    );
+}
+
+/// 说明性断言（第三靶子第四圈，照 end: top、tree 那两条）：库内部的 `unsure_fetch(题, 类别, 材料)` 的现状（B0630 起只认 lib
+/// 调用点，用户程序里调报 `E-rt-lib-only`）——
+/// 只调程序经 `unsure_source` 注册的 `fetch`：没注册时回 fail；取到材料照原样回；取到别的值包成 `{类别: 值}` 的材料；
+/// fetch 回 fail 照回 fail。**这个行为不在契约内，只是锁住现状、不作承诺**：`unsure_fetch` 只供 lib 的过程入口
+/// （`lib/derive/drive.jpp` 的完成条件派生）用，INTERFACE.md 不写；B0630 起只认 lib 里的调用点（Z0947）
+#[test]
+fn 不在契约内_锁住现状_unsure_fetch_只认lib调用点() {
+    let src = r#"budget {calls: 4, cost: 0, depth: 128};
+let a = unsure_fetch("题", "语境", mat("甲"));
+unsure_source({fetch: fn(q, need, m) { if need == "语境" { mat("规则原文") } else if need == "参照" { "一段文字" } else { fail("没有") } }});
+let b = unsure_fetch("题", "语境", mat("甲"));
+let c = unsure_fetch("题", "参照", mat("甲"));
+let d = unsure_fetch("题", "材料", mat("甲"));
+{a: is_fail(a), b: content(b), c: content(c), d: is_fail(d)}
+"#;
+    let e = 跑_关(src, |_t, _q, _s| Answer::Noul(0.5), vec![]).err().expect("用户调用点不认");
+    assert!(e.contains("E-rt-lib-only"), "{e}");
+    let r = 跑_关_库(src, |_t, _q, _s| Answer::Noul(0.5), vec![]).unwrap_or_else(|e| panic!("{e}"));
+    assert_eq!(r.out.value_json(), json!({"a": true, "b": "规则原文", "c": {"参照": "一段文字"}, "d": true}));
+}
+
+/// 说明性断言（第四圈 4.e，照上一条）：tree 规格带 `fallback: "ctx"` 时，缩小后为空（三个候选都带外否）不落到末端，
+/// 带 S 的回答在原集上再问、已决，选中项就是原集下标；不带 fallback 时同样的读数落到末端按最大项。
+/// **不在契约内，只是锁住现状**：fallback 只供 lib 的过程入口的对照臂用，INTERFACE.md 不写；B0630 起只认 lib 调用点
+#[test]
+fn 不在契约内_锁住现状_tree_fallback_只认lib调用点() {
+    let 源 = |fb: &str| {
+        format!(
+            r#"budget {{calls: 16, cost: 0, depth: 256}};
+let st = state(mat("甲"), {{over: [mat("a"), mat("b"), mat("c")]}});
+let e = cut(judge(st, fill(form("select", "哪个", {{calib: "k", lacks: ["材料", "中间判断"]}}), {{}})));
+let tree = {{s: select("先判哪件事", "ks"), s_over: ["事一", "事二"],
+            narrow: form("test", "做「{{动作}}」是在做「{{要紧的事}}」吗？", {{calib: "kn"}}), ctx_tpl: "{{q}}：{{s}}", mode: "narrow"{fb}}};
+let d = unsure_default(e, {{end: "top", tree: tree}});
+{{end: d.end, kind: exit_kind(d.exit)}}
+"#
+        )
+    };
+    let 读 = |t: &str, _q: &Question, s: &State| {
+        if t == "哪个" {
+            // 首问三项并列；带了子题回答（ctx 非空）再问选 c
+            if s.ctx.is_empty() { Answer::Choice(vec![0.4, 0.4, 0.2]) } else { Answer::Choice(vec![0.1, 0.1, 0.8]) }
+        } else if t.contains("为什么拿不准") {
+            let k = s.over.iter().position(|m| m.content.as_str() == Some("中间判断")).unwrap_or(0);
+            let mut v = vec![0.0; s.over.len()];
+            v[k] = 1.0;
+            Answer::Choice(v)
+        } else if t == "先判哪件事" {
+            Answer::Choice(vec![0.9, 0.1])
+        } else if t.contains("是在做") {
+            Answer::Noul(0.0)
+        } else {
+            Answer::Noul(0.5)
+        }
+    };
+    let e = 跑_关(&源(", fallback: \"ctx\""), 读, vec![]).err().expect("用户调用点不认");
+    assert!(e.contains("E-rt-lib-only"), "{e}");
+    let ctx = 跑_关_库(&源(", fallback: \"ctx\""), 读, vec![]).unwrap_or_else(|e| panic!("{e}"));
+    assert_eq!(ctx.out.value_json(), json!({"end": "decided", "kind": "pick(2)"}));
+    let end = 跑_关_库(&源(""), 读, vec![]).unwrap_or_else(|e| panic!("{e}"));
+    assert_eq!(end.out.value_json(), json!({"end": "top", "kind": "unsure(tie)"}));
+}

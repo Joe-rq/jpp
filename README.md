@@ -10,6 +10,33 @@ J++ is an experimental programming-language project exploring semantic judgment 
 
 **Write standalone `.jpp` source and run it with the native Rust implementation.** It parses source, checks language rules and executes methods through one shared kernel. The earlier Python 3.12 embedded implementation remains available as a behavior reference and experiment tool. [Rust package and examples](rust/README.md) · [Language implementation decision](docs/adr/0001-rust-kernel.md).
 
+## Run standalone J++
+
+You need Rust 1.85 or newer. Install the `jpp` command from the `rust/` folder and run programs from there (a program finds its libraries
+next to its own file, and the installed command does not carry them):
+
+```sh
+git clone https://github.com/towow-ai/jpp.git
+cd jpp/rust
+cargo install --locked --path crates/jpp      # release build, about two minutes
+jpp run examples/composition.jpp 2>/dev/null | tail -n 5
+```
+
+The last command prints `"value": {"expected": 43, "result": 43}`: a program that composes two small methods into a new one.
+The other examples cover the three ways in: **a batch of items from one sentence of purpose** (`purpose_run`), **a process that keeps
+changing** (`purpose_drive`, with a small world) and **modules you fill in yourself** (`modules_run`), plus filling in missing information
+and replaying a run from its ledger. All five run offline on recorded answers at no cost. [Install, the examples and what J++ cannot do yet](rust/README.md)
+· [the five examples](rust/examples/README.md) · [Grammar](rust/FRONTEND.md) · [Source and direct-core equivalence](rust/COMPARISON.md).
+
+CI installs `jpp` on a clean Ubuntu and a clean macOS machine and runs the five examples with the installed binary, and it runs every code block in the
+docs (and compares the output pasted under them) on each push; if any of them fails, CI is red.
+
+Building needs Rust; the installed native executable runs without Python or Cargo.
+Use the explicit executable path (`~/.cargo/bin/jpp`) if the retained Python `jpp` command is also installed.
+
+[Next steps](ROADMAP.md): reusable source-library methods, consistent composition
+rules and an application using standalone source.
+
 ## Demos / 演示
 
 All demos live on one page: **[jpp.towow.net/demos/](https://jpp.towow.net/demos/)**. Cards 01–04 replay real runs; every number comes from that run's report and ledger. None of the cases is fully settled, and the pages say so.
@@ -54,30 +81,6 @@ The [325-profile real-source comparison](https://jpp.towow.net/demos/towow/real/
 [Discovery roadmap (中文)](docs/towow-discovery-roadmap.zh-CN.md) records candidate-pool bottlenecks, reusable Towow research assets and the next bounded experiment. Its offline diagnostic script requires no model calls.
 
 The [composable discovery application](https://jpp.towow.net/demos/towow/teams/) runs different task plans through the same J++ composition and feeds a two-member proposal back in to nominate a third member. Its API accepts replaceable questions, routing and combination functions. Three synthetic live examples, exact replay and the unsuccessful fixed-slot exploration control are documented in the [iteration report](docs/towow-discovery-iteration.zh-CN.md); this is a bounded application component, not a delivered distributed discovery network.
-
-## Run standalone J++
-
-```sh
-git clone https://github.com/towow-ai/jpp.git
-cd jpp/rust
-cargo build --locked --workspace
-cargo run -p jpp -- run examples/composition.jpp
-cargo run -p jpp -- run examples/adaptive.jpp --fixtures examples/fixtures/adaptive.json
-cargo run -p jpp -- run examples/partial.jpp --fixtures examples/fixtures/partial.json
-```
-
-The three programs compose methods, locate 731 among 1,000 candidates in ten
-questions, and improve a usable cost-9 candidate combination to cost 2 by changing
-the continuation strategy. The source contains the algorithms; the CLI supplies
-fixed observations and a local recording action. No model API is called.
-[Grammar](rust/FRONTEND.md) · [Source and direct-core equivalence](rust/COMPARISON.md).
-
-Building needs Rust; the installed native executable runs without Python or Cargo.
-Use the explicit executable path if the retained Python `jpp` command is also installed.
-
-The native delivery passed 41 Rust tests and GitHub's Rust/Python checks.
-[Next steps](ROADMAP.md): reusable source-library methods, consistent composition
-rules and an application using standalone source.
 
 ## Run the retained Python reference
 

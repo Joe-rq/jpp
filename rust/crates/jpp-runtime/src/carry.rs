@@ -498,7 +498,7 @@ impl TripCarry {
                     (Some(_), None) => true,
                     _ => false,
                 });
-        let cap = 更小.then(|| Entry::CarryCap {
+        let cap = 更小.then_some(Entry::CarryCap {
             calls: eff.0.calls,
             usd: eff.0.cost,
             secs: eff.0.latency_p95,

@@ -17,6 +17,7 @@ use jpp_ledger::{
     AttemptRef, CalibRef, Durability, EffectKey, Entry, Header, HeaderCompare, JudgeKey,
     LedgerError, LedgerPort, MatMeta, RENDER_VERSION, SourceEdge, StopCause, Trace,
 };
+use jpp_ir::key::SiteRef;
 use jpp_value::value::*;
 
 pub const HANDLER_VERSION: &str = "h0.1-rs";
@@ -270,6 +271,8 @@ pub struct Outcome {
     /// 点名类别无取法（Jpp 2026-10-02）：`{类别: 次数}`——伴随题点名（「最缺哪类」选出，或「参照与语境够吗」带外判否映射）
     /// 的类别、默认链取不到的次数。为空时 `Null`，报告不出这一段
     pub named_unfetchable: Json,
+    /// 查不到结构化站点、回退成 `@<偏移>` 的次数（B0630）。为 0 时报告不出这一项；不为 0 说明运行时进键的 span 有站点表外的来源
+    pub site_key_fallback: u64,
     /// 违规的单次形态（G2，`12` R9）：程序结束时还欠着的未决，每笔一项；值照带，这次结论为「未决（violation）」。
     /// 为空即没有违规
     pub violations: Vec<ViolationReport>,
@@ -425,6 +428,18 @@ pub struct Interp<'a> {
     点名无取法: std::collections::BTreeMap<String, u64>,
     /// 最近一次默认链末端转交时缺的类别（`unsure_default` 回给调用方，写进去向：「缺<类别>、无取法」）
     末次缺: Vec<String>,
+    /// 裁定七十八：过程入口的动作题由 `drive.jpp` 打标记（`unsure_default(出口, {end: "top"})`），这一次走链的末端
+    /// 判过而仍拿不准时取最大项；`末次最大项` 回（最大项下标, 候选数）。只在 `b_unsure_default` 里置、用完即清
+    末端取最大项: bool,
+    末次最大项: Option<(usize, usize)>,
+    /// 最大项取自哪一次读数（账本键）：缩小后再问时它的候选是缩小集，按值映回原候选
+    末次最大项键: Option<String>,
+    /// Z0913：中间判断没走成的原因（子题拿不准、子题未发出、缩小后为空、缩小未发出），调用方写进 pending 的去向
+    末次题树败因: Option<&'static str>,
+    /// Z0913（D1）：题树层数计入运行时深度，只下一层（≤ 1）
+    题树深: u32,
+    /// Z0913：过程入口的动作题交来的题树规格（子题 S、缩小题式、开关），只在 `b_unsure_default` 里置、用完即清
+    题树: Option<crate::unsure_default::题树规格>,
     /// 首个停发站点的延后记法（步 30，B93 第 6 条；复核 B0488-A 缺口 1）：本次刷新重排过、且本趟此前没有停发时为
     /// `Some`，各停发组的（原登记下标, 条数, 站点, 报文）先攒在这里，刷新结束取原登记下标最小的一组写 `W-budget` 与
     /// `first_site`——与审计重放按登记顺序停发的第一组相同。挑选只改发出顺序，不改首个停发站点的记法
@@ -467,6 +482,13 @@ pub struct Interp<'a> {
     /// 判断键的渲染分量（B155，步 15i）：缺省 `RENDER_VERSION`；只凭账本重放时取账本头记的版本，
     /// 旧渲染的账本照样命中（重放不发请求，不违反 B48）。续接遇到旧渲染在 `run` 入口拒绝。
     render: String,
+    /// 本趟的键法（B0630）：`run` 入口按账本头的 `key_version` 选；新跑取 `KEY_VERSION_CURRENT`。
+    /// 写进新头；只凭账本重放旧键法账本时取账本的键法，头里照写它（与键一致，能再次重放）。
+    key_version: jpp_ledger::key_version::KeyVersion,
+    /// 结构化站点表（B0630）：`Program.site_keys`，宿主没写（不经 `Session`）时在 `run` 入口按 IR 现算（全部算非 lib）
+    站点键: jpp_ir::site_key::SiteKeys,
+    /// 查不到结构化站点、回退成 `@<偏移>` 的次数（B0630），进报告 `site_key_fallback`，为 0 不出
+    站点回退: u64,
     /// 本趟算出的效应键：账本键 → 结构化键（步 7）
     effect_keys: HashMap<String, EffectKey>,
     /// 本趟判断调用累计耗时（秒，B32 时延预算）
@@ -705,6 +727,7 @@ pub const BUILTINS: &[&str] = &[
     // J-05 默认链（B0492 S2）：取材料函数的声明、库代码记细化
     "refine",
     "unsure_source",
+    "unsure_fetch",
     "allocate",
     "unsure_bound",
     "agg",
@@ -937,6 +960,12 @@ impl<'a> Interp<'a> {
             超窗计数: [0; 3],
             点名无取法: Default::default(),
             末次缺: vec![],
+            末端取最大项: false,
+            末次最大项: None,
+            末次最大项键: None,
+            末次题树败因: None,
+            题树深: 0,
+            题树: None,
             首停延后: None,
             当前组位: 0,
             asks_in_ledger: 0,
@@ -997,6 +1026,9 @@ impl<'a> Interp<'a> {
             consecutive_absent: 0,
             judge_keys: HashMap::new(),
             render: RENDER_VERSION.to_string(),
+            key_version: jpp_ledger::key_version::KEY_VERSION_CURRENT,
+            站点键: Default::default(),
+            站点回退: 0,
             effect_keys: HashMap::new(),
             latency_spent: 0.0,
             上游: None,

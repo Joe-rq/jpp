@@ -8,7 +8,7 @@
 mod common;
 
 use common::{run, run_replay};
-use jpp::effects::{CalibStore, FnPort, JudgeResult, Ports};
+use jpp::effects::{CalibStore, JudgeResult, Ports};
 use jpp::interp::ActionRegistry;
 use jpp::ledger::Ledger;
 use jpp::value::{Answer, State};

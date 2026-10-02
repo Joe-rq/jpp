@@ -101,13 +101,15 @@ fn 跑_核(
         std::process::id(),
         NEXT.fetch_add(1, Ordering::Relaxed)
     ));
-    std::fs::create_dir_all(&dir).unwrap();
-    let path = dir.join("p.jpp");
-    std::fs::write(
-        &path,
-        format!("import \"../../lib/derive/chain.jpp\";\n{src}"),
-    )
-    .unwrap();
+    // B0630：「当库跑」时程序文件放进名为 lib 的目录，loader 按 lib 判据把它的定义标成库定义（库内部参数只认 lib 调用点）
+    let 当库 = 库.with(|c| c.get());
+    let (path, 导入) = if 当库 {
+        (dir.join("lib/p.jpp"), "../../../lib/derive/chain.jpp")
+    } else {
+        (dir.join("p.jpp"), "../../lib/derive/chain.jpp")
+    };
+    std::fs::create_dir_all(path.parent().unwrap()).unwrap();
+    std::fs::write(&path, format!("import \"{导入}\";\n{src}")).unwrap();
     let loaded = jpp::syntax::loader::load(&path);
     let _ = std::fs::remove_dir_all(&dir);
     let loaded = loaded.map_err(|e| format!("装载：{e:?}"))?;
@@ -161,6 +163,8 @@ fn 跑_核(
         })
         .run(&program, &EntryArgs::default(), &mut ledger)
         .map_err(|e| e.render())?;
+    // B0630：lib/derive 的路径（过程入口、默认链、伴随题、题树）上进键的站点都查得到结构化标识，没有回退成偏移
+    assert_eq!(out.site_key_fallback, 0, "站点回退成偏移");
     let calls = *calls.borrow();
     let gens = *gens.borrow();
     let asked = asked.borrow().clone();
@@ -228,7 +232,7 @@ pub const 读出: &str = "{value: map(r.value, fn(v) { {by: v.by, refined: if ha
 /// 伴随题开关与中性读数约定：只在 `tests/common` 定一处，这里引用（主控 2026-09-30）
 #[path = "../common/mod.rs"]
 mod 公共;
-pub use 公共::{伴随, 伴随中性, 伴随参数};
+pub use 公共::{伴随, 伴随中性};
 
 /// 同 [`跑`]，固定关伴随题（数题数、条目数的测试用；主控 2026-09-30：第二、三类保持关）
 pub fn 跑_关(
@@ -242,7 +246,33 @@ pub fn 跑_关(
     r
 }
 
+/// 同 [`跑`]，程序文件放在名为 lib 的目录里跑（B0630：库内部参数 `unsure_default` 的第二参、`unsure_fetch` 只认
+/// lib 定义里的调用点；锁现状的测试用它测库里的行为）
+pub fn 跑_库(
+    src: &str,
+    answer: impl Fn(&str, &Question, &State) -> Answer,
+    gen_out: Vec<Json>,
+) -> Result<跑出, String> {
+    库.with(|c| c.set(true));
+    let r = 跑(src, answer, gen_out);
+    库.with(|c| c.set(false));
+    r
+}
+
+/// 同 [`跑_库`]，固定关伴随题
+pub fn 跑_关_库(
+    src: &str,
+    answer: impl Fn(&str, &Question, &State) -> Answer,
+    gen_out: Vec<Json>,
+) -> Result<跑出, String> {
+    库.with(|c| c.set(true));
+    let r = 跑_关(src, answer, gen_out);
+    库.with(|c| c.set(false));
+    r
+}
+
 thread_local! {
+    static 库: std::cell::Cell<bool> = const { std::cell::Cell::new(false) };
     static 关: std::cell::Cell<bool> = const { std::cell::Cell::new(false) };
     static 把关: std::cell::Cell<bool> = const { std::cell::Cell::new(false) };
     static 开: std::cell::Cell<bool> = const { std::cell::Cell::new(false) };

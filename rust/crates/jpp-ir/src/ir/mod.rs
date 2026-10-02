@@ -45,6 +45,11 @@ pub struct Program {
     /// `jpp_check::unsure_default_sites` 写入（唯一写入处）。空时不序列化、不打印，不进任何哈希与金样。
     #[serde(default, skip_serializing_if = "std::collections::BTreeSet::is_empty")]
     pub unsure_default_sites: std::collections::BTreeSet<usize>,
+    /// 结构化站点表（B0630）：完整 Span → `<定义路径>:<标签>#<序号>` 与是否在 lib 定义里，判断键与效应键的站点取它。
+    /// 由 `jpp::Session::compile` 调 `jpp_ir::site_key::site_keys` 写入（唯一写入处；lib 区间来自 loader）；不经 `Session`
+    /// 的宿主由运行时按 IR 现算（全部算非 lib）。不序列化、不打印，不进任何哈希与金样。
+    #[serde(skip)]
+    pub site_keys: crate::site_key::SiteKeys,
 }
 
 /// 宿主入口参数声明（B106）：名字、种类与宿主声明的 taint。源码级声明语法未定（`21` A-13）。
@@ -130,6 +135,10 @@ pub struct Function {
     /// 所以账本键逐字节不变。步 12d 删除核心语法树时改由降级按同一口径产出。
     #[serde(default)]
     pub source_hash: String,
+    /// 不含源码位置的结构哈希（B0630，`key_version` `"1"`）：同一份影子结构，但不序列化任何 Span，改注释、挪位置不变。
+    /// 结构化键法下闭包的方法身份取它；`source_hash` 留给旧键法（只凭账本重放旧账本）。不序列化（IR 金样不变）。
+    #[serde(skip)]
+    pub shape_hash: String,
 }
 
 /// 降级后不可变。

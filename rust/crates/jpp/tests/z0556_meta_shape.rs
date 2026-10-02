@@ -206,8 +206,7 @@ let e = cut(judge(state(mat("甲"), {over: [mat("A"), mat("B")]}), select("哪�
         false,
     )
     .outcome
-    .err()
-    .expect("E-rt-answer");
+    .expect_err("E-rt-answer");
     assert!(e.contains("E-rt-answer"), "{e}");
 }
 

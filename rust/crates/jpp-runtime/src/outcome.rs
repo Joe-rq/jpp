@@ -35,6 +35,12 @@ impl<'a> Interp<'a> {
                 self.站点表.remove(&k);
             }
         }
+        // B0630：结构化站点表。`Session::compile` 写好的直接用；没写（不经 `Session` 的宿主）按 IR 现算，全部算非 lib
+        self.站点键 = if program.site_keys.is_empty() {
+            jpp_ir::site_key::site_keys(program, &[])
+        } else {
+            program.site_keys.clone()
+        };
         // 放行把关只有一个来源：`Program.entry.guard`（意图汇编 11a），检查器读同一位
         self.guard = program.entry.guard;
         // 「无作者去向」站点（B0492 S2c）：检查器算好、编译时写进 IR
@@ -64,6 +70,26 @@ impl<'a> Interp<'a> {
                     ),
                     jpp_ir::ir::Span::default(),
                 ));
+            }
+        }
+        // B0630：按账本头的 `key_version` 选键法（预注册 §2.3）。不认识的值与续接旧键法账本报 `E-key-version`，
+        // 在发任何请求之前；只凭账本重放旧键法账本按账本的键法算，头里照写它
+        {
+            let 视图 = self.ledger.view();
+            let 头值 = 视图.header.as_ref().and_then(|h| h.compared.key_version.clone());
+            match jpp_ledger::key_version::choose(
+                头值.as_deref(),
+                !视图.entries.is_empty(),
+                self.audit.on,
+            ) {
+                Ok(k) => self.key_version = k,
+                Err(m) => {
+                    return Err(RtError::new(
+                        Some("E-key-version"),
+                        m.trim_start_matches("E-key-version: ").to_string(),
+                        program.span,
+                    ));
+                }
             }
         }
         // 依据：B77、J-18（只凭账本重放不比 `calib_hash`，续接两者都比）
@@ -107,6 +133,7 @@ impl<'a> Interp<'a> {
                 &self.render,
                 HANDLER_VERSION,
             )
+            .with_key_version(self.key_version.header_tag().map(String::from))
             // 头在 run() 入口定稿：档案是运行前就定下的输入，不该等跑完再补
             .with_profile_hash(self.calib.profile().hash.clone())
             .with_behavior_hash(self.calib.profile().behavior_hash.clone())
@@ -427,6 +454,7 @@ impl<'a> Interp<'a> {
                     improve: 伴随报告,
                     window_over: 超窗报告.clone(),
                     named_unfetchable: 点名报告.clone(),
+                    site_key_fallback: self.站点回退,
                     orders: std::mem::take(&mut self.并档记录),
                     violations: std::mem::take(&mut self.违规)
                         .into_iter()
@@ -469,6 +497,7 @@ impl<'a> Interp<'a> {
                     improve: 伴随报告,
                     window_over: 超窗报告.clone(),
                     named_unfetchable: 点名报告.clone(),
+                    site_key_fallback: self.站点回退,
                     orders: self.并档记录,
                     violations: vec![],
                     settle_failed: vec![],

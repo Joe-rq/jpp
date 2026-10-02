@@ -48,7 +48,7 @@ fn 转交(l: &Ledger) -> Vec<Vec<String>> {
 }
 
 /// 预算只够一次调用：第二道 Unsure(budget)，交给缺臂的 handle 走默认链
-const d3头: &str = "budget {calls: 1, cost: 0, depth: 16};
+const D3头: &str = "budget {calls: 1, cost: 0, depth: 16};
 let e1 = cut(judge(state(mat(\"甲\")), test(\"行吗\", \"k\")));
 let e2 = cut(judge(state(mat(\"乙\")), test(\"行吗\", \"k\")));
 let v1 = handle(e1, {act: fn() { 1 }, ignore: fn() { 0 }, unsure: fn(u) { {exit: u} }});
@@ -58,7 +58,7 @@ let v2 = handle(e2, {act: fn() { 1 }, ignore: fn() { 0 }});
 /// d3：值被丢掉 → 段末记违规，没有当场写的 Handoff；报告行 end 为 carry
 #[test]
 fn d3_缺席类走链后被丢_记违规() {
-    let (o, l) = 跑(&format!("{d3头}{{v1: v1}}\n"));
+    let (o, l) = 跑(&format!("{D3头}{{v1: v1}}\n"));
     assert_eq!(o.unsure_default.len(), 1, "{:?}", o.unsure_default);
     assert_eq!(o.unsure_default[0]["cause"], "budget");
     assert_eq!(o.unsure_default[0]["end"], "carry");
@@ -70,7 +70,7 @@ fn d3_缺席类走链后被丢_记违规() {
 /// d3 把值返回：程序结束时随返回值写一条 Handoff，无违规
 #[test]
 fn d3_缺席类走链后随值返回_一条转交() {
-    let (o, l) = 跑(&format!("{d3头}{{v1: v1, v2: v2}}\n"));
+    let (o, l) = 跑(&format!("{D3头}{{v1: v1, v2: v2}}\n"));
     assert!(o.violations.is_empty(), "{:?}", o.violations);
     assert_eq!(转交(&l).len(), 1, "{:?}", 转交(&l));
     assert_eq!(o.unsure_default[0]["end"], "carry");

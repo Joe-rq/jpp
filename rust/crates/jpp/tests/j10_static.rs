@@ -13,7 +13,7 @@
 
 // 伴随题「最缺哪类」是 K 选一：替身经 common::伴随中性judge 给伴随元题中性读数（Z0398 返修，过程记录 5.23）
 mod common;
-use jpp::effects::{CalibStore, FnPort, JudgeResult, LiteralMode, Ports, Sample};
+use jpp::effects::{CalibStore, JudgeResult, LiteralMode, Ports, Sample};
 use jpp::value::{Answer, Question, State};
 use std::cell::Cell;
 

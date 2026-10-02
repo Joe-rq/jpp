@@ -159,7 +159,7 @@ pub fn aggregate(ledgers: &[Ledger], roster: &[String]) -> BankStats {
     }
     for l in ledgers {
         let mut seen: BTreeSet<String> = BTreeSet::new();
-        let mut sites: BTreeMap<String, BTreeSet<usize>> = BTreeMap::new();
+        let mut sites: BTreeMap<String, BTreeSet<jpp_ir::key::SiteRef>> = BTreeMap::new();
         for e in &l.entries {
             let Entry::Judge {
                 jkey,
@@ -197,7 +197,7 @@ pub fn aggregate(ledgers: &[Ledger], roster: &[String]) -> BankStats {
                 s.cost += *cost;
             }
             if let Some(k) = jkey {
-                sites.entry(hash.to_string()).or_default().insert(k.site);
+                sites.entry(hash.to_string()).or_default().insert(k.site.clone());
             }
             seen.insert(hash.to_string());
             // 出口重算：题式记录（线、δ）取自本账本的 CalibUsed

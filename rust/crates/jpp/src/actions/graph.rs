@@ -385,6 +385,8 @@ fn same_pairs(a: &[(usize, usize, f64, usize)], b: &[(usize, usize, f64, usize)]
 }
 
 type BipEdges = HashMap<(usize, usize), (f64, usize)>;
+/// 一组指派：每个解是 (左, 右, 权, 边号) 的列表
+type 指派组 = Vec<Vec<(usize, usize, f64, usize)>>;
 
 /// 二分图带权匹配一次求解的结果：`pairs` 是权 > 0 的实边配对（按右端升序）；`cost`/`u`/`v` 是补成方阵后的
 /// 匈牙利代价矩阵与对偶势（1-索引），供并列枚举判「紧边」。
@@ -448,7 +450,7 @@ fn bip_enumerate(
     n: usize,
     m: usize,
     root: &BipSol,
-) -> (Vec<Vec<(usize, usize, f64, usize)>>, bool) {
+) -> (指派组, bool) {
     let mut found = vec![root.pairs.clone()];
     let wmax = best.values().map(|x| x.0).fold(0.0f64, f64::max);
     if wmax <= 0.0 || root.pairs.is_empty() {
@@ -1057,8 +1059,8 @@ fn run_shortest_path(input: &Json) -> Result<Json, String> {
     let tight = |u: usize, v: usize, w: f64| dist[u].is_finite() && close(dist[u] + w, dist[v]);
     // 反向可达：能沿紧弧走到 t 的节点
     let mut radj: Vec<Vec<usize>> = vec![Vec::new(); n];
-    for u in 0..n {
-        for &(v2, w, _) in &adj[u] {
+    for (u, edges) in adj.iter().enumerate().take(n) {
+        for &(v2, w, _) in edges {
             if tight(u, v2, w) {
                 radj[v2].push(u);
             }

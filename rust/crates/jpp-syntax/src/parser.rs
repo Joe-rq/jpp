@@ -19,7 +19,11 @@ pub(crate) fn parse_tokens(tokens: Vec<Token>) -> Result<Program, Diagnostic> {
         None
     };
     let body = parser.body(false, start)?;
-    Ok(Program { budget, body })
+    Ok(Program {
+        budget,
+        body,
+        lib_ranges: vec![],
+    })
 }
 
 struct Parser {

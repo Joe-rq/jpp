@@ -188,10 +188,11 @@ impl<'a> Interp<'a> {
             ))
         })?;
         let args_canon: Vec<String> = args.iter().map(|a| canon(&a.to_json())).collect();
+        let site = self.站点(sp).to_string();
         let key = self.effect_key_of(
             s.name,
             &[
-                &sp.start.to_string(),
+                &site,
                 name,
                 &args_canon.join("\u{1f}"),
                 &iter_seq.to_string(),
@@ -359,10 +360,11 @@ impl<'a> Interp<'a> {
         // 12:158「键：(site, prompt_hash, ctx_hash, n, retry_seq)」——site 排第一位。
         // 缺了它，同一段 prompt 在两个站点生成会撞键，第二个站点命中第一个的输出。
         // gen 比 judge 更容易撞：prompt 常是字面量，两处写同一句话很正常。
+        let site = self.站点(sp).to_string();
         let key = self.effect_key_of(
             s.name,
             &[
-                &sp.start.to_string(),
+                &site,
                 prompt,
                 &ctx_hash.join(","),
                 &n.to_string(),
@@ -731,10 +733,8 @@ impl<'a> Interp<'a> {
             )));
         };
         // 12:189「键 (site, f_hash, args_hash)」。`captured` 是 13 §4 另加的（身份含捕获状态）。
-        let key = self.effect_key_of(
-            s.name,
-            &[&sp.start.to_string(), &f_hash, &captured, &hashes.join(",")],
-        );
+        let site = self.站点(sp).to_string();
+        let key = self.effect_key_of(s.name, &[&site, &f_hash, &captured, &hashes.join(",")]);
         // 步 15h-3：先查开着的层，再查账本
         // 变换的缓存键不含模型（方法身份在方法哈希与捕获指纹里）
         let 已有 = match self.账本查(&key) {

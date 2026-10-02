@@ -919,7 +919,7 @@ mod tests {
             "jev-1.13.0",
             Box::new(move |body| {
                 *c2.borrow_mut() += 1;
-                Ok(json!({"answers": 桩答(&body, 0.8)}))
+                Ok(json!({"answers": 桩答(body, 0.8)}))
             }),
         );
         let calib = CalibStore::new();
@@ -1022,7 +1022,7 @@ mod tests {
         let client = JevClient::with_transport(
             "jev-1.13.0",
             Box::new(|body| {
-                Ok(json!({"answers": 桩答(&body, 0.8), "usage": {"input_tokens": 1000}}))
+                Ok(json!({"answers": 桩答(body, 0.8), "usage": {"input_tokens": 1000}}))
             }),
         )
         .with_price(画像.profile.price_per_input_token());

@@ -32,6 +32,7 @@ use jpp_value::prov::EdgeKind;
 use jpp_value::value::{Answer, Taint, hash_of};
 
 mod aggregate;
+pub mod key_version;
 pub use aggregate::{Observation, depth_profile, observations};
 mod port;
 pub use port::{Durability, LedgerError, LedgerPort};
@@ -52,9 +53,11 @@ pub use skeleton::{
 /// 账本格式版本（步 18a 起 3；C-1 起 4：加未决去向事件的六个变体；C-2 的追踪字段并进同一个 v4：
 /// 行外壳 `{seq, prev, entry, trace}` 的 `trace` 可缺省，没有它的 v4 账本照读，见 [`EntryLine`]；
 /// 步 34 V5 起 5：骨架事件一次声明，B196）。头行的 `version` 就是冻结清单 §4.1 账本头的 `schema`。
-pub const LEDGER_VERSION: u32 = 5;
+/// 步 B0630 起 6：`jkey.site` 可为字符串（结构化站点），头里写 `key_version`；v5 旧二进制在版本闸处拒读，不在条目处出错。
+pub const LEDGER_VERSION: u32 = 6;
 /// 本二进制照读的旧版本：v3、v4 的条目集合是 v5 的子集（`Halt` 从未构造），不迁移（C-1 Z0207 第 1 条；V5）。
-pub const LEDGER_READS_AS_IS: [u32; 2] = [3, 4];
+/// v5 的条目集合也是 v6 的子集（站点为数，`key_version` 缺省 = 旧键法，B0630）。
+pub const LEDGER_READS_AS_IS: [u32; 3] = [3, 4, 5];
 /// v1 账本的归档标签：只由这个标签处的二进制重放（`21` E5）。
 pub const V1_ARCHIVE_TAG: &str = "ledger-v1-archive";
 /// v2 账本的归档标签（步 18a 格式变更前，`21` E5）。v2 另有迁移（`jpp::store::migrations::ledger_v2`）。
@@ -586,7 +589,8 @@ pub struct HeaderCompared {
     /// 本账本里的段与父段（冻结清单 §4.1 账本头；V5）。续接只会加段：旧的是新的前缀即不算不同。为空不写。
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub segments: Vec<Segment>,
-    /// 键版本（裁定三十七，V5 留位；落地时再填）。为空不写。
+    /// 键法版本（裁定三十七；B0630 起由 [`key_version`] 解读）：缺省 = 字节偏移键法，`"1"` = 结构化站点键，
+    /// 其余值 `E-key-version`。为空不写。
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub key_version: Option<String>,
 }
@@ -772,6 +776,11 @@ impl Header {
     pub fn with_gen(mut self, model: Option<String>, profile_hash: Option<String>) -> Header {
         self.compared.gen_model = model;
         self.compared.gen_profile_hash = profile_hash;
+        self
+    }
+    /// 键法版本（B0630）：`None` 即旧键法，`Some("1")` 结构化键；`None` 与不调相同。
+    pub fn with_key_version(mut self, v: Option<String>) -> Header {
+        self.compared.key_version = v;
         self
     }
     /// 标准库与题库的版本（步 27，B48）：`lib_version` 是本次运行装载的标准库文件的内容哈希，`bank_version`
@@ -1050,7 +1059,7 @@ impl Ledger {
             }
         );
         let 再意向 = matches!(&e, Entry::Intent { .. }) && self.intent_withheld(&k);
-        if !(replaces_unanswered && is_answer) && !再意向 {
+        if !(再意向 || replaces_unanswered && is_answer) {
             return self.put(e);
         }
         self.index.insert(k, self.entries.len());
@@ -1139,13 +1148,12 @@ impl Ledger {
     /// 并指出行号。
     pub fn decode(text: &str) -> Result<(Ledger, Option<Truncated>), String> {
         // 依据：20 §2.3 jpp-ledger「v1 账本不迁移，decode 报 E-ledger-archived」；21 E5
-        if let Ok(Json::Object(m)) = serde_json::from_str::<Json>(text) {
-            if m.contains_key("entries") {
+        if let Ok(Json::Object(m)) = serde_json::from_str::<Json>(text)
+            && m.contains_key("entries") {
                 return Err(format!(
                     "E-ledger-archived: 这是 v1 格式的账本（整份 JSON，键只存哈希），已归档不迁移。修法：用标签 {V1_ARCHIVE_TAG} 处的二进制重放它"
                 ));
             }
-        }
         let mut lines: Vec<&str> = text.split('\n').collect();
         let ends_clean = text.ends_with('\n');
         if ends_clean {
@@ -1169,7 +1177,7 @@ impl Ledger {
             && v > LEDGER_VERSION as u64
         {
             return Err(format!(
-                "E-ledger-newer: 账本版本 {v}，比本二进制（v{LEDGER_VERSION}）新，是更新的二进制写的。修法：用写它的二进制读"
+                "E-ledger-newer: 账本格式 v{v} 比本二进制（v{LEDGER_VERSION}）新，是更新的二进制写的。修法：用更新的二进制，或不带账本重跑"
             ));
         }
         // 依据：20 §九 账本行「未知字段拒绝」「链哈希断裂 → decode 拒绝」；12 §2.11 无声吞字段通则
@@ -1183,7 +1191,7 @@ impl Ledger {
         if head.version != LEDGER_VERSION && !LEDGER_READS_AS_IS.contains(&head.version) {
             // 依据：21 E5（每次格式变更在上一提交打归档标签，旧格式只由对应二进制重放）；C-1（v3 照读）
             return Err(format!(
-                "E-ledger-archived: 账本版本 {}，本二进制只读 v{LEDGER_VERSION}（v3、v4 照读）。修法：v1 用标签 {V1_ARCHIVE_TAG} 处的二进制重放，v2 用 jpp ledger-migrate 迁移",
+                "E-ledger-archived: 账本版本 {}，本二进制只读 v{LEDGER_VERSION}（v3、v4、v5 照读）。修法：v1 用标签 {V1_ARCHIVE_TAG} 处的二进制重放，v2 用 jpp ledger-migrate 迁移",
                 head.version
             ));
         }

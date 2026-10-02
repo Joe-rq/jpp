@@ -1,6 +1,6 @@
 ir v1
 budget calls=10 cost=1 depth=256 escalate=- unsure=- latency_p95=- absent=-
-block 363..2094
+block 363..2103
   fn-stmt observe
     #0 fn (m:{"Named":"Mat"}, q:{"Named":"Question"}) -> {"Named":"Record"} effects=[judge]
       block 455..847
@@ -221,13 +221,13 @@ block 363..2094
                   #132 name s
               #133 int 0
   fn-stmt solve
-    #134 fn (input:{"Named":"Mat"}, method:{"Function":[[{"Named":"Record"}],{"Named":"Record"}]}) -> {"Named":"Record"} effects=[judge]
-      block 1693..1901
+    #134 fn (input:{"Named":"Mat"}, method:{"Method":{"params":[{"Named":"Record"}],"ret":{"Named":"Record"},"effects":["judge"],"captures_responsibility":false}}) -> {"Named":"Record"} effects=[judge]
+      block 1702..1910
         result
-          #135 loop @8 1699..1899
+          #135 loop @8 1708..1908
             bound:
               #136 int 10
-            #137 record 1708..1769
+            #137 record 1717..1778
               lo:
                 #138 int 0
               hi:
@@ -235,56 +235,56 @@ block 363..2094
               material:
                 #140 name input
               evidence:
-                #141 list 1753..1755
+                #141 list 1762..1764
               pending:
-                #142 list 1766..1768
+                #142 list 1775..1777
             #144 fn (s:-, index:-) -> - effects=-
-              block 1784..1898
+              block 1793..1907
                 let next : -
-                  #145 if @9 1805..1840
+                  #145 if @9 1814..1849
                     cond:
-                      #146 call 1808..1815
+                      #146 call 1817..1824
                         callee:
                           #147 name done
                         #148 name s
-                    block 1816..1821
+                    block 1825..1830
                       result
                         #149 name s
-                    block 1827..1840
+                    block 1836..1849
                       result
-                        #150 call 1829..1838
+                        #150 call 1838..1847
                           callee:
                             #151 name method
                           #152 name s
                 result
-                  #153 if @10 1850..1892
+                  #153 if @10 1859..1901
                     cond:
-                      #154 call 1853..1863
+                      #154 call 1862..1872
                         callee:
                           #155 name done
                         #156 name next
-                    block 1864..1878
+                    block 1873..1887
                       result
-                        #157 call 1866..1876
+                        #157 call 1875..1885
                           callee:
                             #158 name stop
                           #159 name next
-                    block 1884..1892
+                    block 1893..1901
                       result
                         #160 name next
   let result : -
-    #161 call 1916..1947
+    #161 call 1925..1956
       callee:
         #162 name solve
-      #163 call 1922..1940
+      #163 call 1931..1949
         callee:
           #164 name mat
-        #165 record 1926..1939
+        #165 record 1935..1948
           target:
             #166 int 731
       #167 name step
   result
-    #168 record 1949..2094
+    #168 record 1958..2103
       target:
         #169 field .lo
           #170 name result
@@ -295,7 +295,7 @@ block 363..2094
           #174 field .lo
             #175 name result
       questions:
-        #176 call 2021..2041
+        #176 call 2030..2050
           callee:
             #177 name len
           #178 field .evidence
@@ -315,6 +315,6 @@ sites 11
   @5 #61 construct:test 1068..1113 fn=#53 in=-
   @6 #73 if 1155..1548 fn=#53 in=-
   @7 #77 if 1180..1431 fn=#53 in=-
-  @8 #135 loop 1699..1899 fn=#134 in=-
-  @9 #145 if 1805..1840 fn=#144 in=@8
-  @10 #153 if 1850..1892 fn=#144 in=@8
+  @8 #135 loop 1708..1908 fn=#134 in=-
+  @9 #145 if 1814..1849 fn=#144 in=@8
+  @10 #153 if 1859..1901 fn=#144 in=@8

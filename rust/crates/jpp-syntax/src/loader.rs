@@ -81,11 +81,34 @@ fn render(sources: &[SourceFile], d: &Diagnostic) -> String {
     }
 }
 
+/// 标准库文件判据（B0630；`jpp::store::bank::versions_of` 同用这一条）：最靠近文件的名为 `lib` 的祖先目录之下返回
+/// （相对 `lib/` 的路径, 是否在 `lib/bank/` 下），不在 lib 下返回 `None`。
+pub fn lib_rel(path: &Path) -> Option<(PathBuf, bool)> {
+    let comps: Vec<_> = path.components().collect();
+    let li = comps
+        .iter()
+        .rposition(|c| c.as_os_str() == "lib")
+        .filter(|i| *i + 1 < comps.len())?;
+    let rel: PathBuf = comps[li + 1..].iter().collect();
+    let bank = rel
+        .components()
+        .next()
+        .is_some_and(|c| c.as_os_str() == "bank");
+    Some((rel, bank))
+}
+
 pub fn load(path: &Path) -> Result<LoadedProgram, String> {
     let mut loader = Loader::default();
     let mut program = loader.visit(path, true)?.expect("entry is loaded once");
     loader.statements.append(&mut program.body.statements);
     program.body.statements = loader.statements;
+    // B0630：lib 文件（`lib/` 之下、不在 `lib/bank/` 下）的区间，结构化站点表据此标 lib 定义
+    program.lib_ranges = loader
+        .sources
+        .iter()
+        .filter(|f| matches!(lib_rel(&f.path), Some((_, false))))
+        .map(|f| (f.offset, f.offset + f.text.len()))
+        .collect();
     Ok(LoadedProgram {
         program,
         sources: loader.sources,

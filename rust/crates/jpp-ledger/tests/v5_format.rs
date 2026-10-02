@@ -513,16 +513,17 @@ fn 空头(v: u32) -> String {
 
 #[test]
 fn 版本闸_v3v4照读_v6报更新() {
-    assert_eq!(LEDGER_VERSION, 5);
-    for v in [3, 4, 5] {
+    // B0630 起 v6（结构化站点）；v3、v4、v5 照读，v7 起报更新
+    assert_eq!(LEDGER_VERSION, 6);
+    for v in [3, 4, 5, 6] {
         assert!(Ledger::decode(&空头(v)).is_ok(), "v{v} 照读");
     }
-    for v in [6, 9] {
+    for v in [7, 9] {
         let e = Ledger::decode(&空头(v)).expect_err("更新的版本拒读");
         assert!(e.starts_with("E-ledger-newer"), "{e}");
     }
     // 新版本的头即使多出本二进制不认识的字段，也先报「更新」
-    let e = Ledger::decode("{\"version\":6,\"header\":null,\"schema_extra\":1}\n").unwrap_err();
+    let e = Ledger::decode("{\"version\":7,\"header\":null,\"schema_extra\":1}\n").unwrap_err();
     assert!(e.starts_with("E-ledger-newer"), "{e}");
 }
 

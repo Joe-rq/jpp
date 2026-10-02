@@ -1,0 +1,19 @@
+// 批量入口（purpose_run）：只给一句目的，语言替你出题、问每一项、落成字段。
+//
+// 目的由命令行 --purpose 给（程序里以名字 purpose 取用）；这里只写材料（三家供应商）和结果怎么看。
+// 语言自己做的事：把目的拆成模块 → 没说的补上 → 查已认证题库 → 没命中的唤出候选题 → 过闸门 → 对每家问同一批题。
+// 生成器调用数只和谓词数有关，与供应商家数无关。每家得到两个字段：rank（可靠程度的名次）与 risk（最大的风险）。
+// 固定观察的读数与生成器输出是合成的，只检查构造，不代表模型表现。重建夹具：python3 examples/fixtures/build-fixtures.py
+import "../lib/derive/purpose.jpp";
+budget {calls: 2000, cost: 0, depth: 8192};
+
+let items = [
+    {on: mat({name: "供应商0", note: "第 0 家，产能与账期各不相同"}), ref: mat("订单：三千件，六周内交付")},
+    {on: mat({name: "供应商1", note: "第 1 家，产能与账期各不相同"}), ref: mat("订单：三千件，六周内交付")},
+    {on: mat({name: "供应商2", note: "第 2 家，产能与账期各不相同"}), ref: mat("订单：三千件，六周内交付")}
+];
+let r = purpose_run(purpose, items, {});
+{value: map(r.value, fn(v) { {item: content(v.item), fields: v.fields} }),
+ pending: r.pending,
+ questions: map(r.detail.questions, fn(q) { {field: q.field, cut: q.cut, op: q.op, from: q.from} }),
+ sources: r.detail.sources}

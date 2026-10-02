@@ -252,7 +252,10 @@ fn purpose_bank(p, opts) {
 fn purpose_elicit(m, p, samples, opts) {
     let R = derive_rules();
     let count = if has(opts, "elicit_n") { opts.elicit_n } else { 4 };
-    let raw = gen(R.purpose_elicit_prompt(to_json(m), p.text, if p.cut == "" { R.purpose_cut_unknown } else { p.cut }), [], count, 0);
+    // hint：谓词自带的唤出补充（Z0913 子题 S：动作题题面与候选的形状），别的谓词没有，提示与改前相同；
+    // gen_ctx：唤出时给生成器的材料（第四圈子题 S′：规则原文），别的谓词没有
+    let base = R.purpose_elicit_prompt(to_json(m), p.text, if p.cut == "" { R.purpose_cut_unknown } else { p.cut });
+    let raw = gen(if has(p, "hint") { base + p.hint } else { base }, if has(p, "gen_ctx") { p.gen_ctx } else { [] }, count, 0);
     if is_fail(raw) { [] } else {
         let specs = map(raw, fn(x) { derive_spec(x) });
         fold(derive_idx(specs), [], fn(acc, k) {
@@ -425,7 +428,8 @@ fn purpose_stated(from) { from == "purpose" || from == "author" }
 fn purpose_assemble(p, decl, opts) {
     let R = derive_rules();
     let op = purpose_op(p.cut);
-    let e0 = with(decl, "lacks", R.lacks.modules);
+    // 过程入口的动作题（候选来自过程）多一类「中间判断」（Z0913）；别的题照旧
+    let e0 = with(decl, "lacks", if p.over_from == "process" { R.lacks.process } else { R.lacks.modules });
     let e1 = if op == "measure" { with(e0, "scale", p.scale) } else { e0 };
     fill(derive_form(op, R.assemble_text(p.cut, p.text), e1, opts), {})
 }
@@ -567,23 +571,42 @@ fn purpose_land(acc0, qq, r, item, pos, rank) {
                 } else {
                     let e0 = cut(r);
                     // 字段未决先走默认链（N-T6，Z0514 的 unsure_default，与 handle 缺 unsure 臂同一份实现与记账）：
-                    // 再判成已决就用新出口落字段；放弃的不进 pending、记 detail.dropped；其余照旧转交
-                    let d = if starts_with(exit_kind(e0), "unsure") { unsure_default(e0) } else { {exit: e0, end: "none"} };
+                    // 再判成已决就用新出口落字段；放弃的不进 pending、记 detail.dropped；其余照旧转交。
+                    // 裁定七十八：过程入口的动作题（purpose_plan 在题记录上打 end_top，只有它打）到末端仍拿不准时按最大项行动
+                    let top = if has(qq, "end_top") { qq.end_top } else { false };
+                    // Z0913：过程入口的动作题另把题树规格（子题 S、缩小题式、开关）交给默认链，走到「中间判断」时用
+                    let uo = if has(qq, "tree") && qq.tree != unit { {end: "top", tree: qq.tree} } else { {end: "top"} };
+                    let d = if !starts_with(exit_kind(e0), "unsure") { {exit: e0, end: "none"} }
+                            else if top { unsure_default(e0, uo) } else { unsure_default(e0) };
                     let e = d.exit;
                     let lab = exit_kind(e);
                     let acc1 = if key_of(e) != key_of(e0) { with(acc0, "extra", append(acc0.extra, key_of(e))) } else { acc0 };
                     let acc = with(acc1, "trust", with(acc1.trust, qq.field, taint(e)));
-                    if d.end == "drop" {
+                    let over = purpose_over(qq, item);
+                    // 默认链末端转交时的去向层（Jpp 2026-10-02 与 Z0913 O3）：先写「缺<类别>、无取法」，中间判断没走成再写原因。
+                    // 只在要进 pending 的两支里建（element 会给出口在报告 exits 表的那一行盖 index、pos，别的结局不能盖，N1）
+                    let pend_el = fn() {
+                        let el = [element(item.on, e, {pos: pos, q: qq.q})];
+                        let el1 = if has(d, "needed") && len(d.needed) > 0 { carry([], el, "缺" + join(d.needed, "、") + "、无取法") } else { el };
+                        if has(d, "tree_why") { carry([], el1, d.tree_why) } else { el1 }
+                    };
+                    // 最大项、再判已决的选中项：走过缩小时运行时给本拍原候选的下标 orig（缩小集的下标对不上原集，Z0913 O4/O5；
+                    // 取原候选里的元素，来源是世界给的候选，J-02）；没走过缩小时按原下标。候选对不上、映不回去由运行时报错（E-rt-arg）
+                    let ti = if d.end != "top" { -1 } else if has(d, "orig") { d.orig } else { d.top };
+                    if ti >= 0 {
+                        // 裁定七十八：按最大项行动；未决照转交进 pending，去向「已按最大项行动」；行标签由调用方按 topped 标（by: "top"）
+                        let inner = carry([], pend_el(), "已按最大项行动");
+                        with(with(with(acc, "fields", with(acc.fields, qq.field, over[ti])), "pend",
+                                  carry(acc.pend, inner, "purpose:" + qq.field)),
+                             "topped", append(if has(acc, "topped") { acc.topped } else { [] }, qq.field))
+                    } else if d.end == "drop" {
                         with(with(acc, "fields", with(acc.fields, qq.field, unit)), "dropped",
                              append(acc.dropped, {pos: pos, field: qq.field, exit: lab}))
                     } else if starts_with(lab, "unsure") {
-                        // 默认链末端转交、缺的类别取不到（路 C）：去向里先写「缺<类别>、无取法」（Jpp 2026-10-02），再写本字段
-                        let el = [element(item.on, e, {pos: pos, q: qq.q})];
-                        let inner = if has(d, "needed") && len(d.needed) > 0 { carry([], el, "缺" + join(d.needed, "、") + "、无取法") } else { el };
                         with(with(acc, "fields", with(acc.fields, qq.field, unit)), "pend",
-                             carry(acc.pend, inner, "purpose:" + qq.field))
+                             carry(acc.pend, pend_el(), "purpose:" + qq.field))
                     } else if starts_with(lab, "pick(") {
-                        with(acc, "fields", with(acc.fields, qq.field, purpose_over(qq, item)[derive_index(lab)]))
+                        with(acc, "fields", with(acc.fields, qq.field, over[if has(d, "orig") { d.orig } else { derive_index(lab) }]))
                     } else if starts_with(lab, "at(") {
                         with(acc, "fields", with(acc.fields, qq.field, qq.q.scale[derive_index(lab)]))
                     } else { with(acc, "fields", with(acc.fields, qq.field, lab == "act")) }

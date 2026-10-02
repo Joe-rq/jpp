@@ -134,11 +134,14 @@ type 弱来源表 = Weak<std::collections::BTreeMap<String, Edge>>;
 /// 来源集合按身份缓存的门槛：至少这么多条边。
 const 来源门槛: usize = 64;
 
+/// 并集表的一项：(左弱, 右弱, 结果)
+type 并集项 = (弱来源表, 弱来源表, Sources);
+
 thread_local! {
     /// 来源集合的摘要：指针 → (弱引用, 摘要)
     static 集摘要: RefCell<HashMap<usize, (弱来源表, String)>> = RefCell::new(HashMap::new());
     /// 并集：(左指针, 右指针) → (左弱, 右弱, 结果)
-    static 并集表: RefCell<HashMap<(usize, usize), (弱来源表, 弱来源表, Sources)>> = RefCell::new(HashMap::new());
+    static 并集表: RefCell<HashMap<(usize, usize), 并集项>> = RefCell::new(HashMap::new());
 }
 
 fn 同一(w: &弱来源表, r: &来源表) -> bool {

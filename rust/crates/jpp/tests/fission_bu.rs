@@ -437,7 +437,8 @@ let e = cut(judge(state(mat("{m}"), {{over: [mat("香蕉"), mat("苹果"), mat("
     assert!(r.值.contains("pick(0)"), "差比 δ 大 0.01：{}", r.值);
     // (b) 浮点噪声：中段 δ 设 0.04 的副本；裸浮点 0.90 − 0.86 > 0.04
     let 副本 = 画像_中段delta(30, 0.04);
-    assert!(0.90_f64 - 0.86 > 0.04, "本测试要钉住的正是这个浮点噪声");
+    let 噪声差 = 0.90_f64 - 0.86;
+    assert!(噪声差 > 0.04, "本测试要钉住的正是这个浮点噪声");
     let r = 跑_画像(&src, 副本.clone(), false, false, 0.86).unwrap();
     assert!(r.值.contains("unsure(tie)"), "{}", r.值);
     // 差 0.05 才出 pick

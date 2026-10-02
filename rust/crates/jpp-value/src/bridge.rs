@@ -389,7 +389,7 @@ mod answer_route_tests {
 
     /// Z0912（裁定七十二 (2)）：没有线的 K 选一，前两项差不超过画像中段 δ 即并列；δ 未知或为 0 时照改前（恰好相等才并列）
     #[test]
-    fn 选择题没线_前两项差在中段δ内为并列() {
+    fn 选择题没线_前两项差在中段delta内为并列() {
         let tie = ExitKind::Unsure(Why::of(UnsureCause::Tie));
         let v = Answer::Choice(vec![0.30, 0.22, 0.48]);
         // 0.48 − 0.30 = 0.18 > 0.0971：照最大项

@@ -94,9 +94,7 @@ fn 出口有去向_不标() {
 
 #[test]
 fn 契约值只窄引用_标_否则不标() {
-    let 标 = format!(
-        "budget {{calls: 8, cost: 0, depth: 16}};\nlet o = sieve([\"甲\", \"乙\"], test(\"q\", \"k\"));\nlen(accepted(o))\n"
-    );
+    let 标 = "budget {calls: 8, cost: 0, depth: 16};\nlet o = sieve([\"甲\", \"乙\"], test(\"q\", \"k\"));\nlen(accepted(o))\n".to_string();
     assert_eq!(站点(&标), vec![起点(&标, "sieve(")]);
     for 后 in ["o", "o.pending", "{a: accepted(o), p: o.pending}"] {
         let src = format!(
@@ -146,7 +144,8 @@ fn 金样程序的站点数() {
 /// 持有者解除责任。两处都没有去向（结果是 `1`）时 5.18 起两处都标，见 `同一判断直接绑定的一组cut按b162分组`
 #[test]
 fn 同一读数切两次_不标() {
-    for 后 in ["{a: a}"] {
+    {
+        let 后 = "{a: a}";
         let src = format!(
             "budget {{calls: 8, cost: 0, depth: 16}};\nlet r = judge(state(mat(\"甲\")), test(\"q\", \"k\"));\nlet a = cut(r);\nlet b = cut(r);\n{后}\n"
         );

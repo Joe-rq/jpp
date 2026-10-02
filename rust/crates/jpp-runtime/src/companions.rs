@@ -26,6 +26,9 @@ pub(crate) struct 伴随组 {
     pub 候选: Vec<String>,
 }
 
+/// 伴随题的结果：（每个伴随题的键与读数，未取到的类别）
+type 伴随读数与缺类 = (Vec<(String, Rc<Reading>)>, Vec<String>);
+
 impl<'a> Interp<'a> {
     /// 这道题有没有可信记录（第一版：题级或题式级有「上岗」记录）
     fn 有可信记录(&self, q: &Question) -> bool {
@@ -98,10 +101,13 @@ impl<'a> Interp<'a> {
         // Z0622：按偏移索引的站点表与默认链站点同样换空表
         let 计划 = std::mem::replace(&mut self.plan, jpp_ir::plan::Plan::empty());
         let 站点表 = std::mem::take(&mut self.站点表);
+        // B0630：结构化站点表同样换空（序言的 Span 与用户程序重叠）
+        let 站点键 = std::mem::take(&mut self.站点键);
         let 链站点 = std::mem::take(&mut self.默认链站点);
         let 结果 = self.eval_block(&p.body, &env);
         self.plan = 计划;
         self.站点表 = 站点表;
+        self.站点键 = 站点键;
         self.默认链站点 = 链站点;
         结果?;
         let 顶层 = self.顶层环境.take();
@@ -178,7 +184,7 @@ impl<'a> Interp<'a> {
         q: &Question,
         题式: &[Value],
         sp: Span,
-    ) -> R<(Vec<(String, Rc<Reading>)>, Vec<String>)> {
+    ) -> R<伴随读数与缺类> {
         let mut cqs = vec![];
         // K 选一的伴随题（「最缺哪类」）另登在换了 over 槽的状态上：候选 = 原题的四级候选 + 「材料不缺」（裁定五十一）
         let mut 选题 = vec![];
@@ -201,7 +207,7 @@ impl<'a> Interp<'a> {
         if self.audit.on
             && let Some(c) = cqs.first()
         {
-            let k = self.judge_key_of(&state.hash, &c.hash, c.op.phys(), sp.start);
+            let k = self.judge_key_of(&state.hash, &c.hash, c.op.phys(), sp);
             // 首跑这道回答形状不符被丢掉时账本里是 Absent（Z0556）
             if self.账本查(&k).is_none() && self.账本查(&format!("absent:{k}")).is_none() {
                 return Ok((vec![], vec![]));
@@ -258,7 +264,7 @@ impl<'a> Interp<'a> {
         }
         let k = k?;
         let 并列 = match self.calib.profile().delta_prior(Op::Select) {
-            Some(δ) => 最大 - 次大 <= δ + jpp_value::stat::BOUNDARY_EPS,
+            Some(delta) => 最大 - 次大 <= delta + jpp_value::stat::BOUNDARY_EPS,
             None => 最大 == 次大,
         };
         (!并列).then_some(k)
@@ -290,7 +296,7 @@ impl<'a> Interp<'a> {
         // 是判断器自己也拿不准、没有信号——不能当成「题不清」或「两可」，默认链照常走到下一步（发「为什么」、取、再判）。
         // 与裁定六、七十二 (2) 同一规则：没有线的判断带内一律按拿不准处理，去掉手写的 0.5 线。
         // 画像没测中段 δ 时照改前（按 0.5 分），不为元题中止程序
-        let Some(δ) = self.calib.profile().delta_prior(Op::Test) else {
+        let Some(delta) = self.calib.profile().delta_prior(Op::Test) else {
             return Some(if 前 < 0.5 || 谓 > 0.5 {
                 ("unclear", None)
             } else if let Some(c) = 缺 {
@@ -301,8 +307,8 @@ impl<'a> Interp<'a> {
                 ("ambiguous", None)
             });
         };
-        let 带外否 = |p: f64| p < 0.5 - δ - jpp_value::stat::BOUNDARY_EPS;
-        let 带外是 = |p: f64| p > 0.5 + δ + jpp_value::stat::BOUNDARY_EPS;
+        let 带外否 = |p: f64| p < 0.5 - delta - jpp_value::stat::BOUNDARY_EPS;
+        let 带外是 = |p: f64| p > 0.5 + delta + jpp_value::stat::BOUNDARY_EPS;
         Some(if 带外否(前) || 带外是(谓) {
             ("unclear", None)
         } else if let Some(c) = 缺 {
@@ -467,7 +473,7 @@ pub fn 序言越界(p: &Program) -> Option<(Span, String)> {
             _ => None,
         };
         if let Some(w) = 什么 {
-            坏 = Some((e.span.clone(), w));
+            坏 = Some((e.span, w));
         }
     });
     坏

@@ -164,7 +164,7 @@ fn lacks写在test上或不是文本列表_报错() {
             "文本列表",
         ),
     ] {
-        let e = 跑(src, 0).outcome.err().expect("应报错");
+        let e = 跑(src, 0).outcome.expect_err("应报错");
         assert!(e.contains("E-rt-question") && e.contains(词), "{e}");
     }
 }
@@ -173,8 +173,7 @@ fn lacks写在test上或不是文本列表_报错() {
 fn unsure_source至少给一项() {
     let e = 跑(&程序("unsure_source({});", "test(\"x\", \"k\")"), 0)
         .outcome
-        .err()
-        .expect("空的 unsure_source 报错");
+        .expect_err("空的 unsure_source 报错");
     assert!(e.contains("E-rt-arg") && e.contains("至少给一项"), "{e}");
 }
 
@@ -193,6 +192,6 @@ let kids = derive_premise(n, e, {});
     assert_eq!(v["lacks"], json!(["材料", "语境"]));
     assert_eq!(v["lacks"], v["rules"]);
     // 守则版本：Z0398 升到 derive-4，线 A 之后 Z0511、Z0511 返修、Z0535、Z0559 依次升到 derive-8，W-shadow 改名升到 derive-9，B0470 前提派生升到 derive-10，臂 3 空跑 3.1 的请求缺省值修补升到 derive-11，3.2 的前提题只看条目升到 derive-12，B0478 作者入口升到 derive-13，Z0860 前提三层升到 derive-14；第二靶子迭代：前提≠证据升到 derive-15，if_false 自报升到 derive-16，
-    // if_false 结构化并进账本升到 derive-17，协议值改名 unanswerable 升到 derive-18，裁定七十五过程入口不派生前提升到 derive-19
-    assert_eq!(v["version"], "derive-19");
+    // if_false 结构化并进账本升到 derive-17，协议值改名 unanswerable 升到 derive-18，裁定七十五过程入口不派生前提升到 derive-19，Z0913 过程动作题的 lacks 加中间判断升到 derive-20，第三靶子第四圈完成条件进过程入口升到 derive-21，第五圈计分途径带可达条件、子题 S″ 升到 derive-22
+    assert_eq!(v["version"], "derive-22");
 }

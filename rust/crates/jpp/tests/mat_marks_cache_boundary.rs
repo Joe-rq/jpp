@@ -182,5 +182,5 @@ fn 只凭账本重放逐字节一致() {
     );
     assert_eq!(读到的出口(&重1), "act");
     assert_eq!(读到的出口(&重2), "ignore");
-    assert_eq!(json!(重1) == json!(重2), false);
+    assert!(!(json!(重1) == json!(重2)));
 }

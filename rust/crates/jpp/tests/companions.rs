@@ -327,8 +327,7 @@ fn 固定观察_没登记的伴随题给中性读数_别的照旧报错() {
     let e = Session::new(fp.ports(), &calib, &a)
         .with_companions(CompanionMode::Same)
         .run(&program, &EntryArgs::default(), &mut l)
-        .err()
-        .expect("原题没登记照旧报错");
+        .expect_err("原题没登记照旧报错");
     assert!(e.render().contains("固定观察未命中"), "{}", e.render());
 }
 

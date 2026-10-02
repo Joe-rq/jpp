@@ -65,6 +65,7 @@ fn program(b: Budget, sites: Vec<SiteInfo>) -> Program {
         span: Span::default(),
         entry: EntryDecl::default(),
         unsure_default_sites: Default::default(),
+        site_keys: Default::default(),
     }
 }
 

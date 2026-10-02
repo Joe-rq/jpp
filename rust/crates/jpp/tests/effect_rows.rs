@@ -614,6 +614,7 @@ fn 实参必须在参数类型的效应行之内() {
                     },
                 ),
             ),
+            lib_ranges: vec![],
         };
         jpp::lower(&src).expect("降级")
     };

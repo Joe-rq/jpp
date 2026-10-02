@@ -97,6 +97,6 @@ fn 提升计划与块对不上_报_e_rt_plan() {
     let mut l = Ledger::new();
     let r = jpp_runtime::Interp::new(端口(&calls), &mut l, &calib, &actions, 短.budget.clone())
         .run(&短, plan, &jpp_plan::Hooks);
-    let e = r.err().expect("计划与块对不上应报错");
+    let e = r.expect_err("计划与块对不上应报错");
     assert_eq!(e.rule.as_deref(), Some("E-rt-plan"), "{}", e.render());
 }

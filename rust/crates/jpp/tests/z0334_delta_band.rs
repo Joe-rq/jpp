@@ -209,7 +209,7 @@ fn cut兜底缺mid报错() {
 }
 
 /// 6. 一个段都没测的画像：照线切、不加迁移带（裁定五十六读法乙，出口带 `delta_unknown`、不放行，见 `z0411_missing_mid.rs`），
-/// 0.70 过 0.60 → act（出口不变）
+///    0.70 过 0.60 → act（出口不变）
 #[test]
 fn 没测delta照旧取零() {
     let d = 临时("cut-untested");

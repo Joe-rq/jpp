@@ -1,0 +1,430 @@
+{
+  "无取法": {
+    "act_form": "e29c5cee913415386f4c1508",
+    "all_judges": [
+      [
+        "6327c7d32a9550ef59e0d3b4",
+        "b671473bead4abdc78139b78",
+        "Choice([0.0, 0.0, 0.0, 1.0])"
+      ],
+      [
+        "6327c7d32a9550ef59e0d3b4",
+        "dab2368be0699435b2eaa481",
+        "Choice([0.0, 0.0, 0.0, 0.0, 1.0])"
+      ],
+      [
+        "6327c7d32a9550ef59e0d3b4",
+        "85c75a0ee6f7a28f10d5ca1c",
+        "Choice([0.0, 0.0, 0.0, 0.0, 1.0])"
+      ],
+      [
+        "3bb383eebc0557004f6369d9",
+        "94778120b1cf699837a0a636",
+        "Noul(0.1)"
+      ],
+      [
+        "3bb383eebc0557004f6369d9",
+        "e5a3596b9f96db2ffcdf092f",
+        "Noul(0.1)"
+      ],
+      [
+        "13a875842ad4488dc2dd1f73",
+        "fd06567e9be71163f8ef845e",
+        "Noul(0.9)"
+      ],
+      [
+        "13a875842ad4488dc2dd1f73",
+        "98c596bf1811876329e7ec73",
+        "Noul(0.9)"
+      ],
+      [
+        "b07a761b636df072e651a1fd",
+        "c78988643dd87ed77b2981cf",
+        "Noul(0.7)"
+      ],
+      [
+        "e29c5cee913415386f4c1508",
+        "d3623572225a412ca75933eb",
+        "Choice([0.4, 0.4, 0.2])"
+      ],
+      [
+        "1b9b2ade0caca32a68c259cf",
+        "e10b5741587097cdf00158ec",
+        "Choice([0.0, 0.0, 0.0, 1.0, 0.0, 0.0])"
+      ],
+      [
+        "116c724a78e197416d9a9a22",
+        "41b596d7611e1684ed07af14",
+        "Choice([0.9, 0.1])"
+      ],
+      [
+        "89998a29d374fc63ae1c7fae",
+        "d3623572225a412ca75933eb",
+        "Noul(0.1)"
+      ],
+      [
+        "b9b7e1d03b36399ddf9cc7ee",
+        "d3623572225a412ca75933eb",
+        "Noul(0.9)"
+      ],
+      [
+        "ea7bf8e588bc56f634ec8294",
+        "d3623572225a412ca75933eb",
+        "Noul(0.5)"
+      ],
+      [
+        "e29c5cee913415386f4c1508",
+        "490383532b51c17e27977fa4",
+        "Choice([0.8, 0.1])"
+      ],
+      [
+        "b07a761b636df072e651a1fd",
+        "b4da19ba6c39dcf50addf433",
+        "Noul(0.7)"
+      ],
+      [
+        "e29c5cee913415386f4c1508",
+        "9e96a5cbacc7ede76863697e",
+        "Choice([0.1, 0.8, 0.1])"
+      ]
+    ],
+    "ctxs": [
+      "",
+      "",
+      "\"先判了一件更小的事：「眼下最要紧的是哪一件事？」，答的是「往目标走」\"",
+      ""
+    ],
+    "pending": [],
+    "rows": {
+      "results": [
+        {
+          "hash": "h2-2-2",
+          "match": 0,
+          "result": {
+            "reached": true
+          },
+          "steps": 2
+        }
+      ],
+      "rows": [
+        {
+          "action": "right",
+          "by": "judge",
+          "excluded": false,
+          "fields": {
+            "act": "right",
+            "far": true
+          },
+          "hash": "h2-0-0",
+          "match": 0,
+          "step": 0,
+          "trust": {
+            "act": "untrusted",
+            "far": "untrusted"
+          }
+        },
+        {
+          "action": "right",
+          "by": "judge",
+          "excluded": false,
+          "fields": {
+            "act": "right",
+            "far": true
+          },
+          "hash": "h2-1-1",
+          "match": 0,
+          "step": 1,
+          "trust": {
+            "act": "untrusted",
+            "far": "untrusted"
+          }
+        }
+      ]
+    },
+    "step_judges": [
+      [
+        "e29c5cee913415386f4c1508",
+        "d3623572225a412ca75933eb",
+        "Choice([0.4, 0.4, 0.2])"
+      ],
+      [
+        "116c724a78e197416d9a9a22",
+        "41b596d7611e1684ed07af14",
+        "Choice([0.9, 0.1])"
+      ],
+      [
+        "e29c5cee913415386f4c1508",
+        "490383532b51c17e27977fa4",
+        "Choice([0.8, 0.1])"
+      ],
+      [
+        "e29c5cee913415386f4c1508",
+        "9e96a5cbacc7ede76863697e",
+        "Choice([0.1, 0.8, 0.1])"
+      ]
+    ],
+    "unsure_default": [
+      {
+        "asked": [
+          "材料",
+          "语境",
+          "参照",
+          "中间判断"
+        ],
+        "cause": "tie",
+        "end": "decided",
+        "fetched": [
+          "中间判断"
+        ],
+        "fetched_by": [
+          "tree"
+        ],
+        "missed": [],
+        "route": "why",
+        "source": "lacks",
+        "tree": {
+          "delta_unknown": true,
+          "depth": 1,
+          "mode": "narrow",
+          "n0": 3,
+          "n1": 2,
+          "s": 0,
+          "s_p": 0.9,
+          "s_text": "往目标走"
+        },
+        "why": null
+      }
+    ]
+  },
+  "有取法": {
+    "act_form": "e29c5cee913415386f4c1508",
+    "all_judges": null,
+    "ctxs": [
+      "",
+      "",
+      "\"先判了一件更小的事：「眼下最要紧的是哪一件事？」，答的是「往目标走」\"",
+      ""
+    ],
+    "pending": [],
+    "rows": {
+      "results": [
+        {
+          "hash": "h2-2-2",
+          "match": 0,
+          "result": {
+            "reached": true
+          },
+          "steps": 2
+        }
+      ],
+      "rows": [
+        {
+          "action": "right",
+          "by": "judge",
+          "excluded": false,
+          "fields": {
+            "act": "right",
+            "far": true
+          },
+          "hash": "h2-0-0",
+          "match": 0,
+          "step": 0,
+          "trust": {
+            "act": "untrusted",
+            "far": "untrusted"
+          }
+        },
+        {
+          "action": "right",
+          "by": "judge",
+          "excluded": false,
+          "fields": {
+            "act": "right",
+            "far": true
+          },
+          "hash": "h2-1-1",
+          "match": 0,
+          "step": 1,
+          "trust": {
+            "act": "untrusted",
+            "far": "untrusted"
+          }
+        }
+      ]
+    },
+    "step_judges": [
+      [
+        "e29c5cee913415386f4c1508",
+        "d3623572225a412ca75933eb",
+        "Choice([0.4, 0.4, 0.2])"
+      ],
+      [
+        "116c724a78e197416d9a9a22",
+        "41b596d7611e1684ed07af14",
+        "Choice([0.9, 0.1])"
+      ],
+      [
+        "e29c5cee913415386f4c1508",
+        "490383532b51c17e27977fa4",
+        "Choice([0.8, 0.1])"
+      ],
+      [
+        "e29c5cee913415386f4c1508",
+        "9e96a5cbacc7ede76863697e",
+        "Choice([0.1, 0.8, 0.1])"
+      ]
+    ],
+    "unsure_default": [
+      {
+        "asked": [
+          "材料",
+          "语境",
+          "参照",
+          "中间判断"
+        ],
+        "cause": "tie",
+        "end": "decided",
+        "fetched": [
+          "中间判断"
+        ],
+        "fetched_by": [
+          "tree"
+        ],
+        "missed": [],
+        "route": "why",
+        "source": "lacks",
+        "tree": {
+          "delta_unknown": true,
+          "depth": 1,
+          "mode": "narrow",
+          "n0": 3,
+          "n1": 2,
+          "s": 0,
+          "s_p": 0.9,
+          "s_text": "往目标走"
+        },
+        "why": null
+      }
+    ]
+  },
+  "有取法+全判否": {
+    "act_form": "e29c5cee913415386f4c1508",
+    "all_judges": null,
+    "ctxs": [
+      "",
+      "",
+      "",
+      "",
+      "\"规则：走到目标那一格得 10 分；每走一步扣 1 分。\"",
+      ""
+    ],
+    "pending": [],
+    "rows": {
+      "results": [
+        {
+          "hash": "h2-2-2",
+          "match": 0,
+          "result": {
+            "reached": true
+          },
+          "steps": 2
+        }
+      ],
+      "rows": [
+        {
+          "action": "right",
+          "by": "judge",
+          "excluded": false,
+          "fields": {
+            "act": "right",
+            "far": true
+          },
+          "hash": "h2-0-0",
+          "match": 0,
+          "step": 0,
+          "trust": {
+            "act": "untrusted",
+            "far": "untrusted"
+          }
+        },
+        {
+          "action": "right",
+          "by": "judge",
+          "excluded": false,
+          "fields": {
+            "act": "right",
+            "far": true
+          },
+          "hash": "h2-1-1",
+          "match": 0,
+          "step": 1,
+          "trust": {
+            "act": "untrusted",
+            "far": "untrusted"
+          }
+        }
+      ]
+    },
+    "step_judges": [
+      [
+        "e29c5cee913415386f4c1508",
+        "d3623572225a412ca75933eb",
+        "Choice([0.4, 0.4, 0.2])"
+      ],
+      [
+        "116c724a78e197416d9a9a22",
+        "41b596d7611e1684ed07af14",
+        "Choice([0.9, 0.1])"
+      ],
+      [
+        "e29c5cee913415386f4c1508",
+        "c1fd6e3d5b776c7dd915772d",
+        "Choice([0.1, 0.8, 0.1])"
+      ],
+      [
+        "e29c5cee913415386f4c1508",
+        "9e96a5cbacc7ede76863697e",
+        "Choice([0.1, 0.8, 0.1])"
+      ]
+    ],
+    "unsure_default": [
+      {
+        "asked": [
+          "材料",
+          "语境",
+          "参照",
+          "中间判断",
+          "材料",
+          "语境",
+          "参照",
+          "语境",
+          "参照"
+        ],
+        "cause": "tie",
+        "end": "decided",
+        "fetched": [
+          "语境"
+        ],
+        "fetched_by": [
+          "fetch"
+        ],
+        "missed": [
+          "材料"
+        ],
+        "route": "why",
+        "source": "lacks",
+        "tree": {
+          "delta_unknown": true,
+          "depth": 1,
+          "mode": "narrow",
+          "n0": 3,
+          "n1": 0,
+          "s": 0,
+          "s_p": 0.9,
+          "s_text": "往目标走"
+        },
+        "why": null
+      }
+    ]
+  }
+}

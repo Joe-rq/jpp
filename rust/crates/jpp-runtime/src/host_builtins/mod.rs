@@ -82,6 +82,8 @@ impl<'a> Interp<'a> {
             "literalize" => self.b_literalize(name, args, sp),
             // J-05 默认链（B0492 S2）：取材料来源的声明；库代码记一轮补信息与细化
             "unsure_source" => self.b_unsure_source(name, args, sp),
+            // 第三靶子第四圈（完成条件进过程入口）：库内部按类别调一次 unsure_source 注册的 fetch，不进文档
+            "unsure_fetch" => self.b_unsure_fetch(name, args, sp),
             "refine" => self.b_refine(name, args, sp),
             "pending" => self.b_pending(name, args, sp),
             "fail" => self.b_fail(name, args, sp),

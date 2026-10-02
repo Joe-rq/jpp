@@ -15,6 +15,24 @@ pub(super) fn source_hash(f: &a::Function) -> String {
     ])
 }
 
+/// 不含源码位置的结构哈希（B0630，`ir::Function.shape_hash`）：同一份影子结构的 JSON 去掉全部 `span` 字段再取哈希。
+/// 影子结构里叫 `span` 的只有位置（记录字面量的字段名序列化成数组里的串，不是对象键），去掉不会吞掉作者写的东西。
+pub(super) fn shape_hash(f: &a::Function) -> String {
+    fn strip(v: &mut serde_json::Value) {
+        match v {
+            serde_json::Value::Object(m) => {
+                m.remove("span");
+                m.values_mut().for_each(strip);
+            }
+            serde_json::Value::Array(xs) => xs.iter_mut().for_each(strip),
+            _ => {}
+        }
+    }
+    let mut v = serde_json::to_value(Function::of(f)).unwrap_or_default();
+    strip(&mut v);
+    jpp_ir::key::hash_of(&["fn-shape", &v.to_string()])
+}
+
 #[derive(Serialize)]
 struct Span {
     start: usize,

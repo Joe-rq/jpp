@@ -32,7 +32,6 @@ KEEP=(
   /crates/jpp/tests/fixtures/
   /crates/jpp/tests/known_defects.rs
   /scripts/ci_public.sh
-  /scripts/doc_snippets.py
   /examples/purpose-only.jpp
   /examples/purpose-only.args
   /examples/purpose-only/

@@ -1,0 +1,2201 @@
+{
+  "backend": "fixed-0",
+  "cost": {
+    "asks": 0,
+    "calls": 0,
+    "replayed": 106,
+    "tokens": 0,
+    "usd": 0.0
+  },
+  "entry": [
+    {
+      "kind": "value",
+      "name": "purpose",
+      "taint": "untrusted"
+    }
+  ],
+  "exits": [
+    {
+      "exit": "pick(2)",
+      "grade": "Answer",
+      "item": "cdde1a1b35b3",
+      "releases": false,
+      "site": 17911
+    },
+    {
+      "exit": "pick(4)",
+      "grade": "Answer",
+      "item": "782fa6ee9c9d",
+      "releases": false,
+      "site": 17911
+    },
+    {
+      "delta_unknown": true,
+      "exit": "ignore",
+      "grade": "Answer",
+      "index": 0,
+      "item": "e041698cb283",
+      "pos": 0,
+      "releases": false,
+      "site": 101774
+    },
+    {
+      "delta_unknown": true,
+      "exit": "ignore",
+      "grade": "Answer",
+      "index": 1,
+      "item": "1308bde88a9e",
+      "pos": 1,
+      "releases": false,
+      "site": 101774
+    },
+    {
+      "delta_unknown": true,
+      "exit": "act",
+      "grade": "Answer",
+      "index": 0,
+      "item": "2230b97cb47e",
+      "pos": 0,
+      "releases": false,
+      "site": 102202
+    },
+    {
+      "delta_unknown": true,
+      "exit": "act",
+      "grade": "Answer",
+      "index": 1,
+      "item": "a16903768a5a",
+      "pos": 1,
+      "releases": false,
+      "site": 102202
+    },
+    {
+      "delta_unknown": true,
+      "exit": "act",
+      "grade": "Answer",
+      "index": 0,
+      "item": "d93dc219fedf",
+      "pos": 0,
+      "releases": false,
+      "site": 102202
+    },
+    {
+      "delta_unknown": true,
+      "exit": "act",
+      "grade": "Answer",
+      "index": 1,
+      "item": "34b8e06a4663",
+      "pos": 1,
+      "releases": false,
+      "site": 102202
+    },
+    {
+      "delta_unknown": true,
+      "exit": "act",
+      "grade": "Answer",
+      "index": 0,
+      "item": "0c1cec21a58d",
+      "pos": 0,
+      "releases": false,
+      "site": 102202
+    },
+    {
+      "delta_unknown": true,
+      "exit": "act",
+      "grade": "Answer",
+      "index": 1,
+      "item": "d230810c6cf8",
+      "pos": 1,
+      "releases": false,
+      "site": 102202
+    },
+    {
+      "exit": "at(2)",
+      "grade": "Answer",
+      "item": "a27158908c3e",
+      "releases": false,
+      "site": 41898
+    },
+    {
+      "exit": "pick(0)",
+      "grade": "Answer",
+      "item": "783040ed842c",
+      "releases": false,
+      "site": 43020
+    },
+    {
+      "exit": "at(0)",
+      "grade": "Answer",
+      "item": "3a4430dc5812",
+      "releases": false,
+      "site": 41898
+    },
+    {
+      "exit": "pick(1)",
+      "grade": "Answer",
+      "item": "24d831676788",
+      "releases": false,
+      "site": 43020
+    },
+    {
+      "exit": "at(1)",
+      "grade": "Answer",
+      "item": "80ff20f2b4c7",
+      "releases": false,
+      "site": 41898
+    },
+    {
+      "exit": "pick(2)",
+      "grade": "Answer",
+      "item": "f1e31250c804",
+      "releases": false,
+      "site": 43020
+    }
+  ],
+  "fixture_description": "Synthetic fixed observations for purpose-run.jpp (construction check only; not model evaluation). Built by build-fixtures.py.",
+  "improve": [
+    {
+      "companions": [
+        {
+          "key": "e02b2b4724f06a4ea8c13326",
+          "kind": "unsure-companion-premise",
+          "p": 0.5
+        },
+        {
+          "key": "24258c737a4f74c487e3f708",
+          "kind": "diag-two-judgments",
+          "p": 0.5
+        },
+        {
+          "key": "2fee55e8cd79ca9a0711ecbe",
+          "kind": "unsure-companion-cut",
+          "p": 0.5
+        },
+        {
+          "key": "729346efb8df222c77029662",
+          "kind": "unsure-companion-reference",
+          "p": 0.5
+        },
+        {
+          "key": "8fb062e86d1f098559f01708",
+          "kind": "unsure-companion-material",
+          "p": 0.25,
+          "pick": null
+        }
+      ],
+      "key": "ed328defe86211cfeeaa97b3",
+      "lacks": null,
+      "q": "这段话要判断的事，和下列哪一道已认证的题问的是同一件事？"
+    },
+    {
+      "companions": [
+        {
+          "key": "da8f7c68607e33a2aec98768",
+          "kind": "unsure-companion-premise",
+          "p": 0.5
+        },
+        {
+          "key": "e2104e3489105ac7aee4486e",
+          "kind": "diag-two-judgments",
+          "p": 0.5
+        },
+        {
+          "key": "f29d2991afeca5812a99eea5",
+          "kind": "unsure-companion-cut",
+          "p": 0.5
+        },
+        {
+          "key": "f584107d23e7e7e9c8cd79ce",
+          "kind": "unsure-companion-reference",
+          "p": 0.5
+        },
+        {
+          "key": "83711995345496e2821d9c57",
+          "kind": "unsure-companion-material",
+          "p": 0.25,
+          "pick": null
+        }
+      ],
+      "key": "9fa3f8bed8d9bc9a44caae79",
+      "lacks": null,
+      "q": "这段话要判断的事，和下列哪一道已认证的题问的是同一件事？"
+    },
+    {
+      "companions": [
+        {
+          "key": "c5fac5c59ce55bb8b9eb5176",
+          "kind": "unsure-companion-premise",
+          "p": 0.5
+        },
+        {
+          "key": "49691b9fc6fca0f3947e55e0",
+          "kind": "diag-two-judgments",
+          "p": 0.5
+        },
+        {
+          "key": "ac586d8e7dec4d0b424997b4",
+          "kind": "unsure-companion-cut",
+          "p": 0.5
+        },
+        {
+          "key": "8866b56b01c2c107bed20f1b",
+          "kind": "unsure-companion-reference",
+          "p": 0.5
+        },
+        {
+          "key": "d3216229e02f07b4fa57ed33",
+          "kind": "unsure-companion-material",
+          "p": 0.25,
+          "pick": null
+        }
+      ],
+      "key": "14da35f6a53a0bc76afdb427",
+      "lacks": null,
+      "q": "这道题里是否有两个或更多需要分别回答的判断？"
+    },
+    {
+      "companions": [
+        {
+          "key": "0941190113688671d1bf9f70",
+          "kind": "unsure-companion-premise",
+          "p": 0.5
+        },
+        {
+          "key": "c2d77a42f75ea2ef63540e31",
+          "kind": "diag-two-judgments",
+          "p": 0.5
+        },
+        {
+          "key": "640a337404ca627918ea8844",
+          "kind": "unsure-companion-cut",
+          "p": 0.5
+        },
+        {
+          "key": "09435d22e187bb86f6f2adc0",
+          "kind": "unsure-companion-reference",
+          "p": 0.5
+        },
+        {
+          "key": "a91f3839d647139919e9f46e",
+          "kind": "unsure-companion-material",
+          "p": 0.25,
+          "pick": null
+        }
+      ],
+      "key": "f9b6664065801428745ce9aa",
+      "lacks": null,
+      "q": "这道题里是否有两个或更多需要分别回答的判断？"
+    },
+    {
+      "companions": [
+        {
+          "key": "e98d679a2305635475ddee3c",
+          "kind": "unsure-companion-premise",
+          "p": 0.5
+        },
+        {
+          "key": "d765ab1085e228f05f930826",
+          "kind": "diag-two-judgments",
+          "p": 0.5
+        },
+        {
+          "key": "8556e5e44b30c692bc858282",
+          "kind": "unsure-companion-cut",
+          "p": 0.5
+        },
+        {
+          "key": "d59240c05f8f6f5bddff6c51",
+          "kind": "unsure-companion-reference",
+          "p": 0.5
+        },
+        {
+          "key": "e42d8350e8899e4c1e6871ea",
+          "kind": "unsure-companion-material",
+          "p": 0.25,
+          "pick": null
+        }
+      ],
+      "key": "8d3759a7c9be03fc75e1f273",
+      "lacks": null,
+      "q": "上下文里那道题问的东西，这段材料里有没有？"
+    },
+    {
+      "companions": [
+        {
+          "key": "547617658a6446bad3345e24",
+          "kind": "unsure-companion-premise",
+          "p": 0.5
+        },
+        {
+          "key": "9d813d766c32151264707715",
+          "kind": "diag-two-judgments",
+          "p": 0.5
+        },
+        {
+          "key": "4664a7384e1ff678f87765a8",
+          "kind": "unsure-companion-cut",
+          "p": 0.5
+        },
+        {
+          "key": "bc731fad2cff11fb16955400",
+          "kind": "unsure-companion-reference",
+          "p": 0.5
+        },
+        {
+          "key": "a1bbd40df8cf56a8389ff256",
+          "kind": "unsure-companion-material",
+          "p": 0.25,
+          "pick": null
+        }
+      ],
+      "key": "54f7fa6183597944c8ef8f39",
+      "lacks": null,
+      "q": "上下文里那道题问的东西，这段材料里有没有？"
+    },
+    {
+      "companions": [
+        {
+          "key": "c52bbeab76351b1c0abf340e",
+          "kind": "unsure-companion-premise",
+          "p": 0.5
+        },
+        {
+          "key": "c366df7d2c702d49c4e8474f",
+          "kind": "diag-two-judgments",
+          "p": 0.5
+        },
+        {
+          "key": "1df0371dbb3aadce1150814b",
+          "kind": "unsure-companion-cut",
+          "p": 0.5
+        },
+        {
+          "key": "d8d6dba56ce8c4e349a5aad6",
+          "kind": "unsure-companion-reference",
+          "p": 0.5
+        },
+        {
+          "key": "6de124210717b4f5f0d58818",
+          "kind": "unsure-companion-material",
+          "p": 0.25,
+          "pick": null
+        }
+      ],
+      "key": "6eb53971ef7240ec19d83d65",
+      "lacks": null,
+      "q": "上下文里那道题问的东西，这段材料里有没有？"
+    },
+    {
+      "companions": [
+        {
+          "key": "a16360f98fde13fdbe0d9e7d",
+          "kind": "unsure-companion-premise",
+          "p": 0.5
+        },
+        {
+          "key": "731f016f64266c691f53235c",
+          "kind": "diag-two-judgments",
+          "p": 0.5
+        },
+        {
+          "key": "47e48a8dccf9df16ab48e1c2",
+          "kind": "unsure-companion-cut",
+          "p": 0.5
+        },
+        {
+          "key": "11b931098c79323759a99f5e",
+          "kind": "unsure-companion-reference",
+          "p": 0.5
+        },
+        {
+          "key": "e4c6c86a831ffb675eb0f16a",
+          "kind": "unsure-companion-material",
+          "p": 0.25,
+          "pick": null
+        }
+      ],
+      "key": "8e352343e1081d9cf91a9ff0",
+      "lacks": null,
+      "q": "上下文里那道题问的东西，这段材料里有没有？"
+    },
+    {
+      "companions": [
+        {
+          "key": "6c3c72bb3139924ada915518",
+          "kind": "unsure-companion-premise",
+          "p": 0.5
+        },
+        {
+          "key": "e40714384bdfb6b5d953bdf9",
+          "kind": "diag-two-judgments",
+          "p": 0.5
+        },
+        {
+          "key": "e0cbb0cb5b2034aff37d2acb",
+          "kind": "unsure-companion-cut",
+          "p": 0.5
+        },
+        {
+          "key": "32fae6001fc7f5cec0c7a13e",
+          "kind": "unsure-companion-reference",
+          "p": 0.5
+        },
+        {
+          "key": "2968c9bc93bc2fb16481aba9",
+          "kind": "unsure-companion-material",
+          "p": 0.25,
+          "pick": null
+        }
+      ],
+      "key": "458ca768dbe3b6d21fbf575d",
+      "lacks": null,
+      "q": "上下文里那道题问的东西，这段材料里有没有？"
+    },
+    {
+      "companions": [
+        {
+          "key": "6a065b942dfe102e6db2b00e",
+          "kind": "unsure-companion-premise",
+          "p": 0.5
+        },
+        {
+          "key": "a83bab31c1b8b6c3af32db6c",
+          "kind": "diag-two-judgments",
+          "p": 0.5
+        },
+        {
+          "key": "26e7298d4e11216f8bfcdb0e",
+          "kind": "unsure-companion-cut",
+          "p": 0.5
+        },
+        {
+          "key": "53478787174889c7daa5077d",
+          "kind": "unsure-companion-reference",
+          "p": 0.5
+        },
+        {
+          "key": "741ecf139664761ef7c37de5",
+          "kind": "unsure-companion-material",
+          "p": 0.25,
+          "pick": null
+        }
+      ],
+      "key": "4a095bf46a391e13476a6a5b",
+      "lacks": null,
+      "q": "上下文里那道题问的东西，这段材料里有没有？"
+    },
+    {
+      "companions": [
+        {
+          "key": "ce8c2155d5ba12a6b5320157",
+          "kind": "unsure-companion-premise",
+          "p": 0.5
+        },
+        {
+          "key": "8be32de642649d152412e95e",
+          "kind": "diag-two-judgments",
+          "p": 0.5
+        },
+        {
+          "key": "ccac16d4a53a5260442ef4ed",
+          "kind": "unsure-companion-cut",
+          "p": 0.5
+        },
+        {
+          "key": "1fffc61c63fcbbd316e3e432",
+          "kind": "unsure-companion-reference",
+          "p": 0.5
+        },
+        {
+          "key": "ffe341e64c570e9968384d73",
+          "kind": "unsure-companion-material",
+          "p": 0.25,
+          "pick": null
+        }
+      ],
+      "key": "684ec23e1547d6dc74698ee7",
+      "lacks": null,
+      "q": "这家供应商按期交付这份订单的把握有多大？"
+    },
+    {
+      "companions": [
+        {
+          "key": "666008cd628f49211453d7ee",
+          "kind": "unsure-companion-premise",
+          "p": 0.5
+        },
+        {
+          "key": "00710169e59b1e030001ec63",
+          "kind": "diag-two-judgments",
+          "p": 0.5
+        },
+        {
+          "key": "6619323791eab6d4b8848645",
+          "kind": "unsure-companion-cut",
+          "p": 0.5
+        },
+        {
+          "key": "176829a71e0c97ddb2e15724",
+          "kind": "unsure-companion-reference",
+          "p": 0.5
+        },
+        {
+          "key": "4013ee3ac3a44caa10582097",
+          "kind": "unsure-companion-material",
+          "p": 0.25,
+          "pick": null
+        }
+      ],
+      "key": "70d84424cd7622832b95ac0e",
+      "lacks": null,
+      "q": "这家供应商交付这份订单最大的风险在哪一方面？"
+    },
+    {
+      "companions": [
+        {
+          "key": "9d0277e94ef7ed9758afa3dc",
+          "kind": "unsure-companion-premise",
+          "p": 0.5
+        },
+        {
+          "key": "4020093df3c05f8a895cd8a6",
+          "kind": "diag-two-judgments",
+          "p": 0.5
+        },
+        {
+          "key": "9a5cf181db7860affbceee20",
+          "kind": "unsure-companion-cut",
+          "p": 0.5
+        },
+        {
+          "key": "9f25f0a2217e9b1b247e1ddb",
+          "kind": "unsure-companion-reference",
+          "p": 0.5
+        },
+        {
+          "key": "1aa6ac3499336223280e78fc",
+          "kind": "unsure-companion-material",
+          "p": 0.25,
+          "pick": null
+        }
+      ],
+      "key": "43ee9bcaf79f2ba14cdbc452",
+      "lacks": null,
+      "q": "这家供应商按期交付这份订单的把握有多大？"
+    },
+    {
+      "companions": [
+        {
+          "key": "d0774032edbaafad886016d7",
+          "kind": "unsure-companion-premise",
+          "p": 0.5
+        },
+        {
+          "key": "5954138ff1512102f1b44178",
+          "kind": "diag-two-judgments",
+          "p": 0.5
+        },
+        {
+          "key": "b699bd312ddcabd4fc55dca3",
+          "kind": "unsure-companion-cut",
+          "p": 0.5
+        },
+        {
+          "key": "918825aa7861157923eaa6c0",
+          "kind": "unsure-companion-reference",
+          "p": 0.5
+        },
+        {
+          "key": "6f8a7a90c36c725b00baf7dd",
+          "kind": "unsure-companion-material",
+          "p": 0.25,
+          "pick": null
+        }
+      ],
+      "key": "7762dbf0b3f98a49f52d15fb",
+      "lacks": null,
+      "q": "这家供应商交付这份订单最大的风险在哪一方面？"
+    },
+    {
+      "companions": [
+        {
+          "key": "727b085823c81b89e45fc56e",
+          "kind": "unsure-companion-premise",
+          "p": 0.5
+        },
+        {
+          "key": "ac25572c7e0cf41d0b3db219",
+          "kind": "diag-two-judgments",
+          "p": 0.5
+        },
+        {
+          "key": "a8155e06b972fde08c9017f0",
+          "kind": "unsure-companion-cut",
+          "p": 0.5
+        },
+        {
+          "key": "8999522bb4b1cd95f057a0d5",
+          "kind": "unsure-companion-reference",
+          "p": 0.5
+        },
+        {
+          "key": "40cfba2003f0d08c6b3801c4",
+          "kind": "unsure-companion-material",
+          "p": 0.25,
+          "pick": null
+        }
+      ],
+      "key": "e4f367a75b6d4ae9ac4f0bdc",
+      "lacks": null,
+      "q": "这家供应商按期交付这份订单的把握有多大？"
+    },
+    {
+      "companions": [
+        {
+          "key": "41bbc64b83c66fcb6dcf950e",
+          "kind": "unsure-companion-premise",
+          "p": 0.5
+        },
+        {
+          "key": "5198476585456ec445671006",
+          "kind": "diag-two-judgments",
+          "p": 0.5
+        },
+        {
+          "key": "72ee13cc0047601e597f79e3",
+          "kind": "unsure-companion-cut",
+          "p": 0.5
+        },
+        {
+          "key": "f655b107a8f88f1b4734bf9c",
+          "kind": "unsure-companion-reference",
+          "p": 0.5
+        },
+        {
+          "key": "418f200ef3b78252d6eed478",
+          "kind": "unsure-companion-material",
+          "p": 0.25,
+          "pick": null
+        }
+      ],
+      "key": "e18e118f0416e15f28e7f568",
+      "lacks": null,
+      "q": "这家供应商交付这份订单最大的风险在哪一方面？"
+    }
+  ],
+  "local_checks": [],
+  "mode": "replay; no model API requests",
+  "pending": [],
+  "plan": {
+    "calls": {
+      "kind": "at_least",
+      "lo": 0
+    },
+    "cost_usd": {
+      "kind": "unknown",
+      "reason": "price_not_given"
+    },
+    "latency_s": {
+      "kind": "unknown",
+      "reason": "untested:concurrency.latency_s.p95"
+    },
+    "layers": {
+      "kind": "at_least",
+      "lo": 0
+    }
+  },
+  "questions": [
+    {
+      "kind": "class",
+      "q": "6327c7d32a9550ef59e0d3b4"
+    },
+    {
+      "fill": {
+        "q": "这段话要判断的事，和下列哪一道已认证的题问的是同一件事？"
+      },
+      "form_hash": "54315f241f66412e88607f2d",
+      "kind": "attr",
+      "q": "658f7d70e815911cfdaf85cd",
+      "template": "题「{q}」的前提在这份材料上成立吗？"
+    },
+    {
+      "fill": {
+        "q": "这段话要判断的事，和下列哪一道已认证的题问的是同一件事？"
+      },
+      "form_hash": "cd4d3fd600f3459fa6b03c89",
+      "kind": "attr",
+      "q": "36e8ee7eeed0490a4d64de7c",
+      "template": "题「{q}」里是否有两个或更多需要分别回答的判断？"
+    },
+    {
+      "fill": {
+        "q": "这段话要判断的事，和下列哪一道已认证的题问的是同一件事？"
+      },
+      "form_hash": "18c6093988df2ab3840b661c",
+      "kind": "attr",
+      "q": "24b5b9346471a58bf9fd3379",
+      "template": "把题「{q}」按更细的情形分开问，会比整体问更容易答准吗？"
+    },
+    {
+      "fill": {
+        "q": "这段话要判断的事，和下列哪一道已认证的题问的是同一件事？"
+      },
+      "form_hash": "d8ff506d5be24dd56b495116",
+      "kind": "attr",
+      "q": "b8aff15d24d03f4d2b9957b2",
+      "template": "判断题「{q}」需要的参照对象和语境，这段材料里给够了吗？"
+    },
+    {
+      "fill": {
+        "q": "这段话要判断的事，和下列哪一道已认证的题问的是同一件事？"
+      },
+      "form_hash": "2ec36692b44a45c1e23fbea6",
+      "kind": "class",
+      "q": "d564ddf8a426d7623fc7d9f0",
+      "template": "题「{q}」要判得更明确，最缺哪一类信息？"
+    },
+    {
+      "kind": "attr",
+      "q": "3bb383eebc0557004f6369d9"
+    },
+    {
+      "fill": {
+        "q": "这道题里是否有两个或更多需要分别回答的判断？"
+      },
+      "form_hash": "54315f241f66412e88607f2d",
+      "kind": "attr",
+      "q": "e6a0736db12145d977b112c4",
+      "template": "题「{q}」的前提在这份材料上成立吗？"
+    },
+    {
+      "fill": {
+        "q": "这道题里是否有两个或更多需要分别回答的判断？"
+      },
+      "form_hash": "cd4d3fd600f3459fa6b03c89",
+      "kind": "attr",
+      "q": "396ca407f9a2e2118679c1a9",
+      "template": "题「{q}」里是否有两个或更多需要分别回答的判断？"
+    },
+    {
+      "fill": {
+        "q": "这道题里是否有两个或更多需要分别回答的判断？"
+      },
+      "form_hash": "18c6093988df2ab3840b661c",
+      "kind": "attr",
+      "q": "8941b37a9b4a18d68149d690",
+      "template": "把题「{q}」按更细的情形分开问，会比整体问更容易答准吗？"
+    },
+    {
+      "fill": {
+        "q": "这道题里是否有两个或更多需要分别回答的判断？"
+      },
+      "form_hash": "d8ff506d5be24dd56b495116",
+      "kind": "attr",
+      "q": "b111bf7350447341528ae82a",
+      "template": "判断题「{q}」需要的参照对象和语境，这段材料里给够了吗？"
+    },
+    {
+      "fill": {
+        "q": "这道题里是否有两个或更多需要分别回答的判断？"
+      },
+      "form_hash": "2ec36692b44a45c1e23fbea6",
+      "kind": "class",
+      "q": "1f733df9f15c54621768e65b",
+      "template": "题「{q}」要判得更明确，最缺哪一类信息？"
+    },
+    {
+      "kind": "attr",
+      "q": "13a875842ad4488dc2dd1f73"
+    },
+    {
+      "fill": {
+        "q": "上下文里那道题问的东西，这段材料里有没有？"
+      },
+      "form_hash": "54315f241f66412e88607f2d",
+      "kind": "attr",
+      "q": "0f85c68a1b07b20b10bf0516",
+      "template": "题「{q}」的前提在这份材料上成立吗？"
+    },
+    {
+      "fill": {
+        "q": "上下文里那道题问的东西，这段材料里有没有？"
+      },
+      "form_hash": "cd4d3fd600f3459fa6b03c89",
+      "kind": "attr",
+      "q": "d8c9ab1e3f0111720e6c20f2",
+      "template": "题「{q}」里是否有两个或更多需要分别回答的判断？"
+    },
+    {
+      "fill": {
+        "q": "上下文里那道题问的东西，这段材料里有没有？"
+      },
+      "form_hash": "18c6093988df2ab3840b661c",
+      "kind": "attr",
+      "q": "addd846f6163a2488f92990b",
+      "template": "把题「{q}」按更细的情形分开问，会比整体问更容易答准吗？"
+    },
+    {
+      "fill": {
+        "q": "上下文里那道题问的东西，这段材料里有没有？"
+      },
+      "form_hash": "d8ff506d5be24dd56b495116",
+      "kind": "attr",
+      "q": "29234b6445637016bf60715d",
+      "template": "判断题「{q}」需要的参照对象和语境，这段材料里给够了吗？"
+    },
+    {
+      "fill": {
+        "q": "上下文里那道题问的东西，这段材料里有没有？"
+      },
+      "form_hash": "2ec36692b44a45c1e23fbea6",
+      "kind": "class",
+      "q": "3cbd70d83a7cec5a525c5b08",
+      "template": "题「{q}」要判得更明确，最缺哪一类信息？"
+    },
+    {
+      "fill": {},
+      "form_hash": "f4d5af1d6cdd6b74e85ba376",
+      "kind": "degree",
+      "q": "ee638bf4b87e875b382f8e3e",
+      "template": "这家供应商按期交付这份订单的把握有多大？"
+    },
+    {
+      "fill": {
+        "q": "这家供应商按期交付这份订单的把握有多大？"
+      },
+      "form_hash": "54315f241f66412e88607f2d",
+      "kind": "attr",
+      "q": "e31b7c3cbac3586ad1f54b29",
+      "template": "题「{q}」的前提在这份材料上成立吗？"
+    },
+    {
+      "fill": {
+        "q": "这家供应商按期交付这份订单的把握有多大？"
+      },
+      "form_hash": "cd4d3fd600f3459fa6b03c89",
+      "kind": "attr",
+      "q": "cdfb400139d317cc75405bb5",
+      "template": "题「{q}」里是否有两个或更多需要分别回答的判断？"
+    },
+    {
+      "fill": {
+        "q": "这家供应商按期交付这份订单的把握有多大？"
+      },
+      "form_hash": "18c6093988df2ab3840b661c",
+      "kind": "attr",
+      "q": "3f8b993f05aefeaf52b1706d",
+      "template": "把题「{q}」按更细的情形分开问，会比整体问更容易答准吗？"
+    },
+    {
+      "fill": {
+        "q": "这家供应商按期交付这份订单的把握有多大？"
+      },
+      "form_hash": "d8ff506d5be24dd56b495116",
+      "kind": "attr",
+      "q": "09f8649492e4a829878535e6",
+      "template": "判断题「{q}」需要的参照对象和语境，这段材料里给够了吗？"
+    },
+    {
+      "fill": {
+        "q": "这家供应商按期交付这份订单的把握有多大？"
+      },
+      "form_hash": "2ec36692b44a45c1e23fbea6",
+      "kind": "class",
+      "q": "9ccf0850c1d5dec4e38c0bde",
+      "template": "题「{q}」要判得更明确，最缺哪一类信息？"
+    },
+    {
+      "fill": {},
+      "form_hash": "d7d9e9adcee7e9577ce7a328",
+      "kind": "class",
+      "q": "891599fe233da5fe27a2202d",
+      "template": "这家供应商交付这份订单最大的风险在哪一方面？"
+    },
+    {
+      "fill": {
+        "q": "这家供应商交付这份订单最大的风险在哪一方面？"
+      },
+      "form_hash": "54315f241f66412e88607f2d",
+      "kind": "attr",
+      "q": "284e85d40b16a8ae80e9d9de",
+      "template": "题「{q}」的前提在这份材料上成立吗？"
+    },
+    {
+      "fill": {
+        "q": "这家供应商交付这份订单最大的风险在哪一方面？"
+      },
+      "form_hash": "cd4d3fd600f3459fa6b03c89",
+      "kind": "attr",
+      "q": "f34003e9927486ab418b4fb7",
+      "template": "题「{q}」里是否有两个或更多需要分别回答的判断？"
+    },
+    {
+      "fill": {
+        "q": "这家供应商交付这份订单最大的风险在哪一方面？"
+      },
+      "form_hash": "18c6093988df2ab3840b661c",
+      "kind": "attr",
+      "q": "3ed71ce36650b0b3fb74bb21",
+      "template": "把题「{q}」按更细的情形分开问，会比整体问更容易答准吗？"
+    },
+    {
+      "fill": {
+        "q": "这家供应商交付这份订单最大的风险在哪一方面？"
+      },
+      "form_hash": "d8ff506d5be24dd56b495116",
+      "kind": "attr",
+      "q": "423e4ea965b778804b33e9b6",
+      "template": "判断题「{q}」需要的参照对象和语境，这段材料里给够了吗？"
+    },
+    {
+      "fill": {
+        "q": "这家供应商交付这份订单最大的风险在哪一方面？"
+      },
+      "form_hash": "2ec36692b44a45c1e23fbea6",
+      "kind": "class",
+      "q": "c74571363fb204f77b2a4f3a",
+      "template": "题「{q}」要判得更明确，最缺哪一类信息？"
+    }
+  ],
+  "replay": true,
+  "resumed": false,
+  "returned_unsure": [],
+  "status": "returned",
+  "trace": {
+    "events": [
+      {
+        "cost": 0.0,
+        "key": "fe8ab1c76276d25ae6af74be",
+        "kind": "gen",
+        "note": "下面是一段目的：「在这些供应商里找出最可能按期交付我们这份订单的，排好先后，并说出每家最大的风险。」。要判断的材料是一批同样形状的条目（每条的字段：name、note），每条可能还带一份参照材料。请把这段目的拆成出题守则的十个模块，写成一个 JSON 对象：{\"material\": 被判断的对象与参照各指什么, \"predicates\": [{\"text\": 要对每个条目判断的事, \"cut\": \"binary\" 或 \"k_ary\" 或 \"ordered\", \"over\": [候选…]（k_ary 才有）, \"scale\": [从低到高的档…]（ordered 才有）, \"request\": \"one\" 或 \"all\", \"cut_from\", \"over_from\", \"scale_from\": 各自是 \"purpose\"（目的原文说了）或 \"system\"（目的没说、你补的）, \"field\": 这件事的答案在结果里的名字（短的英文小写）}], \"request\": 请求, \"presupposition\": 前提, \"context\": 语境, \"reference\": 参照, \"budget\": 预算, \"unsure\": 拿不准去向, \"done\": [结果里每个条目要有的字段名]}。目的里没说的模块写 null，不要替目的补。谓词——目的要对每个条目判断几件事就写几个，一个谓词一件事；切法——判是否用 binary；从几个互不重叠的候选里挑一个用 k_ary；排先后、分高低用 ordered；候选与档位——目的里列了就照抄并标 purpose；目的没列时可以给出（k_ary 给互不重叠的候选，ordered 给三到五档），但要标 system，切法同理；请求——每个条目给一个答案写 one，要全部满足的写 all；完成条件——目的要求结果里有什么，就在 done 里列什么，每个名字对应一个谓词的 field。",
+        "replayed": true,
+        "site": {
+          "end": 15117,
+          "start": 15055
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "95f6193f9c45b5a590f25b67",
+        "kind": "gen",
+        "note": "下面是一段目的：「在这些供应商里找出最可能按期交付我们这份订单的，排好先后，并说出每家最大的风险。」。要对一批条目逐个判断：这家供应商能按期交付我们这份订单；这家供应商交付这份订单最大的风险。在细判之前，先用字面前提题筛掉不值得细判的条目：每道题问条目材料本身写明了什么（例如「材料里写明了某件事吗？」），条目不满足它，就不必为这个目的再细判。不要问「这段材料对判断有没有帮助」「材料够不够判断」这类关于判断本身的题。前提必须与结果无关：不管各道题最后判成哪个答案，判断要成立都得先满足它。若一道前提不成立时目的仍能用某个候选作答，它就是那个答案的证据，不是前提，不要写。判前提题时只看得到这一个条目自己的材料，看不到参照材料、用户，也看不到目的里提到的其他输入；所以题面只问条目自己写明了什么，不要提参照、用户，也不要写「对照」「相符」「匹配」这类要拿别的材料比着才能答的说法。条目是结构化记录，字段：name、note。下面是从这批条目里等距取出的几条（只作参考，不代表全部）：{\"name\":\"供应商0\",\"note\":\"第 0 家，产能与账期各不相同\"}；{\"name\":\"供应商1\",\"note\":\"第 1 家，产能与账期各不相同\"}；{\"name\":\"供应商2\",\"note\":\"第 2 家，产能与账期各不相同\"}。每道前提应当让一部分条目满足、一部分不满足；照样本看全都满足或全都不满足的，不要写。只看某个字段的取值就能定的（字段有没有、是否等于某值、数值大小、列表里有没有某一项、文字里有没有某段字），写成代码谓词 {\"op\": \"code\", \"field\": 字段名, \"check\": \"has\" 或 \"eq\" 或 \"ne\" 或 \"lt\" 或 \"le\" 或 \"gt\" 或 \"ge\" 或 \"contains\", \"value\": 值（has 不要）, \"if_false\": 见下}，由代码判，不交给判断器；要理解意思才能定的，写成是非题 {\"op\": \"test\", \"text\": 题面, \"if_false\": 见下}。每道都要写 if_false：这道前提不成立时，目的会落到哪个候选。落到某个候选就写 {\"falls_to\": \"candidate\", \"value\": 候选原文}，候选原文照下列逐字抄一个（「产能」「资金」「质量」「没有明显风险」），它是那个答案的证据，会被弃掉；不成立时材料不够判、目的无法作答，写 {\"falls_to\": \"unanswerable\"}。表示「都不合适、不选任何一类」的兜底候选不是落点：那是材料够、判过之后的结果，不是材料不够判。写出至多两道，按筛掉条目的多少从多到少排，一道一个 JSON 对象。题面里不要用花括号。",
+        "replayed": true,
+        "site": {
+          "end": 118968,
+          "start": 118535
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "ed328defe86211cfeeaa97b3",
+        "kind": "judge",
+        "note": "「这段话要判断的事，和下列哪一道已认证的题问的是同一件事？」",
+        "replayed": true,
+        "site": {
+          "end": 17893,
+          "start": 17850
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "e02b2b4724f06a4ea8c13326",
+        "kind": "judge",
+        "note": "「题「这段话要判断的事，和下列哪一道已认证的题问的是同一件事？」的前提在这份材料上成立吗？」",
+        "replayed": true,
+        "site": {
+          "end": 17893,
+          "start": 17850
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "24258c737a4f74c487e3f708",
+        "kind": "judge",
+        "note": "「题「这段话要判断的事，和下列哪一道已认证的题问的是同一件事？」里是否有两个或更多需要分别回答的判断？」",
+        "replayed": true,
+        "site": {
+          "end": 17893,
+          "start": 17850
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "2fee55e8cd79ca9a0711ecbe",
+        "kind": "judge",
+        "note": "「把题「这段话要判断的事，和下列哪一道已认证的题问的是同一件事？」按更细的情形分开问，会比整体问更容易答准吗？」",
+        "replayed": true,
+        "site": {
+          "end": 17893,
+          "start": 17850
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "729346efb8df222c77029662",
+        "kind": "judge",
+        "note": "「判断题「这段话要判断的事，和下列哪一道已认证的题问的是同一件事？」需要的参照对象和语境，这段材料里给够了吗？」",
+        "replayed": true,
+        "site": {
+          "end": 17893,
+          "start": 17850
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "8fb062e86d1f098559f01708",
+        "kind": "judge",
+        "note": "「题「这段话要判断的事，和下列哪一道已认证的题问的是同一件事？」要判得更明确，最缺哪一类信息？」",
+        "replayed": true,
+        "site": {
+          "end": 17893,
+          "start": 17850
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "9fa3f8bed8d9bc9a44caae79",
+        "kind": "judge",
+        "note": "「这段话要判断的事，和下列哪一道已认证的题问的是同一件事？」",
+        "replayed": true,
+        "site": {
+          "end": 17893,
+          "start": 17850
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "da8f7c68607e33a2aec98768",
+        "kind": "judge",
+        "note": "「题「这段话要判断的事，和下列哪一道已认证的题问的是同一件事？」的前提在这份材料上成立吗？」",
+        "replayed": true,
+        "site": {
+          "end": 17893,
+          "start": 17850
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "e2104e3489105ac7aee4486e",
+        "kind": "judge",
+        "note": "「题「这段话要判断的事，和下列哪一道已认证的题问的是同一件事？」里是否有两个或更多需要分别回答的判断？」",
+        "replayed": true,
+        "site": {
+          "end": 17893,
+          "start": 17850
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "f29d2991afeca5812a99eea5",
+        "kind": "judge",
+        "note": "「把题「这段话要判断的事，和下列哪一道已认证的题问的是同一件事？」按更细的情形分开问，会比整体问更容易答准吗？」",
+        "replayed": true,
+        "site": {
+          "end": 17893,
+          "start": 17850
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "f584107d23e7e7e9c8cd79ce",
+        "kind": "judge",
+        "note": "「判断题「这段话要判断的事，和下列哪一道已认证的题问的是同一件事？」需要的参照对象和语境，这段材料里给够了吗？」",
+        "replayed": true,
+        "site": {
+          "end": 17893,
+          "start": 17850
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "83711995345496e2821d9c57",
+        "kind": "judge",
+        "note": "「题「这段话要判断的事，和下列哪一道已认证的题问的是同一件事？」要判得更明确，最缺哪一类信息？」",
+        "replayed": true,
+        "site": {
+          "end": 17893,
+          "start": 17850
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "6ad5f48e9b395615c3ab6cbe",
+        "kind": "gen",
+        "note": "下面是从一段目的里拆出的模块：{\"budget\":null,\"context\":null,\"done\":[\"rank\",\"risk\"],\"material\":\"供应商；参照是我们的订单\",\"predicates\":[{\"cut\":\"ordered\",\"cut_from\":\"purpose\",\"field\":\"rank\",\"request\":\"all\",\"scale\":[\"不能\",\"难说\",\"能\"],\"scale_from\":\"purpose\",\"text\":\"这家供应商能按期交付我们这份订单\"},{\"cut\":\"k_ary\",\"cut_from\":\"purpose\",\"field\":\"risk\",\"over\":[\"产能\",\"资金\",\"质量\",\"没有明显风险\"],\"over_from\":\"purpose\",\"request\":\"one\",\"text\":\"这家供应商交付这份订单最大的风险\"}],\"presupposition\":null,\"reference\":\"我们的订单\",\"request\":\"每家一个名次与一个原因\",\"unsure\":null}。请为其中这个谓词出一道交给判断器的题：「这家供应商能按期交付我们这份订单」（切法：ordered）。题会对每个条目各问一次，条目在材料里，参照材料（若有）在参照槽 ref。写成 JSON 对象，一个候选一个对象：{\"op\": \"test\" 或 \"select\" 或 \"measure\", \"text\": 题面, \"over\": [候选…]（select 才有）, \"scale\": [从低到高的档…]（measure 才有）, \"presupposition\": 前提（可省）, \"evidence\": [要用到的参照槽，如 \"ref\"]（可省）, \"request\": 这道题的请求（可省；是非题 \"whether\"，K 选一 \"one\"，程度题 \"degree\"；与上面模块里谓词的 one / all 不是一回事，那是每个条目要几个答案）}。题面里不要用花括号。出题守则，按十个模块逐项想：材料——只问面前这份材料里能看到的东西；谓词——一道题只判一件事，不要把两个条件连在一起，也不要问「这份材料有没有帮助判断」这类关于判断本身的题；切法——是非题问能答是或否的事，K 选一给出互不重叠的候选；请求——说清要选一个还是全部；前提——题默认成立的事写进 presupposition；语境——需要的背景写进题面，不指望读题的人自己补；参照——比较时写明和什么比，要对照参照材料才能判的写 evidence；预算——判断很便宜，能判的都出成题，不为省调用合并或删掉有用的题；拿不准去向——这道题判不下来时程序会把它细化成更字面的子题、问缺哪类信息补上再判、或带原因转交，所以题面要写清判断依据落在材料的哪一部分，拿不准时最该补的是哪类信息；完成条件——每道题的答案都要让原题的可能答案变少。",
+        "replayed": true,
+        "site": {
+          "end": 20037,
+          "start": 19925
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "f07b097188e7fc6be784489e",
+        "kind": "gen",
+        "note": "下面是从一段目的里拆出的模块：{\"budget\":null,\"context\":null,\"done\":[\"rank\",\"risk\"],\"material\":\"供应商；参照是我们的订单\",\"predicates\":[{\"cut\":\"ordered\",\"cut_from\":\"purpose\",\"field\":\"rank\",\"request\":\"all\",\"scale\":[\"不能\",\"难说\",\"能\"],\"scale_from\":\"purpose\",\"text\":\"这家供应商能按期交付我们这份订单\"},{\"cut\":\"k_ary\",\"cut_from\":\"purpose\",\"field\":\"risk\",\"over\":[\"产能\",\"资金\",\"质量\",\"没有明显风险\"],\"over_from\":\"purpose\",\"request\":\"one\",\"text\":\"这家供应商交付这份订单最大的风险\"}],\"presupposition\":null,\"reference\":\"我们的订单\",\"request\":\"每家一个名次与一个原因\",\"unsure\":null}。请为其中这个谓词出一道交给判断器的题：「这家供应商交付这份订单最大的风险」（切法：k_ary）。题会对每个条目各问一次，条目在材料里，参照材料（若有）在参照槽 ref。写成 JSON 对象，一个候选一个对象：{\"op\": \"test\" 或 \"select\" 或 \"measure\", \"text\": 题面, \"over\": [候选…]（select 才有）, \"scale\": [从低到高的档…]（measure 才有）, \"presupposition\": 前提（可省）, \"evidence\": [要用到的参照槽，如 \"ref\"]（可省）, \"request\": 这道题的请求（可省；是非题 \"whether\"，K 选一 \"one\"，程度题 \"degree\"；与上面模块里谓词的 one / all 不是一回事，那是每个条目要几个答案）}。题面里不要用花括号。出题守则，按十个模块逐项想：材料——只问面前这份材料里能看到的东西；谓词——一道题只判一件事，不要把两个条件连在一起，也不要问「这份材料有没有帮助判断」这类关于判断本身的题；切法——是非题问能答是或否的事，K 选一给出互不重叠的候选；请求——说清要选一个还是全部；前提——题默认成立的事写进 presupposition；语境——需要的背景写进题面，不指望读题的人自己补；参照——比较时写明和什么比，要对照参照材料才能判的写 evidence；预算——判断很便宜，能判的都出成题，不为省调用合并或删掉有用的题；拿不准去向——这道题判不下来时程序会把它细化成更字面的子题、问缺哪类信息补上再判、或带原因转交，所以题面要写清判断依据落在材料的哪一部分，拿不准时最该补的是哪类信息；完成条件——每道题的答案都要让原题的可能答案变少。",
+        "replayed": true,
+        "site": {
+          "end": 20037,
+          "start": 19925
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "475d5d3d2aad8bd7d43875ba",
+        "kind": "transform",
+        "note": "",
+        "replayed": true,
+        "site": {
+          "end": 89635,
+          "start": 89578
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "7b82a91dff5679d220f32f7d",
+        "kind": "transform",
+        "note": "",
+        "replayed": true,
+        "site": {
+          "end": 89635,
+          "start": 89578
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "c88d30fd075eaaf200674411",
+        "kind": "transform",
+        "note": "",
+        "replayed": true,
+        "site": {
+          "end": 89635,
+          "start": 89578
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "8ffb452f5d1448a5011902b2",
+        "kind": "transform",
+        "note": "",
+        "replayed": true,
+        "site": {
+          "end": 89635,
+          "start": 89578
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "98de6f5d1d487d1567a2a22a",
+        "kind": "transform",
+        "note": "",
+        "replayed": true,
+        "site": {
+          "end": 89635,
+          "start": 89578
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "f3922766675ab5202ce040cd",
+        "kind": "transform",
+        "note": "",
+        "replayed": true,
+        "site": {
+          "end": 89635,
+          "start": 89578
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "14da35f6a53a0bc76afdb427",
+        "kind": "judge",
+        "note": "「这道题里是否有两个或更多需要分别回答的判断？」",
+        "replayed": true,
+        "site": {
+          "end": 101840,
+          "start": 101774
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "c5fac5c59ce55bb8b9eb5176",
+        "kind": "judge",
+        "note": "「题「这道题里是否有两个或更多需要分别回答的判断？」的前提在这份材料上成立吗？」",
+        "replayed": true,
+        "site": {
+          "end": 101840,
+          "start": 101774
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "49691b9fc6fca0f3947e55e0",
+        "kind": "judge",
+        "note": "「题「这道题里是否有两个或更多需要分别回答的判断？」里是否有两个或更多需要分别回答的判断？」",
+        "replayed": true,
+        "site": {
+          "end": 101840,
+          "start": 101774
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "ac586d8e7dec4d0b424997b4",
+        "kind": "judge",
+        "note": "「把题「这道题里是否有两个或更多需要分别回答的判断？」按更细的情形分开问，会比整体问更容易答准吗？」",
+        "replayed": true,
+        "site": {
+          "end": 101840,
+          "start": 101774
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "8866b56b01c2c107bed20f1b",
+        "kind": "judge",
+        "note": "「判断题「这道题里是否有两个或更多需要分别回答的判断？」需要的参照对象和语境，这段材料里给够了吗？」",
+        "replayed": true,
+        "site": {
+          "end": 101840,
+          "start": 101774
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "d3216229e02f07b4fa57ed33",
+        "kind": "judge",
+        "note": "「题「这道题里是否有两个或更多需要分别回答的判断？」要判得更明确，最缺哪一类信息？」",
+        "replayed": true,
+        "site": {
+          "end": 101840,
+          "start": 101774
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "f9b6664065801428745ce9aa",
+        "kind": "judge",
+        "note": "「这道题里是否有两个或更多需要分别回答的判断？」",
+        "replayed": true,
+        "site": {
+          "end": 101840,
+          "start": 101774
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "0941190113688671d1bf9f70",
+        "kind": "judge",
+        "note": "「题「这道题里是否有两个或更多需要分别回答的判断？」的前提在这份材料上成立吗？」",
+        "replayed": true,
+        "site": {
+          "end": 101840,
+          "start": 101774
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "c2d77a42f75ea2ef63540e31",
+        "kind": "judge",
+        "note": "「题「这道题里是否有两个或更多需要分别回答的判断？」里是否有两个或更多需要分别回答的判断？」",
+        "replayed": true,
+        "site": {
+          "end": 101840,
+          "start": 101774
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "640a337404ca627918ea8844",
+        "kind": "judge",
+        "note": "「把题「这道题里是否有两个或更多需要分别回答的判断？」按更细的情形分开问，会比整体问更容易答准吗？」",
+        "replayed": true,
+        "site": {
+          "end": 101840,
+          "start": 101774
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "09435d22e187bb86f6f2adc0",
+        "kind": "judge",
+        "note": "「判断题「这道题里是否有两个或更多需要分别回答的判断？」需要的参照对象和语境，这段材料里给够了吗？」",
+        "replayed": true,
+        "site": {
+          "end": 101840,
+          "start": 101774
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "a91f3839d647139919e9f46e",
+        "kind": "judge",
+        "note": "「题「这道题里是否有两个或更多需要分别回答的判断？」要判得更明确，最缺哪一类信息？」",
+        "replayed": true,
+        "site": {
+          "end": 101840,
+          "start": 101774
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "8d3759a7c9be03fc75e1f273",
+        "kind": "judge",
+        "note": "「上下文里那道题问的东西，这段材料里有没有？」",
+        "replayed": true,
+        "site": {
+          "end": 102278,
+          "start": 102202
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "e98d679a2305635475ddee3c",
+        "kind": "judge",
+        "note": "「题「上下文里那道题问的东西，这段材料里有没有？」的前提在这份材料上成立吗？」",
+        "replayed": true,
+        "site": {
+          "end": 102278,
+          "start": 102202
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "d765ab1085e228f05f930826",
+        "kind": "judge",
+        "note": "「题「上下文里那道题问的东西，这段材料里有没有？」里是否有两个或更多需要分别回答的判断？」",
+        "replayed": true,
+        "site": {
+          "end": 102278,
+          "start": 102202
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "8556e5e44b30c692bc858282",
+        "kind": "judge",
+        "note": "「把题「上下文里那道题问的东西，这段材料里有没有？」按更细的情形分开问，会比整体问更容易答准吗？」",
+        "replayed": true,
+        "site": {
+          "end": 102278,
+          "start": 102202
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "d59240c05f8f6f5bddff6c51",
+        "kind": "judge",
+        "note": "「判断题「上下文里那道题问的东西，这段材料里有没有？」需要的参照对象和语境，这段材料里给够了吗？」",
+        "replayed": true,
+        "site": {
+          "end": 102278,
+          "start": 102202
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "e42d8350e8899e4c1e6871ea",
+        "kind": "judge",
+        "note": "「题「上下文里那道题问的东西，这段材料里有没有？」要判得更明确，最缺哪一类信息？」",
+        "replayed": true,
+        "site": {
+          "end": 102278,
+          "start": 102202
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "54f7fa6183597944c8ef8f39",
+        "kind": "judge",
+        "note": "「上下文里那道题问的东西，这段材料里有没有？」",
+        "replayed": true,
+        "site": {
+          "end": 102278,
+          "start": 102202
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "547617658a6446bad3345e24",
+        "kind": "judge",
+        "note": "「题「上下文里那道题问的东西，这段材料里有没有？」的前提在这份材料上成立吗？」",
+        "replayed": true,
+        "site": {
+          "end": 102278,
+          "start": 102202
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "9d813d766c32151264707715",
+        "kind": "judge",
+        "note": "「题「上下文里那道题问的东西，这段材料里有没有？」里是否有两个或更多需要分别回答的判断？」",
+        "replayed": true,
+        "site": {
+          "end": 102278,
+          "start": 102202
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "4664a7384e1ff678f87765a8",
+        "kind": "judge",
+        "note": "「把题「上下文里那道题问的东西，这段材料里有没有？」按更细的情形分开问，会比整体问更容易答准吗？」",
+        "replayed": true,
+        "site": {
+          "end": 102278,
+          "start": 102202
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "bc731fad2cff11fb16955400",
+        "kind": "judge",
+        "note": "「判断题「上下文里那道题问的东西，这段材料里有没有？」需要的参照对象和语境，这段材料里给够了吗？」",
+        "replayed": true,
+        "site": {
+          "end": 102278,
+          "start": 102202
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "a1bbd40df8cf56a8389ff256",
+        "kind": "judge",
+        "note": "「题「上下文里那道题问的东西，这段材料里有没有？」要判得更明确，最缺哪一类信息？」",
+        "replayed": true,
+        "site": {
+          "end": 102278,
+          "start": 102202
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "6eb53971ef7240ec19d83d65",
+        "kind": "judge",
+        "note": "「上下文里那道题问的东西，这段材料里有没有？」",
+        "replayed": true,
+        "site": {
+          "end": 102278,
+          "start": 102202
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "c52bbeab76351b1c0abf340e",
+        "kind": "judge",
+        "note": "「题「上下文里那道题问的东西，这段材料里有没有？」的前提在这份材料上成立吗？」",
+        "replayed": true,
+        "site": {
+          "end": 102278,
+          "start": 102202
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "c366df7d2c702d49c4e8474f",
+        "kind": "judge",
+        "note": "「题「上下文里那道题问的东西，这段材料里有没有？」里是否有两个或更多需要分别回答的判断？」",
+        "replayed": true,
+        "site": {
+          "end": 102278,
+          "start": 102202
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "1df0371dbb3aadce1150814b",
+        "kind": "judge",
+        "note": "「把题「上下文里那道题问的东西，这段材料里有没有？」按更细的情形分开问，会比整体问更容易答准吗？」",
+        "replayed": true,
+        "site": {
+          "end": 102278,
+          "start": 102202
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "d8d6dba56ce8c4e349a5aad6",
+        "kind": "judge",
+        "note": "「判断题「上下文里那道题问的东西，这段材料里有没有？」需要的参照对象和语境，这段材料里给够了吗？」",
+        "replayed": true,
+        "site": {
+          "end": 102278,
+          "start": 102202
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "6de124210717b4f5f0d58818",
+        "kind": "judge",
+        "note": "「题「上下文里那道题问的东西，这段材料里有没有？」要判得更明确，最缺哪一类信息？」",
+        "replayed": true,
+        "site": {
+          "end": 102278,
+          "start": 102202
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "8e352343e1081d9cf91a9ff0",
+        "kind": "judge",
+        "note": "「上下文里那道题问的东西，这段材料里有没有？」",
+        "replayed": true,
+        "site": {
+          "end": 102278,
+          "start": 102202
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "a16360f98fde13fdbe0d9e7d",
+        "kind": "judge",
+        "note": "「题「上下文里那道题问的东西，这段材料里有没有？」的前提在这份材料上成立吗？」",
+        "replayed": true,
+        "site": {
+          "end": 102278,
+          "start": 102202
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "731f016f64266c691f53235c",
+        "kind": "judge",
+        "note": "「题「上下文里那道题问的东西，这段材料里有没有？」里是否有两个或更多需要分别回答的判断？」",
+        "replayed": true,
+        "site": {
+          "end": 102278,
+          "start": 102202
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "47e48a8dccf9df16ab48e1c2",
+        "kind": "judge",
+        "note": "「把题「上下文里那道题问的东西，这段材料里有没有？」按更细的情形分开问，会比整体问更容易答准吗？」",
+        "replayed": true,
+        "site": {
+          "end": 102278,
+          "start": 102202
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "11b931098c79323759a99f5e",
+        "kind": "judge",
+        "note": "「判断题「上下文里那道题问的东西，这段材料里有没有？」需要的参照对象和语境，这段材料里给够了吗？」",
+        "replayed": true,
+        "site": {
+          "end": 102278,
+          "start": 102202
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "e4c6c86a831ffb675eb0f16a",
+        "kind": "judge",
+        "note": "「题「上下文里那道题问的东西，这段材料里有没有？」要判得更明确，最缺哪一类信息？」",
+        "replayed": true,
+        "site": {
+          "end": 102278,
+          "start": 102202
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "458ca768dbe3b6d21fbf575d",
+        "kind": "judge",
+        "note": "「上下文里那道题问的东西，这段材料里有没有？」",
+        "replayed": true,
+        "site": {
+          "end": 102278,
+          "start": 102202
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "6c3c72bb3139924ada915518",
+        "kind": "judge",
+        "note": "「题「上下文里那道题问的东西，这段材料里有没有？」的前提在这份材料上成立吗？」",
+        "replayed": true,
+        "site": {
+          "end": 102278,
+          "start": 102202
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "e40714384bdfb6b5d953bdf9",
+        "kind": "judge",
+        "note": "「题「上下文里那道题问的东西，这段材料里有没有？」里是否有两个或更多需要分别回答的判断？」",
+        "replayed": true,
+        "site": {
+          "end": 102278,
+          "start": 102202
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "e0cbb0cb5b2034aff37d2acb",
+        "kind": "judge",
+        "note": "「把题「上下文里那道题问的东西，这段材料里有没有？」按更细的情形分开问，会比整体问更容易答准吗？」",
+        "replayed": true,
+        "site": {
+          "end": 102278,
+          "start": 102202
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "32fae6001fc7f5cec0c7a13e",
+        "kind": "judge",
+        "note": "「判断题「上下文里那道题问的东西，这段材料里有没有？」需要的参照对象和语境，这段材料里给够了吗？」",
+        "replayed": true,
+        "site": {
+          "end": 102278,
+          "start": 102202
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "2968c9bc93bc2fb16481aba9",
+        "kind": "judge",
+        "note": "「题「上下文里那道题问的东西，这段材料里有没有？」要判得更明确，最缺哪一类信息？」",
+        "replayed": true,
+        "site": {
+          "end": 102278,
+          "start": 102202
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "4a095bf46a391e13476a6a5b",
+        "kind": "judge",
+        "note": "「上下文里那道题问的东西，这段材料里有没有？」",
+        "replayed": true,
+        "site": {
+          "end": 102278,
+          "start": 102202
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "6a065b942dfe102e6db2b00e",
+        "kind": "judge",
+        "note": "「题「上下文里那道题问的东西，这段材料里有没有？」的前提在这份材料上成立吗？」",
+        "replayed": true,
+        "site": {
+          "end": 102278,
+          "start": 102202
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "a83bab31c1b8b6c3af32db6c",
+        "kind": "judge",
+        "note": "「题「上下文里那道题问的东西，这段材料里有没有？」里是否有两个或更多需要分别回答的判断？」",
+        "replayed": true,
+        "site": {
+          "end": 102278,
+          "start": 102202
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "26e7298d4e11216f8bfcdb0e",
+        "kind": "judge",
+        "note": "「把题「上下文里那道题问的东西，这段材料里有没有？」按更细的情形分开问，会比整体问更容易答准吗？」",
+        "replayed": true,
+        "site": {
+          "end": 102278,
+          "start": 102202
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "53478787174889c7daa5077d",
+        "kind": "judge",
+        "note": "「判断题「上下文里那道题问的东西，这段材料里有没有？」需要的参照对象和语境，这段材料里给够了吗？」",
+        "replayed": true,
+        "site": {
+          "end": 102278,
+          "start": 102202
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "741ecf139664761ef7c37de5",
+        "kind": "judge",
+        "note": "「题「上下文里那道题问的东西，这段材料里有没有？」要判得更明确，最缺哪一类信息？」",
+        "replayed": true,
+        "site": {
+          "end": 102278,
+          "start": 102202
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "684ec23e1547d6dc74698ee7",
+        "kind": "judge",
+        "note": "「这家供应商按期交付这份订单的把握有多大？」",
+        "replayed": true,
+        "site": {
+          "end": 36974,
+          "start": 36958
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "ce8c2155d5ba12a6b5320157",
+        "kind": "judge",
+        "note": "「题「这家供应商按期交付这份订单的把握有多大？」的前提在这份材料上成立吗？」",
+        "replayed": true,
+        "site": {
+          "end": 36974,
+          "start": 36958
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "8be32de642649d152412e95e",
+        "kind": "judge",
+        "note": "「题「这家供应商按期交付这份订单的把握有多大？」里是否有两个或更多需要分别回答的判断？」",
+        "replayed": true,
+        "site": {
+          "end": 36974,
+          "start": 36958
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "ccac16d4a53a5260442ef4ed",
+        "kind": "judge",
+        "note": "「把题「这家供应商按期交付这份订单的把握有多大？」按更细的情形分开问，会比整体问更容易答准吗？」",
+        "replayed": true,
+        "site": {
+          "end": 36974,
+          "start": 36958
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "1fffc61c63fcbbd316e3e432",
+        "kind": "judge",
+        "note": "「判断题「这家供应商按期交付这份订单的把握有多大？」需要的参照对象和语境，这段材料里给够了吗？」",
+        "replayed": true,
+        "site": {
+          "end": 36974,
+          "start": 36958
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "ffe341e64c570e9968384d73",
+        "kind": "judge",
+        "note": "「题「这家供应商按期交付这份订单的把握有多大？」要判得更明确，最缺哪一类信息？」",
+        "replayed": true,
+        "site": {
+          "end": 36974,
+          "start": 36958
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "70d84424cd7622832b95ac0e",
+        "kind": "judge",
+        "note": "「这家供应商交付这份订单最大的风险在哪一方面？」",
+        "replayed": true,
+        "site": {
+          "end": 36974,
+          "start": 36958
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "666008cd628f49211453d7ee",
+        "kind": "judge",
+        "note": "「题「这家供应商交付这份订单最大的风险在哪一方面？」的前提在这份材料上成立吗？」",
+        "replayed": true,
+        "site": {
+          "end": 36974,
+          "start": 36958
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "00710169e59b1e030001ec63",
+        "kind": "judge",
+        "note": "「题「这家供应商交付这份订单最大的风险在哪一方面？」里是否有两个或更多需要分别回答的判断？」",
+        "replayed": true,
+        "site": {
+          "end": 36974,
+          "start": 36958
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "6619323791eab6d4b8848645",
+        "kind": "judge",
+        "note": "「把题「这家供应商交付这份订单最大的风险在哪一方面？」按更细的情形分开问，会比整体问更容易答准吗？」",
+        "replayed": true,
+        "site": {
+          "end": 36974,
+          "start": 36958
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "176829a71e0c97ddb2e15724",
+        "kind": "judge",
+        "note": "「判断题「这家供应商交付这份订单最大的风险在哪一方面？」需要的参照对象和语境，这段材料里给够了吗？」",
+        "replayed": true,
+        "site": {
+          "end": 36974,
+          "start": 36958
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "4013ee3ac3a44caa10582097",
+        "kind": "judge",
+        "note": "「题「这家供应商交付这份订单最大的风险在哪一方面？」要判得更明确，最缺哪一类信息？」",
+        "replayed": true,
+        "site": {
+          "end": 36974,
+          "start": 36958
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "43ee9bcaf79f2ba14cdbc452",
+        "kind": "judge",
+        "note": "「这家供应商按期交付这份订单的把握有多大？」",
+        "replayed": true,
+        "site": {
+          "end": 36974,
+          "start": 36958
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "9d0277e94ef7ed9758afa3dc",
+        "kind": "judge",
+        "note": "「题「这家供应商按期交付这份订单的把握有多大？」的前提在这份材料上成立吗？」",
+        "replayed": true,
+        "site": {
+          "end": 36974,
+          "start": 36958
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "4020093df3c05f8a895cd8a6",
+        "kind": "judge",
+        "note": "「题「这家供应商按期交付这份订单的把握有多大？」里是否有两个或更多需要分别回答的判断？」",
+        "replayed": true,
+        "site": {
+          "end": 36974,
+          "start": 36958
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "9a5cf181db7860affbceee20",
+        "kind": "judge",
+        "note": "「把题「这家供应商按期交付这份订单的把握有多大？」按更细的情形分开问，会比整体问更容易答准吗？」",
+        "replayed": true,
+        "site": {
+          "end": 36974,
+          "start": 36958
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "9f25f0a2217e9b1b247e1ddb",
+        "kind": "judge",
+        "note": "「判断题「这家供应商按期交付这份订单的把握有多大？」需要的参照对象和语境，这段材料里给够了吗？」",
+        "replayed": true,
+        "site": {
+          "end": 36974,
+          "start": 36958
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "1aa6ac3499336223280e78fc",
+        "kind": "judge",
+        "note": "「题「这家供应商按期交付这份订单的把握有多大？」要判得更明确，最缺哪一类信息？」",
+        "replayed": true,
+        "site": {
+          "end": 36974,
+          "start": 36958
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "7762dbf0b3f98a49f52d15fb",
+        "kind": "judge",
+        "note": "「这家供应商交付这份订单最大的风险在哪一方面？」",
+        "replayed": true,
+        "site": {
+          "end": 36974,
+          "start": 36958
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "d0774032edbaafad886016d7",
+        "kind": "judge",
+        "note": "「题「这家供应商交付这份订单最大的风险在哪一方面？」的前提在这份材料上成立吗？」",
+        "replayed": true,
+        "site": {
+          "end": 36974,
+          "start": 36958
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "5954138ff1512102f1b44178",
+        "kind": "judge",
+        "note": "「题「这家供应商交付这份订单最大的风险在哪一方面？」里是否有两个或更多需要分别回答的判断？」",
+        "replayed": true,
+        "site": {
+          "end": 36974,
+          "start": 36958
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "b699bd312ddcabd4fc55dca3",
+        "kind": "judge",
+        "note": "「把题「这家供应商交付这份订单最大的风险在哪一方面？」按更细的情形分开问，会比整体问更容易答准吗？」",
+        "replayed": true,
+        "site": {
+          "end": 36974,
+          "start": 36958
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "918825aa7861157923eaa6c0",
+        "kind": "judge",
+        "note": "「判断题「这家供应商交付这份订单最大的风险在哪一方面？」需要的参照对象和语境，这段材料里给够了吗？」",
+        "replayed": true,
+        "site": {
+          "end": 36974,
+          "start": 36958
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "6f8a7a90c36c725b00baf7dd",
+        "kind": "judge",
+        "note": "「题「这家供应商交付这份订单最大的风险在哪一方面？」要判得更明确，最缺哪一类信息？」",
+        "replayed": true,
+        "site": {
+          "end": 36974,
+          "start": 36958
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "e4f367a75b6d4ae9ac4f0bdc",
+        "kind": "judge",
+        "note": "「这家供应商按期交付这份订单的把握有多大？」",
+        "replayed": true,
+        "site": {
+          "end": 36974,
+          "start": 36958
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "727b085823c81b89e45fc56e",
+        "kind": "judge",
+        "note": "「题「这家供应商按期交付这份订单的把握有多大？」的前提在这份材料上成立吗？」",
+        "replayed": true,
+        "site": {
+          "end": 36974,
+          "start": 36958
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "ac25572c7e0cf41d0b3db219",
+        "kind": "judge",
+        "note": "「题「这家供应商按期交付这份订单的把握有多大？」里是否有两个或更多需要分别回答的判断？」",
+        "replayed": true,
+        "site": {
+          "end": 36974,
+          "start": 36958
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "a8155e06b972fde08c9017f0",
+        "kind": "judge",
+        "note": "「把题「这家供应商按期交付这份订单的把握有多大？」按更细的情形分开问，会比整体问更容易答准吗？」",
+        "replayed": true,
+        "site": {
+          "end": 36974,
+          "start": 36958
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "8999522bb4b1cd95f057a0d5",
+        "kind": "judge",
+        "note": "「判断题「这家供应商按期交付这份订单的把握有多大？」需要的参照对象和语境，这段材料里给够了吗？」",
+        "replayed": true,
+        "site": {
+          "end": 36974,
+          "start": 36958
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "40cfba2003f0d08c6b3801c4",
+        "kind": "judge",
+        "note": "「题「这家供应商按期交付这份订单的把握有多大？」要判得更明确，最缺哪一类信息？」",
+        "replayed": true,
+        "site": {
+          "end": 36974,
+          "start": 36958
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "e18e118f0416e15f28e7f568",
+        "kind": "judge",
+        "note": "「这家供应商交付这份订单最大的风险在哪一方面？」",
+        "replayed": true,
+        "site": {
+          "end": 36974,
+          "start": 36958
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "41bbc64b83c66fcb6dcf950e",
+        "kind": "judge",
+        "note": "「题「这家供应商交付这份订单最大的风险在哪一方面？」的前提在这份材料上成立吗？」",
+        "replayed": true,
+        "site": {
+          "end": 36974,
+          "start": 36958
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "5198476585456ec445671006",
+        "kind": "judge",
+        "note": "「题「这家供应商交付这份订单最大的风险在哪一方面？」里是否有两个或更多需要分别回答的判断？」",
+        "replayed": true,
+        "site": {
+          "end": 36974,
+          "start": 36958
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "72ee13cc0047601e597f79e3",
+        "kind": "judge",
+        "note": "「把题「这家供应商交付这份订单最大的风险在哪一方面？」按更细的情形分开问，会比整体问更容易答准吗？」",
+        "replayed": true,
+        "site": {
+          "end": 36974,
+          "start": 36958
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "f655b107a8f88f1b4734bf9c",
+        "kind": "judge",
+        "note": "「判断题「这家供应商交付这份订单最大的风险在哪一方面？」需要的参照对象和语境，这段材料里给够了吗？」",
+        "replayed": true,
+        "site": {
+          "end": 36974,
+          "start": 36958
+        }
+      },
+      {
+        "cost": 0.0,
+        "key": "418f200ef3b78252d6eed478",
+        "kind": "judge",
+        "note": "「题「这家供应商交付这份订单最大的风险在哪一方面？」要判得更明确，最缺哪一类信息？」",
+        "replayed": true,
+        "site": {
+          "end": 36974,
+          "start": 36958
+        }
+      }
+    ],
+    "warnings": [
+      "W-window-untested: @17850 画像没有测过窗口（window），对象长度不核；超窗的语境可能接管读数而无痕",
+      "W-window-untested: @101774 画像没有测过窗口（window），对象长度不核；超窗的语境可能接管读数而无痕",
+      "W-window-untested: @102202 画像没有测过窗口（window），对象长度不核；超窗的语境可能接管读数而无痕",
+      "W-window-untested: @36958 画像没有测过窗口（window），对象长度不核；超窗的语境可能接管读数而无痕"
+    ]
+  },
+  "value": {
+    "pending": [],
+    "questions": [
+      {
+        "cut": "ordered",
+        "field": "rank",
+        "from": "elicit",
+        "op": "measure"
+      },
+      {
+        "cut": "k_ary",
+        "field": "risk",
+        "from": "elicit",
+        "op": "select"
+      }
+    ],
+    "sources": {
+      "budget": "system",
+      "context": "system:none",
+      "cut": "purpose",
+      "done": "purpose",
+      "material": "purpose",
+      "predicate": "purpose",
+      "presupposition": "system",
+      "reference": "purpose",
+      "request": "purpose",
+      "unsure": "system"
+    },
+    "value": [
+      {
+        "fields": {
+          "rank": 1,
+          "risk": "产能"
+        },
+        "item": {
+          "name": "供应商0",
+          "note": "第 0 家，产能与账期各不相同"
+        }
+      },
+      {
+        "fields": {
+          "rank": 3,
+          "risk": "资金"
+        },
+        "item": {
+          "name": "供应商1",
+          "note": "第 1 家，产能与账期各不相同"
+        }
+      },
+      {
+        "fields": {
+          "rank": 2,
+          "risk": "质量"
+        },
+        "item": {
+          "name": "供应商2",
+          "note": "第 2 家，产能与账期各不相同"
+        }
+      }
+    ]
+  }
+}

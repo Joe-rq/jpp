@@ -349,6 +349,7 @@ mod tests {
                 span: sp(),
             },
             source_hash: String::new(),
+            shape_hash: String::new(),
         }
     }
     fn effect(e: EffectId) -> Expr {

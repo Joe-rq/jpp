@@ -187,7 +187,7 @@ impl<'a> Interp<'a> {
             chars_list(&s)
         } else {
             s.split(sep.as_ref())
-                .map(|p| Value::text(p))
+                .map(Value::text)
                 .collect::<Vec<_>>()
         };
         Ok(Value::list(parts).with_prov(&join_args(&args)))

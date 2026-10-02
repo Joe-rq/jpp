@@ -20,6 +20,10 @@ use serde_json::{Value, json};
 pub const RT_CODES: &[(&str, &str)] = &[
     ("E-rt-arity", "内置或构造收到的参数个数不对"),
     (
+        "E-rt-lib-only",
+        "标准库过程入口内部用的内置或参数（unsure_fetch、unsure_default 的第二参）只认 lib 定义里的调用点（B0630）",
+    ),
+    (
         "E-rt-arg",
         "实参的类型或形状不对；报文给出正确写法（如 slice(list, a, b)）",
     ),
@@ -38,6 +42,10 @@ pub const RT_CODES: &[(&str, &str)] = &[
     ("E-rt-client", "外部组件报错（判断器客户端、gen、ask）"),
     ("E-rt-answer", "判断器答案的形状或条数与题不符"),
     ("E-rt-absent", "判断器缺席且缺席策略为 fail"),
+    (
+        "E-rt-depth",
+        "默认链的题树只下一层（Z0913，D1）：一次中间判断里又走到中间判断，内部错误",
+    ),
     (
         "E-rt-plan",
         "要规划器算的内置（gate_info、split_point）在没接规划器钩子的解释器里被调用，经 jpp::run / Session 跑；或提升计划与正在求值的块对不上（计划不是按这个块算的，内部错误，Z0613）",

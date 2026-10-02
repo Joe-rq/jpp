@@ -149,8 +149,8 @@ pub fn diagnose_fill(
     let text = strip_slots(template);
     if direct_write(&text) {
         for (k, v) in fills {
-            if let Some(v) = v {
-                if looks_abstract(v) {
+            if let Some(v) = v
+                && looks_abstract(v) {
                     // 依据：B13（12 §3 J-17 后「诊断层规则集第一批」）
                     out.push(Diagnostic::warning(
                         "W-diag-abstract-direct",
@@ -160,7 +160,6 @@ pub fn diagnose_fill(
                         span,
                     ));
                 }
-            }
         }
     }
     out
@@ -314,7 +313,7 @@ fn open_question(op: &str, text: &str, what: &str, span: Span) -> Option<Diagnos
         .find(|w| text.contains(*w))
         .map(|w| w.to_string())
         .or_else(|| {
-            let first = text.trim_start().split_whitespace().next()?.to_lowercase();
+            let first = text.split_whitespace().next()?.to_lowercase();
             ["why", "what", "which", "how", "who", "where", "when"]
                 .contains(&first.as_str())
                 .then_some(first)
@@ -460,11 +459,10 @@ fn two_judgments_en(text: &str) -> Option<String> {
     if whether >= 2 {
         return Some(format!("出现 {whether} 处「whether」"));
     }
-    if let Some(i) = ws.iter().position(|w| w == "both") {
-        if ws[i + 1..].iter().any(|w| w == "and") {
+    if let Some(i) = ws.iter().position(|w| w == "both")
+        && ws[i + 1..].iter().any(|w| w == "and") {
             return Some("用「both … and」连接两个条件".to_string());
         }
-    }
     for i in 0..ws.len() {
         if (ws[i] == "and" || ws[i] == "or") && i + 2 < ws.len() && 助.contains(&ws[i + 1].as_str())
         {

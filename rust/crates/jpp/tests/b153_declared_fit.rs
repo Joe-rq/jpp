@@ -6,7 +6,7 @@
 
 mod common;
 
-use jpp::effects::{CalibStore, FixedPorts, FnPort, JudgeResult, Ports};
+use jpp::effects::{CalibStore, FixedPorts, JudgeResult, Ports};
 use jpp::interp::{ActionRegistry, TaintOut};
 use jpp::ledger::Ledger;
 use jpp::value::{Answer, Mat, Op, Question, State, Taint, Value};

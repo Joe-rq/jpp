@@ -187,7 +187,10 @@ pub(crate) fn 解析策略(a: &Value, sp: Span) -> R<crate::bridge::CutOpts> {
             Value::List(l) => l.iter().filter_map(数值).collect(),
             _ => vec![],
         };
-        if nums.len() != 2 || nums.iter().any(|x| !(*x > 0.0)) {
+        // 写成 `!(x > 0.0)` 是有意的：NaN 也要拒，改成 `x <= 0.0` 会放过它
+        #[allow(clippy::neg_cmp_op_on_partial_ord)]
+        let 不合 = nums.len() != 2 || nums.iter().any(|x| !(*x > 0.0));
+        if 不合 {
             return err(
                 Some("E-rt-arg"),
                 "cost 要是两个正数 [fp, fn]：放错一条（假放行）与漏掉一条（假拒绝）的代价",

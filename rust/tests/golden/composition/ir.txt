@@ -1,50 +1,50 @@
 ir v1
 budget calls=0 cost=0 depth=256 escalate=- unsure=- latency_p95=- absent=-
-block 58..410
+block 58..426
   fn-stmt compose_rules
-    #0 fn (f:{"Function":[[{"Named":"Int"}],{"Named":"Int"}]}, g:{"Function":[[{"Named":"Int"}],{"Named":"Int"}]}) -> {"Function":[[{"Named":"Int"}],{"Named":"Int"}]} effects=-
-      block 171..208
+    #0 fn (f:{"Method":{"params":[{"Named":"Int"}],"ret":{"Named":"Int"},"effects":[],"captures_responsibility":false}}, g:{"Method":{"params":[{"Named":"Int"}],"ret":{"Named":"Int"},"effects":[],"captures_responsibility":false}}) -> {"Method":{"params":[{"Named":"Int"}],"ret":{"Named":"Int"},"effects":[],"captures_responsibility":false}} effects=[]
+      block 187..224
         result
           #2 fn (x:{"Named":"Int"}) -> {"Named":"Int"} effects=-
-            block 195..206
+            block 211..222
               result
-                #3 call 197..204
+                #3 call 213..220
                   callee:
                     #4 name g
-                  #5 call 199..203
+                  #5 call 215..219
                     callee:
                       #6 name f
                     #7 name x
   fn-stmt increment
     #8 fn (x:{"Named":"Int"}) -> {"Named":"Int"} effects=-
-      block 238..247
+      block 254..263
         result
           #9 binary +
             #10 name x
             #11 int 1
   fn-stmt twice
     #12 fn (x:{"Named":"Int"}) -> {"Named":"Int"} effects=-
-      block 272..281
+      block 288..297
         result
           #13 binary *
             #14 name x
             #15 int 2
   let method : -
-    #16 call 296..327
+    #16 call 312..343
       callee:
         #17 name compose_rules
       #18 name increment
       #19 name twice
   let larger : -
-    #20 call 342..374
+    #20 call 358..390
       callee:
         #21 name compose_rules
       #22 name method
       #23 name increment
   result
-    #24 record 376..410
+    #24 record 392..426
       result:
-        #25 call 385..395
+        #25 call 401..411
           callee:
             #26 name larger
           #27 int 20

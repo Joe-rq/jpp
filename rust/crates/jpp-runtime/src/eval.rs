@@ -72,7 +72,13 @@ impl<'a> Interp<'a> {
         span: Span,
     ) -> Value {
         // 方法身份：降级时按源码函数算好（口径与步 12c 前相同，账本键不变）
-        let hash = f.source_hash.clone();
+        // B0630：结构化键法取不含位置的 `shape_hash`（改注释、挪位置不变）；只凭账本重放旧账本取带位置的 `source_hash`
+        // （`shape_hash` 为空只出在不经降级手造的函数上，退回 `source_hash`，免得这类闭包共用一个空身份）
+        let hash = if self.结构化() && !f.shape_hash.is_empty() {
+            f.shape_hash.clone()
+        } else {
+            f.source_hash.clone()
+        };
         // B52（步 21）：记下创建时经捕获环境可达的未决责任；是不是 Fn¹ 由创建它的帧返回时判
         let captures = captured_duties(f, env);
         Value::Fn(Rc::new(Closure {

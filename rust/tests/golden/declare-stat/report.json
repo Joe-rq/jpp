@@ -95,66 +95,66 @@
     {
       "companions": [
         {
-          "key": "6799e394276de23d57ef006f",
+          "key": "69eaef8383c52575dc28df55",
           "kind": "unsure-companion-premise",
           "p": 0.5
         },
         {
-          "key": "997e5be1834ccb3b4ce92808",
+          "key": "d0f4370516200a4ba7518f54",
           "kind": "diag-two-judgments",
           "p": 0.5
         },
         {
-          "key": "95ff4dd08c4e9b48e9470e5c",
+          "key": "0bb117e7bdafddbd7a63d47f",
           "kind": "unsure-companion-cut",
           "p": 0.5
         },
         {
-          "key": "68d354693f3308ba91209688",
+          "key": "66849675bd4cee30a139bba7",
           "kind": "unsure-companion-reference",
           "p": 0.5
         },
         {
-          "key": "2b0a8fe5808a51073e18afa8",
+          "key": "2cc4820fe07247dfd8c4eded",
           "kind": "unsure-companion-material",
           "p": 0.25,
           "pick": null
         }
       ],
-      "key": "aecd9d6b5294afeadad4781a",
+      "key": "c683b89225e4b3b2a691348c",
       "lacks": null,
       "q": "这段工单描述的故障影响有多大？"
     },
     {
       "companions": [
         {
-          "key": "fdf9ced09baf546b17f4a1a1",
+          "key": "eb50059c9c5e4b1168cbe87b",
           "kind": "unsure-companion-premise",
           "p": 0.5
         },
         {
-          "key": "38c7dd23a273a472372f6548",
+          "key": "b4e657fbba663c35818ef709",
           "kind": "diag-two-judgments",
           "p": 0.5
         },
         {
-          "key": "69dc654bfc6f8ec6d943ef93",
+          "key": "9e8b3dc17396f9baffefdfa3",
           "kind": "unsure-companion-cut",
           "p": 0.5
         },
         {
-          "key": "eccb357bc87d075782717af9",
+          "key": "4b55de56bf7ce6da02d082a4",
           "kind": "unsure-companion-reference",
           "p": 0.5
         },
         {
-          "key": "ba69f61241160f02dddb6b0d",
+          "key": "0a367dd0565dac13c97cc6ae",
           "kind": "unsure-companion-material",
           "p": 0.25,
           "pick": null
         }
       ],
-      "key": "f53295f75dc45bad2d1fd52b",
+      "key": "426b412e7d72120d1ee4a537",
       "lacks": null,
       "q": "这段工单最可能归哪个组处理？"
     }
@@ -291,7 +291,7 @@
     "events": [
       {
         "cost": 0.0,
-        "key": "aecd9d6b5294afeadad4781a",
+        "key": "c683b89225e4b3b2a691348c",
         "kind": "judge",
         "note": "「这段工单描述的故障影响有多大？」",
         "replayed": false,
@@ -302,7 +302,7 @@
       },
       {
         "cost": 0.0,
-        "key": "6799e394276de23d57ef006f",
+        "key": "69eaef8383c52575dc28df55",
         "kind": "judge",
         "note": "「题「这段工单描述的故障影响有多大？」的前提在这份材料上成立吗？」",
         "replayed": false,
@@ -313,7 +313,7 @@
       },
       {
         "cost": 0.0,
-        "key": "997e5be1834ccb3b4ce92808",
+        "key": "d0f4370516200a4ba7518f54",
         "kind": "judge",
         "note": "「题「这段工单描述的故障影响有多大？」里是否有两个或更多需要分别回答的判断？」",
         "replayed": false,
@@ -324,7 +324,7 @@
       },
       {
         "cost": 0.0,
-        "key": "95ff4dd08c4e9b48e9470e5c",
+        "key": "0bb117e7bdafddbd7a63d47f",
         "kind": "judge",
         "note": "「把题「这段工单描述的故障影响有多大？」按更细的情形分开问，会比整体问更容易答准吗？」",
         "replayed": false,
@@ -335,7 +335,7 @@
       },
       {
         "cost": 0.0,
-        "key": "68d354693f3308ba91209688",
+        "key": "66849675bd4cee30a139bba7",
         "kind": "judge",
         "note": "「判断题「这段工单描述的故障影响有多大？」需要的参照对象和语境，这段材料里给够了吗？」",
         "replayed": false,
@@ -346,7 +346,7 @@
       },
       {
         "cost": 0.0,
-        "key": "2b0a8fe5808a51073e18afa8",
+        "key": "2cc4820fe07247dfd8c4eded",
         "kind": "judge",
         "note": "「题「这段工单描述的故障影响有多大？」要判得更明确，最缺哪一类信息？」",
         "replayed": false,
@@ -357,7 +357,7 @@
       },
       {
         "cost": 0.0,
-        "key": "f53295f75dc45bad2d1fd52b",
+        "key": "426b412e7d72120d1ee4a537",
         "kind": "judge",
         "note": "「这段工单最可能归哪个组处理？」",
         "replayed": false,
@@ -368,7 +368,7 @@
       },
       {
         "cost": 0.0,
-        "key": "fdf9ced09baf546b17f4a1a1",
+        "key": "eb50059c9c5e4b1168cbe87b",
         "kind": "judge",
         "note": "「题「这段工单最可能归哪个组处理？」的前提在这份材料上成立吗？」",
         "replayed": false,
@@ -379,7 +379,7 @@
       },
       {
         "cost": 0.0,
-        "key": "38c7dd23a273a472372f6548",
+        "key": "b4e657fbba663c35818ef709",
         "kind": "judge",
         "note": "「题「这段工单最可能归哪个组处理？」里是否有两个或更多需要分别回答的判断？」",
         "replayed": false,
@@ -390,7 +390,7 @@
       },
       {
         "cost": 0.0,
-        "key": "69dc654bfc6f8ec6d943ef93",
+        "key": "9e8b3dc17396f9baffefdfa3",
         "kind": "judge",
         "note": "「把题「这段工单最可能归哪个组处理？」按更细的情形分开问，会比整体问更容易答准吗？」",
         "replayed": false,
@@ -401,7 +401,7 @@
       },
       {
         "cost": 0.0,
-        "key": "eccb357bc87d075782717af9",
+        "key": "4b55de56bf7ce6da02d082a4",
         "kind": "judge",
         "note": "「判断题「这段工单最可能归哪个组处理？」需要的参照对象和语境，这段材料里给够了吗？」",
         "replayed": false,
@@ -412,7 +412,7 @@
       },
       {
         "cost": 0.0,
-        "key": "ba69f61241160f02dddb6b0d",
+        "key": "0a367dd0565dac13c97cc6ae",
         "kind": "judge",
         "note": "「题「这段工单最可能归哪个组处理？」要判得更明确，最缺哪一类信息？」",
         "replayed": false,

@@ -9,14 +9,41 @@ use jpp_ir::plan::Reach;
 type 提前站点 = (Rc<State>, Vec<Rc<Question>>, Span);
 
 impl<'a> Interp<'a> {
+    /// 本趟按结构化站点算键（B0630；`key_version` `"1"`），否则是只凭账本重放旧账本的字节偏移键法。
+    pub(crate) fn 结构化(&self) -> bool {
+        self.key_version == jpp_ledger::key_version::KeyVersion::Structured
+    }
+
+    /// 键里的站点（B0630）：结构化键法查站点表得 `<定义路径>:<标签>#<序号>`，查不到回退成 `@<偏移>` 并计数；
+    /// 只凭账本重放旧账本（旧键法）时是字节偏移。
+    pub(crate) fn 站点(&mut self, sp: Span) -> SiteRef {
+        if !self.结构化() {
+            return SiteRef::Offset(sp.start);
+        }
+        match self.站点键.get(sp.start, sp.end) {
+            Some(e) => SiteRef::Path(e.key.clone()),
+            None => {
+                self.站点回退 += 1;
+                SiteRef::Path(format!("@{}", sp.start))
+            }
+        }
+    }
+
+    /// 调用点在不在标准库定义里（B0630；库内部参数只认 lib 调用点，Z0943、Z0947）。查不到按不在算。
+    pub(crate) fn 是库站点(&self, sp: Span) -> bool {
+        self.站点键.get(sp.start, sp.end).is_some_and(|e| e.lib)
+    }
+
     /// 判断键：算出账本键并记下结构化键，写账本时附上（账本 v2，步 7）。键值与 `judge_key` 相同。
+    /// 站点按本趟键法取（B0630，[`Self::站点`]）。
     pub(crate) fn judge_key_of(
         &mut self,
         state_hash: &str,
         q_hash: &str,
         phys: &str,
-        site: usize,
+        sp: Span,
     ) -> String {
+        let site = self.站点(sp);
         let mut k = JudgeKey::new(
             &self.model_id,
             state_hash,
@@ -117,7 +144,7 @@ impl<'a> Interp<'a> {
         }
         let keys: Vec<String> = qs
             .iter()
-            .map(|q| self.judge_key_of(&state.hash, &q.hash, q.op.phys(), sp.start))
+            .map(|q| self.judge_key_of(&state.hash, &q.hash, q.op.phys(), sp))
             .collect();
         // 循环内键重复即停（J-06）
         if let Some(lc) = self.loops.last_mut() {
@@ -588,7 +615,7 @@ impl<'a> Interp<'a> {
         self.过闸(qs, sp);
         let keys: Vec<String> = qs
             .iter()
-            .map(|q| self.judge_key_of(&state.hash, &q.hash, q.op.phys(), sp.start))
+            .map(|q| self.judge_key_of(&state.hash, &q.hash, q.op.phys(), sp))
             .collect();
         let mut items = vec![];
         for (q, k) in qs.iter().zip(&keys) {
