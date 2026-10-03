@@ -307,18 +307,19 @@ fn 缺省字段宽容_未知字段拒绝() {
 
 #[test]
 fn v3照读_别的版本拒读() {
-    // 步 34 V5：账本升到 v5，v3、v4 照读，更新的版本报 E-ledger-newer
+    // 步 34 V5：账本升到 v5，v3、v4 照读，更新的版本报 E-ledger-newer；B0630 起 v6（结构化站点），v5 照读
     let v5 = 一行(&Entry::Drop {
         of: vec!["k".into()],
         cause: "band".into(),
         site: 1,
     });
-    assert!(v5.starts_with(r#"{"version":5,"#), "{v5}");
+    assert!(v5.starts_with(r#"{"version":6,"#), "{v5}");
     let 空头 = |v: u32| format!("{{\"version\":{v},\"header\":null}}\n");
     assert!(Ledger::decode(&空头(3)).is_ok(), "v3 照读");
     assert!(Ledger::decode(&空头(4)).is_ok(), "v4 照读");
-    assert!(Ledger::decode(&空头(5)).is_ok());
-    let e = Ledger::decode(&空头(6)).expect_err("v6 拒读");
+    assert!(Ledger::decode(&空头(5)).is_ok(), "v5 照读");
+    assert!(Ledger::decode(&空头(6)).is_ok());
+    let e = Ledger::decode(&空头(7)).expect_err("v7 拒读");
     assert!(e.starts_with("E-ledger-newer"), "{e}");
 }
 

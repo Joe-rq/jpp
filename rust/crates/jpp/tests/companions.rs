@@ -327,8 +327,7 @@ fn 固定观察_没登记的伴随题给中性读数_别的照旧报错() {
     let e = Session::new(fp.ports(), &calib, &a)
         .with_companions(CompanionMode::Same)
         .run(&program, &EntryArgs::default(), &mut l)
-        .err()
-        .expect("原题没登记照旧报错");
+        .expect_err("原题没登记照旧报错");
     assert!(e.render().contains("固定观察未命中"), "{}", e.render());
 }
 
@@ -539,8 +538,16 @@ fn 伴随选路_带内没有信号_照常往下走() {
         ("unsure-companion-reference", 0.55),
     ];
     let r = 跑(走链, CompanionMode::Same, 0.5, &带内, 带画像());
-    assert_ne!(r.outcome.unsure_default[0]["why"], "unclear", "{:?}", r.outcome.unsure_default);
-    assert_ne!(r.outcome.unsure_default[0]["why"], "ambiguous", "{:?}", r.outcome.unsure_default);
+    assert_ne!(
+        r.outcome.unsure_default[0]["why"], "unclear",
+        "{:?}",
+        r.outcome.unsure_default
+    );
+    assert_ne!(
+        r.outcome.unsure_default[0]["why"], "ambiguous",
+        "{:?}",
+        r.outcome.unsure_default
+    );
     assert!(为什么发了(&r.ledger), "带内无信号，照常发「为什么」");
     // 同一组读数不带画像（δ 未知）：照改前，前提 0.45 < 0.5 判题不清
     let r0 = 跑(走链, CompanionMode::Same, 0.5, &带内, CalibStore::new());
@@ -589,15 +596,33 @@ fn 缺料直取_不问伴随题题不清() {
     assert_eq!(ud.len(), 1, "{ud:?}");
     assert_eq!(ud[0]["cause"], "insufficient", "{ud:?}");
     assert_eq!(ud[0]["source"], "lacks", "{ud:?}");
-    assert_eq!(ud[0]["why"], Json::Null, "伴随题判「前提不成立」不再读成题不清：{ud:?}");
-    assert_eq!(ud[0]["missed"], json!(["材料"]), "按 lacks 顺序逐类取：{ud:?}");
+    assert_eq!(
+        ud[0]["why"],
+        Json::Null,
+        "伴随题判「前提不成立」不再读成题不清：{ud:?}"
+    );
+    assert_eq!(
+        ud[0]["missed"],
+        json!(["材料"]),
+        "按 lacks 顺序逐类取：{ud:?}"
+    );
     assert_eq!(ud[0]["fetched"], json!(["参照"]), "{ud:?}");
     assert_eq!(ud[0]["end"], "decided", "{ud:?}");
     assert_eq!(ud[0]["asked"], json!([]), "{ud:?}");
     assert!(!为什么发了(&r.ledger), "不发「为什么拿不准」");
     // 这道题确实带了伴随题，「前提成立」读数是 0.1（不是没登记的中性读数）
-    let imp = r.outcome.improve.iter().find(|x| x["q"] == "这两方适合合作吗？").expect("原题有伴随题");
-    let p = imp["companions"].as_array().unwrap().iter().find(|c| c["kind"] == "unsure-companion-premise").unwrap();
+    let imp = r
+        .outcome
+        .improve
+        .iter()
+        .find(|x| x["q"] == "这两方适合合作吗？")
+        .expect("原题有伴随题");
+    let p = imp["companions"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|c| c["kind"] == "unsure-companion-premise")
+        .unwrap();
     assert_eq!(p["p"], json!(0.1), "{imp}");
 }
 
@@ -670,7 +695,11 @@ fn 七十七_伴随题全在带内_照旧问为什么() {
 #[test]
 fn 七十六的行_route_写缺料直取() {
     let r = 跑(缺料链, CompanionMode::Same, 0.9, &前提否, 带画像());
-    assert_eq!(r.outcome.unsure_default[0]["route"], "missing-slot", "{:?}", r.outcome.unsure_default);
+    assert_eq!(
+        r.outcome.unsure_default[0]["route"], "missing-slot",
+        "{:?}",
+        r.outcome.unsure_default
+    );
 }
 
 /// 裁定七十七交叉情形（预注册 10.2 第 4a 条，主控读法，待 Jpp 确认）：「最缺哪类」选出参照、「参照与语境够吗」也带外判否，
@@ -697,7 +726,12 @@ handle(e, {act: fn() { "合作" }, ignore: fn() { "不合作" }})
     assert_eq!(ud[0]["end"], "handoff", "{ud:?}");
     assert!(!为什么发了(&r.ledger));
     // 点名类别无取法（Jpp 2026-10-02）：伴随题点名了参照、取不到，按类别计一次
-    assert_eq!(r.outcome.named_unfetchable, json!({"参照": 1}), "{:?}", r.outcome.named_unfetchable);
+    assert_eq!(
+        r.outcome.named_unfetchable,
+        json!({"参照": 1}),
+        "{:?}",
+        r.outcome.named_unfetchable
+    );
 }
 
 /// 点名了、取到了，不计「点名类别无取法」；没有点名的不出这一段
@@ -712,5 +746,10 @@ fn 点名取到不计() {
     ];
     let r = 跑(走链, CompanionMode::Same, 0.5, &选出, 带画像());
     assert_eq!(r.outcome.unsure_default[0]["fetched"], json!(["过往合作"]));
-    assert_eq!(r.outcome.named_unfetchable, Json::Null, "{:?}", r.outcome.named_unfetchable);
+    assert_eq!(
+        r.outcome.named_unfetchable,
+        Json::Null,
+        "{:?}",
+        r.outcome.named_unfetchable
+    );
 }

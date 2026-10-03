@@ -8,7 +8,7 @@
 mod common;
 
 use common::run;
-use jpp::effects::{CalibStore, FixedPorts, FnPort, JudgeResult, Ports, Profile};
+use jpp::effects::{CalibStore, FixedPorts, JudgeResult, Ports, Profile};
 use jpp::interp::{ActionRegistry, Passes};
 use jpp::ledger::{Entry, Ledger};
 use jpp::value::{Answer, Mat, Op, Question, State};
@@ -148,13 +148,11 @@ fn d_别的统计量不借认证线() {
     assert_eq!(照常.kind, "at(2)", "记录能用：{:?}", 照常.exits);
     assert_ne!(照常.exits[0]["grade"], "Cold");
     // B187（批 9 第 3 格）：`expect` 上没有现成的回答，不写线是缺分档参数（形状错）
-    let e = 跑(&单切(四档, r#", {stat: "expect"}"#), a.clone(), &c)
-        .err()
-        .expect("expect 不写线该报错");
+    let e =
+        跑(&单切(四档, r#", {stat: "expect"}"#), a.clone(), &c).expect_err("expect 不写线该报错");
     assert!(e.contains("E-cut-options") && e.contains("declare"), "{e}");
     let e = 跑(&单切(四档, r#", {stat: "confidence"}"#), a.clone(), &c)
-        .err()
-        .expect("confidence 不写线该报错");
+        .expect_err("confidence 不写线该报错");
     assert!(e.contains("E-cut-options"), "{e}");
     // B187（批 9 第 2 格）：`mass` 不写线按概率和的多数块走（0.97 + 0.03 = 1.0 > 0.5 → act），等级 Answer，不查记录
     let o = 跑(&单切(四档, r#", {stat: {mass: [2, 3]}}"#), a, &c).unwrap();
@@ -270,8 +268,7 @@ handle(e, {{
         Answer::Score(vec![0.1, 0.2, 0.6, 0.1]),
         &CalibStore::new(),
     )
-    .err()
-    .expect("运行期按出口种类取臂");
+    .expect_err("运行期按出口种类取臂");
     assert!(
         e.contains("J-05") && e.contains("at 型") && e.contains("缺分支 at"),
         "{e}"
@@ -291,8 +288,7 @@ handle(e, {{
         Answer::Choice(vec![0.3, 0.25, 0.4, 0.05]),
         &CalibStore::new(),
     )
-    .err()
-    .expect("test 型出口缺 act / ignore");
+    .expect_err("test 型出口缺 act / ignore");
     assert!(e.contains("J-05") && e.contains("test 型"), "{e}");
 }
 
@@ -412,9 +408,7 @@ fn i_画像未测报取不到() {
         }
     }
     assert!(jpp::check(&p).find("E-stat-unavailable").is_none());
-    let e = 跑(&src, Answer::Noul(0.8), &CalibStore::new())
-        .err()
-        .expect("非固定端口没有 confidence");
+    let e = 跑(&src, Answer::Noul(0.8), &CalibStore::new()).expect_err("非固定端口没有 confidence");
     assert!(e.contains("E-stat-unavailable"), "{e}");
 }
 

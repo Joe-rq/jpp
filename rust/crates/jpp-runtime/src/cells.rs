@@ -12,10 +12,10 @@ use jpp_cell::{
     Attempt, CellGraph, CellValue, CodeStep, Ctx, DebtTok, JudgeSeen, PState, UnsureCause,
 };
 use jpp_ir::cell_key::{MethodIdentity, code_cell_key};
-use jpp_value::value::ident_cache;
 use jpp_ir::cell_key::{ProgramIdentity, effect_cell_key, judge_cell_key, program_cell_key};
 use jpp_ir::key::CacheKey;
 use jpp_ledger::PermMeasure;
+use jpp_value::value::ident_cache;
 
 /// 一道题第一次有答案时记下的东西（同运行复用要照抄：复用条目的 `reused_from` 是第一次那条的账本键）。
 pub(crate) struct 判断答 {
@@ -369,7 +369,8 @@ impl<'a> Interp<'a> {
         if !open || self.拟合中 > 0 {
             return None;
         }
-        let Some(captured) = self.单元捕获指纹(&c.env, &referenced_names(&c.function), 3) else {
+        let Some(captured) = self.单元捕获指纹(&c.env, &referenced_names(&c.function), 3)
+        else {
             self.单元.as_mut().unwrap().计.不可键 += 1;
             return None;
         };
@@ -415,14 +416,21 @@ impl<'a> Interp<'a> {
 
     /// 值的内容哈希（实参与记忆值；附录二 A2.2）：见 [`值哈希_用`]；函数值的捕获指纹按 [`Interp::单元捕获指纹`]（深度 3）。
     fn 值哈希(&self, v: &Value) -> Option<String> {
-        值哈希_用(v, &|c| self.单元捕获指纹(&c.env, &referenced_names(&c.function), 3))
+        值哈希_用(v, &|c| {
+            self.单元捕获指纹(&c.env, &referenced_names(&c.function), 3)
+        })
     }
 
     /// 代码单元键的捕获指纹（附录四）：遍历的名字、跳过与「不可键」的条件与 `env_fingerprint` 逐条相同（内置跳过；
     /// 未取回的生成、读数、出口、惰性出口、责任、状态、题 → 不可键；函数值递归），每个值用按身份缓存的 [`值哈希_用`]；
     /// 里面嵌着算不出哈希的东西（如列表里的读数）时退回规范 JSON（与 `env_fingerprint` 同口径，慢但罕见）。
     /// `env_fingerprint` 本身不改：它还给 `transform` 的效应键用，改它会动账本键。
-    fn 单元捕获指纹(&self, env: &Env, names: &BTreeSet<String>, depth: u32) -> Option<String> {
+    fn 单元捕获指纹(
+        &self,
+        env: &Env,
+        names: &BTreeSet<String>,
+        depth: u32,
+    ) -> Option<String> {
         let mut parts: Vec<String> = vec![];
         for n in names {
             let Some(v) = env_lookup(env, n) else {
@@ -434,7 +442,8 @@ impl<'a> Interp<'a> {
                     if depth == 0 {
                         return None;
                     }
-                    let inner = self.单元捕获指纹(&c.env, &referenced_names(&c.function), depth - 1)?;
+                    let inner =
+                        self.单元捕获指纹(&c.env, &referenced_names(&c.function), depth - 1)?;
                     parts.push(format!("{n}=fn:{}:{inner}", c.hash));
                 }
                 Value::Gen(g) if g.value().is_none() => return None,
@@ -450,12 +459,15 @@ impl<'a> Interp<'a> {
                         Value::Gen(g) => g.value().and_then(|x| self.值哈希(&x)),
                         x => self.值哈希(x),
                     };
-                    let h = 内容.unwrap_or_else(|| hash_of(&["cell/json", &canon(&other.to_json())]));
+                    let h =
+                        内容.unwrap_or_else(|| hash_of(&["cell/json", &canon(&other.to_json())]));
                     parts.push(format!("{n}={h}"));
                 }
             }
         }
-        Some(hash_of(&parts.iter().map(|s| s.as_str()).collect::<Vec<_>>()))
+        Some(hash_of(
+            &parts.iter().map(|s| s.as_str()).collect::<Vec<_>>(),
+        ))
     }
 
     /// 对闭包的一次调用，经单元图（附录二 A2.3、A2.5）：成单元的调用按键记忆；同一趟内只有第一次求值足迹为空、

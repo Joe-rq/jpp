@@ -497,7 +497,10 @@ pub fn take_entry(args: &mut Vec<String>) -> Result<EntryFlags, String> {
     let mut i = 1;
     while i < args.len() {
         let flag = args[i].clone();
-        if !matches!(flag.as_str(), "--purpose" | "--mat" | "--mat-store" | "--env") {
+        if !matches!(
+            flag.as_str(),
+            "--purpose" | "--mat" | "--mat-store" | "--env"
+        ) {
             i += 1;
             continue;
         }

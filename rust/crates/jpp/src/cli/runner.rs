@@ -689,6 +689,9 @@ pub fn execute_with(
         report["improve"] = json!(outcome.improve);
     }
     // 超窗次数（Z0918）：画像测过窗口时出现（各项可为 0），没测时不出，默认输出逐字节不变
+    if outcome.site_key_fallback > 0 {
+        report["site_key_fallback"] = json!(outcome.site_key_fallback);
+    }
     if !outcome.named_unfetchable.is_null() {
         report["named_unfetchable"] = outcome.named_unfetchable.clone();
     }

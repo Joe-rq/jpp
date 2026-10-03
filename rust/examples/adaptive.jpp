@@ -32,7 +32,7 @@ fn step(s: Record) -> Record !{judge} {
 
 fn done(s: Record) -> Bool { s.hi - s.lo <= 1 || len(s.pending) > 0 }
 
-fn solve(input: Mat, method: Fn(Record) -> Record) -> Record !{judge} {
+fn solve(input: Mat, method: Fn(Record) -!{judge}-> Record) -> Record !{judge} {
     loop(10, {lo: 0, hi: 1000, material: input, evidence: [], pending: []}, fn(s, index) {
         let next = if done(s) { s } else { method(s) };
         if done(next) { stop(next) } else { next }

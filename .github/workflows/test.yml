@@ -16,17 +16,24 @@ jobs:
         working-directory: rust
   rust-checks:
     # 研究树 scripts/ci.sh 的公开子集（rust/scripts/ci_public.sh）：fmt、clippy、依赖表、行数与 grep 类检查、
-    # 发行画像核对、等价写法对，外加 GUIDE / README / METHODS 的代码片段与全部示例实跑。
-    # 报告模式：读数与基线比较后写进本次运行的摘要页，不使 CI 失败；转拦截按研究树 21 §九·1 逐项进行。
-    # Public subset of the research tree's scripts/ci.sh plus doc snippets and examples, in report mode.
-    name: rust-checks (report)
+    # 发行画像核对、等价写法对。文档片段与示例实跑另有阻断的 docs-and-examples 作业。
+    # 其中两项由 JPP_CI_GATE 挡：fmt（基线 0）、clippy（告警数不超基线）；
+    # 其余各项仍是报告模式，读数写进本次运行的摘要页，不使 CI 失败。
+    # JPP_CI_GATE 是总开关：report = 只报告，fail = 挡。研究树 fmt 清零并同步过来后（2026-10-03）已翻成 fail。
+    # Public subset of the research tree's scripts/ci.sh (the doc snippets and examples run in the blocking
+    # docs-and-examples job). Two checks are gated by JPP_CI_GATE (fmt at baseline 0, clippy not above baseline);
+    # the rest stay in report mode. JPP_CI_GATE is the master switch: report = report only, fail = block (flipped to fail on 2026-10-03, after the repository-wide rustfmt).
+    name: rust-checks
     runs-on: ubuntu-latest
     env:
       # fmt_clippy.py 按无颜色的短格式数 clippy 告警；工具链 action 默认打开颜色，会让计数归零。
       CARGO_TERM_COLOR: never
     steps:
       - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
+      # 挡 fmt 与 clippy 要固定工具链：基线按 1.96.0 记，浮动的 stable 一升级就会因新增 lint 无故变红。换版本时同步刷基线。
+      # fmt and clippy are gated, so the toolchain is pinned: baselines are recorded on 1.96.0 and a floating stable
+      # would turn CI red on new lints. Refresh the baselines when bumping.
+      - uses: dtolnay/rust-toolchain@1.96.0
         with:
           components: rustfmt, clippy
       - uses: actions/setup-python@v5
@@ -38,6 +45,53 @@ jobs:
         working-directory: rust
         env:
           JPP_CI_MODE: report
+          JPP_CI_GATE: fail
+  docs-and-examples:
+    # 阻断：GUIDE / README / examples/README / METHODS 里每一段代码（sh 片段后面贴的输出逐字核对）、
+    # tests/golden/manifest.json 登记的每个示例都实跑；任何一个跑不通，这个作业就红。
+    # `cargo test` 行记为跳过，因为 rust-source 作业已阻断地跑同一条全量测试（JPP_DOC_SKIP_TEST）。
+    # Blocking: every code block in the docs (and every output block pasted under a sh block, compared verbatim) and every
+    # example in tests/golden/manifest.json is run; if any fails, this job is red. `cargo test` lines are skipped here
+    # because rust-source already runs the same full test suite as a blocking step.
+    name: docs and examples
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      CARGO_TERM_COLOR: never
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: cargo fetch --locked
+        working-directory: rust
+      - run: python3 scripts/doc_snippets.py
+        working-directory: rust
+        env:
+          JPP_CI_MODE: fail
+          JPP_DOC_SKIP_TEST: '1'
+  install-smoke:
+    # 装机冒烟：像外人一样 `cargo install` 装出 jpp，到检出目录外用装出来的可执行文件跑 examples/README.md 的五条命令，
+    # 返回值与金样核对；任何一个跑不通就红。Ubuntu 与 macOS 各一次（macOS 上世界动作走系统沙箱，Linux 上没有）。
+    # Install smoke: `cargo install` jpp the way an outsider would and run the five commands of examples/README.md with the
+    # installed binary, comparing return values with the goldens; red if any fails. Ubuntu and macOS (the world action
+    # runs under the OS sandbox on macOS, without one on Linux).
+    name: install smoke (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: cargo install --locked --path rust/crates/jpp --root "$RUNNER_TEMP/jpp"
+      - run: python3 rust/scripts/examples_smoke.py --jpp "$RUNNER_TEMP/jpp/bin/jpp"
   offline:
     runs-on: ubuntu-latest
     strategy:

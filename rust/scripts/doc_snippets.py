@@ -4,10 +4,15 @@
 范围：
   - DOCS 里的 ```sh 片段：每段当一个 bash 脚本（set -e）在 rust/ 下跑，同一份文档的各段依次跑，
     前一段写出的文件后一段能读到；整份文档跑完删掉它新建的未跟踪文件。
-    ```jpp 片段写进 examples/ 下的临时文件，先 check 再 run。
+    ```jpp 片段写进 examples/ 下的临时文件，先 check 再 run。两种文档约定（与 scripts/guide_check.py 同一套）：
+    代码块前一行写 `<!-- 片段 -->` 的是示意片段，不是完整程序，不跑；代码块后一两行引用
+    `examples/guide/*.jpp` 的，只 check 被引用的那份文件（带夹具的运行与逐字核对归 guide_check.py）。
     ```json 片段先解析；带 observations 的当夹具喂给 examples/composition.jpp，核对夹具加载器收得下。
+    ```sh 片段后面（隔不超过两行）紧跟一个 ```output 片段的，把它当这段脚本的期望标准输出，逐字核对（去掉首尾空白）：
+    文档里贴的输出不会悄悄过期。片段里的 `jpp` 命令（装好的可执行文件）换成本次构建的 target/debug/jpp。
   - tests/golden/manifest.json 登记的每个示例：check 源文件，再按清单的 fixtures / calib / files /
-    resume_from 跑一次；登记为 expect=error 的必须失败。examples/ 下没登记的 .jpp 只 check 并列出来。
+    resume_from / args 跑一次；登记为 expect=error 的必须失败，且报出金样 stderr.txt 里的每个诊断码。
+    examples/ 下没登记的 .jpp 只 check 并列出来。
     逐字节比对金样与重放在 `cargo test -p jpp --test golden` 里做，这里不重复。
 
 跳过（逐行打印原因）：需要真机的行（`--features live` 构建、`--backend live` 调用），以及读这些行产物的行
@@ -15,6 +20,7 @@
 `./target/release/jpp` 换成本次构建的 `target/debug/jpp`；片段用到 `labels.jsonl` 而文件不存在时，
 取同一片段注释里给出的样例行写一份。同一条 cargo build / test / install 命令成功过一次就不再重跑。
 
+研究机上设 JPP_CARGO=scripts/cargoq 的绝对路径，让 cargo 经排队脚本跑。
 模式与 scripts/ci.sh 相同：JPP_CI_MODE=report（默认）只报告、退出 0；fail 时任一项未通过即退出 1。
 在 GitHub Actions 里另把结果表写进 $GITHUB_STEP_SUMMARY。
 """
@@ -29,10 +35,20 @@ import sys
 import tempfile
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-DOCS = ["GUIDE.md", "README.md", "METHODS-AND-LIFECYCLE.md", "METHODS-AND-LIFECYCLE.zh-CN.md"]
+DOCS = ["GUIDE.md", "README.md", "examples/README.md", "METHODS-AND-LIFECYCLE.md", "METHODS-AND-LIFECYCLE.zh-CN.md"]
 JPP = ROOT / "target" / "debug" / "jpp"
+GUIDE_DIR = ROOT / "examples" / "guide"
 MODE = os.environ.get("JPP_CI_MODE", "report")
+# 研究机上 cargo 要经 scripts/cargoq 排队：JPP_CARGO 指向它即可（构建与片段里的 cargo 行都走它）。
+# cargoq 自己再从 PATH 调真 cargo，所以这里只设变量、不改 PATH，不会递归。公开仓不设，直接用 cargo。
+CARGO = os.environ.get("JPP_CARGO", "cargo")
+# 一段 sh 片段的超时（秒）。cargo test 在研究机上要排队，默认 30 分钟不够时调大。
+TIMEOUT = int(os.environ.get("JPP_DOC_TIMEOUT", "1800"))
+# JPP_DOC_SKIP_TEST=1：片段里的 `cargo test` 行记为跳过。ci.sh 已在前一步跑过同一条全量测试，不再跑第二遍。
+SKIP_TEST = os.environ.get("JPP_DOC_SKIP_TEST") == "1"
 DEDUP = re.compile(r"^cargo (build|test|install)\b")
+FILE_REF = re.compile(r"examples/guide/([A-Za-z0-9_.\-]+\.jpp)")
+DIAG = re.compile(r":\d+:\d+: ([A-Za-z]+-[\w-]+):")
 
 results = []  # (状态, 位置, 说明)；状态 ∈ 通过 / 未通过 / 跳过
 
@@ -98,7 +114,7 @@ def flag_values(tokens, flags):
 
 def untracked():
     r = subprocess.run(["git", "ls-files", "--others", "--exclude-standard", "-z", "."],
-                       cwd=ROOT, capture_output=True, text=True)
+                       cwd=ROOT, capture_output=True, text=True, encoding="utf-8", errors="replace")
     return set(filter(None, r.stdout.split("\0"))) if r.returncode == 0 else None
 
 
@@ -115,8 +131,12 @@ def cleanup(before):
             parent.rmdir()
 
 
-def run_sh(where, lines, state):
+def run_sh(where, lines, state, expected=None):
     script, runnable, dedup = ["set -e"], 0, []
+    if CARGO != "cargo":
+        script.append(f'cargo() {{ {shlex.quote(CARGO)} "$@"; }}')
+    # 文档里的 `jpp` 是装好的可执行文件；这里换成本次构建的那一份（装机本身由 cargo install 那行与 CI 的装机冒烟作业核）
+    script.append(f'jpp() {{ {shlex.quote(str(JPP))} "$@"; }}')
     for line in logical(lines):
         s = line.strip()
         if not s or s.startswith("#"):
@@ -139,6 +159,9 @@ def run_sh(where, lines, state):
             state["skipped_out"] |= set(flag_values(tokens, {"--ledger-out", "--output", "--calib-out"}))
             record("跳过", where, f"{why}：{s}")
             continue
+        if SKIP_TEST and re.match(r"^cargo test\b", cmd):
+            record("跳过", where, f"调用方已跑过全量测试（JPP_DOC_SKIP_TEST=1）：{s}")
+            continue
         if DEDUP.match(cmd) and cmd in state["done"]:
             script.append(f"echo {shlex.quote('[已跑过] ' + cmd)}")
             continue
@@ -157,11 +180,20 @@ def run_sh(where, lines, state):
         return
     with tempfile.NamedTemporaryFile("w", suffix=".sh", delete=False, encoding="utf-8") as fh:
         fh.write("\n".join(script) + "\n")
-    r = subprocess.run(["bash", "-x", fh.name], cwd=ROOT, capture_output=True, text=True, timeout=1800)
+    try:
+        r = subprocess.run(["bash", "-x", fh.name], cwd=ROOT, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=TIMEOUT)
+    except subprocess.TimeoutExpired as e:
+        os.unlink(fh.name)
+        out = (e.stdout or b"") + (e.stderr or b"")
+        record("未通过", where, f"sh 超过 {TIMEOUT} 秒（JPP_DOC_TIMEOUT 可调）\n{tail(out.decode(errors='replace') if isinstance(out, bytes) else out)}")
+        return
     os.unlink(fh.name)
-    if r.returncode == 0:
+    if r.returncode == 0 and expected is not None and r.stdout.strip() != expected.strip():
+        record("未通过", where, "标准输出与文档里紧跟的 output 片段不一致\n--- 文档 ---\n" + tail(expected, 20)
+               + "\n--- 实际 ---\n" + tail(r.stdout, 20))
+    elif r.returncode == 0:
         state["done"].update(dedup)
-        record("通过", where, f"sh，{runnable} 条命令")
+        record("通过", where, f"sh，{runnable} 条命令" + ("，输出与文档一致" if expected is not None else ""))
     else:
         record("未通过", where, f"sh 退出 {r.returncode}\n{tail(r.stdout + r.stderr)}")
 
@@ -170,18 +202,30 @@ def run_jpp_source(where, path, expect_error=False):
     # 需要命令行给目的与材料的示例（examples/purpose-only.jpp）在旁边放同名 .args，check 时带上这些开关
     sidecar = path.with_suffix(".args")
     extra = shlex.split(sidecar.read_text(encoding="utf-8")) if sidecar.exists() else []
-    c = subprocess.run([str(JPP), "check", str(path), *extra], cwd=ROOT, capture_output=True, text=True)
+    c = subprocess.run([str(JPP), "check", str(path), *extra], cwd=ROOT, capture_output=True, text=True, encoding="utf-8", errors="replace")
     if expect_error:
         return c.returncode != 0, c.stderr
     return c.returncode == 0, c.stdout + c.stderr
+
+
+def guide_ref(text_lines, end_line):
+    """代码块结束围栏（1 起算的行号 end_line）之后一两行里引用的 examples/guide/*.jpp，没有则 None。
+    规则同 scripts/guide_check.py：中间出现不以全角或半角括号开头的非空行就不再找。"""
+    for k in range(end_line, min(end_line + 2, len(text_lines))):
+        m = FILE_REF.search(text_lines[k])
+        if m:
+            return m.group(1)
+        if text_lines[k].strip() and not text_lines[k].startswith(("（", "(")):
+            break
+    return None
 
 
 def run_jpp_block(where, lines, doc):
     tmp = ROOT / "examples" / f"_doc_snippet_{pathlib.Path(doc).stem}_{where.rsplit(':', 1)[1]}.jpp"
     tmp.write_text("\n".join(lines) + "\n", encoding="utf-8")
     try:
-        c = subprocess.run([str(JPP), "check", str(tmp)], cwd=ROOT, capture_output=True, text=True)
-        r = subprocess.run([str(JPP), "run", str(tmp)], cwd=ROOT, capture_output=True, text=True)
+        c = subprocess.run([str(JPP), "check", str(tmp)], cwd=ROOT, capture_output=True, text=True, encoding="utf-8", errors="replace")
+        r = subprocess.run([str(JPP), "run", str(tmp)], cwd=ROOT, capture_output=True, text=True, encoding="utf-8", errors="replace")
     finally:
         tmp.unlink()
     if c.returncode == 0 and r.returncode == 0:
@@ -202,7 +246,7 @@ def run_json_block(where, lines):
     with tempfile.NamedTemporaryFile("w", suffix=".json", delete=False, encoding="utf-8") as fh:
         json.dump(doc, fh, ensure_ascii=False)
     r = subprocess.run([str(JPP), "run", "examples/composition.jpp", "--fixtures", fh.name],
-                       cwd=ROOT, capture_output=True, text=True)
+                       cwd=ROOT, capture_output=True, text=True, encoding="utf-8", errors="replace")
     os.unlink(fh.name)
     if r.returncode == 0:
         record("通过", where, "json 夹具被 jpp run --fixtures 收下")
@@ -218,11 +262,27 @@ def docs():
         if not path.exists():
             continue
         before = untracked()
-        for lang, start, lines in blocks(path.read_text(encoding="utf-8")):
+        text = path.read_text(encoding="utf-8")
+        text_lines = text.splitlines()
+        all_blocks = blocks(text)
+        for bi, (lang, start, lines) in enumerate(all_blocks):
             where = f"{doc}:{start}"
             if lang in ("sh", "bash", "shell"):
-                run_sh(where, lines, state)
+                end = start + len(lines) + 1
+                nxt = all_blocks[bi + 1] if bi + 1 < len(all_blocks) else None
+                expected = "\n".join(nxt[2]) if nxt and nxt[0] == "output" and nxt[1] - end <= 3 else None
+                run_sh(where, lines, state, expected)
             elif lang == "jpp":
+                if start >= 2 and "<!-- 片段 -->" in text_lines[start - 2]:
+                    record("跳过", where, "示意片段（前一行标了 <!-- 片段 -->），不是完整程序")
+                    continue
+                ref = guide_ref(text_lines, start + len(lines) + 1)
+                if ref:
+                    ok, out = run_jpp_source(where, GUIDE_DIR / ref)
+                    record("通过" if ok else "未通过", where,
+                           f"引用 examples/guide/{ref}，只 check（运行与逐字核对归 guide_check.py）"
+                           + ("" if ok else f"\n{tail(out)}"))
+                    continue
                 run_jpp_block(where, lines, doc)
             elif lang == "json":
                 run_json_block(where, lines)
@@ -249,7 +309,7 @@ def examples():
             tmp.mkdir(parents=True)
             for fname, body in c.get("files", {}).items():
                 (tmp / fname).write_text(body, encoding="utf-8")
-            args = [str(JPP), "run", str(ROOT / src)]
+            args = [str(JPP), "run", str(ROOT / src), *c.get("args", [])]
             if c.get("fixtures"):
                 args += ["--fixtures", str(ROOT / c["fixtures"])]
             if c.get("calib") and not expect_error:
@@ -258,12 +318,18 @@ def examples():
                 args += ["--resume", str(base / c["resume_from"] / "ledger.json")]
             if not expect_error:
                 args += ["--ledger-out", "ledger.json", "--output", "report.json"]
-            r = subprocess.run(args, cwd=tmp, capture_output=True, text=True)
+            r = subprocess.run(args, cwd=tmp, capture_output=True, text=True, encoding="utf-8", errors="replace")
             if expect_error:
-                if r.returncode != 0:
-                    record("通过", f"{name}（{src}）", "按登记报错")
-                else:
+                golden = ROOT / "tests" / "golden" / name / "stderr.txt"
+                want = set(DIAG.findall(golden.read_text(encoding="utf-8"))) if golden.exists() else set()
+                got = set(DIAG.findall(r.stderr))
+                if r.returncode == 0:
                     record("未通过", f"{name}（{src}）", "登记为预期报错，却运行成功")
+                elif not want <= got:
+                    record("未通过", f"{name}（{src}）",
+                           f"报错码对不上：金样要 {sorted(want)}，实际 {sorted(got)}\n{tail(r.stderr)}")
+                else:
+                    record("通过", f"{name}（{src}）", "按登记报错" + (f"，诊断码 {sorted(want)}" if want else ""))
             elif r.returncode == 0:
                 status = json.loads((tmp / "report.json").read_text(encoding="utf-8")).get("status")
                 record("通过", f"{name}（{src}）", f"check 与 run，status={status}")
@@ -297,7 +363,7 @@ def summary():
 
 
 def main():
-    b = subprocess.run(["cargo", "build", "--locked", "-q", "-p", "jpp"], cwd=ROOT)
+    b = subprocess.run([CARGO, "build", "--locked", "-q", "-p", "jpp"], cwd=ROOT)
     if b.returncode != 0:
         sys.exit("cargo build -p jpp 失败")
     docs()

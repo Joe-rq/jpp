@@ -41,7 +41,11 @@ fn jpp(cwd: &Path, args: &[&str]) -> Output {
 }
 
 fn 有_python() -> bool {
-    Command::new("python3").arg("-c").arg("pass").output().is_ok_and(|o| o.status.success())
+    Command::new("python3")
+        .arg("-c")
+        .arg("pass")
+        .output()
+        .is_ok_and(|o| o.status.success())
 }
 
 /// 确定性小世界：计数器。`state` 为空时按 `reset` 开局；`inc` 加一、`dec` 减一、`stay` 不动；n 到 5 即结束。
@@ -167,12 +171,19 @@ fn 环境出错给失败值() {
         let d = 工作目录(mode);
         布置(&d);
         let o = 跑(&d, mode, &[]);
-        assert!(o.status.success(), "{mode}: {}", String::from_utf8_lossy(&o.stderr));
+        assert!(
+            o.status.success(),
+            "{mode}: {}",
+            String::from_utf8_lossy(&o.stderr)
+        );
         assert_eq!(值(&o)["open_failed"], true, "{mode}");
     }
     let d = 工作目录("unreg");
     布置(&d);
-    let o = jpp(&d, &["run", "p.jpp", "--json", "--env", "other=python3 x.py"]);
+    let o = jpp(
+        &d,
+        &["run", "p.jpp", "--json", "--env", "other=python3 x.py"],
+    );
     assert!(o.status.success(), "{}", String::from_utf8_lossy(&o.stderr));
     assert_eq!(值(&o)["open_failed"], true);
 }
@@ -193,7 +204,11 @@ fn 不守无状态的环境由重放比对报出() {
     let r = jpp(&d, &["run", "p.jpp", "--json", "--replay", "l.jsonl"]);
     assert!(r.status.success(), "{}", String::from_utf8_lossy(&r.stderr));
     assert_eq!(值(&r), 值(&a), "重放给出首跑记下的值");
-    assert_ne!(值(&b)["last"], 值(&a)["last"], "同输入第二次首跑输出不同：重放比对报出");
+    assert_ne!(
+        值(&b)["last"],
+        值(&a)["last"],
+        "同输入第二次首跑输出不同：重放比对报出"
+    );
 }
 
 /// `--env` 只收 run，名字不重
@@ -203,7 +218,17 @@ fn 登记开关() {
     布置(&d);
     let o = jpp(&d, &["check", "p.jpp", "--env", "w=python3 x.py"]);
     assert!(!o.status.success());
-    let o = jpp(&d, &["run", "p.jpp", "--env", "w=python3 x.py", "--env", "w=python3 y.py"]);
+    let o = jpp(
+        &d,
+        &[
+            "run",
+            "p.jpp",
+            "--env",
+            "w=python3 x.py",
+            "--env",
+            "w=python3 y.py",
+        ],
+    );
     assert!(!o.status.success());
     assert!(String::from_utf8_lossy(&o.stderr).contains("twice"));
 }

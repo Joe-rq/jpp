@@ -18,7 +18,7 @@ use common::run;
 use std::cell::RefCell;
 
 use jpp::ActionRegistry;
-use jpp::effects::{CalibStore, FnPort, JevClient, Ports};
+use jpp::effects::{CalibStore, JevClient, Ports};
 use jpp::ledger::Ledger;
 use jpp::{lower, syntax::parse};
 use serde_json::{Value as Json, json};

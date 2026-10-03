@@ -211,7 +211,7 @@ fn p16_失败轮也写交回余额() {
 }
 
 /// 五道题、程序声明 calls 100 的版本（P19）
-fn 五题(d: &PathBuf) {
+fn 五题(d: &std::path::Path) {
     let 题: Vec<String> = (0..5).map(|i| format!("判(\"材料{i}\")")).collect();
     let src = format!(
         "budget {{calls: 100, cost: 0, depth: 16}};\nfn 判(t) {{\n    let e = cut(judge(state(mat(t)), test(\"行吗\", \"k\")));\n    {{k: exit_kind(e), e: e}}\n}}\nlet rs = [{}];\n{{v: map(rs, fn(r) {{ r.k }}), pending: map(rs, fn(r) {{ r.e }})}}\n",
@@ -224,7 +224,7 @@ fn 五题(d: &PathBuf) {
     fs::write(d.join("fx5.json"), json!({"observations": obs}).to_string()).unwrap();
 }
 
-fn 余额文件(d: &PathBuf, name: &str, calls: u64) {
+fn 余额文件(d: &std::path::Path, name: &str, calls: u64) {
     fs::write(
         d.join(name),
         json!({"calls": calls, "cost": 0.0, "latency_p95": null, "escalate": 0, "hop": 0, "round": 0, "depth_cap": 256})

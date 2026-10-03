@@ -63,7 +63,7 @@ pub fn observations(l: &Ledger) -> Vec<Observation> {
 /// （有多条取最大）；没有这样的条目记 1（B59 无父为 1）。整组缺席时同组没有判断条目，记 1 是下界；
 /// 精确归跳要给 `Absent` 加字段（格式步），主会话 2026-09-24 定不走。
 pub fn depth_profile(l: &Ledger) -> Vec<(u32, u64, u64)> {
-    let mut hop_at: BTreeMap<(String, usize), u32> = BTreeMap::new();
+    let mut hop_at: BTreeMap<(String, jpp_ir::key::SiteRef), u32> = BTreeMap::new();
     let mut table: BTreeMap<u32, (u64, u64)> = BTreeMap::new();
     for e in &l.entries {
         if let Entry::Judge {
@@ -74,7 +74,7 @@ pub fn depth_profile(l: &Ledger) -> Vec<(u32, u64, u64)> {
         } = e
         {
             if let Some(k) = jkey {
-                let h = hop_at.entry((k.state.clone(), k.site)).or_insert(0);
+                let h = hop_at.entry((k.state.clone(), k.site.clone())).or_insert(0);
                 *h = (*h).max(*hop);
             }
             table.entry(*hop).or_default().0 += 1;
@@ -84,7 +84,7 @@ pub fn depth_profile(l: &Ledger) -> Vec<(u32, u64, u64)> {
         if let Entry::Absent { jkey, .. } = e {
             let hop = jkey
                 .as_ref()
-                .and_then(|k| hop_at.get(&(k.state.clone(), k.site)).copied())
+                .and_then(|k| hop_at.get(&(k.state.clone(), k.site.clone())).copied())
                 .unwrap_or(1);
             table.entry(hop).or_default().1 += 1;
         }

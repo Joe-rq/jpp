@@ -681,7 +681,8 @@ fn d1_替身判断器跑全部示例() {
     // 步 15h-1 新增金样用例 `gen-choose` 也调 gen，替身不生成，同 lifecycle 一类停下；
     // 步 25c 的三个 `search-*` 用例与步 25c-2 的 `search-rank` 的 propose 包 gen，同一类；
     // 批 8 T6 的 `tree-collab` 由 gen 生成题树，同一类；批 8 T1 的 `search-keep` 的 propose 包 gen，同一类；
-    // 步 26 的 `diag-runtime` 由 gen 出题，同一类；步 28 的 `derive-elicit` 由 gen 唤出候选题，同一类
+    // 步 26 的 `diag-runtime` 由 gen 出题，同一类；步 28 的 `derive-elicit` 由 gen 唤出候选题，同一类；
+    // 收尾③ 随仓示例 `purpose-run`（批量入口）由 gen 拆目的、出题，同一类（pkg-ex 加示例时漏列，B0630 车上补）
     assert_eq!(
         停名,
         vec![
@@ -689,6 +690,7 @@ fn d1_替身判断器跑全部示例() {
             "diag-runtime",
             "gen-choose",
             "lifecycle",
+            "purpose-run",
             "search-bound",
             "search-keep",
             "search-noshrink",
@@ -704,6 +706,7 @@ fn d1_替身判断器跑全部示例() {
     for g in [
         "gen-choose",
         "lifecycle",
+        "purpose-run",
         "search-bound",
         "search-keep",
         "search-noshrink",

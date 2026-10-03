@@ -91,7 +91,7 @@ fn a_首跑每键一条_同账本再跑逐字节不变() {
     let head: Value =
         serde_json::from_str(fs::read_to_string(&l1).unwrap().lines().next().unwrap()).unwrap();
     // C-1：账本升到 v4（v3 照读）
-    assert_eq!(head["version"], 5); // 步 34 V5 起 5
+    assert_eq!(head["version"], jpp::ledger::LEDGER_VERSION); // 步 34 V5 起 5，B0630 起 6
     assert!(
         head.get("calib_used").is_none()
             && head["header"]["compared"].get("calib_used_hash").is_none()

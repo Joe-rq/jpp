@@ -62,7 +62,7 @@ handle(cut(judge(state(mat("材料")), [test("甲行吗", "ka"), test("乙行吗
 }
 
 /// 写目录并按 CLI 同一个装载函数读回，取两键的 Σuᵢ（装载会按标注重算 unsure_rate，以读回的为准）。
-fn 目录与和(d: &PathBuf) -> f64 {
+fn 目录与和(d: &std::path::Path) -> f64 {
     jpp::store::calib::save(&记录本(&[("ka", 0.2), ("kb", 0.2)]), &d.join("calib")).unwrap();
     let s = jpp::store::calib::open(&d.join("calib")).unwrap();
     let 和 = s.unsure_rate("ka").unwrap() + s.unsure_rate("kb").unwrap();

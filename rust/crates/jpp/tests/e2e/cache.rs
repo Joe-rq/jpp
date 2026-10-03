@@ -300,8 +300,13 @@ const 一题: &str = "let e = cut(judge(state(mat(\"hello\")), test(\"行吗\", 
 fn f_cli_cache() {
     let d = 目录("cli");
     std::fs::write(d.join("p1.jpp"), format!("{预算}{一题}")).unwrap();
-    // 同一道题换个调用位置
-    std::fs::write(d.join("p2.jpp"), format!("{预算}let pad = 1;\n{一题}")).unwrap();
+    // 同一道题换个调用位置。B0630 起站点是结构化标识：只在前面加一行不改站点（`<main>:judge#1`），
+    // 所以把它挪进一个函数（`go:judge#1`），账本键才不同
+    std::fs::write(
+        d.join("p2.jpp"),
+        format!("{预算}fn go() {{\n{一题}}}\ngo()\n"),
+    )
+    .unwrap();
     std::fs::write(
         d.join("fx.json"),
         json!({"observations": [{"on": ["hello"], "op": "test", "text": "行吗", "calib": "k", "answer": {"Noul": 0.95}}]}).to_string(),
@@ -485,12 +490,4 @@ fn h_推测也查缓存() {
     );
     assert_eq!(c.requests["judge"], 0);
     assert_eq!(c.hits["judge"], 9);
-}
-/// 伴随题开关（B0492 S5，主控 2026-09-30 路 3）：与伴随题无关的测试显式关掉；`JPP_TEST_COMPANIONS=on` 整体开着跑
-fn 伴随() -> jpp::interp::CompanionMode {
-    if std::env::var("JPP_TEST_COMPANIONS").is_ok_and(|v| v == "on") {
-        jpp::interp::CompanionMode::Same
-    } else {
-        jpp::interp::CompanionMode::Off
-    }
 }

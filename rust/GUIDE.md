@@ -20,14 +20,15 @@ cargo run -p jpp -- run examples/adaptive.jpp \
 判断效应的程序（如 `composition.jpp`）。`--output` 落报告 JSON，`--ledger-out` 另落账本，
 `--replay <ledger.json>` 用账本重放（拒绝任何新调用）、`--resume <ledger.json>` 续跑。
 
-脱离本仓库单独安装：
+装成命令（放进 `~/.cargo/bin`，需要 Rust 1.85 以上）：
 
 ```sh
-cargo install --locked --path crates/jpp --root /tmp/jpp-native
-/tmp/jpp-native/bin/jpp run examples/composition.jpp
+cargo install --locked --path crates/jpp
+jpp run examples/composition.jpp
 ```
 
-装出来的可执行文件不需要 Python 或 Cargo；固定观察运行不需要账号、密钥或网络。
+装出来的可执行文件不需要 Python 或 Cargo；固定观察运行不需要账号、密钥或网络。它不带 `lib/` 与 `examples/`：程序按自己文件的位置找库，
+所以示例要在检出目录里跑。要装到别处加 `--root <目录>`，再用 `<目录>/bin/jpp` 调用（如果还装了本项目的 Python 包，那边的命令也叫 `jpp`）。
 
 ## 夹具（fixture）格式
 
@@ -116,7 +117,8 @@ cargo install --locked --path crates/jpp --root /tmp/jpp-native
 `parse_json`/`date_parse` 解析失败返回 `Fail`（`is_fail(v)` 判），不是运行期错误：
 
 ```jpp
-let v = parse_json(text);
+budget {calls: 0, cost: 0, depth: 1};
+let v = parse_json("{这不是 JSON");
 if is_fail(v) { "格式不对" } else { v.field }
 ```
 
@@ -172,6 +174,7 @@ if is_fail(v) { "格式不对" } else { v.field }
 
 **几道题的读数按自己的换算率合成一个分，再在分上写线**（声明式拟合，B153）：
 
+<!-- 片段 -->
 ```jpp
 let 匹配 = fn(a, b, c, d) { (0.4 * a.expect + 0.35 * b.expect + 0.25 * c.expect) / 3.0 * d.p };
 let s = fit({declare: 匹配}, [judge(st, 技能), judge(st, 经历), judge(st, 文化), judge(st, 在招)]);
@@ -182,6 +185,7 @@ handle(cut(s, {declare: {hi: 0.6}}), {…})
 
 推荐写法是两侧线加 unsure 臂转人工，读数落在两线之间的由人拍板：
 
+<!-- 片段 -->
 ```jpp
 handle(cut(judge(state(m), refund), {declare: {hi: 0.7, lo: 0.3}}), {
     act: fn() { 退款(chat) },
@@ -197,6 +201,7 @@ handle(cut(judge(state(m), refund), {declare: {hi: 0.7, lo: 0.3}}), {
 
 开 `--guard` 时，登记为不可逆的动作（CLI 的 `write_json`）只有在守卫里至少有一项来自**可信材料上、线放行的已决判断**，或来自 `ask` 时才执行。这份证据只在 `handle` 分派出口时产生：所选臂的守卫栈压上它，臂返回值里的每个 `Bool` 也带上它，经 `let`、字段、下标、函数返回原样带走；`&&` 保留两侧的证据，`||`、`!`、比较（`==`、`>` 等）和其他运算都不带；`if` 不把条件的证据传给分支里造出来的值；未决出口不给证据（B121）。三种写法：
 
+<!-- 片段 -->
 ```jpp
 // 逐项：do 写进臂里，每个动作由选出它的那次判断放行
 map(accepted(r), fn(e) { handle(e.exit, {act: fn() { do("write_json", ["out.json", e.item], 0) },
@@ -238,7 +243,7 @@ cargo build -p jpp --features live --release
 ```sh
 # labels.jsonl 每行：{"key": "cs-refund", "item": "c1", "p": 0.99,
 #                     "label": true, "source": "computed"}
-./target/release/jpp calib-import labels.jsonl --calib-out calib
+./target/release/jpp calib-import labels.jsonl --profile profiles/jev-1.13.0.json --calib-out calib
 ```
 
 **样本量**：默认 `--alpha 0.1 --conf-delta 0.1` 下，认证的每一侧（act 一侧、ignore

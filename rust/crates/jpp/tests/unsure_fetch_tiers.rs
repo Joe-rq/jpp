@@ -281,8 +281,7 @@ fn 没有opaque的旧账本_重放不带料库报e_replay() {
     let r = 跑("", None, None, &mut 旧, true);
     let e = r
         .outcome
-        .err()
-        .expect("旧账本重放取不到首跑取到的材料，报 E-replay");
+        .expect_err("旧账本重放取不到首跑取到的材料，报 E-replay");
     assert!(e.contains("E-replay") && e.contains("Z0494"), "{e}");
 }
 

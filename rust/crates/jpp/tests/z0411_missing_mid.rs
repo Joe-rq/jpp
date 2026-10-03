@@ -12,7 +12,7 @@ mod common;
 use std::cell::Cell;
 use std::path::PathBuf;
 
-use jpp::effects::{CalibStore, FnPort, JudgeResult, Ports, Profile};
+use jpp::effects::{CalibStore, JudgeResult, Ports, Profile};
 use jpp::interp::{ActionRegistry, TaintOut};
 use jpp::ledger::Ledger;
 use jpp::truth::{CertifyMethod, ImportOptions, LabelRow, import_labels};

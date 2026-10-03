@@ -1,2 +1,5 @@
 target/
 out/
+# 跑示例时在源文件旁自动写出的账本（运行产物，不入库；B0630 复核）
+examples/**/*.ledger.jsonl
+*.resumed.ledger.jsonl

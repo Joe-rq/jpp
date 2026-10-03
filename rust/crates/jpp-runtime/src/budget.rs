@@ -704,7 +704,7 @@ impl<'a> Interp<'a> {
 }
 
 /// 一组的代表成员（步 30）：有真站点成员取第一条真站点成员，只含推测的组取第一条成员
-fn 代表<'g>(g: &'g [PendingJudge]) -> &'g PendingJudge {
+fn 代表(g: &[PendingJudge]) -> &PendingJudge {
     g.iter().find(|p| !p.speculative).unwrap_or(&g[0])
 }
 

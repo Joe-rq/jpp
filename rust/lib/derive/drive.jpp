@@ -10,7 +10,8 @@
 //
 // 动作谓词：世界每步要一个动作，系统补一个 K 选一谓词「为了〈目的〉，下一步最该做的动作」，候选来源 process——
 // 每步由世界的 actions 给，进状态 over 槽；题面按守则组装（不唤出、不过闸门），所以题式跨步不变（同一个 form_hash）。
-// 这一步没有动作（判断器并列、缺席、默认链放弃）时取世界声明的空动作 idle，未决随返回值转交（不沿用上一步的动作，
+// 动作题到默认链末端仍拿不准（并列、默认链放弃、取不到）时按最后那次读数的最大项行动（裁定七十八：最大项仍是判断器的回答，
+// 只是偏好弱；空动作没人判过、世界对它还有代价），未决照转交。没有读数（缺席等）时取世界声明的空动作 idle（不沿用上一步的动作，
 // 也不静默若干步——那是作者的策略，不是语言的默认；跑偏第 10 条自查：理由是「这一步判断器没给回答」，不是不信任判断器）。
 //
 // 替代与放弃：每步重新出题（生成器调用随步数线性涨，T1 推翻条件）——放弃；动作谓词走唤出（生成器写题面、候选与世界
@@ -25,12 +26,21 @@
 //   env    宿主 --env 登记的世界名
 //   opts   {reset: [开局参数…]（每个一局，依次跑；缺省 [unit]）, play?: [局下标…]（只推进这几局，出题仍用全部开局观测；缺省全部）, bound?: 总步数上限（缺省 1000，含每局开局那一步）,
 //           elicit_n?, sample?（闸门样本数，缺省 = 开局数）, calib?}
-//   value  {rows: [{match, step, action, by: "judge" | "idle" | "excluded" | "no-candidates", fields, trust, excluded, hash}],
-//          by：judge 动作来自判断；idle 判断器这一步没给回答（并列、缺席、默认链放弃），未决有去向；
+//          另有四个开关只供对照臂用、不进 INTERFACE.md：tree（Z0913：narrow 缺省、ctx、off）、done（第四圈：off 缺省、on——
+//          完成条件进动作题语境、题树用带完成条件的 S′）、fallback（第四圈：end 缺省、ctx——缩小后为空时带 S 的回答在原集上再问）、
+//          reach（第五圈：off 缺省、on——done 为 on 时语境换成带可达条件的途径、题树用问「拿得到哪条」的 S″）
+//   value  {rows: [{match, step, action, by: "judge" | "top" | "idle" | "excluded" | "no-candidates", fields, trust, excluded, hash}],
+//          by：judge 动作来自判断；top 默认链末端仍拿不准、按最后那次读数的最大项行动（裁定七十八），未决照转交进 pending；
+//          idle 判断器这一步没给回答（缺席等没有读数的），未决有去向；
 //          excluded 前提判这一步不纳入（已决的 ignore，不是未决；过程入口不派生前提，只在 plan 带前提时出现）；no-candidates 世界这一步没给候选
 //           results: [{match, steps, result, hash}]}
 //   pending  出题时的未决（闸门、查题库、前提探测的缺席类）与每步的未决（pos = 全程步号）
-//   detail   {plan: 出题明细, reason: iterate 停的原因, rounds, error?}
+//   detail   {plan: 出题明细（含 tree 与 done：完成条件的计分途径、留空原因、S′；第五圈起另有可达条件、S″、归属标注）, reason: iterate 停的原因, rounds, error?}
+//
+// 计分途径（第三靶子第四圈预注册 §2.1，地基/规划/第三靶子-第四圈-预注册草稿.md；Jpp 10-02）：出题时规则材料经程序的
+// unsure_source 按「语境」取一次，生成器另行派生几条计分途径（purpose_done，明细 done.routes）；三臂都派生，done 为 on
+// 时才进动作题语境、题树才换成 S′。它不读抽模块给的 modules.done——那一样（结果里要有的字段，缺的补成字段谓词）在过程入口
+// 照第三圈的行为另外存在；两样并存，见守则 done_source 上的注释
 import "purpose.jpp";
 
 // 世界的一步结果 → 条目：观测进材料、候选进 over
@@ -44,6 +54,55 @@ fn drive_item_prev(w, prev) {
     else { {on: mat(w.obs), over: w.actions, ctx: mat({previous_action: prev, effect: w.effect})} }
 }
 
+// 完成条件进动作题语境（第三靶子第四圈预注册 §2.1，开关 done 为 on 时）：作单独一份材料排在 ctx 最前，每拍都在；
+// 原有的「上一步 + effect」那份不动（done 为 off 时条目与第三圈逐字相同）
+fn drive_item_done(item, dm) {
+    if dm == unit { item }
+    else { with(item, "ctx", if has(item, "ctx") { [dm, item.ctx] } else { [dm] }) }
+}
+
+// 完成条件的派生（第四圈 §2.1，Jpp 10-02）：规则材料经程序的 unsure_source 按类别（守则 done_source）取一次——库内部
+// unsure_fetch 只调程序注册的 fetch，不读别处、不缓存；取到后生成器派生一次（与步数无关，同键命中预跑缓存），
+// 输入只有目的、开局观测的字段名与规则原文。返回 {routes: [计分途径…], reach: [带可达条件的途径…], reach_missing: 没有任何条件的条数
+// （when、needs、cost 三项都空才算没有；代码复核 O3）,
+// rules: 规则材料 | unit, why: unit | 留空的原因}
+fn purpose_done(purpose, q, samples) {
+    let R = derive_rules();
+    let empty = fn(rules, why) { {routes: [], reach: [], reach_missing: 0, rules: rules, why: why} };
+    if len(samples) == 0 { empty(unit, "no-sample") } else {
+        let got = unsure_fetch(q, R.done_source, samples[0].on);
+        if is_fail(got) { empty(unit, "no-rules") } else {
+            let raw = gen(R.done_prompt(purpose, purpose_shape(samples)), [got], 1, 0);
+            let none = !is_fail(raw) && len(raw) == 0;
+            let sp = if is_fail(raw) { fail("生成失败") } else if none { fail("生成器没有给出计分途径") } else { derive_spec(raw[0]) };
+            let ok = !is_fail(sp) && starts_with(to_json(sp), "{") && has(sp, "routes") && starts_with(to_json(sp.routes), "[");
+            let reach = if ok { filter(map(sp.routes, fn(x) { done_route(x) }), fn(r) { r.route != "" }) } else { [] };
+            // 对照臂只用途径本身（与第四圈同一形状：文本列表）
+            let routes = map(reach, fn(r) { r.route });
+            let missing = len(filter(reach, fn(r) { r.when == "" && len(r.needs) == 0 && r.cost == "" }));
+            // 生成器回空（一项都没给）记 empty，与给了却解析不出（parse）分开（代码复核 O1）
+            if is_fail(raw) { empty(got, "gen-fail") }
+            else if none { empty(got, "empty") }
+            else if !ok { empty(got, "parse") }
+            else if len(routes) == 0 { empty(got, "empty") }
+            else { {routes: routes, reach: reach, reach_missing: missing, rules: got, why: unit} }
+        }
+    }
+}
+
+// 第五圈（预注册 §2.1）：一条途径规整成 {route, when, needs: [文本…], cost, from}。生成器给的是字符串时条件都空
+// （第四圈的写法）；对象缺的字段、null 记空文本，needs 给成一句文本时当一项
+fn done_str(x) { if x == unit { "" } else if starts_with(to_json(x), "\"") { trim(x) } else { trim(text(x)) } }
+fn done_route(x) {
+    if starts_with(to_json(x), "{") && has(x, "route") {
+        let f = fn(k) { if has(x, k) { done_str(x[k]) } else { "" } };
+        let needs = if !has(x, "needs") || x.needs == unit { [] }
+                    else if starts_with(to_json(x.needs), "[") { filter(map(x.needs, fn(n) { done_str(n) }), fn(n) { n != "" }) }
+                    else { filter([done_str(x.needs)], fn(n) { n != "" }) };
+        {route: f("route"), when: f("when"), needs: needs, cost: f("cost"), from: f("from")}
+    } else { {route: done_str(x), when: "", needs: [], cost: "", from: ""} }
+}
+
 fn purpose_plan(purpose, samples, opts0) {
     let R = derive_rules();
     let opts1 = if has(opts0, "sample") { opts0 } else { with(opts0, "sample", len(samples)) };
@@ -54,32 +113,136 @@ fn purpose_plan(purpose, samples, opts0) {
     let act = {id: "p" + text(len(h.preds)), text: R.purpose_act_pred(purpose), cut: "k_ary", cut_from: "system",
                over: [], over_from: "process", scale: [], scale_from: "none", request: "one", field: fname, warn: [], added: "process"};
     let preds = if len(filter(h.preds, fn(p) { p.over_from == "process" })) > 0 { h.preds } else { append(h.preds, act) };
+    // Z0913：子题 S 作为一个系统谓词排在动作谓词之后，与别的谓词一起唤出、过闸门（动作题的 id、字段、题式不变）；
+    // 出题后从逐步要判的题里拿掉，只挂在动作题上
+    let tfield = R.tree_s_field;
+    // S 唤出时另给动作题题面与候选的形状（预注册 §2.1，O7）：取开局第一份观测里世界给的动作名单
+    let actp = filter(preds, fn(p) { p.over_from == "process" })[0];
+    let shape = if len(samples) > 0 && has(samples[0], "over") { to_json(samples[0].over) } else { "[]" };
+    let tp = {id: "p" + text(len(preds)), text: R.tree_s_pred(purpose), cut: "k_ary", cut_from: "system",
+              over: [], over_from: "system", scale: [], scale_from: "none", request: "one", field: tfield, warn: [], added: "tree",
+              hint: R.tree_s_hint(R.assemble_text("k_ary", actp.text), shape)};
     // 前提≠证据（derive-15 起）：K 选一谓词的候选交给派生；候选来自过程的（每步由世界给）出题时还不知道，不交
     let pre = if len(samples) == 0 || !R.premise_process { unit } else {
         purpose_premises(purpose, map(preds, fn(p) { p.text }), samples, opts,
                          map(filter(preds, fn(p) { len(p.over) > 0 }), fn(p) { {field: p.field, over: p.over} }))
     };
-    let Q = purpose_qs(preds, samples, opts, h.info0);
+    let Q0 = purpose_qs(append(preds, tp), samples, opts, h.info0);
+    let ti = len(preds);
+    let sq = Q0.qs[ti];
+    // S 的硬门槛：K 选一、候选至少两个；唤不出或被闸门拒掉时题树留空，原因进明细（中间判断就是取不到，落到末端取最大项）
+    let s_ok = sq.q != unit && sq.op == "select" && len(sq.over) >= 2;
+    let mode = if has(opts0, "tree") { opts0.tree } else { "narrow" };
+    let narrow = derive_form("test", R.tree_narrow_template, {lacks: []}, opts);
+    // 第四圈 4.e（开关 fallback 只供对照臂：end 缺省、ctx）：缩小后为空时带 S 的回答在原集上再问；缺省时规格与第三圈逐字相同
+    let fallback = if has(opts0, "fallback") { opts0.fallback } else { "end" };
+    let tree_of = fn(q, over) {
+        let t0 = {s: q, s_over: over, narrow: narrow, ctx_tpl: R.tree_ctx, mode: mode};
+        if fallback == "end" { t0 } else { with(t0, "fallback", fallback) }
+    };
+    let tree0 = if s_ok { tree_of(sq.q, sq.over) } else { unit };
+    let tree_why0 = if s_ok { unit } else if sq.q == unit { "s-not-elicited" } else if sq.op != "select" { "s-not-select" } else { "s-over<2" };
+    // 第四圈 §2.1：完成条件（三臂都派生，开关 done 决定用不用）。规则材料取的时候给动作题（默认链取语境时也是这道题）
+    let ai = fold(derive_idx(preds), -1, fn(b, i) { if b < 0 && preds[i].over_from == "process" { i } else { b } });
+    let dn = purpose_done(purpose, Q0.qs[ai].q, samples);
+    let done = if has(opts0, "done") { opts0.done } else { "off" };
+    // 带完成条件的子题 S′：另一个系统谓词、另一次唤出与闸门（不与 S 同组过闸门，S 的出题与第三圈相同）；完成条件留空时不唤出
+    let tp2 = {id: "p" + text(len(preds) + 1), text: R.tree_s_pred_done(purpose), cut: "k_ary", cut_from: "system",
+               over: [], over_from: "system", scale: [], scale_from: "none", request: "one", field: R.tree_s_done_field, warn: [], added: "tree",
+               hint: R.tree_s_hint(R.assemble_text("k_ary", actp.text), shape) + R.tree_s_hint_done(dn.routes),
+               gen_ctx: if dn.rules == unit { [] } else { [dn.rules] }};
+    let Q2 = if dn.why == unit { purpose_qs([tp2], samples, opts, h.info0) } else { unit };
+    let sq2 = if Q2 == unit { unit } else { Q2.qs[0] };
+    let s2_ok = sq2 != unit && sq2.q != unit && sq2.op == "select" && len(sq2.over) >= 2;
+    let s2_why = if s2_ok { unit } else if sq2 == unit { "done-empty" } else if sq2.q == unit { "s-not-elicited" }
+                 else if sq2.op != "select" { "s-not-select" } else { "s-over<2" };
+    // done 为 on：动作题挂 S′ 的题树（S′ 没出来时题树留空，原因进明细）；off：挂 S 的（与第三圈同）
+    // 第五圈（预注册 §2.1，开关 reach 只供对照臂：off 缺省、on）：带可达条件的子题 S″——又一个系统谓词、又一次唤出与闸门，
+    // 唤出补充在 S 的补充之后加带可达条件的途径，规则原文作生成器的材料；三臂都派生（同一份出题预跑），reach 决定用不用
+    let reach = if has(opts0, "reach") { opts0.reach } else { "off" };
+    let rtext = join(map(dn.reach, fn(r) { R.reach_text(r) }), "；");
+    let tp3 = {id: "p" + text(len(preds) + 2), text: R.tree_s_pred_reach(purpose), cut: "k_ary", cut_from: "system",
+               over: [], over_from: "system", scale: [], scale_from: "none", request: "one", field: R.tree_s_reach_field, warn: [], added: "tree",
+               hint: R.tree_s_hint(R.assemble_text("k_ary", actp.text), shape) + R.tree_s_hint_reach(rtext),
+               gen_ctx: if dn.rules == unit { [] } else { [dn.rules] }};
+    let Q3 = if dn.why == unit { purpose_qs([tp3], samples, opts, h.info0) } else { unit };
+    let sq3 = if Q3 == unit { unit } else { Q3.qs[0] };
+    let s3_ok = sq3 != unit && sq3.q != unit && sq3.op == "select" && len(sq3.over) >= 2;
+    let s3_why = if s3_ok { unit } else if sq3 == unit { "done-empty" } else if sq3.q == unit { "s-not-elicited" }
+                 else if sq3.op != "select" { "s-not-select" } else { "s-over<2" };
+    // S″ 的候选归属由生成器标注一次（第四圈教训：二元组规则鉴别力弱）：每个候选一个整数，0 = 对应不上任何一条途径
+    let lab = if s3_ok { purpose_reach_labels(dn.routes, sq3.over) } else { {labels: [], why: "no-s"} };
+    // done 为 on：reach 为 on 时挂 S″ 的题树、off 时挂 S′ 的（S′、S″ 没出来时题树留空，原因进明细）；done 为 off：挂 S 的（与第三圈同）
+    let tree = if done == "on" {
+        if reach == "on" { if s3_ok { tree_of(sq3.q, sq3.over) } else { unit } } else { if s2_ok { tree_of(sq2.q, sq2.over) } else { unit } }
+    } else { tree0 };
+    let tree_why = if done == "on" { if reach == "on" { s3_why } else { s2_why } } else { tree_why0 };
+    let Q = with(with(Q0, "qs", slice(Q0.qs, 0, ti)), "live", filter(Q0.live, fn(i) { i != ti }));
     // 前提的样本探测在出题时结算：过程每步的判断站点与探测不同键，探测出口没有后续承担者（判过而拿不准的 drop，缺席类转交）
     let probe = if pre == unit { [] } else { premise_settle(fold(pre.premises, [], fn(acc, p) { concat(acc, p.probe_pending) })) };
-    let pend = concat(concat(carry([], Q.g.pending, "purpose:gate"),
-                             carry([], fold(Q.bank, [], fn(acc, b) { if has(b, "pend") { concat(acc, b.pend) } else { acc } }), "purpose:bank")),
+    let bank2 = concat(if Q2 == unit { [] } else { Q2.bank }, if Q3 == unit { [] } else { Q3.bank });
+    let gpend2 = concat(if Q2 == unit { [] } else { Q2.g.pending }, if Q3 == unit { [] } else { Q3.g.pending });
+    let pend = concat(concat(carry([], concat(Q.g.pending, gpend2), "purpose:gate"),
+                             carry([], fold(concat(Q.bank, bank2), [], fn(acc, b) { if has(b, "pend") { concat(acc, b.pend) } else { acc } }), "purpose:bank")),
                       concat(if has(h.info0, "extra_pending") { h.info0.extra_pending } else { [] },
                              carry([], concat(if pre == unit { [] } else { pre.carry }, probe), "premise-probe")));
-    {purpose: purpose, preds: preds, qs: Q.qs, live: Q.live, pre: pre, act_field: fname, pending: pend,
-     evidence: concat(filter(concat(map(Q.bank, fn(b) { b.key }), h.info0.alias_keys), fn(k) { k != unit }), Q.g.evidence),
+    // 裁定七十八：只给系统补的动作题（字段 fname）打 end_top——过程入口每拍必须交一个动作，末端仍拿不准时按最大项行动；
+    // 过程里别的 K 选一题（模块抽出的、Z0913 的子题）不打，末端照旧留空
+    // Z0913：动作题另挂题树规格（开关 tree 只供 3g.tc、3g.z″ 两个对照臂用：narrow 缺省、ctx、off；不进 INTERFACE.md）
+    let qs = map(Q.qs, fn(x) { if x.field == fname { with(with(x, "end_top", true), "tree", tree) } else { x } });
+    {purpose: purpose, preds: preds, qs: qs, live: Q.live, pre: pre, act_field: fname, pending: pend,
+     // reach 为 on 时语境换成带可达条件的那一份；途径留空或 S″ 没出来时语境也不加
+     done_ctx: if done == "on" && dn.why == unit { if reach == "on" { if s3_ok { R.reach_ctx(rtext) } else { unit } } else { R.done_ctx(dn.routes) } } else { unit },
+     evidence: concat(concat(filter(concat(map(concat(Q.bank, bank2), fn(b) { b.key }), h.info0.alias_keys), fn(k) { k != unit }), Q.g.evidence),
+                      concat(if Q2 == unit { [] } else { Q2.g.evidence }, if Q3 == unit { [] } else { Q3.g.evidence })),
      detail: {version: R.version, entry: "process", modules: h.info0.modules, sources: h.info0.sources,
               preds: map(preds, fn(p) { {field: p.field, cut: p.cut, cut_from: p.cut_from, over_from: p.over_from} }),
               bank: map(Q.bank, fn(b) { if has(b, "hit") { {pred: b.pred, kind: b.kind, how: b.how, hit: b.hit} } else { {pred: b.pred, kind: b.kind, how: b.how} } }),
               elicit: {calls: len(Q.todo), rejected: Q.g.rejected}, gate_items: Q.gate_items,
               questions: map(Q.qs, fn(x) { {field: x.field, cut: x.cut, q: if x.q == unit { unit } else { x.q.text },
-                                            form: if x.q == unit { unit } else { x.q.hash }, op: x.op, from: x.from, over_from: x.over_from} }),
+                                            form: if x.q == unit { unit } else { x.q.hash }, op: x.op, from: x.from, over_from: x.over_from,
+                                            lacks: if x.q == unit { [] } else { x.q.lacks }} }),
               premise: if pre == unit { unit } else {
                   {derived: pre.derived, passed: map(pre.premises, fn(x) { x.q }), code: map(pre.code, fn(c) { {q: c.q, spec: c.spec} }),
                    rejected: pre.rejected, dropped: pre.dropped, rounds: pre.rounds, reason: pre.reason} },
+              tree: {mode: mode, fallback: fallback, used: if done == "on" { if reach == "on" { "s_reach" } else { "s_done" } } else { "s" },
+                     s: if s_ok { sq.q.text } else { unit }, s_form: if s_ok { sq.q.hash } else { unit },
+                     s_over: if s_ok { sq.over } else { [] }, narrow: narrow.template, narrow_form: narrow.hash, why: tree_why},
+              // 第四圈：完成条件与 S′（三臂都派生；why 是留空的原因：no-rules 取不到规则材料、gen-fail、parse、empty）。
+              // 规则材料只记哈希与长度，不把原文放进明细（程序看得见的地方不留取来的材料）
+              done: {mode: done, source: R.done_source, routes: dn.routes, why: dn.why,
+                     rules_hash: if dn.rules == unit { unit } else { dn.rules.hash },
+                     rules_len: if dn.rules == unit { 0 } else { len(text(content(dn.rules))) },
+                     s_done: if s2_ok { sq2.q.text } else { unit }, s_done_form: if s2_ok { sq2.q.hash } else { unit },
+                     s_done_over: if s2_ok { sq2.over } else { [] }, s_done_why: s2_why,
+                     s_done_rejected: if Q2 == unit { [] } else { Q2.g.rejected },
+                     // 第五圈：带可达条件的途径（reach 是规整后的列表；reach_missing 是没有任何条件的条数）、S″ 与归属标注
+                     reach_mode: reach, reach: dn.reach, reach_missing: dn.reach_missing,
+                     s_reach: if s3_ok { sq3.q.text } else { unit }, s_reach_form: if s3_ok { sq3.q.hash } else { unit },
+                     s_reach_over: if s3_ok { sq3.over } else { [] }, s_reach_why: s3_why,
+                     s_reach_rejected: if Q3 == unit { [] } else { Q3.g.rejected },
+                     labels: lab.labels, labels_why: lab.why},
               warnings: fold(preds, [], fn(acc, p) { concat(acc, p.warn) }),
               // 抽模块失败或一个谓词都没抽出（只剩系统补的动作谓词）时记下原因
               error: if len(h.preds) == 0 { h.info0.error } else { unit }}}
+}
+
+// S″ 候选的归属标注（第五圈预注册 §2.1）：生成器一次给 {labels: [整数…]}，长度等于候选数、每个在 0..途径条数；
+// 不合格时 labels 留空、why 记原因（gen-fail、empty、parse、len、range）
+fn purpose_reach_labels(routes, over) {
+    let R = derive_rules();
+    let numbered = join(map(derive_idx(routes), fn(i) { text(i + 1) + ". " + routes[i] }), "；");
+    let raw = gen(R.reach_label_prompt(numbered, to_json(over)), [], 1, 0);
+    let none = !is_fail(raw) && len(raw) == 0;
+    let sp = if is_fail(raw) || none { unit } else { derive_spec(raw[0]) };
+    let ok = sp != unit && !is_fail(sp) && starts_with(to_json(sp), "{") && has(sp, "labels") && starts_with(to_json(sp.labels), "[");
+    let ints = ok && len(filter(sp.labels, fn(x) { !regex_match(to_json(x), "^[0-9]+$") })) == 0;
+    if is_fail(raw) { {labels: [], why: "gen-fail"} }
+    else if none { {labels: [], why: "empty"} }
+    else if !ok || !ints { {labels: [], why: "parse"} }
+    else if len(sp.labels) != len(over) { {labels: [], why: "len"} }
+    else if len(filter(sp.labels, fn(x) { x > len(routes) })) > 0 { {labels: [], why: "range"} }
+    else { {labels: sp.labels, why: unit} }
 }
 
 // 一步：前提先筛（代码一路零花费；判断类逐层，判过线的才往下，拿不准的存活并转交，同 select_material），再判全部活题、落字段
@@ -110,7 +273,8 @@ fn purpose_step(plan, item, pos) {
             purpose_land(acc0, qq, rs[k], item, pos, if qq.cut == "ordered" { purpose_rank(order([rs[k]]), 0) } else { 0 })
         });
         {fields: row.fields, trust: row.trust, pend: row.pend, dropped: row.dropped, excluded: false, premise: marks,
-         keys: concat(concat(pr.keys, map(rs, fn(r) { key_of(r) })), row.extra)}
+         keys: concat(concat(pr.keys, map(rs, fn(r) { key_of(r) })), row.extra),
+         topped: if has(row, "topped") { row.topped } else { [] }}
     }
 }
 
@@ -125,6 +289,7 @@ fn purpose_drive(purpose, env, opts) {
         let ws = map(opens, fn(o) { content(o) });
         let plan = purpose_plan(purpose, map(ws, fn(w) { drive_item(w) }), opts);
         let f = plan.act_field;
+        let dm = if plan.done_ctx == unit { unit } else { mat(plan.done_ctx) };
         // 这一趟走哪几局（下标指 reset 的位置）：出题用全部开局观测作样本，只推进 play 里的局。
         // 宿主可以一局一趟地跑、每局之间看花费决定跑不跑下一局（第三靶子附录 9.2），出题与一趟跑全部时相同
         let plays = if has(opts, "play") { opts.play } else { derive_idx(ws) };
@@ -139,11 +304,13 @@ fn purpose_drive(purpose, env, opts) {
                 // 世界这一步没给候选：不判，取空动作（by: no-candidates）
                 let none = len(acc.w.actions) == 0;
                 let row = if none { {fields: {}, trust: {}, pend: [], dropped: [], keys: [], excluded: false, premise: []} }
-                          else { purpose_step(plan, drive_item_prev(acc.w, acc.prev), acc.n) };
+                          else { purpose_step(plan, drive_item_done(drive_item_prev(acc.w, acc.prev), dm), acc.n) };
                 let picked = has(row.fields, f) && row.fields[f] != unit;
                 let a = if picked { row.fields[f] } else { acc.w.idle };
                 let o = do("env:step", [{env: env, state: acc.w.state, action: a}], 0);
-                let r = {match: plays[acc.k], step: acc.s, action: a, by: if picked { "judge" } else if none { "no-candidates" } else if row.excluded { "excluded" } else { "idle" },
+                let topped = if has(row, "topped") { contains(row.topped, f) } else { false };
+                let r = {match: plays[acc.k], step: acc.s, action: a,
+                         by: if picked && topped { "top" } else if picked { "judge" } else if none { "no-candidates" } else if row.excluded { "excluded" } else { "idle" },
                          fields: row.fields, trust: row.trust,
                          excluded: row.excluded, hash: if has(acc.w, "hash") { acc.w.hash } else { unit }};
                 let acc2 = with(with(with(with(with(with(acc, "rows", append(acc.rows, r)), "pend", concat(acc.pend, row.pend)),

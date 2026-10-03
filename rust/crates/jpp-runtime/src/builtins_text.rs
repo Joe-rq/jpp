@@ -186,9 +186,7 @@ impl<'a> Interp<'a> {
         let parts = if sep.is_empty() {
             chars_list(&s)
         } else {
-            s.split(sep.as_ref())
-                .map(|p| Value::text(p))
-                .collect::<Vec<_>>()
+            s.split(sep.as_ref()).map(Value::text).collect::<Vec<_>>()
         };
         Ok(Value::list(parts).with_prov(&join_args(&args)))
     }

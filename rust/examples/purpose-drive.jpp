@@ -1,0 +1,13 @@
+// 过程入口（purpose_drive）：按步出题。世界每一步给一份观测和几个可选动作，语言每步判断下一步做什么。
+//
+// 目的由 --purpose 给，世界由 --env 登记（worlds/walk.py，相对本文件所在目录：数轴上的点从 0 出发，走到目标为止）。
+// 题只出一次（生成器调用数与步数、局数无关），每步只判断：世界给的候选动作进状态的候选槽，判断器选一个，世界照着走一步。
+// 这里开两局：目标在 3、目标在 -2。每局的每一步记在 value.rows（动作、谁定的、观测），每局的结果记在 value.results。
+// 固定观察的读数与生成器输出是合成的，只检查构造，不代表模型表现。重建夹具：python3 examples/fixtures/build-fixtures.py
+import "../lib/derive/drive.jpp";
+budget {calls: 2000, cost: 0, depth: 8192};
+
+let r = purpose_drive(purpose, "walk", {reset: [3, -2], bound: 40});
+{rows: map(r.value.rows, fn(x) { {match: x.match, step: x.step, action: x.action, by: x.by} }),
+ results: r.value.results,
+ pending: r.pending}

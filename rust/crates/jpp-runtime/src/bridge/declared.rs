@@ -127,7 +127,8 @@ impl<'a> Interp<'a> {
         if let Value::Exit(e) = &出口
             && 用线
         {
-            self.note_declared(&key, sp.start, line, stat);
+            let site = self.站点(sp);
+            self.note_declared(&key, site, line, stat);
             let 等级 = if 改选.is_some() {
                 LineGrade::Answer
             } else {
@@ -447,13 +448,8 @@ impl<'a> Interp<'a> {
         });
         let mut row = 基本;
         if let (true, Some(l), Some(v)) = (用线, &line, 值) {
-            self.note_declared_with(
-                &key,
-                sp.start,
-                l,
-                &Stat::Max,
-                Some((&s.fit_hash, &s.inputs)),
-            );
+            let site = self.站点(sp);
+            self.note_declared_with(&key, site, l, &Stat::Max, Some((&s.fit_hash, &s.inputs)));
             e.grade.set(Some(LineGrade::Declared));
             let 接受 = self.entry.accept.declared_lines;
             e.host_accepts_declared.set(接受);
@@ -509,7 +505,7 @@ impl<'a> Interp<'a> {
     pub(crate) fn note_declared(
         &mut self,
         key: &str,
-        site: usize,
+        site: SiteRef,
         line: &DeclaredLine,
         stat: &Stat,
     ) {
@@ -520,7 +516,7 @@ impl<'a> Interp<'a> {
     pub(crate) fn note_declared_with(
         &mut self,
         key: &str,
-        site: usize,
+        site: SiteRef,
         line: &DeclaredLine,
         stat: &Stat,
         拟合: Option<(&str, &[String])>,
@@ -609,7 +605,8 @@ impl<'a> Interp<'a> {
     /// 声明，按有计，零误报）。本趟走到过的站点已在 [`Self::note_declared`] 比过，这里跳过。
     pub(crate) fn 声明站点核对(&mut self, program: &jpp_ir::ir::Program) {
         use jpp_ir::ir::{Host, Node};
-        let mut 可能有声明: HashSet<usize> = HashSet::new();
+        // B0630：站点按本趟键法比（结构化标识或旧账本的字节偏移），记录里的 `site` 数与串都认
+        let mut 声明span: Vec<Span> = vec![];
         jpp_ir::ir::walk(&program.body, &mut |e| {
             if let Node::Cut { rest, .. } = &e.node {
                 let 有 = rest.iter().any(|a| match &a.node {
@@ -618,10 +615,14 @@ impl<'a> Interp<'a> {
                     _ => true,
                 });
                 if 有 {
-                    可能有声明.insert(e.span.start);
+                    声明span.push(e.span);
                 }
             }
         });
+        let 可能有声明: HashSet<String> = 声明span
+            .into_iter()
+            .map(|sp| self.站点(sp).to_string())
+            .collect();
         let 旧: Vec<(String, Json)> = self
             .ledger
             .view()
@@ -633,7 +634,10 @@ impl<'a> Interp<'a> {
             .map(|(k, v)| (k.clone(), v["record"].clone()))
             .collect();
         for (_, r) in 旧 {
-            let site = r["site"].as_u64().unwrap_or_default() as usize;
+            let site = match &r["site"] {
+                Json::String(s) => s.clone(),
+                other => other.as_u64().unwrap_or_default().to_string(),
+            };
             if !可能有声明.contains(&site) {
                 // 依据：B142 (3)
                 self.trace.warn(format!(

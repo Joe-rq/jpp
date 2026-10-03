@@ -131,7 +131,11 @@ pub fn follow_answer_delta(a: &Answer, mode_share: Option<f64>, delta: Option<f6
                 let mut s = v.clone();
                 s.sort_by(|x, y| y.partial_cmp(x).unwrap_or(std::cmp::Ordering::Equal));
                 // 与 order 并档同一容差比较（BOUNDARY_EPS 吸收两位小数读数的浮点误差）
-                if s[0] - s[1] <= d + crate::stat::BOUNDARY_EPS { tie() } else { ExitKind::Pick(k) }
+                if s[0] - s[1] <= d + crate::stat::BOUNDARY_EPS {
+                    tie()
+                } else {
+                    ExitKind::Pick(k)
+                }
             }
             (k, _) => k.map_or_else(tie, ExitKind::Pick),
         },
@@ -389,11 +393,14 @@ mod answer_route_tests {
 
     /// Z0912（裁定七十二 (2)）：没有线的 K 选一，前两项差不超过画像中段 δ 即并列；δ 未知或为 0 时照改前（恰好相等才并列）
     #[test]
-    fn 选择题没线_前两项差在中段δ内为并列() {
+    fn 选择题没线_前两项差在中段delta内为并列() {
         let tie = ExitKind::Unsure(Why::of(UnsureCause::Tie));
         let v = Answer::Choice(vec![0.30, 0.22, 0.48]);
         // 0.48 − 0.30 = 0.18 > 0.0971：照最大项
-        assert_eq!(follow_answer_delta(&v, None, Some(0.0971)), ExitKind::Pick(2));
+        assert_eq!(
+            follow_answer_delta(&v, None, Some(0.0971)),
+            ExitKind::Pick(2)
+        );
         let w = Answer::Choice(vec![0.30, 0.22, 0.38]);
         // 0.38 − 0.30 = 0.08 ≤ 0.0971：并列
         assert_eq!(follow_answer_delta(&w, None, Some(0.0971)), tie);
@@ -404,11 +411,25 @@ mod answer_route_tests {
         assert_eq!(follow_answer_delta(&w, None, None), ExitKind::Pick(2));
         assert_eq!(follow_answer_delta(&w, None, Some(0.0)), ExitKind::Pick(2));
         // 是非题、程度题不受影响
-        assert_eq!(follow_answer_delta(&Answer::Noul(0.55), None, Some(0.2)), ExitKind::Act);
-        assert_eq!(follow_answer_delta(&Answer::Score(vec![0.3, 0.36, 0.34]), None, Some(0.2)), ExitKind::At(1));
+        assert_eq!(
+            follow_answer_delta(&Answer::Noul(0.55), None, Some(0.2)),
+            ExitKind::Act
+        );
+        assert_eq!(
+            follow_answer_delta(&Answer::Score(vec![0.3, 0.36, 0.34]), None, Some(0.2)),
+            ExitKind::At(1)
+        );
         // decide 的没线分支用上 δ
-        let i = CutInput { fail: None, absent: None, line: None, cost_requested: false, alpha_requested: false,
-                           answer: Some(w.clone()), delta: Some(0.0971), mode_share: None };
+        let i = CutInput {
+            fail: None,
+            absent: None,
+            line: None,
+            cost_requested: false,
+            alpha_requested: false,
+            answer: Some(w.clone()),
+            delta: Some(0.0971),
+            mode_share: None,
+        };
         assert_eq!(decide(&i).0, tie);
     }
 

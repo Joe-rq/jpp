@@ -22,8 +22,7 @@ fn 跑(体: &str) -> Result<Outcome, String> {
 #[test]
 fn deadline出口不能drop() {
     let e = 跑("let u = unsure(\"deadline\");\nconsume(u, \"drop\");\n1\n")
-        .err()
-        .expect("E-drop-unobserved");
+        .expect_err("E-drop-unobserved");
     assert!(e.contains("E-drop-unobserved"), "{e}");
     // 对照：判过而拿不准的可以放弃
     跑("let u = unsure(\"tie\");\nconsume(u, \"drop\");\n1\n")

@@ -51,6 +51,7 @@ pub const BUILTINS: &[&str] = &[
     // J-05 默认链（B0492 S2）
     "refine",
     "unsure_source",
+    "unsure_fetch",
     "allocate",
     "unsure_bound",
     "agg",

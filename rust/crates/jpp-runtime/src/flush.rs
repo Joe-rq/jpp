@@ -500,30 +500,30 @@ impl<'a> Interp<'a> {
             }
         }
         // **时延预算已用完**（B32）：之后的判断站点转 `Unsure(latency)`，不静默继续，也不再发
-        if let Some(lim) = self.budget.latency_p95 {
-            if self.latency_spent > lim {
-                self.记缺席(
-                    &items,
-                    "latency",
-                    site,
-                    format!("时延预算 {lim}s 已用完（已用 {:.2}s）", self.latency_spent),
-                    0,
-                );
-                return Ok(发出前::跳过);
-            }
+        if let Some(lim) = self.budget.latency_p95
+            && self.latency_spent > lim
+        {
+            self.记缺席(
+                &items,
+                "latency",
+                site,
+                format!("时延预算 {lim}s 已用完（已用 {:.2}s）", self.latency_spent),
+                0,
+            );
+            return Ok(发出前::跳过);
         }
         // **熔断**（B32）：连续缺席到上限后不再发
-        if let Some(pol) = self.budget.absent.clone() {
-            if self.consecutive_absent >= pol.breaker {
-                self.缺席处置(
-                    &items,
-                    &pol,
-                    site,
-                    format!("熔断：连续缺席 {} 次", self.consecutive_absent),
-                    0,
-                )?;
-                return Ok(发出前::跳过);
-            }
+        if let Some(pol) = self.budget.absent.clone()
+            && self.consecutive_absent >= pol.breaker
+        {
+            self.缺席处置(
+                &items,
+                &pol,
+                site,
+                format!("熔断：连续缺席 {} 次", self.consecutive_absent),
+                0,
+            )?;
+            return Ok(发出前::跳过);
         }
         // 审计重放：首跑没发过的推测登记照样不发（首跑可能因预算丢掉了它们）
         if self.audit.on && only_speculative {
@@ -701,7 +701,7 @@ impl<'a> Interp<'a> {
             let 用时 = 起.elapsed().as_secs_f64();
             self.latency_spent += 用时;
             if let Err(e) = &结果
-                && !(隐含 && !e.is_network())
+                && (!隐含 || e.is_network())
             {
                 self.consecutive_absent += 1;
                 self.缺席处置(
@@ -747,7 +747,7 @@ impl<'a> Interp<'a> {
         // 第一条判断条目上，其余记 0，按条目相加即得实际花费；同调用号（`call`）的条目仍标 `merged_by: fuse`，
         // 按调用号去重的读者取最大值（`调用费`）。均摊会让「按调用号取首条」的读者（审计重放、契约 `spent`、
         // 案例 05 build-demo）少算，且与旧账本（每条整次费用）无法用同一条规则读，所以不均摊
-        for (idx, ((q, r, key), a)) in items.iter().zip(res.answers.into_iter()).enumerate() {
+        for (idx, ((q, r, key), a)) in items.iter().zip(res.answers).enumerate() {
             let (条目tokens, 条目费用) = if idx == 0 {
                 (res.tokens, res.cost)
             } else {
@@ -869,19 +869,19 @@ impl<'a> Interp<'a> {
             }
         }
         // **超时站点**（B32）：这一次调用把累计时延推过预算，本组题转 `Unsure(latency)`（答案已记账，但不采信）
-        if let Some(lim) = self.budget.latency_p95 {
-            if self.latency_spent > lim {
-                self.记缺席(
-                    &items,
-                    "latency",
-                    site,
-                    format!(
-                        "本次调用后累计时延 {:.2}s 超过预算 {lim}s",
-                        self.latency_spent
-                    ),
-                    0,
-                );
-            }
+        if let Some(lim) = self.budget.latency_p95
+            && self.latency_spent > lim
+        {
+            self.记缺席(
+                &items,
+                "latency",
+                site,
+                format!(
+                    "本次调用后累计时延 {:.2}s 超过预算 {lim}s",
+                    self.latency_spent
+                ),
+                0,
+            );
         }
         // 实际费用高于调用前的估计时，停的是**下一步**：下一组发出前的核对发不起就停发（B93）
         Ok(())

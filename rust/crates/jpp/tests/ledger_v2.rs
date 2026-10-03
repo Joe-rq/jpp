@@ -72,7 +72,10 @@ fn 链断拒绝() {
 fn 未知字段拒绝() {
     let text = 样本().encode();
     // 账本 v3（步 18a）：版本号随格式改为 3；v4（C-1）改为 4
-    let bad = text.replacen("\"version\":5,", "\"version\":5,\"extra\":1,", 1); // 步 34 V5 起 5
+    // 步 34 V5 起 5；B0630 起 6：按当前版本号拼，免得版本一升这一行什么也不替换
+    let v = format!("\"version\":{},", jpp::ledger::LEDGER_VERSION);
+    let bad = text.replacen(&v, &format!("{v}\"extra\":1,"), 1);
+    assert_ne!(bad, text, "头行确实多了一个字段");
     let e = Ledger::decode(&bad).expect_err("头行多一个字段要被拒");
     assert!(e.starts_with("E-ledger-corrupt"), "{e}");
 }

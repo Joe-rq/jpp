@@ -15,6 +15,8 @@
 #      和包着 cargoq 的 test-companions-on（公开仓直接用 cargo；开伴随题跑全量设 JPP_TEST_COMPANIONS=on）。
 #   3. 可移植改写（PORT）：测试里指向研究工作区 `foundation/` 的路径改到本仓的 `src/foundation/`，
 #      读未公开运行目录的测试改读仓库内夹具。改写找不到原文时报错退出，提醒人工核对。
+# 4. 重排版：PORT 改写会把个别行拉长（例如 wiring.rs 的画像路径），同步末尾对 rust/ 跑一次 cargo fmt --all，
+#    让公开仓的 fmt 基线保持 0（有 cargo 才做）。
 # 跑完后在 rust/ 下执行 `cargo test --locked --workspace`，并用 `git status` 看清改动再提交。
 set -euo pipefail
 
@@ -32,7 +34,7 @@ KEEP=(
   /crates/jpp/tests/fixtures/
   /crates/jpp/tests/known_defects.rs
   /scripts/ci_public.sh
-  /scripts/doc_snippets.py
+  /scripts/baselines/clippy-linux.json
   /examples/purpose-only.jpp
   /examples/purpose-only.args
   /examples/purpose-only/
@@ -218,6 +220,11 @@ for f in root.rglob("*.jsonl"):
 if bad:
     sys.exit("发现人工抽检逐条标注，先加进 SKIP：" + ", ".join(bad[:10]))
 PY
+
+# 重排版（见头注 4）：PORT 改写后个别行变长，cargo fmt 只动这些行
+if command -v cargo >/dev/null 2>&1; then
+  (cd "$DEST" && cargo fmt --all)
+fi
 
 echo "已同步研究树 $commit → rust/"
 echo "Synced research-tree commit $commit into rust/"

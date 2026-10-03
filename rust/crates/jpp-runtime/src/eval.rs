@@ -72,7 +72,13 @@ impl<'a> Interp<'a> {
         span: Span,
     ) -> Value {
         // 方法身份：降级时按源码函数算好（口径与步 12c 前相同，账本键不变）
-        let hash = f.source_hash.clone();
+        // B0630：结构化键法取不含位置的 `shape_hash`（改注释、挪位置不变）；只凭账本重放旧账本取带位置的 `source_hash`
+        // （`shape_hash` 为空只出在不经降级手造的函数上，退回 `source_hash`，免得这类闭包共用一个空身份）
+        let hash = if self.结构化() && !f.shape_hash.is_empty() {
+            f.shape_hash.clone()
+        } else {
+            f.source_hash.clone()
+        };
         // B52（步 21）：记下创建时经捕获环境可达的未决责任；是不是 Fn¹ 由创建它的帧返回时判
         let captures = captured_duties(f, env);
         Value::Fn(Rc::new(Closure {
@@ -669,10 +675,16 @@ impl<'a> Interp<'a> {
         let 名 = c.name.clone().unwrap_or_else(|| "<fn>".into());
         // G2 附录三（Z0564）：欠账记号的帧主人带实参哈希，同一函数不同实参的两次调用记号不同。Z0882：等本帧第一次建出口
         // 时再算（值不可变，结果一样）；实参里有函数值时当场算——闭包的指纹带捕获环境的名字，环境之后可能长出新名字
-        let 主人 = if args.iter().any(|a| jpp_value::value::ident_cache::标记(a).有函数) {
+        let 主人 = if args
+            .iter()
+            .any(|a| jpp_value::value::ident_cache::标记(a).有函数)
+        {
             crate::帧主人::已算(format!("{名}#{}", crate::violation::实参哈希(&args)))
         } else {
-            crate::帧主人::待算 { 名: 名.clone(), 实参: args.clone() }
+            crate::帧主人::待算 {
+                名: 名.clone(),
+                实参: args.clone(),
+            }
         };
         let env = env_child(&c.env);
         for (p, a) in f.parameters.iter().zip(args) {

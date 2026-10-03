@@ -10,6 +10,27 @@ J++ 是一门正在开发的实验性编程语言。我们想让语义判断成�
 
 **现在可以直接写 `.jpp` 源码，用原生 Rust 程序检查并运行。** 函数、问题和组合方法交给同一个内核执行。此前的 Python 3.12 嵌入式实现保留为行为对照和实验工具。[Rust 安装与完整例子](rust/README.md) · [语言实现路线](docs/adr/0001-rust-kernel.md)。
 
+## 直接运行 J++ 源码
+
+需要 Rust 1.85 或更新。从 `rust/` 目录装出 `jpp` 命令，并在这个目录里运行程序（程序按自己文件的位置找库，装出来的命令不带库）：
+
+```sh
+git clone https://github.com/towow-ai/jpp.git
+cd jpp/rust
+cargo install --locked --path crates/jpp      # release 编译，约两分钟
+jpp run examples/composition.jpp 2>/dev/null | tail -n 5
+```
+
+最后一条打印 `"value": {"expected": 43, "result": 43}`：一个把两个小方法组合成新方法的程序。其余例子覆盖三种入口：**一句目的加一批条目**
+（`purpose_run`）、**不断变化的过程**（`purpose_drive`，配一个小世界）、**作者自己填模块**（`modules_run`），另有拿不准时补信息、按账本重放两个。
+五个例子都离线运行，用录好的答案，不花钱。[安装、例子与现在还不能做什么](rust/README.md) · [五个例子](rust/examples/README.md) ·
+[源码文法](rust/FRONTEND.md) · [与直接构造内核程序的等价对照](rust/COMPARISON.md)。
+
+CI 在干净的 Ubuntu 与 macOS 上装出 `jpp`、用装出来的程序跑这五个例子，并把文档里每一段代码（及贴在下面的输出）跑一遍、核对一遍；任何一个跑不通，CI 就红。
+
+构建时需要 Rust；安装后的原生程序无须 Python 或 Cargo。若同时安装了旧 Python
+版本，两者都叫 `jpp`，请使用原生程序的完整路径（`~/.cargo/bin/jpp`）区分。
+
 ## 我们最初感受到的直觉
 
 我们一直被算法的一种力量吸引：少量基本操作，经过合适的组织，可以处理令人惊讶的复杂问题。JEV 让我们想到，如果语义判断也能加入这些基本操作，与精确计算、搜索、生成和反馈结合，会出现什么？
@@ -27,25 +48,6 @@ J++ 是一门正在开发的实验性编程语言。我们想让语义判断成�
 [网络发现的下一步](docs/towow-discovery-roadmap.zh-CN.md)：定位候选入口与排序的漏失，整理旧通爻研究中可复用的语料、转介、多人组合和动态网络接口，提供零 API 费用的诊断脚本。
 
 [可续接的发现应用](https://towow-ai.github.io/jpp/demos/towow/teams/)用同一套 J++ 组合运行不同任务，并把两人提议重新输入，继续发现第三位成员。接口支持替换问题、路由与组合函数。[本轮实现与复现](docs/towow-discovery-iteration.zh-CN.md)保留三个合成样本真实运行、精确回放，以及没有改善结果的固定名额探索对照。当前交付为有界应用组件，尚未实现分布式发现网络。
-
-## 直接运行 J++ 源码
-
-```sh
-git clone https://github.com/towow-ai/jpp.git
-cd jpp/rust
-cargo build --locked --workspace
-cargo run -p jpp -- run examples/composition.jpp
-cargo run -p jpp -- run examples/adaptive.jpp --fixtures examples/fixtures/adaptive.json
-cargo run -p jpp -- run examples/partial.jpp --fixtures examples/fixtures/partial.json
-```
-
-三个程序分别展示：组合方法再参与组合；自己选择十道问题，在 1,000 个候选里找到
-731；先取得成本 9 的可用组合，再换一种策略继续问，得到成本 2 的方案，旧检查不
-重复做。算法写在 `.jpp` 源码中，运行器只提供固定观察和记录动作，本次不调用模型。
-[源码文法](rust/FRONTEND.md) · [与直接构造内核程序的等价对照](rust/COMPARISON.md)。
-
-构建时需要 Rust；安装后的原生程序无须 Python 或 Cargo。若同时安装了旧 Python
-版本，两者都叫 `jpp`，请使用原生程序的完整路径区分。
 
 ## 运行保留的 Python 对照
 

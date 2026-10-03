@@ -49,6 +49,7 @@ pub fn lower(program: &a::Program, names: &dyn NameTable) -> Result<Program, Vec
             span,
             entry: Default::default(),
             unsure_default_sites: Default::default(),
+            site_keys: Default::default(),
         }),
         Ok(_) => Err(cx.errors),
         Err(d) => Err(std::iter::once(d).chain(cx.errors).collect()),
@@ -234,6 +235,7 @@ impl Cx<'_> {
             effects: f.effects.clone(),
             body,
             source_hash: fn_hash::source_hash(f),
+            shape_hash: fn_hash::shape_hash(f),
         }
     }
 

@@ -280,6 +280,8 @@ impl<'a> Session<'a> {
         prog.entry = entry.clone();
         // 「无作者去向」站点（B0492 S4，供 S2c 的运行时默认链）：检查器算、写进 IR 的唯一写入处
         prog.unsure_default_sites = check::unsure_default_sites(&prog);
+        // 结构化站点表（B0630）：判断键与效应键的站点取它，写进 IR 的唯一写入处；lib 区间由 loader 填进表层程序
+        prog.site_keys = jpp_ir::site_key::site_keys(&prog, &p.lib_ranges);
         Ok(prog)
     }
 

@@ -145,7 +145,7 @@ fn 两个程序互调_账本拼成一棵树() {
     let ls = 四份(&c);
     // 每份账本每条条目都带追踪，且同一份账本里只有一段（预测 D9 的前提）
     for (n, l) in &ls {
-        assert!(l.len() >= 1, "{n}");
+        assert!(!l.is_empty(), "{n}");
         let t0 = l
             .trace_at(0)
             .unwrap_or_else(|| panic!("{n} 第 1 条没有 trace"));

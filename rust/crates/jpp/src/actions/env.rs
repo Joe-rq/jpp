@@ -22,7 +22,7 @@
 //! **推翻条件。** 有一个真实世界的状态不能整份序列化、又必须接进来时，改为有状态协议并另请裁定。
 
 use super::subprocess_util::run_subprocess;
-use super::{sandbox, Ctx};
+use super::{Ctx, sandbox};
 use crate::interp::json_to_value;
 use crate::value::Value;
 use serde_json::Value as Json;
@@ -85,7 +85,11 @@ pub(super) fn env_step(ctx: &Ctx, args: &[Value]) -> Result<Value, String> {
         已登记.sort();
         format!(
             "环境 {name} 没有登记。用 --env {name}=<命令> 登记；本次登记了：{}",
-            if 已登记.is_empty() { "（无）".to_string() } else { 已登记.join("、") }
+            if 已登记.is_empty() {
+                "（无）".to_string()
+            } else {
+                已登记.join("、")
+            }
         )
     })?;
     let (program0, rest) = argv.split_first().ok_or("登记的命令为空")?;
@@ -96,18 +100,32 @@ pub(super) fn env_step(ctx: &Ctx, args: &[Value]) -> Result<Value, String> {
     let call_dir = sandbox::new_call_dir("env")?;
     let (mut cmd, 沙箱) = sandbox::command(program, rest, &call_dir)?;
     // 相对路径的命令参数按程序文件所在目录解析（同 `read_json`）；程序在当前目录时 parent 是空路径，不改
-    if let Some(d) = ctx.program_dir.as_ref().filter(|d| !d.as_os_str().is_empty()) {
+    if let Some(d) = ctx
+        .program_dir
+        .as_ref()
+        .filter(|d| !d.as_os_str().is_empty())
+    {
         cmd.current_dir(d);
     }
     cmd.env("PYTHONDONTWRITEBYTECODE", "1");
-    let res = run_subprocess(cmd, &format!("{line}\n"), Duration::from_secs(ENV_STEP_TIMEOUT_S));
+    let res = run_subprocess(
+        cmd,
+        &format!("{line}\n"),
+        Duration::from_secs(ENV_STEP_TIMEOUT_S),
+    );
     let _ = std::fs::remove_dir_all(&call_dir);
     let r = res.map_err(|e| format!("{e}（环境：{name}；沙箱：{沙箱}）"))?;
     if r.timed_out {
         return Err(format!("环境 {name} 超时（{ENV_STEP_TIMEOUT_S} 秒）"));
     }
     if r.exit_code != Some(0) {
-        let tail: String = r.stderr.lines().rev().take(5).collect::<Vec<_>>().join(" | ");
+        let tail: String = r
+            .stderr
+            .lines()
+            .rev()
+            .take(5)
+            .collect::<Vec<_>>()
+            .join(" | ");
         return Err(format!(
             "环境 {name} 退出码 {:?}；stderr 末几行：{tail}",
             r.exit_code
@@ -119,8 +137,8 @@ pub(super) fn env_step(ctx: &Ctx, args: &[Value]) -> Result<Value, String> {
         .rev()
         .find(|l| !l.trim().is_empty())
         .ok_or_else(|| format!("环境 {name} 没有输出"))?;
-    let out: Json = serde_json::from_str(last)
-        .map_err(|e| format!("环境 {name} 的输出不是 JSON：{e}"))?;
+    let out: Json =
+        serde_json::from_str(last).map_err(|e| format!("环境 {name} 的输出不是 JSON：{e}"))?;
     check_contract(name, &out)?;
     Ok(json_to_value(&out))
 }
@@ -130,7 +148,11 @@ pub(super) fn check_contract(name: &str, out: &Json) -> Result<(), String> {
     let Json::Object(o) = out else {
         return Err(format!("环境 {name} 的输出要是记录"));
     };
-    let lack: Vec<&str> = REQUIRED.iter().copied().filter(|k| !o.contains_key(*k)).collect();
+    let lack: Vec<&str> = REQUIRED
+        .iter()
+        .copied()
+        .filter(|k| !o.contains_key(*k))
+        .collect();
     if !lack.is_empty() {
         return Err(format!("环境 {name} 的输出缺字段：{}", lack.join("、")));
     }
@@ -163,7 +185,8 @@ mod tests {
         assert!(check_contract("w", &ok).is_ok());
         let lack = serde_json::json!({"state": {}, "obs": {}, "actions": ["a"]});
         assert!(check_contract("w", &lack).unwrap_err().contains("idle"));
-        let bad = serde_json::json!({"state": {}, "obs": {}, "actions": "a", "idle": "a", "done": false});
+        let bad =
+            serde_json::json!({"state": {}, "obs": {}, "actions": "a", "idle": "a", "done": false});
         assert!(check_contract("w", &bad).is_err());
     }
 }

@@ -251,6 +251,7 @@ pub fn source(
     jpp::syntax::ast::Program {
         budget: b.as_ref().map(budget_expr),
         body: body(statements, result),
+        lib_ranges: vec![],
     }
 }
 
@@ -278,11 +279,10 @@ pub fn with_effects(p: &Program, name: &str, effects: &[&str]) -> (Program, jpp:
             function,
             span,
         } = s
+            && n == name
         {
-            if n == name {
-                function.effects = Some(effects.iter().map(|e| e.to_string()).collect());
-                at = Some(*span);
-            }
+            function.effects = Some(effects.iter().map(|e| e.to_string()).collect());
+            at = Some(*span);
         }
     }
     (

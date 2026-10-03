@@ -1,6 +1,6 @@
 // Independent source: methods are arguments and results.
 budget {calls: 0, cost: 0, depth: 256};
-fn compose_rules(f: Fn(Int) -> Int, g: Fn(Int) -> Int) -> Fn(Int) -> Int {
+fn compose_rules(f: Fn(Int) -!{}-> Int, g: Fn(Int) -!{}-> Int) -> Fn(Int) -!{}-> Int !{} {
     fn(x: Int) -> Int { g(f(x)) }
 }
 

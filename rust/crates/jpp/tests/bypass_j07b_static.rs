@@ -10,7 +10,7 @@ mod common;
 use std::cell::Cell;
 use std::rc::Rc;
 
-use jpp::effects::{CalibStore, FnPort, JudgeResult, Ports};
+use jpp::effects::{CalibStore, JudgeResult, Ports};
 use jpp::interp::JudgePrice;
 use jpp::ledger::Ledger;
 use jpp::store::CacheIndex;

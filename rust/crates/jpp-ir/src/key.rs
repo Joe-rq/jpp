@@ -89,7 +89,43 @@ impl Op {
 /// `test` 可带 `criteria: {true, false}`。只凭账本重放按账本头记的版本算键（`jpp-runtime` `Interp.render`）。
 pub const RENDER_VERSION: &str = "r2";
 
-/// 账本键。`site` 是**调用点**（`.jpp` 源码里的字节偏移），与 Python 的
+/// 判断键与效应键里的站点（B0630）。旧账本里是数（字节偏移），`key_version` `"1"` 起是串（结构化标识）。
+/// 读入两种都收；摘要按 `to_string()` 进键，`Offset(n)` 仍是十进制串，所以旧键逐字节不变。
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum SiteRef {
+    Offset(usize),
+    Path(String),
+}
+
+impl std::fmt::Display for SiteRef {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            SiteRef::Offset(n) => write!(f, "{n}"),
+            SiteRef::Path(s) => f.write_str(s),
+        }
+    }
+}
+
+impl From<usize> for SiteRef {
+    fn from(n: usize) -> SiteRef {
+        SiteRef::Offset(n)
+    }
+}
+
+impl From<String> for SiteRef {
+    fn from(s: String) -> SiteRef {
+        SiteRef::Path(s)
+    }
+}
+
+impl From<&str> for SiteRef {
+    fn from(s: &str) -> SiteRef {
+        SiteRef::Path(s.to_string())
+    }
+}
+
+/// 账本键（旧键法的公式，`key_version` 缺省）。`site` 是**调用点**（`.jpp` 源码里的字节偏移），与 Python 的
 /// `foundation/jv/store.py:26` 同一组成分——那边的 `site` 是「第一个不在 jv 包内的栈帧，
 /// `文件名:行号`，同程序重放时稳定」，这边用 `Span.start` 干同一件事。
 ///
@@ -155,7 +191,8 @@ pub struct JudgeKey {
     pub render: String,
     pub perm_seed: u64,
     pub run_seq: u64,
-    pub site: usize,
+    /// 调用点：旧账本是字节偏移，`key_version` `"1"` 起是结构化标识（B0630）
+    pub site: SiteRef,
 }
 
 impl JudgeKey {
@@ -166,7 +203,7 @@ impl JudgeKey {
         phys: &str,
         perm_seed: u64,
         run_seq: u64,
-        site: usize,
+        site: impl Into<SiteRef>,
     ) -> JudgeKey {
         JudgeKey {
             model_id: model_id.into(),
@@ -176,7 +213,7 @@ impl JudgeKey {
             render: RENDER_VERSION.into(),
             perm_seed,
             run_seq,
-            site,
+            site: site.into(),
         }
     }
     pub fn digest(&self) -> String {

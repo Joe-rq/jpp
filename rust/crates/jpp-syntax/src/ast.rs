@@ -10,6 +10,9 @@ pub struct Span {
 pub struct Program {
     pub budget: Option<Expr>,
     pub body: Block,
+    /// 标准库文件在全程序源码里的字节区间 `[起, 止)`（B0630）：loader 按 [`crate::loader::lib_rel`] 填，单文件解析为空。
+    /// 结构化站点表据此标出 lib 定义（库内部参数只认 lib 调用点）。
+    pub lib_ranges: Vec<(usize, usize)>,
 }
 
 #[derive(Clone, Debug, PartialEq)]

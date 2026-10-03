@@ -198,7 +198,10 @@ fn 伴随题开着_带内中性读数_照常补_补后成叶() {
         assert_eq!(x["refined"], json!([]), "{v}");
     }
     assert!(
-        r.out.unsure_default.iter().all(|u| u["fetched"] == json!(["材料"]) && u["end"] == "decided"),
+        r.out
+            .unsure_default
+            .iter()
+            .all(|u| u["fetched"] == json!(["材料"]) && u["end"] == "decided"),
         "{:?}",
         r.out.unsure_default
     );

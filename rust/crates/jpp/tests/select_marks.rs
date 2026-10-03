@@ -10,7 +10,7 @@ use std::path::{Path, PathBuf};
 use std::rc::Rc;
 use std::sync::atomic::{AtomicUsize, Ordering};
 
-use jpp::effects::{CalibStore, EffectError, FnPort, JudgeResult, NoCallPorts, Ports};
+use jpp::effects::{CalibStore, EffectError, JudgeResult, NoCallPorts, Ports};
 use jpp::interp::ActionRegistry;
 use jpp::ledger::{Entry, Ledger};
 use jpp::store::{DirBlob, FileMatStore, MemBlob};

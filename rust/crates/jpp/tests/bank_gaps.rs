@@ -188,11 +188,8 @@ impl Tree {
         let p = self.bank_dir().join("bank.json");
         let e = self.entry(slug);
         let from = e["status"].as_str().unwrap();
-        let s = fs::read_to_string(&p).unwrap().replacen(
-            &format!("\"slug\": \"{slug}\""),
-            &format!("\"slug\": \"{slug}\""),
-            1,
-        );
+        // 条目行在 bank.json 里整行是 `"slug": …, "op": …, "kind": …, "status": …`，按整行找、只改其中的 status
+        let s = fs::read_to_string(&p).unwrap();
         let old = format!(
             "\"slug\": \"{slug}\", \"op\": \"{}\", \"kind\": \"{}\", \"status\": \"{from}\"",
             e["op"].as_str().unwrap(),
