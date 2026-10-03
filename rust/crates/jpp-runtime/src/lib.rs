@@ -13,11 +13,11 @@ use jpp_effects::view::{self, Callee, K, kind};
 use jpp_effects::views::{CalibView, Lookup};
 use jpp_effects::views::{FitRecord, FitView};
 use jpp_ir::ir::{Block, Budget, Expr, Function, Program, Span, Stmt};
+use jpp_ir::key::SiteRef;
 use jpp_ledger::{
     AttemptRef, CalibRef, Durability, EffectKey, Entry, Header, HeaderCompare, JudgeKey,
     LedgerError, LedgerPort, MatMeta, RENDER_VERSION, SourceEdge, StopCause, Trace,
 };
-use jpp_ir::key::SiteRef;
 use jpp_value::value::*;
 
 pub const HANDLER_VERSION: &str = "h0.1-rs";

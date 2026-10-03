@@ -68,8 +68,14 @@ fn observations_match_runtime_evidence() {
     let mut l = Ledger::new();
     // B0630：有条目的账本要有头说明键法（没有头按旧键法算，续接报 E-key-version）；宿主预填时写一个结构化键法的头
     l.set_header(
-        jpp::ledger::Header::new(u64::MAX, f64::MAX, "fixed-0", jpp::ledger::RENDER_VERSION, "h")
-            .with_key_version(Some("1".into())),
+        jpp::ledger::Header::new(
+            u64::MAX,
+            f64::MAX,
+            "fixed-0",
+            jpp::ledger::RENDER_VERSION,
+            "h",
+        )
+        .with_key_version(Some("1".into())),
     );
     // 宿主手写的条目不是本次运行的观察
     l.put(Entry::judge(

@@ -36,7 +36,9 @@ fn 模块() -> Json {
 
 fn 生成(p: &str) -> Vec<Json> {
     if p.contains("字面前提题") {
-        补if_false(vec![json!({"op": "test", "text": "材料里写明了交付周期吗？"})])
+        补if_false(vec![
+            json!({"op": "test", "text": "材料里写明了交付周期吗？"}),
+        ])
     } else if p.starts_with("下面是一段目的") {
         vec![模块()]
     } else if p.contains("按期交付我们这份订单」") {

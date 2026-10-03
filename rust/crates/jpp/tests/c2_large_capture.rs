@@ -27,12 +27,16 @@ fn 入口(n: usize) -> EntryArgs {
     let items: Vec<_> = (0..n)
         .map(|i| json!({"id": i, "text": format!("第{i}条：{}", "问题描述".repeat(600))}))
         .collect();
-    EntryArgs { values: vec![EntryValue::new("items", json!(items))], ..Default::default() }
+    EntryArgs {
+        values: vec![EntryValue::new("items", json!(items))],
+        ..Default::default()
+    }
 }
 
 fn 跑(n: usize, cells: bool) -> (Outcome, f64) {
     let entry = 入口(n);
-    let program = Session::compile(&jpp::syntax::parse(程序).expect("解析"), &entry.decl()).expect("compile");
+    let program =
+        Session::compile(&jpp::syntax::parse(程序).expect("解析"), &entry.decl()).expect("compile");
     let calib = CalibStore::new();
     let acts = ActionRegistry::new();
     let t = Instant::now();
@@ -84,7 +88,6 @@ fn p4_大捕获慢路径线性() {
     }
 }
 
-
 /// P8（附录六）：`iterate` 的累积值逐步变长（每步 `append` 一行），单元图开着时每步只该哈希新节点。步数 50 与 200
 /// 的慢路径访问数之比，开、关单元图都 ≤ 5（修前开着每步把整份累积值逐元素重算，比约 16）。
 #[test]
@@ -107,9 +110,16 @@ len(r.value.rows)
             .with_cells(cells)
             .run(&program, &EntryArgs::default(), &mut Ledger::new())
             .unwrap_or_else(|e| panic!("{}", e.render()));
-        assert!(o.value_json().as_i64().is_some_and(|x| x >= 1), "{:?}", o.value_json());
+        assert!(
+            o.value_json().as_i64().is_some_and(|x| x >= 1),
+            "{:?}",
+            o.value_json()
+        );
         if cells {
-            assert!(o.cells.as_ref().is_some_and(|c| c.代码计算 > 0), "step 成了代码单元");
+            assert!(
+                o.cells.as_ref().is_some_and(|c| c.代码计算 > 0),
+                "step 成了代码单元"
+            );
         }
         慢路径访问数() - 前
     };

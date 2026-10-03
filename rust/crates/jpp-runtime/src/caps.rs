@@ -275,10 +275,11 @@ impl Cap<ExitRow> {
     /// 给出口在报告 `exits` 表里的那一行写元素编号（B120 (b)）；出口没有行（不来自 `cut`）则不写
     pub(crate) fn stamp_row(&self, it: &mut Interp, exit_id: usize, index: i64, pos: usize) {
         if let Some(&i) = it.exit_rows.get(&exit_id)
-            && let Some(row) = it.exit_grades.get_mut(i) {
-                row["index"] = serde_json::json!(index);
-                row["pos"] = serde_json::json!(pos);
-            }
+            && let Some(row) = it.exit_grades.get_mut(i)
+        {
+            row["index"] = serde_json::json!(index);
+            row["pos"] = serde_json::json!(pos);
+        }
     }
 }
 

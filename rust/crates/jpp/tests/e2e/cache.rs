@@ -302,7 +302,11 @@ fn f_cli_cache() {
     std::fs::write(d.join("p1.jpp"), format!("{预算}{一题}")).unwrap();
     // 同一道题换个调用位置。B0630 起站点是结构化标识：只在前面加一行不改站点（`<main>:judge#1`），
     // 所以把它挪进一个函数（`go:judge#1`），账本键才不同
-    std::fs::write(d.join("p2.jpp"), format!("{预算}fn go() {{\n{一题}}}\ngo()\n")).unwrap();
+    std::fs::write(
+        d.join("p2.jpp"),
+        format!("{预算}fn go() {{\n{一题}}}\ngo()\n"),
+    )
+    .unwrap();
     std::fs::write(
         d.join("fx.json"),
         json!({"observations": [{"on": ["hello"], "op": "test", "text": "行吗", "calib": "k", "answer": {"Noul": 0.95}}]}).to_string(),

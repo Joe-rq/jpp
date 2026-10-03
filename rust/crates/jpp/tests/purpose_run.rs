@@ -1106,7 +1106,11 @@ fn 目的明说候选_唤出可多一项兜底() {
     let 跑一次 = |over: Json, pick: usize| {
         let m = json!({"material": "供应商", "predicates": [{"text": "这家供应商最主要的短板", "cut": "k_ary", "over": ["甲", "乙", "丙"],
                        "cut_from": "purpose", "over_from": "purpose", "field": "weak"}], "done": ["weak"]});
-        let src = 程序_关键(2, 目的甲乙丙, "{value: map(r.value, fn(v) { v.fields }), detail: r.detail}");
+        let src = 程序_关键(
+            2,
+            目的甲乙丙,
+            "{value: map(r.value, fn(v) { v.fields }), detail: r.detail}",
+        );
         let r = 跑_按提示(&src, move |t, _q, s| {
             if t.contains("需要分别回答的判断") { Answer::Noul(0.1) }
             else if t.contains("这段材料里有没有") { Answer::Noul(0.9) }
@@ -1124,13 +1128,34 @@ fn 目的明说候选_唤出可多一项兜底() {
     let v = 跑一次(json!(["甲", "乙", "丙", "都不是"]), 3);
     assert_eq!(v["detail"]["fields_missing"], json!([]), "{v}");
     assert_eq!(v["detail"]["over_extra"][0]["field"], json!("weak"), "{v}");
-    assert_eq!(v["detail"]["over_extra"][0]["extra"], json!(["都不是"]), "{v}");
-    assert!(v["value"].as_array().unwrap().iter().all(|x| x["weak"] == json!("都不是")), "{v}");
+    assert_eq!(
+        v["detail"]["over_extra"][0]["extra"],
+        json!(["都不是"]),
+        "{v}"
+    );
+    assert!(
+        v["value"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .all(|x| x["weak"] == json!("都不是")),
+        "{v}"
+    );
     // 多出两项、缺一项：第⓪段拒，字段没题
-    for over in [json!(["甲", "乙", "丙", "丁", "戊"]), json!(["甲", "乙", "都不是"])] {
+    for over in [
+        json!(["甲", "乙", "丙", "丁", "戊"]),
+        json!(["甲", "乙", "都不是"]),
+    ] {
         let w = 跑一次(over.clone(), 0);
         assert_eq!(w["detail"]["fields_missing"], json!(["weak"]), "{over} {w}");
-        assert!(w["detail"]["elicit"]["rejected"].as_array().unwrap().iter().any(|x| x["codes"] == json!(["over-mismatch"])), "{w}");
+        assert!(
+            w["detail"]["elicit"]["rejected"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .any(|x| x["codes"] == json!(["over-mismatch"])),
+            "{w}"
+        );
         assert_eq!(w["detail"]["over_extra"], json!([]), "{w}");
     }
 }

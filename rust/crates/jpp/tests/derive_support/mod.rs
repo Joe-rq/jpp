@@ -358,7 +358,8 @@ pub fn 补if_false(v: Vec<Json>) -> Vec<Json> {
     v.into_iter()
         .map(|mut x| {
             if let Some(o) = x.as_object_mut() {
-                o.entry("if_false").or_insert(serde_json::json!({"falls_to": "unanswerable"}));
+                o.entry("if_false")
+                    .or_insert(serde_json::json!({"falls_to": "unanswerable"}));
             }
             x
         })

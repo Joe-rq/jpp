@@ -196,7 +196,13 @@ let e = cut(judge(state(mat("甲"), {over: [mat("a"), mat("b")]}), select("哪�
 let d = unsure_default(e, {end: "top"});
 {kind0: exit_kind(e), end: d.end, top: d.top, top_of: d.top_of}
 "#;
-    let 读 = |t: &str, _q: &Question, _s: &State| if t == "哪个" { Answer::Choice(vec![0.5, 0.5]) } else { Answer::Noul(0.5) };
+    let 读 = |t: &str, _q: &Question, _s: &State| {
+        if t == "哪个" {
+            Answer::Choice(vec![0.5, 0.5])
+        } else {
+            Answer::Noul(0.5)
+        }
+    };
     let e = 跑(src, 读, vec![]).err().expect("用户调用点不认");
     assert!(e.contains("E-rt-lib-only"), "{e}");
     let r = 跑_库(src, 读, vec![]).unwrap_or_else(|e| panic!("{e}"));
@@ -225,9 +231,17 @@ let d = unsure_default(e, {end: "top", tree: tree});
     let 读 = |t: &str, _q: &Question, s: &State| {
         if t == "哪个" {
             // 首问三项并列；缩小到 [a, c] 后再问选 c
-            if s.over.len() == 3 { Answer::Choice(vec![0.4, 0.4, 0.2]) } else { Answer::Choice(vec![0.1, 0.9]) }
+            if s.over.len() == 3 {
+                Answer::Choice(vec![0.4, 0.4, 0.2])
+            } else {
+                Answer::Choice(vec![0.1, 0.9])
+            }
         } else if t.contains("为什么拿不准") {
-            let k = s.over.iter().position(|m| m.content.as_str() == Some("中间判断")).unwrap_or(0);
+            let k = s
+                .over
+                .iter()
+                .position(|m| m.content.as_str() == Some("中间判断"))
+                .unwrap_or(0);
             let mut v = vec![0.0; s.over.len()];
             v[k] = 1.0;
             Answer::Choice(v)
@@ -263,10 +277,15 @@ let c = unsure_fetch("题", "参照", mat("甲"));
 let d = unsure_fetch("题", "材料", mat("甲"));
 {a: is_fail(a), b: content(b), c: content(c), d: is_fail(d)}
 "#;
-    let e = 跑_关(src, |_t, _q, _s| Answer::Noul(0.5), vec![]).err().expect("用户调用点不认");
+    let e = 跑_关(src, |_t, _q, _s| Answer::Noul(0.5), vec![])
+        .err()
+        .expect("用户调用点不认");
     assert!(e.contains("E-rt-lib-only"), "{e}");
     let r = 跑_关_库(src, |_t, _q, _s| Answer::Noul(0.5), vec![]).unwrap_or_else(|e| panic!("{e}"));
-    assert_eq!(r.out.value_json(), json!({"a": true, "b": "规则原文", "c": {"参照": "一段文字"}, "d": true}));
+    assert_eq!(
+        r.out.value_json(),
+        json!({"a": true, "b": "规则原文", "c": {"参照": "一段文字"}, "d": true})
+    );
 }
 
 /// 说明性断言（第四圈 4.e，照上一条）：tree 规格带 `fallback: "ctx"` 时，缩小后为空（三个候选都带外否）不落到末端，
@@ -289,9 +308,17 @@ let d = unsure_default(e, {{end: "top", tree: tree}});
     let 读 = |t: &str, _q: &Question, s: &State| {
         if t == "哪个" {
             // 首问三项并列；带了子题回答（ctx 非空）再问选 c
-            if s.ctx.is_empty() { Answer::Choice(vec![0.4, 0.4, 0.2]) } else { Answer::Choice(vec![0.1, 0.1, 0.8]) }
+            if s.ctx.is_empty() {
+                Answer::Choice(vec![0.4, 0.4, 0.2])
+            } else {
+                Answer::Choice(vec![0.1, 0.1, 0.8])
+            }
         } else if t.contains("为什么拿不准") {
-            let k = s.over.iter().position(|m| m.content.as_str() == Some("中间判断")).unwrap_or(0);
+            let k = s
+                .over
+                .iter()
+                .position(|m| m.content.as_str() == Some("中间判断"))
+                .unwrap_or(0);
             let mut v = vec![0.0; s.over.len()];
             v[k] = 1.0;
             Answer::Choice(v)
@@ -303,10 +330,18 @@ let d = unsure_default(e, {{end: "top", tree: tree}});
             Answer::Noul(0.5)
         }
     };
-    let e = 跑_关(&源(", fallback: \"ctx\""), 读, vec![]).err().expect("用户调用点不认");
+    let e = 跑_关(&源(", fallback: \"ctx\""), 读, vec![])
+        .err()
+        .expect("用户调用点不认");
     assert!(e.contains("E-rt-lib-only"), "{e}");
     let ctx = 跑_关_库(&源(", fallback: \"ctx\""), 读, vec![]).unwrap_or_else(|e| panic!("{e}"));
-    assert_eq!(ctx.out.value_json(), json!({"end": "decided", "kind": "pick(2)"}));
+    assert_eq!(
+        ctx.out.value_json(),
+        json!({"end": "decided", "kind": "pick(2)"})
+    );
     let end = 跑_关_库(&源(""), 读, vec![]).unwrap_or_else(|e| panic!("{e}"));
-    assert_eq!(end.out.value_json(), json!({"end": "top", "kind": "unsure(tie)"}));
+    assert_eq!(
+        end.out.value_json(),
+        json!({"end": "top", "kind": "unsure(tie)"})
+    );
 }

@@ -99,9 +99,10 @@ impl MatStorePort for FileMatStore {
         let _ = self.ensure_meta();
         let mut b = self.blob.borrow_mut();
         if !matches!(b.get(&key), Ok(Some(_)))
-            && let Ok(bytes) = serde_json::to_vec(m) {
-                let _ = b.put_atomic(&key, &bytes);
-            }
+            && let Ok(bytes) = serde_json::to_vec(m)
+        {
+            let _ = b.put_atomic(&key, &bytes);
+        }
         m.hash.clone()
     }
 

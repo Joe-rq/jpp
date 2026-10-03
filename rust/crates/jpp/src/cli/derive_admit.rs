@@ -255,9 +255,10 @@ pub fn run(args: &[String]) -> Result<(), String> {
         }
     };
     if let Some(b) = by_arg
-        && b != by {
-            return Err(format!("{h} 记的派生方式是 {by}，--derived-by 给的是 {b}"));
-        }
+        && b != by
+    {
+        return Err(format!("{h} 记的派生方式是 {by}，--derived-by 给的是 {b}"));
+    }
     if !Provenance::needs_holdout(by) {
         return Err(format!(
             "{h} 的派生方式是 {by}：没有原版可比，只过闸门；要担保错误率走认证（B86，calib-import）。\

@@ -102,7 +102,10 @@ fn 写(d: &Path, name: &str, text: &str) -> String {
 fn 首跑写的头_旧键法不带key_version() {
     let (_d, text, _, _) = 首跑("head");
     let head = text.lines().next().unwrap();
-    assert!(head.starts_with(&format!("{{\"version\":{LEDGER_VERSION},")), "{head}");
+    assert!(
+        head.starts_with(&format!("{{\"version\":{LEDGER_VERSION},")),
+        "{head}"
+    );
     assert_eq!(
         head.contains("\"key_version\":\"1\""),
         KEY_VERSION_CURRENT == KeyVersion::Structured,
@@ -162,9 +165,13 @@ fn 比本二进制新的格式_报更新_退出码非0_不panic() {
 #[test]
 fn 头里key_version不认识_重放与续接都报key_version错() {
     let (d, text, _, _) = 首跑("kv9");
-    let p = 写(&d, "kv9.ledger", &rewrite(&text, LEDGER_VERSION, |h| {
-        h.compared.key_version = Some("9".into());
-    }));
+    let p = 写(
+        &d,
+        "kv9.ledger",
+        &rewrite(&text, LEDGER_VERSION, |h| {
+            h.compared.key_version = Some("9".into());
+        }),
+    );
     for mode in ["--replay", "--resume"] {
         let report = d.join("k9.json").display().to_string();
         let o = jpp(&[
@@ -179,7 +186,10 @@ fn 头里key_version不认识_重放与续接都报key_version错() {
         ]);
         assert!(!o.status.success(), "{mode} 要失败");
         let e = err(&o);
-        assert!(e.contains("E-key-version") && e.contains("\"9\""), "{mode}：{e}");
+        assert!(
+            e.contains("E-key-version") && e.contains("\"9\""),
+            "{mode}：{e}"
+        );
         assert!(!e.contains("panicked"), "{e}");
     }
 }
@@ -208,9 +218,12 @@ fn 旧键法账本_续接按当前键法_重放照常() {
             &report,
         ]);
         assert!(o.status.success(), "{}", err(&o));
-        let r: serde_json::Value = serde_json::from_str(&fs::read_to_string(&report).unwrap()).unwrap();
-        let first: serde_json::Value =
-            serde_json::from_str(&fs::read_to_string(root().join("tests/replay/k0/sieve.report.json")).unwrap()).unwrap();
+        let r: serde_json::Value =
+            serde_json::from_str(&fs::read_to_string(&report).unwrap()).unwrap();
+        let first: serde_json::Value = serde_json::from_str(
+            &fs::read_to_string(root().join("tests/replay/k0/sieve.report.json")).unwrap(),
+        )
+        .unwrap();
         assert_eq!(r["cost"]["calls"], serde_json::json!(0), "{r}");
         assert_eq!(r["value"], first["value"], "旧键法重放与录制时的值相同");
     }
@@ -230,7 +243,10 @@ fn 旧键法账本_续接按当前键法_重放照常() {
     } else {
         assert!(!o.status.success());
         let e = err(&o);
-        assert!(e.contains("E-key-version") && e.contains("--replay") && e.contains("--cache"), "{e}");
+        assert!(
+            e.contains("E-key-version") && e.contains("--replay") && e.contains("--cache"),
+            "{e}"
+        );
     }
 }
 
@@ -240,8 +256,17 @@ fn 旧键法账本_续接按当前键法_重放照常() {
 fn cache目录混放各版本账本_都进索引() {
     let (d, text, _, _) = 首跑("cache");
     let 解析 = |e: &str| -> (usize, String) {
-        let l = e.lines().find(|l| l.starts_with("缓存：从 ")).unwrap_or_else(|| panic!("{e}"));
-        let n = l.trim_start_matches("缓存：从 ").split(' ').next().unwrap().parse().unwrap();
+        let l = e
+            .lines()
+            .find(|l| l.starts_with("缓存：从 "))
+            .unwrap_or_else(|| panic!("{e}"));
+        let n = l
+            .trim_start_matches("缓存：从 ")
+            .split(' ')
+            .next()
+            .unwrap()
+            .parse()
+            .unwrap();
         (n, l.to_string())
     };
     let 跑 = |dir: &Path| -> String {
@@ -273,12 +298,27 @@ fn cache目录混放各版本账本_都进索引() {
     写(&mix, "a-v3.ledger", &rewrite(&text, 3, |_| {}));
     写(&mix, "b-v4.ledger", &rewrite(&text, 4, |_| {}));
     写(&mix, "c-cur.ledger", &text);
-    写(&mix, "d-newer.ledger", &rewrite(&text, LEDGER_VERSION + 1, |_| {}));
+    写(
+        &mix,
+        "d-newer.ledger",
+        &rewrite(&text, LEDGER_VERSION + 1, |_| {}),
+    );
     写(&mix, "e-junk.txt", "not a ledger\n");
     let (n3, l3) = 解析(&跑(&mix));
     assert_eq!(n3, 3, "三份可读账本都进索引：{l3}");
-    assert!(l3.ends_with("跳过 2 个文件"), "新版本与垃圾各计一次跳过：{l3}");
+    assert!(
+        l3.ends_with("跳过 2 个文件"),
+        "新版本与垃圾各计一次跳过：{l3}"
+    );
     // 判断、生成、变换条数 = 只放一份时（同内容去重后的并集）
-    let 条数 = |l: &str| l.split_once("（").unwrap().1.split_once("）").unwrap().0.to_string();
+    let 条数 = |l: &str| {
+        l.split_once("（")
+            .unwrap()
+            .1
+            .split_once("）")
+            .unwrap()
+            .0
+            .to_string()
+    };
     assert_eq!(条数(&l1), 条数(&l3), "{l1} / {l3}");
 }

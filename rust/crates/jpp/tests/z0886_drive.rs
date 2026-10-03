@@ -11,9 +11,9 @@
 //! 裁定七十五（守则 premise_process）：过程入口不派生前提——生成器对前提提示给一道能把开局观测分成两边的前提，
 //! 过程入口不问它、不排除任何一步；批量入口（purpose_run）拿同一道前提照旧派生、筛项。
 use jpp::effects::{CalibStore, EffectError, FnPort, GenResult, JudgeResult, Ports};
+use jpp::interp::{TaintOut, json_to_value};
 use jpp::ledger::{Entry, Ledger};
 use jpp::value::{Answer, Question, State, Value};
-use jpp::interp::{TaintOut, json_to_value};
 use jpp::{ActionRegistry, EntryArgs, Session};
 use serde_json::{Value as Json, json};
 use std::cell::RefCell;
@@ -38,7 +38,11 @@ fn 世界(req: &Json, gap: Option<i64>, effect: bool) -> Json {
     };
     let t = st["t"].as_i64().unwrap();
     let done = st["pos"] == st["goal"] || t >= 12;
-    let actions = if gap == Some(t) { json!([]) } else { json!(["left", "right", "wait"]) };
+    let actions = if gap == Some(t) {
+        json!([])
+    } else {
+        json!(["left", "right", "wait"])
+    };
     let mut out = json!({"state": st, "obs": {"t": t, "pos": st["pos"], "goal": st["goal"]}, "actions": actions, "idle": "wait",
            "done": done, "hash": format!("h{}-{}-{}", st["goal"], st["pos"], t),
            "result": {"reached": st["pos"] == st["goal"]}});
@@ -97,7 +101,8 @@ const 子题三: &str = "以现在的处境拿得到哪条，眼下最要紧的�
 const 要紧的事: [&str; 2] = ["往目标走", "原地等"];
 
 fn 模块() -> Json {
-    let mut preds = vec![json!({"text": "离目标还远", "cut": "binary", "field": "far", "cut_from": "system"})];
+    let mut preds =
+        vec![json!({"text": "离目标还远", "cut": "binary", "field": "far", "cut_from": "system"})];
     if 方向题.with(|c| c.get()) {
         preds.push(json!({"text": "离目标的方向", "cut": "k_ary", "over": ["左边", "右边"], "request": "one", "field": "dir",
                           "cut_from": "purpose", "over_from": "purpose"}));
@@ -139,7 +144,9 @@ fn 生成(p: &str) -> Vec<Json> {
         vec![模块()]
     } else if p.contains("照这一局的计分办法") {
         // 第四圈：带完成条件的子题 S′（题面与 S 不同，好分辨用的是哪一份）
-        vec![json!({"op": "select", "text": "照计分办法，眼下最要紧的是哪一件事？", "over": 要紧的事})]
+        vec![
+            json!({"op": "select", "text": "照计分办法，眼下最要紧的是哪一件事？", "over": 要紧的事}),
+        ]
     } else if p.contains("眼下最要紧") {
         // 子题 S 的唤出提示里也带着模块原文（含别的谓词），所以先认它
         vec![json!({"op": "select", "text": "眼下最要紧的是哪一件事？", "over": 要紧的事})]
@@ -163,19 +170,29 @@ fn 读数(q: &Question, s: &State, tie_t: Option<i64>) -> Answer {
         if t.contains("最缺哪一类") {
             let mut v = vec![0.0; s.over.len()];
             let k = if 点名参照.with(|c| c.get()) {
-                s.over.iter().position(|m| m.content.as_str() == Some("参照")).unwrap_or(0)
+                s.over
+                    .iter()
+                    .position(|m| m.content.as_str() == Some("参照"))
+                    .unwrap_or(0)
             } else {
                 s.over.len() - 1
             };
             v[k] = 1.0;
             return Answer::Choice(v);
         }
-        return Answer::Noul(if t.contains("需要分别回答") { 0.1 } else { 0.5 });
+        return Answer::Noul(if t.contains("需要分别回答") {
+            0.1
+        } else {
+            0.5
+        });
     }
     if t.contains("为什么拿不准") {
         let mut v = vec![0.0; s.over.len()];
         let k = if 选中间判断.with(|c| c.get()) {
-            s.over.iter().position(|m| m.content.as_str() == Some("中间判断")).unwrap_or(0)
+            s.over
+                .iter()
+                .position(|m| m.content.as_str() == Some("中间判断"))
+                .unwrap_or(0)
         } else {
             0
         };
@@ -183,14 +200,24 @@ fn 读数(q: &Question, s: &State, tie_t: Option<i64>) -> Answer {
         return Answer::Choice(v);
     }
     if t.contains("眼下最要紧的是哪一件事") {
-        return Answer::Choice(if 子题并列.with(|c| c.get()) { vec![0.5, 0.5] } else { vec![0.9, 0.1] });
+        return Answer::Choice(if 子题并列.with(|c| c.get()) {
+            vec![0.5, 0.5]
+        } else {
+            vec![0.9, 0.1]
+        });
     }
     if t.contains("这件事吗") {
         // 缩小：right 是在往目标走（带外是），left 不是（带外否），wait 拿不准（带内，保留）
         if 全判否.with(|c| c.get()) {
             return Answer::Noul(0.1);
         }
-        return Answer::Noul(if t.contains("「right」") { 0.9 } else if t.contains("「left」") { 0.1 } else { 等的读数.with(|c| c.get()) });
+        return Answer::Noul(if t.contains("「right」") {
+            0.9
+        } else if t.contains("「left」") {
+            0.1
+        } else {
+            等的读数.with(|c| c.get())
+        });
     }
     if t.contains("需要分别回答的判断") {
         Answer::Noul(0.1)
@@ -203,26 +230,49 @@ fn 读数(q: &Question, s: &State, tie_t: Option<i64>) -> Answer {
         Answer::Choice(v)
     } else if t.contains("下一步最该做的动作") {
         let c = &s.on[0].content;
-        let (pos, goal, tt) = (c["pos"].as_i64().unwrap(), c["goal"].as_i64().unwrap(), c["t"].as_i64().unwrap());
+        let (pos, goal, tt) = (
+            c["pos"].as_i64().unwrap(),
+            c["goal"].as_i64().unwrap(),
+            c["t"].as_i64().unwrap(),
+        );
         // 并列只给首问（原集三个候选、ctx 空）；缩小后或带了子题回答再问时照常判，除非要测再问仍并列。
         // 第四圈：完成条件那份语境（done 为 on 时每拍都在）不算，ctx 里只有它的仍是首问
-        let 首问 = s.over.len() == 3 && s.ctx.iter().all(|m| m.content.to_string().contains("这一局怎么计分"));
+        let 首问 = s.over.len() == 3
+            && s.ctx
+                .iter()
+                .all(|m| m.content.to_string().contains("这一局怎么计分"));
         if tie_t == Some(tt) && 首问 {
             return Answer::Choice(vec![0.4, 0.4, 0.2]);
         }
         if tie_t == Some(tt) && 再问并列.with(|c| c.get()) {
             return Answer::Choice(vec![1.0 / s.over.len() as f64; s.over.len()]);
         }
-        let want = if pos < goal { "right" } else if pos > goal { "left" } else { "wait" };
+        let want = if pos < goal {
+            "right"
+        } else if pos > goal {
+            "left"
+        } else {
+            "wait"
+        };
         Answer::Choice(
             s.over
                 .iter()
-                .map(|m| if m.content.as_str() == Some(want) { 0.8 } else { 0.1 })
+                .map(|m| {
+                    if m.content.as_str() == Some(want) {
+                        0.8
+                    } else {
+                        0.1
+                    }
+                })
                 .collect(),
         )
     } else if t.as_str() == 前提题 {
         let c = &s.on[0].content;
-        Answer::Noul(if c["pos"].as_i64() < c["goal"].as_i64() { 0.9 } else { 0.1 })
+        Answer::Noul(if c["pos"].as_i64() < c["goal"].as_i64() {
+            0.9
+        } else {
+            0.1
+        })
     } else if t.contains("离目标还远") {
         Answer::Noul(0.7)
     } else {
@@ -273,7 +323,11 @@ fn 驱动程序_带(resets: &str, play: &str, calls: usize, 前置: &str) -> Str
 
 fn 跑_源(src: &str, tie_t: Option<i64>, gap: Option<i64>, effect: bool) -> 跑出 {
     let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../..");
-    let dir = root.join(format!("target/z0886-{}-{}", std::process::id(), NEXT.fetch_add(1, Ordering::Relaxed)));
+    let dir = root.join(format!(
+        "target/z0886-{}-{}",
+        std::process::id(),
+        NEXT.fetch_add(1, Ordering::Relaxed)
+    ));
     std::fs::create_dir_all(&dir).unwrap();
     let path = dir.join("p.jpp");
     std::fs::write(&path, src).unwrap();
@@ -282,9 +336,13 @@ fn 跑_源(src: &str, tie_t: Option<i64>, gap: Option<i64>, effect: bool) -> 跑
     let loaded = loaded.unwrap_or_else(|e| panic!("装载：{e:?}"));
     let program = jpp::lower(&loaded.program).unwrap_or_else(|e| panic!("lower：{e:?}"));
     let mut acts = ActionRegistry::new();
-    acts.register("env:step", 0.0, true, TaintOut::Untrusted, move |args: &[Value]| {
-        Ok(json_to_value(&世界(&args[0].to_json(), gap, effect)))
-    });
+    acts.register(
+        "env:step",
+        0.0,
+        true,
+        TaintOut::Untrusted,
+        move |args: &[Value]| Ok(json_to_value(&世界(&args[0].to_json(), gap, effect))),
+    );
     let gens = Rc::new(RefCell::new(0usize));
     let g2 = gens.clone();
     let gen_calls = Rc::new(RefCell::new(Vec::<(String, usize)>::new()));
@@ -298,9 +356,16 @@ fn 跑_源(src: &str, tie_t: Option<i64>, gap: Option<i64>, effect: bool) -> 跑
     let ports = Ports::new()
         .with(FnPort::judge("fixed-0", move |s, qs| {
             a2.borrow_mut().extend(qs.iter().map(|q| q.text.clone()));
-            b2.borrow_mut().push(qs.iter().map(|q| q.text.clone()).collect());
+            b2.borrow_mut()
+                .push(qs.iter().map(|q| q.text.clone()).collect());
             if qs.iter().any(|q| q.text.contains("下一步最该做的动作")) {
-                c2.borrow_mut().push(s.ctx.iter().map(|m| m.content.to_string()).collect::<Vec<_>>().join("|"));
+                c2.borrow_mut().push(
+                    s.ctx
+                        .iter()
+                        .map(|m| m.content.to_string())
+                        .collect::<Vec<_>>()
+                        .join("|"),
+                );
             }
             Ok::<_, EffectError>(JudgeResult {
                 answers: qs.iter().map(|q| 读数(q, s, tie_t)).collect(),
@@ -314,9 +379,14 @@ fn 跑_源(src: &str, tie_t: Option<i64>, gap: Option<i64>, effect: bool) -> 跑
         .with(FnPort::generate("fixed-0", move |p, c, _n, _r| {
             *g2.borrow_mut() += 1;
             gc2.borrow_mut().push((p.to_string(), c.len()));
-            Ok(GenResult { outputs: 生成(p), ..Default::default() })
+            Ok(GenResult {
+                outputs: 生成(p),
+                ..Default::default()
+            })
         }))
-        .with(FnPort::ask("fixed-0", |_s, _q| Err(EffectError("不该 ask".into()))));
+        .with(FnPort::ask("fixed-0", |_s, _q| {
+            Err(EffectError("不该 ask".into()))
+        }));
     let mut ledger = Ledger::new();
     let mut calib = CalibStore::new();
     if 用画像.with(|c| c.get()) {
@@ -325,7 +395,11 @@ fn 跑_源(src: &str, tie_t: Option<i64>, gap: Option<i64>, effect: bool) -> 跑
         calib.profile = jpp::effects::Profile::from_json(&j).unwrap();
     }
     let out = Session::new(ports, &calib, &acts)
-        .with_companions(if 开伴随.with(|c| c.get()) { jpp::interp::CompanionMode::Same } else { jpp::interp::CompanionMode::Off })
+        .with_companions(if 开伴随.with(|c| c.get()) {
+            jpp::interp::CompanionMode::Same
+        } else {
+            jpp::interp::CompanionMode::Off
+        })
         .run(&program, &EntryArgs::default(), &mut ledger)
         .unwrap_or_else(|e| panic!("{}", e.render()));
     // B0630：过程入口（drive.jpp）上进键的站点都查得到结构化标识，没有回退成偏移
@@ -342,12 +416,22 @@ fn 跑_源(src: &str, tie_t: Option<i64>, gap: Option<i64>, effect: bool) -> 跑
     // O9：审计重放只凭账本，判断器、生成器都不该再被调用
     let report = if 审计重放.with(|c| c.get()) {
         let ports2 = Ports::new()
-            .with(FnPort::judge("fixed-0", |_s, _q| Err::<JudgeResult, _>(EffectError("重放不该调判断器".into()))))
-            .with(FnPort::generate("fixed-0", |_p, _c, _n, _r| Err::<GenResult, _>(EffectError("重放不该调生成器".into()))))
-            .with(FnPort::ask("fixed-0", |_s, _q| Err(EffectError("不该 ask".into()))));
+            .with(FnPort::judge("fixed-0", |_s, _q| {
+                Err::<JudgeResult, _>(EffectError("重放不该调判断器".into()))
+            }))
+            .with(FnPort::generate("fixed-0", |_p, _c, _n, _r| {
+                Err::<GenResult, _>(EffectError("重放不该调生成器".into()))
+            }))
+            .with(FnPort::ask("fixed-0", |_s, _q| {
+                Err(EffectError("不该 ask".into()))
+            }));
         let mut l2 = ledger.clone();
         let o2 = Session::new(ports2, &calib, &acts)
-            .with_companions(if 开伴随.with(|c| c.get()) { jpp::interp::CompanionMode::Same } else { jpp::interp::CompanionMode::Off })
+            .with_companions(if 开伴随.with(|c| c.get()) {
+                jpp::interp::CompanionMode::Same
+            } else {
+                jpp::interp::CompanionMode::Off
+            })
             .replay(&program, &EntryArgs::default(), &mut l2)
             .unwrap_or_else(|e| panic!("审计重放：{}", e.render()));
         let mut r = report;
@@ -356,7 +440,16 @@ fn 跑_源(src: &str, tie_t: Option<i64>, gap: Option<i64>, effect: bool) -> 跑
     } else {
         report
     };
-    跑出 { value: out.value_json(), ledger, gens, ctxs, asked, 批, report, gen_calls }
+    跑出 {
+        value: out.value_json(),
+        ledger,
+        gens,
+        ctxs,
+        asked,
+        批,
+        report,
+        gen_calls,
+    }
 }
 
 /// 某道题（按题哈希）的判断记录的状态哈希
@@ -376,7 +469,10 @@ fn 题式跨步复用_生成器调用与步数无关() {
     let b = 跑("[3, 6]", None, None);
     // 一局 3 步、两局 3 + 6 步：出题只做一次
     assert_eq!(a.gens, b.gens, "生成器调用数与步数、局数无关");
-    assert_eq!(a.gens, 3, "抽模块 + 唤出 far + 唤出子题 S（Z0913；过程入口不派生前提，裁定七十五）");
+    assert_eq!(
+        a.gens, 3,
+        "抽模块 + 唤出 far + 唤出子题 S（Z0913；过程入口不派生前提，裁定七十五）"
+    );
     let v = &b.value["value"];
     let rows = v["rows"].as_array().unwrap();
     assert_eq!(rows.len(), 9, "{v}");
@@ -412,11 +508,22 @@ fn 并列按最大项行动_未决带步号转交() {
     let pend = r.value["pending"].as_array().unwrap();
     let p0: Vec<_> = pend.iter().filter(|p| p["pos"] == 0).collect();
     assert_eq!(p0.len(), 1, "第 0 步恰好一条未决：{pend:?}");
-    assert!(p0[0]["via"].as_array().unwrap().iter().any(|x| x == "已按最大项行动"), "{pend:?}");
+    assert!(
+        p0[0]["via"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|x| x == "已按最大项行动"),
+        "{pend:?}"
+    );
     let dropped = r.value["detail"]["dropped"].as_array().unwrap();
     assert!(dropped.iter().all(|d| d["pos"] != 0), "{dropped:?}");
     let ud = r.report["unsure_default"].as_array().unwrap();
-    assert!(ud.iter().any(|u| u["end"] == "top" && u["via"] == "并列、按最大项" && u["top"] == 0), "{ud:?}");
+    assert!(
+        ud.iter()
+            .any(|u| u["end"] == "top" && u["via"] == "并列、按最大项" && u["top"] == 0),
+        "{ud:?}"
+    );
     assert_eq!(r.report["violations"], 0);
     let ws = r.report["warnings"].to_string();
     assert!(!ws.contains("W-duty-twice"), "{ws}");
@@ -428,7 +535,12 @@ fn 并列按最大项行动_未决带步号转交() {
 fn 点名类别取不到也按最大项行动() {
     let r = 跑_源(
         // 关题树（Z0913 的 off，即只有七十七、七十八）：中间判断也按取不到
-        &驱动程序_带("[2]", ", tree: \"off\"", 2000, "unsure_source({fetch: fn(q, need, m) { fail(\"没有这一类材料\") }});"),
+        &驱动程序_带(
+            "[2]",
+            ", tree: \"off\"",
+            2000,
+            "unsure_source({fetch: fn(q, need, m) { fail(\"没有这一类材料\") }});",
+        ),
         Some(0),
         None,
         false,
@@ -439,11 +551,24 @@ fn 点名类别取不到也按最大项行动() {
     let pend = r.value["pending"].as_array().unwrap();
     let p0: Vec<_> = pend.iter().filter(|p| p["pos"] == 0).collect();
     assert_eq!(p0.len(), 1, "{pend:?}");
-    let via: Vec<String> = p0[0]["via"].as_array().unwrap().iter().map(|x| x.as_str().unwrap_or("").to_string()).collect();
-    assert!(via.iter().any(|x| x.starts_with("缺") && x.ends_with("无取法")), "{via:?}");
+    let via: Vec<String> = p0[0]["via"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|x| x.as_str().unwrap_or("").to_string())
+        .collect();
+    assert!(
+        via.iter()
+            .any(|x| x.starts_with("缺") && x.ends_with("无取法")),
+        "{via:?}"
+    );
     assert!(via.iter().any(|x| x == "已按最大项行动"), "{via:?}");
     let ud = r.report["unsure_default"].as_array().unwrap();
-    assert!(ud.iter().any(|u| u["end"] == "top" && u["needed"].as_array().is_some_and(|n| !n.is_empty())), "{ud:?}");
+    assert!(
+        ud.iter()
+            .any(|u| u["end"] == "top" && u["needed"].as_array().is_some_and(|n| !n.is_empty())),
+        "{ud:?}"
+    );
     assert_eq!(r.report["violations"], 0);
 }
 
@@ -457,11 +582,22 @@ fn 过程里别的选择题末端照旧留空() {
     let v = &r.value["value"];
     let rows = v["rows"].as_array().unwrap();
     assert!(!rows.is_empty(), "{v}");
-    assert!(rows.iter().all(|x| x["by"] == "judge" && x["fields"]["dir"].is_null()), "{v}");
+    assert!(
+        rows.iter()
+            .all(|x| x["by"] == "judge" && x["fields"]["dir"].is_null()),
+        "{v}"
+    );
     let qs = r.value["detail"]["plan"]["questions"].as_array().unwrap();
-    assert!(qs.iter().any(|q| q["field"] == "dir" && q["op"] == "select"), "方向题要真的问到：{qs:?}");
+    assert!(
+        qs.iter()
+            .any(|q| q["field"] == "dir" && q["op"] == "select"),
+        "方向题要真的问到：{qs:?}"
+    );
     let ud = r.report["unsure_default"].as_array().unwrap();
-    assert!(!ud.is_empty() && ud.iter().all(|u| u["end"] != "top"), "方向题并列要走到默认链末端：{ud:?}");
+    assert!(
+        !ud.is_empty() && ud.iter().all(|u| u["end"] != "top"),
+        "方向题并列要走到默认链末端：{ud:?}"
+    );
 }
 
 /// 裁定七十八（反面二）：批量入口（purpose_run）同一道并列的选择题，末端照旧留空、进 pending，不按最大项
@@ -479,9 +615,15 @@ fn 批量入口选择题末端照旧留空() {
     方向题.with(|c| c.set(false));
     let rows = r.value["value"].as_array().unwrap();
     assert_eq!(rows.len(), 2, "{rows:?}");
-    assert!(rows.iter().all(|x| x["fields"]["dir"].is_null()), "{rows:?}");
+    assert!(
+        rows.iter().all(|x| x["fields"]["dir"].is_null()),
+        "{rows:?}"
+    );
     let ud = r.report["unsure_default"].as_array().unwrap();
-    assert!(!ud.is_empty() && ud.iter().all(|u| u["end"] != "top"), "{ud:?}");
+    assert!(
+        !ud.is_empty() && ud.iter().all(|u| u["end"] != "top"),
+        "{ud:?}"
+    );
 }
 
 #[test]
@@ -525,7 +667,10 @@ fn 世界自报事件进下一步语境() {
     let off = 跑_全("[3]", "", None, None, false);
     assert!(off.ctxs.iter().all(|c| c.is_empty()), "{:?}", off.ctxs);
     // 题集不受 effect 影响（出题阶段的输入相同；第二圈预注册 §1.6）
-    assert_eq!(on.value["detail"]["plan"]["questions"], off.value["detail"]["plan"]["questions"]);
+    assert_eq!(
+        on.value["detail"]["plan"]["questions"],
+        off.value["detail"]["plan"]["questions"]
+    );
 }
 
 /// Z0911（R-102，裁定七十二 (1)）：同一步的两道独立判断（是非题 far 与 K 选一 act）登记在同一层、一起发出，
@@ -534,14 +679,23 @@ fn 世界自报事件进下一步语境() {
 fn 同一步的独立判断同层发出() {
     let r = 跑("[3]", None, None);
     let qs = r.value["detail"]["plan"]["questions"].as_array().unwrap();
-    let form = |f: &str| qs.iter().find(|q| q["field"] == f).unwrap()["form"].as_str().unwrap().to_string();
+    let form = |f: &str| {
+        qs.iter().find(|q| q["field"] == f).unwrap()["form"]
+            .as_str()
+            .unwrap()
+            .to_string()
+    };
     let (far, act) = (form("far"), form("act"));
     let layers = |q: &str| -> Vec<u32> {
         r.ledger
             .entries
             .iter()
             .filter_map(|e| match e {
-                Entry::Judge { jkey: Some(k), layer, .. } if k.q == q => Some(*layer),
+                Entry::Judge {
+                    jkey: Some(k),
+                    layer,
+                    ..
+                } if k.q == q => Some(*layer),
                 _ => None,
             })
             .collect()
@@ -575,7 +729,9 @@ fn 预算紧时同一步的题一起发或一起不发() {
                     .filter(|p| {
                         p["cause"] == "budget"
                             && p["pos"] == x["step"]
-                            && p["via"].as_array().is_some_and(|v| v.iter().any(|y| y == "purpose:far" || y == "purpose:act"))
+                            && p["via"].as_array().is_some_and(|v| {
+                                v.iter().any(|y| y == "purpose:far" || y == "purpose:act")
+                            })
                     })
                     .count();
                 assert_eq!(n, 2, "calls={calls} 两道题各一条预算未决：{pend:?}");
@@ -612,15 +768,26 @@ fn 预算紧时批量入口按层内挑选截断() {
         let 判了: Vec<bool> = rows.iter().map(|x| !x["fields"]["far"].is_null()).collect();
         let k = 判了.iter().filter(|b| **b).count();
         // 判了的恰是前 k 项（价值相同按登记序），其余每项一条预算未决
-        assert_eq!(判了, (0..4).map(|j| j < k).collect::<Vec<_>>(), "calls={calls}");
+        assert_eq!(
+            判了,
+            (0..4).map(|j| j < k).collect::<Vec<_>>(),
+            "calls={calls}"
+        );
         let pend = r.value["pending"].as_array().unwrap();
         for x in &rows[k..] {
-            let n = pend.iter().filter(|p| p["cause"] == "budget" && p["item"] == x["item"]).count();
+            let n = pend
+                .iter()
+                .filter(|p| p["cause"] == "budget" && p["item"] == x["item"])
+                .count();
             assert_eq!(n, 1, "calls={calls} {x}");
         }
         见过.insert(k);
     }
-    assert_eq!(见过, (0..=4).collect(), "预算从不够一项到够全部，每一档都见到");
+    assert_eq!(
+        见过,
+        (0..=4).collect(),
+        "预算从不够一项到够全部，每一档都见到"
+    );
 }
 
 /// 裁定七十五（正面）：过程入口不派生前提。两局的开局观测在前提题上分两边（旧库会派生它、过抽样检验，
@@ -633,8 +800,19 @@ fn 过程入口不派生前提_不排除任何一步() {
     assert_eq!(r.gens, 3, "不调前提派生（抽模块、唤出 far、唤出子题 S）");
     let v = &r.value["value"];
     let rows = v["rows"].as_array().unwrap();
-    assert!(rows.iter().all(|x| x["by"] == "judge" && x["excluded"] != true), "{v}");
-    assert!(v["results"].as_array().unwrap().iter().all(|x| x["result"]["reached"] == true), "{v}");
+    assert!(
+        rows.iter()
+            .all(|x| x["by"] == "judge" && x["excluded"] != true),
+        "{v}"
+    );
+    assert!(
+        v["results"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .all(|x| x["result"]["reached"] == true),
+        "{v}"
+    );
     assert!(!r.asked.iter().any(|t| t == 前提题), "过程入口不该问前提题");
 }
 
@@ -670,9 +848,17 @@ fn 跑_树(mode: &str, 前置: &str, 中间: bool, 再并: bool, 参照: bool) -
     选中间判断.with(|c| c.set(中间));
     再问并列.with(|c| c.set(再并));
     点名参照.with(|c| c.set(参照));
-    let play = if mode.is_empty() { String::new() } else { format!(", tree: \"{mode}\"") };
+    let play = if mode.is_empty() {
+        String::new()
+    } else {
+        format!(", tree: \"{mode}\"")
+    };
     let src = 驱动程序_带("[2]", &play, 2000, 前置);
-    let r = if 参照 { 跑_源_伴随(&src, Some(0), None) } else { 跑_源(&src, Some(0), None, false) };
+    let r = if 参照 {
+        跑_源_伴随(&src, Some(0), None)
+    } else {
+        跑_源(&src, Some(0), None, false)
+    };
     选中间判断.with(|c| c.set(false));
     再问并列.with(|c| c.set(false));
     点名参照.with(|c| c.set(false));
@@ -681,7 +867,10 @@ fn 跑_树(mode: &str, 前置: &str, 中间: bool, 再并: bool, 参照: bool) -
 
 fn 树行(r: &跑出) -> Json {
     let ud = r.report["unsure_default"].as_array().unwrap();
-    ud.iter().find(|u| u.get("tree").is_some()).cloned().unwrap_or_else(|| panic!("没有走到中间判断：{ud:?}"))
+    ud.iter()
+        .find(|u| u.get("tree").is_some())
+        .cloned()
+        .unwrap_or_else(|| panic!("没有走到中间判断：{ud:?}"))
 }
 
 /// Z0913（正面，narrow）：「为什么」选中间判断 → 子题 S 选「往目标走」→ 缩小（left 带外否去掉、wait 带内留下）→ 在 [right, wait]
@@ -704,9 +893,17 @@ fn 题树_缩小后再问已决() {
     assert_eq!(plan["s"], "眼下最要紧的是哪一件事？", "{plan}");
     assert!(plan["narrow_form"].is_string(), "{plan}");
     // 缩小那组：三道是非题在判断器的同一次调用里（同一状态、同一层发出，R-102）
-    let 组: Vec<&Vec<String>> = r.批.iter().filter(|b| b.iter().any(|t| t.contains("这件事吗"))).collect();
+    let 组: Vec<&Vec<String>> = r
+        .批
+        .iter()
+        .filter(|b| b.iter().any(|t| t.contains("这件事吗")))
+        .collect();
     assert_eq!(组.len(), 1, "缩小题只发一次调用：{组:?}");
-    assert_eq!(组[0].iter().filter(|t| t.contains("这件事吗")).count(), 3, "{组:?}");
+    assert_eq!(
+        组[0].iter().filter(|t| t.contains("这件事吗")).count(),
+        3,
+        "{组:?}"
+    );
 }
 
 /// Z0913（正面，ctx）：同上，但子题回答只进 ctx、不缩小，在原集上再问
@@ -719,7 +916,10 @@ fn 题树_只进语境不缩小() {
     let t = 树行(&r);
     assert_eq!(t["tree"]["mode"], "ctx", "{t}");
     assert_eq!(t["tree"]["n1"], 3);
-    assert!(!r.asked.iter().any(|x| x.contains("这件事吗")), "ctx 不发缩小题");
+    assert!(
+        !r.asked.iter().any(|x| x.contains("这件事吗")),
+        "ctx 不发缩小题"
+    );
 }
 
 /// Z0913（反面，off）：中间判断按取不到，链走到末端，按七十八取首问的最大项（left）；不问子题 S
@@ -730,7 +930,10 @@ fn 题树_关时到末端取最大项() {
     assert_eq!(rows[0]["by"], "top", "{rows:?}");
     assert_eq!(rows[0]["action"], "left");
     assert_eq!(树行(&r)["tree"]["mode"], "off");
-    assert!(!r.asked.iter().any(|x| x.contains("眼下最要紧的是哪一件事")), "off 不问子题");
+    assert!(
+        !r.asked.iter().any(|x| x.contains("眼下最要紧的是哪一件事")),
+        "off 不问子题"
+    );
 }
 
 /// Z0913 × 七十八：缩小到 [right, wait] 后再问仍并列 → 末端按最后那次读数（缩小集上的）最大项行动：right。
@@ -769,8 +972,22 @@ fn 中间判断只在过程入口的动作题上() {
     方向题.with(|c| c.set(false));
     let qs = r.value["detail"]["plan"]["questions"].as_array().unwrap();
     let lacks = |f: &str| qs.iter().find(|q| q["field"] == f).unwrap()["lacks"].clone();
-    assert!(lacks("act").as_array().unwrap().iter().any(|x| x == "中间判断"), "{qs:?}");
-    assert!(!lacks("dir").as_array().unwrap().iter().any(|x| x == "中间判断"), "{qs:?}");
+    assert!(
+        lacks("act")
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|x| x == "中间判断"),
+        "{qs:?}"
+    );
+    assert!(
+        !lacks("dir")
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|x| x == "中间判断"),
+        "{qs:?}"
+    );
 }
 
 /// Z0913：预算在题树中途（子题、缩小那组、再问之间）用完——程序照常结束、不报违规；
@@ -782,7 +999,11 @@ fn 题树_预算中途用完不违规() {
         选中间判断.with(|c| c.set(true));
         let r = 跑_源(&驱动程序_带("[2]", "", calls, ""), Some(0), None, false);
         选中间判断.with(|c| c.set(false));
-        assert_eq!(r.report["violations"], 0, "calls={calls} {}", r.report["violations_detail"]);
+        assert_eq!(
+            r.report["violations"], 0,
+            "calls={calls} {}",
+            r.report["violations_detail"]
+        );
         let 问了子题 = r.asked.iter().any(|t| t.contains("眼下最要紧的是哪一件事"));
         let 缩小了 = r.asked.iter().any(|t| t.contains("这件事吗"));
         if 问了子题 && !缩小了 && r.report["budget"]["exhausted"] == true {
@@ -792,7 +1013,12 @@ fn 题树_预算中途用完不违规() {
     assert!(中途 >= 1, "至少有一档预算停在子题之后、缩小之前");
 }
 
-fn 带开关跑<T>(开关: &'static std::thread::LocalKey<std::cell::Cell<T>>, 值: T, 复原: T, f: impl FnOnce() -> 跑出) -> 跑出
+fn 带开关跑<T>(
+    开关: &'static std::thread::LocalKey<std::cell::Cell<T>>,
+    值: T,
+    复原: T,
+    f: impl FnOnce() -> 跑出,
+) -> 跑出
 where
     T: Copy + 'static,
 {
@@ -819,7 +1045,12 @@ fn 题树_账本追得到三组判断键() {
         .collect();
     let s_key = t["tree"]["s_key"].as_str().unwrap().to_string();
     assert!(judges.contains(&s_key), "{t}");
-    let nk: Vec<String> = t["tree"]["narrow_keys"].as_array().unwrap().iter().map(|x| x.as_str().unwrap().to_string()).collect();
+    let nk: Vec<String> = t["tree"]["narrow_keys"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|x| x.as_str().unwrap().to_string())
+        .collect();
     assert_eq!(nk.len(), 3, "{t}");
     assert!(nk.iter().all(|k| judges.contains(k)), "{t}");
     let enrich_by: Vec<Option<String>> = r
@@ -827,11 +1058,17 @@ fn 题树_账本追得到三组判断键() {
         .entries
         .iter()
         .filter_map(|e| match e {
-            Entry::Enrich { need, asked_by, .. } if need == "中间判断" => Some(asked_by.clone()),
+            Entry::Enrich { need, asked_by, .. } if need == "中间判断" => {
+                Some(asked_by.clone())
+            }
             _ => None,
         })
         .collect();
-    assert_eq!(enrich_by, vec![Some(s_key.clone())], "Enrich.asked_by 是子题的键");
+    assert_eq!(
+        enrich_by,
+        vec![Some(s_key.clone())],
+        "Enrich.asked_by 是子题的键"
+    );
     // 「为什么拿不准」选中了中间判断：那道元题的键也留着（报告 tree 行 why_key），是账本里的判断记录，不同于子题的键
     let why_key = t["tree"]["why_key"].as_str().unwrap().to_string();
     assert!(judges.contains(&why_key) && why_key != s_key, "{t}");
@@ -844,7 +1081,10 @@ fn 题树_账本追得到三组判断键() {
             _ => None,
         })
         .collect();
-    assert!(refine_to.iter().any(|k| judges.contains(k)), "再问经 Refine.to 连上：{refine_to:?}");
+    assert!(
+        refine_to.iter().any(|k| judges.contains(k)),
+        "再问经 Refine.to 连上：{refine_to:?}"
+    );
     assert_eq!(t["tree"]["delta_unknown"], true, "这个测试没有画像 δ（O6）");
     assert_eq!(t["tree"]["depth"], 1, "D1");
 }
@@ -854,7 +1094,11 @@ fn 题树_账本追得到三组判断键() {
 #[test]
 fn 题树_带内保留带外否去掉() {
     for (p, n1) in [(0.45, 2), (0.30, 1)] {
-        let r = 带开关跑(&用画像, true, false, || 带开关跑(&等的读数, p, 0.5, || 跑_树("", "", true, false, false)));
+        let r = 带开关跑(&用画像, true, false, || {
+            带开关跑(&等的读数, p, 0.5, || {
+                跑_树("", "", true, false, false)
+            })
+        });
         let t = 树行(&r);
         assert_eq!(t["tree"]["n1"], n1, "wait {p}：{t}");
         assert!(t["tree"].get("delta_unknown").is_none(), "{t}");
@@ -865,14 +1109,31 @@ fn 题树_带内保留带外否去掉() {
 /// Z0913 O3：子题拿不准时，pending 的去向写「子题拿不准」，不计进 named_unfetchable，链照常到末端按最大项
 #[test]
 fn 题树_子题拿不准去向分开记() {
-    let r = 带开关跑(&子题并列, true, false, || 跑_树("", "", true, false, false));
+    let r = 带开关跑(&子题并列, true, false, || {
+        跑_树("", "", true, false, false)
+    });
     let rows = r.value["value"]["rows"].as_array().unwrap();
     assert_eq!(rows[0]["by"], "top", "{rows:?}");
     let t = 树行(&r);
     assert_eq!(t["tree"]["why"], "子题拿不准", "{t}");
     let pend = r.value["pending"].as_array().unwrap();
-    let p0: Vec<_> = pend.iter().filter(|p| p["pos"] == 0 && p["via"].as_array().is_some_and(|v| v.iter().any(|x| x == "purpose:act"))).collect();
-    assert!(p0.iter().any(|p| p["via"].as_array().unwrap().iter().any(|x| x == "子题拿不准")), "{p0:?}");
+    let p0: Vec<_> = pend
+        .iter()
+        .filter(|p| {
+            p["pos"] == 0
+                && p["via"]
+                    .as_array()
+                    .is_some_and(|v| v.iter().any(|x| x == "purpose:act"))
+        })
+        .collect();
+    assert!(
+        p0.iter().any(|p| p["via"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|x| x == "子题拿不准")),
+        "{p0:?}"
+    );
     let nu = r.report["named_unfetchable"].to_string();
     assert!(!nu.contains("中间判断"), "{nu}");
 }
@@ -883,7 +1144,9 @@ fn 题树_子题拿不准去向分开记() {
 fn 题树_预算停在缩小与再问() {
     let (mut 见未发出, mut 见按最后) = (false, false);
     for calls in 10usize..=24 {
-        let r = 带开关跑(&选中间判断, true, false, || 跑_源(&驱动程序_带("[2]", "", calls, ""), Some(0), None, false));
+        let r = 带开关跑(&选中间判断, true, false, || {
+            跑_源(&驱动程序_带("[2]", "", calls, ""), Some(0), None, false)
+        });
         let ud = r.report["unsure_default"].as_array().unwrap();
         for u in ud {
             if u["tree"]["narrow"] == "未发出" {
@@ -901,14 +1164,18 @@ fn 题树_预算停在缩小与再问() {
     assert!(见按最后, "至少一档预算停在再问之前");
     let _ = 见未发出;
     // N2：预算矩阵是确定的——calls = 14 每次都停在「缩小未发出」：tree 行记未发出、不记 n1，去向写原因
-    let r = 带开关跑(&选中间判断, true, false, || 跑_源(&驱动程序_带("[2]", "", 14, ""), Some(0), None, false));
+    let r = 带开关跑(&选中间判断, true, false, || {
+        跑_源(&驱动程序_带("[2]", "", 14, ""), Some(0), None, false)
+    });
     let t = 树行(&r);
     assert_eq!(t["tree"]["narrow"], "未发出", "{t}");
     assert!(t["tree"].get("n1").is_none(), "{t}");
     assert_eq!(t["tree"]["why"], Json::Null, "{t}");
     let pend = r.value["pending"].as_array().unwrap();
     assert!(
-        pend.iter().any(|p| p["via"].as_array().is_some_and(|v| v.iter().any(|x| x == "缩小未发出（预算）"))),
+        pend.iter().any(|p| p["via"]
+            .as_array()
+            .is_some_and(|v| v.iter().any(|x| x == "缩小未发出（预算）"))),
         "{pend:?}"
     );
 }
@@ -916,7 +1183,9 @@ fn 题树_预算停在缩小与再问() {
 /// Z0913 O9：带题树的一局，审计重放只凭账本，值与首跑相同（判断器、生成器一次都不调）
 #[test]
 fn 题树_审计重放一致() {
-    let r = 带开关跑(&审计重放, true, false, || 跑_树("", "", true, false, false));
+    let r = 带开关跑(&审计重放, true, false, || {
+        跑_树("", "", true, false, false)
+    });
     assert_eq!(r.report["replay_value"], r.value, "重放的值与首跑相同");
 }
 
@@ -927,12 +1196,17 @@ const 规则取法: &str = "unsure_source({fetch: fn(q, need, m) { if need == \"
 
 /// 第四圈用：目标 2、第 0 步动作题并列、「为什么」选中间判断；`开关` 插进 purpose_drive 的 opts（如 `, done: "on"`）
 fn 跑_四(开关: &str, 前置: &str) -> 跑出 {
-    带开关跑(&选中间判断, true, false, || 跑_源(&驱动程序_带("[2]", 开关, 2000, 前置), Some(0), None, false))
+    带开关跑(&选中间判断, true, false, || {
+        跑_源(&驱动程序_带("[2]", 开关, 2000, 前置), Some(0), None, false)
+    })
 }
 
 fn 动作题式(r: &跑出) -> String {
     let qs = r.value["detail"]["plan"]["questions"].as_array().unwrap();
-    qs.iter().find(|q| q["field"] == "act").unwrap()["form"].as_str().unwrap().to_string()
+    qs.iter().find(|q| q["field"] == "act").unwrap()["form"]
+        .as_str()
+        .unwrap()
+        .to_string()
 }
 
 /// 第四圈 §2.1（正反两面）：取到语境时出题阶段派生完成条件、唤出 S′（生成器调用 3 → 5，与开关无关；第五圈起另有
@@ -945,11 +1219,20 @@ fn 完成条件_派生且只在开时进语境() {
     let off = 跑_四("", 规则取法);
     let on = 跑_四(", done: \"on\"", 规则取法);
     assert_eq!(base.gens, 3, "没有取法：抽模块、唤出 far、唤出 S");
-    assert_eq!(off.gens, 7, "取到语境：加派生完成条件、唤出 S′、唤出 S″、归属标注");
+    assert_eq!(
+        off.gens, 7,
+        "取到语境：加派生完成条件、唤出 S′、唤出 S″、归属标注"
+    );
     assert_eq!(on.gens, 7);
     // 规则原文作生成器材料：派生完成条件、唤出 S′、唤出 S″ 各收到 1 份，别的调用（含归属标注）没有
     for (p, n) in &off.gen_calls {
-        let want = if (p.contains("计分途径") || p.contains("照这一局的计分办法")) && !p.contains("标上") { 1 } else { 0 };
+        let want = if (p.contains("计分途径") || p.contains("照这一局的计分办法"))
+            && !p.contains("标上")
+        {
+            1
+        } else {
+            0
+        };
         assert_eq!(*n, want, "{p}");
     }
     let d = &off.value["detail"]["plan"]["done"];
@@ -957,23 +1240,43 @@ fn 完成条件_派生且只在开时进语境() {
     assert_eq!(d["why"], Json::Null, "{d}");
     assert_eq!(d["routes"], json!(计分途径), "{d}");
     assert_eq!(d["source"], "语境");
-    assert!(d["rules_hash"].is_string() && d.get("rules").is_none(), "规则材料只记哈希与长度：{d}");
-    assert_eq!(d["rules_len"], "规则：走到目标那一格得 10 分；每走一步扣 1 分。".chars().count(), "{d}");
+    assert!(
+        d["rules_hash"].is_string() && d.get("rules").is_none(),
+        "规则材料只记哈希与长度：{d}"
+    );
+    assert_eq!(
+        d["rules_len"],
+        "规则：走到目标那一格得 10 分；每走一步扣 1 分。"
+            .chars()
+            .count(),
+        "{d}"
+    );
     // 代码复核 O2：账本里有一条取规则材料的标记（类别、材料哈希），只一条；程序值里没有规则原文
     let 标记: Vec<Json> = off
         .ledger
         .entries
         .iter()
         .filter_map(|e| match e {
-            Entry::Opaque { key, value, .. } if key.starts_with("unsure_fetch/") => Some(value.clone()),
+            Entry::Opaque { key, value, .. } if key.starts_with("unsure_fetch/") => {
+                Some(value.clone())
+            }
             _ => None,
         })
         .collect();
     assert_eq!(标记.len(), 1, "{标记:?}");
     assert_eq!(标记[0]["need"], "语境");
     assert_eq!(标记[0]["rules_hash"], d["rules_hash"]);
-    assert!(!off.value.to_string().contains("规则：走到目标那一格"), "程序值里不留规则原文");
-    assert!(!base.ledger.entries.iter().any(|e| matches!(e, Entry::Opaque { key, .. } if key.starts_with("unsure_fetch/"))));
+    assert!(
+        !off.value.to_string().contains("规则：走到目标那一格"),
+        "程序值里不留规则原文"
+    );
+    assert!(
+        !base
+            .ledger
+            .entries
+            .iter()
+            .any(|e| matches!(e, Entry::Opaque { key, .. } if key.starts_with("unsure_fetch/")))
+    );
     assert_eq!(d["s_done"], "照计分办法，眼下最要紧的是哪一件事？", "{d}");
     assert_eq!(on.value["detail"]["plan"]["done"]["mode"], "on");
     // 4.z：与第三圈同配置逐字相同——动作题式、逐拍状态、动作；题树用 S
@@ -983,26 +1286,47 @@ fn 完成条件_派生且只在开时进语境() {
     assert_eq!(判断状态(&off.ledger, &h), 判断状态(&base.ledger, &h));
     assert_eq!(off.value["value"], base.value["value"]);
     assert_eq!(off.ctxs, base.ctxs);
-    assert!(off.ctxs.iter().all(|c| !c.contains("这一局怎么计分")), "{:?}", off.ctxs);
+    assert!(
+        off.ctxs.iter().all(|c| !c.contains("这一局怎么计分")),
+        "{:?}",
+        off.ctxs
+    );
     assert_eq!(off.value["detail"]["plan"]["tree"]["used"], "s");
     assert!(off.asked.iter().any(|t| t == "眼下最要紧的是哪一件事？"));
     // 4.d：每次动作题判断（含题树再问）的语境里都有完成条件；状态因此与 4.z 不同；题树问 S′
     assert!(
-        !on.ctxs.is_empty() && on.ctxs.iter().all(|c| c.contains("这一局怎么计分：走到目标那一格得 10 分；每走一步扣 1 分")),
+        !on.ctxs.is_empty()
+            && on
+                .ctxs
+                .iter()
+                .all(|c| c.contains("这一局怎么计分：走到目标那一格得 10 分；每走一步扣 1 分")),
         "{:?}",
         on.ctxs
     );
     assert_ne!(判断状态(&on.ledger, &h), 判断状态(&off.ledger, &h));
     assert_eq!(on.value["detail"]["plan"]["tree"]["used"], "s_done");
-    assert!(on.asked.iter().any(|t| t == "照计分办法，眼下最要紧的是哪一件事？"), "{:?}", on.asked);
-    assert!(!on.asked.iter().any(|t| t == "眼下最要紧的是哪一件事？"), "4.d 不问 S");
+    assert!(
+        on.asked
+            .iter()
+            .any(|t| t == "照计分办法，眼下最要紧的是哪一件事？"),
+        "{:?}",
+        on.asked
+    );
+    assert!(
+        !on.asked.iter().any(|t| t == "眼下最要紧的是哪一件事？"),
+        "4.d 不问 S"
+    );
     let t = 树行(&on);
     assert_eq!(t["end"], "decided", "{t}");
     // 完成条件是生成器产物（untrusted）进了每拍的状态：不多出别种告警（去掉位置比；off 比 base 多的只有唤出 S′、S″ 那两次 W-gen-count，
     // 归属标注要 1 给 1，不报）
     let 告警 = |r: &跑出| -> Vec<String> {
-        let mut v: Vec<String> = r.report["warnings"].as_array().unwrap().iter()
-            .map(|w| w.as_str().unwrap().split(':').next().unwrap().to_string()).collect();
+        let mut v: Vec<String> = r.report["warnings"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|w| w.as_str().unwrap().split(':').next().unwrap().to_string())
+            .collect();
         v.sort();
         v
     };
@@ -1013,9 +1337,16 @@ fn 完成条件_派生且只在开时进语境() {
     b.sort();
     assert_eq!(告警(&off), b);
     for r in [&off, &on] {
-        assert_eq!(r.report["violations"], 0, "{}", r.report["violations_detail"]);
+        assert_eq!(
+            r.report["violations"], 0,
+            "{}",
+            r.report["violations_detail"]
+        );
         let rows = r.value["value"]["rows"].as_array().unwrap();
-        assert!(rows.iter().all(|x| x["by"] == "judge" || x["by"] == "top"), "{rows:?}");
+        assert!(
+            rows.iter().all(|x| x["by"] == "judge" || x["by"] == "top"),
+            "{rows:?}"
+        );
         assert_eq!(rows[0]["action"], "right", "{rows:?}");
     }
 }
@@ -1025,7 +1356,12 @@ fn 完成条件_派生且只在开时进语境() {
 #[test]
 fn 完成条件_取不到语境时留空() {
     let 取不到 = "unsure_source({fetch: fn(q, need, m) { fail(\"没有这一类材料\") }});";
-    for (前置, 坏, why, gens) in [("", 0, "no-rules", 3), (取不到, 0, "no-rules", 3), (规则取法, 1, "parse", 4), (规则取法, 2, "empty", 4)] {
+    for (前置, 坏, why, gens) in [
+        ("", 0, "no-rules", 3),
+        (取不到, 0, "no-rules", 3),
+        (规则取法, 1, "parse", 4),
+        (规则取法, 2, "empty", 4),
+    ] {
         let r = 带开关跑(&完成条件坏, 坏, 0, || 跑_四(", done: \"on\"", 前置));
         let d = &r.value["detail"]["plan"]["done"];
         assert_eq!(d["why"], why, "{前置} {d}");
@@ -1034,13 +1370,32 @@ fn 完成条件_取不到语境时留空() {
         assert_eq!(d["s_done_why"], "done-empty", "{d}");
         assert_eq!(r.value["detail"]["plan"]["tree"]["why"], "done-empty");
         assert_eq!(r.gens, gens, "{前置}");
-        assert!(r.ctxs.iter().all(|c| !c.contains("这一局怎么计分")), "{:?}", r.ctxs);
-        assert!(!r.asked.iter().any(|t| t.contains("眼下最要紧")), "题树留空，不问子题");
+        assert!(
+            r.ctxs.iter().all(|c| !c.contains("这一局怎么计分")),
+            "{:?}",
+            r.ctxs
+        );
+        assert!(
+            !r.asked.iter().any(|t| t.contains("眼下最要紧")),
+            "题树留空，不问子题"
+        );
         // 中间判断按取不到（没有题树）；有取法的那一例默认链照常取到语境再问、已决，其余到末端按最大项
         let rows = r.value["value"]["rows"].as_array().unwrap();
-        assert_eq!(rows[0]["by"], if 前置 == 规则取法 { "judge" } else { "top" }, "{rows:?}");
+        assert_eq!(
+            rows[0]["by"],
+            if 前置 == 规则取法 {
+                "judge"
+            } else {
+                "top"
+            },
+            "{rows:?}"
+        );
         assert_eq!(树行(&r)["tree"]["why"], "no-tree");
-        assert_eq!(r.report["violations"], 0, "{}", r.report["violations_detail"]);
+        assert_eq!(
+            r.report["violations"], 0,
+            "{}",
+            r.report["violations_detail"]
+        );
     }
 }
 
@@ -1052,19 +1407,31 @@ fn 缩小为空_带子题回答在原集上再问() {
     let 跑e = |开关: &'static str| 带开关跑(&全判否, true, false, || 跑_四(开关, ""));
     let end = 跑e("");
     let rows = end.value["value"]["rows"].as_array().unwrap();
-    assert_eq!((rows[0]["by"].as_str(), rows[0]["action"].as_str()), (Some("top"), Some("left")), "{rows:?}");
+    assert_eq!(
+        (rows[0]["by"].as_str(), rows[0]["action"].as_str()),
+        (Some("top"), Some("left")),
+        "{rows:?}"
+    );
     let t = 树行(&end);
     assert_eq!(t["tree"]["n1"], 0, "{t}");
     assert!(t["tree"].get("fallback").is_none(), "{t}");
     let 去向有 = |r: &跑出, w: &str| {
-        r.value["pending"].as_array().unwrap().iter().any(|p| p["via"].as_array().is_some_and(|v| v.iter().any(|x| x == w)))
+        r.value["pending"].as_array().unwrap().iter().any(|p| {
+            p["via"]
+                .as_array()
+                .is_some_and(|v| v.iter().any(|x| x == w))
+        })
     };
     assert!(去向有(&end, "缩小后为空"), "{}", end.value["pending"]);
     assert_eq!(end.value["detail"]["plan"]["tree"]["fallback"], "end");
 
     let ctx = 跑e(", fallback: \"ctx\"");
     let rows = ctx.value["value"]["rows"].as_array().unwrap();
-    assert_eq!((rows[0]["by"].as_str(), rows[0]["action"].as_str()), (Some("judge"), Some("right")), "{rows:?}");
+    assert_eq!(
+        (rows[0]["by"].as_str(), rows[0]["action"].as_str()),
+        (Some("judge"), Some("right")),
+        "{rows:?}"
+    );
     let t = 树行(&ctx);
     assert_eq!(t["end"], "decided", "{t}");
     assert_eq!(t["tree"]["fallback"], "ctx", "{t}");
@@ -1073,9 +1440,20 @@ fn 缩小为空_带子题回答在原集上再问() {
     assert!(!去向有(&ctx, "缩小后为空"), "{}", ctx.value["pending"]);
     assert_eq!(ctx.value["detail"]["plan"]["tree"]["fallback"], "ctx");
     // 再问在原集上（三个候选），语境里有子题的回答；缩小那组照样发了一次
-    assert!(ctx.ctxs.iter().any(|c| c.contains("先判了一件更小的事")), "{:?}", ctx.ctxs);
-    assert_eq!(ctx.asked.iter().filter(|x| x.contains("这件事吗")).count(), 3);
-    assert_eq!(ctx.report["violations"], 0, "{}", ctx.report["violations_detail"]);
+    assert!(
+        ctx.ctxs.iter().any(|c| c.contains("先判了一件更小的事")),
+        "{:?}",
+        ctx.ctxs
+    );
+    assert_eq!(
+        ctx.asked.iter().filter(|x| x.contains("这件事吗")).count(),
+        3
+    );
+    assert_eq!(
+        ctx.report["violations"], 0,
+        "{}",
+        ctx.report["violations_detail"]
+    );
 
     // 再问仍并列：到末端按最大项
     let tie = 带开关跑(&再问并列, true, false, || 跑e(", fallback: \"ctx\""));
@@ -1099,9 +1477,15 @@ fn 缩小为空_带子题回答在原集上再问() {
 /// 第四圈 4.d、4.e（O9 同款）：带完成条件的一局、缩小为空再问的一局，审计重放只凭账本，值与首跑相同
 #[test]
 fn 第四圈_审计重放一致() {
-    let d = 带开关跑(&审计重放, true, false, || 跑_四(", done: \"on\"", 规则取法));
+    let d = 带开关跑(&审计重放, true, false, || {
+        跑_四(", done: \"on\"", 规则取法)
+    });
     assert_eq!(d.report["replay_value"], d.value);
-    let e = 带开关跑(&审计重放, true, false, || 带开关跑(&全判否, true, false, || 跑_四(", fallback: \"ctx\"", "")));
+    let e = 带开关跑(&审计重放, true, false, || {
+        带开关跑(&全判否, true, false, || {
+            跑_四(", fallback: \"ctx\"", "")
+        })
+    });
     assert_eq!(e.report["replay_value"], e.value);
 }
 
@@ -1124,7 +1508,10 @@ fn 可达条件_两臂同一份出题_只在开时换语境与子题() {
     let z = 跑_四(", done: \"on\"", 规则取法);
     let pr = 跑_四(", done: \"on\", reach: \"on\"", 规则取法);
     for r in [&z, &pr] {
-        assert_eq!(r.gens, 7, "抽模块、唤出 far、唤出 S、派生途径、唤出 S′、唤出 S″、归属标注");
+        assert_eq!(
+            r.gens, 7,
+            "抽模块、唤出 far、唤出 S、派生途径、唤出 S′、唤出 S″、归属标注"
+        );
         let d = &r.value["detail"]["plan"]["done"];
         assert_eq!(d["routes"], json!(计分途径), "对照臂用的途径文本不变：{d}");
         assert_eq!(
@@ -1138,57 +1525,128 @@ fn 可达条件_两臂同一份出题_只在开时换语境与子题() {
         assert_eq!(d["reach_missing"], 0, "{d}");
         assert_eq!(d["s_done"], "照计分办法，眼下最要紧的是哪一件事？", "{d}");
         assert_eq!(d["s_reach"], 子题三, "{d}");
-        assert!(d["s_reach_form"].is_string() && d["s_reach_form"] != d["s_done_form"], "{d}");
+        assert!(
+            d["s_reach_form"].is_string() && d["s_reach_form"] != d["s_done_form"],
+            "{d}"
+        );
         assert_eq!(d["s_reach_over"], json!(要紧的事), "{d}");
         assert_eq!(d["s_reach_why"], Json::Null, "{d}");
         assert_eq!(d["labels"], json!([1, 0]), "{d}");
         assert_eq!(d["labels_why"], Json::Null, "{d}");
-        assert_eq!(r.report["violations"], 0, "{}", r.report["violations_detail"]);
+        assert_eq!(
+            r.report["violations"], 0,
+            "{}",
+            r.report["violations_detail"]
+        );
         assert_eq!(r.value["value"]["rows"][0]["action"], "right");
         assert_eq!(树行(r)["end"], "decided");
     }
     // S″ 的唤出提示带可达条件的途径、收到规则原文 1 份；归属标注不带材料，提示里有途径编号与 S″ 的候选
-    let 唤出三: Vec<_> = pr.gen_calls.iter().filter(|(p, _)| p.contains("拿得到")).collect();
+    let 唤出三: Vec<_> = pr
+        .gen_calls
+        .iter()
+        .filter(|(p, _)| p.contains("拿得到"))
+        .collect();
     assert_eq!(唤出三.len(), 1, "{:?}", pr.gen_calls);
-    assert!(唤出三[0].0.contains("要先满足：还在数轴上") && 唤出三[0].1 == 1, "{:?}", 唤出三);
-    let 标注: Vec<_> = pr.gen_calls.iter().filter(|(p, _)| p.contains("标上")).collect();
+    assert!(
+        唤出三[0].0.contains("要先满足：还在数轴上") && 唤出三[0].1 == 1,
+        "{:?}",
+        唤出三
+    );
+    let 标注: Vec<_> = pr
+        .gen_calls
+        .iter()
+        .filter(|(p, _)| p.contains("标上"))
+        .collect();
     assert_eq!(标注.len(), 1);
-    assert!(标注[0].0.contains("1. 走到目标那一格得 10 分") && 标注[0].0.contains("往目标走") && 标注[0].1 == 0, "{:?}", 标注);
+    assert!(
+        标注[0].0.contains("1. 走到目标那一格得 10 分")
+            && 标注[0].0.contains("往目标走")
+            && 标注[0].1 == 0,
+        "{:?}",
+        标注
+    );
     // 两臂出题相同（同一份预跑）：生成器提示逐字相同
     assert_eq!(z.gen_calls, pr.gen_calls);
     assert_eq!(动作题式(&z), 动作题式(&pr), "可达条件进语境、不进题面");
     // 5.z：与第四圈 4.d 同配置
     assert_eq!(z.value["detail"]["plan"]["done"]["reach_mode"], "off");
     assert_eq!(z.value["detail"]["plan"]["tree"]["used"], "s_done");
-    assert!(!z.ctxs.is_empty() && z.ctxs.iter().all(|c| c.contains("这一局怎么计分：走到目标那一格得 10 分；每走一步扣 1 分")), "{:?}", z.ctxs);
+    assert!(
+        !z.ctxs.is_empty()
+            && z.ctxs
+                .iter()
+                .all(|c| c.contains("这一局怎么计分：走到目标那一格得 10 分；每走一步扣 1 分")),
+        "{:?}",
+        z.ctxs
+    );
     assert!(z.ctxs.iter().all(|c| !c.contains("每条带")), "{:?}", z.ctxs);
-    assert!(z.asked.iter().any(|t| t == "照计分办法，眼下最要紧的是哪一件事？"));
-    assert!(!z.asked.iter().any(|t| t == 子题三 || t == "眼下最要紧的是哪一件事？"), "5.z 只问 S′");
+    assert!(
+        z.asked
+            .iter()
+            .any(|t| t == "照计分办法，眼下最要紧的是哪一件事？")
+    );
+    assert!(
+        !z.asked
+            .iter()
+            .any(|t| t == 子题三 || t == "眼下最要紧的是哪一件事？"),
+        "5.z 只问 S′"
+    );
     // 5.p：语境带可达条件，题树问 S″
     assert_eq!(pr.value["detail"]["plan"]["done"]["reach_mode"], "on");
     assert_eq!(pr.value["detail"]["plan"]["tree"]["used"], "s_reach");
     assert_eq!(pr.value["detail"]["plan"]["tree"]["why"], Json::Null);
     let 语境 = 可达语境();
-    assert!(!pr.ctxs.is_empty() && pr.ctxs.iter().all(|c| c.contains(&语境)), "{:?}", pr.ctxs);
+    assert!(
+        !pr.ctxs.is_empty() && pr.ctxs.iter().all(|c| c.contains(&语境)),
+        "{:?}",
+        pr.ctxs
+    );
     assert!(pr.asked.iter().any(|t| t == 子题三), "{:?}", pr.asked);
     assert!(!pr.asked.iter().any(|t| t == "照计分办法，眼下最要紧的是哪一件事？" || t == "眼下最要紧的是哪一件事？"), "5.p 只问 S″");
     let h = 动作题式(&z);
-    assert_ne!(判断状态(&pr.ledger, &h), 判断状态(&z.ledger, &h), "语境不同，状态不同");
+    assert_ne!(
+        判断状态(&pr.ledger, &h),
+        判断状态(&z.ledger, &h),
+        "语境不同，状态不同"
+    );
 }
 
 /// 第五圈 §2.1 反面一：生成器给的途径没有可达条件（第四圈的纯字符串）——条件都空、reach_missing 记条数（when、needs、cost 都空才算）；
 /// 5.p 照样跑，语境里写「原文没写」（arm3.py 的硬门槛读 reach_missing 拒跑真机）
 #[test]
 fn 可达条件_途径没有条件() {
-    let r = 带开关跑(&完成条件坏, 3, 0, || 跑_四(", done: \"on\", reach: \"on\"", 规则取法));
+    let r = 带开关跑(&完成条件坏, 3, 0, || {
+        跑_四(", done: \"on\", reach: \"on\"", 规则取法)
+    });
     let d = &r.value["detail"]["plan"]["done"];
     assert_eq!(d["why"], Json::Null, "{d}");
     assert_eq!(d["routes"], json!(计分途径), "{d}");
     assert_eq!(d["reach_missing"], 2, "{d}");
-    assert!(d["reach"].as_array().unwrap().iter().all(|x| x["when"] == "" && x["needs"] == json!([]) && x["cost"] == "" && x["from"] == ""), "{d}");
-    assert!(r.ctxs.iter().all(|c| c.contains("走到目标那一格得 10 分（什么时候计：原文没写；要先满足：原文没写；代价：原文没写）")), "{:?}", r.ctxs);
+    assert!(
+        d["reach"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .all(|x| x["when"] == ""
+                && x["needs"] == json!([])
+                && x["cost"] == ""
+                && x["from"] == ""),
+        "{d}"
+    );
+    assert!(
+        r.ctxs.iter().all(|c| c.contains(
+            "走到目标那一格得 10 分（什么时候计：原文没写；要先满足：原文没写；代价：原文没写）"
+        )),
+        "{:?}",
+        r.ctxs
+    );
     assert_eq!(r.value["detail"]["plan"]["tree"]["used"], "s_reach");
-    assert_eq!(r.report["violations"], 0, "{}", r.report["violations_detail"]);
+    assert_eq!(
+        r.report["violations"], 0,
+        "{}",
+        r.report["violations_detail"]
+    );
 }
 
 /// 第五圈 §2.1 反面二：归属标注不合格（长度不等于候选数、不是 JSON 对象、超出途径条数）——labels 留空、原因进明细；
@@ -1197,13 +1655,19 @@ fn 可达条件_途径没有条件() {
 fn 可达条件_标注不合格时留空并写明原因() {
     let 好 = 跑_四(", done: \"on\", reach: \"on\"", 规则取法);
     for (坏, why) in [(1u8, "len"), (2, "parse"), (3, "range")] {
-        let r = 带开关跑(&标注坏, 坏, 0, || 跑_四(", done: \"on\", reach: \"on\"", 规则取法));
+        let r = 带开关跑(&标注坏, 坏, 0, || {
+            跑_四(", done: \"on\", reach: \"on\"", 规则取法)
+        });
         let d = &r.value["detail"]["plan"]["done"];
         assert_eq!(d["labels"], json!([]), "{d}");
         assert_eq!(d["labels_why"], why, "{d}");
         assert_eq!(d["s_reach"], 子题三, "{d}");
         assert_eq!(r.value["value"], 好.value["value"], "标注不进运行");
-        assert_eq!(r.report["violations"], 0, "{}", r.report["violations_detail"]);
+        assert_eq!(
+            r.report["violations"], 0,
+            "{}",
+            r.report["violations_detail"]
+        );
     }
 }
 
@@ -1211,34 +1675,69 @@ fn 可达条件_标注不合格时留空并写明原因() {
 /// 途径留空（取不到规则材料）时 S″ 不唤出、不标注
 #[test]
 fn 可达条件_子题三没出来时题树与语境都留空() {
-    let pr = 带开关跑(&子题三空, true, false, || 跑_四(", done: \"on\", reach: \"on\"", 规则取法));
+    let pr = 带开关跑(&子题三空, true, false, || {
+        跑_四(", done: \"on\", reach: \"on\"", 规则取法)
+    });
     let d = &pr.value["detail"]["plan"]["done"];
     assert_eq!(d["s_reach"], Json::Null, "{d}");
     assert_eq!(d["s_reach_why"], "s-not-elicited", "{d}");
     assert_eq!(d["labels_why"], "no-s", "{d}");
     assert_eq!(pr.value["detail"]["plan"]["tree"]["why"], "s-not-elicited");
-    assert!(pr.ctxs.iter().all(|c| !c.contains("这一局怎么计分")), "{:?}", pr.ctxs);
-    assert!(!pr.asked.iter().any(|t| t.contains("眼下最要紧")), "题树留空，不问子题");
+    assert!(
+        pr.ctxs.iter().all(|c| !c.contains("这一局怎么计分")),
+        "{:?}",
+        pr.ctxs
+    );
+    assert!(
+        !pr.asked.iter().any(|t| t.contains("眼下最要紧")),
+        "题树留空，不问子题"
+    );
     assert_eq!(树行(&pr)["tree"]["why"], "no-tree");
-    assert_eq!(pr.report["violations"], 0, "{}", pr.report["violations_detail"]);
-    let z = 带开关跑(&子题三空, true, false, || 跑_四(", done: \"on\"", 规则取法));
+    assert_eq!(
+        pr.report["violations"], 0,
+        "{}",
+        pr.report["violations_detail"]
+    );
+    let z = 带开关跑(&子题三空, true, false, || {
+        跑_四(", done: \"on\"", 规则取法)
+    });
     assert_eq!(z.value["detail"]["plan"]["tree"]["used"], "s_done");
-    assert!(z.ctxs.iter().all(|c| c.contains("这一局怎么计分：")), "{:?}", z.ctxs);
+    assert!(
+        z.ctxs.iter().all(|c| c.contains("这一局怎么计分：")),
+        "{:?}",
+        z.ctxs
+    );
     for 前置 in ["", 规则取法] {
         let 坏 = if 前置.is_empty() { 0 } else { 2 };
-        let r = 带开关跑(&完成条件坏, 坏, 0, || 跑_四(", done: \"on\", reach: \"on\"", 前置));
+        let r = 带开关跑(&完成条件坏, 坏, 0, || {
+            跑_四(", done: \"on\", reach: \"on\"", 前置)
+        });
         let d = &r.value["detail"]["plan"]["done"];
-        assert_eq!((d["s_reach_why"].as_str(), d["labels_why"].as_str()), (Some("done-empty"), Some("no-s")), "{d}");
+        assert_eq!(
+            (d["s_reach_why"].as_str(), d["labels_why"].as_str()),
+            (Some("done-empty"), Some("no-s")),
+            "{d}"
+        );
         assert_eq!(d["reach"], json!([]), "{d}");
-        assert!(!r.gen_calls.iter().any(|(p, _)| p.contains("拿得到") || p.contains("标上")));
-        assert!(r.ctxs.iter().all(|c| !c.contains("这一局怎么计分")), "{:?}", r.ctxs);
+        assert!(
+            !r.gen_calls
+                .iter()
+                .any(|(p, _)| p.contains("拿得到") || p.contains("标上"))
+        );
+        assert!(
+            r.ctxs.iter().all(|c| !c.contains("这一局怎么计分")),
+            "{:?}",
+            r.ctxs
+        );
     }
 }
 
 /// 第五圈 5.p（O9 同款）：带可达条件的一局，审计重放只凭账本，值与首跑相同
 #[test]
 fn 第五圈_审计重放一致() {
-    let r = 带开关跑(&审计重放, true, false, || 跑_四(", done: \"on\", reach: \"on\"", 规则取法));
+    let r = 带开关跑(&审计重放, true, false, || {
+        跑_四(", done: \"on\", reach: \"on\"", 规则取法)
+    });
     assert_eq!(r.report["replay_value"], r.value);
 }
 
@@ -1258,7 +1757,11 @@ fn 判断序列(l: &Ledger, qs: &[String]) -> Vec<(String, String, String)> {
     l.entries
         .iter()
         .filter_map(|e| match e {
-            Entry::Judge { jkey: Some(k), answer, .. } if qs.is_empty() || qs.contains(&k.q) => {
+            Entry::Judge {
+                jkey: Some(k),
+                answer,
+                ..
+            } if qs.is_empty() || qs.contains(&k.q) => {
                 Some((k.q.clone(), k.state.clone(), format!("{answer:?}")))
             }
             _ => None,
@@ -1271,7 +1774,9 @@ fn 去键(v: &Json) -> Json {
     match v {
         Json::Object(m) => Json::Object(
             m.iter()
-                .filter(|(k, _)| !k.ends_with("key") && !k.ends_with("keys") && *k != "site" && *k != "hash")
+                .filter(|(k, _)| {
+                    !k.ends_with("key") && !k.ends_with("keys") && *k != "site" && *k != "hash"
+                })
                 .map(|(k, x)| (k.clone(), 去键(x)))
                 .collect(),
         ),
@@ -1284,7 +1789,9 @@ fn 去键(v: &Json) -> Json {
 /// 默认链报告行与 pending（去键）；没有取法时另记全部判断
 fn 跨库快照(lib: &str, 前置: &str, 全否: bool) -> Json {
     let r = 带开关跑(&全判否, 全否, false, || {
-        带开关跑(&选中间判断, true, false, || 跑_源(&驱动程序_库(lib, "", 2000, 前置), Some(0), None, false))
+        带开关跑(&选中间判断, true, false, || {
+            跑_源(&驱动程序_库(lib, "", 2000, 前置), Some(0), None, false)
+        })
     });
     let h = 动作题式(&r);
     let mut qs = vec![h.clone()];
@@ -1293,7 +1800,13 @@ fn 跨库快照(lib: &str, 前置: &str, 全否: bool) -> Json {
             qs.push(x.to_string());
         }
     }
-    let 序 = |v: Vec<(String, String, String)>| json!(v.into_iter().map(|(a, b, c)| json!([a, b, c])).collect::<Vec<_>>());
+    let 序 = |v: Vec<(String, String, String)>| {
+        json!(
+            v.into_iter()
+                .map(|(a, b, c)| json!([a, b, c]))
+                .collect::<Vec<_>>()
+        )
+    };
     json!({
         "act_form": h,
         "step_judges": 序(判断序列(&r.ledger, &qs)),
@@ -1311,20 +1824,37 @@ fn 跨库快照(lib: &str, 前置: &str, 全否: bool) -> Json {
 /// 重录时把 26bc0d008 的 lib/derive 拷到 lib/derive_r3，`JPP_R3_SNAPSHOT=record` 跑这条，录完删掉拷贝
 #[test]
 fn 第四圈_缺省时与第三圈库逐字相同() {
-    let path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/z0886_r3_snapshot.json");
-    let 配置 = [("无取法", "", false), ("有取法", 规则取法, false), ("有取法+全判否", 规则取法, true)];
+    let path =
+        PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/z0886_r3_snapshot.json");
+    let 配置 = [
+        ("无取法", "", false),
+        ("有取法", 规则取法, false),
+        ("有取法+全判否", 规则取法, true),
+    ];
     if std::env::var("JPP_R3_SNAPSHOT").is_ok_and(|v| v == "record") {
         let mut m = serde_json::Map::new();
         for (名, 前置, 全否) in 配置 {
             m.insert(名.to_string(), 跨库快照("derive_r3", 前置, 全否));
         }
-        std::fs::write(&path, serde_json::to_string_pretty(&Json::Object(m)).unwrap() + "\n").unwrap();
+        std::fs::write(
+            &path,
+            serde_json::to_string_pretty(&Json::Object(m)).unwrap() + "\n",
+        )
+        .unwrap();
     }
     let want: Json = serde_json::from_str(&std::fs::read_to_string(&path).unwrap()).unwrap();
     for (名, 前置, 全否) in 配置 {
         let got = 跨库快照("derive", 前置, 全否);
         let w = &want[名];
-        for k in ["act_form", "step_judges", "all_judges", "rows", "ctxs", "unsure_default", "pending"] {
+        for k in [
+            "act_form",
+            "step_judges",
+            "all_judges",
+            "rows",
+            "ctxs",
+            "unsure_default",
+            "pending",
+        ] {
             assert_eq!(got[k], w[k], "[{名}] {k}");
         }
     }
@@ -1335,13 +1865,22 @@ fn 第四圈_缺省时与第三圈库逐字相同() {
 #[test]
 fn 第四圈_预算矩阵不违规() {
     let mut 失败 = vec![];
-    for (done, fb, reach) in [("off", "end", "off"), ("on", "end", "off"), ("off", "ctx", "off"), ("on", "ctx", "off"), ("on", "end", "on"), ("on", "ctx", "on")] {
+    for (done, fb, reach) in [
+        ("off", "end", "off"),
+        ("on", "end", "off"),
+        ("off", "ctx", "off"),
+        ("on", "ctx", "off"),
+        ("on", "end", "on"),
+        ("on", "ctx", "on"),
+    ] {
         for calls in 4usize..=30 {
             let 开关 = format!(", done: \"{done}\", fallback: \"{fb}\", reach: \"{reach}\"");
             全判否.with(|c| c.set(true));
             选中间判断.with(|c| c.set(true));
             let src = 驱动程序_带("[2]", &开关, calls, 规则取法);
-            let res = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| 跑_源(&src, Some(0), None, false)));
+            let res = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+                跑_源(&src, Some(0), None, false)
+            }));
             全判否.with(|c| c.set(false));
             选中间判断.with(|c| c.set(false));
             let Ok(r) = res else {
@@ -1350,12 +1889,27 @@ fn 第四圈_预算矩阵不违规() {
             };
             let v = r.report["violations"].as_u64().unwrap_or(999);
             if v != 0 {
-                失败.push(format!("{done}/{fb}/{reach}/{calls}: violations={v} {}", r.report["violations_detail"]));
+                失败.push(format!(
+                    "{done}/{fb}/{reach}/{calls}: violations={v} {}",
+                    r.report["violations_detail"]
+                ));
             }
-            let rows = r.value["value"]["rows"].as_array().cloned().unwrap_or_default();
-            for u in r.report["unsure_default"].as_array().cloned().unwrap_or_default() {
-                if u["tree"]["fallback"] == "ctx" && u["via"] == "预算、按最后读数最大项" && rows[0]["action"] != "left" {
-                    失败.push(format!("{done}/{fb}/{reach}/{calls}: 预算停在再问之前却没按首问最大项：{rows:?}"));
+            let rows = r.value["value"]["rows"]
+                .as_array()
+                .cloned()
+                .unwrap_or_default();
+            for u in r.report["unsure_default"]
+                .as_array()
+                .cloned()
+                .unwrap_or_default()
+            {
+                if u["tree"]["fallback"] == "ctx"
+                    && u["via"] == "预算、按最后读数最大项"
+                    && rows[0]["action"] != "left"
+                {
+                    失败.push(format!(
+                        "{done}/{fb}/{reach}/{calls}: 预算停在再问之前却没按首问最大项：{rows:?}"
+                    ));
                 }
             }
         }

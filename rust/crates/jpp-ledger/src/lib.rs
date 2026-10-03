@@ -1149,11 +1149,12 @@ impl Ledger {
     pub fn decode(text: &str) -> Result<(Ledger, Option<Truncated>), String> {
         // 依据：20 §2.3 jpp-ledger「v1 账本不迁移，decode 报 E-ledger-archived」；21 E5
         if let Ok(Json::Object(m)) = serde_json::from_str::<Json>(text)
-            && m.contains_key("entries") {
-                return Err(format!(
-                    "E-ledger-archived: 这是 v1 格式的账本（整份 JSON，键只存哈希），已归档不迁移。修法：用标签 {V1_ARCHIVE_TAG} 处的二进制重放它"
-                ));
-            }
+            && m.contains_key("entries")
+        {
+            return Err(format!(
+                "E-ledger-archived: 这是 v1 格式的账本（整份 JSON，键只存哈希），已归档不迁移。修法：用标签 {V1_ARCHIVE_TAG} 处的二进制重放它"
+            ));
+        }
         let mut lines: Vec<&str> = text.split('\n').collect();
         let ends_clean = text.ends_with('\n');
         if ends_clean {

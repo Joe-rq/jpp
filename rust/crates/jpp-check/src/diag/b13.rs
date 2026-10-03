@@ -150,16 +150,17 @@ pub fn diagnose_fill(
     if direct_write(&text) {
         for (k, v) in fills {
             if let Some(v) = v
-                && looks_abstract(v) {
-                    // 依据：B13（12 §3 J-17 后「诊断层规则集第一批」）
-                    out.push(Diagnostic::warning(
+                && looks_abstract(v)
+            {
+                // 依据：B13（12 §3 J-17 后「诊断层规则集第一批」）
+                out.push(Diagnostic::warning(
                         "W-diag-abstract-direct",
                         format!(
                             "槽 {k} 填的「{v}」看起来是抽象概念，题式却问「直接写出」：抽象概念在材料里多以具体行为出现，「直接写出」对它没有判定边界，外延未定（B13；第四轮 D 题错判集中在抽象档）。修法：改问「是否与「{v}」这个话题相关」，或问「是否描述了体现{v}的具体行为」；若确是具体对象，在题式上声明接受的填法类型（B23）"
                         ),
                         span,
                     ));
-                }
+            }
         }
     }
     out
@@ -460,9 +461,10 @@ fn two_judgments_en(text: &str) -> Option<String> {
         return Some(format!("出现 {whether} 处「whether」"));
     }
     if let Some(i) = ws.iter().position(|w| w == "both")
-        && ws[i + 1..].iter().any(|w| w == "and") {
-            return Some("用「both … and」连接两个条件".to_string());
-        }
+        && ws[i + 1..].iter().any(|w| w == "and")
+    {
+        return Some("用「both … and」连接两个条件".to_string());
+    }
     for i in 0..ws.len() {
         if (ws[i] == "and" || ws[i] == "or") && i + 2 < ws.len() && 助.contains(&ws[i + 1].as_str())
         {

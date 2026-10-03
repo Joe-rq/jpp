@@ -944,8 +944,9 @@ pub(crate) fn element_parts(it: &Value) -> (Value, Value) {
         _ => vec![],
     };
     if let Some(e) = it.get("exit")
-        && !matches!(e, Value::Unit) {
-            t.push(e);
-        }
+        && !matches!(e, Value::Unit)
+    {
+        t.push(e);
+    }
     (it.get("item").unwrap_or(Value::Unit), Value::list(t))
 }

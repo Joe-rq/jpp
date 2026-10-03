@@ -279,10 +279,11 @@ pub fn with_effects(p: &Program, name: &str, effects: &[&str]) -> (Program, jpp:
             function,
             span,
         } = s
-            && n == name {
-                function.effects = Some(effects.iter().map(|e| e.to_string()).collect());
-                at = Some(*span);
-            }
+            && n == name
+        {
+            function.effects = Some(effects.iter().map(|e| e.to_string()).collect());
+            at = Some(*span);
+        }
     }
     (
         out,

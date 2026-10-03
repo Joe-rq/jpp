@@ -36,6 +36,11 @@ step() { local name="$1"; shift; run_step "$MODE" "$name" "$@"; }
 gate() { local name="$1"; shift; run_step "$GATE" "${name}（挡位 ${GATE}）" "$@"; }
 
 gate "cargo fmt --check（计需重排文件数）" python3 scripts/fmt_clippy.py fmt
+# Linux 上 clippy 比研究机（macOS）多报几条与平台有关的告警（例如只在 macOS 才构造的枚举变体「从不构造」）：
+# Linux 用 scripts/baselines/clippy-linux.json（只在公开侧，同步时保留）当基线，其余平台用 clippy.json。基线只许减少。
+if [ "$(uname -s)" = Linux ] && [ -f scripts/baselines/clippy-linux.json ]; then
+  cp scripts/baselines/clippy-linux.json scripts/baselines/clippy.json
+fi
 gate "cargo clippy（计告警数）" python3 scripts/fmt_clippy.py clippy
 # 计数只认「路径:行:列: warning|error: 」这一种短格式；工具链换版本后格式若变，计数会失真。
 # 这里把缓存里的原始输出前几行打出来，便于核对计数口径（第二次运行只读缓存，不重新编译）。

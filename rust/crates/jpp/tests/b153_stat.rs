@@ -148,8 +148,8 @@ fn d_别的统计量不借认证线() {
     assert_eq!(照常.kind, "at(2)", "记录能用：{:?}", 照常.exits);
     assert_ne!(照常.exits[0]["grade"], "Cold");
     // B187（批 9 第 3 格）：`expect` 上没有现成的回答，不写线是缺分档参数（形状错）
-    let e = 跑(&单切(四档, r#", {stat: "expect"}"#), a.clone(), &c)
-        .expect_err("expect 不写线该报错");
+    let e =
+        跑(&单切(四档, r#", {stat: "expect"}"#), a.clone(), &c).expect_err("expect 不写线该报错");
     assert!(e.contains("E-cut-options") && e.contains("declare"), "{e}");
     let e = 跑(&单切(四档, r#", {stat: "confidence"}"#), a.clone(), &c)
         .expect_err("confidence 不写线该报错");
@@ -408,8 +408,7 @@ fn i_画像未测报取不到() {
         }
     }
     assert!(jpp::check(&p).find("E-stat-unavailable").is_none());
-    let e = 跑(&src, Answer::Noul(0.8), &CalibStore::new())
-        .expect_err("非固定端口没有 confidence");
+    let e = 跑(&src, Answer::Noul(0.8), &CalibStore::new()).expect_err("非固定端口没有 confidence");
     assert!(e.contains("E-stat-unavailable"), "{e}");
 }
 

@@ -197,7 +197,10 @@ pub fn aggregate(ledgers: &[Ledger], roster: &[String]) -> BankStats {
                 s.cost += *cost;
             }
             if let Some(k) = jkey {
-                sites.entry(hash.to_string()).or_default().insert(k.site.clone());
+                sites
+                    .entry(hash.to_string())
+                    .or_default()
+                    .insert(k.site.clone());
             }
             seen.insert(hash.to_string());
             // 出口重算：题式记录（线、δ）取自本账本的 CalibUsed

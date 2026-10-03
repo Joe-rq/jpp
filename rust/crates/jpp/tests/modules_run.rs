@@ -76,7 +76,13 @@ fn 无生成(_p: &str) -> Vec<Json> {
 
 #[test]
 fn 只填模块_零生成_组装出题与输入() {
-    type 见 = (String, Vec<String>, Vec<String>, Option<String>, Vec<String>);
+    type 见 = (
+        String,
+        Vec<String>,
+        Vec<String>,
+        Option<String>,
+        Vec<String>,
+    );
     let seen: RefCell<Vec<见>> = RefCell::new(vec![]);
     let r = 跑_按提示(
         &程序(全模块),

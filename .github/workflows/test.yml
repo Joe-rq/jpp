@@ -19,11 +19,11 @@ jobs:
     # 发行画像核对、等价写法对。文档片段与示例实跑另有阻断的 docs-and-examples 作业。
     # 其中两项由 JPP_CI_GATE 挡：fmt（基线 0）、clippy（告警数不超基线）；
     # 其余各项仍是报告模式，读数写进本次运行的摘要页，不使 CI 失败。
-    # JPP_CI_GATE 是总开关：report = 只报告（过渡期），fail = 挡。研究树 fmt 清零并同步过来后翻成 fail。
+    # JPP_CI_GATE 是总开关：report = 只报告，fail = 挡。研究树 fmt 清零并同步过来后（2026-10-03）已翻成 fail。
     # Public subset of the research tree's scripts/ci.sh (the doc snippets and examples run in the blocking
     # docs-and-examples job). Two checks are gated by JPP_CI_GATE (fmt at baseline 0, clippy not above baseline);
-    # the rest stay in report mode. JPP_CI_GATE is the master switch: report = report only (transition), fail = block.
-    name: rust-checks (report)
+    # the rest stay in report mode. JPP_CI_GATE is the master switch: report = report only, fail = block (flipped to fail on 2026-10-03, after the repository-wide rustfmt).
+    name: rust-checks
     runs-on: ubuntu-latest
     env:
       # fmt_clippy.py 按无颜色的短格式数 clippy 告警；工具链 action 默认打开颜色，会让计数归零。
@@ -45,7 +45,7 @@ jobs:
         working-directory: rust
         env:
           JPP_CI_MODE: report
-          JPP_CI_GATE: report
+          JPP_CI_GATE: fail
   docs-and-examples:
     # 阻断：GUIDE / README / examples/README / METHODS 里每一段代码（sh 片段后面贴的输出逐字核对）、
     # tests/golden/manifest.json 登记的每个示例都实跑；任何一个跑不通，这个作业就红。

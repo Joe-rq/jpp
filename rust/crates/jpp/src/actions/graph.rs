@@ -445,12 +445,7 @@ fn bip_solve(best: &BipEdges, rows: &[usize], cols: &[usize]) -> BipSol {
 /// 每个决定用紧格图里的一次增广路核对「已定的前缀还能补成完美匹配」，所以不会走进死路，每个节点都至少通向一个解。
 /// 手里始终有一个与前缀相容的完美匹配（见证）：见证自己选的分支零成本，其他分支只需从被挤掉的那一行找一条增广路，
 /// 单次 O(紧格数)；C-8 原做法每个分支重跑一次匈牙利（O(n²m)），162×163 上是主要耗时。
-fn bip_enumerate(
-    best: &BipEdges,
-    n: usize,
-    m: usize,
-    root: &BipSol,
-) -> (指派组, bool) {
+fn bip_enumerate(best: &BipEdges, n: usize, m: usize, root: &BipSol) -> (指派组, bool) {
     let mut found = vec![root.pairs.clone()];
     let wmax = best.values().map(|x| x.0).fold(0.0f64, f64::max);
     if wmax <= 0.0 || root.pairs.is_empty() {

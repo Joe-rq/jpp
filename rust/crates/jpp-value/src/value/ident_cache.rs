@@ -30,7 +30,10 @@ impl 子树标记 {
         !self.有函数 && !self.有句柄
     }
     fn 并(self, o: 子树标记) -> 子树标记 {
-        子树标记 { 有函数: self.有函数 || o.有函数, 有句柄: self.有句柄 || o.有句柄 }
+        子树标记 {
+            有函数: self.有函数 || o.有函数,
+            有句柄: self.有句柄 || o.有句柄,
+        }
     }
 }
 
@@ -49,11 +52,19 @@ impl 弱引用 {
     fn 指着(&self, v: &Value) -> bool {
         match (self, v) {
             (弱引用::List(w), Value::List(l)) => w.upgrade().is_some_and(|x| Rc::ptr_eq(&x, l)),
-            (弱引用::Record(w), Value::Record(r)) => w.upgrade().is_some_and(|x| Rc::ptr_eq(&x, r)),
-            (弱引用::Text(w), Value::Text(t, _)) => w.upgrade().is_some_and(|x| Rc::ptr_eq(&x, t)),
+            (弱引用::Record(w), Value::Record(r)) => {
+                w.upgrade().is_some_and(|x| Rc::ptr_eq(&x, r))
+            }
+            (弱引用::Text(w), Value::Text(t, _)) => {
+                w.upgrade().is_some_and(|x| Rc::ptr_eq(&x, t))
+            }
             (弱引用::Mat(w), Value::Mat(m)) => w.upgrade().is_some_and(|x| Rc::ptr_eq(&x, m)),
-            (弱引用::State(w), Value::State(s)) => w.upgrade().is_some_and(|x| Rc::ptr_eq(&x, s)),
-            (弱引用::Question(w), Value::Question(q)) => w.upgrade().is_some_and(|x| Rc::ptr_eq(&x, q)),
+            (弱引用::State(w), Value::State(s)) => {
+                w.upgrade().is_some_and(|x| Rc::ptr_eq(&x, s))
+            }
+            (弱引用::Question(w), Value::Question(q)) => {
+                w.upgrade().is_some_and(|x| Rc::ptr_eq(&x, q))
+            }
             (弱引用::Form(w), Value::Form(f)) => w.upgrade().is_some_and(|x| Rc::ptr_eq(&x, f)),
             _ => false,
         }
@@ -108,15 +119,34 @@ fn 按需清理(i: usize, len: usize, 清: impl FnOnce() -> usize) {
 /// 这个节点按身份缓存吗：给 (指针, 种类) 与弱引用。
 fn 身份(v: &Value) -> Option<((usize, u8), 弱引用)> {
     Some(match v {
-        Value::List(l) if l.len() >= 缓存项数 => ((Rc::as_ptr(l) as *const () as usize, 1), 弱引用::List(Rc::downgrade(l))),
-        Value::Record(r) if r.len() >= 缓存项数 => {
-            ((Rc::as_ptr(r) as *const () as usize, 2), 弱引用::Record(Rc::downgrade(r)))
-        }
-        Value::Text(t, _) if t.len() >= 缓存字节 => ((Rc::as_ptr(t) as *const u8 as usize, 3), 弱引用::Text(Rc::downgrade(t))),
-        Value::Mat(m) => ((Rc::as_ptr(m) as *const () as usize, 4), 弱引用::Mat(Rc::downgrade(m))),
-        Value::State(s) => ((Rc::as_ptr(s) as *const () as usize, 5), 弱引用::State(Rc::downgrade(s))),
-        Value::Question(q) => ((Rc::as_ptr(q) as *const () as usize, 6), 弱引用::Question(Rc::downgrade(q))),
-        Value::Form(f) => ((Rc::as_ptr(f) as *const () as usize, 7), 弱引用::Form(Rc::downgrade(f))),
+        Value::List(l) if l.len() >= 缓存项数 => (
+            (Rc::as_ptr(l) as *const () as usize, 1),
+            弱引用::List(Rc::downgrade(l)),
+        ),
+        Value::Record(r) if r.len() >= 缓存项数 => (
+            (Rc::as_ptr(r) as *const () as usize, 2),
+            弱引用::Record(Rc::downgrade(r)),
+        ),
+        Value::Text(t, _) if t.len() >= 缓存字节 => (
+            (Rc::as_ptr(t) as *const u8 as usize, 3),
+            弱引用::Text(Rc::downgrade(t)),
+        ),
+        Value::Mat(m) => (
+            (Rc::as_ptr(m) as *const () as usize, 4),
+            弱引用::Mat(Rc::downgrade(m)),
+        ),
+        Value::State(s) => (
+            (Rc::as_ptr(s) as *const () as usize, 5),
+            弱引用::State(Rc::downgrade(s)),
+        ),
+        Value::Question(q) => (
+            (Rc::as_ptr(q) as *const () as usize, 6),
+            弱引用::Question(Rc::downgrade(q)),
+        ),
+        Value::Form(f) => (
+            (Rc::as_ptr(f) as *const () as usize, 7),
+            弱引用::Form(Rc::downgrade(f)),
+        ),
         _ => return None,
     })
 }
@@ -161,7 +191,12 @@ pub fn 来源集摘要(s: &Sources) -> String {
         return 算();
     }
     let k = Rc::as_ptr(m) as usize;
-    if let Some(h) = 集摘要.with(|t| t.borrow().get(&k).filter(|(w, _)| 同一(w, m)).map(|(_, h)| h.clone())) {
+    if let Some(h) = 集摘要.with(|t| {
+        t.borrow()
+            .get(&k)
+            .filter(|(w, _)| 同一(w, m))
+            .map(|(_, h)| h.clone())
+    }) {
         return h;
     }
     let h = 算();
@@ -184,7 +219,10 @@ pub(crate) fn 并集(a: &来源表, b: &来源表, 算: impl FnOnce() -> Sources
     }
     let k = (Rc::as_ptr(a) as usize, Rc::as_ptr(b) as usize);
     if let Some(r) = 并集表.with(|t| {
-        t.borrow().get(&k).filter(|(wa, wb, _)| 同一(wa, a) && 同一(wb, b)).map(|(_, _, r)| r.clone())
+        t.borrow()
+            .get(&k)
+            .filter(|(wa, wb, _)| 同一(wa, a) && 同一(wb, b))
+            .map(|(_, _, r)| r.clone())
     }) {
         return r;
     }
@@ -233,7 +271,16 @@ fn 用条目<T>(v: &Value, f: impl FnOnce(&mut 条目) -> T) -> Option<T> {
                 t.retain(|_, e| e.弱.活着());
                 t.len()
             });
-            t.insert(k, 条目 { 弱, 标记, 来源: None, 指纹哈希: None, 单元哈希: None });
+            t.insert(
+                k,
+                条目 {
+                    弱,
+                    标记,
+                    来源: None,
+                    指纹哈希: None,
+                    单元哈希: None,
+                },
+            );
         });
     }
     表.with(|t| t.borrow_mut().get_mut(&k).map(f))
@@ -243,12 +290,23 @@ fn 算标记(v: &Value) -> 子树标记 {
     记访问_容器(v);
     match v {
         Value::List(l) => l.iter().fold(子树标记::default(), |a, x| a.并(标记(x))),
-        Value::Record(r) => r.iter().fold(子树标记::default(), |a, (_, x)| a.并(标记(x))),
+        Value::Record(r) => r
+            .iter()
+            .fold(子树标记::default(), |a, (_, x)| a.并(标记(x))),
         Value::Stop(x) => 标记(x),
-        Value::Fn(_) => 子树标记 { 有函数: true, 有句柄: false },
-        Value::Exit(_) | Value::Cut(_) | Value::Gen(_) | Value::Duty(_) | Value::Reading(_) | Value::Score(_) => {
-            子树标记 { 有函数: false, 有句柄: true }
-        }
+        Value::Fn(_) => 子树标记 {
+            有函数: true,
+            有句柄: false,
+        },
+        Value::Exit(_)
+        | Value::Cut(_)
+        | Value::Gen(_)
+        | Value::Duty(_)
+        | Value::Reading(_)
+        | Value::Score(_) => 子树标记 {
+            有函数: false,
+            有句柄: true,
+        },
         _ => 子树标记::default(),
     }
 }
@@ -283,14 +341,26 @@ fn 取<T: Clone>(
 /// 缓存的来源标签（`Value::prov` 用）。
 /// 缓存条件：子树没有句柄（出口的账本键、惰性出口与生成的取回都会改变来源；函数值的来源恒为可信，不影响）。
 pub fn 来源(v: &Value, 算: impl FnOnce() -> Provenance) -> Provenance {
-    取(v, |m| !m.有句柄, |e| e.来源.clone(), |e, x| e.来源 = Some(x), 算)
+    取(
+        v,
+        |m| !m.有句柄,
+        |e| e.来源.clone(),
+        |e, x| e.来源 = Some(x),
+        算,
+    )
 }
 
 /// 缓存的帧实参指纹哈希（G2 `实参哈希` 用）。
 /// 缓存条件：子树没有函数值（闭包的 `to_json` 带捕获环境的名字，环境会长出新名字）。句柄的帧指纹只取身份
 /// （生成号、出口号与题、读数的账本键与题等不变字段），不随取回或消费变，可以缓存。
 pub fn 指纹哈希(v: &Value, 算: impl FnOnce() -> String) -> String {
-    取(v, |m| !m.有函数, |e| e.指纹哈希.clone(), |e, x| e.指纹哈希 = Some(x), 算)
+    取(
+        v,
+        |m| !m.有函数,
+        |e| e.指纹哈希.clone(),
+        |e, x| e.指纹哈希 = Some(x),
+        算,
+    )
 }
 
 /// 缓存的单元值哈希（单元键用；`None` = 算不出）。
@@ -299,7 +369,13 @@ pub fn 单元哈希(v: &Value, 算: impl FnOnce() -> Option<String>) -> Option<S
     if 身份(v).is_some() && 标记(v).有句柄 {
         return None;
     }
-    取(v, |m| !m.有函数, |e| e.单元哈希.clone(), |e, x| e.单元哈希 = Some(x), 算)
+    取(
+        v,
+        |m| !m.有函数,
+        |e| e.单元哈希.clone(),
+        |e, x| e.单元哈希 = Some(x),
+        算,
+    )
 }
 
 #[cfg(test)]
@@ -307,7 +383,11 @@ mod tests {
     use super::*;
 
     fn 大表(n: usize) -> Value {
-        Value::list((0..n).map(|i| Value::Int(i as i64, Taint::Untrusted.into())).collect())
+        Value::list(
+            (0..n)
+                .map(|i| Value::Int(i as i64, Taint::Untrusted.into()))
+                .collect(),
+        )
     }
 
     #[test]

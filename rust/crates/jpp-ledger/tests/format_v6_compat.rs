@@ -22,7 +22,12 @@ fn 旧版本照读_新于本二进制的报更新不崩() {
     for v in LEDGER_READS_AS_IS.iter().copied().chain([LEDGER_VERSION]) {
         assert!(Ledger::decode(&空头(v as u64)).is_ok(), "v{v} 照读");
     }
-    for v in [LEDGER_VERSION as u64 + 1, LEDGER_VERSION as u64 + 2, 99, u32::MAX as u64] {
+    for v in [
+        LEDGER_VERSION as u64 + 1,
+        LEDGER_VERSION as u64 + 2,
+        99,
+        u32::MAX as u64,
+    ] {
         let e = Ledger::decode(&空头(v)).expect_err("更新的版本拒读");
         assert!(e.starts_with("E-ledger-newer"), "{e}");
         assert!(
@@ -87,7 +92,10 @@ fn key_version读写无损_旧键法不写字段() {
     let (l, _) = Ledger::decode(&format!("{s}\n")).unwrap();
     assert_eq!(l.header, Some(h1.clone()));
     // 键法不同在两种场合都进比对集合
-    for mode in [jpp_ledger::HeaderCompare::Resume, jpp_ledger::HeaderCompare::Replay] {
+    for mode in [
+        jpp_ledger::HeaderCompare::Resume,
+        jpp_ledger::HeaderCompare::Replay,
+    ] {
         let d = h0.compared.diff_in(&h1.compared, mode);
         assert_eq!(d.len(), 1, "{d:?}");
         assert_eq!(d[0].0, "key_version");
@@ -103,7 +111,10 @@ fn key_version读写无损_旧键法不写字段() {
 
 #[test]
 fn 头值与键法互转() {
-    assert_eq!(KeyVersion::from_header(Some("1")), Ok(KeyVersion::Structured));
+    assert_eq!(
+        KeyVersion::from_header(Some("1")),
+        Ok(KeyVersion::Structured)
+    );
     assert_eq!(KeyVersion::Offset.header_tag(), None);
     assert_eq!(KeyVersion::Structured.header_tag(), Some("1"));
     for bad in ["0", "2", "9", "", "1.0", " 1", "一"] {
@@ -181,29 +192,45 @@ fn 场合表_结构化键账本() {
 
 #[test]
 fn 当前键法本二进制能算() {
-    assert!(KEY_VERSION_CURRENT.supported(), "新写的账本自己必须读得回去");
+    assert!(
+        KEY_VERSION_CURRENT.supported(),
+        "新写的账本自己必须读得回去"
+    );
 }
 
 /// v6 账本的判断条目里 `jkey.site` 是串（结构化站点，B0630）：照读，`SiteRef::Path` 原样回来，再编码逐字节不变；
 /// 同一条目把站点换成数（旧键法）也照读，读成 `SiteRef::Offset`。
 #[test]
 fn v6账本_jkey站点为串与为数都照读() {
-    use jpp_ledger::{Entry, JudgeKey};
     use jpp_ir::key::SiteRef;
+    use jpp_ledger::{Entry, JudgeKey};
     let mut l = Ledger::new();
     l.set_header(头(KEY_VERSION_CURRENT.header_tag()));
-    for (i, site) in [SiteRef::Path("purpose_land/λ2:judge#1".into()), SiteRef::Offset(107140)]
-        .into_iter()
-        .enumerate()
+    for (i, site) in [
+        SiteRef::Path("purpose_land/λ2:judge#1".into()),
+        SiteRef::Offset(107140),
+    ]
+    .into_iter()
+    .enumerate()
     {
-        let mut e = Entry::judge(format!("k{i}"), jpp_value::value::Answer::Noul(0.9), 0, 0.0, "m", 1);
+        let mut e = Entry::judge(
+            format!("k{i}"),
+            jpp_value::value::Answer::Noul(0.9),
+            0,
+            0.0,
+            "m",
+            1,
+        );
         if let Entry::Judge { jkey, .. } = &mut e {
             *jkey = Some(JudgeKey::new("m", "s", "q", "noul", 0, 0, site));
         }
         l.put(e);
     }
     let text = l.encode();
-    assert!(text.contains(r#""site":"purpose_land/λ2:judge#1""#), "{text}");
+    assert!(
+        text.contains(r#""site":"purpose_land/λ2:judge#1""#),
+        "{text}"
+    );
     assert!(text.contains(r#""site":107140"#), "{text}");
     let (back, _) = Ledger::decode(&text).expect("v6 照读");
     let sites: Vec<SiteRef> = back
@@ -216,7 +243,10 @@ fn v6账本_jkey站点为串与为数都照读() {
         .collect();
     assert_eq!(
         sites,
-        vec![SiteRef::Path("purpose_land/λ2:judge#1".into()), SiteRef::Offset(107140)]
+        vec![
+            SiteRef::Path("purpose_land/λ2:judge#1".into()),
+            SiteRef::Offset(107140)
+        ]
     );
     assert_eq!(back.encode(), text, "再编码逐字节不变");
 }

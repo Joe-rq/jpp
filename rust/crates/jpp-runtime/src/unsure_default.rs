@@ -93,35 +93,61 @@ impl<'a> Interp<'a> {
     /// 取到时在账本记一条标记（代码复核 O2）：`Opaque`，键 `unsure_fetch/{类别}/{材料哈希}`，值记类别、材料哈希、长度，
     /// 审计时看得到这次取；不进任何判断键，重放与续跑时账本里已有同键的不再记。
     /// 不在契约内：INTERFACE.md 不写；B0630 起按站点限定，只认 lib 里的调用点（Z0943、Z0947），用户程序调报 `E-rt-lib-only`
-    pub(crate) fn b_unsure_fetch(&mut self, name: &'static str, args: Vec<Value>, sp: Span) -> R<Value> {
+    pub(crate) fn b_unsure_fetch(
+        &mut self,
+        name: &'static str,
+        args: Vec<Value>,
+        sp: Span,
+    ) -> R<Value> {
         // B0630（Z0947）：只认 lib 定义里的调用点
         if !self.是库站点(sp) {
             return err(
                 Some("E-rt-lib-only"),
-                format!("{name} 是标准库过程入口内部用的，用户程序里不能调。修法：去掉这次调用（默认链按 unsure_source 注册的 fetch 照常取材料）"),
+                format!(
+                    "{name} 是标准库过程入口内部用的，用户程序里不能调。修法：去掉这次调用（默认链按 unsure_source 注册的 fetch 照常取材料）"
+                ),
                 sp,
             );
         }
         if args.len() != 3 {
-            return err(Some("E-rt-arity"), format!("{name} 需要 3 个参数（题, 类别, 材料）"), sp);
+            return err(
+                Some("E-rt-arity"),
+                format!("{name} 需要 3 个参数（题, 类别, 材料）"),
+                sp,
+            );
         }
         let Value::Text(need, _) = &args[1] else {
             return err(Some("E-rt-arg"), format!("{name} 的类别要是文本"), sp);
         };
         let need = need.to_string();
         let Some(fetch) = self.未决来源.as_ref().and_then(|(_, f)| f.clone()) else {
-            return Ok(Value::Fail(Rc::from("没有注册取法（unsure_source 的 fetch）"), Provenance::trusted()));
+            return Ok(Value::Fail(
+                Rc::from("没有注册取法（unsure_source 的 fetch）"),
+                Provenance::trusted(),
+            ));
         };
-        let got = self.call_closure(&fetch, vec![args[0].clone(), Value::text(&need), args[2].clone()], sp)?;
+        let got = self.call_closure(
+            &fetch,
+            vec![args[0].clone(), Value::text(&need), args[2].clone()],
+            sp,
+        )?;
         let got = self.检视(got)?;
         let got = match got {
             Value::Mat(_) | Value::Fail(..) => got,
-            other => Value::Mat(Rc::new(self.as_mat(&Value::record(vec![(need.clone(), other)]), "ctx", sp)?)),
+            other => Value::Mat(Rc::new(self.as_mat(
+                &Value::record(vec![(need.clone(), other)]),
+                "ctx",
+                sp,
+            )?)),
         };
         if let Value::Mat(m) = &got {
             let 键 = format!("unsure_fetch/{need}/{}", m.hash);
             if !self.账本记过取来材料(&键) {
-                let len = m.content.as_str().map(|x| x.chars().count()).unwrap_or_else(|| m.content.to_string().chars().count());
+                let len = m
+                    .content
+                    .as_str()
+                    .map(|x| x.chars().count())
+                    .unwrap_or_else(|| m.content.to_string().chars().count());
                 self.登记记账(Entry::Opaque {
                     key: 键,
                     world_epoch: 0,
@@ -336,7 +362,11 @@ impl<'a> Interp<'a> {
     /// 原因不可补：原样不动，什么也不记）
     pub(crate) fn b_unsure_default(&mut self, args: Vec<Value>, sp: Span) -> R<Value> {
         if args.is_empty() || args.len() > 2 {
-            return err(Some("E-rt-arity"), "unsure_default 需要 1 个参数（库内部可另带 {end: \"top\"}）", sp);
+            return err(
+                Some("E-rt-arity"),
+                "unsure_default 需要 1 个参数（库内部可另带 {end: \"top\"}）",
+                sp,
+            );
         }
         // 裁定七十八：第二参 {end: "top"} 只由过程入口（lib/derive/drive.jpp 经 purpose_land）给动作题打；
         // 不是 cut 的选项，INTERFACE.md 只按过程入口的语义写，这个参数本身不进文档。
@@ -361,14 +391,21 @@ impl<'a> Interp<'a> {
                 match fs.iter().find(|(k, _)| k.as_str() == "end").map(|(_, v)| v) {
                     Some(Value::Text(t, _)) if &**t == "top" => true,
                     _ => {
-                        return err(Some("E-rt-arg"), "unsure_default 的第二参只认 {end: \"top\"}（过程入口的动作题，裁定七十八）", sp);
+                        return err(
+                            Some("E-rt-arg"),
+                            "unsure_default 的第二参只认 {end: \"top\"}（过程入口的动作题，裁定七十八）",
+                            sp,
+                        );
                     }
                 }
             }
             Some(other) => {
                 return err(
                     Some("E-rt-arg"),
-                    format!("unsure_default 的第二参要是记录 {{end: \"top\"}}，收到 {}", other.type_name()),
+                    format!(
+                        "unsure_default 的第二参要是记录 {{end: \"top\"}}，收到 {}",
+                        other.type_name()
+                    ),
                     sp,
                 );
             }
@@ -386,12 +423,20 @@ impl<'a> Interp<'a> {
                 );
             }
         };
-        let 回 = |x: Rc<Exit>, end: &str, 缺: &[String], top: Option<(usize, usize)>, 原: Option<usize>, 败因: Option<&str>| {
+        let 回 = |x: Rc<Exit>,
+                  end: &str,
+                  缺: &[String],
+                  top: Option<(usize, usize)>,
+                  原: Option<usize>,
+                  败因: Option<&str>| {
             let mut fs = vec![
                 ("exit".into(), Value::Exit(x)),
                 ("end".into(), Value::text(end)),
                 // 末端转交时缺的类别（路 C、取不到；Jpp 2026-10-02：调用方写进去向「缺<类别>、无取法」），别的结局为空
-                ("needed".into(), Value::list(缺.iter().map(|c| Value::text(c)).collect())),
+                (
+                    "needed".into(),
+                    Value::list(缺.iter().map(|c| Value::text(c)).collect()),
+                ),
             ];
             // 裁定七十八：末端按最大项行动时，最大项在最后那次读数候选里的下标与候选数（调用方核对候选数再取）
             if let Some((k, n)) = top {
@@ -436,7 +481,11 @@ impl<'a> Interp<'a> {
         } else {
             "handoff"
         };
-        let 缺 = if end == "handoff" || end == "top" { std::mem::take(&mut self.末次缺) } else { vec![] };
+        let 缺 = if end == "handoff" || end == "top" {
+            std::mem::take(&mut self.末次缺)
+        } else {
+            vec![]
+        };
         // Z0913：选中项来自哪次读数——已决取最后那个出口，最大项取 top键；与原题读数不是同一份候选时按值映回（O4/O5）
         let 原 = match (end, &top, f.kind.clone()) {
             ("decided", _, ExitKind::Pick(k)) => {
@@ -455,23 +504,39 @@ impl<'a> Interp<'a> {
     /// Z0913（O4/O5）：`用键` 那次读数的第 `k` 个候选，在 `原键` 那次读数（本拍首问）的候选里的下标。两次读数的候选
     /// 相同（没走过缩小）回 None，调用方照原下标取；不同时按内容找，找不到报错，不静默落空
     fn 映回原候选(&self, 原键: &str, 用键: &str, k: usize, sp: Span) -> R<Option<usize>> {
-        let (Some((s0, _)), Some((s1, _))) = (self.判断来历.get(原键), self.判断来历.get(用键)) else {
+        let (Some((s0, _)), Some((s1, _))) = (self.判断来历.get(原键), self.判断来历.get(用键))
+        else {
             return Ok(None);
         };
         // 候选相同（没走过缩小）：调用方照原下标取，不另给 orig（O5）。不同则按内容映回，映不回去在这里报错（O4），
         // 库里不再自己核候选数
-        let 同 = s0.over.len() == s1.over.len() && s0.over.iter().zip(s1.over.iter()).all(|(a, b)| a.content == b.content);
+        let 同 = s0.over.len() == s1.over.len()
+            && s0
+                .over
+                .iter()
+                .zip(s1.over.iter())
+                .all(|(a, b)| a.content == b.content);
         if 同 {
             return Ok(None);
         }
         let Some(c) = s1.over.get(k) else {
-            return err(Some("E-rt-arg"), format!("默认链：选中项下标 {k} 超出这次读数的候选数 {}", s1.over.len()), sp);
+            return err(
+                Some("E-rt-arg"),
+                format!(
+                    "默认链：选中项下标 {k} 超出这次读数的候选数 {}",
+                    s1.over.len()
+                ),
+                sp,
+            );
         };
         match s0.over.iter().position(|m| m.content == c.content) {
             Some(j) => Ok(Some(j)),
             None => err(
                 Some("E-rt-arg"),
-                format!("默认链：缩小后选中的候选 {} 在本拍原候选里找不到（Z0913，O4）", c.content),
+                format!(
+                    "默认链：缩小后选中的候选 {} 在本拍原候选里找不到（Z0913，O4）",
+                    c.content
+                ),
                 sp,
             ),
         }
@@ -479,11 +544,21 @@ impl<'a> Interp<'a> {
 
     /// Z0913：库交来的题树规格 `{s: 题, s_over: [文本…], narrow: 题式, ctx_tpl: 文本, mode: 文本}`
     fn 解析题树(t: &Value, sp: Span) -> R<题树规格> {
-        let 坏 = |m: &str| -> R<题树规格> { err(Some("E-rt-arg"), format!("unsure_default 的 tree 规格不对：{m}"), sp) };
+        let 坏 = |m: &str| -> R<题树规格> {
+            err(
+                Some("E-rt-arg"),
+                format!("unsure_default 的 tree 规格不对：{m}"),
+                sp,
+            )
+        };
         let Value::Record(fs) = t else {
             return 坏("要是记录");
         };
-        let get = |k: &str| fs.iter().find(|(n, _)| n.as_str() == k).map(|(_, v)| v.clone());
+        let get = |k: &str| {
+            fs.iter()
+                .find(|(n, _)| n.as_str() == k)
+                .map(|(_, v)| v.clone())
+        };
         let Some(Value::Question(s)) = get("s") else {
             return 坏("s 要是题");
         };
@@ -506,7 +581,14 @@ impl<'a> Interp<'a> {
             Some(Value::Text(x, _)) if matches!(&*x, "end" | "ctx") => x.to_string(),
             _ => return 坏("fallback 只认 end、ctx"),
         };
-        Ok(题树规格 { s, s_over: so.iter().cloned().collect(), narrow, ctx_tpl, mode, fallback })
+        Ok(题树规格 {
+            s,
+            s_over: so.iter().cloned().collect(),
+            narrow,
+            ctx_tpl,
+            mode,
+            fallback,
+        })
     }
 
     /// Z0913：默认链走到「中间判断」——先问子题 S（同一状态，候选换成「要紧的事」），选中 s 后：
@@ -519,9 +601,19 @@ impl<'a> Interp<'a> {
         &mut self,
         st: &Rc<State>,
         sp: Span,
-    ) -> R<(Option<(Mat, Option<Vec<Value>>)>, Json, Option<String>, Option<&'static str>)> {
+    ) -> R<(
+        Option<(Mat, Option<Vec<Value>>)>,
+        Json,
+        Option<String>,
+        Option<&'static str>,
+    )> {
         let Some(t) = self.题树.clone() else {
-            return Ok((None, json!({"mode": Json::Null, "why": "no-tree"}), None, None));
+            return Ok((
+                None,
+                json!({"mode": Json::Null, "why": "no-tree"}),
+                None,
+                None,
+            ));
         };
         if t.mode == "off" {
             return Ok((None, json!({"mode": "off"}), None, None));
@@ -543,7 +635,12 @@ impl<'a> Interp<'a> {
         t: &题树规格,
         st: &Rc<State>,
         sp: Span,
-    ) -> R<(Option<(Mat, Option<Vec<Value>>)>, Json, Option<String>, Option<&'static str>)> {
+    ) -> R<(
+        Option<(Mat, Option<Vec<Value>>)>,
+        Json,
+        Option<String>,
+        Option<&'static str>,
+    )> {
         let δ = self.calib.profile().delta_prior(Op::Test);
         let ws = self.换槽(st, None, Some(t.s_over.clone()), sp)?;
         self.元题登记 += 1;
@@ -556,7 +653,10 @@ impl<'a> Interp<'a> {
         let s_key = Some(sr.ledger_key.clone()).filter(|k| !k.is_empty());
         // 子题最大一项的概率（T12：子题是否比动作题拿得准）
         let s_p = match self.answer_of(&sr) {
-            Some(Answer::Choice(v)) => v.iter().cloned().fold(None, |a: Option<f64>, x| Some(a.map_or(x, |y| y.max(x)))),
+            Some(Answer::Choice(v)) => v
+                .iter()
+                .cloned()
+                .fold(None, |a: Option<f64>, x| Some(a.map_or(x, |y| y.max(x)))),
             _ => None,
         };
         let mut info = json!({"mode": t.mode, "s_key": s_key, "s_p": s_p});
@@ -575,7 +675,11 @@ impl<'a> Interp<'a> {
                 let 没发出 = se.why().is_some_and(|w| w.cause.is_absent_class());
                 self.记去向(&se, 去向::Drop, "默认链：中间判断", sp);
                 info["s"] = Json::Null;
-                let why = if 没发出 { "子题未发出（预算）" } else { "子题拿不准" };
+                let why = if 没发出 {
+                    "子题未发出（预算）"
+                } else {
+                    "子题拿不准"
+                };
                 info["why"] = json!(why);
                 return Ok((None, info, s_key, Some(why)));
             }
@@ -584,7 +688,11 @@ impl<'a> Interp<'a> {
         *se.consumed_by.borrow_mut() = "default:tree".into();
         let s_text = match &t.s_over[k] {
             Value::Text(x, _) => x.to_string(),
-            Value::Mat(m) => m.content.as_str().map(|x| x.to_string()).unwrap_or_else(|| m.content.to_string()),
+            Value::Mat(m) => m
+                .content
+                .as_str()
+                .map(|x| x.to_string())
+                .unwrap_or_else(|| m.content.to_string()),
             other => other.to_json().to_string(),
         };
         let ctx_text = t.ctx_tpl.replace("{q}", &t.s.text).replace("{s}", &s_text);
@@ -600,8 +708,15 @@ impl<'a> Interp<'a> {
         // narrow：一组是非题，同一状态 st、同一题式填不同的候选
         let mut qs: Vec<Rc<Question>> = Vec::with_capacity(n0);
         for c in st.over.iter() {
-            let c_text = c.content.as_str().map(|x| x.to_string()).unwrap_or_else(|| c.content.to_string());
-            let 槽 = Value::record(vec![("动作".into(), Value::text(&c_text)), ("要紧的事".into(), Value::text(&s_text))]);
+            let c_text = c
+                .content
+                .as_str()
+                .map(|x| x.to_string())
+                .unwrap_or_else(|| c.content.to_string());
+            let 槽 = Value::record(vec![
+                ("动作".into(), Value::text(&c_text)),
+                ("要紧的事".into(), Value::text(&s_text)),
+            ]);
             match self.builtin("fill", vec![t.narrow.clone(), 槽], sp)? {
                 Value::Question(q) => qs.push(q),
                 _ => return err(Some("E-rt-arg"), "默认链：缩小题式没填出题", sp),
@@ -697,7 +812,11 @@ impl<'a> Interp<'a> {
         let cur = 果.last.clone();
         // 点名类别无取法（Jpp 2026-10-02）：伴随题点名的类别、这条链里没取到的，按类别计
         // 中间判断没走成（子题拿不准、没发出等）不是「无取法」，不计（Z0913，O3）
-        for c in 果.点名.iter().filter(|c| 果.missed.contains(c) && c.as_str() != 中间判断) {
+        for c in 果
+            .点名
+            .iter()
+            .filter(|c| 果.missed.contains(c) && c.as_str() != 中间判断)
+        {
             *self.点名无取法.entry(c.clone()).or_insert(0) += 1;
         }
         self.末次缺.clear();
@@ -727,18 +846,21 @@ impl<'a> Interp<'a> {
         // via「预算、按最后读数最大项」；这份未决随值走（缺席类不当场写转交），动作照取
         let 缺席 = cur.why().is_some_and(|w| w.cause.is_absent_class());
         let 取自 = |me: &Self, k: &str| -> Option<(usize, usize)> {
-            me.读数表.get(k).cloned().and_then(|r| match me.answer_of(&r) {
-                Some(Answer::Choice(v)) if !v.is_empty() => {
-                    let mut i0 = 0;
-                    for (i, p) in v.iter().enumerate() {
-                        if *p > v[i0] {
-                            i0 = i;
+            me.读数表
+                .get(k)
+                .cloned()
+                .and_then(|r| match me.answer_of(&r) {
+                    Some(Answer::Choice(v)) if !v.is_empty() => {
+                        let mut i0 = 0;
+                        for (i, p) in v.iter().enumerate() {
+                            if *p > v[i0] {
+                                i0 = i;
+                            }
                         }
+                        Some((i0, v.len()))
                     }
-                    Some((i0, v.len()))
-                }
-                _ => None,
-            })
+                    _ => None,
+                })
         };
         let (最大项键, 最大项) = if !self.末端取最大项 {
             (String::new(), None)
@@ -913,7 +1035,9 @@ impl<'a> Interp<'a> {
             // 伴随题「最缺哪类」选出的先取，否则按 lacks 的顺序逐类取（取不到记 missed、取下一类）
             let 缺料直取 = !触发
                 && 来源 == "lacks"
-                && cur.why().is_some_and(|w| w.cause == UnsureCause::Insufficient);
+                && cur
+                    .why()
+                    .is_some_and(|w| w.cause == UnsureCause::Insufficient);
             if 缺料直取 {
                 if round == 0 {
                     伴随类别 = self.伴随最缺(&key);
@@ -921,7 +1045,7 @@ impl<'a> Interp<'a> {
                 }
                 果.route.get_or_insert("missing-slot");
             } else if round == 0 {
-            // 伴随题（B0492 S5，草案 (2)「已有伴随题读数的，直接用」）：第一轮按伴随题读数选路；题不清、两可即停
+                // 伴随题（B0492 S5，草案 (2)「已有伴随题读数的，直接用」）：第一轮按伴随题读数选路；题不清、两可即停
                 match self.伴随路由(&key) {
                     Some(("unclear", _)) => {
                         果.why = Some("unclear");
@@ -940,7 +1064,11 @@ impl<'a> Interp<'a> {
                     }
                     Some(("enrich-ref", _)) => {
                         // 裁定七十七 (i)：「参照与语境够吗」带外判否，类别 = 候选里的参照、语境（按候选顺序）
-                        let d: Vec<String> = 候选.iter().filter(|c| 参照与语境.contains(&c.as_str())).cloned().collect();
+                        let d: Vec<String> = 候选
+                            .iter()
+                            .filter(|c| 参照与语境.contains(&c.as_str()))
+                            .cloned()
+                            .collect();
                         if d.is_empty() {
                             // 诊断出的两类都不在候选里：没有可取的，到末端（needed 写这两类）
                             果.needed.extend(参照与语境.iter().map(|s| s.to_string()));
@@ -956,7 +1084,10 @@ impl<'a> Interp<'a> {
             }
             // 诊断定下的类别：只在这几类里取。过滤空了就到末端——取过的已记在 missed；一类都没轮到的（诊断的类别不在候选里），
             // 把诊断的类别写进 needed，末端转交（裁定七十七：取不到不再问「为什么」）
-            let 候选: Vec<String> = 候选.into_iter().filter(|c| 诊断.as_ref().is_none_or(|d| d.contains(c))).collect();
+            let 候选: Vec<String> = 候选
+                .into_iter()
+                .filter(|c| 诊断.as_ref().is_none_or(|d| d.contains(c)))
+                .collect();
             if 候选.is_empty() {
                 if let Some(d) = &诊断
                     && 果.fetched.is_empty()
@@ -1322,9 +1453,10 @@ impl<'a> Interp<'a> {
                 && matches!(me.answer_of(r), Some(Answer::Noul(p)) if { let d = (p - 0.5).abs(); d > 0.0 && d < band })
         }, sp)?;
         if !果.补过
-            && let Some(row) = self.exit_grades.get_mut(行) {
-                row["near_boundary"] = json!(true);
-            }
+            && let Some(row) = self.exit_grades.get_mut(行)
+        {
+            row["near_boundary"] = json!(true);
+        }
         let end = if 果.补过 {
             "decided"
         } else {

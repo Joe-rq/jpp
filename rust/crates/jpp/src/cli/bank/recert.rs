@@ -294,16 +294,17 @@ fn recertify(plan: &Plan, o: &Opts, work: &Path) -> Result<(PathBuf, Option<Stri
     // 按同一认证路径重算的线与旧记录在容差 1e-9 内相同，`line_drift` 的口径）；其余一律当认证路径问题，拒绝写回
     let mut 迁移 = None;
     if same_readings(&plan.labels, &lines)
-        && let Some(d) = line_drift(&plan.dir.join("calib"), &out.join("calib"))? {
-            match delta_migration(&plan.dir.join("calib"), &out.join("calib"), &labels, o, &w) {
-                Ok(note) => 迁移 = Some(note),
-                Err(why) => {
-                    return Err(format!(
-                        "认证结果与旧记录不一致，疑认证路径问题（读数逐行未变，认证线变了）：{d}；不是画像 δ 迁移：{why}"
-                    ));
-                }
+        && let Some(d) = line_drift(&plan.dir.join("calib"), &out.join("calib"))?
+    {
+        match delta_migration(&plan.dir.join("calib"), &out.join("calib"), &labels, o, &w) {
+            Ok(note) => 迁移 = Some(note),
+            Err(why) => {
+                return Err(format!(
+                    "认证结果与旧记录不一致，疑认证路径问题（读数逐行未变，认证线变了）：{d}；不是画像 δ 迁移：{why}"
+                ));
             }
         }
+    }
     Ok((out, 迁移))
 }
 

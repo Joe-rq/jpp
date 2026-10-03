@@ -66,8 +66,8 @@ fn solve_的错标注在调用点被拦下() {
 
     let wrong = retag(
         &source,
-        "fn solve(input: Mat, method: Fn(Record) -> Record) -> Record !{judge}",
-        "fn solve(input: Mat, method: Fn(Record) -> Record) -> Record !{}",
+        "fn solve(input: Mat, method: Fn(Record) -!{judge}-> Record) -> Record !{judge}",
+        "fn solve(input: Mat, method: Fn(Record) -!{judge}-> Record) -> Record !{}",
     );
     let report = check_source("adaptive.jpp(solve 标成纯的)", &wrong);
     let d = effect_error(&report, "solve 标成 !{} 而实参 step 会 judge");

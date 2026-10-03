@@ -178,8 +178,15 @@ fn 五条命令的输出与金样一致() {
         }
         // 重录（与 golden.rs 同一个开关，B0630 起账本键换了要重录）：`JPP_GOLDEN_UPDATE=1 cargo test -p jpp --test examples_five`
         if std::env::var("JPP_GOLDEN_UPDATE").is_ok_and(|v| v == "1") {
-            let p = root().join("tests/golden").join(用例).join("projection.json");
-            fs::write(&p, serde_json::to_string_pretty(&投影(&report)).unwrap() + "\n").unwrap();
+            let p = root()
+                .join("tests/golden")
+                .join(用例)
+                .join("projection.json");
+            fs::write(
+                &p,
+                serde_json::to_string_pretty(&投影(&report)).unwrap() + "\n",
+            )
+            .unwrap();
         }
         assert_eq!(
             投影(&report),

@@ -67,7 +67,11 @@ fn 生成(p: &str) -> Vec<Json> {
 fn 读数(q: &Question, s: &State) -> Answer {
     let t = &q.text;
     if t.starts_with("题「") || t.starts_with("判断题「") || t.starts_with("把题「") {
-        return Answer::Noul(if t.contains("需要分别回答") { 0.1 } else { 0.5 });
+        return Answer::Noul(if t.contains("需要分别回答") {
+            0.1
+        } else {
+            0.5
+        });
     }
     if t.contains("为什么拿不准") {
         let mut v = vec![0.0; s.over.len()];
@@ -78,7 +82,13 @@ fn 读数(q: &Question, s: &State) -> Answer {
         return Answer::Choice(vec![0.9, 0.1]);
     }
     if t.contains("这件事吗") {
-        return Answer::Noul(if t.contains("「right」") { 0.9 } else if t.contains("「left」") { 0.1 } else { 0.5 });
+        return Answer::Noul(if t.contains("「right」") {
+            0.9
+        } else if t.contains("「left」") {
+            0.1
+        } else {
+            0.5
+        });
     }
     if t.contains("需要分别回答的判断") {
         Answer::Noul(0.1)
@@ -92,8 +102,25 @@ fn 读数(q: &Question, s: &State) -> Answer {
     } else if t.contains("下一步最该做的动作") {
         let c = &s.on[0].content;
         let (pos, goal) = (c["pos"].as_i64().unwrap(), c["goal"].as_i64().unwrap());
-        let want = if pos < goal { "right" } else if pos > goal { "left" } else { "wait" };
-        Answer::Choice(s.over.iter().map(|m| if m.content.as_str() == Some(want) { 0.8 } else { 0.1 }).collect())
+        let want = if pos < goal {
+            "right"
+        } else if pos > goal {
+            "left"
+        } else {
+            "wait"
+        };
+        Answer::Choice(
+            s.over
+                .iter()
+                .map(|m| {
+                    if m.content.as_str() == Some(want) {
+                        0.8
+                    } else {
+                        0.1
+                    }
+                })
+                .collect(),
+        )
     } else if t.contains("离目标还远") {
         Answer::Noul(0.7)
     } else {
@@ -114,7 +141,11 @@ struct 沙盒(PathBuf);
 impl 沙盒 {
     fn 新(改库: impl Fn(&Path)) -> 沙盒 {
         let crate_root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../..");
-        let root = std::env::temp_dir().join(format!("b0630-{}-{}", std::process::id(), NEXT.fetch_add(1, Ordering::Relaxed)));
+        let root = std::env::temp_dir().join(format!(
+            "b0630-{}-{}",
+            std::process::id(),
+            NEXT.fetch_add(1, Ordering::Relaxed)
+        ));
         复制(&crate_root.join("lib"), &root.join("lib"));
         std::fs::write(root.join("lib/b0630_probe.jpp"), 探针库).unwrap();
         改库(&root.join("lib"));
@@ -162,7 +193,9 @@ fn 遍历_jpp(dir: &Path, f: &mut dyn FnMut(&Path)) {
 fn 加注释(lib: &Path) {
     遍历_jpp(lib, &mut |p| {
         let src = std::fs::read_to_string(p).unwrap();
-        let mut out = String::from("// B0630 测试：这几行只是注释，不改库的任何含义。\n// 第二行。\n// 第三行。\n");
+        let mut out = String::from(
+            "// B0630 测试：这几行只是注释，不改库的任何含义。\n// 第二行。\n// 第三行。\n",
+        );
         for line in src.lines() {
             if line.starts_with("fn ") || line.starts_with("let ") || line.starts_with("export ") {
                 out.push_str("// 定义前的一行注释（B0630 测试加的）\n");
@@ -179,7 +212,11 @@ fn 改题面(lib: &Path) {
     let f = lib.join("derive/rules.jpp");
     let src = std::fs::read_to_string(&f).unwrap();
     let from = "，下一步最该做的动作\" },";
-    assert_eq!(src.matches(from).count(), 1, "找不到 purpose_act_pred 的题面");
+    assert_eq!(
+        src.matches(from).count(),
+        1,
+        "找不到 purpose_act_pred 的题面"
+    );
     std::fs::write(&f, src.replace(from, "，下一步最该做的动作（改）\" },")).unwrap();
 }
 
@@ -205,11 +242,23 @@ fn 重放(sandbox: &沙盒, old: Ledger) -> Result<跑出, String> {
     跑_内(sandbox, None, Some(old), true)
 }
 
-fn 跑_内(sandbox: &沙盒, cache: Option<&CacheIndex>, old: Option<Ledger>, replay: bool) -> Result<跑出, String> {
-    let loaded = jpp::syntax::loader::load(&sandbox.程序()).unwrap_or_else(|e| panic!("装载：{e:?}"));
+fn 跑_内(
+    sandbox: &沙盒,
+    cache: Option<&CacheIndex>,
+    old: Option<Ledger>,
+    replay: bool,
+) -> Result<跑出, String> {
+    let loaded =
+        jpp::syntax::loader::load(&sandbox.程序()).unwrap_or_else(|e| panic!("装载：{e:?}"));
     let program = jpp::lower(&loaded.program).unwrap_or_else(|e| panic!("lower：{e:?}"));
     let mut acts = ActionRegistry::new();
-    acts.register("env:step", 0.0, true, TaintOut::Untrusted, move |args: &[Value]| Ok(json_to_value(&世界(&args[0].to_json()))));
+    acts.register(
+        "env:step",
+        0.0,
+        true,
+        TaintOut::Untrusted,
+        move |args: &[Value]| Ok(json_to_value(&世界(&args[0].to_json()))),
+    );
     let judged = Rc::new(RefCell::new(0usize));
     let j2 = judged.clone();
     let gens = Rc::new(RefCell::new(0usize));
@@ -228,9 +277,14 @@ fn 跑_内(sandbox: &沙盒, cache: Option<&CacheIndex>, old: Option<Ledger>, re
         }))
         .with(FnPort::generate("fixed-0", move |p, _c, _n, _r| {
             *g2.borrow_mut() += 1;
-            Ok(GenResult { outputs: 生成(p), ..Default::default() })
+            Ok(GenResult {
+                outputs: 生成(p),
+                ..Default::default()
+            })
         }))
-        .with(FnPort::ask("fixed-0", |_s, _q| Err(EffectError("不该 ask".into()))));
+        .with(FnPort::ask("fixed-0", |_s, _q| {
+            Err(EffectError("不该 ask".into()))
+        }));
     let resuming = old.is_some();
     let mut ledger = old.unwrap_or_else(Ledger::new);
     let calib = CalibStore::new();
@@ -249,7 +303,12 @@ fn 跑_内(sandbox: &沙盒, cache: Option<&CacheIndex>, old: Option<Ledger>, re
     // B0630：结构化键法下进键的站点都查得到结构化标识（旧键法重放不查表，恒为 0）
     assert_eq!(out.site_key_fallback, 0, "站点回退成偏移");
     let (judged, gens) = (*judged.borrow(), *gens.borrow());
-    Ok(跑出 { value: out.value_json(), ledger, judged, gens })
+    Ok(跑出 {
+        value: out.value_json(),
+        ledger,
+        judged,
+        gens,
+    })
 }
 
 /// 账本里判断、生成、闭包变换的条目数与其中带复用来源的条数
@@ -264,18 +323,29 @@ struct 统计 {
 }
 
 fn 复用统计(l: &Ledger) -> 统计 {
-    let mut n = 统计 { j: 0, jr: 0, g: 0, gr: 0, t: 0, tr: 0 };
+    let mut n = 统计 {
+        j: 0,
+        jr: 0,
+        g: 0,
+        gr: 0,
+        t: 0,
+        tr: 0,
+    };
     for e in &l.entries {
         match e {
             Entry::Judge { reused_from, .. } => {
                 n.j += 1;
                 n.jr += reused_from.is_some() as usize;
             }
-            Entry::Effect { kind, reused_from, .. } if kind == "gen" => {
+            Entry::Effect {
+                kind, reused_from, ..
+            } if kind == "gen" => {
                 n.g += 1;
                 n.gr += reused_from.is_some() as usize;
             }
-            Entry::Effect { kind, reused_from, .. } if kind == "transform" => {
+            Entry::Effect {
+                kind, reused_from, ..
+            } if kind == "transform" => {
                 n.t += 1;
                 n.tr += reused_from.is_some() as usize;
             }
@@ -305,9 +375,17 @@ fn 索引(first: &跑出) -> CacheIndex {
 fn 第一趟() -> (沙盒, 跑出) {
     let 原 = 沙盒::新(|_| {});
     let first = 跑(&原, None);
-    assert!(first.judged > 0 && first.gens > 0, "夹具得真产生判断与生成：判断 {} 生成 {}", first.judged, first.gens);
+    assert!(
+        first.judged > 0 && first.gens > 0,
+        "夹具得真产生判断与生成：判断 {} 生成 {}",
+        first.judged,
+        first.gens
+    );
     let n = 复用统计(&first.ledger);
-    assert!(n.j > 0 && n.g > 0 && n.t > 0, "夹具得含判断、生成、闭包变换各至少一条：{n:?}");
+    assert!(
+        n.j > 0 && n.g > 0 && n.t > 0,
+        "夹具得含判断、生成、闭包变换各至少一条：{n:?}"
+    );
     (原, first)
 }
 
@@ -315,7 +393,10 @@ fn 加了注释的沙盒(原: &沙盒) -> 沙盒 {
     let 改 = 沙盒::新(加注释);
     // 前提自检：注释确实让库文件变了（不然这条测试什么也没测）；两个 lib 文件都变
     for f in ["lib/derive/drive.jpp", "lib/b0630_probe.jpp"] {
-        let (a, b) = (std::fs::read_to_string(原.0.join(f)).unwrap(), std::fs::read_to_string(改.0.join(f)).unwrap());
+        let (a, b) = (
+            std::fs::read_to_string(原.0.join(f)).unwrap(),
+            std::fs::read_to_string(改.0.join(f)).unwrap(),
+        );
         assert!(b.len() > a.len() && b.contains("B0630 测试"), "{f}");
     }
     改
@@ -338,7 +419,11 @@ fn 跨运行缓存_库只改注释_判断与生成全命中() {
     assert_eq!(second.gens, 0, "生成一次也不该重调");
     assert_eq!(second.value, first.value, "值与原来相同");
     let n = 复用统计(&second.ledger);
-    assert_eq!((n.jr, n.gr), (n.j, n.g), "每条判断、每条生成都是复用来源：{n:?}");
+    assert_eq!(
+        (n.jr, n.gr),
+        (n.j, n.g),
+        "每条判断、每条生成都是复用来源：{n:?}"
+    );
 }
 
 /// 预注册 §六 (iii)：带旧账本的缓存跑改过注释的库，判断、生成、闭包变换的命中数都等于各自条目数，请求全 0
@@ -350,7 +435,11 @@ fn 跨运行缓存_库只改注释_闭包变换也命中() {
     assert_eq!((second.judged, second.gens), (0, 0), "请求全 0");
     assert_eq!(second.value, first.value);
     let n = 复用统计(&second.ledger);
-    assert_eq!((n.jr, n.gr, n.tr), (n.j, n.g, n.t), "命中数等于条目数：{n:?}");
+    assert_eq!(
+        (n.jr, n.gr, n.tr),
+        (n.j, n.g, n.t),
+        "命中数等于条目数：{n:?}"
+    );
 }
 
 /// 对照：动作题的题面模板改一个字，动作题必须重判
@@ -359,7 +448,10 @@ fn 跨运行缓存_库改了动作题题面_动作题不命中() {
     let (_原, first) = 第一趟();
     let ix = 索引(&first);
     let second = 跑(&沙盒::新(改题面), Some(&ix));
-    assert!(second.judged > 0, "题面真改了：动作题必须重判，不能命中旧缓存");
+    assert!(
+        second.judged > 0,
+        "题面真改了：动作题必须重判，不能命中旧缓存"
+    );
     let n = 复用统计(&second.ledger);
     assert!(n.jr < n.j, "动作题那些判断不带复用来源：{n:?}");
 }
@@ -379,7 +471,8 @@ fn 注释前后两趟_账本键逐个相同() {
 #[test]
 fn 旧账本重放_库只改注释_新增调用0_值不变() {
     let (原, first) = 第一趟();
-    let second = 重放(&加了注释的沙盒(&原), first.ledger.clone()).unwrap_or_else(|e| panic!("重放失败：{e}"));
+    let second = 重放(&加了注释的沙盒(&原), first.ledger.clone())
+        .unwrap_or_else(|e| panic!("重放失败：{e}"));
     assert_eq!((second.judged, second.gens), (0, 0), "新增调用 0");
     assert_eq!(second.value, first.value, "值不变");
 }
@@ -391,7 +484,11 @@ fn 旧账本续跑_库只改注释_全命中() {
     let second = 跑_账本(&加了注释的沙盒(&原), None, Some(first.ledger.clone()));
     assert_eq!((second.judged, second.gens), (0, 0), "请求全 0");
     assert_eq!(second.value, first.value);
-    assert_eq!(second.ledger.entries.len(), first.ledger.entries.len(), "续跑不该往账本里加条目");
+    assert_eq!(
+        second.ledger.entries.len(),
+        first.ledger.entries.len(),
+        "续跑不该往账本里加条目"
+    );
 }
 
 /// 对照：库一字不改，旧账本续跑全命中、重放通过——证明上面几条的红来自注释，不是续跑、重放本身

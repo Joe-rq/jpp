@@ -76,7 +76,10 @@ impl<'a> Interp<'a> {
         // 在发任何请求之前；只凭账本重放旧键法账本按账本的键法算，头里照写它
         {
             let 视图 = self.ledger.view();
-            let 头值 = 视图.header.as_ref().and_then(|h| h.compared.key_version.clone());
+            let 头值 = 视图
+                .header
+                .as_ref()
+                .and_then(|h| h.compared.key_version.clone());
             match jpp_ledger::key_version::choose(
                 头值.as_deref(),
                 !视图.entries.is_empty(),

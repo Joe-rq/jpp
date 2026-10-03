@@ -675,10 +675,16 @@ impl<'a> Interp<'a> {
         let 名 = c.name.clone().unwrap_or_else(|| "<fn>".into());
         // G2 附录三（Z0564）：欠账记号的帧主人带实参哈希，同一函数不同实参的两次调用记号不同。Z0882：等本帧第一次建出口
         // 时再算（值不可变，结果一样）；实参里有函数值时当场算——闭包的指纹带捕获环境的名字，环境之后可能长出新名字
-        let 主人 = if args.iter().any(|a| jpp_value::value::ident_cache::标记(a).有函数) {
+        let 主人 = if args
+            .iter()
+            .any(|a| jpp_value::value::ident_cache::标记(a).有函数)
+        {
             crate::帧主人::已算(format!("{名}#{}", crate::violation::实参哈希(&args)))
         } else {
-            crate::帧主人::待算 { 名: 名.clone(), 实参: args.clone() }
+            crate::帧主人::待算 {
+                名: 名.clone(),
+                实参: args.clone(),
+            }
         };
         let env = env_child(&c.env);
         for (p, a) in f.parameters.iter().zip(args) {

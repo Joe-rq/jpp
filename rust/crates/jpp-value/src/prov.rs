@@ -151,7 +151,11 @@ impl Sources {
         }
     }
 
-    fn union_slow(&self, a: &Rc<BTreeMap<String, Edge>>, b: &Rc<BTreeMap<String, Edge>>) -> Sources {
+    fn union_slow(
+        &self,
+        a: &Rc<BTreeMap<String, Edge>>,
+        b: &Rc<BTreeMap<String, Edge>>,
+    ) -> Sources {
         crate::value::ident_cache::记访问();
         {
             {
