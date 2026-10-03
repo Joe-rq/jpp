@@ -1,6 +1,16 @@
 # J++ progress / 项目进度
 
-Updated: 2026-10-02 (evening). This is a dated report, not an automatically updated dashboard.
+Updated: 2026-10-03. This is a dated report, not an automatically updated dashboard.
+
+## 2026-10-03 (wrap-up): development pauses here; what works, what is not built, how to report / 收尾：开发在这里暂停；能用什么、没造什么、怎么报问题
+
+> **What changed.** Active development of J++ pauses at this point so that it can be used on real projects; problems found in use decide what is built next. No code changed since the previous sync (research tree `27995f8a9`). Before pausing, two rounds of the game-bot target were finished on the real judge, and the ledger keys were made stable (a site is identified by its definition path and an index within it, ledger format 6; editing only comments in the library keeps every cache entry, and the old ledgers of all three targets replay to the same values with the library they were written with).
+> **Effect.** Works now: one-command install, three entries (a batch of items, a process driven through a world, modules filled in by the author), five bundled examples and every doc snippet checked by blocking CI. Ran on the real judge: job matching and GitHub issue triage, each from one sentence of purpose, with results comparable to the hand-written versions. Not reached: the game bot. Round 4 (telling the program how a game is scored) lowered its score, because it went after a scoring route it could not survive to reach; round 5 (each scoring route also says what it takes to get it) scored 52.3 against 17.7 for the control on seeds 1–3 and survived all 300 ticks, but only three games ran, so this is recorded as too few samples and only described ($0.161 and $0.346). Not built: continuous computation (one program reading another's in-progress results), a long-lived stateful world, a persistent material store, and most of the static checker. Known rough edge: yes/no questions derived from a purpose do not carry descriptions of what "yes" and "no" mean, so their readings run lower than in projects that write such criteria; hand-written `test(…, {labels: {yes, no}})` does carry them.
+> **How to use it.** Install and run the examples from the first screen of [`rust/README.md`](../rust/README.md). Report a problem at [github.com/Towow-ai/jpp/issues](https://github.com/Towow-ai/jpp/issues) with the command, the `E-`/`W-` lines and, if you can, the `--ledger-out` file.
+>
+> **变了什么。** J++ 的施工在这里暂停，先拿去写真实项目，用的时候撞到的问题决定下一步造什么。自上次同步（研究树 `27995f8a9`）以来代码没有变。暂停前做完了两件事：游戏机器人靶子的第四、五圈真机；账本键稳定下来（站点用定义路径加定义内序号确定，账本格式第 6 版；只改库注释时缓存全部命中；三个靶子的旧账本配回写它时的库，都重放出相同的值）。
+> **效果。** 现在能用：一条命令装上，三种入口（一批条目、驱动一个世界的过程、作者自己填模块），五个随仓示例与全部文档片段由阻断的 CI 守着。真机跑通：求职匹配、GitHub issue 分诊，都只给一句目的，效果与手写版相当。没达到：游戏机器人。第四圈告诉程序这局怎么计分，得分反而更低，因为它去追一条活不到就拿不到的计分途径；第五圈让每条计分途径也写明怎样才拿得到，种子 1–3 上自身得分 52.3（对照 17.7），三局都活满 300 拍，但只跑了三局，记为样本不足、只描述（花费 0.161 与 0.346 美元）。没造：持续计算（一个程序读另一个程序算到一半的结果）、常驻有状态环境、持久的料库，以及大部分静态检查器。已知的毛刺：由目的派生的是非题不带「是」「否」各指什么的描述，读数会比写了这种判断标准的项目偏低；手写的 `test(…, {labels: {yes, no}})` 会带上。
+> **怎么用。** 安装和示例看 [`rust/README.md`](../rust/README.md) 第一屏。遇到问题到 [github.com/Towow-ai/jpp/issues](https://github.com/Towow-ai/jpp/issues) 提 issue，贴上运行的命令、以 `E-`/`W-` 开头的行，能给的话附上 `--ledger-out` 账本。
 
 ## 2026-10-02 (wrap-up sync): installable in one command, five bundled examples, docs and CI that block / 收尾同步：一条命令装上、五个随仓示例、挡得住的文档与 CI
 
