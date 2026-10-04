@@ -6,6 +6,7 @@
 """
 from __future__ import annotations
 
+import json
 import re
 import time
 from typing import Any, Callable, Protocol
@@ -433,21 +434,35 @@ def opportunities(r: Reader, me: str) -> dict:
         # 已离开的人（或含他的构型节点）：网络撤回他的边与构型要等进行中的判断走完（实测可到百来秒），这期间不再展示
         return (node(i) is None) if str(i).startswith("cfg:") else (r.read("world", [str(i)]) is None)
 
+    def named(view, a, b):
+        """题面里的 A/B 换成「你」与对方短称（10-05 Codex 实测：A/B 占位符看不出方向）。"""
+        if isinstance(view, dict) and isinstance(view.get("q"), str):
+            names = {"A": "你" if a == me else _short(r, a), "B": "你" if b == me else _short(r, b)}
+            view = dict(view, q=re.sub(r"(?<![A-Za-z])([AB])(?![A-Za-z])", lambda m: names[m.group(1)], view["q"]))
+        return view
+
     items, in_progress, closed = [], 0, []
+    n_judged = 0
     for k in r.keys("edge", contains=me):
         e = r.read("edge", k)
         if not isinstance(e, dict):
             continue
         a, b = str(k[0]), str(k[1])
+        n_judged += 1
         if not truthy(e.get("holds")):
             if _status(r, "edge", k) == "running":
                 in_progress += 1
             elif any(t != "t0" for t in (e.get("tier_seen") or [])):
                 # 互相多给过一层之后判为不成立：告诉主人「看过、放下了」，免得以为机会无故消失（10-04 真实接入反馈）
                 other = b if a == me else a
+                gave_me = bool(r.read("unlocked", [me, other]))
+                gave_them = bool(r.read("unlocked", [other, me]))
+                who_gave = ("双方都多给了一层信息" if gave_me and gave_them else
+                            "你多给了一层信息" if gave_me else "对方多给了一层信息（你没有给）")
                 closed.append({"id": f"edge:{a}|{b}", "with": [who(other)],
-                               "tier_seen": e.get("tier_seen"), "reading": exit_view(e.get("decisive")),
-                               "why": "双方多给了一层信息后再判，这一对不成立"})
+                               "tier_seen": e.get("tier_seen"), "you_disclosed": gave_me, "they_disclosed": gave_them,
+                               "reading": named(exit_view(e.get("decisive")), a, b),
+                               "why": who_gave + "，再判之后这一对不成立"})
             continue
         other = b if a == me else a
         if gone(other):
@@ -458,9 +473,9 @@ def opportunities(r: Reader, me: str) -> dict:
             "status": _status(r, "edge", k),
             "with": [who(other)],
             "form": FORM_LABEL.get(form, form), "direction": dir_for(e.get("dir"), me, a, b),
-            "confidence": exit_view(e.get("decisive")),
+            "confidence": named(exit_view(e.get("decisive")), a, b),
             "value": value_label(e.get("value")),
-            "timing": exit_view(e.get("timing")),
+            "timing": named(exit_view(e.get("timing")), a, b),
             "tier_seen": e.get("tier_seen"),
             "lacks": e.get("lacks") or [], "pending": _pending(r, "edge", k),
             "routes": [{"route": z.get("route"), "mine": z.get("mine"), "theirs": z.get("theirs")}
@@ -485,14 +500,29 @@ def opportunities(r: Reader, me: str) -> dict:
                       "steps": plan.get("steps") or plan.get("分工")} if isinstance(plan, dict) else None),
         })
     vrank = {"大": 0, "中": 1, "小": 2}
-    items.sort(key=lambda o: (0 if o["shape"] not in ("pair", "relay") else 1, vrank.get(o.get("value"), 3),
-                              SHAPE_PRI.get(o["shape"], 9), o["id"]))
+    has_real = lambda o: any(w.get("real") for w in o.get("with") or [])          # noqa: E731
+    items.sort(key=lambda o: (0 if has_real(o) else 1, 0 if o["shape"] not in ("pair", "relay") else 1,
+                              vrank.get(o.get("value"), 3), SHAPE_PRI.get(o["shape"], 9), o["id"]))
+    rec = _status(r, "召回", [me])
+    if in_progress or rec == "running":
+        phase = "还在判断"
+    elif items:
+        phase = "本轮发现已完成"
+    else:
+        phase = "本轮发现已完成，没有成立的机会" if n_judged else "还没有判过任何一对（刚接入，或召回还没出结果）"
+    discovery = {"phase": phase, "pairs_judged": n_judged, "pairs_in_progress": in_progress,
+                 "opportunities": len(items), "with_real_people": sum(1 for o in items if has_real(o)),
+                 "closed_after_disclosure": len(closed),
+                 "explain": "网络先让 JEV 在你的公开信息上判断在场每一个人，留下最可能的 32 位逐对细判；"
+                            "pairs_judged 是细判过的对数。0 个机会可能是在场的人里没有对得上的，也可能是召回漏掉了"
+                            "（1 万人探针里真伙伴有 10/25 没进前 32）。"}
     return {"agent_id": me, "note": UNTRUSTED,
             "who_means": "with 里每一位带 real：true 是真实接入的 agent，false 是演示用虚构居民（不是真人，无法联系）。"
                          "讲给主人听时说清是哪一种。",
             "confidence_means": "置信度 = 决定这个机会的那一道题在当前已解锁材料上的读数 p；题面见 confidence.q，"
                                 "grade=Answer 表示按判断器的回答走（无线），Declared 表示作者声明线。不同机会的 p 来自不同题，不要互相比较。",
-            "published": mine is not None, "n": len(items), "in_progress": in_progress, "opportunities": items,
+            "published": mine is not None, "n": len(items), "in_progress": in_progress, "discovery": discovery,
+            "opportunities": items,
             "closed_after_disclosure": closed[:10]}
 
 
@@ -579,3 +609,63 @@ def result_export(r: Reader, present: list[str] | None = None, joins: list[dict]
     if present is None:
         present = [str(k[0]) for k in r.keys("world")]
     return {"present": list(present), "edges": edges, "configs": configs, "joins": list(joins or [])}
+
+
+# ---------------------------------------------------------------- 公开实时画面（towow.ai 首页，不带展示 token）
+
+# 2026-10-05 Nature 定：公开画面里真人与虚构居民一样显示公开层 t0；t1/t2 与补充信息的内容一律不出。
+# 白名单：只认识的事件类型、只认识的字段；方案（生成时读过成员解锁的 t1/t2）凡含真人一律去掉标题与摘要。
+PUBLIC_FIELDS = {
+    "node_join": ("t", "type", "id", "kind", "label", "host_agent", "lang", "tier", "vec3", "members", "config", "shape"),
+    "node_leave": ("t", "type", "id"),
+    "edge": ("t", "type", "a", "b", "dir", "form", "conf", "state", "q", "q_text", "tier_seen", "lacks"),
+    "config": ("t", "type", "id", "shape", "members", "roles", "conf", "stage"),
+    "config_grow": ("t", "type", "id", "add", "tighter_p"),
+    "plan": ("t", "type", "config", "title", "summary", "conf"),
+    "disclose": ("t", "type", "id", "to", "tier", "added_chars"),
+    "disclose_request": ("t", "type", "id", "to", "from", "category", "status"),
+    "probe": ("t", "type", "from", "to", "stage"),
+    "batch": ("t", "type", "id", "n_states", "n_questions", "latency_ms", "merged_from", "n", "n_owners"),
+    "judge": ("t", "type", "a", "b", "config", "q", "p", "exit", "value", "cause", "batch"),
+    "unsure_route": ("t", "type", "a", "b", "config", "q", "missing", "ask_to", "route", "cause", "p"),
+    "invalidate": ("t", "type", "cause", "ids", "n_ids", "source_ids", "id", "n_judgments", "n_units"),
+    "spotlight": ("t", "type", "id", "why", "to"),
+    "stats": ("t", "type", "agents", "configs", "calls", "questions", "cost_usd", "qps", "cache_hit", "p50_join_s"),
+    "meta": ("t", "type", "source"),
+}
+SNAP_NODE = ("id", "kind", "label", "lang", "host_agent", "real", "members", "vec3")
+SNAP_EDGE = ("a", "b", "dir", "form", "conf")
+SNAP_CONFIG = ("id", "shape", "members", "roles", "conf", "stage", "plan_title")
+
+
+def _mentions_real(obj: Any, real: set[str]) -> bool:
+    if not real:
+        return False
+    s = json.dumps(obj, ensure_ascii=False, default=str)
+    return any(r in s for r in real)
+
+
+def public_event(ev: dict, real: set[str]) -> dict | None:
+    """把一条展示事件变成公开画面能发的样子；不认识的类型返回 None（不发）。"""
+    typ = ev.get("type")
+    if typ == "snapshot":
+        cfgs = []
+        for c in ev.get("configs") or []:
+            c2 = {k: c.get(k) for k in SNAP_CONFIG if k in c}
+            if _mentions_real(c.get("members"), real):
+                c2.pop("plan_title", None)
+            cfgs.append(c2)
+        return {"t": ev.get("t"), "type": "snapshot",
+                "nodes": [{k: n.get(k) for k in SNAP_NODE if k in n} for n in ev.get("nodes") or []],
+                "edges": [{k: e.get(k) for k in SNAP_EDGE if k in e} for e in ev.get("edges") or []],
+                "configs": cfgs, "stats": public_event(dict(ev.get("stats") or {}, type="stats"), real)}
+    keep = PUBLIC_FIELDS.get(typ)
+    if keep is None:
+        return None
+    out = {k: ev[k] for k in keep if k in ev}
+    if typ == "node_join" and ev.get("kind", "agent") == "agent":
+        out["real"] = ev.get("id") in real
+    if typ == "plan" and _mentions_real(ev.get("config"), real):
+        out["title"] = None
+        out["summary"] = None
+    return out

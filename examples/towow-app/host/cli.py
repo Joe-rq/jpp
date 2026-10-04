@@ -226,12 +226,13 @@ def main(argv=None):
         return
     if a.cmd == "join":
         pack = json.load(open(a.pack, encoding="utf-8"))
-        from host.server import agent_id_for
-        aid = agent_id_for(a.name, a.host_agent)
+        who = f"name:{a.host_agent}\x00{a.name}"       # agent_id 由服务端加盐生成，客户端算不出：按称呼记下 id
+        aid = load_token(url, who)
         res = asyncio.run(call(url, "towow_join", {"pack": pack, "agent_name": a.name, "host_agent": a.host_agent,
-                                                   "token": load_token(url, aid)}))
+                                                   "token": load_token(url, aid) if aid else ""}))
         if res.get("token"):
             save_token(url, res["agent_id"], res["token"])        # 存在 ~/.towow/tokens.json（0600），之后的命令自动带上
+            save_token(url, who, res["agent_id"])
         show(res)
         return
     if a.cmd == "opps":

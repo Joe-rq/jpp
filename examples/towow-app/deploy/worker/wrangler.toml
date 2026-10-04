@@ -3,5 +3,11 @@ main = "worker.js"
 compatibility_date = "2026-10-01"
 routes = [{ pattern = "net.towow.ai", custom_domain = true }]
 
+# 首页与前端：deploy/worker.sh 部署前把 web/dist 拷进 public/（不入库）
+[assets]
+directory = "./public"
+binding = "ASSETS"
+run_worker_first = true
+
 [vars]
-ORIGIN = "https://cigarettes-allocated-relaxation-raid.trycloudflare.com"
+ORIGIN = "https://example.trycloudflare.com"   # 占位；deploy/tunnel.sh、deploy/worker.sh 部署时用 --var 换成当前隧道地址

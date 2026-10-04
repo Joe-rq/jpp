@@ -44,6 +44,8 @@ export class UI {
   connected = true;
   /** 数据出处（实时 / 回放（真机数据）/ 模拟数据 …）与回放倍速 */
   origin?: string;
+  /** 首页英文版只把左下角这一行换成英文；旁白取自居民的中文资料，保持原文 */
+  lang: 'zh' | 'en' = 'zh';
   speed = 1;
   /** 真后端 HTTP 根；undefined 表示没有后端（模拟、回放） */
   api?: string;
@@ -89,11 +91,19 @@ export class UI {
   /** 左下角一行：数据来源 + 规模。真后端的 stats 很稀，所以按秒从前端状态重算。 */
   stats(now: number) {
     const s = this.net.stats;
+    const perMin = Math.round(typeof s.qps === 'number' && this.srcKind === 'mock' ? s.qps * 60 : this.net.judgesLastMinute(now)).toLocaleString('zh-CN');
+    if (this.lang === 'en') {
+      if (this.srcKind === 'probing') { this.stat.textContent = 'Connecting to the network'; return; }
+      let w = { live: 'Live', mock: 'Mock data', replay: 'Replay', probing: '' }[this.srcKind];
+      if (this.srcKind === 'live' && !this.connected) w = 'Live, reconnecting';
+      if (this.srcKind === 'replay' && this.speed !== 1) w = `${w} at ${this.speed}x`;
+      this.stat.textContent = `${w}. ${this.net.agentCount().toLocaleString('en')} agents, ${perMin} judgments a minute, ${this.net.configCount().toLocaleString('en')} groups`;
+      return;
+    }
     let src = this.origin ?? SRC_WORD[this.srcKind];
     if (this.srcKind === 'live' && !this.connected) src = '实时，重连中';
     if (this.srcKind === 'replay' && this.speed !== 1) src = `${src}。${this.speed} 倍速`;
     if (this.srcKind === 'probing') { this.stat.textContent = '正在连接网络……'; return; }
-    const perMin = Math.round(typeof s.qps === 'number' && this.srcKind === 'mock' ? s.qps * 60 : this.net.judgesLastMinute(now)).toLocaleString('zh-CN');
     this.stat.textContent = `${src}。${this.net.agentCount().toLocaleString('zh-CN')} 个 agent，每分钟 ${perMin} 次判断，${this.net.configCount().toLocaleString('zh-CN')} 个构型`;
   }
 

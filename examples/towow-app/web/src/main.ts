@@ -9,6 +9,7 @@ import { UI } from './ui';
 import { mockSource, wsSource, replaySource, autoSource, type Source } from './source';
 import { shared } from './scene/common';
 import { HEX } from './style';
+import { isHome, homeSource, mountHome, langOf } from './home';
 
 const qs = new URLSearchParams(location.search);
 const N = Math.max(50, Math.min(20000, Number(qs.get('n')) || 500));
@@ -75,14 +76,18 @@ director.onMode = (m) => document.body.classList.toggle('free', m === 'free');
 
 // ---------- 事件源 ----------
 // 回放默认 4 倍速：10 分钟的真实运行 2 分半看完。?data=jev|fixture|mock 可以替没写 meta 行的文件声明出处。
-let source: Source;
+let source: Source | undefined;
+const home = isHome(qs);
 const speed = Math.max(0.25, Math.min(64, Number(qs.get('speed')) || 4));
 // ?replay=nature|full 直接放对应回放（不先探测后端）；?file= 仍可指定任意文件
 const REPLAYS: Record<string, string> = { nature: 'replay-nature.jsonl', full: 'replay.jsonl' };
 const replayParam = qs.get('replay') || undefined;
 const replayFile = qs.get('file') || (replayParam && REPLAYS[replayParam]) || 'replay.jsonl';
 const dataOrigin = qs.get('data') || undefined;
-if (srcParam === 'auto' && replayParam) source = replaySource(replayFile, speed, dataOrigin);
+if (home) {
+  // 首页：先问 /healthz 网里有没有动静，再定放实时还是回放（home.ts）
+  void homeSource(qs, speed).then(({ source: s, note, h }) => { source = s; ui.lang = langOf(qs); mountHome(ui.lang, s.kind === 'live' ? 'live' : 'replay', note, h); });
+} else if (srcParam === 'auto' && replayParam) source = replaySource(replayFile, speed, dataOrigin);
 else if (srcParam === 'auto') source = autoSource(replayFile, speed, dataOrigin);
 else if (srcParam === 'mock') source = mockSource(N, Number(qs.get('seed')) || 7);
 else if (srcParam === 'replay') source = replaySource(replayFile, speed, dataOrigin);
@@ -90,9 +95,10 @@ else source = wsSource(srcParam);
 // 数据来源写在左下角那一行最前面：实时 / 模拟数据 / 回放
 let lastStat = -1;
 function syncSource(now: number) {
+  if (!source) return;
   ui.srcKind = source.kind; ui.connected = source.connected ?? true; ui.origin = source.origin; ui.speed = source.speed;
   net.speed = source.speed;
-  if (ui.api === undefined && source.kind === 'live') { ui.api = source.api ?? ''; if (ui.openId) ui.open(ui.openId); }
+  if (ui.api === undefined && source.kind === 'live' && !home) { ui.api = source.api ?? ''; if (ui.openId) ui.open(ui.openId); }
   if (now - lastStat > 1) { lastStat = now; ui.stats(now); }
 }
 if (meParam) enableMe(meParam);
@@ -153,8 +159,8 @@ function frame() {
   const dt = Math.min(0.1, now - last); last = now;
   shared.uTime.value = now;
   // 回放 meta 带 me 时，要赶在第一批事件放出之前切成「我的 agent」视角，导演才不会为别人的接入花镜头
-  if (!me && source.meta && typeof source.meta.me === 'string') enableMe(source.meta.me);
-  source.pump(now, (e) => net.ingest(e, now));
+  if (source && !me && !home && source.meta && typeof source.meta.me === 'string') enableMe(source.meta.me);
+  source?.pump(now, (e) => net.ingest(e, now));
   net.flush(now);
   if (me && meIdx < 0) { const n = net.nodes.get(me); if (n) { meIdx = n.idx; if (net.ports.selected.value < 0) net.ports.selected.value = meIdx; } }
   syncSource(now);
@@ -164,7 +170,7 @@ function frame() {
   composer.render(dt);
   if (!qs.get('fixdpr')) adapt(dt);
   perf.frames.push(dt * 1000); if (perf.frames.length > 3000) perf.frames.splice(0, 1000);
-  if (fpsEl) { fpsAcc += dt; fpsN++; if (fpsAcc > 0.5) { fpsEl.textContent = `${Math.round(fpsN / fpsAcc)} fps  n=${N}  ${source.label}`; fpsAcc = 0; fpsN = 0; } }
+  if (fpsEl) { fpsAcc += dt; fpsN++; if (fpsAcc > 0.5) { fpsEl.textContent = `${Math.round(fpsN / fpsAcc)} fps  n=${N}  ${source?.label ?? ''}`; fpsAcc = 0; fpsN = 0; } }
   perf.js.push(performance.now() - tj); if (perf.js.length > 3000) perf.js.splice(0, 1000);
   requestAnimationFrame(frame);
 }

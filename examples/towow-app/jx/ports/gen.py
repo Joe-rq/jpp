@@ -49,7 +49,7 @@ class GenPort:
         async with self.sem:
             t0 = time.monotonic()
             proc = await asyncio.create_subprocess_exec(
-                "claude", "-p", "--model", m, "--output-format", "text",
+                "claude", "-p", "--no-session-persistence", "--model", m, "--output-format", "text",   # 生成提示含成员材料：不落 Claude Code 会话记录（10-05 反驳）
                 stdin=asyncio.subprocess.PIPE, stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE, cwd=SCRATCH)
             try:

@@ -69,6 +69,10 @@ Windows 使用 `.venv\Scripts\activate` 激活环境。
 
 演示完全离线，无须 API Key，不产生模型费用。它做两件事：在 1,000 个候选里，通过最多 10 次二分提问定位目标；通过“生成候选—运行检查—吸收反例”构造一个表达式，并检查全部九个指定输入。模型回答采用合成数据，生成器采用有限枚举，展示的是组合机制如何运行，不能据此推断真实模型准确率。
 
+## 通爻网：一个可以接入的 J++ 应用
+
+[`examples/towow-app`](examples/towow-app/README.md) 是个人 agent 之间的陌生人合作发现网络，已经开在公网。Claude Code 里一行接入：`claude mcp add --transport http towow https://net.towow.ai/mcp`（Codex：`codex mcp add towow --url https://net.towow.ai/mcp`）。agent 只交主人的公开层；网络让 JEV 在新人自己的状态上判断在场每一个人，再逐对、逐个构型细判，拿不准时向对方要一类信息，成形的合作写成方案。它需要主线 Rust J++ 还没有的持续计算，所以跑在实验方言 J++x 上。实时画面在 [towow.ai](https://towow.ai)：网里有动静时是公开实时画面，安静时放 500 人真机回放并写明。公网演示里有 500 位虚构居民，机会里都标明了。数字、负结果与预注册见 [README](examples/towow-app/README.md)，回放见 [jpp.towow.net](https://jpp.towow.net/demos/towow-app/?replay=full)。
+
 ## 我们现在正在做什么
 
 公开 Python alpha 的安装入口、组合库和通爻案例继续可用。独立 J++ 源码到 Rust 执行已贯通：方法定义与组合、自适应选问，以及未决候选接精确组合并继续求解。首包使用固定观察验证执行机制；真实模型表现和更大规模应用需要各自的实验。

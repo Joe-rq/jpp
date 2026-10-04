@@ -14,6 +14,7 @@ from __future__ import annotations
 import asyncio
 import contextlib
 import hashlib
+import hmac
 import secrets
 import json
 import os
@@ -36,7 +37,8 @@ INSTRUCTIONS = """通爻（Towow）是一个陌生人合作发现网络。你是
 1. 调 towow_spec，读算子包编译说明（唯一的提示词）。
 2. 读主人的本地上下文（笔记、聊天、日程、项目、亲友情况），按说明和主人的披露意愿编译一份算子包 JSON：
    signals / offers / catchers / forbids / projects，每条标披露层 t0/t1/t2；never 层的原文永不写进包。
-   **只有 t0 交给网络**：join 时网络只收 t0 片段，t1/t2 留在你这里（交了也会在服务端丢掉，不落盘）。
+   **只有 t0 交给网络**：join 时只构造并发送 t0 片段，t1/t2 留在你这里（误交了服务端也会丢掉，不落盘）。
+   t0 会出现在 towow.ai 的公开实时画面里，任何人都能看到；写 t0 时按「公开」来写。
    某一位对方有合作苗头、向你要某一类信息时，你按主人的披露意愿用 towow_respond 逐类给出。
 3. 调 towow_join(pack, agent_name, host_agent)，记下返回的 agent_id 和 token。token 只给你自己：
    之后读机会、读收件箱、回复、重新 join（更新算子包）都要带上它；别人没有 token 就读不到主人的收件箱。
@@ -61,8 +63,23 @@ def _sha(token: Any) -> str:
     return hashlib.sha256(str(token or "").encode()).hexdigest()
 
 
+def _id_salt() -> bytes:
+    """agent_id 的服务端盐（~/.towow/agent-id-salt，0600）：没有盐，id 可由称呼与宿主名反推出来是谁（10-05 反驳）。"""
+    p = os.path.expanduser("~/.towow/agent-id-salt")
+    try:
+        with open(p, "rb") as f:
+            return f.read()
+    except OSError:
+        os.makedirs(os.path.dirname(p), exist_ok=True)
+        salt = secrets.token_bytes(16)
+        fd = os.open(p, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+        with os.fdopen(fd, "wb") as f:
+            f.write(salt)
+        return salt
+
+
 def agent_id_for(agent_name: str, host_agent: str) -> str:
-    return "u" + hashlib.sha256(f"{host_agent}\x00{agent_name}".encode()).hexdigest()[:10]
+    return "u" + hmac.new(_id_salt(), f"{host_agent}\x00{agent_name}".encode(), hashlib.sha256).hexdigest()[:10]
 
 
 class EventHub:
@@ -75,6 +92,10 @@ class EventHub:
         if self.view is not None and self.view.tell() == 0:    # 首行写出处，前端据此标「真机 / 伪读数 / 模拟」
             self.view.write(json.dumps({"type": "meta", "t": time.time(), **(view_meta or {})}, ensure_ascii=False) + "\n")
         self.clients: set[asyncio.Queue] = set()
+        self.public: set[asyncio.Queue] = set()      # 公开画面（/live）的客户端：只收 views.public_event 过滤后的事件
+        self.real_ids = lambda: set()                 # 宿主注入：当前真实接入者的 id
+        self.max_public = 200
+        self.last_activity: float | None = None
         self.maxsize = maxsize
         self.last_stats: dict = {}
         self.loop: asyncio.AbstractEventLoop | None = None
@@ -92,6 +113,8 @@ class EventHub:
         ev.setdefault("t", time.time())
         if ev.get("type") == "stats":
             self.last_stats = ev
+        elif ev.get("type") in ("judge", "batch"):
+            self.last_activity = time.time()          # 首页据此决定放实时还是回放
         self.n += 1
         if self.view and ev.get("type") != "error":     # 错误只进引擎自己的事件文件，回放文件只放画面要的
             self.view.write(json.dumps(ev, ensure_ascii=False, default=str) + "\n")
@@ -107,10 +130,26 @@ class EventHub:
 
     def _fanout(self, ev: dict):
         for q in list(self.clients):
-            if q.full():
-                with contextlib.suppress(asyncio.QueueEmpty):
-                    q.get_nowait()
-            q.put_nowait(ev)
+            self._put(q, ev)
+        if self.public:
+            pub = views.public_event(ev, self.real_ids())
+            if pub is not None:
+                for q in list(self.public):
+                    self._put(q, pub)
+
+    @staticmethod
+    def _put(q: asyncio.Queue, ev: dict):
+        if q.full():
+            with contextlib.suppress(asyncio.QueueEmpty):
+                q.get_nowait()
+        q.put_nowait(ev)
+
+    def subscribe_public(self) -> asyncio.Queue | None:
+        if len(self.public) >= self.max_public:
+            return None
+        q: asyncio.Queue = asyncio.Queue(self.maxsize)
+        self.public.add(q)
+        return q
 
     def subscribe(self) -> asyncio.Queue:
         q: asyncio.Queue = asyncio.Queue(self.maxsize)
@@ -119,6 +158,7 @@ class EventHub:
 
     def unsubscribe(self, q):
         self.clients.discard(q)
+        self.public.discard(q)
 
 
 class EngineView:
@@ -171,6 +211,7 @@ class Host:
         self.joins_path: str | None = None  # 公网部署时把真实接入（只有 t0 包与 token 摘要）存盘，重启后恢复，接入者不用重来
         self.after_start: list = []        # 启动后回调（如预载驱动 host.simulate.start_preload），同步、只登记
         self._register(sim)
+        self.hub.real_ids = lambda: set(self.tokens)
         self.eng.bus.subscribe(self.hub.on_engine_event)
 
     # ------------------------------------------------------------ do 动作
@@ -308,8 +349,27 @@ class Host:
         out = {"agent_id": aid, "token": tok or token, "epoch": epoch, "eta_first_batch_s": eta, "t0_fragments": n_t0,
                 "dropped_non_t0": n_dropped,
                 "network": self.population(),
-                "next": f"约 {eta:g} 秒后调 towow_opportunities('{aid}')；之后定期调 towow_opportunities 与 towow_inbox。"}
+                **({"budget_note": n} if (n := self.budget_note()) else {}),
+                "next": f"约 {eta:g} 秒后调 towow_opportunities(agent_id='{aid}', token=上面的 token)；"
+                        "之后定期调 towow_opportunities 与 towow_inbox（都要带 token）。"}
         return out
+
+    def budget(self) -> dict:
+        """程序 budget 的余量（本次启动起算）。用完后判断一律记为未观察，新接入拿不到机会：要让接入者与运营方看得见。"""
+        acct = getattr(self.engine, "account", None)
+        sched = getattr(self.engine, "sched", None)
+        if acct is None:
+            return {}
+        left = acct.remaining_cost()
+        return {"cost_cap_usd": acct.cap_cost, "cost_used_usd": round(acct.cost, 4), "cost_left_usd": round(left, 4),
+                "skipped_for_budget": getattr(sched, "budget_skips", 0), "exhausted": left < 0.05}
+
+    def budget_note(self) -> str | None:
+        b = self.budget()
+        if b.get("exhausted") or b.get("skipped_for_budget"):
+            return ("这个演示网络本次启动的判断预算已经用完或快用完，新的判断会被跳过，机会可能不全；"
+                    "请稍后再看，或联系运营方。")
+        return None
 
     def population(self) -> dict:
         n_world, n_cfg = len(self.eng.keys("world")), len(self.eng.keys("config"))   # world 在 join 时就写下，node 稍后才发布
@@ -337,15 +397,20 @@ class Host:
         me = str(agent_id)
         epoch = await self.eng.remove_source("world", [me])
         await asyncio.get_running_loop().run_in_executor(self._pool, self.index.remove, me)   # 别人之后召回不到他
+        n_disc = 0
         for fam in ("unlocked", "reply"):
             for k in list(self.eng.keys(fam, contains=me)):
                 epoch = await self.eng.remove_source(fam, list(k))
+                n_disc += 1
         self.tokens.pop(me, None)
         if self.joins_path:
             joins = self._load_joins()
             if joins.pop(me, None) is not None:
                 self._save_joins(joins)
-        return {"ok": True, "epoch": epoch}
+        return {"ok": True, "epoch": epoch,
+                "removed": {"pack": True, "index_entries": True, "disclosure_cells": n_disc, "saved_join": bool(self.joins_path)},
+                "note": "你的算子包、索引条目和补充信息已删除，别人那里立刻不再显示你；由你算出的边与构型在进行中的判断走完后撤回"
+                        "（实测约 100 秒）。已经发给 TypeSafe JEV 判断和 Claude 写方案的文字，按这两家的数据政策保留，网络删不到。"}
 
     # ------------------------------------------------------------ 展示时钟（宿主供时钟：每秒一条 stats 给前端）
     def stats_event(self, prev: dict | None, dt: float) -> dict:
@@ -408,7 +473,10 @@ class Host:
         def towow_opportunities(agent_id: str, token: str) -> dict:
             if not host.authorized(agent_id, token):
                 return {"error": DENY}
-            return views.opportunities(host.eng, agent_id)
+            out = views.opportunities(host.eng, agent_id)
+            if (n := host.budget_note()):
+                out["budget_note"] = n
+            return out
 
         @mcp.tool(description="读取别的 agent 为推进合作向主人要的补充信息请求（尚未回复的）。")
         def towow_inbox(agent_id: str, token: str) -> dict:
@@ -470,7 +538,9 @@ class Host:
 
         @app.get("/healthz")
         def healthz():
-            return {"ok": True, **host.population()}
+            la = host.hub.last_activity
+            return {"ok": True, **host.population(), "budget": host.budget(),
+                    "last_activity_s": round(time.time() - la, 1) if la else None}
 
         @app.get("/api/state")
         def api_state(display_token: str = ""):
@@ -498,16 +568,25 @@ class Host:
                 return JSONResponse({"error": DENY}, status_code=403)
             return JSONResponse(await host.leave(agent_id))
 
-        @app.websocket("/events")
-        async def events(ws: WebSocket):
-            if not display_ok(ws.query_params.get("display_token")):
-                await ws.close(code=1008)
-                return
-            await ws.accept()
-            q = host.hub.subscribe()
+        async def stream(ws: WebSocket, public: bool):
+            if public:
+                q = host.hub.subscribe_public()
+                if q is None:                         # 公开画面满员
+                    await ws.close(code=1013)
+                    return
+                await ws.accept()
+            else:
+                if not display_ok(ws.query_params.get("display_token")):
+                    await ws.close(code=1008)
+                    return
+                await ws.accept()
+                q = host.hub.subscribe()
 
             async def pump():
-                await ws.send_text(json.dumps(host.state(), ensure_ascii=False, default=str))
+                snap = host.state()
+                if public:
+                    snap = views.public_event(snap, host.hub.real_ids())
+                await ws.send_text(json.dumps(snap, ensure_ascii=False, default=str))
                 while True:
                     ev = await q.get()
                     await ws.send_text(json.dumps(ev, ensure_ascii=False, default=str))
@@ -527,6 +606,15 @@ class Host:
                     tg.start_soon(run_then_cancel, until_closed)
             finally:
                 host.hub.unsubscribe(q)
+
+        @app.websocket("/events")
+        async def events(ws: WebSocket):
+            await stream(ws, public=False)
+
+        @app.websocket("/live")
+        async def live(ws: WebSocket):
+            """公开实时画面（towow.ai 首页）：不要 token；只发白名单字段，真人只到公开层 t0（Nature 10-05 定）。"""
+            await stream(ws, public=True)
 
         for r in mcp_app.routes:            # /mcp 直接进主路由，不 Mount（避免 /mcp/mcp 与 307）
             app.router.routes.append(r)
@@ -554,7 +642,7 @@ def build_real(program: str, *, port_judge: str = "live", ledger_dir: str | None
 
     runs = ledger_dir or os.path.join(APP_DIR, "runs", "raw")
     os.makedirs(runs, exist_ok=True)
-    enc = EncPort(enc_cache or os.path.join(runs, "enc-cache.sqlite"), device=device)
+    enc = EncPort(enc_cache or os.path.join(runs, "enc-cache.sqlite"), device=device, persist_new=keep_text)
     ports: dict[str, Any] = {"enc": enc}
     if port_judge in ("live", "jev"):
         from jx.ports.jev import JevPort

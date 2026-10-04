@@ -31,6 +31,49 @@
       position: fixed; left: 28px; bottom: 24px; font-size: 13px; color: var(--faint); font-variant-numeric: tabular-nums;
       pointer-events: none; letter-spacing: 0.02em;
     }
+    /* 首页（DESIGN.md §9）：画面上只压一句话、一行命令、几处文字链接；不画卡片，字靠夜海色的径向暗晕托住 */
+    body.home #caption { bottom: auto; top: 15vh; }
+    #home-nav {
+      position: fixed; top: 22px; left: 28px; right: 28px; display: flex; align-items: baseline; gap: 22px;
+      font-size: 14px; letter-spacing: 0.02em; z-index: 3;
+    }
+    #home-nav .mark { font-family: var(--serif); font-size: 18px; color: var(--text); letter-spacing: 0.06em; }
+    #home-nav .gap { flex: 1; }
+    #home-nav .sep { width: 10px; }
+    #home-nav a { color: var(--dim); text-decoration: none; transition: color 0.25s; }
+    #home-nav a:hover, #home-nav a.on { color: var(--text); }
+    #home {
+      position: fixed; left: 56px; bottom: 64px; width: min(660px, calc(100vw - 112px)); z-index: 2; pointer-events: none;
+    }
+    #home::before {
+      content: ''; position: absolute; left: -220px; bottom: -160px; width: 980px; height: 680px; z-index: -1; pointer-events: none;
+      background: radial-gradient(closest-side, rgba(5, 8, 12, 0.82), rgba(5, 8, 12, 0.55) 55%, rgba(5, 8, 12, 0) 100%);
+    }
+    #home h1 {
+      font-family: var(--serif); font-weight: 400; font-size: 40px; line-height: 1.28; letter-spacing: 0.02em; margin: 0 0 18px;
+      text-shadow: 0 0 24px rgba(5, 8, 12, 0.9);
+    }
+    #home .sub { font-size: 15px; line-height: 1.75; color: var(--dim); margin: 0 0 26px; max-width: 32em; }
+    #home .cmd {
+      pointer-events: auto; display: inline-block; max-width: 100%; text-align: left; cursor: copy; padding: 0 0 6px; margin: 0;
+      font: inherit; font-size: 15px; letter-spacing: 0.01em; color: var(--sodium); background: none; border: 0;
+      border-bottom: 1px solid rgba(255, 179, 92, 0.38); overflow-wrap: anywhere; font-variant-ligatures: none; transition: color 0.25s, border-color 0.25s;
+    }
+    #home .cmd:hover { color: #FFE2B0; border-color: rgba(255, 226, 176, 0.7); }
+    #home .cmd.done { color: #FFE2B0; }
+    #home .hint { font-size: 12.5px; line-height: 1.7; color: var(--faint); margin: 10px 0 0; overflow-wrap: anywhere; }
+    #home .people { font-size: 13px; color: var(--dim); margin: 18px 0 0; }
+    #home .note { font-size: 13px; line-height: 1.7; color: var(--dim); margin: 6px 0 0; }
+    #home .note a { pointer-events: auto; color: var(--text); text-decoration: none; border-bottom: 1px solid rgba(237, 230, 218, 0.35); }
+    @media (max-width: 640px) {
+      #home-nav { top: 14px; left: 16px; right: 16px; gap: 14px; font-size: 13px; }
+      #home-nav .mark { font-size: 16px; }
+      #home { left: 16px; bottom: 78px; width: calc(100vw - 32px); }
+      #home h1 { font-size: 26px; margin-bottom: 12px; }
+      #home .sub { font-size: 14px; margin-bottom: 18px; }
+      #home .cmd { font-size: 13px; }
+      body.home #stat { left: 16px; bottom: 16px; font-size: 12px; }
+    }
     #fps { position: fixed; right: 16px; top: 12px; font-size: 12px; color: var(--faint); display: none; font-variant-numeric: tabular-nums; }
 
     /* 信息层：右侧一列，从右往左的夜海色渐隐，不画卡片 */
