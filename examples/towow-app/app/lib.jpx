@@ -137,3 +137,16 @@ fn invalid_candidate(c) {
     let n_cfg = len(filter(c.members, fn(m) { is_cfg(m) }));
     len(unique(flat)) < len(flat) || n_cfg > 1 || fold(map(c.members, fn(m) { nest_depth(m) }), 0, fn(a, b) { max(a, b) }) >= 2
 }
+
+// ───────────── 宽召回的重排（预注册 06）：「我」的 t0 作状态，每个候选一道题，题面只放对方的公开一句话
+fn rerank_me(n) { {展示: n.display ?? n.id, 在找: texts(n.signals ?? []), 能提供: texts(n.offers ?? []),
+                   接得住的来信: map(n.catchers ?? [], fn(c) { c.can ?? c.text ?? c })} }
+fn first_clause(t) {
+    let s0 = replace(replace(replace(replace(str(t ?? ""), ",", "，"), "。", "，"), "；", "，"), ";", "，");
+    substr(split(s0, "，")[0], 0, 40) }
+fn rerank_q(m) {
+    if m == unit { "对方信息缺失。读「我」的世界：我和这位对方之间可能有一桩实在的合作吗？" } else {
+        "对方：" + first_clause(m.display ?? m.id) + "。对方在找：" + join(map(take(texts(m.signals ?? []), 2), fn(t) { substr(t, 0, 60) }), "；")
+        + "。对方能提供：" + join(map(take(texts(m.offers ?? []), 2), fn(t) { substr(t, 0, 60) }), "；")
+        + "。读「我」的世界：我和这位对方之间，可能有一桩实在的合作吗（我帮他、他帮我，或经身边的人转介都算）？" } }
+fn p_yes(e) { if is_exit(e) && e.kind == "act" { e.p } else { if is_exit(e) && e.p != unit { 1 - e.p } else { 0 } } }

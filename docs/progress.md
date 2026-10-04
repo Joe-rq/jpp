@@ -2,6 +2,16 @@
 
 Updated: 2026-10-04. This is a dated report, not an automatically updated dashboard.
 
+## 2026-10-04 (later): Towow network — wide recall plus a same-state rerank lifts recall from 0.54 to 0.68 / 通爻网：宽召回加同状态重排，召回 0.54 → 0.68
+
+> **What changed.** Recall in [`examples/towow-app`](../examples/towow-app/README.md) now takes the vector top 200 and reranks them on the joiner's own state with one yes/no question per candidate, answered in a single JEV call (pre-registration 06), then keeps the top 32. A second probe (pre-registration 07) tried a three-way "really helps / looks related but does not / unrelated" question for holds; it halved the hard-negative rate but missed its pre-set bar, so it was not adopted.
+> **Effect (real JEV).** Probe: true partners in the top 32 rose from 6/3/0 to 19/11/3 of 25 at 500/2,000/10,000 agents — almost every partner inside the top 200 is recovered. Full run on the same 429 agents: overall recall of gold structures 0.54 → 0.68; one-to-one and relay at t0 0.65 → 0.89; teams/stars/many-to-many 0.36 → 0.45. Cost rose to about $0.0093 per agent and first opportunity p50 to 7.0 s. Still open: hard negatives (18 of 22 held), recall at 10,000 bounded by vector recall (3/25 in the top 200).
+> **How to use it.** Unchanged: `towow serve` and `claude mcp add --transport http towow http://localhost:8794/mcp`.
+>
+> **变了什么。** [`examples/towow-app`](../examples/towow-app/README.md) 的召回改为：向量取前 200 名，再在接入者自己的状态上每个候选一道是非题、一次 JEV 调用答完（预注册 06），取前 32。另一个探针（预注册 07）把成立题改成「真能帮上 / 看似相关但不成 / 无关」三选一，难负例减半，但没过预先定的线，没有采用。
+> **效果（真机 JEV）。** 探针：真伙伴进前 32 的数在 500 / 2000 / 1 万人时由 6/3/0 升到 19/11/3（分母 25），前 200 里的真伙伴几乎全部救回。同一批 429 人的全量：真值结构召回 0.54 → 0.68；t0 一对一与转介 0.65 → 0.89；团队/星/多对多 0.36 → 0.45。每人花费升到约 0.0093 美元，首个机会 p50 升到 7.0 秒。仍未解决：难负例（22 对里 18 对判成立）；1 万人时召回上限由向量召回决定（前 200 只有 3/25）。
+> **怎么用。** 不变：`towow serve`，再 `claude mcp add --transport http towow http://localhost:8794/mcp`。
+
 ## 2026-10-04: Towow network — a J++ application with continuous computation, run live on 500 agents / 通爻网：一个需要持续计算的 J++ 应用，500 个 agent 真机运行
 
 > **What changed.** A from-scratch application, [`examples/towow-app`](../examples/towow-app/README.md): personal agents join a stranger-discovery network with one MCP line and hand the network only their public layer (t0). The network finds pairs, relays, chains, rings, stars, teams, many-to-many groups and groups of groups, each with a confidence (the reading of the question that decided it, with its text); when it is unsure it asks the other side for one category of information; formed groups get a concrete plan. The application needs what the Rust J++ has explicitly not built — continuous computation and a long-lived stateful world — so it runs on an experimental Python language, J++x (`jx/`): versioned cells, residents, three read modes, composition closure, the default fill chain on unsure exits, budgets, deadlines and judge absence. The network program is `app/net.jpx` + `app/lib.jpx` (247 non-blank lines). Two Fable rulings fixed the language and the mechanism; five pre-registrations were committed before the code or runs they govern. A 3D frontend replays real runs.
