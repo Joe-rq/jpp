@@ -64,7 +64,7 @@ def program_publishes(eng, me, other="a0042"):
 async def roundtrip(client_factory, eng):
     async with client_factory() as c:
         tools = sorted(t.name for t in (await c.list_tools()).tools)
-        assert tools == ["towow_inbox", "towow_join", "towow_opportunities", "towow_respond", "towow_spec"]
+        assert tools == ["towow_inbox", "towow_join", "towow_leave", "towow_opportunities", "towow_respond", "towow_spec"]
         assert "towow_spec" in (c.instructions or "") and "不可信" in c.instructions
 
         def data(res):
@@ -92,7 +92,7 @@ async def roundtrip(client_factory, eng):
         jl = data(await c.call_tool("towow_join", {"pack": leak, "agent_name": "Leak", "host_agent": "Claude Code"}))
         wl = eng.read("world", [jl["agent_id"]])
         assert [f["text"] for f in wl["forbids"]] == ["公开的禁区"] and "secret_notes" not in wl
-        assert "bio" not in wl["owner"] and "123" not in json.dumps(wl, ensure_ascii=False)
+        assert "bio" not in wl["owner"] and "银行账户" not in json.dumps(wl, ensure_ascii=False)
         # 同名重新 join 要带 token；字符串形式的 pack 也收
         stolen = data(await c.call_tool("towow_join", {"pack": PACK, "agent_name": "Nature", "host_agent": "Claude Code"}))
         assert "error" in stolen
@@ -103,6 +103,8 @@ async def roundtrip(client_factory, eng):
         assert "error" in bad
 
         program_publishes(eng, me)
+        eng.sim_put("world", ["a0042"], {"id": "a0042", "real": False, "display": "心理咨询师老周"})   # 预载的虚构居民
+        eng.sim_put("world", ["a0007"], {"id": "a0007", "real": False, "display": "场地主"})
         assert "error" in data(await c.call_tool("towow_opportunities", {"agent_id": me, "token": "guess"}))
         assert "error" in data(await c.call_tool("towow_inbox", {"agent_id": me, "token": ""}))
         o = data(await c.call_tool("towow_opportunities", {"agent_id": me, "token": tok}))
@@ -113,9 +115,17 @@ async def roundtrip(client_factory, eng):
         assert pair["shape"] == "pair" and pair["confidence"]["p"] == 0.83 and pair["direction"] == "对方帮你"
         assert pair["confidence"]["kind"] == "act" and "孤立" in pair["confidence"]["q"]
         assert pair["with"][0]["display"] == "心理咨询师老周" and pair["value"] == "中" and pair["form"] == "直接互补"
+        # 演示网络里对方是虚构居民时要标出来（真实接入者不能误以为是真人）
+        assert pair["with"][0]["real"] is False and "虚构" in pair["with"][0]["who"] and "real" in o["who_means"]
+        # 对方离开后（world 已删、边还没撤完），机会里不再出现他和含他的构型
+        eng.cells.pop(("world", ("a0042",)))
+        o2 = data(await c.call_tool("towow_opportunities", {"agent_id": me, "token": tok}))
+        assert o2["n"] == 0          # 一对一和含他的三人环都不再出现
+        eng.sim_put("world", ["a0042"], {"id": "a0042", "real": False, "display": "心理咨询师老周"})
 
         ib = data(await c.call_tool("towow_inbox", {"agent_id": me, "token": tok}))
         assert ib["n"] == 1 and ib["requests"][0]["request_id"] == "a0042|近况细节"
+        assert ib["requests"][0]["real"] is False and "虚构" in ib["requests"][0]["hint"]
         r = data(await c.call_tool("towow_respond", {"agent_id": me, "token": tok, "request_id": "a0042|近况细节", "grant": True,
                                                      "text": "最近接单少，一个人在工作室，挺孤立的"}))
         assert r["ok"] and r["granted"]
@@ -196,7 +206,7 @@ async def test_http_mcp_events_and_state(fake_enc):
 async def test_do_actions_registered(fake_enc):
     eng, host = make_host(fake_enc)
     acts = eng.actions
-    assert set(acts) == {"index_put", "route", "route_offers", "graph_local"}
+    assert set(acts) == {"index_put", "route", "route_offers", "present", "graph_local"}
     assert acts["index_put"][1] is False                     # 有副作用
     assert all(acts[n][2] is None for n in acts)             # 不挂 node 族依赖（见 README：每次接入成本与 N 无关）
     await acts["index_put"][0]("a", {"signals": [{"text": "缺钱", "tier": "t0"}], "members": ["a"]})
@@ -205,6 +215,7 @@ async def test_do_actions_registered(fake_enc):
     host.hub.emit = lambda ev: got.append(ev)
     r = await acts["route"][0]("a", {"signals": [{"text": "缺钱", "tier": "t0"}]}, 5)
     assert r[0]["peer"] == "b" and got[0]["type"] == "probe" and got[0]["to"] == ["b"]
+    assert await acts["present"][0]("a") == ["b"]
     g = acts["graph_local"][0]("a", [{"a": "a", "b": "b", "dir": X("pick", "ba"), "form": X("pick", "direct"),
                                       "holds": True}], {})
     assert g[0]["shape"] == "pair"
@@ -249,3 +260,34 @@ def test_mapper_spotlight_invalidate_vec3(fake_enc):
     assert P("unlocked", ["a", "b"], [{"text": "x", "tier": "t2"}])[0]["tier"] == 2
     for e in [x for x in out if x["type"] == "spotlight"]:
         assert e["why"] in views.SPOTLIGHT_WHY
+
+
+@pytest.mark.anyio
+async def test_joins_persist_restore_and_leave(fake_enc, tmp_path):
+    """公网部署：真实接入存盘（只有 t0 与 token 摘要），重启后恢复、旧 token 照旧有效；leave 删掉包、补充信息与存盘。"""
+    path = str(tmp_path / "joins.json")
+    eng, host = make_host(fake_enc)
+    host.joins_path = path
+    j = await host.join(PACK, "Nature", "Claude Code")
+    me, tok = j["agent_id"], j["token"]
+    assert j["network"]["real_agents"] == 1
+    raw = open(path, encoding="utf-8").read()
+    assert tok not in raw and "睡眠很差" not in raw and me in raw
+    import os
+    assert os.stat(path).st_mode & 0o777 == 0o600
+
+    eng2, host2 = make_host(fake_enc)                 # 重启：新进程从存盘恢复
+    host2.joins_path = path
+    assert await host2.restore_joins(log=lambda m: None) == 1
+    assert eng2.read("world", [me])["real"] is True and host2.authorized(me, tok) and not host2.authorized(me, "x")
+
+    await host2.respond(me, "a0042|近况细节", True, "最近一个人在工作室")
+    await host2.leave(me)
+    assert eng2.read("world", [me]) is None and eng2.keys("unlocked", contains=me) == []
+    assert eng2.keys("reply", contains=me) == [] and not host2.authorized(me, tok)
+    assert json.load(open(path, encoding="utf-8")) == {}
+
+    # 已离开的人发过的补信息请求（inbox 是并集单元，不随撤回消失）不再展示
+    from host import views
+    eng2.sim_put("inbox", ["u-other"], [{"from": me, "cat": "近况细节", "purpose": "p", "q": "q", "asker_display": "Nature"}])
+    assert views.inbox(eng2, "u-other")["n"] == 0

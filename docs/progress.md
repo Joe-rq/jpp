@@ -1,6 +1,16 @@
 # J++ progress / 项目进度
 
-Updated: 2026-10-04. This is a dated report, not an automatically updated dashboard.
+Updated: 2026-10-05. This is a dated report, not an automatically updated dashboard.
+
+## 2026-10-05: Towow network — public demo at net.towow.ai, and recall without vector gating / 通爻网：net.towow.ai 公网演示，召回不再由向量挡门
+
+> **What changed.** [`examples/towow-app`](../examples/towow-app/README.md) now runs as a public demo: any MCP client joins with `claude mcp add --transport http towow https://net.towow.ai/mcp` (or `codex mcp add towow --url https://net.towow.ai/mcp`); the root page is the invitee guide. Counterparts in opportunities and disclosure requests carry `real`, and the 500 fictional residents are labelled as not real people. `towow_leave` removes the pack, disclosures, index entries and every edge and config derived from them; real joins survive restarts; in public mode no value-bearing event or replay file is written. Recall changed after three pre-registrations: with a generated, non-duplicated background of 9,500 people, vector top 200 + rerank kept only 3/25 true partners in the top 32 at 10,000 agents (08); JEV judging everyone present instead raised that to 10/25 (09); re-judging the top 200 with the full public pack raised it to 15/25 (10), so agent recall no longer goes through vectors. The J++x scheduler now splits same-state batches by estimated tokens and halves a batch that the judge rejects as too long.
+> **Effect (real JEV).** At 10,000 agents true partners in the top 32 went 3/25 → 15/25. A fresh agent joining the public network: both recall stages about 7.5 s, first opportunity 17 s, quiet after 2.7 min, 24 opportunities, about $0.11 per cold join (recall about $0.01; the rest is pair, config and disclosure judgments). A live leave after a granted disclosure leaves no edge, config or node mentioning the agent.
+> **How to use it.** Join the public demo with the command above, or run locally with `towow serve`. Operators: `deploy/up.sh` starts server, tunnel and worker; `deploy/watch.sh` under launchd restarts whichever part fails.
+>
+> **变了什么。** [`examples/towow-app`](../examples/towow-app/README.md) 开成了公网演示：任何 MCP 客户端用 `claude mcp add --transport http towow https://net.towow.ai/mcp`（或 `codex mcp add towow --url https://net.towow.ai/mcp`）接入，首页就是给被邀请人的说明。机会与补信息请求里的每位对方都带 `real`，500 位虚构居民标明不是真人。`towow_leave` 删掉算子包、补充信息、索引条目和由此算出的所有边与构型；真实接入在重启后恢复；公网模式不写带单元值的事件与回放文件。召回经三份预注册改过：用 Sonnet 生成、不复用片段的 9500 人做背景，1 万人时向量前 200 + 重排只留住 3/25 个真伙伴（08）；改为 JEV 判断在场全体，升到 10/25（09）；前 200 名再用完整公开包判一次，升到 15/25（10），所以 agent 召回不再经向量。J++x 调度器现在按估算 token 切批，判断器嫌太长时对半重发。
+> **效果（真机 JEV）。** 1 万人时真伙伴进前 32：3/25 → 15/25。一个新 agent 接入公网网络：召回两段约 7.5 秒，第一个机会 17 秒，2.7 分钟后静止，24 个机会，冷缓存每次接入约 0.11 美元（召回约 0.01，其余是两两、整体与补信息判断）。给出补充信息后离开，网里不再有任何含他的边、构型或节点。
+> **怎么用。** 用上面的命令接入公网演示，或本机 `towow serve`。运营方：`deploy/up.sh` 起服务、隧道与转发 Worker；launchd 常驻的 `deploy/watch.sh` 谁挂了重启谁。
 
 ## 2026-10-04 (later): Towow network — wide recall plus a same-state rerank lifts recall from 0.54 to 0.68 / 通爻网：宽召回加同状态重排，召回 0.54 → 0.68
 

@@ -461,3 +461,42 @@ map(range(20), fn(i) { cut(judge(state({i: i}), test("好？"))).kind })'''
         return r
     r = run(go())
     assert port.n == 7 and r.count("act") == 7 and r.count("unsure") == 13
+
+
+def test_batch_splits_by_tokens_and_on_overflow():
+    """同一状态的题按估算 token 切批；端口报 max_tokens_exceeded 时对半拆开重发，不当缺席（10-05 公网）。"""
+    from jx.ports.jev import JevAbsent
+    long_q = "长" * 3000
+    src = '''budget {calls: 100, cost: 1};
+cell world[a] reducer single;
+resident 判(a) on [change(world[a])] {
+    let w = settled world[a];
+    let r = judge(state({me: w}), map(range(12), fn(i) { test(w.q + str(i)) }));
+    len(filter(r, fn(x) { act(cut(x)) }))
+}
+'''
+    sizes = []
+
+    class Port:
+        sync = False
+        async def call(self, st, qs):
+            sizes.append(len(qs))
+            if len(qs) > 3:
+                raise JevAbsent('HTTP 400: {"detail":{"error_type":"max_tokens_exceeded"}}')
+            return [{"type": "noul", "noul": 0.9} for _ in qs]
+
+    async def go(cap):
+        eng = make(src, port=Port())
+        if cap:
+            eng.sched.prof.max_tokens_per_call = cap
+        await eng.start()
+        await eng.put_source("world", ["a"], {"q": long_q})
+        await eng.idle()
+        v = eng.read_host("判", ["a"], "settled")
+        await eng.stop()
+        return v
+    assert run(go(10 ** 9)) == 12                          # 关掉估算切分，只测溢出对半重发
+    assert sizes[0] == 12 and sum(x for x in sizes if x <= 3) == 12
+    sizes.clear()
+    assert run(go(None)) == 12                             # 默认上限：长题一开始就切成小批
+    assert sizes[0] < 12 and sum(x for x in sizes if x <= 3) == 12

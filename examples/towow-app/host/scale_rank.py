@@ -28,6 +28,44 @@ def node_of(aid: str, p: dict) -> dict:
             "derived": [], "members": [aid]}
 
 
+def load_genbg(n: int, packs: dict) -> dict:
+    """预注册 08 的背景：按批次顺序取前 n 个生成的人（g00001…），只留 t0；
+    丢掉与任何原包逐字相同的片段，人与人之间逐字重复的片段只留第一次出现。"""
+    gdir = os.path.join(APP_DIR, "runs", "scale", "genbg")
+    seen = set()
+    for p in packs.values():
+        for k in ("signals", "offers", "catchers"):
+            for f in p.get(k) or []:
+                seen.add(str((f.get("hypo") or f.get("text")) if isinstance(f, dict) else f))
+    out, i = {}, 0
+    for fn in sorted(os.listdir(gdir)):
+        if not fn.startswith("batch"):
+            continue
+        for q in json.load(open(os.path.join(gdir, fn), encoding="utf-8")):
+            if len(out) >= n:
+                return out
+            if not isinstance(q, dict):
+                continue
+            i += 1
+            pk = {"display": str(q.get("display", "")), "lang": q.get("lang", "zh")}
+            for k in ("signals", "offers"):
+                keep = []
+                for t in q.get(k) or []:
+                    t = str(t)
+                    if t not in seen:
+                        seen.add(t)
+                        keep.append({"text": t, "tier": "t0"})
+                pk[k] = keep
+            cs = []
+            for c in q.get("catchers") or []:
+                if isinstance(c, dict) and c.get("hypo") and str(c["hypo"]) not in seen:
+                    seen.add(str(c["hypo"]))
+                    cs.append({**c, "tier": "t0"})
+            pk["catchers"] = cs
+            out[f"g{i:05d}"] = pk
+    return out
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--ids", required=True)
@@ -36,6 +74,8 @@ def main():
     ap.add_argument("--k", type=int, default=500)
     ap.add_argument("--device", default="mps")
     ap.add_argument("--seed", type=int, default=0)
+    ap.add_argument("--genbg", action="store_true", help="预注册 08：背景用 claude 生成的不复用片段人口（runs/scale/genbg）")
+    ap.add_argument("--out", default="runs/scale/rank-diag.json")
     a = ap.parse_args()
     from jx.ports.enc import EncPort
     enc = EncPort(os.path.join(APP_DIR, "runs", "raw", "enc-cache.sqlite"), device=a.device)
@@ -53,12 +93,17 @@ def main():
     bg_dir = os.path.join(APP_DIR, "runs", "scale", "bg")
     out = {}
     for t in [int(x) for x in a.tiers.split(",")]:
-        synth = write_bg(TIERS[t], packs, a.seed, bg_dir, exclude)
         ix = FragmentIndex(enc)
         for aid in residents:
             ix.index_put(aid, node_of(aid, packs[aid]))
-        for aid in synth:
-            ix.index_put(aid, node_of(aid, json.load(open(os.path.join(bg_dir, aid + ".json"), encoding="utf-8"))))
+        if a.genbg:
+            gb = load_genbg(TIERS[t], packs)
+            for aid, p in gb.items():
+                ix.index_put(aid, node_of(aid, p))
+        else:
+            synth = write_bg(TIERS[t], packs, a.seed, bg_dir, exclude)
+            for aid in synth:
+                ix.index_put(aid, node_of(aid, json.load(open(os.path.join(bg_dir, aid + ".json"), encoding="utf-8"))))
         for aid in keep:
             ix.index_put(aid, node_of(aid, packs[aid]))
         rows, top200, samples = [], {}, []
@@ -68,7 +113,7 @@ def main():
             s32 = res[31]["score"] if len(res) >= 32 else None
             top200[x] = [{"peer": h["peer"], "score": h["score"]} for h in res[:200]]
             for h in res[:32]:       # 抽样：挤进前 32 的合成背景，与测试成员匹配上的那条片段原文
-                if h["peer"].startswith("b") and h["peer"][1:].isdigit() and len(samples) < 40:
+                if h["peer"][:1] in ("b", "g") and h["peer"][1:].isdigit() and len(samples) < 40:
                     r0 = h["routes"][0]
                     samples.append({"member": x, "peer": h["peer"], "score": h["score"], "route": r0["route"],
                                     "mine": r0["mine"], "theirs": r0["theirs"]})
@@ -88,7 +133,7 @@ def main():
                   "beyond_1000_or_missing": sum(1 for r in rk if r is None or r > 1000), "k": a.k, "rows": rows, "top200": top200, "synthetic_samples": samples}
         print(t, {k: v for k, v in out[t].items() if k not in ("rows", "top200", "synthetic_samples")}, flush=True)
         del ix
-    json.dump(out, open(os.path.join(APP_DIR, "runs", "scale", "rank-diag.json"), "w"), ensure_ascii=False, indent=1)
+    json.dump(out, open(os.path.join(APP_DIR, a.out), "w"), ensure_ascii=False, indent=1)
 
 
 if __name__ == "__main__":

@@ -164,6 +164,14 @@ def start_preload(host, pack_dir: str, **kw):
     return cb
 
 
+def start_restore(host):
+    """给 towow serve --public 用：预载完成后恢复存盘的真实接入（驱动侧起任务，宿主只提供 restore_joins）。"""
+    def cb():
+        host.restore_task = asyncio.get_running_loop().create_task(
+            host.restore_joins(getattr(host, "preload_task", None), log=lambda m: print(m, file=sys.stderr, flush=True)))
+    return cb
+
+
 def assemble(a, rdir: str):
     """装配：端口（enc / judge / gen）+ 引擎 + 宿主。返回 (eng, host, judge_cache_path)。simulate.run 与 host.scale 共用。"""
     from jx.engine import Engine
@@ -278,7 +286,7 @@ async def run(a) -> dict:
                 break
     for aid in rng.sample(present, min(a.leave, len(present))):
         c0 = eng.stats().get("calls", 0)
-        await eng.remove_source("world", [aid])
+        await host.leave(aid)
         present.remove(aid)
         left.append(aid)
         await eng.idle(timeout=a.idle_timeout)

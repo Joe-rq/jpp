@@ -43,6 +43,7 @@ class Profile:
     latency_p95_s: float = 1.1
     concurrency: int = 32
     max_q_per_call: int = 100
+    max_tokens_per_call: int = 24000    # 估算 token 上限：题长时 100 题会超 JEV 单次上限（10-05 公网：HTTP 400 max_tokens_exceeded）
     timeout_s: float | None = 20.0      # 单次调用的时延上限（超时 → Unsure(latency)）
     near_band: float = 0.1              # 无线是非题读数离 0.5 小于它时触发「先补再判」（画像字段，J-05 读数触发）
 
@@ -415,9 +416,16 @@ class Sched:
         no_chain = self.flags.get("no_budget_chain")
         for sid, rs in groups.items():
             rs.sort(key=lambda r: r.seq)
-            mq = self.prof.max_q_per_call
-            for i in range(0, len(rs), mq):
-                part = rs[i:i + mq]
+            mq, mt = self.prof.max_q_per_call, self.prof.max_tokens_per_call
+            parts, cur = [], []
+            for r in rs:                   # 按题数与估算 token 两条上限切分
+                if cur and (len(cur) >= mq or self._split_tokens(r.state.wire(), cur + [r]) > mt):
+                    parts.append(cur)
+                    cur = []
+                cur.append(r)
+            if cur:
+                parts.append(cur)
+            for part in parts:
                 for r in part:
                     r.sent = True
                 first = min(part, key=lambda r: r.seq)
@@ -459,6 +467,11 @@ class Sched:
             acct.charge(1, est)          # 发出即预留（并发在飞的调用也不会超账），回来后按实花费校正
         part[0].reserved = est
         return None
+
+    @staticmethod
+    def _split_tokens(state_wire, part) -> int:
+        """切批用的保守估算：中文约一字一 token 以上（10-05 实测 100 道短题 1.87 万 token，按字数 /1.6 只估到一半）。"""
+        return int((len(canon(state_wire)) + sum(len(canon(r.wq.wire())) for r in part)) * 1.2) + 20
 
     @staticmethod
     def _est_tokens(state_wire, part) -> int:
@@ -510,6 +523,16 @@ class Sched:
                 self._charge(part, self._est_tokens(st, part))
                 return self._finish_missing(part, "latency")
             except (PortAbsent, JevAbsent) as e:
+                if "max_tokens_exceeded" in str(e) and len(part) > 1:    # 估算偏低：对半拆开重发，不当缺席
+                    half = len(part) // 2
+                    first = min(part, key=lambda r: r.seq)
+                    if first.account is not None:       # 退回发出时的预留，两半重发时各自再预留
+                        first.account.charge(-1, -(getattr(part[0], "reserved", 0.0) or 0.0))
+                    part[0].reserved = 0.0
+                    for sub in (part[:half], part[half:]):
+                        heapq.heappush(self.heap, ((-math.inf,), next(self.seq), sub))
+                    self.splits = getattr(self, "splits", 0) + 1
+                    return None
                 return self._absent(part, str(e))
             after = getattr(getattr(self.port, "stats", None), "input_tokens", None)
             own = raws[0].get("_usage_input_tokens") if raws and isinstance(raws[0], dict) else None

@@ -51,16 +51,22 @@ resident 召回(x) on [change(material[x])] {
     // 规模实验的背景人口（world.background）只进索引、被别人召回，自己不主动召回：它们代表「网络里已经有的人」
     // 宽召回 + 同状态重排（预注册 06）：向量召回取前 200 名，再在「我」的状态上每个候选一道题，一次调用答完，按读数取前 32。
     // 向量前 32 在 2000 人时只留住 3/25 个真伙伴，重排后 11/25；1 万人时上限由前 200 决定（3/25）。
+    // 预注册 08–10（10-05）：1 万人时向量挡门只留住 3/25 个真伙伴；不用向量、在「我」的状态上判断在场全体（第一段），
+    // 前 200 名再用对方完整 t0 判一次（第二段），1 万人时前 32 留住 15/25。所以 agent 节点不再经向量：present 给出在场全体。
+    // 构型节点仍走向量（40 → 8）：它代表的人各自已经判过全体，构型这一层只为找「组合的组合」。
     let is_cfg_node = has(n, "kind") && n.kind == "config";
-    let wide = if is_cfg_node { 40 } else { 200 };
-    let raw = if has(n, "background") && n.background == true { [] } else { do("route", [x, n, wide], 0) };   // signals→catchers、catchers→signals、offers↔signals、→derived
+    let me = state({我: rerank_me(n)}, {owners: [x]});
+    let raw = if has(n, "background") && n.background == true { [] } else {
+        if is_cfg_node { do("route", [x, n, 40], 0) } else { map(do("present", [x], 0), fn(p) { {peer: p, routes: []} }) } };
     let pool = filter(raw, fn(h) { h.peer != x && not(blocked(n, h)) });
-    let rr = if len(pool) == 0 { [] } else {
-        judge(state({我: rerank_me(n)}, {owners: [x]}), map(pool, fn(h) { test(rerank_q(snap material[h.peer]), "rerank") })) };
-    let scored = map(range(len(pool)), fn(i) { {h: pool[i], p: p_yes(cut(rr[i])), i: i} });
-    // 构型节点只取前 8 名：它代表的人各自已经召回过 32 名，构型这一层只为找「组合的组合」
+    let rr = if len(pool) == 0 { [] } else { judge(me, map(pool, fn(h) { test(rerank_q(snap material[h.peer]), "rerank") })) };
+    let s1 = take(sort_by(map(range(len(pool)), fn(i) { {h: pool[i], p: p_yes(cut(rr[i])), i: i} }), fn(z) { [0 - z.p, z.i] }),
+                  if is_cfg_node { 40 } else { 200 });
+    let rr2 = if is_cfg_node || len(s1) == 0 { [] } else {
+        judge(me, map(s1, fn(z) { test(rerank_q_full(snap material[z.h.peer]), "rerank2") })) };
+    let s2 = if is_cfg_node { s1 } else { map(range(len(s1)), fn(i) { {h: s1[i].h, p: p_yes(cut(rr2[i])), i: i} }) };
     let width = if is_cfg_node { 8 } else { 32 };
-    let peers = map(take(sort_by(scored, fn(z) { [0 - z.p, z.i] }), width), fn(z) { z.h });
+    let peers = map(take(sort_by(s2, fn(z) { [0 - z.p, z.i] }), width), fn(z) { z.h });
     map(peers, fn(h) {
         let k = pair_key(x, h.peer);
         put hits[k.a, k.b] <- map(h.routes ?? [], fn(r) { {route: r.route, mine: r.mine, theirs: r.theirs} });
@@ -70,6 +76,8 @@ resident 召回(x) on [change(material[x])] {
 
 // ───────────────────────────── 两两：一对一个状态，根层题一次挂齐（运行时合批）
 resident 两两(k) on [change(material[k.a]), change(material[k.b]), change(unlocked[k.a, k.b]), change(unlocked[k.b, k.a]), change(hits[k.a, k.b])] {
+    // 一方离开（material 被撤回）就不判、不写：上次写的 edge/derived/adj 随重算撤回（10-05 公网离开实测，同 整体）
+    if peek material[k.a] == unit || peek material[k.b] == unit { {left: true} } else {
     let A = settled material[k.a];  let B = settled material[k.b];
     let H = peek hits[k.a, k.b];
     let UA = peek unlocked[k.a, k.b];  let UB = peek unlocked[k.b, k.a];
@@ -113,6 +121,7 @@ resident 两两(k) on [change(material[k.a]), change(material[k.b]), change(unlo
     put adj[k.a] <- merge(link, {peer: k.b});
     put adj[k.b] <- merge(link, {peer: k.a});
     e
+    }
     // 没写 unsure 臂：未决走语言的默认链——问缺哪类（伴随题，同批）→ put inbox[持有方] → settled reply → 补进 ctx 重判；
     // 被拒或截止 → 进 pending，needed 写明「缺 X，持有者拒绝」。
 }
@@ -161,6 +170,10 @@ resident 构型(x) on [change(adj[x])] {
 
 resident 整体(ck) on [change(cand[ck])] {   // 身份 = 成员集合键（同一组人只有一个单元）；候选一出现就实例化，之后不随 构型 重算消失
     let c = (settled cand[ck])[0];
+    // 有成员离开（material 被撤回）就不再判、不写：上一次写的 config/material/node 随重算撤回，构型节点的召回与两两跟着撤。
+    // 10-05 公网离开实测：原先这里 settled 读已撤回的 material 会一直等，旧构型和它的边留在网里，离开的人仍出现在别人的机会里。
+    let gone = filter(c.members, fn(m) { peek material[m] == unit });
+    if len(gone) > 0 { {left: gone} } else {
     let mats = map(c.members, fn(m) { side(settled material[m], all_unlocked(m, c.members)) });
     let s = state({members: mats, shape: c.shape, roles: c.roles}, {ref: VALUE_REF, owners: c.members});
     let without = map(c.members, fn(m) { test("去掉 " + display_of(m) + " 之后，这个合作还成立吗？", "without") });
@@ -180,6 +193,7 @@ resident 整体(ck) on [change(cand[ck])] {   // 身份 = 成员集合键（同�
             put node[k] <- cfg;                  // 组合封闭：构型作为节点，再进召回与两两
             cfg },                               // 成长、方案由 settled(config[k]) 实例化
         ignore: fn() { {dissolved: c.members} }})
+    }
 }
 
 // 成长：Nature 7b 的题组。一轮、三个候选；有人让合作更紧密，就把「原构型 + 他」作为新候选交给 整体 再判一次。
