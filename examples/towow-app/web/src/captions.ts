@@ -19,3 +19,10 @@ export const shapeEn = (s: string) => SHAPE_EN[s] ?? 'group';
 export const plural = (n: number, w: string) => `${n.toLocaleString('en')} ${w}${n === 1 ? '' : 's'}`;
 export const listEn = (xs: string[]) => xs.length < 2 ? xs.join('') : `${xs.slice(0, -1).join(', ')} and ${xs[xs.length - 1]}`;
 export const cap1 = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+// 信息层（点开一座港后的面板）的英文词表
+export const STATUS_EN: Record<string, string> = {
+  sent: 'requested', granted: 'shared', denied: 'declined', escalate: 'escalated', drop: 'dropped', return: 'returned to caller',
+  near_boundary: 'reading near the line', refine: 'refined, judged again',
+};
+export const TIER_EN = ['one public line', 'shared once there is a sign of fit', 'shared only after trust'];
+export const VALUE_EN = ['small', 'medium', 'large'];

@@ -20,6 +20,7 @@ cell cand[k] reducer union;            // 候选构型（形状、角色）：�
 cell edge[a, b] reducer single;        // 一对的关系读数（a < b），持续计算的产物
 cell config[k] reducer single;         // 构型，k = 成员集合内容键
 cell plan[k] reducer single;           // 方案（生成器写）
+cell best[m] reducer by_key(k);        // m 所在的成立构型与读数（整体写，方案据此每人取前 2；预注册 11）
 cell inbox[b] reducer union;           // 补信息请求（J-05 默认链写这里）
 cell reply[b, a, cat] reducer single;  // 持有方的回复（模拟 agent 的披露程序或真实 agent 经宿主写）
 
@@ -174,6 +175,23 @@ resident 整体(ck) on [change(cand[ck])] {   // 身份 = 成员集合键（同�
     // 10-05 公网离开实测：原先这里 settled 读已撤回的 material 会一直等，旧构型和它的边留在网里，离开的人仍出现在别人的机会里。
     let gone = filter(c.members, fn(m) { peek material[m] == unit });
     if len(gone) > 0 { {left: gone} } else {
+    // 两人构型不再问整体：同一份材料上它只比两两的决定性题系统性低一点（预注册 11 零花费核对：81–88% 更低、中位差 0.06–0.09），
+    // 不添信息；置信度直接沿用两两的决定性题（题面随行），edge 不成立就当不成立。
+    if c.shape == "pair" && len(c.members) == 2 {
+        let pk = pair_key(c.members[0], c.members[1]);
+        let e = settled edge[pk.a, pk.b];
+        if e == unit || e.holds != true || e.decisive == unit { {dissolved: c.members} } else {
+            let k = members_key(c.members);
+            let cfg = {id: k, kind: "config", shape: c.shape, members: c.members, roles: c.roles,
+                       hold: e.decisive, weakest: unit, value: e.value, lacks: [],
+                       offers: [summary_offer(c)], signals: [summary_lack(c)], derived: [],
+                       display: node_display({shape: c.shape, members: c.members}), catchers: [], projects: [], forbids: []};
+            put config[k] <- cfg;
+            put material[k] <- cfg;
+            put node[k] <- cfg;
+            map(c.members, fn(m) { put best[m] <- {k: k, p: e.decisive.p} });
+            cfg }
+    } else {
     let mats = map(c.members, fn(m) { side(settled material[m], all_unlocked(m, c.members)) });
     let s = state({members: mats, shape: c.shape, roles: c.roles}, {ref: VALUE_REF, owners: c.members});
     let without = map(c.members, fn(m) { test("去掉 " + display_of(m) + " 之后，这个合作还成立吗？", "without") });
@@ -191,8 +209,10 @@ resident 整体(ck) on [change(cand[ck])] {   // 身份 = 成员集合键（同�
             put config[k] <- cfg;
             put material[k] <- cfg;
             put node[k] <- cfg;                  // 组合封闭：构型作为节点，再进召回与两两
+            map(c.members, fn(m) { put best[m] <- {k: k, p: h.p} });
             cfg },                               // 成长、方案由 settled(config[k]) 实例化
         ignore: fn() { {dissolved: c.members} }})
+    }
     }
 }
 
@@ -216,9 +236,13 @@ resident 成长(k) on [settled(config[k])] {
 }
 
 // 方案：只在筛选之后交给生成器，只协调三四五个主体（#274）
+// 预注册 11：门是「决定性题出口 act」（config 只在 act 时写）加「每位成员都把它排在自己的前 2」；原先的 0.6 线没有校准依据，
+// 只交 t0 时读数挤在 0.5–0.65，公网上一份方案都出不来。有成员一层都没向其他成员放行时是草案（生成端加标注）。
 resident 方案(k) on [settled(config[k])] {
     let C = settled config[k];
-    if len(C.members) <= 5 && C.hold.conf >= 0.6 {
-        put plan[k] <- gen_json("plan", [C, map(C.members, fn(m) { side(settled material[m], all_unlocked(m, C.members)) })]);
+    let top = all(C.members, fn(m) { has(take(map(sort_by(values(peek best[m] ?? {}), fn(b) { 0 - b.p }), fn(b) { b.k }), 2), k) });
+    if len(C.members) <= 5 && top {
+        let draft = any(C.members, fn(m) { len(all_unlocked(m, C.members)) == 0 });   // 有一方只交了公开层就是草案（预注册 11 结果节）
+        put plan[k] <- gen_json("plan", [merge(C, {draft: draft}), map(C.members, fn(m) { side(settled material[m], all_unlocked(m, C.members)) })]);
     } else { unit }
 }
