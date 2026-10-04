@@ -86,6 +86,13 @@ async def roundtrip(client_factory, eng):
         assert w["real"] is True and w["host_agent"] == "Claude Code" and j["dropped_non_t0"] >= 1
         assert all(f.get("tier", "t0") == "t0" for k in ("signals", "offers", "catchers", "projects") for f in w[k])
         assert w["policy"] == {}
+        # 第三位反驳者的复现：带层的 forbids、自定义顶层字段、owner 详情都不能进 world
+        leak = dict(PACK, forbids=[{"text": "公开的禁区", "tier": "t0"}, {"text": "私密禁区", "tier": "t2"}],
+                    secret_notes="银行账户 123", owner={"bio": "家人住院"})
+        jl = data(await c.call_tool("towow_join", {"pack": leak, "agent_name": "Leak", "host_agent": "Claude Code"}))
+        wl = eng.read("world", [jl["agent_id"]])
+        assert [f["text"] for f in wl["forbids"]] == ["公开的禁区"] and "secret_notes" not in wl
+        assert "bio" not in wl["owner"] and "123" not in json.dumps(wl, ensure_ascii=False)
         # 同名重新 join 要带 token；字符串形式的 pack 也收
         stolen = data(await c.call_tool("towow_join", {"pack": PACK, "agent_name": "Nature", "host_agent": "Claude Code"}))
         assert "error" in stolen
