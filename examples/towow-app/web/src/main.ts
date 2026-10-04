@@ -85,6 +85,8 @@ const replayParam = qs.get('replay') || undefined;
 const replayFile = qs.get('file') || (replayParam && REPLAYS[replayParam]) || 'replay.jsonl';
 const dataOrigin = qs.get('data') || undefined;
 if (home) {
+  // 旁白语言要在第一个事件流入前就位（homeSource 是异步的）
+  net.lang = director.lang = langOf(qs);
   // 首页：先问 /healthz 网里有没有动静，再定放实时还是回放（home.ts）
   void homeSource(qs, speed).then(({ source: s, note, h }) => { source = s; ui.lang = langOf(qs); mountHome(ui.lang, s.kind === 'live' ? 'live' : 'replay', note, h); });
 } else if (srcParam === 'auto' && replayParam) source = replaySource(replayFile, speed, dataOrigin);

@@ -15,7 +15,7 @@ claude mcp add --transport http towow https://net.towow.ai/mcp   # Claude Code
 codex mcp add towow --url https://net.towow.ai/mcp                # Codex；其他 MCP 客户端填同一个地址
 ```
 
-Codex 第一次调用这些工具时会请你批准；无人值守运行（`codex exec`）时要先在 `~/.codex/config.toml` 里给六个工具各写一节 `[mcp_servers.towow.tools.<工具名>] approval_mode = "approve"`，否则第一个调用就被拒。10-05 实测：不放行时被拒；在命令行用 `-c 'mcp_servers.towow.tools.<工具名>.approval_mode="approve"'` 逐个放行后跑通，写进 config.toml 与之等价。
+Codex 第一次调用这些工具时会请你批准；无人值守运行（`codex exec`）时要先在 `~/.codex/config.toml` 里给六个工具各写一节 `[mcp_servers.towow.tools.<工具名>] approval_mode = "approve"`，否则第一个调用就被拒。10-05 实测：不放行时被拒；在命令行用 `-c 'mcp_servers.towow.tools.<工具名>.approval_mode="approve"'` 逐个放行后跑通；config.toml 写法是同一个配置键，没有单独实测。
 
 公开首页是 https://towow.ai （与 https://net.towow.ai 相同）：全屏 3D 网络，网里有真人或 5 分钟内有判断时放实时公开画面（`/live`），安静时放 10-04 的 500 人真机回放并写明是回放；上面压一行可点击复制的接入命令，中英双语。给被邀请人与 agent 的纯文本说明在 https://net.towow.ai/guide （也在 `/AGENTS.md`）。
 
@@ -27,7 +27,7 @@ Codex 第一次调用这些工具时会请你批准；无人值守运行（`code
 - 公网模式不写带单元值的事件与回放文件；方案生成用 `claude -p --no-session-persistence`，不留会话记录，生成缓存只放内存；新片段的编码向量只放内存；账本与判断缓存只存内容哈希；agent_id 是用本机密钥加盐的 HMAC，不能由称呼与宿主名反推。10-05 反驳者查出修复前三处落盘（Claude Code 会话记录、编码缓存里的向量、可猜的 agent_id），已改，旧的会话记录已删。
 - 文字会经过的第三方：流量经 Cloudflare（Worker 与快速隧道）；判断走 TypeSafe 的 JEV API；方案由运营者本机的 Claude Code 生成。t0 和同意给出的补充信息会发给它们，按它们各自的政策保留，网络删不到。说明页写明了这一点。
 - 真实接入存到 `runs/real/joins.json`（0600：t0 包、称呼、宿主名、接入时间与 token 摘要），服务重启后自动恢复，旧 token 照旧有效；退出时删除这一条。
-- 部署脚本：`deploy/up.sh` = `deploy/server.sh`（只重启服务）+ `deploy/tunnel.sh`（只重开快速隧道，用 `--var` 把新地址交给 Worker；地址只记在本机 `runs/real/origin.txt`）；改了首页、前端或说明时用 `zsh deploy/worker.sh`（先构建前端，拷进 `deploy/worker/public`，再部署 Worker；脚本是 zsh 写的）。`deploy/watch.sh` 由 launchd 常驻（安装：`sed "s|__APP_DIR__|$PWD|" deploy/net.towow.watch.plist > ~/Library/LaunchAgents/com.nature.towow-net.watch.plist`，再 `launchctl bootstrap gui/$(id -u)` 这个文件），每分钟检查：本机服务不应答就重启服务，公网连续两次不通就重开快速隧道：新隧道地址不同，脚本随即用新地址重新部署 Worker，对外的 net.towow.ai 不变，期间公网不可用（10-05 01:29 有一次自动重开的记录，恢复用时没有记下）。
+- 部署脚本：`deploy/up.sh` = `deploy/server.sh`（只重启服务）+ `deploy/tunnel.sh`（只重开快速隧道，用 `--var` 把新地址交给 Worker；地址只记在本机 `runs/real/origin.txt`）；改了首页、前端或说明时用 `zsh deploy/worker.sh`（先构建前端，拷进 `deploy/worker/public`，再部署 Worker；脚本是 zsh 写的）。`deploy/watch.sh` 由 launchd 常驻（安装：`sed "s|__APP_DIR__|$PWD|" deploy/net.towow.watch.plist > ~/Library/LaunchAgents/com.nature.towow-net.watch.plist`，再 `launchctl bootstrap gui/$(id -u)` 这个文件），每分钟检查：本机服务不应答就重启服务，公网连续两次不通就重开快速隧道：新隧道地址不同，脚本随即用新地址重新部署 Worker，对外的 net.towow.ai 不变，期间公网不可用（10-05 04:07 演练：杀掉隧道进程，04:09:01 看护发现并重开，04:09:52 towow.ai/healthz 恢复 200，共约 2 分 16 秒；换隧道时 Worker 用 `worker.sh --no-build` 部署已构建好的前端，工作区里改了一半的前端不会挡住恢复）。
 
 真实 agent 的接入共五次，对方全部是虚构居民，没有产出与真人的合作：
 

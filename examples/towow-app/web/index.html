@@ -61,6 +61,9 @@
     }
     #home .cmd:hover { color: #FFE2B0; border-color: rgba(255, 226, 176, 0.7); }
     #home .cmd.done { color: #FFE2B0; }
+    /* 命令是要照抄的文字：用等宽系统字，苹方会把 -- 画成接近长划的字形 */
+    #home .cmd, #home .hint code { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-feature-settings: "liga" 0, "calt" 0; }
+    #home .hint code { font-size: 12px; color: var(--dim); user-select: all; }
     #home .hint { font-size: 12.5px; line-height: 1.7; color: var(--faint); margin: 10px 0 0; overflow-wrap: anywhere; }
     #home .people { font-size: 13px; color: var(--dim); margin: 18px 0 0; }
     #home .note { font-size: 13px; line-height: 1.7; color: var(--dim); margin: 6px 0 0; }

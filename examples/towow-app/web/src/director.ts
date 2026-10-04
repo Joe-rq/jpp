@@ -7,6 +7,7 @@ import type { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js
 import type { Net, Moment } from './net';
 import { CAM } from './style';
 import { Q_WORD } from './protocol';
+import { Q_EN, formEn, shapeEn, plural, listEn, cap1 } from './captions';
 
 type ShotKind = 'cruise' | 'home' | 'revisit' | 'push' | 'orbit' | 'follow' | 'pull';
 interface Shot {
@@ -49,6 +50,8 @@ export class Director {
   private firstSaid = new Set<string>();
   private lastMeta = -1e9; private lastGrant = -1e9;
   private lastCandT = -1e9;
+  /** 旁白语言：首页 ?lang=en 时为 'en'，默认 'zh'（中文路径输出不变） */
+  lang: 'zh' | 'en' = 'zh';
   caption?: (text: string, prio?: number) => void;
   onMode?: (m: 'director' | 'free') => void;
   /** 当前被镜头关注的对象（供信息层或调试用） */
@@ -110,9 +113,10 @@ export class Director {
       this.offer({ key: 'join:' + m.id, subject: m.id, prio: due ? 6 : 2, t: now, ttl: 6, make: (t) => {
         const n = net.nodes.get(m.id); if (!n) return undefined;
         this.lastJoinShot = t;
-        const where = n.city ? `从${n.city}接入` : '接入网络';
+        const en = this.lang === 'en';
+        const where = en ? (n.city ? `joined from ${n.city}` : 'joined the network') : (n.city ? `从${n.city}接入` : '接入网络');
         return { kind: 'push', prio: 2, start: t, min: 7, max: 10, target: () => n.pos, dist: 200 * s, elev: 34, azSpeed: 3, close: true, subject: m.id, omega: 2.1,
-          onFramed: () => { if (m.id === this.me && net.storyPending) return; this.caption?.(`${n.label}的 ${n.host ?? 'agent'} ${where}`); } };
+          onFramed: () => { if (m.id === this.me && net.storyPending) return; this.caption?.(en ? `${n.label}'s ${n.host ?? 'agent'} ${where}` : `${n.label}的 ${n.host ?? 'agent'} ${where}`); } };
       } });
     } else if (m.kind === 'recall') {
       // 网络替 ?me 在人群里召回候选：镜头拉开，让探针从它射向四面八方的候选，再一个个暗下或留下
@@ -138,7 +142,7 @@ export class Director {
       // ?me 的 agent 的第一个机会常出在别的镜头里（补信息的镜头正拍着对方）：字幕照出，不等镜头
       if ((this.shot.subject === m.id || m.id === this.me) && this.mode === 'director' && !this.firstSaid.has(m.id)) {
         this.firstSaid.add(m.id);
-this.caption?.(`${m.dt < 0.1 ? '不到 0.1 秒就' : m.dt < 10 ? `${m.dt.toFixed(1)} 秒就` : `${Math.round(m.dt)} 秒后`}找到第一个机会：与${this.short(m.other)}${m.form === '不成立' ? '' : `，${m.form}`}`, 2);
+this.caption?.(this.firstLine(m.dt, m.other, m.form), 2);
         if (this.shot.subject === m.id) this.shot.max = Math.max(this.shot.max, now - this.shot.start + 4);
       }
     } else if (m.kind === 'fleet') {
@@ -171,10 +175,17 @@ this.caption?.(`${m.dt < 0.1 ? '不到 0.1 秒就' : m.dt < 10 ? `${m.dt.toFixed
       const mineRe = !!this.me && (m.a === this.me || m.b === this.me);
       const onShot = this.grantKey === m.key && this.shot.kind === 'push' && now - this.shot.start < this.shot.max;
       if (this.mode === 'director' && (onShot || mineRe)) {
-        const who = mineRe ? `与${this.short(m.a === this.me ? m.b : m.a)}，` : '';
-        this.caption?.(who + (typeof m.p === 'number'
-          ? (typeof m.p0 === 'number' ? `多了这一层再判：置信度 ${m.p0.toFixed(2)} → ${m.p.toFixed(2)}` : `多了这一层再判：关系成立，置信度 ${m.p.toFixed(2)}`)
-          : `多了这一层再判：这段关系不成立${typeof m.pNo === 'number' ? `（判「不成立」的把握 ${m.pNo.toFixed(2)}）` : ''}`), 1);
+        if (this.lang === 'en') {
+          const body = typeof m.p === 'number'
+            ? (typeof m.p0 === 'number' ? `re-judged with the extra layer, confidence moved from ${m.p0.toFixed(2)} to ${m.p.toFixed(2)}` : `re-judged with the extra layer, the match holds at confidence ${m.p.toFixed(2)}`)
+            : `re-judged with the extra layer, no match${typeof m.pNo === 'number' ? ` (no-match confidence ${m.pNo.toFixed(2)})` : ''}`;
+          this.caption?.(mineRe ? `${this.short(m.a === this.me ? m.b : m.a)}: ${body}` : cap1(body), 1);
+        } else {
+          const who = mineRe ? `与${this.short(m.a === this.me ? m.b : m.a)}，` : '';
+          this.caption?.(who + (typeof m.p === 'number'
+            ? (typeof m.p0 === 'number' ? `多了这一层再判：置信度 ${m.p0.toFixed(2)} → ${m.p.toFixed(2)}` : `多了这一层再判：关系成立，置信度 ${m.p.toFixed(2)}`)
+            : `多了这一层再判：这段关系不成立${typeof m.pNo === 'number' ? `（判「不成立」的把握 ${m.pNo.toFixed(2)}）` : ''}`), 1);
+        }
         if (onShot) { this.shot.max = Math.max(this.shot.max, now - this.shot.start + 4); this.grantKey = ''; }
       }
     } else if (m.kind === 'spotlight') {
@@ -185,7 +196,7 @@ this.caption?.(`${m.dt < 0.1 ? '不到 0.1 秒就' : m.dt < 10 ? `${m.dt.toFixed
           this.offer({ key: 'first:' + m.id, subject: m.id, prio: 2, t: now, ttl: 12, make: (t) => {
             const n = net.nodes.get(m.id); if (!n) return undefined;
             return { kind: 'push', prio: 2, start: t, min: 6, max: 9, target: () => n.pos, dist: 220 * s, elev: 38, azSpeed: 3.5, close: true, subject: m.id,
-              onFramed: () => { if (this.firstSaid.has(m.id)) return; this.firstSaid.add(m.id); const o = this.firstOther(m.id); this.caption?.(o ? `${n.label}找到第一个机会：与${this.short(o.id)}${o.form === '不成立' ? '' : `，${o.form}`}` : `${n.label}找到了第一个机会`); } };
+              onFramed: () => { if (this.firstSaid.has(m.id)) return; this.firstSaid.add(m.id); const o = this.firstOther(m.id); this.caption?.(this.lang === 'en' ? (o ? `${n.label} found its first opportunity: with ${this.short(o.id)}${o.form === '不成立' ? '' : `, ${formEn(o.form)}`}` : `${n.label} found its first opportunity`) : (o ? `${n.label}找到第一个机会：与${this.short(o.id)}${o.form === '不成立' ? '' : `，${o.form}`}` : `${n.label}找到了第一个机会`)); } };
           } });
           break;
         }
@@ -239,7 +250,8 @@ this.caption?.(`${m.dt < 0.1 ? '不到 0.1 秒就' : m.dt < 10 ? `${m.dt.toFixed
   private grantLine(holder: string, asker?: string): string {
     const net = this.net;
     const h = this.short(holder);
-    if (!asker) return `${h}同意补充信息`;
+    const en = this.lang === 'en';
+    if (!asker) return en ? `${h} agreed to share more` : `${h}同意补充信息`;
     const a = this.short(asker);
     const st = net.stories.get(net.pairKey(holder, asker));
     let cat: string | undefined; let tier: number | undefined; let unsure: { q?: string; p?: number | null } | undefined;
@@ -250,16 +262,35 @@ this.caption?.(`${m.dt < 0.1 ? '不到 0.1 秒就' : m.dt < 10 ? `${m.dt.toFixed
       if (x.k === 'unsure' && cat) { unsure = x; break; }
     }
     // 字幕只有一行：请求方的名字和题、要的类别、对方给到哪一层；持有方由镜头交代
+    if (en) {
+      const q = unsure ? (Q_EN[unsure.q ?? ''] ?? unsure.q) : '';
+      const head = unsure ? `${a} was unsure about \u201c${q}\u201d${typeof unsure.p === 'number' ? ` (${unsure.p.toFixed(2)})` : ''} and asked for` : `${a} asked ${h} for`;
+      return `${head} ${cat ? `\u201c${cat}\u201d` : 'more information'}; they shared ${typeof tier === 'number' ? `t${tier}` : 'one more layer'}`;
+    }
     const head = unsure ? `${a}拿不准「${Q_WORD[unsure.q ?? ''] ?? unsure.q}」${typeof unsure.p === 'number' ? `（${unsure.p.toFixed(2)}）` : ''}，要` : `${a}向${h}要`;
     return `${head}${cat ? `「${cat}」` : '更多信息'}，对方给了${typeof tier === 'number' ? ` t${tier}` : '一层'}`;
   }
   /** 字幕里的短名：agent 用节点标签的整名；新港说成「一个某某构型」 */
   private short(id: string): string {
     const n = this.net.nodes.get(id);
+    if (this.lang === 'en') {
+      const cid = n?.kind === 'config' ? n.configId ?? id : !n && this.net.configs.has(id) ? id : undefined;
+      if (cid !== undefined) { const c = this.net.configs.get(cid); return c ? `a ${shapeEn(c.shape)}` : 'a group'; }
+      return this.net.label(id);
+    }
     if (n?.kind === 'config') { const c = this.net.configs.get(n.configId ?? id); return c ? `${this.net.shapeName(c.shape)}构型` : '一个构型'; }
     return this.net.label(id); // 节点标签本身已是后端短称的规则（第一分句，最多 12 字），整名放进字幕，不再二次截断
   }
   private lastJoinShot = -1e9;
+
+  /** 「第 N 秒找到第一个机会」一行 */
+  private firstLine(dt: number, other: string, form: string): string {
+    if (this.lang === 'en') {
+      const t = dt < 0.1 ? 'under 0.1 seconds' : dt < 10 ? `${dt.toFixed(1)} seconds` : plural(Math.round(dt), 'second');
+      return `First opportunity found in ${t}: with ${this.short(other)}${form === '不成立' ? '' : `, ${formEn(form)}`}`;
+    }
+    return `${dt < 0.1 ? '不到 0.1 秒就' : dt < 10 ? `${dt.toFixed(1)} 秒就` : `${Math.round(dt)} 秒后`}找到第一个机会：与${this.short(other)}${form === '不成立' ? '' : `，${form}`}`;
+  }
 
   private offerConfig(id: string, prio: number, now: number, ttl: number, caption: boolean) {
     const net = this.net; const s = net.scale;
@@ -299,6 +330,16 @@ this.caption?.(`${m.dt < 0.1 ? '不到 0.1 秒就' : m.dt < 10 ? `${m.dt.toFixed
 
   configLine(id: string): string {
     const c = this.net.configs.get(id); if (!c) return '';
+    if (this.lang === 'en') {
+      const names = c.members.map((m) => this.net.nodes.get(m)?.kind === 'config' ? 'an existing group' : this.short(m));
+      const many = names.length > 3;
+      const shown = many ? `${names.slice(0, 2).join(', ')} and ${names.length - 2} others` : listEn(names);
+      const sh = shapeEn(c.shape);
+      const word = c.meta ? 'combine into a larger group' : c.shape === 'pair' ? 'complement each other' : c.shape === 'relay' ? 'form a referral link'
+        : many ? `form a ${sh}` : `form a ${names.length}-party ${sh}`;
+      const p = fmt(c.conf);
+      return `${shown} ${word}${p ? `, confidence ${p}` : ''}`;
+    }
     // 字幕只有一行：名字取短名
     const names = c.members.map((m) => this.net.nodes.get(m)?.kind === 'config' ? '一个已成的构型' : this.short(m));
     const many = names.length > 3;
@@ -313,6 +354,10 @@ this.caption?.(`${m.dt < 0.1 ? '不到 0.1 秒就' : m.dt < 10 ? `${m.dt.toFixed
   planLine(id: string): string {
     const c = this.net.configs.get(id); if (!c) return '';
     const p = fmt(c.plan?.conf ?? c.conf);
+    if (this.lang === 'en') {
+      if (c.plan?.title) return `Plan ready: ${c.plan.title}${p ? `, confidence ${p}` : ''}`;
+      return `${this.configLine(id).replace(/, confidence .*$/, '')}, cooperation plan written${p ? `, confidence ${p}` : ''}`;
+    }
     if (c.plan?.title) return `方案落定：${c.plan.title}${p ? `，置信度 ${p}` : ''}`;
     // fixture 判断下生成器不开，方案只有结构没有标题：照实说
     return `${this.configLine(id).replace(/，置信度.*$/, '')}，合作方案写好了${p ? `，置信度 ${p}` : ''}`;
