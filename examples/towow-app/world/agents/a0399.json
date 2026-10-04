@@ -1,0 +1,146 @@
+{
+ "id": "a0399",
+ "host_agent": "CUE",
+ "lang": "en",
+ "owner": {
+  "display_name": "Wanjiru Kamau",
+  "city": "Nairobi",
+  "age_band": "40-45",
+  "occupation": "Procurement officer for a boutique safari lodge group"
+ },
+ "world": {
+  "bio": "Procurement officer for a boutique safari lodge group in Nairobi. I buy everything from linen to coffee for six lodges across Kenya. I am currently stuck between a sustainability audit and a cost-cutting memo. I am renovating a house in Karen, my birdwatching log has just hit 400 species, and my mother is recovering from hip surgery.",
+  "skills_assets": [
+   "Procurement for six lodges: linen, toiletries, coffee, cleaning supplies, kitchen goods",
+   "Supplier relationships across Kenya and Tanzania, a database of 80 vendors",
+   "Experience negotiating bulk contracts in Kenyan shillings and USD",
+   "Knowledge of the group's sustainability audit criteria",
+   "A well-worn birdwatching notebook and a pair of Zeiss binoculars"
+  ],
+  "projects": [
+   {
+    "name": "Guest amenity audit response",
+    "status": "in progress",
+    "text": "The sustainability audit flagged that all guest-room soaps are imported from South Africa. Guests keep asking for something local. I have to propose a plan by the end of October."
+   },
+   {
+    "name": "Cost memo compliance",
+    "status": "in progress",
+    "text": "The finance memo says amenities can't go up more than 10% per room night. Our current soap cost is about KES 45 per bar. Anything above that needs justification."
+   }
+  ],
+  "notes": [
+   {
+    "date": "2026-09-10",
+    "text": "Audit report arrived. Page 12: 'All guest-room soaps imported from South Africa.' The auditor underlined it. I had to explain to the GM that we have always used them because of consistent quality. The GM asked why not local. I said I had never found one."
+   },
+   {
+    "date": "2026-09-13",
+    "text": "Mother's physio went well. She walked to the end of the corridor with her walker. She said she misses her garden. I said wait until the house in Karen is done."
+   },
+   {
+    "date": "2026-09-16",
+    "text": "Cost memo: amenities cannot go up more than 10% per room night. So I need local, sustainable, and cheap. Pick two, they say."
+   },
+   {
+    "date": "2026-09-19",
+    "text": "Guests at the Mara lodge again asked where the soap is from. The manager said South Africa. The guest looked disappointed and said 'I thought you'd have Kenyan'. The manager forwarded me the comment."
+   },
+   {
+    "date": "2026-09-22",
+    "text": "Birdwatching Sunday at Ngong forest. Saw a Hartlaub's turaco. Four hundred species. My notebook is nearly full."
+   },
+   {
+    "date": "2026-09-25",
+    "text": "Contractor at the Karen house says the roof tiles are late. We may not have a roof before the rains."
+   },
+   {
+    "date": "2026-09-28",
+    "text": "Went through my vendor list for soap options. Nothing local that I know of beyond the tourist-shop kind, which are decorative. We need a proper amenity bar that holds up in a bathroom."
+   },
+   {
+    "date": "2026-10-01",
+    "text": "GM called a meeting about audit deadlines. I have until October 31. I said I am working on it."
+   }
+  ],
+  "messages": [
+   {
+    "date": "2026-09-11",
+    "with": "GM (Daniel)",
+    "text": "Daniel: The audit says soap. Me: I know. Daniel: Fix it. Me: Local options are limited. Daniel: Find them."
+   },
+   {
+    "date": "2026-09-17",
+    "with": "Finance (Priya)",
+    "text": "Priya: Remember the 10% cap. Me: I know. Priya: No exceptions. Me: I will bring options."
+   },
+   {
+    "date": "2026-09-21",
+    "with": "Mother",
+    "text": "Mother: Did you eat? Me: Yes. Mother: What? Me: Ugali. Mother: Good."
+   },
+   {
+    "date": "2026-09-26",
+    "with": "Lodge manager (Mara)",
+    "text": "Manager: Guests keep asking about the soap. Me: I'm on it. Manager: They want something Kenyan. Me: I know."
+   },
+   {
+    "date": "2026-09-30",
+    "with": "Contractor",
+    "text": "Contractor: Tiles arrive Friday. Me: You said that last Friday. Contractor: This time."
+   }
+  ],
+  "calendar": [
+   {
+    "date": "2026-09-20",
+    "event": "Supplier review call, 10:00"
+   },
+   {
+    "date": "2026-09-27",
+    "event": "Ngong forest birdwatching, 6:00"
+   },
+   {
+    "date": "2026-10-08",
+    "event": "Audit response draft due"
+   },
+   {
+    "date": "2026-10-31",
+    "event": "Audit deadline"
+   }
+  ],
+  "relations": [
+   {
+    "who": "GM Daniel",
+    "about": "Careful, wants audit green, distrusts new vendors."
+   },
+   {
+    "who": "Finance lead Priya",
+    "about": "Tight on budget."
+   },
+   {
+    "who": "Mother",
+    "about": "Seventy-two, recovering from hip surgery."
+   },
+   {
+    "who": "Contractor",
+    "about": "Late, always apologetic."
+   }
+  ],
+  "constraints": [
+   "Amenity cost cannot rise more than 10% per room night",
+   "Cannot risk consistency of supply",
+   "Must meet audit deadline by end of October",
+   "Needs suppliers who can invoice properly"
+  ],
+  "sensitive": [
+   "Stressed that the house renovation and the audit overlap",
+   "Sometimes thinks about leaving procurement"
+  ]
+ },
+ "disclosure_policy": {
+  "t0_public": "Procurement officer for boutique safari lodge group in Nairobi",
+  "t1_after_signal": "Audit findings, guests asking for local amenities",
+  "t2_after_trust": "Cost constraint 10% per room night",
+  "never": "Salary, house finances"
+ }
+}

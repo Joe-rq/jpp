@@ -1,0 +1,239 @@
+{
+ "display": "Home cook from Kabul in Dandenong, cooking Afghan food for 50 to 200 people and trying to turn it into a registered catering business.",
+ "lang": "en",
+ "signals": [
+  {
+   "text": "I'm trying to turn my community cooking into a registered food business, but the licensing rules feel like a maze.",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "text": "The council says I can't sell food cooked at home, so I need a registered commercial food premises.",
+   "tier": "t1",
+   "src": "message"
+  },
+  {
+   "text": "Commercial kitchens in Dandenong cost $45 to $60 an hour, and I can't pay rent before I have paying customers.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "I'm stuck in a loop: I can't get customers without selling, and I can't sell without a kitchen I can't afford.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "I need to find out what a Class 3 food premises registration requires, including the kitchen layout and a food safety supervisor.",
+   "tier": "t1",
+   "src": "message"
+  },
+  {
+   "text": "I'm taking the online food safety supervisor course on 25 October and want to be ready for the registration.",
+   "tier": "t0",
+   "src": "calendar"
+  },
+  {
+   "text": "Many people in my community say they'd pay for my food if I had a shop, and I keep answering 'inshallah' because I can't say yes yet.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "A school parent asked me to cook for her 74-year-old father, who has diabetes. I said yes and put off talking about payment until the licence is sorted.",
+   "tier": "t1",
+   "src": "message"
+  },
+  {
+   "text": "I want to make Afghan food lighter, with less oil and salt, for people with heart or blood-sugar conditions.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "I'm reading official English letters with a dictionary and would like someone to help me understand the regulatory language.",
+   "tier": "t0",
+   "src": "message"
+  },
+  {
+   "text": "I'm studying for the citizenship test every night after the children sleep, and I want to book it for early November.",
+   "tier": "t1",
+   "src": "calendar"
+  },
+  {
+   "text": "I'm worried about money and wouldn't risk the family savings on a kitchen rental before I know it will work.",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "text": "I'm anxious and stretched thin, with a family member's immigration case dragging on while I'm trying to start the business.",
+   "tier": "t2",
+   "src": "message"
+  }
+ ],
+ "offers": [
+  {
+   "text": "I cook Afghan food at scale for 50 to 200 people: mantu, qabuli pulao, bolani, ashak and aush.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I know about 300 families in the Afghan community in Dandenong and Springvale, and I cook for most of their weddings, Eid gatherings and fundraisers.",
+   "tier": "t0",
+   "src": "relation"
+  },
+  {
+   "text": "I hold a Level 2 food handler certificate.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I run a Facebook page with 1,100 followers and photos of my food.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I can write down recipes and price events in a spreadsheet.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I have my own equipment: two big pots, six trays and a stand mixer.",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "text": "I know how to cook Afghan food low-salt and low-oil, without fried onions, because I cooked this way for years for a family member with a heart condition.",
+   "tier": "t1",
+   "src": "bio"
+  },
+  {
+   "text": "I can offer menu advice and recipes for school events and community groups that need food for different dietary needs.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "I'm free to cook during school hours, 9 to 3 on weekdays, and on some weekends.",
+   "tier": "t1",
+   "src": "calendar"
+  },
+  {
+   "text": "I can be a first, loyal customer for a shared commercial kitchen, with regular community orders already waiting.",
+   "tier": "t1",
+   "src": "project"
+  }
+ ],
+ "catchers": [
+  {
+   "hypo": "Hi, I manage a commercial kitchen in the south-east. We have quiet weekday hours and would like to rent them cheaply to a new food business.",
+   "can": "Zahra can book regular weekday cook sessions, bring in her existing community orders and show real demand within weeks.",
+   "confirm": "Could the kitchen be booked in blocks of about six hours at a lower, flexible, or deferred rate?",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "hypo": "I'm a food safety consultant. I help home cooks get a Class 3 registration and I've worked with this council.",
+   "can": "Zahra can explain her situation and take advice on the kitchen layout, the supervisor requirement and the order of steps.",
+   "confirm": "Do you have experience with Class 3 food premises applications in a Victorian council area, and do you offer free or low-cost help to small starters?",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "hypo": "I run a community hall or social enterprise kitchen that's already registered, and we want local cooks to use it as an incubator.",
+   "can": "Zahra can cook there under the existing registration while she builds up customers and her own application.",
+   "confirm": "Is the kitchen already registered as a food premises that a separate small business can use under its own supervisor?",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "hypo": "My father is 74 and has diabetes. I'm looking for home-style Afghan meals that fit his diet.",
+   "can": "Zahra can cook light, low-salt, low-oil dishes through a friend's kitchen or after she's registered, and her community network can help the family.",
+   "confirm": "Is the meal for a specific person with a health condition, and are you willing to wait until she's licensed before paying her?",
+   "tier": "t1",
+   "src": "message"
+  },
+  {
+   "hypo": "I'm a dietitian or nurse. A patient's family wants culturally familiar food that still suits a heart or diabetes diet.",
+   "can": "Zahra can adapt traditional Afghan dishes to the dietary guidance she's given and test them with families in her community.",
+   "confirm": "Do you have a written dietary guideline she can follow, and would you be happy for her to cook from it rather than give medical advice?",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "hypo": "I organise a school, mosque, or festival event and need halal Afghan food for a group of 50 to 200 people.",
+   "can": "Zahra can quote and cook for large events using her recipes, spreadsheet pricing and her community's trust.",
+   "confirm": "Is the event in Melbourne's south-east, with a date at least a few weeks away, and are you able to supply a registered or borrowed kitchen?",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "hypo": "I help new arrivals understand Australian small-business rules, such as ABN, insurance, tax and council registration, and I'd like to work with someone who's just starting.",
+   "can": "Zahra can describe her business, use the support, and pass the contact to other cooks in her community who face the same maze.",
+   "confirm": "Do you offer this in plain English or Dari/Farsi, and is it free or low-cost for a very small start-up?",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "hypo": "I'm an Afghan woman in Melbourne and I've been cooking for friends. I'd like to start selling too but don't know how.",
+   "can": "Zahra can share what she's learned about the council's rules, and through her network of about 300 families she can pass along other women who cook.",
+   "confirm": "Are you in the Dandenong or Springvale area, and would you be willing to share a kitchen booking or a learning group with other cooks?",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "hypo": "I'm a volunteer teaching English or citizenship test preparation, and I'm looking for learners who study at night.",
+   "can": "Zahra can join practice sessions, bring her friends and help others in her community who are preparing for the test.",
+   "confirm": "Do you run sessions after 6 pm or at the local library, and do they cover the values and democracy questions?",
+   "tier": "t1",
+   "src": "calendar"
+  },
+  {
+   "hypo": "I'm a school staff member planning a fundraiser or cultural day and want to include families' cooking in a way that meets food safety rules.",
+   "can": "Zahra can cook for the stall, offer recipes children can help with, and bring bolani to share the culture.",
+   "confirm": "Is this a one-off school event where food can be prepared in a permitted way, such as in the school kitchen or by a registered caterer?",
+   "tier": "t0",
+   "src": "relation"
+  }
+ ],
+ "forbids": [
+  {
+   "text": "I won't sell food cooked in my home kitchen, because the council doesn't allow it."
+  },
+  {
+   "text": "I can't pay commercial kitchen rent up front without customers or a deferred arrangement."
+  },
+  {
+   "text": "I'm not available to work during school pick-up and drop-off, so only 9 am to 3 pm on weekdays."
+  },
+  {
+   "text": "I'm not available for night shifts or work that takes me away from my children."
+  },
+  {
+   "text": "I don't give medical advice. I can cook to a diet that a doctor or dietitian gives me."
+  },
+  {
+   "text": "I won't use the family's savings for the business, because they're set aside for the children."
+  }
+ ],
+ "projects": [
+  {
+   "name": "Dandenong Afghan Kitchen",
+   "text": "A small registered catering business selling Afghan food for community events and weekend orders, starting with the events people already ask me to cook for.",
+   "roles_needed": [
+    "Commercial kitchen owner or manager with spare hours",
+    "Food safety or council registration advisor",
+    "Small-business or ABN/insurance helper",
+    "Dietitian to review light, low-salt dishes",
+    "Event organiser or first corporate and community customer"
+   ],
+   "tier": "t1"
+  }
+ ],
+ "policy": {
+  "t1": "When a real collaboration looks possible, I'll share my licensing problem, my kitchen needs, my recipes and my experience cooking low-salt food for a family member with a heart condition.",
+  "t2": "Once I know who you are and the fit is strong, I'll share household finances and my family's immigration situation.",
+  "never": "Passport numbers, and details of my family's journey to Australia."
+ },
+ "id": "a0023",
+ "host_agent": "Gemini",
+ "owner_display": "Zahra Rahimi",
+ "city": "Melbourne",
+ "world_sha256": "3455621bb78d3811835895918356885a4e3ba8ccf00bbcecfe3bdd9779ab4587"
+}

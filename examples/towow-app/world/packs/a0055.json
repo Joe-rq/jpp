@@ -1,0 +1,211 @@
+{
+ "display": "Year 3 primary teacher in Auckland with a multicultural, high-ESOL class. Happy to talk about newcomer support and classroom practice.",
+ "lang": "en",
+ "signals": [
+  {
+   "text": "I'm looking for ways to help a newcomer child who understands a lot but isn't speaking yet, especially a Mandarin-speaking child.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "My school has no Mandarin-speaking teacher aide this term because the ESOL budget was cut.",
+   "tier": "t1",
+   "src": "message"
+  },
+  {
+   "text": "I'm hunting for relief funding, grants or volunteers that can cover ESOL language support in a state primary.",
+   "tier": "t1",
+   "src": "message"
+  },
+  {
+   "text": "I'd love a Mandarin or Korean speaker who could check the pronunciation on my newcomer picture cards.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "My newcomer buddy system works for Samoan and Hindi but not yet for Korean or Mandarin.",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "text": "Parents have asked about a homework club, but I have no time to run one myself.",
+   "tier": "t1",
+   "src": "message"
+  },
+  {
+   "text": "I'm worn out. I got sick twice this term and still came in, so the holidays can't come soon enough.",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "text": "My old villa has leaky windows, and the back-window replacement has slipped to mid-November.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "I'd like trustworthy advice on dealing with builders who keep changing schedules and scope.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "I worry I'm not doing enough for the quiet kids who are still finding their feet.",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "text": "My dad just had a hip replacement and is pushing himself too hard, so I'm helping my parents with recovery.",
+   "tier": "t2",
+   "src": "relation"
+  },
+  {
+   "text": "I want to bring a bit of the old fun back to my Thursday-night netball. My knees are complaining.",
+   "tier": "t0",
+   "src": "calendar"
+  }
+ ],
+ "offers": [
+  {
+   "text": "Eight years of primary teaching, four of them with a high-ESOL class of kids from about fourteen countries.",
+   "tier": "t0",
+   "src": "bio"
+  },
+  {
+   "text": "A set of about 200 hand-drawn picture cards for newcomers, and I can share how I design and use them.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "A working newcomer buddy system (older same-language buddies) that I can describe step by step so other schools can copy it.",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "text": "A class blog that parents actually read, and I can share what makes it work.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "Basic te reo Māori and some Samoan classroom phrases, plus practical tips for welcoming Pasifika and Māori families.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "Classroom-level feedback and testing for ESOL, language-learning or children's-literacy tools, without sharing any child's identity.",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "text": "A teacher's view of what a Year 3 newcomer needs in the first weeks, useful for researchers, app makers or community groups.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "Experience living through a 1920s villa window renovation in Auckland, and I can share what I've learned about leaks and the schedule.",
+   "tier": "t1",
+   "src": "project"
+  }
+ ],
+ "catchers": [
+  {
+   "hypo": "Hi, I'm a Mandarin-speaking university student in Auckland. I'd like to volunteer a couple of hours a week helping a primary school with a newly arrived Chinese child.",
+   "can": "I can raise it with the principal so the school can arrange a safe, approved volunteer placement. I can also share my picture cards so the volunteer knows what to start with.",
+   "confirm": "Are you happy to go through the school's usual volunteer approval process, including any police vetting, before meeting children?",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "hypo": "I run a small charity that funds language support for refugee and migrant children in West Auckland schools.",
+   "can": "I can pass your details to my principal, who is already looking at relief funds for ESOL support. I can describe what kind of help a high-ESOL class could use.",
+   "confirm": "Does your funding cover state primary schools, and in particular a Mandarin-language aide?",
+   "tier": "t1",
+   "src": "message"
+  },
+  {
+   "hypo": "I'm a developer building a picture-and-pronunciation tool for children who are just starting English. Could a teacher look at the idea?",
+   "can": "I can give honest classroom feedback and compare it with how my hand-drawn picture cards work. I won't share any child's identity or photos.",
+   "confirm": "Does your tool need only general teacher feedback, with no access to children's names, photos or class data?",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "hypo": "I'm a teacher at a school in another city. How did you set up buddies who speak the same language as a new student?",
+   "can": "I can share the buddy-system steps, what works for Samoan and Hindi, and the gaps I still have. I'm also keen to swap ideas for languages where there's no buddy.",
+   "confirm": "Are you a teacher or school leader looking to set up or improve a newcomer-buddy scheme?",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "hypo": "I'm an orthopaedic physio who volunteers advice for older people after hip replacements. A friend said you might know someone who needs it.",
+   "can": "I can pass your offer to my mum, who is looking after my dad after his hip replacement at home. I can ask whether they'd want a call.",
+   "confirm": "Are you a registered physiotherapist who can give general recovery advice to a family in the Papakura area?",
+   "tier": "t2",
+   "src": "relation"
+  },
+  {
+   "hypo": "I'm a builder or window specialist in Auckland who does honest, fixed-price quotes on old villas. Do you know anyone with leaky windows?",
+   "can": "I can pass your name to my partner Ben, who is a plumber's apprentice and manages our villa project. We could compare notes on windows and schedules.",
+   "confirm": "Do you do fixed-price work on 1920s timber villas in central or south Auckland, with a written schedule?",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "hypo": "I help set up after-school homework clubs run by volunteers. A parent group at one school wants one but has no staff.",
+   "can": "I can introduce the idea to my principal, since parents at my school have asked for one too. I can't run it myself because I have no spare weekday evenings.",
+   "confirm": "Can your homework club run entirely on volunteers or parents, without needing a teacher to staff it?",
+   "tier": "t1",
+   "src": "message"
+  },
+  {
+   "hypo": "I'm a speech-language therapist working with bilingual kids. When a newcomer child goes silent, is it shyness or something else?",
+   "can": "I can share what I observe in the classroom in general terms and what picture-based communication has worked. I'm keen to learn the signs to watch for.",
+   "confirm": "Can you offer general guidance on silent-period behaviour without needing to identify any individual child?",
+   "tier": "t2",
+   "src": "note"
+  }
+ ],
+ "forbids": [
+  {
+   "text": "I won't share any child's name, photo, family details or anything that could identify them. Those stay inside the school system.",
+   "tier": "t0"
+  },
+  {
+   "text": "I can't take on weekday evening commitments during term.",
+   "tier": "t0"
+  },
+  {
+   "text": "I can't run anything in the school day, because my lunch hour goes on class admin.",
+   "tier": "t1"
+  },
+  {
+   "text": "I can't spend more than about $50 a term of my own money on school resources.",
+   "tier": "t1"
+  },
+  {
+   "text": "I won't discuss my family's personal finances.",
+   "tier": "t0"
+  }
+ ],
+ "projects": [
+  {
+   "name": "Newcomer buddy system",
+   "text": "Pairing each new child with an older buddy who speaks the same language. It works for Samoan and Hindi, but there's no Mandarin buddy yet and Korean doesn't work yet.",
+   "roles_needed": [
+    "Mandarin speaker",
+    "Korean speaker",
+    "ESOL specialist",
+    "school volunteer coordinator"
+   ],
+   "tier": "t1"
+  }
+ ],
+ "policy": {
+  "t1": "Constraints on school resourcing, term dates and what kind of help the school and I can use, plus general villa-renovation questions.",
+  "t2": "Personal worries about individual children (never identified) and my workload and health, and family health matters once I trust the person.",
+  "never": "Children's identities, names and photos, my family's finances, and my villa budget."
+ },
+ "id": "a0055",
+ "host_agent": "Gemini",
+ "owner_display": "Hana Whitaker",
+ "city": "Auckland",
+ "world_sha256": "5e0f0173081311abcaef27460ccf4df6d0e57cd00e809878bdd3c90627ccf9f2"
+}

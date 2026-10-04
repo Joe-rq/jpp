@@ -1,0 +1,236 @@
+{
+ "display": "French sommelier at a Bund restaurant in Shanghai for nine years, learning Chinese, and always up for a good glass and a Thursday football match.",
+ "lang": "en",
+ "signals": [
+  {
+   "text": "I'm refreshing our Christmas wine list and want to bring in a few small Loire and Jura producers without raising the average bottle price.",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "text": "I taste with importers twice a week and I'm looking for small, story-rich producers that Shanghai guests will remember.",
+   "tier": "t0",
+   "src": "calendar"
+  },
+  {
+   "text": "My Chinese is stuck at around 600 characters and I want a practice partner or a better method to get past the plateau.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "I want to read Chinese books with my kids, but my 12-year-old already reads faster than I do.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "I play five-a-side football on Thursday evenings and enjoy it, though my knee complains.",
+   "tier": "t0",
+   "src": "message"
+  },
+  {
+   "text": "My kids' international school is raising fees by 20 percent, and I'm weighing a local bilingual school in Pudong that I know nothing about.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "I need someone who can tell me what a local bilingual school is really like day to day: the rigor, the maths, the pressure, and how foreign kids settle in.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "The Pudong school has an open day on 17 October, mostly in Chinese, and I need someone to come along and translate.",
+   "tier": "t1",
+   "src": "calendar"
+  },
+  {
+   "text": "I'd like to talk to parents who have moved their kids from an international school to a local bilingual one, and hear what they'd do differently.",
+   "tier": "t1",
+   "src": "message"
+  },
+  {
+   "text": "I worry that changing schools will cost my kids their friends, and I don't know how to soften that.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "The school deposit is due on 7 November, so I need a decision framework that will get me to a decision, not another month of thinking.",
+   "tier": "t1",
+   "src": "calendar"
+  },
+  {
+   "text": "My lower back hurts from carrying cases up the cellar stairs, and I haven't done anything about it yet.",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "text": "I tend to postpone big decisions, and at home the pressure to settle the school question is building.",
+   "tier": "t2",
+   "src": "message"
+  }
+ ],
+ "offers": [
+  {
+   "text": "I can build or refresh a restaurant wine list of 600 labels or fewer, balancing margin, story and guest taste, with nine years of Shanghai experience.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I can set up cellar management: inventory, rotation, temperature control and supplier negotiation.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I hold the Court of Master Sommeliers advanced certificate and can run a small tasting or food-pairing session, in French or English.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I know importers and merchants in Shanghai, Hong Kong and Bordeaux and can introduce small producers to the right buyers.",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "text": "I can advise a small producer on how to tell a story that works with Shanghai restaurant guests rather than just push a label.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "I speak native French and fluent English, so I can offer French conversation practice, perhaps in exchange for Mandarin practice.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I can pour wine for a private dinner or corporate evening, though only on weekdays outside my restaurant shifts.",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "text": "I can give a new arrival in Shanghai's hospitality trade an honest picture of how an expat sommelier career works here.",
+   "tier": "t0",
+   "src": "bio"
+  }
+ ],
+ "catchers": [
+  {
+   "hypo": "Hi, I make natural wine in the Jura, about 15,000 bottles a year, and I'm looking for a first foothold in Shanghai restaurants.",
+   "can": "Taste the wines and, if they fit, put them on the list or introduce the producer to importers I trust.",
+   "confirm": "Are the wines already available through a licensed importer or distributor in China, or can you set that up?",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "hypo": "I'm opening a restaurant in Shanghai and have no idea how to build a wine list that makes money.",
+   "can": "Share how I structure a list by price tier, margin and story, and review a draft list.",
+   "confirm": "Is this a restaurant that will serve food in a sit-down setting, rather than a bar or retail shop?",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "hypo": "My child goes to the local bilingual school in Pudong, and I'm happy to tell another parent what it's like.",
+   "can": "Listen and ask my questions, and offer something in return, such as wine advice or French conversation practice.",
+   "confirm": "Does your child currently attend that school, or one very like it, rather than only having heard about it?",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "hypo": "I'm a Chinese-English speaker and I'd happily go through a school open day with a foreign parent.",
+   "can": "Go with me to the 17 October open day, and I'd buy lunch and answer your questions about wine in return.",
+   "confirm": "Are you free on Saturday, 17 October, and able to interpret live, not just translate documents?",
+   "tier": "t1",
+   "src": "calendar"
+  },
+  {
+   "hypo": "I teach Chinese characters to adults who are stuck at the intermediate stage.",
+   "can": "Try your method on my 600-character plateau and tell my teacher what worked.",
+   "confirm": "Do you work with adult learners in Shanghai, either in person or online, in the evenings or on weekdays?",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "hypo": "My wife's colleague is a local sommelier who wants to move from Chinese to international restaurants.",
+   "can": "Through my friend Wei, a local sommelier, I can offer an introduction to the trade and honest advice on certification.",
+   "confirm": "Is the person already working in wine service, rather than only interested in wine as a hobby?",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "hypo": "I'm a consultant helping an expat family choose between international and local schools, and I'd like to speak to a parent who has weighed it.",
+   "can": "Through my wife Claire, who works in consulting, I can pass on the request, and I can share my own decision criteria.",
+   "confirm": "Is your question about education choices for expat families in Shanghai, not about visas or relocation?",
+   "tier": "t2",
+   "src": "relation"
+  },
+  {
+   "hypo": "I run a Thursday-night five-a-side game in Shanghai and need a reliable player.",
+   "can": "Join, since Thursday is already my football night, and bring a friend if there is space.",
+   "confirm": "Is the game played on Thursday evenings, in a language mix that includes English or French?",
+   "tier": "t0",
+   "src": "message"
+  },
+  {
+   "hypo": "I'm a physiotherapist or sports-medicine doctor in Shanghai who treats people with manual-handling back pain.",
+   "can": "Book an appointment, and in return offer a wine tasting for your team.",
+   "confirm": "Do you see English- or French-speaking patients, and can you take new patients within a few weeks?",
+   "tier": "t2",
+   "src": "note"
+  }
+ ],
+ "forbids": [
+  {
+   "text": "I will not move my kids to a school I have not visited myself.",
+   "tier": "t1"
+  },
+  {
+   "text": "I cannot take meetings on weekday evenings, because those are my working hours.",
+   "tier": "t0"
+  },
+  {
+   "text": "Weekends are for family, so I only take work calls and events then in exceptional cases.",
+   "tier": "t0"
+  },
+  {
+   "text": "I won't push a label onto my list at a price I can't justify to guests, whatever the supplier says.",
+   "tier": "t0"
+  },
+  {
+   "text": "I won't discuss the value of my private wine collection or my personal finances.",
+   "tier": "t0"
+  },
+  {
+   "text": "The school decision cannot be postponed beyond November.",
+   "tier": "t1"
+  }
+ ],
+ "projects": [
+  {
+   "name": "Christmas wine list 2026",
+   "text": "Refresh the restaurant's wine list by the end of October for a 15 December launch, adding small Loire and Jura producers while keeping margins and the average bottle price steady.",
+   "roles_needed": [
+    "small-producer or importer with Loire/Jura wines",
+    "wine-trade contact in Shanghai",
+    "graphic designer for the wine list"
+   ],
+   "tier": "t0"
+  },
+  {
+   "name": "School decision",
+   "text": "Decide between my kids' international school and a local bilingual school in Pudong before the 7 November deposit deadline, after visiting the school on 17 October.",
+   "roles_needed": [
+    "parent of a pupil at a local bilingual school",
+    "Chinese-English interpreter for the open day",
+    "education advisor for expat families"
+   ],
+   "tier": "t1"
+  }
+ ],
+ "policy": {
+  "t1": "When there is a real lead, I'll share the school-fee question, the Pudong bilingual school I'm considering, the open-day date, and my wine-list needs and contacts.",
+  "t2": "Once I trust the other party, I'll share my back pain, family pressure around the school decision, and the worry about my kids' friendships.",
+  "never": "The value of my wine collection and any details of my personal finances or savings."
+ },
+ "id": "a0099",
+ "host_agent": "Codex",
+ "owner_display": "Étienne Marchand",
+ "city": "Shanghai",
+ "world_sha256": "3eaedccdbd50082689fa68f8a1522df1332cac973758f38e1c09f3aecefc07b0"
+}

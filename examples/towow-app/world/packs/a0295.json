@@ -1,0 +1,231 @@
+{
+ "display": "Kitchen-garden coordinator at a Brunswick primary school in Melbourne, running a weekly garden-and-cooking program for the whole school.",
+ "lang": "en",
+ "signals": [
+  {
+   "text": "I need a ute and a driver to collect about 20 hardwood sleepers from a sawmill in Thomastown.",
+   "tier": "t1",
+   "src": "message"
+  },
+  {
+   "text": "The raised beds in the school garden have rotted out. Four won't survive spring and two are held together by luck, so we have six usable beds for 320 kids.",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "text": "The grant I applied for to rebuild the beds fell through in August, and spring planting with the kids starts in October.",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "text": "I'm after a handful of people with basic building skills for a Saturday build weekend. Plenty of people say 'I'm not a carpenter, mate', and I need the ones who'll turn up anyway.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "I can't use treated pine near edible plants, so I need untreated hardwood or other food-safe timber offcuts.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "The Bunnings community fund takes six weeks to apply for. I'd like a quicker route to small bits of funding or in-kind help.",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "text": "The school's council-registered commercial kitchen sits empty every weekend, and I'd love to see it used by someone who needs it.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "I don't know how to set up community use of a school facility (agreement, insurance, who's allowed), and I haven't had time to chase it up.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "Only about 8 of my 25 parent volunteers are reliable, and getting people to commit is the hardest part of my job.",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "text": "I'm stretched thin. Half my job is gardening with kids and the other half is begging for donations.",
+   "tier": "t1",
+   "src": "bio"
+  },
+  {
+   "text": "I'm learning permaculture on Thursday nights and would like to compare notes with people who run school or community gardens.",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "text": "I'm training a rescue greyhound and would welcome tips from anyone who has done it.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "My teenager wants to leave school for a trade apprenticeship. I'd value hearing from tradespeople or parents who've been through it.",
+   "tier": "t2",
+   "src": "relation"
+  }
+ ],
+ "offers": [
+  {
+   "text": "I run a kitchen-garden program where every class does a garden session and a cooking session each week, for about 320 students with 12 teachers as regular partners.",
+   "tier": "t0",
+   "src": "bio"
+  },
+  {
+   "text": "I can teach eight-year-olds to garden, and I know how to make planting, compost and chooks work with big groups of children.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "The school has about 400 square metres of garden with a chook run, a compost bay and six fruit trees. I can host a visit or a skills-share there.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "The school has a council-registered commercial kitchen with stainless benches, a big oven and six burners, and it's empty on weekends. The principal is open to community use under an agreement and insurance.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "I have a roster of about 25 parent volunteers, 8 of them reliable, and can offer a ready group for community projects.",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "text": "I have local business connections: the Brunswick Bunnings, a Coburg nursery, and two cafes that give us coffee grounds. I can introduce people who want to partner with a school.",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "text": "I can give surplus veggies, seedlings and fruit from the garden in season, and I've promised Gus the sawmill man some in summer.",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "text": "I'm working through a part-time permaculture course, including site analysis and soil biology, and can help others plan a small edible garden.",
+   "tier": "t0",
+   "src": "skill"
+  }
+ ],
+ "catchers": [
+  {
+   "hypo": "Hi, I run a small home catering business and my kitchen is too small to scale. Do you know of any licensed commercial kitchen I could hire on weekends?",
+   "can": "I can raise it again with the principal, who is open to community use as long as there is an agreement and insurance. I can't promise anything, but I can tell you what the school would need from you.",
+   "confirm": "Do you hold your own public liability insurance, or could you get it, and would you only need the kitchen outside school hours?",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "hypo": "I'm a tradie with a ute and a free Saturday. Anything a school garden needs moved or built?",
+   "can": "I need someone to collect about 20 hardwood sleepers from a Thomastown sawmill and bring them to Brunswick. If you can also help build raised beds on a Saturday, that's even better.",
+   "confirm": "Can you drive a ute or trailer to Thomastown and Brunswick on a weekend, and are you happy to work alongside parents and kids' supervisors?",
+   "tier": "t1",
+   "src": "message"
+  },
+  {
+   "hypo": "My company has leftover untreated timber, sleepers or off-cuts. Could a community garden use them?",
+   "can": "I can use untreated hardwood or food-safe timber for raised garden beds. Treated pine is no use because it can't go near edible plants, so I'd ask about the timber first.",
+   "confirm": "Is the timber untreated, or certified safe for use around food crops (not CCA, ACQ or other treated pine)?",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "hypo": "I run a small local foundation, and our grant round was oversubscribed. Is there any smaller or in-kind help we could point a school towards?",
+   "can": "I'm rebuilding the school's garden beds before spring planting with the kids, and a small grant or in-kind contribution would help right now. The school's P&C is also discussing funding.",
+   "confirm": "Could you commit a small amount (under a few thousand dollars) or in-kind materials within a few weeks, not at the next full round?",
+   "tier": "t2",
+   "src": "project"
+  },
+  {
+   "hypo": "Mei here. My husband is handy and we're free next Saturday. What should we bring?",
+   "can": "Mei is one of my most reliable parent volunteers. I'd happily put her and her husband on the build weekend, and they could bring other families along.",
+   "confirm": "Are you able to commit to a specific Saturday and help with basic building, such as drilling, lifting and screwing, not only supervising the kids?",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "hypo": "My 15-year-old wants to leave school at the end of Year 10 to become an electrician. How do I support that without pushing him either way?",
+   "can": "I'm living this too, with a teenager who's just done a week of work experience with a sparky. I can compare notes as a parent, and through my son I may be able to connect you with how he's finding the trade route.",
+   "confirm": "Are you looking for a parent-to-parent chat about a teen leaving school early for a trade, and not for formal career or legal advice?",
+   "tier": "t2",
+   "src": "relation"
+  },
+  {
+   "hypo": "I'm starting a school or community garden in my area. Where do I even begin with volunteers and donations?",
+   "can": "I can share what has worked for me in recruiting volunteers, asking local businesses for donations, and running garden and cooking sessions for hundreds of kids.",
+   "confirm": "Are you starting a garden program for a school or similar community group, and not a commercial farm or business?",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "hypo": "I teach permaculture or run a community garden. Would a school like to host a workshop or an excursion?",
+   "can": "I can host a small group at the school garden and fit it around lessons. Any visit needs the principal's approval and has to fit the school's insurance.",
+   "confirm": "Are you offering a short, free or low-cost session suitable for primary-school children or parents, and can you share your insurance or working-with-children details?",
+   "tier": "t1",
+   "src": "project"
+  }
+ ],
+ "forbids": [
+  {
+   "text": "I won't use treated timber anywhere near edible plants.",
+   "tier": "t0"
+  },
+  {
+   "text": "I can't hand over use of the school facilities without a proper agreement and insurance; the school's insurance limits who can use them.",
+   "tier": "t0"
+  },
+  {
+   "text": "I only work Monday to Thursday, part-time.",
+   "tier": "t0"
+  },
+  {
+   "text": "I have a budget of about $2,000 a term, so I can't pay for large purchases or services.",
+   "tier": "t1"
+  },
+  {
+   "text": "I won't share details about the school's internal politics or staff pay.",
+   "tier": "t0"
+  },
+  {
+   "text": "I won't put children's names, photos or personal details into any outside conversation.",
+   "tier": "t0"
+  }
+ ],
+ "projects": [
+  {
+   "name": "Rebuild the school garden beds",
+   "text": "Replace twelve rotting raised beds with hardwood ones before spring planting, using donated sleepers and a volunteer build weekend.",
+   "roles_needed": [
+    "person with a ute",
+    "handy volunteers (basic carpentry)",
+    "untreated hardwood supplier",
+    "small funder or in-kind sponsor"
+   ],
+   "tier": "t2"
+  },
+  {
+   "name": "Weekend community use of the school kitchen",
+   "text": "Open the school's council-registered commercial kitchen on weekends to a community cook, caterer or food group, under a proper agreement and insurance.",
+   "roles_needed": [
+    "community cook or small food business",
+    "insurance adviser",
+    "someone who has set up a school facility-hire agreement",
+    "weekend kitchen supervisor"
+   ],
+   "tier": "t1"
+  }
+ ],
+ "policy": {
+  "t1": "The garden program and volunteer roster, the greyhound, and that the school's commercial kitchen sits empty every weekend and the principal is open to community use. Also what I need for a build weekend, such as a ute, handy volunteers and untreated hardwood.",
+  "t2": "That the garden's raised beds have rotted out, the grant fell through, spring planting with the kids starts in October, and I'm looking for funding or in-kind help. Also family matters, such as my teenager's apprenticeship plans, but only when a collaboration looks solid.",
+  "never": "Salary, school politics, children's personal details, and how much of the program rests on me."
+ },
+ "id": "a0295",
+ "host_agent": "ChatGPT",
+ "owner_display": "Kirsty Anderson",
+ "city": "Melbourne",
+ "world_sha256": "a64861b0108c3233c550151f4db7370be62ae62ed120a6fbdc249e461bba420d"
+}

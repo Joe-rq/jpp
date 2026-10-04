@@ -1,0 +1,207 @@
+{
+ "display": "I'm a buyer for the shops of four London museums. I look for objects with a named maker, and I have little patience for mass-made 'heritage'.",
+ "lang": "en",
+ "signals": [
+  {
+   "text": "I need makers, not a catalogue: people whose work I can name, not agencies who resell it.",
+   "tier": "t0",
+   "src": "message"
+  },
+  {
+   "text": "I'm trying to cut generic 'heritage' stock in our shops from about forty percent to under twenty this buying round.",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "text": "I'm planning a themed range of Asian handwork for next year, tied to a spring exhibition. It is small in volume but strict on provenance.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "I can't find anyone who offers maker-signed embroidery in batches of 300 or more. Single makers can't reach that number, and the agencies that can won't show me who made the thing.",
+   "tier": "t1",
+   "src": "message"
+  },
+  {
+   "text": "Merchandising wants volumes, lead times and price points by 15 October, and I don't have the batch and timeline numbers to give them yet.",
+   "tier": "t1",
+   "src": "calendar"
+  },
+  {
+   "text": "I'm looking for English-language maker-story cards and packaging that passes a plastic-free rule, ideally from the maker's side or arranged with them.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "I'm reading about Karen weaving and Hmong stitch work. It's early, and I'm still working out what is feasible for a retail cycle.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "I'd like to meet textile and embroidery workshops that answer email reliably and can commit to a retail calendar. Lovely studios that reply slowly don't fit a retail cycle.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "I'm worried the themed range will end up filled with the generic stock I'm trying to get rid of, simply because I can't find enough volume.",
+   "tier": "t2",
+   "src": "bio"
+  },
+  {
+   "text": "Merchandising is pushing for volume, and I'm caught between their numbers and my provenance rule.",
+   "tier": "t2",
+   "src": "message"
+  },
+  {
+   "text": "I'm restoring a 1962 narrowboat at weekends and could use advice on old paint, possibly lead, and on boat engines and pumps.",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "text": "I'm learning Japanese on my commute, slowly and badly, and enjoying it anyway.",
+   "tier": "t2",
+   "src": "note"
+  }
+ ],
+ "offers": [
+  {
+   "text": "I buy across four London museum shops, with two seasonal ranges a year. I can put a maker in front of a real buyer and a real shelf.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I trained in textile conservation and can tell hand embroidery from machine work at arm's length, so I can tell you honestly what your work looks like to a buyer.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I keep a notebook of about two hundred makers worldwide, many reached through personal introductions, and I can introduce makers to each other when it fits.",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "text": "I know retail compliance in practice: plastic-free packaging rules, labelling and product-safety paperwork. I can explain what a supplier needs to get through it.",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "text": "I have working relationships with three small London printers who produce maker-story cards.",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "text": "I can explain what a museum-shop range needs from a maker: named provenance, batch size, lead time, packaging and story card.",
+   "tier": "t1",
+   "src": "bio"
+  },
+  {
+   "text": "I can give honest feedback on whether a product reads as 'heritage-style' stock or as an object with a named maker.",
+   "tier": "t0",
+   "src": "bio"
+  }
+ ],
+ "catchers": [
+  {
+   "hypo": "I run an embroidery cooperative of about thirty women in northern Thailand. Every piece is signed or traceable to the maker, and we can do 300 or more per batch with a few months' notice. Would a museum shop be interested?",
+   "can": "I'd bring it to my planning for the 'Hands of Asia' range and check whether it meets the batch size, packaging and story-card needs. If it does, I'd take it to a supplier meeting and to merchandising.",
+   "confirm": "Can the maker of each piece be named, and can you deliver at least 300 units in a single batch?",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "hypo": "I work with several craft groups across Southeast Asia and can organise batches, packaging and English documentation, while keeping each maker visible and credited. Is that of interest?",
+   "can": "I'd consider you as a way to reach volume without losing provenance, and test it with a small first order.",
+   "confirm": "Can you show me, for a given batch, which individual maker produced which piece?",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "hypo": "I make plastic-free packaging for handmade goods and have sold to small brands. Do museum shops need this?",
+   "can": "I can check whether your packaging meets our group's plastic-free rules and put you forward for the packaging side of the range.",
+   "confirm": "Does your packaging contain no plastic at all, including films, tapes and fillers?",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "hypo": "I translate and design maker-story cards for craft producers abroad, with the maker's voice kept in English. Can you use that?",
+   "can": "I could connect you with the story-card needs of the range, and with the London printers I already work with.",
+   "confirm": "Can you produce English cards that quote or describe the individual maker, not just the region or the craft tradition?",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "hypo": "I'm a craftsperson who has been told my work is too small-scale for shops. Could I ever sell through a museum?",
+   "can": "I can tell you honestly what a museum shop looks for, what batch sizes and lead times it needs, and whether your work could fit now or later. If not, I may know another maker or buyer who is a better match.",
+   "confirm": "Is your work made by you or a named small team, in a way you could describe and show?",
+   "tier": "t0",
+   "src": "bio"
+  },
+  {
+   "hypo": "I'm a buyer at a small independent shop, tired of the same 'artisan' stock at every trade fair. How do you tell what's real?",
+   "can": "I can share how I check for hand work and a named maker, and compare notes on which fairs and supplier routes are worth the time.",
+   "confirm": "Do you buy for a shop where provenance matters more to you than price per unit?",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "hypo": "I'm restoring an old wooden boat and found old paint with something yellow underneath. Has anyone dealt with this?",
+   "can": "I'm in the same position myself, so I can swap notes. My marina neighbour Colin, a retired boat-builder, may be able to advise or point you to someone.",
+   "confirm": "Is the boat an older timber or steel narrowboat, and do you want to compare notes on testing old paint for lead?",
+   "tier": "t2",
+   "src": "relation"
+  },
+  {
+   "hypo": "I tutor GCSE maths for teenagers who are anxious and dislike reassurance. I don't do pep talks, only clear practice and a calm pace.",
+   "can": "I could pass this on to someone close to me who is facing exactly that, and let them decide.",
+   "confirm": "Do you teach in a way that avoids reassurance and focuses on practical steps, for a student who is shaky in maths?",
+   "tier": "t2",
+   "src": "relation"
+  }
+ ],
+ "forbids": [
+  {
+   "text": "I won't buy goods whose maker can't be named.",
+   "tier": "t0"
+  },
+  {
+   "text": "I won't stock packaging that fails the shop group's plastic-free rules.",
+   "tier": "t1"
+  },
+  {
+   "text": "I can't commit a range to merchandising without batch sizes and lead times.",
+   "tier": "t1"
+  },
+  {
+   "text": "I don't buy 'heritage-style' goods or digitally printed items presented as hand-made.",
+   "tier": "t0"
+  },
+  {
+   "text": "I won't share supplier prices or margin targets with anyone outside the buying team.",
+   "tier": "t0"
+  }
+ ],
+ "projects": [
+  {
+   "name": "Hands of Asia",
+   "text": "A themed range for next year tied to a spring exhibition. Every object carries a named maker. Volume is thin but provenance is strict.",
+   "roles_needed": [
+    "Embroidery or textile maker group able to do 300+ units per batch with named makers",
+    "Coordinator who keeps individual makers visible at volume",
+    "Plastic-free packaging supplier",
+    "English maker-story card writer or translator",
+    "Export and shipping handler for small craft batches"
+   ],
+   "tier": "t1"
+  }
+ ],
+ "policy": {
+  "t1": "When there's a real lead, I'll share what a themed museum-shop range requires: named maker, batch size, packaging, story cards and rough timelines.",
+  "t2": "Once the match looks strong and I know who you are, I'll share more about my situation: pressure from merchandising, family, and the narrowboat.",
+  "never": "Supplier prices and margin targets, and any private details about my family."
+ },
+ "id": "a0130",
+ "host_agent": "Muse",
+ "owner_display": "Eleanor Whitcombe",
+ "city": "London",
+ "world_sha256": "6de92aa8b12fca5b08a0dd3dfeef9c24ebb8a480d3bfd64602fd7d0939821849"
+}

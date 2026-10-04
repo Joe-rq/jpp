@@ -1,0 +1,216 @@
+{
+ "display": "I run a three-person cleaning crew in Sydney's Inner West (Marrickville, Newtown, Leichhardt), doing offices, homes and end-of-lease cleans.",
+ "lang": "en",
+ "signals": [
+  {
+   "text": "I'm looking for regular cleaning contracts, such as offices, strata buildings, studios or shared spaces, to give my crew steady weekly hours.",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "text": "My crew has spare capacity this month and I'm taking one-off jobs and end-of-lease cleans in the Inner West.",
+   "tier": "t0",
+   "src": "calendar"
+  },
+  {
+   "text": "Property managers are my best source of work, and I'd like to meet more of them in Marrickville, Newtown, Leichhardt and Dulwich Hill.",
+   "tier": "t0",
+   "src": "message"
+  },
+  {
+   "text": "We lost two regular office contracts in September when the building went in-house, which was about 22 hours a week.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "Crew hours dropped from about 85 a week to about 55, and we need to get back above 70.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "I could use a few weekly recurring jobs of 4-6 hours each. They would fix the rota faster than lots of small one-offs.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "Locals keep offering $25 an hour. We charge $42 with insurance, our own equipment and references, and I need to find clients who value that.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "Bad weather cancels outdoor-adjacent and flexible bookings, and the crew don't get paid when a job cancels. I'm looking for clients or terms with firmer booking commitments.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "I'm worried about cash flow, because I've been covering crew pay out of my own pocket.",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "text": "I need to keep a clear, documented record of steady income over the coming months for personal reasons.",
+   "tier": "t2",
+   "src": "calendar"
+  },
+  {
+   "text": "I'm tired and under constant pressure, and I'd welcome ordinary human company that has nothing to do with work.",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "text": "I'm trying to find extra evening or weekend hours for two crew members who each need 20-25 hours a week to stay.",
+   "tier": "t1",
+   "src": "message"
+  }
+ ],
+ "offers": [
+  {
+   "text": "A reliable three-person cleaning crew with its own van, steam cleaner, industrial vacuums and supplies.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "End-of-lease cleans, including heavy ones with mould or neglected ovens, done to property-manager standard.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "Regular office and residential cleaning with an ABN and public liability insurance, and proper documentation for every job.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "Five years of repeat clients and references from property managers in the Inner West.",
+   "tier": "t0",
+   "src": "bio"
+  },
+  {
+   "text": "A flexible rota. Each person can work anywhere from 15 to 40 hours a week, and I can scale up for a large job.",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "text": "Evening and night shifts are possible for offices, gyms and studios.",
+   "tier": "t1",
+   "src": "message"
+  },
+  {
+   "text": "I speak Portuguese, English and some Spanish, so I can work with Brazilian and Latin American clients and tenants.",
+   "tier": "t0",
+   "src": "bio"
+  },
+  {
+   "text": "Nine years of experience as an immigrant business owner in Sydney, which I can share with newcomers starting a service business or looking for work.",
+   "tier": "t1",
+   "src": "bio"
+  },
+  {
+   "text": "I can give a clear quote and a cleaning checklist for a space, and I'm happy to turn up and walk through a job before pricing it.",
+   "tier": "t1",
+   "src": "skill"
+  }
+ ],
+ "catchers": [
+  {
+   "hypo": "I manage a block of 40 units in Newtown. Our cleaner left and I need someone insured who can do common areas twice a week and handle end-of-lease cleans when tenants move out.",
+   "can": "I can take on the recurring common-area work and the end-of-lease cleans with my crew, with insurance and a documented record for each job.",
+   "confirm": "Is the work in or close to the Inner West (Marrickville, Newtown, Leichhardt, Dulwich Hill, Enmore) and paid at proper commercial rates rather than around $25 an hour?",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "hypo": "I run a small studio (yoga, dance, physio) in Sydney and need someone to clean it every evening after we close, reliably, with proper paperwork.",
+   "can": "I can offer an evening rota, which suits crew members who want extra hours. Bruno has asked for night hours.",
+   "confirm": "Do you need cleaning on a regular weekly schedule, with a written service agreement and invoices, rather than informal cash payment?",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "hypo": "I'm a landlord with an Airbnb unit in Marrickville. I need a team who can turn it over between guests, handling linen, bathrooms and a deep clean now and then.",
+   "can": "My crew can do turnover cleans and deep cleans, and I can set up a standing weekly slot and a fixed price per turnover.",
+   "confirm": "Do you have at least a few turnovers a week in the Inner West, rather than one-off cleans a few times a year?",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "hypo": "I'm a Brazilian who just arrived in Sydney and I need a first job. I have no local experience and my English is still basic.",
+   "can": "I can refer them to Joana, a Brazilian crew member who has been with me four years, or I can take them on if hours open up. I can also share what I learned in my first years here.",
+   "confirm": "Does the person have the legal right to work in Australia, and are they willing to be paid properly and documented?",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "hypo": "I'm an office manager for a small firm in Leichhardt. The building is moving to in-house cleaning and I'm looking for a small, trustworthy contractor who can start next month.",
+   "can": "I can quote for a regular weekly or twice-weekly office clean and bring references from other building contacts.",
+   "confirm": "Is the contract for a regular recurring clean of 10 or more hours a week, rather than a one-off job?",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "hypo": "I run a café and my kitchen needs a deep clean before an inspection. The oven and extraction are in bad shape and I need it done in a day.",
+   "can": "With the steam cleaner and industrial vacuums, my crew can take on heavy cleans like this. I can quote after seeing the site.",
+   "confirm": "Is it a commercial or rental premises in the Inner West, with access for a three-person team for a full day?",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "hypo": "I'm a small-business owner who also has staff to pay and an unpredictable quarter. How did you manage when you lost a big client?",
+   "can": "I can share what has worked and what hasn't in rebuilding my contract base, and I'm glad to swap notes with other owners.",
+   "confirm": "Is this a peer-to-peer exchange between small-business owners, rather than a request for me to take on debt or make an investment?",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "hypo": "I'm a Sydney-born tradie or cleaner who works with a Brazilian team, and I'd like to partner on larger jobs by combining crews, such as a block of apartments that needs a one-day clean.",
+   "can": "I can join forces for larger jobs. Bruno, a local on my crew, has worked with me since 2022 and can coordinate with another team.",
+   "confirm": "Are both teams insured and ABN-registered, with documented jobs and clear invoicing?",
+   "tier": "t1",
+   "src": "relation"
+  }
+ ],
+ "forbids": [
+  {
+   "text": "I don't do cash-in-hand or undocumented work. Every job has to go through my insurance and invoicing."
+  },
+  {
+   "text": "I don't accept jobs outside the Inner West unless the job pays at least $200 to make the travel worthwhile."
+  },
+  {
+   "text": "I can't take rates below what covers the crew's pay, and $25 an hour is not workable."
+  },
+  {
+   "text": "I don't take jobs that offer the crew fewer than the weekly hours they need, because each person needs 20 hours a week to stay."
+  },
+  {
+   "text": "I won't do anything with legal or visa risk, such as informal arrangements, unlicensed work or unsafe conditions."
+  },
+  {
+   "text": "I can't do jobs that require trade licences I don't hold, such as asbestos, biohazard or specialist industrial cleaning."
+  }
+ ],
+ "projects": [
+  {
+   "name": "Rebuilding the contract base",
+   "text": "Rebuilding regular weekly cleaning contracts in the Inner West so the crew can return to about 80 hours a week after losing 22 hours a week in the last month.",
+   "roles_needed": [
+    "property manager",
+    "strata or building manager",
+    "office manager",
+    "studio, gym or café owner",
+    "Airbnb host",
+    "referral partner"
+   ],
+   "tier": "t1"
+  }
+ ],
+ "policy": {
+  "t1": "When there is a real prospect, I'm willing to share current job volume, availability, rates, crew size, and which days and hours we have open.",
+  "t2": "Once I trust the other side and know who they are, I'm willing to share that cash flow is tight, that I need a documented income record over the coming months, and that the pressure is personal.",
+  "never": "I never share visa file details, bank balances or savings, or details about my family, including what I have or haven't told my mother."
+ },
+ "id": "a0068",
+ "host_agent": "Gemini",
+ "owner_display": "Camila Rocha",
+ "city": "Sydney",
+ "world_sha256": "14abd1ccb6a74274bc651ba184fe749eb4234fb5038c43edda557b917c4c06bc"
+}

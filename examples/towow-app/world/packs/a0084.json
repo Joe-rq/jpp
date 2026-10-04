@@ -1,0 +1,214 @@
+{
+ "display": "I teach antenatal and postnatal yoga at a community centre in Stockport, and I have been running classes for about six years.",
+ "lang": "en",
+ "signals": [
+  {
+   "text": "I'm rewriting my antenatal handouts for the January term and want them checked by someone with clinical experience, such as a midwife or physio.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "A partner told me one of my breathing tips differed from what their midwife said, so I'm going through every piece of advice I give and checking where it comes from.",
+   "tier": "t1",
+   "src": "message"
+  },
+  {
+   "text": "I found three pieces of advice in my handouts that I picked up in training or from other teachers and can't source. I want to verify them or take them out.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "I would like to run a mums-and-babies class on Friday mornings, but the centre has no second room and I haven't found anywhere else to hold it.",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "text": "I'm capped at 14 women per class because of the room, and a waiting list would help me see if there is real demand.",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "text": "The centre's room closes for a week in November for heating work. I need to tell participants early and may want somewhere else to hold that week's classes.",
+   "tier": "t0",
+   "src": "calendar"
+  },
+  {
+   "text": "I have to confirm the January timetable by 30 November and am planning the spring term.",
+   "tier": "t0",
+   "src": "calendar"
+  },
+  {
+   "text": "I'm training for the Manchester half marathon in April. My knees hurt on long runs and I'm looking for good advice on shoes and recovery.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "I'm looking for a reliable, cheaper broadband provider in the Stockport area, as mine keeps dropping out.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "I'm worn out and short of headspace this autumn because of things going on in my family.",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "text": "A close relative has early dementia. I'm looking for practical guidance on care options and on how to talk to someone with memory loss.",
+   "tier": "t2",
+   "src": "relation"
+  }
+ ],
+ "offers": [
+  {
+   "text": "I can teach antenatal and postnatal yoga: breathing, pelvic floor work, positions for late pregnancy and gentle recovery after birth.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I have trained for 85 hours as a yoga teacher, plus a pregnancy specialism module, and I hold a current first aid certificate.",
+   "tier": "t0",
+   "src": "bio"
+  },
+  {
+   "text": "I hold regular classes in Stockport on Tuesday and Thursday evenings and Saturday mornings, with about 14 women per class.",
+   "tier": "t0",
+   "src": "calendar"
+  },
+  {
+   "text": "I have a set of handouts on breathing, pelvic floor, late-pregnancy positions and postnatal recovery that I rewrite every term.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I have a mailing list of about 120 past and present participants, so I can reach local pregnant women and new mums directly.",
+   "tier": "t1",
+   "src": "bio"
+  },
+  {
+   "text": "I own bolsters, blocks, birth balls and a stack of mats, stored at the centre.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I'm good at guiding the final ten minutes of relaxation, which women tell me helps them rest and sometimes cry for the first time in weeks.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "I can offer a guest session on breathing and relaxation for a midwife team, a baby group, a workplace or a parent-and-baby event during weekday daytimes.",
+   "tier": "t1",
+   "src": "skill"
+  }
+ ],
+ "catchers": [
+  {
+   "hypo": "I'm a community midwife. A colleague said you're looking for someone to check your breathing handouts, and I could read them over.",
+   "can": "I can send over the breathing and positions handouts for a review before the January term, and then revise them according to the feedback.",
+   "confirm": "Do you have recent clinical experience with antenatal women (for example as a midwife, doula with clinical training, or women's health physio)?",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "hypo": "I'm a women's health physiotherapist and I'd like to give a short talk to local pregnancy classes about pelvic floor health.",
+   "can": "I can host a guest talk or Q&A for my Stockport classes and share it with my mailing list.",
+   "confirm": "Could you do the session on a weekday daytime or a Saturday morning, in or near Stockport?",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "hypo": "I run a church hall, nursery or children's centre near Stockport that is empty on Friday mornings and I'd like to fill it with a mums-and-babies class.",
+   "can": "I can run a Friday-morning mums-and-babies yoga class there and bring participants from my mailing list.",
+   "confirm": "Is the room free on Friday mornings, with floor space for about 12 mats and babies?",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "hypo": "I'm a new mum and I've just given birth. I'm anxious and tired, and I'd like a gentle class where I can bring my baby.",
+   "can": "I can point her to my Saturday-morning postnatal class, which welcomes babies, or to the Friday class if I get a venue for it.",
+   "confirm": "Do you live in or near Stockport and are you well enough for gentle movement (cleared by your GP or midwife)?",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "hypo": "I work at a local business and we'd like to offer a short relaxation and breathing session for staff or for new parents.",
+   "can": "I can lead a guided breathing and relaxation session during a weekday daytime.",
+   "confirm": "Is this for a group of adults who can move on a mat, during a weekday between roughly 9am and 4pm?",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "hypo": "I'm a runner and a yoga fan. I'd like to find a teacher who can show me stretches for runners' knees and recovery.",
+   "can": "I can share simple stretches and mobility work from my own half-marathon training, or recommend a running partner via my club friend.",
+   "confirm": "Is this general movement and stretching for fitness, not treatment for an injury?",
+   "tier": "t0",
+   "src": "relation"
+  },
+  {
+   "hypo": "I'm a dementia support worker in the Stockport area and I run a drop-in for families caring for someone with early dementia.",
+   "can": "Through my family I can bring a relative (who lives ten minutes away) to the drop-in, and also pass the details on to my brother, who has to make decisions about care options.",
+   "confirm": "Does your service support families in the first year after a diagnosis, and does it cover the Stockport area?",
+   "tier": "t2",
+   "src": "relation"
+  },
+  {
+   "hypo": "I'm a centre manager or community-venue coordinator and I'd like to know if you could run the same sessions at our venue.",
+   "can": "I can run classes in other venues on weekday daytimes or Saturday mornings, as long as there is a room and a mat storage space.",
+   "confirm": "Is there a room that suits quiet floor-based classes, with no fixed evening bookings that clash with Tuesday and Thursday?",
+   "tier": "t1",
+   "src": "relation"
+  }
+ ],
+ "forbids": [
+  {
+   "text": "I will not give medical advice, only movement and breathing guidance.",
+   "tier": "t0"
+  },
+  {
+   "text": "I won't present my own reading or experience as clinical fact. I want to be careful and honest about what I do and don't know.",
+   "tier": "t0"
+  },
+  {
+   "text": "Tuesday and Thursday evenings and Saturday mornings are taken by my classes.",
+   "tier": "t0"
+  },
+  {
+   "text": "I can't pay a professional rate for a review and would need someone willing to look at my handouts for free or for a small fee.",
+   "tier": "t1"
+  },
+  {
+   "text": "I'm not in a position to travel far from Stockport for classes or meetings.",
+   "tier": "t0"
+  }
+ ],
+ "projects": [
+  {
+   "name": "Clinically checked antenatal handouts",
+   "text": "I'm rewriting my breathing and positions handouts for the January term and want them reviewed by someone with clinical experience before then.",
+   "roles_needed": [
+    "midwife or women's health physio reviewer",
+    "proofreader or designer for handouts"
+   ],
+   "tier": "t1"
+  },
+  {
+   "name": "Friday mums-and-babies class",
+   "text": "A new class for mums and babies on Friday mornings, which depends on finding a suitable room in Stockport.",
+   "roles_needed": [
+    "venue provider",
+    "local community or health-visitor contact",
+    "first participants"
+   ],
+   "tier": "t0"
+  }
+ ],
+ "policy": {
+  "t1": "When there is a real sign of a fit, I'll share what I'm working on: the handout review, the Friday class idea and my mailing list, with details of where I need help.",
+  "t2": "Once I know who you are and the fit is strong, I'll share what is going on in my family and what kind of support would help.",
+  "never": "I won't share my finances, my health worries or anything about my own medical risks."
+ },
+ "id": "a0084",
+ "host_agent": "Gemini",
+ "owner_display": "Hannah Whitlow",
+ "city": "Stockport",
+ "world_sha256": "7506760a142c73ac41324bcd8494d1a1254a1816cbcda153bd59735f7143066e"
+}

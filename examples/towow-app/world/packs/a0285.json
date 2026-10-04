@@ -1,0 +1,228 @@
+{
+ "display": "Cabinetmaker with a Brunswick workshop, building kitchens, built-ins and furniture for architects and private clients, with hand-cut dovetails.",
+ "lang": "en",
+ "signals": [
+  {
+   "text": "I'm looking for workshop space in the inner north (Brunswick, Coburg, Northcote and nearby) at a rent a one-man cabinet shop can carry.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "My shed lease is renewing in January at roughly 40% more, and I have to decide by the end of November.",
+   "tier": "t1",
+   "src": "message"
+  },
+  {
+   "text": "I've priced selling my 3.2m sliding table saw and my jointer, but only to see what they'd fetch.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "I'd consider sharing a shed with another maker, or subletting part of mine, if the right person turned up.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "I have a big spotted gum kitchen due on 24 October, and everything else is on hold until it's delivered.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "Clients keep changing hardware specs mid-job, and each change costs me unplanned hours on drawer fronts and cutouts.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "I have equipment finance on a CNC router I barely use and I'm unsure whether to sell it or learn it properly.",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "text": "I'm tired and stretched thin, and my mum says I look thin.",
+   "tier": "t2",
+   "src": "message"
+  },
+  {
+   "text": "My 1978 Kingswood restoration has stalled. It's a bare primed shell, the engine is in boxes, and I only get a Sunday morning every two weeks.",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "text": "A seized rear subframe bolt cost me a whole Sunday, and I could use a mate who has done these jobs before.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "I'm coaching my daughter's under-12 netball team and want to teach the girls to play well, not just chase the score.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "Selling the saw feels like admitting defeat, and I haven't worked out what I'd do instead.",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "text": "I'm trying to cut back on coffee and getting through the headaches.",
+   "tier": "t0",
+   "src": "note"
+  }
+ ],
+ "offers": [
+  {
+   "text": "Custom kitchens, built-ins and joinery with 20 years of experience, mostly for architects in the inner north.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "Hand-cut dovetail drawers and solid hardwood work, including thick glued-up benchtops and islands.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "A 140 m² shed in Brunswick with three-phase power and a private spray booth.",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "text": "A Felder 3.2m sliding table saw, jointer-planer, thicknesser and edgebander. I could do contract machining, sheet cutting and edging for other makers.",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "text": "A Hilux ute and a sheet-goods trailer for timber and board pickups and local deliveries.",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "text": "Good relationships with two hardwood yards, in Sunshine and Thomastown. I can advise on species, grades and where to buy.",
+   "tier": "t0",
+   "src": "relation"
+  },
+  {
+   "text": "Introductions to the architects and designers I work with, once I know the person and the work.",
+   "tier": "t2",
+   "src": "relation"
+  },
+  {
+   "text": "I can explain joinery methods to apprentices or hobbyists in short, practical sessions.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I can coach junior netball, with a focus on team passing, structure and keeping a losing team's heads up.",
+   "tier": "t0",
+   "src": "bio"
+  },
+  {
+   "text": "I can explain what a long-term car restoration actually involves, the work that goes into it and what it costs.",
+   "tier": "t0",
+   "src": "project"
+  }
+ ],
+ "catchers": [
+  {
+   "hypo": "Hi, I'm a furniture maker in Fitzroy and I'm leaving my studio. The landlord wants it back, and I'd like to share a space with another maker for a year. Do you have room?",
+   "can": "Possibly share part of the Brunswick shed, or point to makers who do have space. This would be a t1 conversation.",
+   "confirm": "Do you work in solid timber or sheet-goods joinery, and can you manage without a full-time employee or weekend access?",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "hypo": "I'm an architect in Collingwood with a kitchen and joinery set coming up this spring. The last joiner didn't work out. Can you take on a spotted gum job?",
+   "can": "Quote and build high-end kitchens, built-ins and joinery with real timber and dovetailed drawers, once the Hartley job is delivered on 24 October.",
+   "confirm": "Is the project in the inner north, and is the delivery date on or after mid-November?",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "hypo": "I'm a woodworker in Preston and I need a thicknessed, jointed, edged batch of boards cut on a big sliding table saw. Do you take outside work?",
+   "can": "Offer batch machining and edging on the Felder and the other machines as a paid service.",
+   "confirm": "Is this a one-off job in the inner north, and does it fit within weekday hours?",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "hypo": "My business is moving out of its workshop and we're selling machines. Do you know anyone looking for a sliding table saw, a jointer or a small CNC router?",
+   "can": "Gaz, my plumber mate, already has a contact asking about a sliding table saw. I could also check whether the CNC or jointer would sell in the same circle.",
+   "confirm": "Are you a buyer or a seller, and is the machine in Melbourne?",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "hypo": "We're a small company in Brunswick looking for a larger shed and we're willing to share the rent. Could you share a space, or even take on a sublet?",
+   "can": "Possibly sublet part of the Brunswick shed, or introduce others who might. Gaz and I know a lot of local tradespeople.",
+   "confirm": "Would your business work around a woodworking shop's noise and dust?",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "hypo": "I'm restoring a 1970s Holden and I'm stuck on a rusted subframe bolt and a gearbox. Can you help or point me at someone who can?",
+   "can": "Swap Kingswood notes and share what worked on the seized bolt. I could also lend tools or a second pair of hands on a Sunday.",
+   "confirm": "Is the car in the inner north, and is the job on a Sunday morning?",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "hypo": "I'm a mechanic and I'd happily trade labour on a Kingswood engine rebuild for some custom joinery or cabinets. Interested?",
+   "can": "Swap my cabinetmaking for your mechanical work on the engine, gearbox or axle.",
+   "confirm": "Have you worked on Holden 1970s-era engines and driveline before, and are you in the inner north?",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "hypo": "My daughter plays under-12 netball and our team needs a coach, or at least some guidance. Could you give us a few pointers?",
+   "can": "Share my coaching approach and drills for junior teams, and pass on the club or rec centre contacts I know.",
+   "confirm": "Is the team in the Brunswick or Coburg area, and can you work around Tuesday evenings or Saturday mornings?",
+   "tier": "t0",
+   "src": "relation"
+  },
+  {
+   "hypo": "I'm a small business owner in the inner north and my landlord just raised my rent by about 40%. How did you cope, and what are your options?",
+   "can": "Compare notes on what I've tried: looking at other sheds, asking about equipment sales and renegotiating. I can point to local trade groups and tell you who is worth ringing.",
+   "confirm": "Are you a small manufacturer or trade business in the inner north facing a lease renewal?",
+   "tier": "t0",
+   "src": "note"
+  }
+ ],
+ "forbids": [
+  {
+   "text": "I won't work weekends, apart from Sunday mornings on the Kingswood, because of my kids."
+  },
+  {
+   "text": "I won't relocate or work outside the inner north of Melbourne."
+  },
+  {
+   "text": "I won't take shortcuts on drawer construction or cut corners on quality to hit a price."
+  },
+  {
+   "text": "I'm not taking on an employee for now."
+  },
+  {
+   "text": "I won't commit to new kitchen work with a start date before the Hartley job is delivered on 24 October."
+  }
+ ],
+ "projects": [
+  {
+   "name": "1978 Holden Kingswood restoration",
+   "text": "A three-year restoration of a 1978 Kingswood. The shell is stripped and primed, and the matching-numbers engine is in boxes. I'd like it on the road by 2028.",
+   "roles_needed": [
+    "driveline and engine mechanic",
+    "panel and rust specialist",
+    "someone with Kingswood experience who can help on Sunday mornings",
+    "parts sourcing contact"
+   ],
+   "tier": "t0"
+  }
+ ],
+ "policy": {
+  "t1": "When there's a real lead, I'll share that my lease rent is rising sharply, that I'm weighing up selling some machines, my current workload and netball commitments, and what the shed offers.",
+  "t2": "When the match looks strong and I know who I'm dealing with, I'll talk about the loan pressure and what selling the saw means to me.",
+  "never": "Exact finances and anything about my separation."
+ },
+ "id": "a0285",
+ "host_agent": "ChatGPT",
+ "owner_display": "Declan Murphy",
+ "city": "Melbourne",
+ "world_sha256": "0fc3bd79bf27572058646d910a1afcac0a9c06a65922e1f68ee21b8a715cce64"
+}

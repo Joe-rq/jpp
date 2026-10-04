@@ -1,0 +1,47 @@
+// mini-net：20 个 agent 的小网络（J++x 示例）。
+// 配对常驻程序：每个 agent 一个实例，对编码器召回的候选每对判一组题（同一 state 上的题运行时合批）。
+// 披露常驻程序：收到补信息请求就判「给不给」，写回复与已解锁片段。
+// 宿主只写 world[a]；agent 加入、改披露时，运行时只重算读到它的程序与判断。
+budget {calls: 300, cost: 0.05, depth: 3};
+
+cell world[a] reducer single;          // 宿主写：{id, name, city, t0（公开）, t1（有合作苗头才给）}
+cell inbox[b] reducer union;           // 补信息请求（J-05 默认链写这里）
+cell reply[b, a, cat] reducer single;  // 持有方回复
+cell unlocked[a, b] reducer union;     // a 已向 b 释放的片段
+cell edge[a, b] reducer single;        // 关系读数
+
+let LACKS = ["需求细节", "能力细节", "时间安排"];
+let 接住 = test("读 B 的信息：B 能实实在在地帮上 A 现在的需要吗？", "catch", LACKS);
+let 形式 = select("如果合作，最可能是哪种形式？", {trade: "买卖或雇佣", collab: "一起做事", refer: "转介给别人", none: "不成立"}, "form");
+let 价值 = measure("这次合作对 A 的价值有多大？", ["小", "中", "大"], "value");
+
+fn side(w, extra) { mat({name: w.name, city: w.city, 公开: w.t0, 补充: extra}, {origin: w.id}) }
+
+resident 配对(a) on [change(world[a])] {
+    let me = settled world[a];
+    let others = filter(members(world), fn(b) { b != a });
+    let corpus = map(others, fn(b) { {id: b, text: (peek world[b]).t0} });
+    let cands = do("embed_topk", [me.t0, corpus, 4], 0);
+    map(cands, fn(b) {
+        let B = peek world[b];
+        let s = state({A: side(me, peek unlocked[a, b]), B: side(B, peek unlocked[b, a])}, {owners: [a, b]});
+        let r = judge(s, [接住, 形式, 价值]);
+        let e = cut(r[0], {declare: {hi: 0.65, lo: 0.35}});     // 作者的线（Declared）；带内走默认链
+        let out = {a: a, b: b, catch: e, form: cut(r[1]), value: cut(r[2])};
+        put edge[a, b] <- out;
+        out })
+}
+
+resident 披露(b) on [change(inbox[b])] {
+    let w = settled world[b];
+    map(peek inbox[b], fn(req) {
+        let s = state({asker: req.from, want: req.cat, purpose: req.purpose}, {ctx: mat(w.t0)});
+        let ok = cut(judge(s, test("把这一类信息告诉对方，会推进合作、又在主人愿意给的范围内吗？", "disclose")));
+        handle(ok, {
+            act: fn() { put unlocked[b, req.from] <- [{cat: req.cat, text: w.t1}];
+                        put reply[b, req.from, req.cat] <- {granted: true, text: w.t1} },
+            ignore: fn() { put reply[b, req.from, req.cat] <- {denied: true, cat: req.cat, by: b} } })
+    })
+}
+
+{edges: map(members(world), fn(a) { peek 配对[a] }), status: map(members(world), fn(a) { status(配对, [a]) })}

@@ -1,0 +1,219 @@
+{
+ "display": "Second-generation laksa hawker at a Toa Payoh hawker centre. My father started the stall in 1978, and I still pound the rempah by hand.",
+ "lang": "en",
+ "signals": [
+  {
+   "text": "The stall rent went up at the last tender and I'm absorbing it without raising the $4.50 bowl price for the older regulars.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "Ingredient costs, especially cockles, keep rising. I'm quietly trimming portions and would like a smarter way to manage this.",
+   "tier": "t1",
+   "src": "message"
+  },
+  {
+   "text": "I sell about 180 bowls on a weekday. Rent and costs mean I need roughly thirty more bowls a month just to stay level.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "My daughter wants to study French cuisine overseas, and I don't understand how culinary school applications, portfolios or reference letters work.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "I'd like to find a way for my daughter to fund culinary school abroad, but I don't know what scholarships or funding routes exist.",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "text": "I'm looking for someone patient who could learn to hand-pound the rempah the way my father taught me, because I can't do all the physical prep alone forever.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "I'm worried that nobody will carry on the family recipe in the same way, and I have only written it down in an exercise book.",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "text": "I'm not comfortable with online forms and English-language portals, so anything with paperwork or applications stalls with me.",
+   "tier": "t1",
+   "src": "bio"
+  },
+  {
+   "text": "I'm tired by the end of long stall days, and I've been getting less rest than I need.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "Other hawkers around me are anxious about the rents and some talk of leaving, but nobody has a plan.",
+   "tier": "t1",
+   "src": "message"
+  },
+  {
+   "text": "I sometimes feel proud when visitors ask about the ingredients, and I wonder if there is a better way to tell the story of this laksa.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "I find it hard to ask for help, so I mostly keep problems to myself.",
+   "tier": "t2",
+   "src": "note"
+  }
+ ],
+ "offers": [
+  {
+   "text": "A family laksa made with a hand-pounded rempah, a recipe my father started in 1978 and I have run since 1999, at a Toa Payoh hawker centre.",
+   "tier": "t0",
+   "src": "bio"
+  },
+  {
+   "text": "Nearly 50 years of hawker-stall know-how: running a stall, queue handling, and keeping quality up at roughly 180 bowls a day.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "Can teach the technique of hand-pounding rempah, and explain why each ingredient is used, to someone who is serious about learning it.",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "text": "Long relationships with suppliers of cockles, tau pok and fish cake, and can make introductions for people who want to source well.",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "text": "A stone mortar and pestle from 1980 and a family recipe, which can be part of a food story, a documentary or a tasting session.",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "text": "Handwritten accounts covering decades of small-stall costs and prices, which can show what has changed for hawkers.",
+   "tier": "t2",
+   "src": "skill"
+  },
+  {
+   "text": "Can explain on the ground what the tender and rent increases mean for a stall's daily sums.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "A regular crowd of about 40 customers and a steady daily flow of people, who can be reached through the stall for a small food or community project.",
+   "tier": "t1",
+   "src": "bio"
+  }
+ ],
+ "catchers": [
+  {
+   "hypo": "Hi, I run admissions support for a culinary school and I'd like to explain portfolios, reference letters and fees to a young cook's family in plain language.",
+   "can": "I can bring my daughter Mei, who is 23 and polytechnic-trained, to talk to you, and I can attend an open day with her.",
+   "confirm": "Are you able to explain the application process in plain language and in person, rather than only through an online portal?",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "hypo": "I'm a chef who trained in France and I can mentor young Singaporean cooks who want to study in Lyon.",
+   "can": "Through my daughter Mei, who wants to learn French cuisine, I can arrange an introduction and a conversation.",
+   "confirm": "Have you personally trained or worked in a French culinary school or kitchen?",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "hypo": "I know of scholarships and grants for young Singaporeans studying culinary arts abroad and can walk a family through the forms.",
+   "can": "I can pass this on to my daughter Mei, who has already said she will apply, and sit with her through the first meeting.",
+   "confirm": "Do the scholarships you know of cover culinary school tuition for students from Singapore?",
+   "tier": "t2",
+   "src": "relation"
+  },
+  {
+   "hypo": "I'm making a film or book about disappearing hawker recipes and I want to record a family laksa being made from scratch.",
+   "can": "I can show the full hand-pounded rempah process at the stall and share the story of the 1978 stall, within the hours I can spare.",
+   "confirm": "Can you work around a stall that can't close for more than a day and a Monday-morning pounding schedule?",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "hypo": "I'm a young cook who wants to apprentice in a traditional hawker stall and learn the whole process, not just the cooking.",
+   "can": "I can teach the rempah pounding and the recipe steps, and see whether you are a good fit to carry the recipe on.",
+   "confirm": "Are you willing to commit to early mornings and long hours at a stall for at least a few months?",
+   "tier": "t2",
+   "src": "skill"
+  },
+  {
+   "hypo": "I'm helping a group of hawkers understand tender rent increases and want to hear from stallholders about what it does to their daily sums.",
+   "can": "I can share my own experience, and I can put you in touch with neighbouring stallholders such as Auntie Pat, who has the same worries.",
+   "confirm": "Are you working with hawkers at an actual hawker centre, rather than studying them from a distance?",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "hypo": "I run a small food supplier and I want to find a reliable, fairly priced source of cockles or tau pok for hawkers.",
+   "can": "I can compare notes from my own suppliers and tell you what has changed in prices and supply.",
+   "confirm": "Do you supply to small hawker stalls in Singapore at volumes of a few kilograms a day?",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "hypo": "My own parent runs a hawker stall and none of us want to take it over. How do families handle the handover of a recipe?",
+   "can": "I can talk honestly about how I took over from my father, and about my own worries about what happens next. A fellow hawker I know has a child who doesn't want to take over, and I can suggest we talk.",
+   "confirm": "Is your family stall still running, and are you looking for ways to hand it over rather than close it?",
+   "tier": "t2",
+   "src": "relation"
+  }
+ ],
+ "forbids": [
+  {
+   "text": "I can't leave the stall for more than a day, so I can't travel or take long off-site commitments."
+  },
+  {
+   "text": "I can't do very long physical work in one stretch, so work with me has to be at a pace a stallholder can manage."
+  },
+  {
+   "text": "I'm not comfortable with online forms and English-language portals, so I need help or an in-person walk-through for any paperwork."
+  },
+  {
+   "text": "I won't change the recipe or the hand-pounded rempah method for the sake of speed or branding."
+  },
+  {
+   "text": "I won't raise prices on my older regulars just to cover rent."
+  },
+  {
+   "text": "I won't share medical details or exact savings figures with anyone."
+  }
+ ],
+ "projects": [
+  {
+   "name": "Mei's culinary school path",
+   "text": "My daughter wants to study French cuisine overseas, in Lyon or via a Singapore route, and the family needs help understanding applications, funding and what to prepare.",
+   "roles_needed": [
+    "admissions adviser",
+    "culinary school alumni or chef mentor",
+    "scholarship or funding adviser",
+    "someone to help with English-language applications"
+   ],
+   "tier": "t1"
+  },
+  {
+   "name": "Passing on the laksa",
+   "text": "A way to keep the family laksa and the hand-pounded rempah going after me, by finding someone to learn it, and by recording the method properly.",
+   "roles_needed": [
+    "apprentice cook",
+    "recipe documentarian or videographer",
+    "food writer"
+   ],
+   "tier": "t2"
+  }
+ ],
+ "policy": {
+  "t1": "When there is a real sign of cooperation I'll talk about the rent increase, my daily volume, my daughter's plans in general terms, and what I can teach or introduce.",
+  "t2": "When the match looks strong and I know who you are, I'll talk about my worries over savings, tuition and applications, and what happens to the recipe.",
+  "never": "Medical details and exact savings figures."
+ },
+ "id": "a0195",
+ "host_agent": "Gemini",
+ "owner_display": "Lim Teck Seng",
+ "city": "Singapore",
+ "world_sha256": "962592390bbbe3797a39eea332c133f3ca31029ff595e8d26c1abec4364194bf"
+}

@@ -1,0 +1,213 @@
+{
+ "display": "Procurement officer for a boutique safari lodge group in Nairobi. I buy everything from linen to coffee for six lodges across Kenya and Tanzania, and I'm also a keen birder.",
+ "lang": "en",
+ "signals": [
+  {
+   "text": "I'm looking for a locally made guest-room soap in Kenya that is a proper amenity bar, not a decorative tourist-shop one.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "A sustainability audit flagged that all our guest-room soaps are imported, and I have to propose a local alternative by the end of October.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "Guests at our lodges keep asking for Kenyan-made amenities, and we currently can't point them to one.",
+   "tier": "t1",
+   "src": "message"
+  },
+  {
+   "text": "I've gone through my whole vendor list and found no local soap maker I'd trust at lodge scale. I need to look outside my usual network.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "Any soap supplier I take on has to deliver consistently across six lodges and invoice properly. Supply reliability matters more to me than novelty.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "Our amenity budget is tight: the cost per room night can't rise more than about 10%, and a local, sustainable soap has to fit inside that.",
+   "tier": "t2",
+   "src": "project"
+  },
+  {
+   "text": "We pay roughly KES 45 per bar today, and any local option above that needs a solid justification.",
+   "tier": "t2",
+   "src": "project"
+  },
+  {
+   "text": "I'd like to hear from small Kenyan makers who could scale to steady lodge-sized orders but haven't had a buyer like us before.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "My draft response to the audit is due in a few days, and I'd welcome a quick sample or spec sheet I can show my management.",
+   "tier": "t1",
+   "src": "calendar"
+  },
+  {
+   "text": "I'm running a house renovation in Karen at the same time as a heavy work deadline, and I'm short on time and headspace.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "A family member is recovering from hip surgery and I'm helping with her rehab at home.",
+   "tier": "t2",
+   "src": "relation"
+  },
+  {
+   "text": "I've just logged my 400th bird species and my field notebook is nearly full. I'd like to meet other birders.",
+   "tier": "t0",
+   "src": "note"
+  }
+ ],
+ "offers": [
+  {
+   "text": "Procurement for six lodges: linen, toiletries, coffee, cleaning supplies and kitchen goods, bought at group scale.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "A database of about 80 vendors across Kenya and Tanzania. I can introduce a good supplier to the right category of lodge buyer.",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "text": "Experience negotiating bulk contracts in both Kenyan shillings and USD.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "Knowledge of how a hospitality group's sustainability audit scores suppliers. I can tell a small producer what evidence they would need to pass.",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "text": "Feedback to a new local supplier on packaging, consistency, invoicing and lead times from a hospitality buyer's point of view.",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "text": "A real, repeating order channel into six safari lodges for suppliers who fit the quality, price and reliability bar.",
+   "tier": "t2",
+   "src": "project"
+  },
+  {
+   "text": "Birdwatching knowledge of the Nairobi area, including Ngong forest. I can take a visitor out on a Sunday morning.",
+   "tier": "t0",
+   "src": "bio"
+  }
+ ],
+ "catchers": [
+  {
+   "hypo": "We're a small soap workshop outside Nairobi making cold-process bars from Kenyan shea, coconut and plant oils. We've only sold at markets and want to supply hotels but don't know how to start.",
+   "can": "I can tell them what a lodge group needs in specs, volume, consistency and invoicing, and I can put a trial batch in front of the lodge managers.",
+   "confirm": "Can your workshop reliably produce several thousand uniform bars a month and issue proper tax invoices?",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "hypo": "I run a cooperative of women who make natural soap from locally sourced ingredients. We have a sustainability story but no hotel customers yet.",
+   "can": "I can match them against the audit's local and sustainable criteria and say whether it's worth taking a sample to my GM.",
+   "confirm": "Can you document where your ingredients come from, and do you hold or plan to hold a Kenya Bureau of Standards (KEBS) mark?",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "hypo": "I help small manufacturers get ready to sell to hotels and lodges, covering certification, packaging and costing. Would a buyer like you test one of my clients?",
+   "can": "I can give candid buyer feedback on one candidate soap maker and describe what a pass or fail looks like on cost and consistency.",
+   "confirm": "Is your client making a bathroom-grade bar at a unit price close to KES 45?",
+   "tier": "t2",
+   "src": "project"
+  },
+  {
+   "hypo": "I manage purchasing at another lodge or hotel group in East Africa and I'm also being pushed to localise amenities. Can we compare notes on suppliers and pooled orders?",
+   "can": "I can share what I've learned about the audit and the local market, and explore pooling a bulk order across groups.",
+   "confirm": "Do you buy for a multi-property group, and would you consider pooling demand with another buyer?",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "hypo": "I'm a physiotherapist or home-care nurse who works with older patients recovering from hip surgery at home in Nairobi. Do you know anyone who needs this?",
+   "can": "I can pass this to my family, who are in exactly this situation, and I'd gladly read a recommendation.",
+   "confirm": "Do you make home visits in the Nairobi area for hip-surgery recovery?",
+   "tier": "t2",
+   "src": "relation"
+  },
+  {
+   "hypo": "I'm a landscaper or garden designer who builds low-maintenance, accessible gardens for older people with limited mobility, including raised beds and paths.",
+   "can": "I can introduce them to my family, whose house in Karen will need a garden that suits someone recovering from surgery.",
+   "confirm": "Have you designed gardens in the Nairobi area that are safe for walkers or wheelchairs?",
+   "tier": "t2",
+   "src": "relation"
+  },
+  {
+   "hypo": "We supply roofing tiles and building materials in Nairobi with reliable delivery dates. Do you know anyone who has been let down by a supplier?",
+   "can": "I'm renovating a house in Karen with late roof tiles, so I can look at an alternative supplier and pass a recommendation to my contractor.",
+   "confirm": "Can you deliver roofing tiles in Nairobi within a week and hold the delivery date in writing?",
+   "tier": "t2",
+   "src": "relation"
+  },
+  {
+   "hypo": "I'm visiting Nairobi and want to see some good birds near the city, with a local who knows where to go. Would you share a morning?",
+   "can": "I can take them to Ngong forest for a Sunday morning outing and share my species list.",
+   "confirm": "Are you able to be at the forest by 6:00 am on a Sunday?",
+   "tier": "t0",
+   "src": "bio"
+  },
+  {
+   "hypo": "I'm a procurement professional at a Kenyan company and feel stuck between sustainability demands and cost-cutting. How did you cope?",
+   "can": "I can talk it through from experience, and have a candid peer conversation about how I'm working through the same tension.",
+   "confirm": "Are you in a purchasing role and facing a sustainability and cost conflict right now?",
+   "tier": "t1",
+   "src": "note"
+  }
+ ],
+ "forbids": [
+  {
+   "text": "I won't switch to a supplier who can't guarantee consistent supply to all six lodges.",
+   "tier": "t1"
+  },
+  {
+   "text": "I won't work with suppliers who can't issue proper invoices.",
+   "tier": "t1"
+  },
+  {
+   "text": "I can't commit to a purchase before the group's audit and cost review has approved it.",
+   "tier": "t1"
+  },
+  {
+   "text": "I won't make promises to a supplier on behalf of my GM or finance team.",
+   "tier": "t1"
+  },
+  {
+   "text": "I don't take new vendors on trust. Samples and references come first.",
+   "tier": "t1"
+  }
+ ],
+ "projects": [
+  {
+   "name": "Local guest-amenity soap for the lodge group",
+   "text": "Replace imported guest-room soap across six lodges with a Kenyan-made, sustainable bar that meets the group's audit criteria.",
+   "roles_needed": [
+    "Kenyan soap maker or cooperative",
+    "Natural-ingredient or packaging supplier",
+    "Product certification or standards adviser",
+    "Hospitality buyer willing to pool volumes"
+   ],
+   "tier": "t1"
+  }
+ ],
+ "policy": {
+  "t1": "Audit findings, that guests are asking for local amenities, what a lodge buyer needs in quality, consistency and invoicing, and an introduction to the relevant category of lodge buyer.",
+  "t2": "The cost ceiling of 10% per room night and the current price per bar, once a supplier looks credible and I know who they are.",
+  "never": "My salary, my house finances, my employer's internal discussions, and any doubts about my career."
+ },
+ "id": "a0399",
+ "host_agent": "CUE",
+ "owner_display": "Wanjiru Kamau",
+ "city": "Nairobi",
+ "world_sha256": "d887e0aceb4ce716e49e4a37ef2fb851477012d04f0ffa1ddd1e2cd65b90c420"
+}

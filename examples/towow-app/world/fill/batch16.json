@@ -1,0 +1,1885 @@
+{
+ "slots": [
+  {
+   "id": "a0401",
+   "lang": "zh",
+   "host_agent": "通义",
+   "city": "武汉",
+   "occupation": "社区花店老板",
+   "age_band": "35-40",
+   "persona_hint": "在武昌一条老街上开了七年花店，熟客都叫她「花姐」，现在门口被地铁施工围挡挡得只剩一条缝",
+   "structures": [
+    {
+     "sid": "S006",
+     "role": "发起方（只说店里冷清）",
+     "facts_to_embed": [
+      {
+       "fact": "店门口在修地铁八号线支线，围挡挡了门脸八个月，熟客说路过都找不到门",
+       "tier": "t0"
+      },
+      {
+       "fact": "九月流水比去年同期少了六成，房租还押着三个月",
+       "tier": "t1"
+      }
+     ]
+    }
+   ],
+   "background_noise_hints": [
+    "女儿学钢琴考级在即",
+    "在纠结要不要给店里换一台二手冷柜",
+    "每周四晚上打羽毛球"
+   ]
+  },
+  {
+   "id": "a0402",
+   "lang": "en",
+   "host_agent": "Gemini",
+   "city": "Chiang Mai",
+   "occupation": "Retired British district nurse",
+   "age_band": "65-70",
+   "persona_hint": "Thirty years as a district nurse in Leeds, retired to Chiang Mai four years ago, volunteers at a temple English class and misses being useful",
+   "structures": [
+    {
+     "sid": "S105",
+     "role": "环1-退休英国护士（帮织布合作社）",
+     "facts_to_embed": [
+      {
+       "fact": "Landlord is putting the rent up 40% in December and my UK pension won't stretch that far",
+       "tier": "t2"
+      },
+      {
+       "fact": "Thirty years as a district nurse in Leeds; I miss being useful",
+       "tier": "t0"
+      }
+     ]
+    }
+   ],
+   "background_noise_hints": [
+    "Learning Thai and failing at tones",
+    "Walks the Doi Suthep trail weekly",
+    "Her brother in Yorkshire has early dementia"
+   ]
+  },
+  {
+   "id": "a0403",
+   "lang": "zh",
+   "host_agent": "Dot",
+   "city": "海口",
+   "occupation": "潜水教练",
+   "age_band": "30-35",
+   "persona_hint": "在三亚和海口两头跑，带客人考 OW，最会安抚第一次下水就慌的人；台风季三个月没生意，她在想要不要去菲律宾考教练长，可那要先攒三万块",
+   "structures": [],
+   "background_noise_hints": [
+    "房东不让养猫，她的猫寄养在朋友家",
+    "常年晒伤，鼻梁脱皮",
+    "在学西班牙语，为将来去墨西哥带潜"
+   ]
+  },
+  {
+   "id": "a0404",
+   "lang": "en",
+   "host_agent": "Dot",
+   "city": "Bangkok",
+   "occupation": "Muay Thai coach",
+   "age_band": "35-40",
+   "persona_hint": "Trains foreigners at a small gym off Sukhumvit and used to fight at Lumpinee; more and more Chinese students are signing up and none of the gym's waivers or class info exist in Chinese",
+   "structures": [],
+   "background_noise_hints": [
+    "shoulder injury that won't fully heal",
+    "his son starting first grade",
+    "saving for a house in his home province"
+   ]
+  },
+  {
+   "id": "a0405",
+   "lang": "zh",
+   "host_agent": "豆包",
+   "city": "长春九台",
+   "occupation": "大棚菜农",
+   "age_band": "40-45",
+   "persona_hint": "在九台种了四个大棚的番茄、黄瓜、豆角，冬天烧煤保温，菜好但卖不上价",
+   "structures": [
+    {
+     "sid": "S134",
+     "role": "甲组-九台大棚菜农",
+     "facts_to_embed": [
+      {
+       "fact": "在九台有四个大棚，种番茄、黄瓜、豆角",
+       "tier": "t0"
+      },
+      {
+       "fact": "一个棚一天出不到一百斤，大饭店嫌量小不稳定，只能卖给菜贩子，价钱被压到一块五",
+       "tier": "t1"
+      }
+     ]
+    }
+   ],
+   "background_noise_hints": [
+    "儿子在部队，一年回来一次",
+    "媳妇在镇上超市打工",
+    "在研究换成空气能取暖"
+   ]
+  },
+  {
+   "id": "a0406",
+   "lang": "en",
+   "host_agent": "CUE",
+   "city": "Berlin",
+   "occupation": "Music therapist working with refugee children",
+   "age_band": "30-35",
+   "persona_hint": "Music therapist at a nonprofit in Moabit who works with Arabic-speaking kids and keeps a cupboard of mismatched donated instruments",
+   "structures": [
+    {
+     "sid": "S063",
+     "role": "互补方-柏林难民儿童音乐治疗师",
+     "facts_to_embed": [
+      {
+       "fact": "Several kids in her group recognise the oud from home; the two donated ouds are adult-sized and one has a cracked soundboard",
+       "tier": "t0"
+      },
+      {
+       "fact": "Her nonprofit has €3,000 left in this year's instrument budget",
+       "tier": "t1"
+      }
+     ]
+    }
+   ],
+   "background_noise_hints": [
+    "Training for a half-marathon",
+    "Her flat has a mould problem",
+    "Learning Arabic slowly"
+   ]
+  },
+  {
+   "id": "a0407",
+   "lang": "zh",
+   "host_agent": "元宝",
+   "city": "上海",
+   "occupation": "退休沪剧票友",
+   "age_band": "70-75",
+   "persona_hint": "每周两次去文化馆唱沪剧，老伴拉胡琴伴奏，两人在票友圈里有点名气；在加拿大的女儿说孙子想听外婆唱戏，可她不会用手机录音，录了几次都只录到一半",
+   "structures": [],
+   "background_noise_hints": [
+    "高血压，每天量两次",
+    "女儿在多伦多，十二小时时差",
+    "在学用智能手机，最怕点错付款"
+   ]
+  },
+  {
+   "id": "a0408",
+   "lang": "zh",
+   "host_agent": "Claude Code",
+   "city": "上海",
+   "occupation": "劳动法律师（律所合伙人）",
+   "age_band": "40-45",
+   "persona_hint": "做劳动争议十五年，前十年代表公司，后来转到劳动者一侧，每年给自己定一个公益案件的名额",
+   "structures": [
+    {
+     "sid": "S065",
+     "role": "互补方-上海劳动法律师",
+     "facts_to_embed": [
+      {
+       "fact": "今年给自己留的一个公益代理名额还没用，想给真正打不起官司的人",
+       "tier": "t1"
+      },
+      {
+       "fact": "常说小作坊的劳动纠纷多半输在没有书面排班记录，而不是真的违法",
+       "tier": "t0"
+      }
+     ]
+    },
+    {
+     "sid": "S066",
+     "role": "互补方-上海劳动法律师",
+     "facts_to_embed": [
+      {
+       "fact": "在律所公众号写过「年轻人离职前该保存的五样东西」，阅读量不高，觉得公众号触达不到年轻人",
+       "tier": "t0"
+      }
+     ]
+    }
+   ],
+   "background_noise_hints": [
+    "女儿在学大提琴",
+    "每天早上在徐汇滨江骑车",
+    "父亲的老房子在等拆迁"
+   ]
+  },
+  {
+   "id": "a0409",
+   "lang": "zh",
+   "host_agent": "Claude Code",
+   "city": "上海",
+   "occupation": "字体设计师（字库公司）",
+   "age_band": "30-35",
+   "persona_hint": "在一家字库公司做中文字体，私下想做一套「方言招牌体」，收集了几百张街头老招牌的照片",
+   "structures": [
+    {
+     "sid": "S080",
+     "role": "互补方-字库公司字体设计师",
+     "facts_to_embed": [
+      {
+       "fact": "字库公司字体设计师，私下在拍街头老招牌",
+       "tier": "t0"
+      },
+      {
+       "fact": "收集了三百多张南方街头老招牌照片，想做一套「招牌体」，但照片里的字残缺，缺写字的人示范笔法",
+       "tier": "t1"
+      }
+     ]
+    }
+   ],
+   "background_noise_hints": [
+    "养了一只柯基",
+    "在学潜水",
+    "合租室友要搬走"
+   ]
+  },
+  {
+   "id": "a0410",
+   "lang": "zh",
+   "host_agent": "通义",
+   "city": "绍兴",
+   "occupation": "市中医院嗓音康复治疗师",
+   "age_band": "30-35",
+   "persona_hint": "从声乐专业转行做嗓音康复的治疗师，听人说两句话就能猜出对方的职业",
+   "structures": [
+    {
+     "sid": "S024",
+     "role": "接收方（嗓音康复治疗师）",
+     "facts_to_embed": [
+      {
+       "fact": "她牵头的职业用嗓者嗓音训练研究，免费八周，教师组和主播组都招满了，戏曲演员组还缺 6 个人",
+       "tier": "t1"
+      }
+     ]
+    }
+   ],
+   "background_noise_hints": [
+    "在读在职硕士",
+    "迷上了做手工皂",
+    "老家在诸暨，周末回去"
+   ]
+  },
+  {
+   "id": "a0411",
+   "lang": "zh",
+   "host_agent": "元宝",
+   "city": "济南",
+   "occupation": "社区助餐点负责人",
+   "age_band": "50-55",
+   "persona_hint": "历下区一个社区助餐点的负责人，记得住八十个老人里谁不吃香菜、谁要软饭",
+   "structures": [
+    {
+     "sid": "S125",
+     "role": "外围-社区助餐点负责人",
+     "facts_to_embed": [
+      {
+       "fact": "在历下区一个社区助餐点做负责人，每天供 80 位老人午饭",
+       "tier": "t0"
+      },
+      {
+       "fact": "老人里四成有糖尿病，常问能不能有无糖点心，外面买太贵，助餐点自己没有烤箱",
+       "tier": "t1"
+      }
+     ]
+    }
+   ],
+   "background_noise_hints": [
+    "自己血压也开始高了",
+    "儿子在外地考研二战",
+    "在和街道对接年底的检查材料"
+   ]
+  },
+  {
+   "id": "a0412",
+   "lang": "zh",
+   "host_agent": "元宝",
+   "city": "潍坊",
+   "occupation": "风筝扎制艺人",
+   "age_band": "60-65",
+   "persona_hint": "扎了四十年风筝，最拿手的是三十节蜈蚣龙头，年轻时得过国际风筝会的奖；今年四月风筝节，他的作品被别人拍了照做成了网上卖的仿品，他只是生气，没想过要怎么办",
+   "structures": [],
+   "background_noise_hints": [
+    "老伴心脏不好，常去医院",
+    "孙子在济南读高中",
+    "每年四月是他最忙最高兴的时候"
+   ]
+  },
+  {
+   "id": "a0413",
+   "lang": "zh",
+   "host_agent": "Kimi",
+   "city": "北京",
+   "occupation": "三甲医院康复治疗师",
+   "age_band": "30-35",
+   "persona_hint": "三甲医院康复科的治疗师，带过很多摔倒骨折后的老人，一直想做社区里的预防",
+   "structures": [
+    {
+     "sid": "S138",
+     "role": "甲组-三甲医院康复治疗师",
+     "facts_to_embed": [
+      {
+       "fact": "在北京一家三甲医院康复科做治疗师",
+       "tier": "t0"
+      },
+      {
+       "fact": "科里一直想做社区跌倒预防，可医院不许她在外面接活，除非是区里立项的公益项目",
+       "tier": "t1"
+      }
+     ]
+    }
+   ],
+   "background_noise_hints": [
+    "在读在职硕士",
+    "女儿刚上幼儿园",
+    "和老公分担接送"
+   ]
+  },
+  {
+   "id": "a0414",
+   "lang": "zh",
+   "host_agent": "元宝",
+   "city": "济南",
+   "occupation": "退休音乐老师",
+   "age_band": "60-65",
+   "persona_hint": "会拉手风琴，在老年大学带合唱团，家里收着学校淘汰下来的二十把口琴",
+   "structures": [
+    {
+     "sid": "S135",
+     "role": "甲组-退休音乐老师",
+     "facts_to_embed": [
+      {
+       "fact": "退休音乐老师，拉手风琴，在老年大学带合唱",
+       "tier": "t0"
+      },
+      {
+       "fact": "家里收着学校淘汰下来的二十把口琴，一直想送给用得上的孩子，还想教他们吹",
+       "tier": "t1"
+      }
+     ]
+    }
+   ],
+   "background_noise_hints": [
+    "合唱团在排国庆演出",
+    "老伴想去海南过冬",
+    "眼睛老花得厉害"
+   ]
+  },
+  {
+   "id": "a0415",
+   "lang": "en",
+   "host_agent": "Gemini",
+   "city": "Nairobi",
+   "occupation": "Small-batch rose-water distiller (former chemistry teacher)",
+   "age_band": "45-50",
+   "persona_hint": "Left a secondary-school lab to build a 200-litre steam still in a Ruiru garage; obsessive about what goes into it",
+   "structures": [
+    {
+     "sid": "S095",
+     "role": "链2-玫瑰水蒸馏（提取）",
+     "facts_to_embed": [
+      {
+       "fact": "My still runs two days a week at most because market roses are sprayed with who-knows-what and I won't put that in rose water",
+       "tier": "t0"
+      }
+     ]
+    }
+   ],
+   "background_noise_hints": [
+    "Coaching his son's under-14 football team",
+    "Fighting a land-title dispute in his home county",
+    "Reading a lot of Ngũgĩ again"
+   ]
+  },
+  {
+   "id": "a0416",
+   "lang": "zh",
+   "host_agent": "元宝",
+   "city": "福州",
+   "occupation": "寺庙义工（退休教师）",
+   "age_band": "65-70",
+   "persona_hint": "教了三十五年小学，退休后每周三天去鼓山涌泉寺做义工，抄经、给香客指路；整理老伴遗物时翻出一箱八十年代的照片，受了潮，好几张已经粘在一起，她不敢硬撕",
+   "structures": [],
+   "background_noise_hints": [
+    "女儿在美国西雅图，视频要算好时差",
+    "骨质疏松，去年摔过一次手腕",
+    "每天早上在西湖公园打一套八段锦"
+   ]
+  },
+  {
+   "id": "a0417",
+   "lang": "zh",
+   "host_agent": "Gemini",
+   "city": "深圳",
+   "occupation": "跨境电商运营（家居小家电）",
+   "age_band": "30-35",
+   "persona_hint": "在华强北附近的公司做亚马逊德国站，每天早上先看夜里德国客户的差评；去年帮丈母娘在老家开的网店做了店铺装修，结果被平台判了图片侵权，罚款到现在还在申诉",
+   "structures": [],
+   "background_noise_hints": [
+    "老婆在考深圳的公务员，晚上家里要安静",
+    "孩子过敏性鼻炎，换季每天早上打喷嚏",
+    "公司在传年底裁员，群里都不说话了"
+   ]
+  },
+  {
+   "id": "a0418",
+   "lang": "zh",
+   "host_agent": "Muse",
+   "city": "厦门",
+   "occupation": "钢琴调律师",
+   "age_band": "45-50",
+   "persona_hint": "在德国一家琴厂学过三年，回厦门做调律，私下最喜欢的其实是修老管风琴",
+   "structures": [
+    {
+     "sid": "S086",
+     "role": "互补方-钢琴调律师",
+     "facts_to_embed": [
+      {
+       "fact": "厦门的钢琴调律师，在德国一家琴厂学过三年",
+       "tier": "t0"
+      },
+      {
+       "fact": "在德国琴厂三年，有一年专门跟师傅修教堂管风琴，回国后一直没机会碰",
+       "tier": "t1"
+      }
+     ]
+    },
+    {
+     "sid": "S171",
+     "role": "看似相关方-修过管风琴的调律师",
+     "facts_to_embed": [
+      {
+       "fact": "在德国琴厂时专门跟师傅修过一年教堂管风琴，回国后一直没机会碰",
+       "tier": "t1"
+      }
+     ]
+    }
+   ],
+   "background_noise_hints": [
+    "女儿在学钢琴但讨厌练琴",
+    "在装修老房子",
+    "周末钓鱼"
+   ]
+  },
+  {
+   "id": "a0419",
+   "lang": "zh",
+   "host_agent": "通义",
+   "city": "泉州",
+   "occupation": "特殊教育学校老师（自闭症班）",
+   "age_band": "30-35",
+   "persona_hint": "带一个八人的自闭症儿童班，每天写很长的观察记录，总在想办法让孩子愿意把手伸出来",
+   "structures": [
+    {
+     "sid": "S072",
+     "role": "互补方-特殊教育学校自闭症班老师",
+     "facts_to_embed": [
+      {
+       "fact": "观察记录：几个孩子会盯着风铃和吊着摇晃的东西看很久，但一让握笔就把手缩回去",
+       "tier": "t1"
+      },
+      {
+       "fact": "学校这学期在找「能让孩子动手又不排斥」的课外项目，有一点课时费",
+       "tier": "t1"
+      }
+     ]
+    }
+   ],
+   "background_noise_hints": [
+    "自己在做试管备孕",
+    "周末在古城跑步",
+    "和婆婆住在一起"
+   ]
+  },
+  {
+   "id": "a0420",
+   "lang": "zh",
+   "host_agent": "Kimi",
+   "city": "上海",
+   "occupation": "会计（罕见病患儿母亲）",
+   "age_band": "35-40",
+   "persona_hint": "在一家物流公司做会计，女儿五岁，病拖了两年没确诊，她把每次发作的时间和症状都记在表格里",
+   "structures": [
+    {
+     "sid": "S085",
+     "role": "互补方-罕见病患儿母亲",
+     "facts_to_embed": [
+      {
+       "fact": "表格记了女儿两年来三十多次发作：多在洗热水澡或发烧后，一侧手脚无力几分钟到半小时，查了三家医院脑电图都正常",
+       "tier": "t2"
+      },
+      {
+       "fact": "跟老公说过：再查不出来，她怕自己先垮了",
+       "tier": "t2"
+      }
+     ]
+    }
+   ],
+   "background_noise_hints": [
+    "和老公轮流请假陪诊",
+    "父母从安徽来帮忙带孩子",
+    "在看一部日剧解压"
+   ]
+  },
+  {
+   "id": "a0421",
+   "lang": "en",
+   "host_agent": "Muse",
+   "city": "London",
+   "occupation": "Retired secondary-school geography teacher",
+   "age_band": "65-70",
+   "persona_hint": "Clearing out her late father's Highgate flat; he was a Foreign Office China hand in the 1960s and she keeps finding things she can't name",
+   "structures": [
+    {
+     "sid": "S040",
+     "role": "需求方（伦敦退休教师，父亲遗物里有张古琴）",
+     "facts_to_embed": [
+      {
+       "fact": "Posted a photo of 'a long wooden zither with no frets, seven strings and cracked lacquer' from her father's flat, asking what it is",
+       "tier": "t0"
+      },
+      {
+       "fact": "Two auction houses offered consignment, but she told her daughter she'd rather it be played again than sold",
+       "tier": "t1"
+      }
+     ]
+    },
+    {
+     "sid": "S161",
+     "role": "看似相关方-想修父亲遗物古琴的伦敦退休教师",
+     "facts_to_embed": [
+      {
+       "fact": "Posted a photo of 'a long wooden zither with no frets, seven strings and cracked lacquer' and asked who repairs fretless instruments",
+       "tier": "t0"
+      },
+      {
+       "fact": "A dealer said the finish looks like 'very old Chinese lacquer over cloth'; she does not want it shipped anywhere",
+       "tier": "t1"
+      }
+     ]
+    }
+   ],
+   "background_noise_hints": [
+    "Allotment plot and an ongoing war with slugs",
+    "Her grandson's gap-year plans",
+    "Choir rehearsals for a winter concert"
+   ]
+  },
+  {
+   "id": "a0422",
+   "lang": "zh",
+   "host_agent": "豆包",
+   "city": "烟台",
+   "occupation": "海鲜干货店老板娘",
+   "age_band": "40-45",
+   "persona_hint": "在芝罘区开干货店，嫁过来二十年，跟公公比跟丈夫还聊得来",
+   "structures": [
+    {
+     "sid": "S047",
+     "role": "转介方（干货店老板娘，公公是退休鼓书艺人）",
+     "facts_to_embed": [
+      {
+       "fact": "公公是退休的胶东大鼓艺人，八十岁了还能唱整本《呼家将》，最近总叹气说「没人听了」",
+       "tier": "t1"
+      }
+     ]
+    }
+   ],
+   "background_noise_hints": [
+    "儿子明年高考",
+    "在学做烟台焖子",
+    "冬天手裂口子贴满创可贴"
+   ]
+  },
+  {
+   "id": "a0423",
+   "lang": "zh",
+   "host_agent": "豆包",
+   "city": "哈尔滨",
+   "occupation": "松花江游船船老板",
+   "age_band": "45-50",
+   "persona_hint": "在松花江上跑了二十年游船的船老板，夏天晒得黝黑，冬天就窝在家里",
+   "structures": [
+    {
+     "sid": "S022",
+     "role": "发起方（只说冬天没进项）",
+     "facts_to_embed": [
+      {
+       "fact": "「一入冬就没进项了，船一停就是四个月」",
+       "tier": "t0"
+      },
+      {
+       "fact": "跑了二十年江，知道哪几段江面下面有暗流、结冰最晚",
+       "tier": "t1"
+      }
+     ]
+    },
+    {
+     "sid": "S182",
+     "role": "看似相关方-封江后没进项的游船老板",
+     "facts_to_embed": [
+      {
+       "fact": "一入冬就没进项了，船一停就是四个月，还得给两个伙计想办法",
+       "tier": "t0"
+      }
+     ]
+    }
+   ],
+   "background_noise_hints": [
+    "在给船做冬季防冻保养",
+    "儿子要结婚，在凑彩礼",
+    "爱看冰球比赛"
+   ]
+  },
+  {
+   "id": "a0424",
+   "lang": "zh",
+   "host_agent": "豆包",
+   "city": "杭州",
+   "occupation": "公交公司调度员（业余组织大型犬聚会）",
+   "age_band": "35-40",
+   "persona_hint": "白天在公交场站排班，周日带着自家金毛在西溪组织大狗聚会，群里两百多只大狗他叫得出一半的名字",
+   "structures": [
+    {
+     "sid": "S122",
+     "role": "成员-大型犬聚会组织者",
+     "facts_to_embed": [
+      {
+       "fact": "每周日在西溪带大型犬聚会，群里两百多只金毛拉布拉多",
+       "tier": "t0"
+      },
+      {
+       "fact": "去年群里一只狗手术要输血，全群转发找了一整夜",
+       "tier": "t1"
+      }
+     ]
+    }
+   ],
+   "background_noise_hints": [
+    "在考虑要不要换一辆能装下两只大狗的车",
+    "老婆怀孕五个月",
+    "在学做狗狗鲜食"
+   ]
+  },
+  {
+   "id": "a0425",
+   "lang": "zh",
+   "host_agent": "CUE",
+   "city": "长沙",
+   "occupation": "美甲店店长",
+   "age_band": "25-30",
+   "persona_hint": "开在五一商圈写字楼里的小店，三个美甲师轮班，她自己专做日式晕染；店里有个美甲师上周做手被客人投诉过敏，她才发现自己从没认真看过甲油胶的成分表",
+   "structures": [],
+   "background_noise_hints": [
+    "在减脂，晚上只吃一盒鸡胸肉",
+    "男朋友在广州，每个月两人轮流坐高铁",
+    "店里的布偶猫国庆没人照看，她不放心送宠物店"
+   ]
+  }
+ ],
+ "structures": [
+  {
+   "id": "S006",
+   "type": "latent",
+   "members": [
+    {
+     "id": "a0401",
+     "role": "发起方（只说店里冷清）",
+     "brings": "花材进货渠道、插花技艺、每周能出两天",
+     "needs": "未说出：地铁围挡挡住门脸，流水掉六成，需要不依赖街面的订单"
+    },
+    {
+     "id": "a0088",
+     "role": "接收方（养老院活动部主任）",
+     "brings": "每月花材预算和每周一次园艺疗愈活动的固定需求",
+     "needs": "原花材供应商停业，下个月的活动没着落"
+    }
+   ],
+   "why": "花店老板只说「店里最近很冷清」，没说要接团单。养老院主任的世界里有一笔现成的每月花材预算和一个空出来的供应位置。一个缺街面客流，一个缺稳定花材和会教插花的人，词面上「冷清」与「养老院」连不上。",
+   "key_facts": [
+    {
+     "agent": "a0401",
+     "fact": "店门口在修地铁八号线支线，围挡挡了门脸八个月，熟客说路过都找不到门",
+     "tier": "t0"
+    },
+    {
+     "agent": "a0401",
+     "fact": "九月流水比去年同期少了六成，房租还押着三个月",
+     "tier": "t1"
+    },
+    {
+     "agent": "a0088",
+     "fact": "院里每周三下午的园艺疗愈活动，花材预算每月 6000，原来的供应商九月关门了",
+     "tier": "t1"
+    },
+    {
+     "agent": "a0088",
+     "fact": "活动记录里写：老人最喜欢的是有人现场教插花、能把作品带回房间",
+     "tier": "t0"
+    }
+   ],
+   "plan_sketch": "花店每周三送花材并现场带一节插花课，按月结算。主任负责组织老人和场地，花店老板出花材和教学。花店多了一笔每月稳定流水，活动也不断档。",
+   "difficulty": "medium"
+  },
+  {
+   "id": "S022",
+   "type": "latent",
+   "members": [
+    {
+     "id": "a0423",
+     "role": "发起方（只说冬天没进项）",
+     "brings": "二十年松花江行船经验，熟悉各段江面的水流和冰情",
+     "needs": "未说出：封江四个月没收入，还要养两个伙计、凑儿子彩礼"
+    },
+    {
+     "id": "a0282",
+     "role": "接收方（采冰施工队长）",
+     "brings": "每年十二月起的采冰工程，需要冰面安全员",
+     "needs": "老安全员退休了，要找懂江面冰情的人"
+    }
+   ],
+   "why": "船老板只说「一入冬就没进项了」。施工队长的世界里，采冰最怕的是不懂冰情的人，而熟悉江面暗流的老船工最清楚哪段冰薄。季节正好错开：船老板冬天闲，采冰冬天忙。",
+   "key_facts": [
+    {
+     "agent": "a0423",
+     "fact": "「一入冬就没进项了，船一停就是四个月」",
+     "tier": "t0"
+    },
+    {
+     "agent": "a0423",
+     "fact": "跑了二十年江，知道哪几段江面下面有暗流、结冰最晚",
+     "tier": "t1"
+    },
+    {
+     "agent": "a0282",
+     "fact": "干了十几年的老安全员今年退休，十二月开工前要找一个懂江面冰情的人带新工人",
+     "tier": "t0"
+    }
+   ],
+   "plan_sketch": "船老板冬季到采冰队做安全员，带上两个伙计做采冰工。队长负责工程和工资，船老板负责每天的冰面勘察。船老板一家冬天有收入，采冰队的安全有了着落。",
+   "difficulty": "medium"
+  },
+  {
+   "id": "S024",
+   "type": "latent",
+   "members": [
+    {
+     "id": "a0124",
+     "role": "发起方（只说嗓子哑）",
+     "brings": "戏曲演员的发声样本，愿意配合训练记录",
+     "needs": "未说出：每天直播六小时，声带小结，医生要她休声她不敢停"
+    },
+    {
+     "id": "a0410",
+     "role": "接收方（嗓音康复治疗师）",
+     "brings": "免费的八周职业用嗓者嗓音训练（科研项目）",
+     "needs": "项目缺戏曲演员组的受试者"
+    }
+   ],
+   "why": "演员只说「嗓子这阵子总是哑」。治疗师的科研招募不对外宣传，只在院内；演员的声带小结和不敢停播的经济压力在 t2。治疗师从自己的项目缺口和「戏曲演员转直播」这一层判断出她既需要也合适。",
+   "key_facts": [
+    {
+     "agent": "a0124",
+     "fact": "团里演出少了，她每天在直播间卖黄酒六个小时",
+     "tier": "t1"
+    },
+    {
+     "agent": "a0124",
+     "fact": "喉镜查出声带小结，医生让休声一个月，可直播一停这个月就没收入",
+     "tier": "t2"
+    },
+    {
+     "agent": "a0410",
+     "fact": "她牵头的职业用嗓者嗓音训练研究，免费八周，教师组和主播组都招满了，戏曲演员组还缺 6 个人",
+     "tier": "t1"
+    }
+   ],
+   "plan_sketch": "演员进入戏曲演员组接受八周训练，每周两次，学会在直播里用省力的发声方式而不必完全停播。治疗师补齐样本，演员保住嗓子和收入。",
+   "difficulty": "hard"
+  },
+  {
+   "id": "S040",
+   "type": "relay",
+   "members": [
+    {
+     "id": "a0421",
+     "role": "需求方（伦敦退休教师，父亲遗物里有张古琴）",
+     "brings": "一张裂了漆的老古琴，不想卖",
+     "needs": "弄清这是什么、找人修好让它能再被弹"
+    },
+    {
+     "id": "a0459",
+     "role": "转介方（伦敦中餐馆主厨，叔叔是斫琴师）",
+     "brings": "叔叔：扬州斫琴师四十年，十一月底随雅集团到伦敦",
+     "needs": "无"
+    }
+   ],
+   "why": "教师只发了一张「七根弦、没有品的长木琴」的照片问这是什么，不知道古琴这个词；厨师本人和乐器无关。成立在厨师的 relations：叔叔是修过很多清代老琴的斫琴师，而且十一月底正好来伦敦。跨语言、跨行业，只有厨师的 agent 能从照片描述和叔叔的行程里构成这条关系。",
+   "key_facts": [
+    {
+     "agent": "a0421",
+     "fact": "Posted a photo of 'a long wooden zither with no frets, seven strings and cracked lacquer' from her father's flat, asking what it is",
+     "tier": "t0"
+    },
+    {
+     "agent": "a0421",
+     "fact": "Two auction houses offered consignment, but she told her daughter she'd rather it be played again than sold",
+     "tier": "t1"
+    },
+    {
+     "agent": "a0459",
+     "fact": "朋友圈常转叔叔弹琴、斫琴的视频",
+     "tier": "t0"
+    },
+    {
+     "agent": "a0459",
+     "fact": "叔叔在扬州斫琴四十年，修过不少清代老琴，十一月底随一个雅集团来伦敦待一周",
+     "tier": "t1"
+    }
+   ],
+   "plan_sketch": "厨师在叔叔来伦敦那周安排他上门看琴并当翻译。叔叔判断年代和损伤，能现场处理的弦和雁足当场修，漆面裂带回扬州修好再寄回。教师保住父亲的遗物并让它能弹，叔叔多了一张有来历的老琴可讲。",
+   "difficulty": "medium"
+  },
+  {
+   "id": "S047",
+   "type": "relay",
+   "members": [
+    {
+     "id": "a0370",
+     "role": "需求方（养老院护理主任，失智老人傍晚闹）",
+     "brings": "怀旧照护活动的时间与场地，可付演出车马费",
+     "needs": "未明说：能唱胶东大鼓的真人"
+    },
+    {
+     "id": "a0422",
+     "role": "转介方（干货店老板娘，公公是退休鼓书艺人）",
+     "brings": "公公：八十岁退休胶东大鼓艺人，能唱整本，觉得没人听了",
+     "needs": "未明说：让公公重新有人听"
+    }
+   ],
+   "why": "护理主任只在工作记录里写一位失智老人傍晚吵着回家、听到收音机里的大鼓才安静，没说要找艺人。干货店老板娘公开层只是卖干货的，公公的事只在 t1。价值在两边各自的世界里同时被构成：老人需要活的鼓书，公公需要听众。",
+   "key_facts": [
+    {
+     "agent": "a0370",
+     "fact": "院里在做失智老人的怀旧照护，每周办一次",
+     "tier": "t0"
+    },
+    {
+     "agent": "a0370",
+     "fact": "有位九十岁的失智老人每天傍晚闹着要回家，只有收音机里放胶东大鼓时才安静下来",
+     "tier": "t1"
+    },
+    {
+     "agent": "a0422",
+     "fact": "公公是退休的胶东大鼓艺人，八十岁了还能唱整本《呼家将》，最近总叹气说「没人听了」",
+     "tier": "t1"
+    }
+   ],
+   "plan_sketch": "老板娘陪公公每周三傍晚去养老院唱一个小时鼓书，院里出车马费。护理主任把这段排进失智老人的日落时段照护。老人傍晚的躁动有了安抚，公公重新有了固定听众。",
+   "difficulty": "hard"
+  },
+  {
+   "id": "S063",
+   "type": "pair",
+   "members": [
+    {
+     "id": "a0475",
+     "role": "互补方-柏林乌德琴制琴师",
+     "brings": "乌德琴制作与修复手艺",
+     "needs": "冬季订单淡季的活和新客户"
+    },
+    {
+     "id": "a0406",
+     "role": "互补方-柏林难民儿童音乐治疗师",
+     "brings": "非营利机构的乐器采购预算",
+     "needs": "适合儿童手型的小号乌德琴和乐器维修"
+    }
+   ],
+   "why": "治疗师的孩子们熟悉乌德琴的声音，但捐来的琴都是成人尺寸、多半坏了；制琴师就在同城，冬天活少。需求与能力在公开层就能连上。",
+   "key_facts": [
+    {
+     "agent": "a0475",
+     "fact": "Makes and repairs ouds in a Wedding courtyard workshop; winter is his slow season",
+     "tier": "t0"
+    },
+    {
+     "agent": "a0406",
+     "fact": "Several kids in her group recognise the oud from home; the two donated ouds are adult-sized and one has a cracked soundboard",
+     "tier": "t0"
+    },
+    {
+     "agent": "a0406",
+     "fact": "Her nonprofit has €3,000 left in this year's instrument budget",
+     "tier": "t1"
+    }
+   ],
+   "plan_sketch": "制琴师修好两把旧琴，冬季做四把儿童尺寸乌德琴，按成本价加工时计费。每月来机构一次做乐器保养，孩子们可以看他修琴。",
+   "difficulty": "easy"
+  },
+  {
+   "id": "S065",
+   "type": "pair",
+   "members": [
+    {
+     "id": "a0408",
+     "role": "互补方-上海劳动法律师",
+     "brings": "劳动仲裁代理经验、每年一个公益名额",
+     "needs": "把公益名额用在真正需要的小微雇主或劳动者身上"
+    },
+    {
+     "id": "a0033",
+     "role": "互补方-上海手工皮具工坊老板",
+     "brings": "一个需要专业帮助的劳动仲裁案件",
+     "needs": "未说出：不知道自己能不能打赢，以为只能认赔"
+    }
+   ],
+   "why": "工坊老板以为自己必输，打算直接赔两万了事；律师看过这类案子，知道六人以下作坊的加班认定和证据要求不同。老板的处境在 t1，她以为「被员工告」这件事说出去丢人。律师的公益名额今年还没用。",
+   "key_facts": [
+    {
+     "agent": "a0408",
+     "fact": "今年给自己留的一个公益代理名额还没用，想给真正打不起官司的人",
+     "tier": "t1"
+    },
+    {
+     "agent": "a0408",
+     "fact": "常说小作坊的劳动纠纷多半输在没有书面排班记录，而不是真的违法",
+     "tier": "t0"
+    },
+    {
+     "agent": "a0033",
+     "fact": "前员工申请劳动仲裁要两年加班费，她觉得冤，但想着请律师太贵，准备直接赔两万",
+     "tier": "t1"
+    },
+    {
+     "agent": "a0033",
+     "fact": "工坊一直用微信群接龙排班，聊天记录都还在",
+     "tier": "t1"
+    }
+   ],
+   "plan_sketch": "律师用公益名额代理仲裁，先帮老板把微信排班记录整理成证据。案子结束后律师给工坊做一次用工合规梳理，老板付象征性费用。老板少赔冤枉钱，律师的公益名额用在了小微雇主身上。",
+   "difficulty": "medium"
+  },
+  {
+   "id": "S066",
+   "type": "pair",
+   "members": [
+    {
+     "id": "a0408",
+     "role": "互补方-上海劳动法律师",
+     "brings": "劳动法专业知识和真实案例",
+     "needs": "接触更多年轻劳动者，让他们早点知道自己的权利"
+    },
+    {
+     "id": "a0308",
+     "role": "互补方-职场播客主理人",
+     "brings": "两万听众的职场播客",
+     "needs": "节目需要真正懂劳动法的嘉宾"
+    }
+   ],
+   "why": "播客想做劳动权益专题缺专业嘉宾，律师想触达年轻劳动者。双方的方向在公开层就写着。",
+   "key_facts": [
+    {
+     "agent": "a0408",
+     "fact": "在律所公众号写过「年轻人离职前该保存的五样东西」，阅读量不高，觉得公众号触达不到年轻人",
+     "tier": "t0"
+    },
+    {
+     "agent": "a0308",
+     "fact": "听众留言最多的问题是试用期被辞、加班不给钱，他想做一期系列，但怕自己讲错",
+     "tier": "t0"
+    }
+   ],
+   "plan_sketch": "律师做四期劳动权益系列嘉宾，每期回答听众的真实提问，律所提供免费的初次咨询通道。播客涨专业度，律师触达年轻劳动者。",
+   "difficulty": "easy"
+  },
+  {
+   "id": "S072",
+   "type": "pair",
+   "members": [
+    {
+     "id": "a0243",
+     "role": "互补方-泉州提线木偶演员",
+     "brings": "提线木偶操作技艺、剧团的旧木偶",
+     "needs": "未说出：演出越来越少，想找到这门手艺新的用处"
+    },
+    {
+     "id": "a0419",
+     "role": "互补方-特殊教育学校自闭症班老师",
+     "brings": "八个孩子的教学时段与观察记录",
+     "needs": "未说出：让孩子愿意练手部精细动作的办法"
+    }
+   ],
+   "why": "老师的观察记录写着孩子们会盯着悬挂摇动的东西看很久，却不愿意握笔练精细动作；她自己没想到木偶。演员只在私下说演出少、心里空。提线需要手指分别控制、节奏稳定，正是这群孩子要练的。双方的关键事实都在 t1/t2，从公开职业看不出任何关联。",
+   "key_facts": [
+    {
+     "agent": "a0243",
+     "fact": "剧团今年演出场次掉了一半，他跟老婆说想做点别的，又不知道这手艺还能干嘛",
+     "tier": "t2"
+    },
+    {
+     "agent": "a0243",
+     "fact": "家里有几个练功用的简化木偶，只有四根线，小孩也能拉",
+     "tier": "t1"
+    },
+    {
+     "agent": "a0419",
+     "fact": "观察记录：几个孩子会盯着风铃和吊着摇晃的东西看很久，但一让握笔就把手缩回去",
+     "tier": "t1"
+    },
+    {
+     "agent": "a0419",
+     "fact": "学校这学期在找「能让孩子动手又不排斥」的课外项目，有一点课时费",
+     "tier": "t1"
+    }
+   ],
+   "plan_sketch": "演员每周去学校带一节四线木偶课，先让孩子看、再让孩子拉一根线，老师负责记录手部动作和情绪反应。一学期后两人整理成一套可复制的课程，申请市里的特教项目经费。演员的手艺有了新用处，老师多了一个有效的训练工具。",
+   "difficulty": "hard"
+  },
+  {
+   "id": "S080",
+   "type": "pair",
+   "members": [
+    {
+     "id": "a0409",
+     "role": "互补方-字库公司字体设计师",
+     "brings": "字体设计与数字化能力、字库公司发行渠道",
+     "needs": "闽南老招牌手写体的真迹与笔法"
+    },
+    {
+     "id": "a0138",
+     "role": "互补方-泉州写招牌的老师傅",
+     "brings": "几十年写招牌的笔法与存稿",
+     "needs": "未说出：觉得自己的字会跟着这条街一起消失"
+    }
+   ],
+   "why": "设计师私下想做一套方言招牌体，收集的都是照片，缺真正写招牌的人。老师傅在泉州还在写匾，他的存稿和担忧在 t1/t2。设计师那边构成了价值：他的笔法可以变成一套正式发行的字体。",
+   "key_facts": [
+    {
+     "agent": "a0409",
+     "fact": "字库公司字体设计师，私下在拍街头老招牌",
+     "tier": "t0"
+    },
+    {
+     "agent": "a0409",
+     "fact": "收集了三百多张南方街头老招牌照片，想做一套「招牌体」，但照片里的字残缺，缺写字的人示范笔法",
+     "tier": "t1"
+    },
+    {
+     "agent": "a0138",
+     "fact": "在中山路开裱画店，偶尔还给老店写匾",
+     "tier": "t0"
+    },
+    {
+     "agent": "a0138",
+     "fact": "柜子里存着年轻时给半条街写招牌的底稿，孙子说这些字「土」",
+     "tier": "t2"
+    }
+   ],
+   "plan_sketch": "设计师去泉州住两周，请老师傅按字表写两千个常用字，拍摄运笔过程。字库公司发行这套字体，老师傅拿署名和版税分成。",
+   "difficulty": "medium"
+  },
+  {
+   "id": "S085",
+   "type": "pair",
+   "members": [
+    {
+     "id": "a0420",
+     "role": "互补方-罕见病患儿母亲",
+     "brings": "女儿两年的详细发作记录",
+     "needs": "未说出：一个确诊和治疗方向"
+    },
+    {
+     "id": "a0261",
+     "role": "互补方-遗传学研究员",
+     "brings": "离子通道基因研究与免费基因检测名额",
+     "needs": "符合表型的患者入组"
+    }
+   ],
+   "why": "母亲从没提过「罕见病」，只在私密笔记里记女儿的发作时间和症状。研究员公开说在找某种离子通道突变的患者，描述的是表型。只有研究员读到母亲的发作表格，才能认出这个症状组合：洗热水澡后诱发、持续几分钟的肢体无力。母亲的关键事实全在 t2。",
+   "key_facts": [
+    {
+     "agent": "a0420",
+     "fact": "表格记了女儿两年来三十多次发作：多在洗热水澡或发烧后，一侧手脚无力几分钟到半小时，查了三家医院脑电图都正常",
+     "tier": "t2"
+    },
+    {
+     "agent": "a0420",
+     "fact": "跟老公说过：再查不出来，她怕自己先垮了",
+     "tier": "t2"
+    },
+    {
+     "agent": "a0261",
+     "fact": "在建一种离子通道基因突变的患者队列，典型表型是温度变化诱发的发作性偏瘫，课题提供免费全外显子测序",
+     "tier": "t0"
+    }
+   ],
+   "plan_sketch": "研究员看过发作记录后安排免费基因检测，结果出来后转介到合作的儿童神经科。确诊则入组队列，母亲的记录作为病例数据。母亲得到确诊方向，研究员多一例入组。",
+   "difficulty": "hard"
+  },
+  {
+   "id": "S086",
+   "type": "pair",
+   "members": [
+    {
+     "id": "a0418",
+     "role": "互补方-钢琴调律师",
+     "brings": "在德国琴厂学过的管风琴修复技术",
+     "needs": "真正能做的管风琴修复项目"
+    },
+    {
+     "id": "a0320",
+     "role": "互补方-鼓浪屿老教堂执事",
+     "brings": "一台二十年代的管风琴和教友的募捐",
+     "needs": "能修这台管风琴的人"
+    }
+   ],
+   "why": "教堂找了几次只找到调钢琴的人，不知道本地有人懂管风琴；调律师的公开身份是钢琴调律，他学过管风琴修复的经历在 t1。",
+   "key_facts": [
+    {
+     "agent": "a0418",
+     "fact": "厦门的钢琴调律师，在德国一家琴厂学过三年",
+     "tier": "t0"
+    },
+    {
+     "agent": "a0418",
+     "fact": "在德国琴厂三年，有一年专门跟师傅修教堂管风琴，回国后一直没机会碰",
+     "tier": "t1"
+    },
+    {
+     "agent": "a0320",
+     "fact": "教堂那台二十年代的管风琴哑了好几年，教友募了八万块想修，问过的人都说只会调钢琴",
+     "tier": "t0"
+    }
+   ],
+   "plan_sketch": "调律师先免费检查出修复方案和报价，分三期修复风箱、音栓和音管，每期付款。修好后每年保养一次，教堂复活节恢复管风琴伴奏。",
+   "difficulty": "medium"
+  },
+  {
+   "id": "S095",
+   "type": "chain",
+   "members": [
+    {
+     "id": "a0350",
+     "role": "链1-出口玫瑰农场（残次花）",
+     "brings": "每周约两吨出口不合格但农残记录完整的玫瑰",
+     "needs": "残次花有个去处"
+    },
+    {
+     "id": "a0415",
+     "role": "链2-玫瑰水蒸馏（提取）",
+     "brings": "200 升蒸馏器和蒸馏技术",
+     "needs": "农残可追溯的花瓣原料"
+    },
+    {
+     "id": "a0246",
+     "role": "链3-手工皂合作社（做皂）",
+     "brings": "14 位女工和半空的晾皂房",
+     "needs": "替代进口精油的本地香料"
+    },
+    {
+     "id": "a0399",
+     "role": "链4-精品营地采购（客房用品）",
+     "brings": "六家营地的客房洗护采购量",
+     "needs": "能通过可持续审计的本地洗护用品"
+    }
+   ],
+   "why": "关键在农场残次花自带出口级农残记录，这是蒸馏师最缺而自己不知道的东西；农场直接给皂社没用，皂社不会蒸馏；蒸馏师的玫瑰水直接卖营地也不成，营地要的是成品洗护；皂社的皂只在周末市集卖，进不了营地的采购清单。四段串起来，农场的废弃物才变成营地客房里一块有可追溯故事的皂。",
+   "key_facts": [
+    {
+     "agent": "a0350",
+     "fact": "Every week about two tonnes of export-rejected stems (short, bent, bruised petals) go into the compost pit; the Dutch buyer won't take them",
+     "tier": "t0"
+    },
+    {
+     "agent": "a0350",
+     "fact": "Every bed on the farm has spray and residue records kept for EU compliance, including the rejects",
+     "tier": "t1"
+    },
+    {
+     "agent": "a0415",
+     "fact": "My still runs two days a week at most because market roses are sprayed with who-knows-what and I won't put that in rose water",
+     "tier": "t0"
+    },
+    {
+     "agent": "a0246",
+     "fact": "Our soaps sell fine at weekend markets but the imported lavender oil eats most of the margin, and the curing room is half empty",
+     "tier": "t0"
+    },
+    {
+     "agent": "a0399",
+     "fact": "Our sustainability audit flagged that all guest-room soaps are imported from South Africa; guests keep asking for something local",
+     "tier": "t0"
+    },
+    {
+     "agent": "a0399",
+     "fact": "The cost memo says amenities can't go up more than 10% per room night",
+     "tier": "t1"
+    }
+   ],
+   "plan_sketch": "农场每周把残次花和对应的农残记录送到 Ruiru 蒸馏点；蒸馏师把产能开到每周五天，玫瑰水和蒸馏副产的花渣供给皂社；皂社开发一款玫瑰皂和一款洗手液，按营地规格包装；营地采购签半年试用单，并在客房卡片上讲产地故事。",
+   "difficulty": "medium"
+  },
+  {
+   "id": "S105",
+   "type": "ring",
+   "members": [
+    {
+     "id": "a0402",
+     "role": "环1-退休英国护士（帮织布合作社）",
+     "brings": "给织工做伤口护理和基础急救培训",
+     "needs": "由民宿提供负担得起的长住房间"
+    },
+    {
+     "id": "a0146",
+     "role": "环2-克伦织布合作社（帮民宿）",
+     "brings": "用雨季空闲的织机时间给民宿织窗帘床旗",
+     "needs": "由退休护士教会村里基础伤口护理"
+    },
+    {
+     "id": "a0187",
+     "role": "环3-清迈民宿主（帮退休护士）",
+     "brings": "淡季空着的长住房，按成本价租给护士",
+     "needs": "由合作社织一套手织布用于翻新"
+    }
+   ],
+   "why": "护士能帮合作社，合作社的布对护士没用；合作社能给民宿织布，民宿的房间对远在山区的织工没用；民宿能给护士房间，护士的护理技能对民宿没用。三方语言、身份都不同，两两谈都是一方吃亏，只有成环才平衡。",
+   "key_facts": [
+    {
+     "agent": "a0402",
+     "fact": "Landlord is putting the rent up 40% in December and my UK pension won't stretch that far",
+     "tier": "t2"
+    },
+    {
+     "agent": "a0402",
+     "fact": "Thirty years as a district nurse in Leeds; I miss being useful",
+     "tier": "t0"
+    },
+    {
+     "agent": "a0146",
+     "fact": "Two weavers had infected cuts last season; the nearest clinic is ninety minutes away and nobody in the village knows basic wound care",
+     "tier": "t1"
+    },
+    {
+     "agent": "a0146",
+     "fact": "In the rainy-season months after planting the looms sit mostly idle",
+     "tier": "t0"
+    },
+    {
+     "agent": "a0187",
+     "fact": "民宿在翻新，想用手织布做窗帘和床旗，问到的报价一套四万泰铢，预算不够",
+     "tier": "t0"
+    },
+    {
+     "agent": "a0187",
+     "fact": "淡季有两间长住房一直空着",
+     "tier": "t1"
+    }
+   ],
+   "plan_sketch": "护士每月去 Mae Chaem 两天，给织工和村里妇女做伤口护理与急救培训；合作社在淡季织一批窗帘床旗给民宿，民宿只付材料费；民宿把一间长住房按成本价租给护士一年。民宿主负责三方的中文、泰语沟通和接送。",
+   "difficulty": "medium"
+  },
+  {
+   "id": "S122",
+   "type": "team",
+   "members": [
+    {
+     "id": "a0381",
+     "role": "发起人-宠物医院院长",
+     "brings": "外科与输血能力、医院场地、建血库的意愿",
+     "needs": "稳定的献血犬来源、合规的血液冷藏设备、血型分型能力和献血知情同意书"
+    },
+    {
+     "id": "a0424",
+     "role": "成员-大型犬聚会组织者",
+     "brings": "两百多只健康大型犬的主人群",
+     "needs": "群里狗狗手术时不必再满城找血"
+    },
+    {
+     "id": "a0098",
+     "role": "成员-二手医疗器械商",
+     "brings": "三台医院淘汰的 4°C 血液冷藏箱",
+     "needs": "清掉卖不出去的库存"
+    },
+    {
+     "id": "a0268",
+     "role": "成员-犬血型研究博士后",
+     "brings": "DEA 分型试剂和方法",
+     "needs": "大量不同品种健康犬的血样"
+    },
+    {
+     "id": "a0141",
+     "role": "成员-宠物医疗纠纷律师",
+     "brings": "已写好的宠物献血知情同意书模板和风险条款",
+     "needs": "让这份模板第一次被真正用起来"
+    }
+   ],
+   "why": "本地犬血库需要五块：献血犬、冷藏、分型、医院和法律文书。院长的痛点写在上月两只大狗没救回来的私人记录里；冷藏箱人用医院不能再用，在器械商仓库里吃灰，这件事只在他的库存表和生意焦虑里；博士后的分型课题正缺大量健康犬样本，献血前的分型正好给他数据；律师的同意书模板发在公众号却没人用过。冷藏箱和分型这两块没有公开痕迹，只靠院长的公开信息找不到。",
+   "key_facts": [
+    {
+     "agent": "a0381",
+     "fact": "上个月两只车祸送来的大型犬因为找不到同型血没救回来，她在笔记里写「不能再有第三次」",
+     "tier": "t1"
+    },
+    {
+     "agent": "a0424",
+     "fact": "每周日在西溪带大型犬聚会，群里两百多只金毛拉布拉多",
+     "tier": "t0"
+    },
+    {
+     "agent": "a0424",
+     "fact": "去年群里一只狗手术要输血，全群转发找了一整夜",
+     "tier": "t1"
+    },
+    {
+     "agent": "a0098",
+     "fact": "仓库里有三台医院淘汰的 4°C 血液冷藏箱，按规定不能再卖给人用医院，挂了一年没人问",
+     "tier": "t1"
+    },
+    {
+     "agent": "a0098",
+     "fact": "今年生意很差，女儿学费压着，想把库存尽快变现",
+     "tier": "t2"
+    },
+    {
+     "agent": "a0268",
+     "fact": "课题做犬红细胞抗原 DEA 分型，手上有分型试剂，最缺的是不同品种健康犬的样本",
+     "tier": "t1"
+    },
+    {
+     "agent": "a0141",
+     "fact": "写过一份宠物献血知情同意书模板发在自己公众号，至今没有一家医院用过",
+     "tier": "t0"
+    }
+   ],
+   "plan_sketch": "宠物医院出场地和兽医团队并购入两台冷藏箱；狗聚会组织者在群里招募首批 40 只献血犬，献血犬获得终身免费体检；博士后给每只献血犬做 DEA 分型，数据用于课题；律师把同意书模板改成医院正式版本并做合规审查。三个月内建成一个常备 20 单位的小血库。",
+   "difficulty": "hard"
+  },
+  {
+   "id": "S125",
+   "type": "star",
+   "members": [
+    {
+     "id": "a0260",
+     "role": "中心-闲置厨房的承租人",
+     "brings": "一间带商用平炉、醒发箱、打面机和食品经营许可的厨房",
+     "needs": "分摊每月 4800 元租金，自己不想再走进那间屋子"
+    },
+    {
+     "id": "a0307",
+     "role": "外围-宠物鲜食网店店主",
+     "brings": "每周两天的稳定租用",
+     "needs": "有资质的生产厨房"
+    },
+    {
+     "id": "a0324",
+     "role": "外围-听障裱花师",
+     "brings": "每周三天的使用和日常照看厨房",
+     "needs": "能批量出货的烤箱与操作台"
+    },
+    {
+     "id": "a0175",
+     "role": "外围-初中劳动课教师",
+     "brings": "每月两个下午的租用",
+     "needs": "带学生上烘焙课的地方"
+    },
+    {
+     "id": "a0411",
+     "role": "外围-社区助餐点负责人",
+     "brings": "每周一上午的租用与固定的点心需求",
+     "needs": "给糖尿病老人做无糖点心的烤箱"
+    }
+   ],
+   "why": "厨房的存在只在中心方的 t1/t2 里：那是她离婚时分到、不愿面对的旧店，公开资料里她只是酒店西点主管，看不出手上有一间空厨房。四个外围各自缺一个有资质的烤箱时段，彼此无关。只有中心方读到这些需求时，才会意识到空厨房能按时段拆开分租，既摊掉租金，又不用自己回去。",
+   "key_facts": [
+    {
+     "agent": "a0260",
+     "fact": "去年和前夫合开的烘焙培训教室关了，厨房租约还剩到明年六月，商用平炉、醒发箱、打面机都还在里面，食品经营许可没注销",
+     "tier": "t1"
+    },
+    {
+     "agent": "a0260",
+     "fact": "离婚时这间厨房分给了她，每月 4800 的租金一直自己掏，她跟闺蜜说不想再走进那间屋子",
+     "tier": "t2"
+    },
+    {
+     "agent": "a0307",
+     "fact": "在济南做猫狗鲜食和冻干零食网店",
+     "tier": "t0"
+    },
+    {
+     "agent": "a0307",
+     "fact": "平台要求宠物零食要在有资质的厨房生产，在家里烤被同城同行举报了一次，三个链接被下架",
+     "tier": "t1"
+    },
+    {
+     "agent": "a0324",
+     "fact": "听障，之前在连锁蛋糕店做了七年裱花",
+     "tier": "t0"
+    },
+    {
+     "agent": "a0324",
+     "fact": "店关了以后想自己接定制蛋糕，朋友圈已经有人来问，可家里只有一台小烤箱，一次只能出一个六寸",
+     "tier": "t1"
+    },
+    {
+     "agent": "a0175",
+     "fact": "初中劳动课教师，这学期新课标有烹饪与烘焙单元",
+     "tier": "t0"
+    },
+    {
+     "agent": "a0175",
+     "fact": "学校没有烘焙教室，申请经费要等明年，她想先找个地方每月带一个班去上两节",
+     "tier": "t1"
+    },
+    {
+     "agent": "a0411",
+     "fact": "在历下区一个社区助餐点做负责人，每天供 80 位老人午饭",
+     "tier": "t0"
+    },
+    {
+     "agent": "a0411",
+     "fact": "老人里四成有糖尿病，常问能不能有无糖点心，外面买太贵，助餐点自己没有烤箱",
+     "tier": "t1"
+    }
+   ],
+   "plan_sketch": "厨房按时段分租：宠物鲜食每周两天，裱花师每周三天，劳动课每月两个下午，助餐点每周一上午做无糖点心。各家按时长分摊租金和水电，合计能覆盖 4800 元。钥匙和日常管理交给裱花师，中心方不用再进厨房。",
+   "difficulty": "hard"
+  },
+  {
+   "id": "S134",
+   "type": "m2m",
+   "members": [
+    {
+     "id": "a0405",
+     "role": "甲组-九台大棚菜农",
+     "brings": "番茄、黄瓜、豆角，每天各几十斤",
+     "needs": "固定买家和比菜贩子高的价"
+    },
+    {
+     "id": "a0358",
+     "role": "甲组-双阳散养鸡农户",
+     "brings": "每天两百来个笨鸡蛋",
+     "needs": "风雪天也能卖出去的固定客户"
+    },
+    {
+     "id": "a0313",
+     "role": "甲组-农安返乡农场主",
+     "brings": "鲜食玉米、真空玉米、黏豆包，以及一辆面包车和组织能力",
+     "needs": "冬季批量客户"
+    },
+    {
+     "id": "a0029",
+     "role": "乙组-东北菜馆",
+     "brings": "每天三四十斤菜和几十个鸡蛋的需求",
+     "needs": "「当天地里来的菜」做招牌"
+    },
+    {
+     "id": "a0108",
+     "role": "乙组-轻食沙拉店",
+     "brings": "每天小量但稳定的小番茄、黄瓜和鸡蛋需求",
+     "needs": "品质稳定的货源"
+    },
+    {
+     "id": "a0016",
+     "role": "乙组-民办幼儿园食堂",
+     "brings": "180 个孩子的伙食需求",
+     "needs": "来源可查的本地食材"
+    }
+   ],
+   "why": "任何一家农户只出一个品类，量也小，单个饭店要的是一整篮；任何一家饭店的量都撑不起农户每天专门跑一趟。三家农户凑成一整篮，三家买方凑够一条每天值得跑的配送线，组对组才算得过账。一对一时，农户嫌跑一趟不值，买方嫌品类不全。",
+   "key_facts": [
+    {
+     "agent": "a0405",
+     "fact": "在九台有四个大棚，种番茄、黄瓜、豆角",
+     "tier": "t0"
+    },
+    {
+     "agent": "a0405",
+     "fact": "一个棚一天出不到一百斤，大饭店嫌量小不稳定，只能卖给菜贩子，价钱被压到一块五",
+     "tier": "t1"
+    },
+    {
+     "agent": "a0358",
+     "fact": "在双阳山坡上散养了五百只笨鸡",
+     "tier": "t0"
+    },
+    {
+     "agent": "a0358",
+     "fact": "鸡蛋每天两百来个，自己骑三轮去早市卖，下雨下雪就卖不出去",
+     "tier": "t1"
+    },
+    {
+     "agent": "a0313",
+     "fact": "农大毕业回农安接了家里的地，种鲜食玉米、做黏豆包",
+     "tier": "t0"
+    },
+    {
+     "agent": "a0313",
+     "fact": "玉米上市就那一个月，真空玉米和黏豆包冬天卖得动，但缺固定的批量客户；家里有辆面包车平时闲着",
+     "tier": "t1"
+    },
+    {
+     "agent": "a0029",
+     "fact": "在长春朝阳区开东北菜馆十五年",
+     "tier": "t0"
+    },
+    {
+     "agent": "a0029",
+     "fact": "想主打「当天地里来的菜」做招牌，可一家店一天只用得了三四十斤番茄、几十个鸡蛋，农户都不愿专门为他跑一趟",
+     "tier": "t1"
+    },
+    {
+     "agent": "a0108",
+     "fact": "在长春开轻食沙拉店",
+     "tier": "t0"
+    },
+    {
+     "agent": "a0108",
+     "fact": "要的是小番茄、黄瓜和鸡蛋，量小但每天都要，批发市场的货品质忽好忽坏",
+     "tier": "t1"
+    },
+    {
+     "agent": "a0016",
+     "fact": "在南关区一家民办幼儿园管后勤和食堂",
+     "tier": "t0"
+    },
+    {
+     "agent": "a0016",
+     "fact": "180 个孩子的伙食，家长群一直要求菜要来源可查，冬天的黏豆包和玉米也想用本地的",
+     "tier": "t1"
+    }
+   ],
+   "plan_sketch": "返乡农场主牵头，用自家面包车跑一条每日配送线：早上五点在九台、双阳收菜收蛋，七点前依次送到三家。冬季加供玉米和黏豆包。三家买方按周下单、月结，价格比批发高、比零售低，运费按单量分摊。",
+   "difficulty": "medium"
+  },
+  {
+   "id": "S135",
+   "type": "m2m",
+   "members": [
+    {
+     "id": "a0426",
+     "role": "甲组-退休数学老师",
+     "brings": "每周一次线上数学课",
+     "needs": "有学生可教、重新有精神头"
+    },
+    {
+     "id": "a0395",
+     "role": "甲组-退休英语老师",
+     "brings": "每周一次线上英语课和会议软件经验",
+     "needs": "有成规模的学生"
+    },
+    {
+     "id": "a0414",
+     "role": "甲组-退休音乐老师",
+     "brings": "每周一次线上音乐课和二十把口琴",
+     "needs": "把口琴送给会用的孩子并教会他们"
+    },
+    {
+     "id": "a0157",
+     "role": "乙组-村小校长",
+     "brings": "四十多个学生和教室",
+     "needs": "英语和音乐有人真正来上"
+    },
+    {
+     "id": "a0192",
+     "role": "乙组-村支书",
+     "brings": "留守儿童之家的大屏电视和网络",
+     "needs": "让那台大屏用起来"
+    },
+    {
+     "id": "a0365",
+     "role": "乙组-留守儿童之家志愿者",
+     "brings": "在村里组织孩子，开学后可远程协调",
+     "needs": "开学后有人长期带孩子"
+    }
+   ],
+   "why": "一位老师只能教一科，一个村点的孩子每个年级只有几个，撑不起一门固定课；三位老师合起来覆盖三科，三个点合起来每科有三四十个孩子，才值得每周固定开课。一对一时，老师觉得人太少、村点觉得只有一科不够。",
+   "key_facts": [
+    {
+     "agent": "a0426",
+     "fact": "退休前在济南一所中学教了 35 年数学",
+     "tier": "t0"
+    },
+    {
+     "agent": "a0426",
+     "fact": "老伴走后闲不住，去年给邻居孩子免费补课，孩子中考数学提了三十分，她说那几个月是这几年最有精神的",
+     "tier": "t1"
+    },
+    {
+     "agent": "a0395",
+     "fact": "退休英语老师，住徐州",
+     "tier": "t0"
+    },
+    {
+     "agent": "a0395",
+     "fact": "疫情时上过网课，会用腾讯会议，常说「只要有学生，线上也能教」",
+     "tier": "t1"
+    },
+    {
+     "agent": "a0414",
+     "fact": "退休音乐老师，拉手风琴，在老年大学带合唱",
+     "tier": "t0"
+    },
+    {
+     "agent": "a0414",
+     "fact": "家里收着学校淘汰下来的二十把口琴，一直想送给用得上的孩子，还想教他们吹",
+     "tier": "t1"
+    },
+    {
+     "agent": "a0157",
+     "fact": "在沛县一个村小当校长，全校 46 个学生",
+     "tier": "t0"
+    },
+    {
+     "agent": "a0157",
+     "fact": "学校只有 6 个老师，英语和音乐都是数学老师兼着上，英语课常被挪去做题",
+     "tier": "t1"
+    },
+    {
+     "agent": "a0192",
+     "fact": "沛县另一个村的村支书",
+     "tier": "t0"
+    },
+    {
+     "agent": "a0192",
+     "fact": "村里留守儿童之家有台捐来的大屏电视，网络也通，平时只放动画片，没人来上课",
+     "tier": "t1"
+    },
+    {
+     "agent": "a0365",
+     "fact": "大学放假回丰县老家，在村里留守儿童之家做志愿者",
+     "tier": "t0"
+    },
+    {
+     "agent": "a0365",
+     "fact": "九月开学就要回学校，孩子们周末又没人管了，她想找能长期线上带孩子的人",
+     "tier": "t1"
+    }
+   ],
+   "plan_sketch": "三位老师各管一科，周末用腾讯会议给三个点同时上课：周六上午数学，周六下午英语，周日上午音乐。每个点有一个人负责开机和管纪律，志愿者开学后远程排课。寒暑假老师们去沛县一次，把口琴带过去。",
+   "difficulty": "medium"
+  },
+  {
+   "id": "S138",
+   "type": "m2m",
+   "members": [
+    {
+     "id": "a0413",
+     "role": "甲组-三甲医院康复治疗师",
+     "brings": "跌倒风险评估与训练方案",
+     "needs": "以区立项公益项目的名义到社区工作"
+    },
+    {
+     "id": "a0279",
+     "role": "甲组-太极老师",
+     "brings": "为八十岁以上老人改编的坐式太极和讲义",
+     "needs": "把这套动作教给需要的人"
+    },
+    {
+     "id": "a0149",
+     "role": "甲组-社区体育指导员",
+     "brings": "申报经验和带活动的能力",
+     "needs": "凑齐项目要求的评估、训练、活动三类人员"
+    },
+    {
+     "id": "a0488",
+     "role": "乙组-公办敬老院",
+     "brings": "140 位老人和场地",
+     "needs": "降低跌倒率，应付民政考核"
+    },
+    {
+     "id": "a0096",
+     "role": "乙组-民办养老公寓",
+     "brings": "住户和场地",
+     "needs": "请不起全职康复师，又要给家属交代"
+    },
+    {
+     "id": "a0303",
+     "role": "乙组-日间照料中心",
+     "brings": "每天二十几位老人和下午时段",
+     "needs": "一门没有经费的运动课"
+    }
+   ],
+   "why": "区里的老年防跌倒服务项目要求至少三个服务点，还要有评估、训练、活动三类人员。单个教练资质不全、单个养老机构规模不够，一对一都申报不了。三位教练正好补齐三类人员，三家机构正好凑够服务点，组对组才能拿到项目，机构也就不用自己出钱。",
+   "key_facts": [
+    {
+     "agent": "a0413",
+     "fact": "在北京一家三甲医院康复科做治疗师",
+     "tier": "t0"
+    },
+    {
+     "agent": "a0413",
+     "fact": "科里一直想做社区跌倒预防，可医院不许她在外面接活，除非是区里立项的公益项目",
+     "tier": "t1"
+    },
+    {
+     "agent": "a0279",
+     "fact": "退休结构工程师，在玉渊潭教太极十年",
+     "tier": "t0"
+    },
+    {
+     "agent": "a0279",
+     "fact": "编过一套给八十岁以上老人的坐式太极，自己写了动作讲义",
+     "tier": "t1"
+    },
+    {
+     "agent": "a0149",
+     "fact": "社区社会体育指导员，带一支健身操队",
+     "tier": "t0"
+    },
+    {
+     "agent": "a0149",
+     "fact": "区里今年有老年人防跌倒的服务项目可以申请，要求至少三个服务点、有评估有训练有活动，她一个人凑不齐",
+     "tier": "t1"
+    },
+    {
+     "agent": "a0488",
+     "fact": "昌平一家公办敬老院院长，住着 140 位老人",
+     "tier": "t0"
+    },
+    {
+     "agent": "a0488",
+     "fact": "今年上半年院里摔了 9 个，其中两个骨折，民政检查被扣了分",
+     "tier": "t1"
+    },
+    {
+     "agent": "a0096",
+     "fact": "在海淀一家民办养老公寓做运营",
+     "tier": "t0"
+    },
+    {
+     "agent": "a0096",
+     "fact": "家属续签合同时最常问有没有康复活动，院里请不起全职康复师",
+     "tier": "t1"
+    },
+    {
+     "agent": "a0303",
+     "fact": "社区日间照料中心社工，每天来二十几位老人",
+     "tier": "t0"
+    },
+    {
+     "agent": "a0303",
+     "fact": "下午老人们只打牌看电视，她想排一门运动课，但没有经费",
+     "tier": "t1"
+    }
+   ],
+   "plan_sketch": "体育指导员牵头申报。康复师做入住老人的跌倒风险评估和训练方案，太极老师教坐式太极，指导员带活动课，三家机构每周各两次课。项目经费覆盖三位教练的课时费，以半年跌倒次数作为考核。",
+   "difficulty": "medium"
+  },
+  {
+   "id": "S161",
+   "type": "hard_neg",
+   "members": [
+    {
+     "id": "a0421",
+     "role": "看似相关方-想修父亲遗物古琴的伦敦退休教师",
+     "brings": "an inherited seven-string zither",
+     "needs": "someone to make it playable again"
+    },
+    {
+     "id": "a0475",
+     "role": "看似相关方-柏林乌德琴制琴师",
+     "brings": "fretless string-instrument repair",
+     "needs": "winter work"
+    }
+   ],
+   "why": "【能力错位】伦敦的退休教师想让父亲留下的「无品、七弦、漆面开裂的长琴」重新被弹，柏林的乌德琴师专修无品弦乐器、冬天正闲，「fretless」「strings」「repair」「played again」都对得上。但那是一张古琴，要大漆修补和丝弦，乌德琴师只做拼板琴身、羊肠和尼龙弦，从不接漆器活；老琴也不宜跨国寄送。能修它的是懂古琴的斫琴师。",
+   "key_facts": [
+    {
+     "agent": "a0421",
+     "fact": "Posted a photo of 'a long wooden zither with no frets, seven strings and cracked lacquer' and asked who repairs fretless instruments",
+     "tier": "t0"
+    },
+    {
+     "agent": "a0421",
+     "fact": "A dealer said the finish looks like 'very old Chinese lacquer over cloth'; she does not want it shipped anywhere",
+     "tier": "t1"
+    },
+    {
+     "agent": "a0475",
+     "fact": "Only works on bent-rib lute bodies with gut and nylon strings; turns down lacquer work and anything strung with silk",
+     "tier": "t1"
+    }
+   ],
+   "plan_sketch": "",
+   "difficulty": "hard"
+  },
+  {
+   "id": "S171",
+   "type": "hard_neg",
+   "members": [
+    {
+     "id": "a0418",
+     "role": "看似相关方-修过管风琴的调律师",
+     "brings": "在德国修教堂管风琴的经验",
+     "needs": "能动手的管风琴项目"
+    },
+    {
+     "id": "a0178",
+     "role": "看似相关方-音乐厅管风琴管理者",
+     "brings": "一台老管风琴",
+     "needs": "（已解决）"
+    }
+   ],
+   "why": "【已解决】调律师在德国修过教堂管风琴，一直想再碰管风琴，同城的音乐厅就有一台老管风琴，看上去是他回到老本行的机会。但这台琴前年已由德国原厂修复，维保独家归原厂，合同规定其他人开琴即保修作废，音乐厅不会也不能请本地调律师动它。",
+   "key_facts": [
+    {
+     "agent": "a0418",
+     "fact": "在德国琴厂时专门跟师傅修过一年教堂管风琴，回国后一直没机会碰",
+     "tier": "t1"
+    },
+    {
+     "agent": "a0178",
+     "fact": "鼓浪屿音乐厅有一台百年老管风琴，常年用于演出",
+     "tier": "t0"
+    },
+    {
+     "agent": "a0178",
+     "fact": "维保合同写明除原厂技师外任何人不得开琴调整，否则保修作废",
+     "tier": "t1"
+    }
+   ],
+   "plan_sketch": "",
+   "difficulty": "medium"
+  },
+  {
+   "id": "S182",
+   "type": "hard_neg",
+   "members": [
+    {
+     "id": "a0496",
+     "role": "看似相关方-冬天没游客的牵马合作社",
+     "brings": "四十匹马",
+     "needs": "冬季收入"
+    },
+    {
+     "id": "a0423",
+     "role": "看似相关方-封江后没进项的游船老板",
+     "brings": "游船和两个伙计",
+     "needs": "冬季收入"
+    }
+   ],
+   "why": "【方向相同】一个是拉市海的牵马合作社，一个是松花江的游船老板，都做旅游、都在冬天断收入、都要养马或养伙计，「淡季」「冬天没进项」的说法一模一样。两人都是想给闲置运力找冬季生意的一方，相隔几千公里，也没有对方需要的东西。",
+   "key_facts": [
+    {
+     "agent": "a0496",
+     "fact": "十一月以后几乎没游客，冬天四十匹马的草料钱一个月要两万多",
+     "tier": "t1"
+    },
+    {
+     "agent": "a0423",
+     "fact": "一入冬就没进项了，船一停就是四个月，还得给两个伙计想办法",
+     "tier": "t0"
+    },
+    {
+     "agent": "a0496",
+     "fact": "冬天四十匹马只能圈在村里吃草料，合作社也想找冬季的活",
+     "tier": "t0"
+    }
+   ],
+   "plan_sketch": "",
+   "difficulty": "medium"
+  }
+ ]
+}

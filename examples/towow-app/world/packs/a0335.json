@@ -1,0 +1,208 @@
+{
+ "display": "Teaching assistant at a Levenshulme primary school, single mum, studying part-time with the Open University. I bake, I'm good with kids, and I rarely ask for help.",
+ "lang": "en",
+ "signals": [
+  {
+   "text": "I'm running a cake sale for Theo's under-10s football team today, and we're still about £170 short of new kit.",
+   "tier": "t0",
+   "src": "calendar"
+  },
+  {
+   "text": "I have a 2,500-word Open University essay on inclusive practice due 14 October. I have a plan and about 900 words, and I need to turn the plan into an argument.",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "text": "I'm behind on my degree and juggling it around school hours and Theo's evenings, so I'm short on time and sleep.",
+   "tier": "t0",
+   "src": "message"
+  },
+  {
+   "text": "I promised thirty cupcakes for the school fair and my lemon drizzle trial batch burnt on the bottom.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "The boiler in our flat has been broken for seven weeks and we're boiling kettles for baths.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "The landlord's agent stopped replying after my third polite email and has read my chasing message without answering.",
+   "tier": "t1",
+   "src": "message"
+  },
+  {
+   "text": "There is black mould spreading on the wall in Theo's bedroom. I've moved his bed and run a dehumidifier, but it's still there.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "I'd like to find out what my options are for getting repairs done quietly, without turning it into a fight with the agent.",
+   "tier": "t1",
+   "src": "message"
+  },
+  {
+   "text": "Theo's inhaler use has roughly doubled since last month, and his cough is worse at night when he's at home.",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "text": "I'm scared that pushing harder on the damp will get us a no-fault eviction notice, and I can't afford to move.",
+   "tier": "t2",
+   "src": "message"
+  },
+  {
+   "text": "Money is very tight: £1,150 a month take-home against £780 rent, and even a £7.40 launderette trip counts.",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "text": "I feel I can't ask anyone for help because it would look like I'm failing.",
+   "tier": "t2",
+   "src": "bio"
+  }
+ ],
+ "offers": [
+  {
+   "text": "Six years as a Key Stage 2 teaching assistant: classroom support, behaviour, reading help, and day-to-day work with children with additional needs.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "Paediatric first aid certificate and a calm head in a crisis with children.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "Sourdough and celebration cakes. I bake birthday cakes for the class and can do fundraising bakes.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "Knowledge of the local parents' WhatsApp groups and the church hall volunteers in Levenshulme, which helps with getting word out about a community event.",
+   "tier": "t0",
+   "src": "relation"
+  },
+  {
+   "text": "Experience fitting part-time Open University study around a job and parenting, including how to plan an essay and use tutor feedback. I can pass on what works.",
+   "tier": "t0",
+   "src": "bio"
+  },
+  {
+   "text": "A parent's view of a school and a football team, so I can give practical help to other parents running small fundraisers.",
+   "tier": "t0",
+   "src": "project"
+  }
+ ],
+ "catchers": [
+  {
+   "hypo": "I work for a tenants' advice service in Greater Manchester. I help renters get broken boilers and damp fixed, and I can explain how to do it without putting the tenancy at risk. Would a free chat help you?",
+   "can": "Claire could use a confidential conversation about her rights and a safe way to get repairs done quietly. She would pass on the facts: seven weeks without a boiler, an unresponsive agent, and mould.",
+   "confirm": "Can you give advice on housing repairs and protection from retaliatory eviction that works for someone who must not risk losing their tenancy?",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "hypo": "I'm an environmental health officer. If a tenant tells me about damp and mould affecting a child's health, I can explain what the council can do and how a complaint stays confidential. Would that be useful?",
+   "can": "Claire could learn what the council can do about the damp and what a complaint would mean for her. Her mum, who wanted her to phone the council, could support her through it.",
+   "confirm": "Can you explain, before any complaint is made, how a council complaint about damp works and what protections the tenant has?",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "hypo": "My child's school keeps telling me they have 'additional needs' and I don't understand what support to ask for. I'd love to talk to someone calm who has worked in classrooms.",
+   "can": "Claire can explain in plain language what inclusive support in a primary classroom looks like and what to ask the school for. This also feeds directly into her own OU essay.",
+   "confirm": "Is your child at a primary school in England and do you want practical, non-legal guidance on what support to ask for?",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "hypo": "We're a youth football team run by volunteers and need to raise money for kit. Do you know how to run a simple bake sale or find local sponsors?",
+   "can": "Claire can share what she has learned running a cake sale for Theo's team and put the word out through local parents' groups.",
+   "confirm": "Are you a grassroots children's team looking to raise a few hundred pounds, rather than a large club?",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "hypo": "I run a small café or bakery in south Manchester and I'd sponsor a children's football team with a few hundred pounds towards kit in exchange for a mention on the shirts.",
+   "can": "Claire can pass this to Theo's coach and the team's parents, which could close the £170 gap on the kit.",
+   "confirm": "Are you a local business happy to sponsor an under-10s football team in Manchester?",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "hypo": "I'm an Open University tutor or study-skills coach, and I can read an essay plan and show how to build an argument from it. Want a second pair of eyes?",
+   "can": "Claire could share her 900 words and plan and get feedback on developing the argument before the 14 October deadline.",
+   "confirm": "Can you help someone move from a good essay plan to a developed argument in education studies, within about ten days?",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "hypo": "I'm a parent in Levenshulme with a child who has asthma and a flat with damp. Have you been through this, and what helped?",
+   "can": "Claire can talk with another parent who understands living with a child's asthma and damp, and share local contacts. She would reach out through her mum, who is a good listener.",
+   "confirm": "Have you personally handled a child's asthma alongside a damp or mould problem in rented housing?",
+   "tier": "t2",
+   "src": "relation"
+  },
+  {
+   "hypo": "I'm worried about a friend who has been served notice after reporting a repair problem. Do you know anyone who understands how that works?",
+   "can": "Claire can pass this to Janine, a colleague whose friend went through exactly this, so they can compare what they've learned and find proper support.",
+   "confirm": "Is your friend's situation a no-fault eviction notice following a repair complaint in England?",
+   "tier": "t2",
+   "src": "relation"
+  },
+  {
+   "hypo": "I'm a parent who feels I'm failing because I can't ask for help. Does anyone out there get this and just want to talk?",
+   "can": "Claire can be a listener for someone who feels they have to cope alone, and she understands how hard asking for help can be.",
+   "confirm": "Do you mainly want someone to listen, rather than professional counselling?",
+   "tier": "t0",
+   "src": "bio"
+  }
+ ],
+ "forbids": [
+  {
+   "text": "I can't do anything that risks my tenancy, including anything that could be read as a hostile act towards the landlord or agent.",
+   "tier": "t1"
+  },
+  {
+   "text": "I don't want public naming or shaming of the landlord's agent or a confrontation; I prefer to solve things quietly.",
+   "tier": "t1"
+  },
+  {
+   "text": "I can only take on things outside school hours and Theo's evenings, and not much then.",
+   "tier": "t0"
+  },
+  {
+   "text": "I can't pay for services at the moment, because money is very tight.",
+   "tier": "t2"
+  },
+  {
+   "text": "I won't share Theo's health details or photos of his room with anyone who isn't directly helping.",
+   "tier": "t2"
+  }
+ ],
+ "projects": [
+  {
+   "name": "Theo's football kit fundraiser",
+   "text": "New shirts and shorts for the under-10s squad, about £320 in total, with a cake sale at the school fair. We're roughly £170 short and need a bit more help.",
+   "roles_needed": [
+    "local business sponsor",
+    "baker or cake donor",
+    "parent volunteer to help promote it",
+    "football club or league contact"
+   ],
+   "tier": "t0"
+  }
+ ],
+ "policy": {
+  "t1": "When someone shows a real sign they can help, I'll share that our boiler has been broken for seven weeks, the agent isn't replying, and there is mould in Theo's bedroom.",
+  "t2": "Once trust is established and the person's role is clear, I'll share Theo's increased inhaler use, my fear of an eviction notice, and the money situation.",
+  "never": "Nothing about Theo's father, ever."
+ },
+ "id": "a0335",
+ "host_agent": "CUE",
+ "owner_display": "Claire Whitfield",
+ "city": "Manchester",
+ "world_sha256": "78135da43312e3b7812cdac4181d1883423fd34054334709d5c7b714dcb590e4"
+}

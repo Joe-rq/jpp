@@ -1,0 +1,221 @@
+{
+ "display": "Retired NHS midwife in Manchester: thirty-one years of practice, nine of them training student midwives.",
+ "lang": "en",
+ "signals": [
+  {
+   "text": "I'm looking for a useful way to spend my afternoons after retiring in June, and I don't want it to be just a hobby.",
+   "tier": "t0",
+   "src": "bio"
+  },
+  {
+   "text": "I'd like to teach student midwives or newly qualified midwives again, in small groups, on practical skills and reflective sessions.",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "text": "I offered the university free tutoring in summer. It stalled in volunteer HR clearance and I can't see a way through it.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "I'm unsure whether a rejected offer should be left alone or followed up on. I'd like to find another route to the same kind of work.",
+   "tier": "t1",
+   "src": "message"
+  },
+  {
+   "text": "I have a box of teaching materials I wrote myself and a sixteen-item list of what I would teach. I don't know who should have them.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "I'm going to Valencia in mid-November and want to get through a restaurant dinner in Spanish. Right now I can only say 'una mesa para dos' and 'la cuenta, por favor'.",
+   "tier": "t0",
+   "src": "calendar"
+  },
+  {
+   "text": "I'm sorting thirty years of paperwork and found old student reflective journals I never returned. I'd like to find a good way to give them back or let them go.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "My allotment has far more courgettes than I can use. I'd like to find people who will cook them and swap recipes.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "I'm trying to keep up with new music so I can enjoy my son's band gigs properly.",
+   "tier": "t0",
+   "src": "calendar"
+  },
+  {
+   "text": "Younger midwives have told me they wish they could still talk through bad days with someone like me.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "I miss the ward more than I say to anyone.",
+   "tier": "t2",
+   "src": "bio"
+  },
+  {
+   "text": "I feel foolish for having offered and not been taken up on it.",
+   "tier": "t2",
+   "src": "message"
+  }
+ ],
+ "offers": [
+  {
+   "text": "Thirty-one years of clinical midwifery in community and labour ward settings.",
+   "tier": "t0",
+   "src": "bio"
+  },
+  {
+   "text": "Nine years as a practice educator: supervising students, writing competency assessments, and debriefing difficult births.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "Self-written teaching materials: case discussions, a laminated shoulder dystocia card, and a postnatal home-visit checklist.",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "text": "Reflective sessions that help clinicians process hard births, such as how to leave a room when you're about to cry, or how to say 'I don't know yet'.",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "text": "A plain-spoken talk through the early weeks and basics of birth for first-time parents, with no jargon and no rushing.",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "text": "Free afternoons, usually from 4 pm on weekdays outside school terms, plus weekends.",
+   "tier": "t1",
+   "src": "calendar"
+  },
+  {
+   "text": "Friendly contacts among midwifery lecturers and a wide network of former colleagues and students in Manchester.",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "text": "An allotment plot in Chorlton with surplus vegetables, and the time to show a beginner how to cook them.",
+   "tier": "t0",
+   "src": "skill"
+  }
+ ],
+ "catchers": [
+  {
+   "hypo": "I run a midwifery or health-sciences programme with no budget. Would a retired practice educator tutor our students unpaid in small groups if we can sort out the clearance?",
+   "can": "She can run practical skills and reflective sessions for small student groups and bring her own materials, provided supervision boundaries are clear. She has already offered this to one university.",
+   "confirm": "Can your institution complete volunteer clearance within a few months, with a named supervisor?",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "hypo": "I'm a midwife in my first years of practice. Would you be willing to talk through hard shifts with me now and then?",
+   "can": "She can offer informal peer reflection and debriefing as a conversation. It is not clinical supervision.",
+   "confirm": "Are you looking for an occasional reflective conversation, rather than formal supervision or counselling?",
+   "tier": "t1",
+   "src": "message"
+  },
+  {
+   "hypo": "I'm expecting my first baby and everything online scares me. Could someone experienced explain what to expect without the jargon?",
+   "can": "She can talk through birth, early days and when to ask for help, in plain language. She will not give personal medical advice.",
+   "confirm": "Are you after general explanation and reassurance, rather than a diagnosis or advice about a specific medical problem?",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "hypo": "We're a midwifery training team or NHS trust looking for the practical teaching tools and checklists experienced educators have made themselves.",
+   "can": "She can share and adapt her case discussions, shoulder dystocia card and home-visit checklist, and talk through how she uses them.",
+   "confirm": "Would you use the materials for teaching or training, with credit to the author?",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "hypo": "I've just retired from a job I loved and I don't know who I am in the afternoons. Has anyone been through this?",
+   "can": "She can talk honestly about leaving a vocation and finding smaller ways to be useful.",
+   "confirm": "Would an unhurried conversation with someone who is going through something similar help?",
+   "tier": "t0",
+   "src": "bio"
+  },
+  {
+   "hypo": "I'm organising a community garden or allotment project and want volunteers who will share produce and cooking know-how.",
+   "can": "She can contribute surplus allotment vegetables, recipes and neighbourly help in Chorlton.",
+   "confirm": "Is the project within Greater Manchester and fine with an occasional volunteer?",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "hypo": "I'm a university lecturer who wants a clinically experienced practice educator to join our teaching, but our HR process is stuck.",
+   "can": "Through Dr. Patel, a lecturer she knows and who has said she wants her involved, she can look for other formats, such as one-off guest sessions or a workshop that avoids long-term volunteer clearance.",
+   "confirm": "Could you host a one-off or short-run guest session without a long-term volunteer agreement?",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "hypo": "I run a pub, community venue or local event and need a live band that can play a mix of familiar and new songs.",
+   "can": "Through her son Rob, who plays guitar in a pub band, she can pass the enquiry to the band.",
+   "confirm": "Is this a paid or unpaid local gig where a pub band would fit?",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "hypo": "I'm learning Spanish for a trip and want a patient beginner to practise with.",
+   "can": "She is a beginner heading to Valencia in November and would happily swap simple restaurant and travel phrases.",
+   "confirm": "Are you also at beginner level and happy to practise informally?",
+   "tier": "t0",
+   "src": "calendar"
+  }
+ ],
+ "forbids": [
+  {
+   "text": "Won't take payment for teaching or mentoring.",
+   "tier": "t0"
+  },
+  {
+   "text": "Won't work without clear boundaries about who supervises her and what she is responsible for.",
+   "tier": "t0"
+  },
+  {
+   "text": "Can't commit to weekdays before 4 pm outside school terms.",
+   "tier": "t0"
+  },
+  {
+   "text": "Doesn't want travel that takes more than a day.",
+   "tier": "t0"
+  },
+  {
+   "text": "Won't give personal medical advice or act as a clinician of record now that she has retired.",
+   "tier": "t0"
+  },
+  {
+   "text": "Won't share anything about her family's health or finances.",
+   "tier": "t0"
+  }
+ ],
+ "projects": [
+  {
+   "name": "Retired-midwife tutoring for student midwives",
+   "text": "Small-group practical skills and reflective sessions for student midwives, two afternoons a week, unpaid, with clear supervision boundaries.",
+   "roles_needed": [
+    "a lecturer or programme lead who can host",
+    "someone in HR or placement administration who can clear volunteer status",
+    "a named clinical supervisor"
+   ],
+   "tier": "t1"
+  }
+ ],
+ "policy": {
+  "t1": "When there is a real prospect of collaboration, I'll share what I offered the university and why it stalled, the kind of teaching I enjoy, my free afternoons and my teaching materials.",
+  "t2": "Once I trust the other person and know who they are, I'll share that I miss the ward and that I felt foolish about the failed offer.",
+  "never": "Details of my family members' health or pregnancies, and family finances."
+ },
+ "id": "a0318",
+ "host_agent": "ChatGPT",
+ "owner_display": "Maureen Hale",
+ "city": "Manchester",
+ "world_sha256": "6ce4066de494b48c7b50e29f0bceb57b30efca353ce524577337dcbe26187d42"
+}

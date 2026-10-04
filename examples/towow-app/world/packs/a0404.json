@@ -1,0 +1,198 @@
+{
+ "display": "Muay Thai coach at a Bangkok gym (Sukhumvit Soi 26), former Lumpinee fighter, teaching mostly foreign beginners.",
+ "lang": "en",
+ "signals": [
+  {
+   "text": "More Chinese students are joining every week and I can't say much to them beyond 'again' and 'good'.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "I need a Chinese version of the class sheet and timetable. Right now it's all in English.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "I only have English and Thai versions of our waiver, and I need a Chinese one for the new students.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "Students send us voice messages and WeChat messages in Chinese that nobody at the gym can read. I replied 'Ok, welcome' without knowing what the message said.",
+   "tier": "t1",
+   "src": "message"
+  },
+  {
+   "text": "I'm reorganising the timetable: 7am adult fitness, noon beginner class, evening pad work.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "The gym is mostly full on weekends and nearly empty on weekday afternoons. I'd like to fill those hours.",
+   "tier": "t1",
+   "src": "calendar"
+  },
+  {
+   "text": "I have eight classes a week and my body is tired. I'd like to share the teaching load.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "A new student wants to 'become strong like in the movies'. I'd like a good way to set expectations for people like him.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "I'm slowly saving to build a house on my family's land in Buriram. It's a long plan, about five more years.",
+   "tier": "t2",
+   "src": "project"
+  },
+  {
+   "text": "My son starts first grade in November and I'm sorting out school uniform, shoes and books on a tight budget.",
+   "tier": "t2",
+   "src": "relation"
+  }
+ ],
+ "offers": [
+  {
+   "text": "Beginner-friendly Muay Thai classes, fitness classes and private pad work in Bangkok, taught in simple English.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "Around sixty fights, including Lumpinee, before I retired at 28. I can teach real technique and fight culture.",
+   "tier": "t0",
+   "src": "bio"
+  },
+  {
+   "text": "I can build a fighter's conditioning from scratch, including running, strength and pad work plans.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "First class free for friends of current students, and a welcoming 7am class.",
+   "tier": "t0",
+   "src": "message"
+  },
+  {
+   "text": "A small gym with about forty regular students and spare capacity on weekday afternoons. It could host workshops, private groups, or content shoots.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "An Instagram account with 12k followers, mostly foreigners. I could feature a partner's product or service in a fair swap.",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "text": "A front desk run by Khun Noi that handles bookings in English, and three trainers who can take groups.",
+   "tier": "t1",
+   "src": "project"
+  }
+ ],
+ "catchers": [
+  {
+   "hypo": "Hi, I'm a Chinese-speaking student in Bangkok. I'd love to translate your gym's class sheet and waiver into Chinese and answer WeChat messages, and I'd train in exchange.",
+   "can": "Trade free or discounted classes for translation, and have Khun Noi coordinate bookings through that person.",
+   "confirm": "Are you able to read and write Simplified Chinese and speak English well enough to talk with the front desk?",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "hypo": "I'm a Chinese tourist visiting Bangkok for two weeks and want to try a beginner Muay Thai class. Can you teach someone with no English?",
+   "can": "Book them into the noon beginner class, with Khun Noi handling the booking and me demonstrating techniques.",
+   "confirm": "Is this a complete beginner who is fine learning mainly by watching and copying?",
+   "tier": "t0",
+   "src": "bio"
+  },
+  {
+   "hypo": "I run a small translation and localisation service. I could make Chinese materials for gyms and studios aimed at foreign customers.",
+   "can": "Brief them on the timetable, class sheet and waiver, and test the output with our Chinese students.",
+   "confirm": "Can you produce short, plain-language Chinese text for a fitness setting, not only formal documents?",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "hypo": "I'm a travel or fitness creator planning a Muay Thai experience in Bangkok. I'd like to book a group session and film it.",
+   "can": "Use the quiet weekday afternoons for a private group class, and feature it on our Instagram.",
+   "confirm": "Would your group be 10 people or fewer, and happy to come on a weekday afternoon?",
+   "tier": "t1",
+   "src": "calendar"
+  },
+  {
+   "hypo": "I'm a trainer looking for part-time coaching work and I speak Mandarin. Do you need cover for classes?",
+   "can": "Talk with Khun Noi and the other trainers about taking the evening pad-work or beginner classes, and about fair pay.",
+   "confirm": "Do you have experience coaching Muay Thai or boxing, and can you work evenings and weekends?",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "hypo": "I run a sports physio clinic in Bangkok. Fighters and trainers often have shoulder problems, and I'd like to set up a referral with local gyms.",
+   "can": "Share the clinic with our students and trainers, and send injured students to them.",
+   "confirm": "Is the clinic near Sukhumvit and used to treating combat-sport injuries?",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "hypo": "I'm a parent in Bangkok with a child starting first grade. I have spare school uniforms and books to pass on.",
+   "can": "Through Khun Noi and the gym community, share with families who need school items.",
+   "confirm": "Are the items in good condition and suitable for a child about six years old?",
+   "tier": "t2",
+   "src": "relation"
+  }
+ ],
+ "forbids": [
+  {
+   "text": "I won't raise prices for beginners.",
+   "tier": "t0"
+  },
+  {
+   "text": "I can't take unpaid weeks because the gym rent is fixed.",
+   "tier": "t1"
+  },
+  {
+   "text": "I'm not good at writing English, so I do much better speaking and calling.",
+   "tier": "t0"
+  },
+  {
+   "text": "I can't do overhead pad work for the next ten days.",
+   "tier": "t1"
+  },
+  {
+   "text": "I won't take on work that stops me being at the gym for scheduled classes.",
+   "tier": "t1"
+  }
+ ],
+ "projects": [
+  {
+   "name": "Chinese-friendly gym",
+   "text": "Make the gym easy for Chinese-speaking students to join: translated timetable and waiver, a way to answer WeChat enquiries, and someone to help with first-day communication.",
+   "roles_needed": [
+    "Chinese-English translator",
+    "Chinese-speaking assistant for front desk or WeChat",
+    "Designer for bilingual class sheets"
+   ],
+   "tier": "t1"
+  },
+  {
+   "name": "Weekday afternoon programme",
+   "text": "Fill the quiet weekday afternoon hours with private group classes, workshops or visiting-creator sessions.",
+   "roles_needed": [
+    "Group organiser or tour partner",
+    "Content creator",
+    "Part-time assistant coach"
+   ],
+   "tier": "t1"
+  }
+ ],
+ "policy": {
+  "t1": "When there's a real sign of collaboration, I'll share the class timetable, the student mix, and what the gym needs to run smoothly.",
+  "t2": "Once trust is built and I know who you are, I'll talk about money plans, injuries and family situation.",
+  "never": "Medical records, and the full detail of my savings and rent arrears."
+ },
+ "id": "a0404",
+ "host_agent": "Dot",
+ "owner_display": "Somchai 'Chai' Prasert",
+ "city": "Bangkok",
+ "world_sha256": "6442b221198400d752c589f762869b54c42496ff8e9e4db953e475e9658b14ee"
+}

@@ -1,0 +1,207 @@
+{
+ "display": "Webtoon background assistant in Seoul. I ink city streets, interiors and crowds in Clip Studio, and I go to indie gigs in Hongdae.",
+ "lang": "en",
+ "signals": [
+  {
+   "text": "I'd like to find a few Hongdae indie gigs and the people who go to them, and I'm happy to go with someone.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "I want to get better at English. I read comics in English with a dictionary, and I start an online conversation class on Oct 20.",
+   "tier": "t1",
+   "src": "calendar"
+  },
+  {
+   "text": "I want to read my favorite Japanese comics in the original instead of waiting for fan translations.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "My own 8-page short has stalled at half-finished pencils. Thumbnails are done, and I keep putting it off until after the next chapter.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "My weeks run on a Thursday delivery deadline, so weekends and evenings are mostly gone.",
+   "tier": "t1",
+   "src": "calendar"
+  },
+  {
+   "text": "I now see every building as a grid of vanishing points, and I'd like to compare reference-photo and perspective habits with other artists.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "I say yes to extra work too fast and then pay for it with my body. I'd like to learn how other freelancers set limits.",
+   "tier": "t2",
+   "src": "message"
+  },
+  {
+   "text": "My hands and wrists are overworked from long inking days. I want a more sustainable way to do this job for the next ten years.",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "text": "Money is tight and rent depends on piece-rate pages. I'd like extra income that is less hard on my hands.",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "text": "I feel lonely working as a freelancer in the studio and don't have real colleagues. I'd like peers I can talk to about the work.",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "text": "I'm anxious about whether I can keep drawing for a living into my 30s.",
+   "tier": "t2",
+   "src": "note"
+  }
+ ],
+ "offers": [
+  {
+   "text": "I ink dense city backgrounds, interiors and crowds for webtoons in Clip Studio Paint. When I'm well, I do about 6 pages of busy street scenes a week.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I have my own library of perspective grids and 3D room assets for Clip Studio, and I can lay out perspective for other artists.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I have a portfolio of 24 background boards and 8 short comics.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I can explain how to set up one-, two- and three-point perspective grids for comic backgrounds, in a short session or a written walkthrough.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I take reference photos of Seoul buildings, streets and riverside scenes, and can share them or shoot specific locations.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "I know how a webtoon studio's freelance pool works: weekly deadlines, per-page chapter workflow, and how backgrounds are handed to a lead artist.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "I know the Hongdae and Sangsu indie gig scene and can suggest venues, bands and where to eat afterward.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "I can offer Korean-language help, such as talking through Seoul life, in exchange for English conversation practice.",
+   "tier": "t1",
+   "src": "bio"
+  }
+ ],
+ "catchers": [
+  {
+   "hypo": "Hi, I'm writing and directing an indie comic or visual novel set in a city, and I need a background artist for a few scenes. Can you take on a small paid job?",
+   "can": "Take small paid background commissions, though my capacity is limited. Deliver inked streets and interiors from my own perspective grids and 3D room assets.",
+   "confirm": "Is this a paid job with a clear page count and deadline, and not a long unpaid collaboration?",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "hypo": "Hi, our small band plays Hongdae shows and we'd like an illustrator for a gig poster or cover art with a city-night feel.",
+   "can": "Draw a night-street or interior-style poster illustration and bring my experience of the Hongdae gig scene.",
+   "confirm": "Do you need a single illustrated poster or cover with a fixed fee and a few weeks of lead time, and not a long ongoing design contract?",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "hypo": "Hi, I'm a Korean learner or native English speaker looking for a language partner who reads comics and shows with subtitles.",
+   "can": "Do regular English and Korean exchange, and read comics in English together.",
+   "confirm": "Are you after a regular, low-pressure exchange of about an hour a week, and not intensive paid tutoring?",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "hypo": "Hi, I'm a writer, colorist or letterer, and I'd like to help finish a short comic about a night convenience store worker, trading help for credit.",
+   "can": "Share my thumbnails and half-finished pencils, then co-finish the short with the right partner.",
+   "confirm": "Are you able to help with a short of about 8 pages, with credit or a small fee, and can you work around a weekly deadline schedule?",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "hypo": "Hi, I run a bakery or café and need illustrated interiors, menu art or packaging, and I know someone in Seoul who might help.",
+   "can": "Through my roommate Mina, who works at a bakery, connect shops that need illustration, then draw interiors or menu art myself.",
+   "confirm": "Is this a small commission for a real shop in Seoul, with a fixed brief and fee?",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "hypo": "Hi, I'm putting together a team for a webtoon and need a background assistant who can match a lead artist's line quality.",
+   "can": "Introduce them to my lead artist, if she is open to it, or take the work myself if the schedule fits.",
+   "confirm": "Is the work per-page paid and on a regular weekly delivery cycle, and not a fixed-salary full-time job?",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "hypo": "Hi, I work with illustrators and comic artists on healthy working habits for hands and wrists. I'm offering a session or a routine for people who draw long hours.",
+   "can": "Try an ergonomic routine and learn how others keep drawing for decades, then share what works with my lead artist and colleagues.",
+   "confirm": "Is your offer aimed at artists who draw long hours, available online or in Seoul, and affordable for a freelancer?",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "hypo": "Hi, I'm a freelance artist who has set boundaries with studios on extra work and deadlines. Want to compare notes?",
+   "can": "Compare experiences, and practice saying no or negotiating pages and deadlines.",
+   "confirm": "Are you a working freelance comic or illustration artist who has negotiated workload with a studio?",
+   "tier": "t2",
+   "src": "message"
+  }
+ ],
+ "forbids": [
+  {
+   "text": "I can't take on large unpaid projects, and I don't do free spec work beyond a small sample.",
+   "tier": "t0"
+  },
+  {
+   "text": "I can't commit to weekend work or tight deadlines during chapter weeks.",
+   "tier": "t1"
+  },
+  {
+   "text": "I can't take extended unpaid leave from my contract work.",
+   "tier": "t1"
+  },
+  {
+   "text": "I'm not willing to relocate away from Seoul.",
+   "tier": "t0"
+  },
+  {
+   "text": "I won't take on more pages than I can finish while looking after my hands.",
+   "tier": "t2"
+  }
+ ],
+ "projects": [
+  {
+   "name": "Night convenience store short",
+   "text": "An 8-page quiet comic about a girl who works at a night convenience store in Mapo. Thumbnails are done and pencils are half done.",
+   "roles_needed": [
+    "story editor",
+    "colorist or toner",
+    "letterer",
+    "Korean-English translator",
+    "feedback reader"
+   ],
+   "tier": "t1"
+  }
+ ],
+ "policy": {
+  "t1": "Deadline routines, wanting to improve my English, interest in indie gigs, my own short comic and who could help with it, and my background and perspective offers.",
+  "t2": "Hand and wrist strain in general terms, money pressure, loneliness at work, and anxiety about my long-term career.",
+  "never": "Medical details, contract amounts, and family conflicts."
+ },
+ "id": "a0482",
+ "host_agent": "Gemini",
+ "owner_display": "Ji-woo Han",
+ "city": "Seoul",
+ "world_sha256": "e73d7e96a0c620f3595da35a8e9fab2132a59fb63dea817d3cc5e74e0615d72f"
+}

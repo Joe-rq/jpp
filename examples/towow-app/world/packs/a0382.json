@@ -1,0 +1,223 @@
+{
+ "display": "Nurse in Kuala Lumpur; my family has worked the Selayang wholesale market for three generations.",
+ "lang": "en",
+ "signals": [
+  {
+   "text": "I work nights on a medical ward and I'm very tired. I need real leave, but I can't see who would cover my shifts.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "My son is fifteen, wants to study engineering in Taiwan, and we will start looking at school lists and scholarships next month.",
+   "tier": "t1",
+   "src": "message"
+  },
+  {
+   "text": "I want to hear from someone who has been through the Taiwan university route as a Malaysian student or parent: fees, scholarships, dorms, and when to start.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "I'm thinking about visiting Taipei in March and bringing my son to see campuses.",
+   "tier": "t1",
+   "src": "message"
+  },
+  {
+   "text": "My mother is seventy and has type 2 diabetes. I'd like practical ways to help her eat well without making her give up kuih completely.",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "text": "A cousin of mine runs a fruit-import stall at Selayang market. Chinese navel oranges reach him through two middlemen, so his margin is nearly gone.",
+   "tier": "t1",
+   "src": "message"
+  },
+  {
+   "text": "The temple food bank I volunteer at now serves about forty families a week, up from thirty-five, and the families have asked for fresh vegetables.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "My son is good at maths and asks questions I can't answer. I'd welcome a patient maths or engineering mentor for a quiet fifteen-year-old.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "I bake kaya puffs and pineapple tarts from my grandmother's recipe, but my small home oven runs hot and I'm not sure how to adjust.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "I'm saving every month for my son's overseas university costs and I know it isn't enough yet. I'm looking for scholarships or cheaper routes.",
+   "tier": "t2",
+   "src": "project"
+  },
+  {
+   "text": "Some of the elderly patients I look after can't read messages from family abroad because of poor eyesight or language, and that matters a lot to them.",
+   "tier": "t0",
+   "src": "note"
+  }
+ ],
+ "offers": [
+  {
+   "text": "I'm a registered nurse with twelve years on medical and surgical wards. I can explain hospital care, diabetes basics and care routines in plain language.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I speak English, Malay, Cantonese and Mandarin, and I read both simplified and traditional Chinese. I can help with reading or translating letters and messages, and with talking to older relatives.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "Through uncles and cousins I know people in the Selayang wholesale market: vegetables, fruit and durian traders.",
+   "tier": "t0",
+   "src": "relation"
+  },
+  {
+   "text": "I know the Malaysian public hospital system from the inside, including how to navigate clinics, appointments and long-term care for elderly relatives.",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "text": "I have my grandmother's kaya puff and pineapple tart recipes and can bake in small batches.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I volunteer on Sunday mornings at a temple food bank and can help connect food donors or suppliers to it.",
+   "tier": "t0",
+   "src": "relation"
+  },
+  {
+   "text": "I have experience teaching nursing and explaining health topics to learners and families.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I can introduce a trusted trader to my uncle or cousins at Selayang. The introduction is only a first step, and any deal is theirs to decide.",
+   "tier": "t1",
+   "src": "relation"
+  }
+ ],
+ "catchers": [
+  {
+   "hypo": "I run an orchard or packing house in China that exports Chinese navel oranges. I'm looking for a reliable small importer in Kuala Lumpur and don't want to sell through layers of agents.",
+   "can": "I can introduce my cousin, who runs a fruit-import stall at Selayang market and currently buys through two middlemen. I would only make the introduction, and they would negotiate directly.",
+   "confirm": "Can you ship directly to Port Klang, with fixed per-carton quotes and a willingness to work with a small stall rather than a large chain?",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "hypo": "I'm a Malaysian student or parent who went through the Taiwan university application route. I'm happy to share what worked on fees, scholarships and dormitories.",
+   "can": "I'd gladly listen and ask questions for my son, who is fifteen and wants to study engineering in Taiwan, and I could share back what I learn with other parents.",
+   "confirm": "Did you apply to Taiwanese universities from Malaysia yourself, or help your own child do it, within the last five years?",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "hypo": "I run a small charity or food-aid programme and have surplus vegetables, rice or cooking oil. I want to give it to families who really need it.",
+   "can": "I can connect you to my temple food bank, which serves about forty families a week and has asked for vegetables. I can also ask my uncle at the market about supply.",
+   "confirm": "Is the donation regular or one-off, and can it be delivered to Selayang or Kuala Lumpur on a weekday?",
+   "tier": "t0",
+   "src": "relation"
+  },
+  {
+   "hypo": "My elderly parent in Malaysia has type 2 diabetes and I live abroad. I don't know how to help with their appointments and diet from far away.",
+   "can": "I can share my approach to a food diary, check-up routines and talking to the clinic. I've been doing this for my own mother for years. I can't give medical advice for a particular person.",
+   "confirm": "Are you looking for practical routines and caregiver experience, and not for a diagnosis or prescription?",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "hypo": "My grandmother in Kuala Lumpur only reads Chinese and her eyesight is failing. I'm abroad and want someone to help her read and answer family messages.",
+   "can": "I can help with reading and replying in Cantonese or Mandarin, simplified or traditional, or point to someone nearby who can.",
+   "confirm": "Does the person need help in Cantonese, Mandarin or both, and is it occasional help with messages and not daily care?",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "hypo": "I teach engineering or maths and want to mentor a bright teenager who is thinking of studying in Taiwan.",
+   "can": "My son Jun Wei is fifteen, quiet and good at maths, and wants to study engineering. I would pass on your message and arrange a short call with his involvement.",
+   "confirm": "Are you offering mentoring for a teenager that is free or low cost and comfortable for a shy student, and not a paid tutoring centre?",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "hypo": "I'm a nurse in Malaysia who is exhausted from night shifts. I'm looking for another nurse to swap or cover shifts so I can take leave.",
+   "can": "I'm in the same situation and can talk through how colleagues cover shifts and handle burnout. I can't change hospital rosters.",
+   "confirm": "Are you looking for a peer to talk with, and not a formal staffing agency or replacement hire?",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "hypo": "I'm a home baker who wants to swap recipes and tips on small ovens, or I'd like to buy traditional Malaysian Chinese pastries for an event.",
+   "can": "I can swap tips on kaya puffs and pineapple tarts and talk about oven temperature problems. I bake small batches and give most of them away, so I'm not set up for larger orders.",
+   "confirm": "Is this a recipe or tips exchange, or a small event order of a few dozen pieces?",
+   "tier": "t0",
+   "src": "skill"
+  }
+ ],
+ "forbids": [
+  {
+   "text": "I will never share patient information from my work.",
+   "tier": "t0"
+  },
+  {
+   "text": "I can't take more than two days of leave at a time.",
+   "tier": "t0"
+  },
+  {
+   "text": "I work nights, so mornings are for sleep and I can't take calls or meetings then.",
+   "tier": "t0"
+  },
+  {
+   "text": "I won't use my son's tuition savings for anything else.",
+   "tier": "t1"
+  },
+  {
+   "text": "I don't push business at family gatherings, and I only make introductions when both sides want them.",
+   "tier": "t0"
+  },
+  {
+   "text": "I'm not a doctor and can't diagnose, prescribe or give medical advice for a particular person.",
+   "tier": "t0"
+  },
+  {
+   "text": "I won't invest or put in my own money into other people's ventures.",
+   "tier": "t1"
+  }
+ ],
+ "projects": [
+  {
+   "name": "Son's Taiwan university plan",
+   "text": "Planning an engineering degree in Taiwan for my fifteen-year-old son: school lists, scholarships, costs, dormitory and a possible March campus visit.",
+   "roles_needed": [
+    "Malaysian student or parent with Taiwan university experience",
+    "scholarship adviser",
+    "engineering or maths mentor for a teenager"
+   ],
+   "tier": "t1"
+  },
+  {
+   "name": "Temple food bank fresh vegetable supply",
+   "text": "Families at the Sunday temple food bank have asked for vegetables. We serve about forty families a week and need a steady, low-cost supply.",
+   "roles_needed": [
+    "vegetable supplier or wholesaler",
+    "volunteer driver",
+    "donor"
+   ],
+   "tier": "t0"
+  }
+ ],
+ "policy": {
+  "t1": "When there is a real sign of a fit, I'm willing to share my cousin's fruit-stall situation (supply chain and margin concerns), my son's Taiwan study plan and my mother's diabetes care routine.",
+  "t2": "When a fit is likely and I know who you are, I'm willing to share family tensions and details of my savings plan for my son.",
+  "never": "I never share hospital patient information or anything about my husband's departure."
+ },
+ "id": "a0382",
+ "host_agent": "ChatGPT",
+ "owner_display": "Lim Siew Ling",
+ "city": "Kuala Lumpur",
+ "world_sha256": "a942fb589730612d881911539383922db8943a1f20ab2697c00d7a4e6c14ecc0"
+}

@@ -1,0 +1,252 @@
+{
+ "display": "Jordanian trader in Yiwu for twelve years. I source household goods for buyers in Amman, Dubai, Muscat and Kuwait. I work in Arabic and English.",
+ "lang": "en",
+ "signals": [
+  {
+   "text": "I'm looking for reliable factories for stackable food containers and folding drying racks, around Taizhou and Cixi, for a Ramadan 2027 container.",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "text": "Resin prices keep jumping, so I'm thinking of giving buyers very short quote validity, around ten days. I'd like to hear how others handle this.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "I'm tired of the same fight after every damaged container: the forwarder blames the factory, the factory blames the port. I want a cleaner way to settle responsibility.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "My ten-year-old son speaks Chinese easily but his writing is falling behind, and I can't tell what is wrong with his compositions. I'm looking for someone who can sit with him one-on-one.",
+   "tier": "t1",
+   "src": "message"
+  },
+  {
+   "text": "Tutoring centres here charge about 200 yuan an hour and use worksheets. My son gets bored with those in five minutes, so I want something more lively.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "I'm worried my son is drifting away from both Arabic reading and Chinese school, and I'd like him to keep a foot in each.",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "text": "I'm planning a family trip to Amman from about 28 Nov to 10 Dec for my father's 70th birthday, and I haven't decided how to handle school for my son.",
+   "tier": "t1",
+   "src": "calendar"
+  },
+  {
+   "text": "A box of unsold Eid lanterns from 2023 sits in my sample room. I'd like to find Arabic-speaking diaspora buyers online.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "My Muscat hotel linen enquiry has gone quiet, so I'm not chasing it. I'd welcome a better route into Omani hotel buyers.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "I can't visit factories between 15 Nov and 15 Dec, so I need someone I trust to inspect shipments during that window.",
+   "tier": "t1",
+   "src": "calendar"
+  },
+  {
+   "text": "A good part of my savings is tied up in unsold stock, and my margin on Ramadan orders is thin. I want a faster way to move old inventory.",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "text": "My knee is bad but I keep playing weekend football. I'd like to meet more people in Yiwu for a Saturday-morning game.",
+   "tier": "t0",
+   "src": "note"
+  }
+ ],
+ "offers": [
+  {
+   "text": "Sourcing of household goods in Yiwu, Ningbo and Shenzhen: kitchen racks, plastic storage, small hardware and seasonal items, for Gulf and Jordan buyers.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "A notebook of about 140 factory contacts sorted by product, built over twelve years. I know which Futian booths will actually ship what they photograph.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "Factory quality inspection: carton drop tests, colour matching and inner-pack counts, with photo reports.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "Native Arabic, fluent English and market-level spoken Mandarin. I can translate or check Arabic and English wording on packaging, carton marks and quotes.",
+   "tier": "t0",
+   "src": "bio"
+  },
+  {
+   "text": "Three freight forwarders on the routes to Aqaba and Jebel Ali, and experience with customs paperwork for Jordan and the UAE.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "A rented desk and a sample room of about 20 square metres in Futian, where I can host buyers or receive samples.",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "text": "Buyer relationships in Amman, Dubai, Muscat and Kuwait. I can introduce a suitable Chinese factory to the right wholesaler.",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "text": "Practical knowledge of Ramadan and Eid product seasons: when buyers must order and when goods must ship.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "I can walk Arab visitors through Yiwu and Futian markets, including how to negotiate and what to watch for.",
+   "tier": "t0",
+   "src": "bio"
+  }
+ ],
+ "catchers": [
+  {
+   "hypo": "I teach Chinese and I'm looking for a child of foreign parents in Yiwu who needs help with writing. I read compositions with them one-on-one and don't use worksheets.",
+   "can": "He has a ten-year-old son in Yiwu whose Chinese writing is behind, and he is looking for exactly this kind of person. He can introduce the family and arrange a trial session.",
+   "confirm": "Do you work in person in Yiwu, one-on-one, reading and discussing a child's own compositions with a ten-year-old rather than relying on worksheets?",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "hypo": "I'm a university student or young teacher who can draw and tell stories. I'd like to practise Chinese reading with a boy who likes monsters and football.",
+   "can": "His son likes drawing monsters and football. A tutor who builds reading around those interests could work, and he can introduce the family.",
+   "confirm": "Can you plan lessons around a child's own interests, such as drawing and sport, instead of a fixed textbook drill?",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "hypo": "I run a wholesale shop in Kuwait and want 40-foot container quantities of folding racks and food containers from China. I don't know any factories or how to check quality.",
+   "can": "He can shortlist factories, arrange samples, inspect production on site, and book the freight forwarder.",
+   "confirm": "Are you buying household goods in container quantities, and do you need someone on the ground in China to handle factory choice and inspection?",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "hypo": "I make plastic storage products in Zhejiang and want to sell to Jordan and the Gulf, but I can't communicate with Arab buyers.",
+   "can": "He can introduce the factory to his Amman wholesaler contacts and advise on grey versus black colourways, carton marks and customs-friendly labelling.",
+   "confirm": "Do you manufacture household goods yourselves, not trade them, and can you ship in 40-foot container volumes?",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "hypo": "I'm a small brand owner in Dubai and I need someone to check my goods at the factory before they ship. I have no time to fly to China.",
+   "can": "He can inspect on site with carton drop tests, colour matching and counting, then send a photo report, outside his 15 Nov to 15 Dec travel block.",
+   "confirm": "Is your product a household or hardware item produced in the Yiwu, Ningbo or Taizhou area, with an inspection needed before 15 Nov or after 15 Dec?",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "hypo": "I'm a Chinese teacher planning to visit Jordan and would like to meet local school teachers in Irbid to exchange ideas.",
+   "can": "Through his father, a retired schoolteacher in Irbid, he may be able to arrange an introduction. This only happens at high trust, after the person's identity is clear.",
+   "confirm": "Are you visiting Irbid or northern Jordan in person, and do you want to meet with school teachers rather than seek paid work?",
+   "tier": "t2",
+   "src": "relation"
+  },
+  {
+   "hypo": "I sell Arabic-themed decoration online to Muslim customers abroad. I'd like to buy small lots of Eid lanterns and Ramadan decorations.",
+   "can": "He has a leftover box of Eid lanterns and knows suppliers who make them. He can sell the box or source a fresh batch.",
+   "confirm": "Do you sell to Arabic-speaking buyers, and are you interested in small lots of Ramadan or Eid decorations?",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "hypo": "I make bed linens and towels in China and want to approach hotel groups in Oman. I have no contacts there.",
+   "can": "He has quoted a hotel group in Muscat and knows how Gulf hotel buyers evaluate samples and pricing. He can compare notes and possibly point to a route in.",
+   "confirm": "Do you produce hotel-grade towels and bedsheets and have a price list ready to quote in USD for a Gulf buyer?",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "hypo": "My container arrived with damaged cartons and my forwarder and factory are blaming each other. How do I document this and claim?",
+   "can": "He has done this many times: photo evidence, loading checks, and a claim of about 5 percent on the next order. He can share the method.",
+   "confirm": "Was damage found when the container was opened at destination, with photos taken, and is your dispute about who loaded or handled the goods badly?",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "hypo": "We're a foreign expat football team in Yiwu and need an outfield player on Saturday mornings. Beginners and older players are welcome.",
+   "can": "He plays in a local league on Saturday mornings at 8am and can join or swap pitch information.",
+   "confirm": "Are your games on Saturday morning in Yiwu, and is a 43-year-old with a bad knee welcome?",
+   "tier": "t0",
+   "src": "calendar"
+  }
+ ],
+ "forbids": [
+  {
+   "text": "I don't pay through the personal accounts of factory owners.",
+   "tier": "t0"
+  },
+  {
+   "text": "I can't travel for factory visits between 15 Nov and 15 Dec.",
+   "tier": "t0"
+  },
+  {
+   "text": "I need a quiet half hour at midday for prayer, so I don't schedule meetings then.",
+   "tier": "t0"
+  },
+  {
+   "text": "I prefer evening meetings, because fasting days on Mondays and Thursdays leave me low on energy after 4 pm.",
+   "tier": "t0"
+  },
+  {
+   "text": "I can't read or write formal Chinese, such as legal contracts. I need a translator for those.",
+   "tier": "t0"
+  },
+  {
+   "text": "I'm not taking on new product categories outside household goods and hardware before the Ramadan order is confirmed.",
+   "tier": "t1"
+  }
+ ],
+ "projects": [
+  {
+   "name": "Ramadan 2027 kitchenware line",
+   "text": "A 40-foot container of stackable food containers and folding drying racks for Amman wholesalers. Orders must be confirmed by mid-November and shipped by mid-December.",
+   "roles_needed": [
+    "Taizhou or Cixi plastics and wire-rack factory",
+    "resin or raw-material price adviser",
+    "third-party inspector for the 15 Nov to 15 Dec window",
+    "freight forwarder to Aqaba"
+   ],
+   "tier": "t1"
+  },
+  {
+   "name": "Chinese writing help for a ten-year-old",
+   "text": "A one-on-one reading and composition coach for a child born in Yiwu to Arabic-speaking parents, using his own interests instead of worksheets.",
+   "roles_needed": [
+    "Chinese tutor in Yiwu",
+    "Arabic-Chinese bilingual reading mentor"
+   ],
+   "tier": "t1"
+  },
+  {
+   "name": "Eid lantern leftover sale",
+   "text": "Sell a box of unsold 2023 Eid lanterns to Arabic-speaking diaspora buyers online, for example through Taobao or similar channels.",
+   "roles_needed": [
+    "online seller with Arabic-speaking audience",
+    "product photographer"
+   ],
+   "tier": "t0"
+  }
+ ],
+ "policy": {
+  "t1": "When there is a real sign of cooperation, I'll share my family situation in general terms, including that my son is ten and has trouble with Chinese writing, plus my rough order seasons and schedule.",
+  "t2": "When confidence is high and the other side's identity is clear, I'll share specific business margins, stock levels and money worries.",
+  "never": "Passport or visa details, bank accounts, family disputes."
+ },
+ "id": "a0001",
+ "host_agent": "ChatGPT",
+ "owner_display": "Khaled Haddad",
+ "city": "义乌",
+ "world_sha256": "97330c1e081a8829e5a8635ce46963203a104366849a142a5a4486a6bfd29df4"
+}

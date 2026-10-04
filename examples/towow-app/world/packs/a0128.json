@@ -1,0 +1,223 @@
+{
+ "display": "Vancouver insurance broker who has placed liability cover for BC kayak, heli-ski, foraging and wildlife-tour outfitters for about twenty years.",
+ "lang": "en",
+ "signals": [
+  {
+   "text": "I'm in the middle of renewal season: forty-two adventure-tourism renewals between October and January, and I'm walking each client through what changed.",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "text": "Underwriters are tightening wording for adventure operators this season, and I'm spending a lot of time explaining the new terms in plain language.",
+   "tier": "t1",
+   "src": "message"
+  },
+  {
+   "text": "Foraging operators who include tasting now need a mycologist-verified identification protocol on file before we can even get a quote.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "Operators with fifteen years of real experience and no formal paperwork are the hardest conversations right now. Underwriters don't know them, so I have to make their experience legible.",
+   "tier": "t1",
+   "src": "message"
+  },
+  {
+   "text": "One underwriter has dropped night-paddling cover, and I'm looking for ways to help operators who run evening trips.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "I'm hearing from underwriters that application questions are changing, for example food handling on wildlife tours, so I want to ask operators better questions at intake.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "I read incident reports as a habit and want to keep learning how guide decision-making fails at the moment of choice, not just which rule was broken.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "I'm planning my parents' 50th anniversary dinner for forty people in Kelowna on November 8, and the guest list keeps changing.",
+   "tier": "t2",
+   "src": "project"
+  },
+  {
+   "text": "I'm halfway through a slideshow built from my father's scanned seventies slides and could use help with cleanup, captions or sequencing.",
+   "tier": "t2",
+   "src": "project"
+  },
+  {
+   "text": "I'm recovering from knee surgery, about three months in and ahead of schedule, and I'm not travelling far until it's fully healed.",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "text": "I run the cold-storage shelves at a Vancouver food bank on Saturdays and often need ways to move fresh produce fast.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "I'd like more time away from desk work, but renewal season makes that hard until January.",
+   "tier": "t2",
+   "src": "calendar"
+  }
+ ],
+ "offers": [
+  {
+   "text": "Placement of liability cover for guiding and outfitter businesses through six specialty underwriters.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "Twenty years of reading incident reports. I can tell you which operators lose cover and what patterns underwriters react to.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I can draft risk-management protocols in the format and level of detail underwriters actually read.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I can explain what underwriters currently want on file and how long a renewal takes, for kayak, heli-ski, foraging, wildlife-viewing and rafting operations.",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "text": "A network of guides, lodge owners and outfitters across BC and Alberta, which I can use to make introductions.",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "text": "I can help an operator translate years of field experience into documents an underwriter will accept.",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "text": "A home office in Kitsilano with a very good espresso machine, for coffee meetings with local operators.",
+   "tier": "t2",
+   "src": "bio"
+  },
+  {
+   "text": "Cold-storage handling and hand-repacking of donated produce at a food bank, plus a route into the Mount Pleasant volunteer group.",
+   "tier": "t1",
+   "src": "project"
+  }
+ ],
+ "catchers": [
+  {
+   "hypo": "I run mushroom walks and I'm told I need a mycologist to sign off on my identification process. Where do I even start?",
+   "can": "I can explain exactly what underwriters ask for in such a protocol, help structure the document, and introduce operators to a qualified mycologist if one reaches out through me.",
+   "confirm": "Do you run guided foraging with tasting in BC and need your identification process signed off by a formally trained mycologist?",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "hypo": "I'm a mycologist or botanist and I'm interested in certifying identification protocols for foraging guides. Is there demand?",
+   "can": "There is demand right now. I can describe what underwriters need from a sign-off and connect the mycologist with BC foraging operators who need one.",
+   "confirm": "Do you hold formal training in fungal or plant identification and are you willing to review and sign a guide's written identification protocol?",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "hypo": "My underwriter dropped night paddling from my policy. Are there options?",
+   "can": "I can check which of the six underwriters I work with still offer night-paddling terms and what documented procedures they require.",
+   "confirm": "Do you run organised kayak or canoe trips in BC that happen partly after dark, and do you have written safety procedures for them?",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "hypo": "I run wildlife-viewing tours with a packed lunch and my new application asks about food handling. How should I answer?",
+   "can": "I can explain how underwriters now view food handling around wildlife and help the operator answer accurately, before the answers cause trouble later.",
+   "confirm": "Do you run wildlife-viewing tours where food is carried, stored or served to guests?",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "hypo": "My rafting or heli-ski guides are experienced, but I worry about their decision-making under pressure. What do insurers look for?",
+   "can": "I can share, in general terms, the decision-making failures that appear in incident reports and help draft procedures that address them.",
+   "confirm": "Are you looking to improve documented guide decision procedures rather than just buy cheaper cover?",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "hypo": "I'm starting a small outfitter business in BC and don't know what insurance I'll need or what documents to prepare.",
+   "can": "I can walk the new operator through what underwriters ask for in this sector and place cover when the safety documentation is in place.",
+   "confirm": "Are you launching or have you recently launched a guided outdoor business in BC or Alberta?",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "hypo": "I grow fruit in the Okanagan and have surplus at harvest. Do you know anyone who can take it?",
+   "can": "I volunteer at a Mount Pleasant food bank in Vancouver that regularly receives orchard pallets, and I can pass on the contact.",
+   "confirm": "Do you have surplus produce that could be delivered or collected in the Vancouver area?",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "hypo": "I have a box of 1970s slides from my family and I don't know how to scan or care for them. My dad was a woodworking teacher who photographed everything.",
+   "can": "My father is a 79-year-old retired shop teacher who shot most of our early family slides, and I'm digitising them now, so I can share what has worked.",
+   "confirm": "Are you trying to digitise or organise a family slide collection from the 1960s or 70s?",
+   "tier": "t2",
+   "src": "relation"
+  },
+  {
+   "hypo": "I'm about to have knee surgery and I'm worried about getting back to normal mobility. Can anyone talk me through it?",
+   "can": "I'm a few months out from a knee operation myself and can talk about the recovery from the patient's side, though I'm not a medical source.",
+   "confirm": "Are you facing or recovering from knee surgery and looking for a peer conversation rather than medical advice?",
+   "tier": "t2",
+   "src": "note"
+  }
+ ],
+ "forbids": [
+  {
+   "text": "I won't write cover for operators who skip documented risk procedures.",
+   "tier": "t0"
+  },
+  {
+   "text": "I'm not travelling far until my knee is fully recovered, so meetings are in Vancouver or by video call for now.",
+   "tier": "t1"
+  },
+  {
+   "text": "Saturdays are for the food bank, so I take no work calls then.",
+   "tier": "t0"
+  },
+  {
+   "text": "I don't discuss named clients' policies, premiums or claims history with anyone.",
+   "tier": "t0"
+  }
+ ],
+ "projects": [
+  {
+   "name": "Foraging-operator identification protocol",
+   "text": "A reusable approach for BC foraging and wild-edibles operators to meet the new underwriting requirement for mycologist-verified identification when tasting is part of the tour.",
+   "roles_needed": [
+    "mycologist or formally trained species identifier",
+    "experienced foraging guide",
+    "technical writer or risk-protocol drafter"
+   ],
+   "tier": "t1"
+  },
+  {
+   "name": "Parents' 50th anniversary slideshow",
+   "text": "A slideshow for forty guests built from scanned family slides from the 1970s, for a dinner in Kelowna on November 8.",
+   "roles_needed": [
+    "slide scan cleanup or colour restoration",
+    "slideshow editor",
+    "Kelowna-area event contact"
+   ],
+   "tier": "t2"
+  }
+ ],
+ "policy": {
+  "t1": "When there's a real lead, I'll share the direction underwriters are moving, which documents they currently want, and typical renewal timelines. I'll also share a general view of how I could help, without naming any clients.",
+  "t2": "When the fit is clear and I know who you are, I'll talk about family events, my knee recovery, and the kinds of things I have seen go wrong with operators, in general terms.",
+  "never": "No named client's policy details, premiums or claims history, and nothing that identifies an insured business."
+ },
+ "id": "a0128",
+ "host_agent": "CUE",
+ "owner_display": "Mark Reilly",
+ "city": "Vancouver",
+ "world_sha256": "f4c9bb09cb5d595ec1790b763a19a375e4e89e26312747adee718730a8396a6a"
+}

@@ -1,0 +1,221 @@
+{
+ "display": "Year 3 primary school teacher in Brunswick, Melbourne. I run the school veggie garden, play wing defence in a Thursday night netball team, and am training for my first half marathon.",
+ "lang": "en",
+ "signals": [
+  {
+   "text": "The school veggie garden is in its spring planting window (peas, broad beans, lettuce) and the beans need staking.",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "text": "I'm running a garden working bee on 11 October and could use extra hands, tools and plants.",
+   "tier": "t0",
+   "src": "calendar"
+  },
+  {
+   "text": "I'm training for my first half marathon on 8 November. My long runs are up to 16–18 km along the Merri Creek.",
+   "tier": "t0",
+   "src": "calendar"
+  },
+  {
+   "text": "My right glute is a 'lazy tyrant' and I've lost a couple of toenails. I'd happily take tips from runners on recovery and kit.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "The garden's funding runs out in December, and I need a grant application drafted by early October and submitted by mid-October.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "I'm stuck on the grant writing. I keep producing mug-slogan sentences and need concrete evidence like harvest numbers, kid participation and testimonials.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "My grandmother's 1950s Singer treadle machine jams on nearly every stitch. I've taken it apart twice and still can't tell if it's dust, a bent part or my own incompetence.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "I want to make a patchwork quilt on the Singer for a new baby in the family. Right now I mostly need a miracle.",
+   "tier": "t1",
+   "src": "message"
+  },
+  {
+   "text": "My nana said her husband used to oil the Singer 'with a feather', and I don't know what that means.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "I have a half-finished set of cushion covers and I'm a beginner at sewing.",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "text": "My partner has spent nine weekends tiling our bathroom and it's going badly, and I'm quietly looking for rescue options.",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "text": "I'd like more headspace. I only get weekends for projects, and I end up planning seeds during staff meetings.",
+   "tier": "t2",
+   "src": "note"
+  }
+ ],
+ "offers": [
+  {
+   "text": "Eleven years of primary teaching (six at Brunswick Primary). I can design hands-on lessons for ages 7–10, explain things simply, and manage a room of excited kids.",
+   "tier": "t0",
+   "src": "bio"
+  },
+  {
+   "text": "I've built and run a school veggie garden with twelve raised beds and about forty kids across three year levels. I can advise on how to start one, assign roles by year level, and run a worm farm and compost.",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "text": "I can host or plan a school garden visit, or share the garden's setup, planting calendar and kid-friendly activities with other teachers or schools.",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "text": "I play wing defence (intercepts, pressure, loud encouragement) and could help a team that needs a defender or a training partner. My Thursday-night team is top of the ladder.",
+   "tier": "t0",
+   "src": "bio"
+  },
+  {
+   "text": "I can run with first-time half-marathon runners on weekends along the Merri Creek and swap training-plan notes.",
+   "tier": "t0",
+   "src": "bio"
+  },
+  {
+   "text": "I'm good at making kids care about plants, for example by naming every tomato and giving Gandalf a ribbon-topped staff. I can share ways to make science and gardening playful.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "I can offer a teacher's view on school grant applications: what a school can actually evidence, and what kids and parents need from a funded program.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "I've got a pair of Year 3 to Year 5 garden teams and a reliable parent volunteer network that can host working bees.",
+   "tier": "t1",
+   "src": "relation"
+  }
+ ],
+ "catchers": [
+  {
+   "hypo": "Hi, I'm a vintage sewing machine hobbyist (or repair person). I fix old Singer treadle machines and bobbin-case problems and like helping beginners get a family machine running again.",
+   "can": "Rachel could bring her grandmother's 1950s Singer for a weekend look or a video call, and in return offer a thank-you through the garden or a school visit.",
+   "confirm": "Are you able to diagnose and fix bobbin-case jams on pre-1960 Singer treadle machines (not just modern electronic ones)?",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "hypo": "I've written a few community or school garden grants. Would you like a second pair of eyes on your draft before it goes in?",
+   "can": "Rachel could share her draft and get feedback on concrete evidence (numbers, harvest, testimonials) before submitting.",
+   "confirm": "Have you personally written or reviewed a successful grant for a school or community garden program (Australian, small-scale)?",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "hypo": "I'm a teacher at another school thinking of starting a veggie garden with a class. Where do I begin with beds, roles, funding and kids?",
+   "can": "Rachel can explain her setup, share the year-level role split (tomatoes, herbs, compost), and possibly host a visit on a weekend.",
+   "confirm": "Are you a teacher, or a staff member at a school, who actually wants to start or expand a student-run garden?",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "hypo": "I'm training for my first half marathon and I'm nervous about the long runs. Does anyone around Brunswick want a running buddy?",
+   "can": "Rachel can run with a first-timer on weekends along the Merri Creek and swap tips on physio, recovery and race-day planning.",
+   "confirm": "Are you a first-time or early half-marathon runner who can run on weekends around Melbourne's inner north?",
+   "tier": "t0",
+   "src": "bio"
+  },
+  {
+   "hypo": "I'm a tiler or renovator who loves rescuing DIY bathroom projects before they get worse. I'd gladly give advice on grout, angles and setting out.",
+   "can": "Rachel's partner Tom is mid-way through DIY-tiling a bathroom and could take a weekend consultation, with Rachel as the go-between.",
+   "confirm": "Are you a qualified tiler (or an experienced renovator) who is willing to advise on, or step in to fix, an amateur tiling job in Melbourne?",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "hypo": "My grandmother is in aged care and her long-term memory is vivid while her present-day memory is fading. How do you stay connected with her?",
+   "can": "Rachel can share what she's learned from visiting her own nana in aged care in Preston, and swap stories and ideas.",
+   "confirm": "Is the person you're caring about a grandparent in aged care whose memory is changing, and are you looking for peer support rather than medical advice?",
+   "tier": "t2",
+   "src": "relation"
+  },
+  {
+   "hypo": "We run a local seed library, nursery or compost group in Melbourne and would love to support a school garden with seedlings or donations.",
+   "can": "Rachel could take seedlings, seeds or compost materials for the school beds and invite you to a working bee or a class visit.",
+   "confirm": "Can you donate or supply spring seedlings, seeds or compost to a school garden in the Brunswick area?",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "hypo": "I make patchwork quilts and run a small beginners' sewing circle on weekends. Would you like to join, or bring your half-finished projects?",
+   "can": "Rachel could come with her half-finished cushion covers and her quilt plan, and learn pattern and piecing basics.",
+   "confirm": "Do you teach or host beginner quilting or sewing sessions on weekends in Melbourne?",
+   "tier": "t1",
+   "src": "skill"
+  }
+ ],
+ "forbids": [
+  {
+   "text": "I can't do anything on weekdays during school hours, so it needs to be weekends.",
+   "tier": "t0"
+  },
+  {
+   "text": "I can't attend anything on Thursday nights (netball).",
+   "tier": "t0"
+  },
+  {
+   "text": "I can't take on anything that conflicts with the mid-October grant deadline or the 8 November half marathon.",
+   "tier": "t0"
+  },
+  {
+   "text": "I won't share photos or personal details of the students.",
+   "tier": "t0"
+  },
+  {
+   "text": "I want to repair my nana's Singer rather than replace it, so I'm not looking to swap it for a new machine.",
+   "tier": "t1"
+  }
+ ],
+ "projects": [
+  {
+   "name": "School veggie garden",
+   "text": "A twelve-bed school garden in Brunswick run by about forty students across Years 3 to 5. It needs a new funding application, weekend working bees and ongoing volunteers.",
+   "roles_needed": [
+    "grant-writing reviewer",
+    "garden volunteer",
+    "seedling or compost donor",
+    "local business sponsor"
+   ],
+   "tier": "t1"
+  },
+  {
+   "name": "Grandma's Singer and the baby quilt",
+   "text": "Revive a 1950s Singer treadle machine and use it to make a patchwork quilt for a family baby.",
+   "roles_needed": [
+    "vintage sewing machine repairer",
+    "quilting teacher",
+    "fabric donor"
+   ],
+   "tier": "t1"
+  }
+ ],
+ "policy": {
+  "t1": "When there's a real spark I'll share the garden's funding status and grant needs, the Singer's problem, and the quilt plan.",
+  "t2": "Once trust is high and the other person is clear, I'll share my worries about Nana and the pressure of the grant writing.",
+  "never": "My finances, and any details about my sister's pregnancy."
+ },
+ "id": "a0323",
+ "host_agent": "ChatGPT",
+ "owner_display": "Rachel Nguyen",
+ "city": "Melbourne",
+ "world_sha256": "c8fde476db18f46a328fa56b52bde9ba8b6266dd82ec60fd97f4174a80852a10"
+}

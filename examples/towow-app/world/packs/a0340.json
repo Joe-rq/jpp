@@ -1,0 +1,220 @@
+{
+ "display": "Paper conservator at a university library in New York, trained in Western paper and parchment. I'm looking for East Asian mounting expertise for a donated collection of about 300 Chinese stone rubbings and two albums.",
+ "lang": "en",
+ "signals": [
+  {
+   "text": "I'm looking for someone trained in East Asian paper conservation (China, Japan or Taiwan) to work on a donated collection of Chinese rubbings.",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "text": "About 300 Chinese stone rubbings and two albums have come into our library. Several pieces have flaking paste and silverfish damage.",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "text": "The paste on these rubbings flakes in a way I don't recognise from Western starch, and I want to learn what it is.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "The albums are the priority. They are accordion-folded with tipped-in sheets, and one has pages mended with cellophane tape.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "Western conservation conferences have almost nothing on East Asian rubbings. I'm looking for the community, courses or workshops that cover them.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "The donor hopes to see the collection exhibited next spring, so I need to know how long treatment realistically takes and who could do it.",
+   "tier": "t1",
+   "src": "message"
+  },
+  {
+   "text": "I've catalogued about 60 items and photographed about 30. I'd like help cataloguing and reading the inscriptions, colophons and calligraphy.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "I'd like to invite a specialist to work with us in person for a short residency, which my department could support.",
+   "tier": "t2",
+   "src": "project"
+  },
+  {
+   "text": "I'm after introductions to East Asian mounting specialists more than general advice. I'd rather ask carefully than send a broad call for help.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "I need a way to learn East Asian mounting techniques myself, so the library can care for these items after a specialist leaves.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "My schedule is tight, and my home life limits how far I can travel.",
+   "tier": "t1",
+   "src": "note"
+  }
+ ],
+ "offers": [
+  {
+   "text": "A fully equipped paper conservation lab (fume hood, suction table, humidification chamber, light table) that a visiting specialist could use.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "Eleven years of hands-on conservation of Western rag paper, parchment and early printed books.",
+   "tier": "t0",
+   "src": "bio"
+  },
+  {
+   "text": "Training in Japanese tissue mending and wheat starch paste, including surface cleaning, mould treatment and deacidification.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "Access to the library's special collections catalogue and cataloguers, so a collaborator's findings can be properly recorded.",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "text": "Pest management experience with insect-damaged paper, including freezing treatment for silverfish.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "A network of American paper conservators, including colleagues in Manhattan.",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "text": "A possible exhibition venue and a donor who wants these items shown, which could give a collaborator public credit for the work.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "A funded visiting-specialist slot covering travel, accommodation and a day rate, available until 30 June.",
+   "tier": "t2",
+   "src": "project"
+  },
+  {
+   "text": "I play viola in a community orchestra and can bring music and company to anyone who joins.",
+   "tier": "t0",
+   "src": "relation"
+  }
+ ],
+ "catchers": [
+  {
+   "hypo": "I trained in East Asian scroll and album mounting in Taiwan. I'm in the US and looking for conservation work on Chinese rubbings.",
+   "can": "Discuss the collection's condition and timeline, and consider a paid visit through the department's visiting-specialist fund.",
+   "confirm": "Were you trained in East Asian mounting (paste, backing papers and mounting sequence), not only Western paper conservation?",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "hypo": "I know a mounting master in Shanghai who would enjoy working on old rubbings, but she doesn't speak English well.",
+   "can": "Describe the project, then share the condition report and photographs so the master can assess the work.",
+   "confirm": "Has this person actually mounted or repaired Chinese rubbings or albums, rather than only scrolls or paintings?",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "hypo": "I'm a graduate student in East Asian art history. I'd love to help catalogue and read the inscriptions on a donated rubbing collection.",
+   "can": "Bring them to the library's catalogue and cataloguers, and compare their identifications with the 60 items already catalogued.",
+   "confirm": "Can you read classical Chinese inscriptions and colophons on rubbings?",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "hypo": "Our museum has an album with flaking paste and old tape repairs. How did you stabilise yours before treatment?",
+   "can": "Share what I've learned about freezing, documentation and stabilising the albums, and compare notes.",
+   "confirm": "Is the object an East Asian album or rubbing with flaking paste, tape repairs or insect damage?",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "hypo": "I'm a conservator in Manhattan and I know a couple of East Asian specialists. Would you like an introduction?",
+   "can": "Follow through on the introductions that my Met colleague has offered to arrange, and send a short project brief ahead.",
+   "confirm": "Do you know someone who personally treated East Asian paper, and can you pass on a first message?",
+   "tier": "t0",
+   "src": "relation"
+  },
+  {
+   "hypo": "I run special collections at another university. We have Chinese rubbings nobody can treat, and I'd like to share a specialist.",
+   "can": "Compare notes on specialist time and costs, and perhaps share a visiting specialist across institutions through Marjorie and the department.",
+   "confirm": "Does your institution hold East Asian rubbings or albums that need treatment now?",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "hypo": "I'm a violist new to New York, and I'm looking for a friendly amateur orchestra.",
+   "can": "Invite them to the Saturday rehearsal of my community orchestra, where the viola section is four players.",
+   "confirm": "Do you play viola at an amateur level and have time for weekly rehearsals?",
+   "tier": "t0",
+   "src": "relation"
+  },
+  {
+   "hypo": "I'm a vet tech who has managed diabetic cats on insulin schedules. Would you like some tips or cat-sitting?",
+   "can": "Consider help with twice-daily insulin so I can travel, or advice on keeping a routine.",
+   "confirm": "Have you personally given insulin injections to a cat on a 7am and 7pm schedule?",
+   "tier": "t2",
+   "src": "relation"
+  }
+ ],
+ "forbids": [
+  {
+   "text": "I can't travel for more than one day at a time.",
+   "tier": "t1"
+  },
+  {
+   "text": "No treatment involving chemicals that could harm paper.",
+   "tier": "t0"
+  },
+  {
+   "text": "I won't let anyone treat the albums without a documented plan and the library's approval.",
+   "tier": "t1"
+  },
+  {
+   "text": "I don't talk about my personal finances.",
+   "tier": "t0"
+  },
+  {
+   "text": "Funds can only be spent on a visiting specialist, within the fund's terms and before 30 June.",
+   "tier": "t2"
+  }
+ ],
+ "projects": [
+  {
+   "name": "Chinese rubbings and albums",
+   "text": "Conserve and catalogue a donated collection of about 300 Chinese stone rubbings and two albums for exhibition next spring.",
+   "roles_needed": [
+    "East Asian paper/mounting conservator",
+    "Chinese calligraphy and inscription cataloguer",
+    "Pest and paste analysis specialist",
+    "Exhibition curator"
+   ],
+   "tier": "t0"
+  },
+  {
+   "name": "Visiting specialist residency",
+   "text": "A funded short visit in which a specialist works alongside me in the lab to assess and begin treatment of the albums.",
+   "roles_needed": [
+    "Visiting East Asian conservator",
+    "Translator or liaison, if needed"
+   ],
+   "tier": "t2"
+  }
+ ],
+ "policy": {
+  "t1": "With a real sign of interest, I'll share the condition of the items, the damage found so far, and the timeline.",
+  "t2": "Once the match looks strong and the person is clear, I'll share the visiting-specialist fund, its terms and its deadline.",
+  "never": "My personal finances, my household costs, or any claim that I can't handle the collection."
+ },
+ "id": "a0340",
+ "host_agent": "CUE",
+ "owner_display": "Dr. Emily Harlan",
+ "city": "New York",
+ "world_sha256": "2663303232ea128c995626f96d7223276da8adfe55c833d24c3756d7dec49d4b"
+}

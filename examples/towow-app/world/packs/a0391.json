@@ -1,0 +1,239 @@
+{
+ "display": "Third-generation laksa hawker in Singapore. The stall's recipe dates from 1962, and I grind the rempah by hand every Monday.",
+ "lang": "en",
+ "signals": [
+  {
+   "text": "Tourists keep asking to take some of my paste home. It has happened three times in one month, and I have never packaged it.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "I would like to know whether I am allowed to sell paste in jars, and how to do it properly, but I don't know where to start.",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "text": "My hawker-centre lease ends in 2027 and none of my kids want the stall. I'm looking for a way to hand it on that doesn't end the stall.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "A food blogger's write-up doubled my Saturday customers and the cockles ran out by 1pm. I want to handle busy days without changing what we sell.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "I grind paste by hand for two hours every Monday at 5am and it takes a toll on my hands. I'd like to make that work lighter without using a blender.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "Prawn prices keep rising and I won't raise the bowl price, because my regulars are mostly retired. I'm looking for ways to absorb the cost.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "My son asked me why I do this, and I didn't know what to say. I want to find a way to explain the stall to a child who doesn't care for it.",
+   "tier": "t2",
+   "src": "message"
+  },
+  {
+   "text": "Other hawkers my age, like my neighbour Uncle Tan, have no successor either. I'd like to talk to people who have worked through this.",
+   "tier": "t1",
+   "src": "message"
+  },
+  {
+   "text": "My hands ache in the evenings and I worry about arthritis. I'm putting off getting it checked.",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "text": "I feel guilty that the stall may end with me, and I think about it most Mondays.",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "text": "My 81-year-old father is recovering from knee surgery. I'm balancing visits to him with the stall and the family.",
+   "tier": "t2",
+   "src": "relation"
+  },
+  {
+   "text": "I have only 30 minutes between lunch and dinner for any visitor, video or conversation.",
+   "tier": "t1",
+   "src": "calendar"
+  }
+ ],
+ "offers": [
+  {
+   "text": "A laksa stall with a 1962 recipe: coconut-based gravy, hand-ground rempah, cockles and prawns.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "Three generations of knowledge about running a neighbourhood hawker stall in Singapore, including the daily routine and the regulars.",
+   "tier": "t0",
+   "src": "bio"
+  },
+  {
+   "text": "Hands-on technique with a stone mortar, big pots and charcoal-fired stock. I can show visitors how the rempah is ground and why a blender makes it bitter.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "Relationships with wet-market suppliers for galangal, lemongrass and dried shrimp. I know what to look for in each.",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "text": "Twenty years of regular customers and a growing flow of tourists. I can tell you what people actually ask for and notice about the stall.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "A short window between lunch and dinner for a visit, tasting or filming, if the format is small and quiet.",
+   "tier": "t1",
+   "src": "calendar"
+  },
+  {
+   "text": "Experience of the hawker-centre tenancy and lease-renewal process with NEA, and of how it works when children don't take over.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "A story worth telling: a stall running since 1962 and a founder's recipe that is still made by hand every Monday.",
+   "tier": "t0",
+   "src": "bio"
+  }
+ ],
+ "catchers": [
+  {
+   "hypo": "Hi, I'm a tourist who ate at your stall. Could I buy a small jar of your laksa paste to take home?",
+   "can": "He can say honestly that he has never packaged it. If a proper route exists, he may be open to a small, carefully made jar.",
+   "confirm": "Do you want a small amount of paste for personal use, as opposed to a mass-market product carrying his name?",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "hypo": "I help small food businesses in Singapore get paste or sauce packaged and compliant, in small batches. Would you want to talk?",
+   "can": "He can share what he makes weekly and what he will and won't compromise on (hand-ground, no blender). He can discuss whether a small-batch jar is possible.",
+   "confirm": "Can your process work with a hand-ground paste, with no blender step and no change to the recipe?",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "hypo": "I'm a young cook who loves traditional hawker food and wants to learn a stall from the ground up. Is there any chance of an apprenticeship?",
+   "can": "He can consider teaching a serious apprentice the stall's routine. He cannot promise a succession, and the recipe's exact proportions stay private.",
+   "confirm": "Are you prepared to work long hours at a stall, starting early, for an extended period?",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "hypo": "I'm writing about hawker succession in Singapore, where the children don't want to take over. Would you talk to me?",
+   "can": "He can describe the situation from experience: the 2027 lease, how the tenancy works, and what he has and hasn't found. He can also introduce a fellow hawker in the same position, Uncle Tan.",
+   "confirm": "Is your piece about the hawker's real situation, rather than a nostalgic piece that skips the hard parts?",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "hypo": "My father is also an elderly hawker with no successor and he's struggling with it. Do you know anyone who understands?",
+   "can": "He can listen and talk plainly, and through Uncle Tan (same age, same situation) he can bring two older hawkers together.",
+   "confirm": "Is the person looking for peer company from someone in the same position, rather than a business solution?",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "hypo": "I'm a physiotherapist who works with older patients' recovery after knee surgery, and I'd like to share advice on staying consistent with exercises.",
+   "can": "Through his 81-year-old father, who is recovering from knee surgery and complaining about his physio, he can pass on a good approach if it suits the father.",
+   "confirm": "Is your advice aimed at an elderly patient recovering at home from knee surgery?",
+   "tier": "t2",
+   "src": "relation"
+  },
+  {
+   "hypo": "I'm a school administrator or teacher who runs a programme where children visit local workplaces, and I'd like a hawker to speak to the class.",
+   "can": "Through his wife Mei Ling, who works as a school administrator, he may be able to arrange or point to someone with a school connection. He can also speak briefly himself, keeping it short.",
+   "confirm": "Is this a short, low-pressure visit that fits around stall hours?",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "hypo": "I'm a food blogger or video maker. May I film you grinding the paste on a Monday morning?",
+   "can": "He can host a short, quiet shoot between lunch and dinner. A Monday 5am grinding session is possible if the crew is small and doesn't push him to talk much.",
+   "confirm": "Can you work around his schedule and keep the shoot short, with no scripted talking?",
+   "tier": "t0",
+   "src": "message"
+  },
+  {
+   "hypo": "I'm an arthritis or hand-health specialist. Do you have hands that ache from repetitive manual work?",
+   "can": "He can take a practical conversation about hand strain from grinding and stirring. He would likely welcome advice that keeps the manual method.",
+   "confirm": "Is your advice compatible with continuing to grind by hand, and not a recommendation to automate?",
+   "tier": "t2",
+   "src": "note"
+  }
+ ],
+ "forbids": [
+  {
+   "text": "I will not use a blender for the rempah.",
+   "tier": "t0"
+  },
+  {
+   "text": "I will not raise the bowl price above its current level.",
+   "tier": "t0"
+  },
+  {
+   "text": "I cannot close the stall for more than one day a week.",
+   "tier": "t0"
+  },
+  {
+   "text": "I will not franchise the stall or put its name on cheap products.",
+   "tier": "t0"
+  },
+  {
+   "text": "I will not share the exact paste proportions.",
+   "tier": "t0"
+  },
+  {
+   "text": "I will not talk about finances.",
+   "tier": "t0"
+  },
+  {
+   "text": "I do not want to be pushed into long on-camera talking. I only have 30 minutes between lunch and dinner.",
+   "tier": "t1"
+  },
+  {
+   "text": "I won't put up signs or promotions to chase the crowd. We sell what we sell.",
+   "tier": "t1"
+  }
+ ],
+ "projects": [
+  {
+   "name": "Small-batch jar of the paste",
+   "text": "Explore whether a small, carefully made jar of hand-ground paste could be sold to tourists and regulars without compromising the recipe or the name.",
+   "roles_needed": [
+    "food-safety and licensing adviser",
+    "small-batch packaging maker",
+    "label and brand designer"
+   ],
+   "tier": "t1"
+  },
+  {
+   "name": "Stall succession",
+   "text": "Find a way for the stall to continue past the 2027 lease end. This could mean a trained successor who takes over the tenancy or another arrangement that keeps the stall's food.",
+   "roles_needed": [
+    "young cook willing to apprentice",
+    "hawker-tenancy and NEA process adviser",
+    "peer hawker with succession experience"
+   ],
+   "tier": "t1"
+  }
+ ],
+ "policy": {
+  "t1": "When there is a real sign of collaboration, I will share that the lease ends in 2027 with no successor, how much paste I make weekly, my Monday routine and my supplier relationships.",
+  "t2": "Once I am fairly sure and know who I'm talking to, I will talk about my family's doubts, my worries about my hands, and my fears about the stall ending with me.",
+  "never": "The exact recipe proportions and my finances."
+ },
+ "id": "a0391",
+ "host_agent": "Gemini",
+ "owner_display": "Ong Boon Kiat",
+ "city": "Singapore",
+ "world_sha256": "c974ada8e7a6afc2932952a400d29ab71c8479a7d4eed95e3f7473d1f497b12d"
+}

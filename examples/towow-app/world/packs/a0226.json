@@ -1,0 +1,216 @@
+{
+ "display": "Accountant at an audit firm in KL, studying part-time for an MBA, and helping my mother's home food business with its books.",
+ "lang": "en",
+ "signals": [
+  {
+   "text": "I'm looking for a wedding reception hall in the KL/Selangor area for about 300 guests, on short notice, and the search is eating my weekdays.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "I won't pay a large upfront deposit to a venue again unless I can read their accounts first, so I'm looking for someone who can vet a venue's financial health.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "My wedding is about five months away and I still don't have a hall or invitations, so I'm behind on everything that depends on the venue.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "A reception venue I booked went into liquidation. I need to file a proof of debt and I'd like to talk to someone who has actually recovered money in a case like this.",
+   "tier": "t2",
+   "src": "message"
+  },
+  {
+   "text": "My reception budget now has a hard ceiling, so I'm looking for good-value halls or caterers that don't need a big upfront payment.",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "text": "My mother's kuih business needs proper pricing and receipts, but she's proud and resists advice. I'm looking for ways to get a home-kitchen seller to formalise gently.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "I'm worn out in a way coffee doesn't fix. Audit season, an MBA and wedding admin are all piling up, and I'd welcome ideas on how to carry less.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "My MBA group assignment in Financial Management is due on 24 October. Two of the five members rarely reply, so I'd like to find reliable people to study with.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "I'm trying to get a later start date on a new client engagement at work and to say no more easily. I'd like to learn how others set boundaries with partners and family.",
+   "tier": "t1",
+   "src": "message"
+  },
+  {
+   "text": "My costing sheets work, but I'd like to hear how other small food sellers handle supplier ledgers, cash payments without receipts, and seasonal pre-orders.",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "text": "I haven't been eating or sleeping well lately and I'm quietly overloaded. I don't tell many people.",
+   "tier": "t2",
+   "src": "note"
+  }
+ ],
+ "offers": [
+  {
+   "text": "I'm an ACCA-qualified accountant with 8 years in SME and manufacturing audit, familiar with Malaysian SST and corporate tax filings.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I can read a small company's financial statements and give a plain-language view of whether it looks stable, which is useful before you hand over a deposit.",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "text": "I can do per-unit costing and pricing for home-based food businesses, and I've built Excel templates for tray costing, weekly cash-up and supplier ledgers.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I can walk a small business owner through basic bookkeeping set-up: what to record, what to keep receipts for, and how to prepare for an audit or tax filing.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I know how stocktake and inventory-count controls fail at manufacturing sites, and I can explain them in practical terms.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I can help with a valuation or financial-analysis section of an MBA-level case study, especially regional airlines.",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "text": "I can give weekday-evening favour advice to SME owners through my network of audit colleagues and business owners.",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "text": "I know how to approach a proof of debt in a company liquidation from the accounting side.",
+   "tier": "t2",
+   "src": "skill"
+  }
+ ],
+ "catchers": [
+  {
+   "hypo": "Hi, I run a small home bakery and I've never separated my costs from my household money. I don't know whether my cakes are making a profit. Can you help me work out what to charge?",
+   "can": "Priya can build a per-unit costing sheet with them, point out where they're underpricing, and share her tray-costing and cash-up templates.",
+   "confirm": "Is this a small home-scale food seller who needs help working out costs and pricing, rather than someone who needs a full statutory audit?",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "hypo": "I'm a small manufacturer in Shah Alam and my stock records never match the physical count. How should I set up a stocktake that an auditor will accept?",
+   "can": "Priya can explain practical count controls and what auditors look for, based on her experience at manufacturing clients.",
+   "confirm": "Is your issue a mismatch between stock records and physical counts at a Malaysian manufacturing site?",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "hypo": "I own a function hall in the Klang Valley with a free date in about five months, and I'm happy to show you my accounts and a flexible payment schedule if you're serious.",
+   "can": "Priya can view the hall, and she can review the venue's financials herself before committing any deposit.",
+   "confirm": "Can the hall hold roughly 300 guests for a morning-to-evening event and accept staged payments rather than a large upfront deposit?",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "hypo": "My mother does her own accounting in a notebook and pays suppliers in cash with no receipts. She won't listen to me. How do you get a proud parent to formalise?",
+   "can": "Priya is dealing with exactly this at home and can share what has and hasn't worked, including starting from the numbers rather than from compliance.",
+   "confirm": "Is the person you're trying to help a family member running a small home business who resists changes to how they keep records?",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "hypo": "Our wedding vendor went bust and we paid a deposit. Has anyone been through the liquidation process, and is it worth filing a claim?",
+   "can": "Priya can explain how a proof of debt works and what to expect from an unsecured claim, and her cousin is a lawyer who may be able to give a pointer.",
+   "confirm": "Is your vendor in formal liquidation, with a liquidator who has said your deposit is an unsecured claim?",
+   "tier": "t2",
+   "src": "relation"
+  },
+  {
+   "hypo": "I'm a few years out of university and am doing the part-time MBA while working full-time. How do you survive group assignments when half the team goes quiet?",
+   "can": "Priya can share how she runs a shared drive and splits sections so that the work gets done, and she may team up with someone reliable.",
+   "confirm": "Are you in a part-time, working-professional programme with a group assignment currently in progress?",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "hypo": "I work in audit and my partner keeps adding files. I can't seem to say no. Do you have any advice?",
+   "can": "Priya can talk honestly about negotiating workload and start dates, and about leaning on her fiancé, who is better at saying no.",
+   "confirm": "Are you a mid-level professional with a boss who adds work while you're already overloaded, rather than someone facing a formal HR dispute?",
+   "tier": "t1",
+   "src": "message"
+  },
+  {
+   "hypo": "I'm a caterer and I'd like to bid for a 300-guest Hindu wedding in the Klang Valley this year. Who should I speak to?",
+   "can": "Priya can pass the enquiry to herself or to her fiancé to compare quotes, and she'll ask for clear pricing before paying.",
+   "confirm": "Do you cater vegetarian-friendly wedding menus for around 300 guests and quote a clear per-head price without a large upfront payment?",
+   "tier": "t2",
+   "src": "project"
+  }
+ ],
+ "forbids": [
+  {
+   "text": "I won't lie to clients, bend numbers, or sign off on figures I don't believe, even as a favour to family.",
+   "tier": "t0"
+  },
+  {
+   "text": "I'm not taking on new weekend work before the wedding.",
+   "tier": "t0"
+  },
+  {
+   "text": "I'm unavailable on Saturdays until December because of MBA classes.",
+   "tier": "t0"
+  },
+  {
+   "text": "I won't pay a large upfront deposit to any venue or vendor without seeing their financials.",
+   "tier": "t1"
+  },
+  {
+   "text": "I can't do audit or tax work for friends' businesses on an unpaid, ongoing basis. My firm's independence rules and my own time don't allow it.",
+   "tier": "t1"
+  }
+ ],
+ "projects": [
+  {
+   "name": "Wedding reception replacement venue",
+   "text": "I'm finding a reception hall for about 300 guests in KL/Selangor on short notice, with a staged payment schedule. A viewing in Subang is already set for 17 Oct.",
+   "roles_needed": [
+    "venue owner or manager",
+    "wedding caterer",
+    "someone who can vet a venue's financials",
+    "event coordinator"
+   ],
+   "tier": "t1"
+  },
+  {
+   "name": "Mum's kuih business formalisation",
+   "text": "I'm helping a home-kitchen kuih business move to proper costing, supplier invoices and pre-order tracking ahead of Deepavali and Hari Raya.",
+   "roles_needed": [
+    "small-business bookkeeper",
+    "food packaging supplier",
+    "supplier of coconut or gula Melaka that issues receipts"
+   ],
+   "tier": "t1"
+  }
+ ],
+ "policy": {
+  "t1": "Wedding timeline, the venue search and what I need from a hall, general stress about bookkeeping and workload, and my weekday availability.",
+  "t2": "That a venue deposit was lost in a liquidation, the budget ceiling for the reception, and the family's cash position.",
+  "never": "Anyone's health details, my credit card balances, and my emotional breakdowns."
+ },
+ "id": "a0226",
+ "host_agent": "ChatGPT",
+ "owner_display": "Priya Nair",
+ "city": "Kuala Lumpur",
+ "world_sha256": "23b1b136e3fcb51ac9e139e9f9a4ba44e8b6ae93001df6d03b80d0ea8519cda1"
+}

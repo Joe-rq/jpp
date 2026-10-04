@@ -1,0 +1,196 @@
+{
+ "display": "PhD candidate in Chinese literature in Paris, translating late-Qing popular narrative into French.",
+ "lang": "en",
+ "signals": [
+  {
+   "text": "I'm looking for the ending of a late-Qing novella whose only surviving 1890s edition breaks off mid-sentence in chapter 18.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "I don't know whether later editions or other complete copies of this novella exist anywhere, and I'd like to find out.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "I've written to librarians in Shanghai and Taipei and had no answer. I'd welcome a way into collections in Beijing or elsewhere.",
+   "tier": "t1",
+   "src": "message"
+  },
+  {
+   "text": "I'd like a second reader for hard classical passages, and for a reality check on my reading of the text.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "I need a complete translation to attach as an appendix to my thesis, and my supervisor wants it finished.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "I keep re-reading the same chapters trying to guess how the story ends. I'd like to talk with someone who knows the genre's conventions.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "I'm preparing a conference abstract due on 20 October, and I'd like feedback on it.",
+   "tier": "t0",
+   "src": "calendar"
+  },
+  {
+   "text": "My funding ends next summer, so I'm thinking about what comes after the PhD, whether that's finishing on time or teaching work.",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "text": "My shared flat is breaking up in January and I need to find somewhere to live in Paris.",
+   "tier": "t2",
+   "src": "message"
+  },
+  {
+   "text": "I'm worn down by the isolation of long library days and welcome any company around the work.",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "text": "I'm learning a new tune for my jazz trio and would enjoy playing with other musicians.",
+   "tier": "t0",
+   "src": "message"
+  }
+ ],
+ "offers": [
+  {
+   "text": "I read classical and modern Chinese fluently and have translated into French.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I have access to the university library, the BnF and the Inalco collections, and can check or request items there.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I keep a digital archive of scans and notes on late-Qing fiction that I can consult for others.",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "text": "I co-authored a published article on serialised novels and know the late-Qing popular fiction literature.",
+   "tier": "t0",
+   "src": "bio"
+  },
+  {
+   "text": "I can compare print editions of Qing novellas and describe their bibliographic features.",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "text": "I play upright or electric bass and have my own amp. I play weekly in a jazz trio at a small Paris bar.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I can write literary French translations of short Chinese texts, with notes for readers.",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "text": "I can explain pawnshop motifs in Qing fiction, which is the subject of my thesis chapter.",
+   "tier": "t0",
+   "src": "project"
+  }
+ ],
+ "catchers": [
+  {
+   "hypo": "I'm a librarian in Beijing. A reader asked about a late-Qing novella and I found a complete copy in our stacks. Is that of interest?",
+   "can": "I'd send the title, the known text and a description of what's missing so you can check a match. I'd then work out how to obtain scans, with a grateful acknowledgement in the translation.",
+   "confirm": "Does your copy include the last chapters, past chapter 18?",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "hypo": "I collect old Chinese popular novels in Hong Kong. I own a later reprint of a story about a pawnshop and a stolen jade. Could that be what you're after?",
+   "can": "I can compare your reprint to the text I have and say whether it's the same work and whether it continues past chapter 18.",
+   "confirm": "Is the story set around a pawnshop with a stolen jade and a daughter?",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "hypo": "I'm a scholar who has seen a serialised version of a novella like this in a newspaper from the 1890s. Would that help?",
+   "can": "I'd gladly follow up. A newspaper serial could hold the ending, and I'd tell you what text to look for.",
+   "confirm": "Was the serial run in the 1890s and does it reach a final chapter?",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "hypo": "I'm a Chinese literature student in France and stuck on a classical passage in a Qing story. Could you read it with me?",
+   "can": "I can read it with you, and my colleague Jin, a Chinese PhD student in my lab, often helps with tricky passages and may join.",
+   "confirm": "Is the passage printed in standard type rather than a cursive manuscript hand?",
+   "tier": "t0",
+   "src": "relation"
+  },
+  {
+   "hypo": "I run a jazz night in Paris and my bassist just cancelled. Do you know someone who can sit in?",
+   "can": "I can sit in myself on bass, and my trio's drummer Tom has great ears and could suggest other players.",
+   "confirm": "Is the gig on a day other than Thursday, when I rehearse with my trio?",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "hypo": "I edit a journal on Chinese literature. Do you have work on late-Qing popular narrative that could fit a special issue?",
+   "can": "I can offer an article on pawnshop motifs in Qing fiction, and my supervisor, a senior professor in the field, may know suitable reviewers.",
+   "confirm": "Is the journal open to work in progress from a PhD candidate?",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "hypo": "I'm a publisher looking for a French translation of an obscure Chinese novella. Do you have anything?",
+   "can": "I can show you a partial translation of 梅花当 and explain its place in late-Qing fiction. A full publication would depend on the ending.",
+   "confirm": "Would you consider a partial text while we search for the ending?",
+   "tier": "t1",
+   "src": "project"
+  }
+ ],
+ "forbids": [
+  {
+   "text": "I will not invent an ending for the novella. A reconstruction would have to be labelled as hypothesis.",
+   "tier": "t0"
+  },
+  {
+   "text": "I cannot travel to China without grants, so on-site archive visits are out unless someone funds them.",
+   "tier": "t1"
+  },
+  {
+   "text": "I do not read traditional-character cursive manuscripts easily, so I cannot take on that kind of transcription alone.",
+   "tier": "t1"
+  },
+  {
+   "text": "Thursday evenings are for my trio's rehearsal.",
+   "tier": "t0"
+  }
+ ],
+ "projects": [
+  {
+   "name": "French translation of 梅花当 (The Plum Blossom Pawnshop)",
+   "text": "A late-Qing novella from the 1890s. The translation stops at chapter 18 because the only known edition is missing its last pages. The preface says there are twenty-four chapters. The work needs the missing text.",
+   "roles_needed": [
+    "librarian or archivist in China or Taiwan",
+    "collector of Qing popular fiction",
+    "bibliographer of Qing newspaper serials",
+    "reader of cursive hand",
+    "publisher or editor"
+   ],
+   "tier": "t1"
+  }
+ ],
+ "policy": {
+  "t1": "Which novella I'm translating, what the surviving text is, and exactly where it breaks off.",
+  "t2": "My funding timeline and housing situation, once the other side is clearly a serious collaborator.",
+  "never": "Personal finances and details about my family."
+ },
+ "id": "a0396",
+ "host_agent": "Gemini",
+ "owner_display": "Camille Moreau",
+ "city": "Paris",
+ "world_sha256": "fcec5038de4ded9bcf4fa50478a8c8a1908c86c6acc4a50d97a536c15f5c5ed1"
+}

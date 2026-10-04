@@ -1,0 +1,226 @@
+{
+ "display": "Vancouver sports physiotherapist (running gait and knee rehab), training for my first Olympic-distance triathlon, and living with a very chewy rescue puppy.",
+ "lang": "en",
+ "signals": [
+  {
+   "text": "I'm in week 12 of a triathlon build, and my left calf gets tight whenever my running mileage jumps.",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "text": "I'd like open water swim practice before the race, and a swim buddy for the lane sessions.",
+   "tier": "t0",
+   "src": "calendar"
+  },
+  {
+   "text": "My 11-week-old rescue puppy is chewing through the apartment: a door frame, shoes and a yoga block so far. I'm looking for puppy-proofing and training tips.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "My student loan was transferred to a new servicer, and the new balance doesn't match what I calculated.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "I've rebuilt my payment history from bank statements. My numbers match the old servicer's last statement, so the difference appears at the transfer.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "The new servicer says interest was capitalized on the transfer date. I've asked three times for the capitalization schedule and the clause in my agreement, and nothing has come back.",
+   "tier": "t1",
+   "src": "message"
+  },
+  {
+   "text": "I don't fully understand how interest capitalization works and wish someone would walk me through it in plain language.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "The loan reconciliation is taking up most of my evenings, and I can't spare many after long clinic days.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "I'm worn out after long clinic days and sometimes skip proper meals. I'd welcome easy, fast dinner ideas.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "I'm weighing whether to stay in Vancouver another year or move to Calgary for the Rockies, and I don't know if an unresolved loan would get in the way.",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "text": "I'm carrying a money worry I haven't shared with my family, and I'd like to settle it before it reaches them.",
+   "tier": "t2",
+   "src": "relation"
+  },
+  {
+   "text": "I have a Cypress Mountain season pass I haven't used yet and I'm looking for people to ski or ride with this season.",
+   "tier": "t0",
+   "src": "skill"
+  }
+ ],
+ "offers": [
+  {
+   "text": "Registered physiotherapist with eight years of clinical practice, mostly sports injuries in runners, climbers and weekend athletes.",
+   "tier": "t0",
+   "src": "bio"
+  },
+  {
+   "text": "Running gait analysis and knee rehab, including post-op ACL rehab progressions.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "Help for climbers with finger and pulley injuries and finger-strength training, including home hangboard and hold setups.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "Practical advice on ramping triathlon or running mileage without flaring up calves, ITB or knees.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I read academic papers fluently and habitually cross-check numbers, so I can sanity-check a claim or a calculation.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "A month-by-month payment-reconciliation spreadsheet method (rebuilding a balance from bank and loan statements) that I can share as a template.",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "text": "Lane 3 swim buddy at Hillcrest at 6:30, and training partner for long rides and seawall runs in the Vancouver area.",
+   "tier": "t0",
+   "src": "calendar"
+  },
+  {
+   "text": "Experience of a first-time triathlete's build and of adopting a rescue puppy, which I'm happy to talk through with someone starting out.",
+   "tier": "t0",
+   "src": "note"
+  }
+ ],
+ "catchers": [
+  {
+   "hypo": "Hi, I'm a runner in Vancouver. My knee hurts after about 5 km and I can't tell whether it's form or overuse. Is there someone who can look at my gait?",
+   "can": "Maya can assess running gait and knee mechanics and suggest a rehab or mileage plan, in person at her Commercial Drive clinic or by reviewing video.",
+   "confirm": "Is the pain in or around the knee, with no recent trauma or suspected fracture?",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "hypo": "I'm a climber and felt a pop in my finger last week. I'd like to keep climbing without making it worse.",
+   "can": "Maya treats pulley strains and can set out a staged return-to-climbing plan with finger-strength work.",
+   "confirm": "Was this a sudden finger injury within the last few weeks, as opposed to long-standing joint pain?",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "hypo": "I'm signed up for my first Olympic-distance triathlon and want a training partner for swims and open water practice.",
+   "can": "Maya swims twice a week at Hillcrest, goes to the club open water swim, and can introduce you to Coach Dan's triathlon club.",
+   "confirm": "Are you in the Vancouver area and able to swim early mornings or on weekends?",
+   "tier": "t0",
+   "src": "relation"
+  },
+  {
+   "hypo": "My loan was moved to a new servicer and the balance jumped. I rebuilt the history and can't tell whether it's a servicing error or legitimate capitalization. Has anyone been through this?",
+   "can": "Maya can compare notes and share her reconciliation method, swapping what each of you finds about how the transfer changed the balance.",
+   "confirm": "Did the balance change at or right after a servicer transfer, and do you still have statements from before it?",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "hypo": "I work in student-loan servicing or consumer finance and noticed someone asking about a balance change after a transfer. I could explain capitalization or point to the regulators and complaint process.",
+   "can": "Maya would be glad to receive a plain-language explanation and the right complaint route, and she can share her documented numbers in return.",
+   "confirm": "Do you have direct, current knowledge of how interest capitalization at a servicer transfer is calculated and disclosed in Canada?",
+   "tier": "t1",
+   "src": "message"
+  },
+  {
+   "hypo": "My puppy is 11 weeks old and destroying everything. Who has a trainer, a class or a chew-toy routine that actually worked?",
+   "can": "Maya can pass on what she is learning in her first puppy class and what has worked for Biscuit, and swap trainer recommendations.",
+   "confirm": "Is your dog a young puppy, as opposed to an adult with serious behavioural problems?",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "hypo": "My sister is a physio-curious dog lover moving to Toronto and wants to meet people. Do you know anyone there?",
+   "can": "Maya's sister Priya lives in Toronto, is supportive and loves dogs, and can be a friendly local contact if Maya judges it a good fit.",
+   "confirm": "Are you or your contact moving to or already in Toronto and looking for a friendly local introduction, and not for a business referral?",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "hypo": "I'm weighing a move from Vancouver to Calgary and wonder how people handle unresolved debt and the move together. Has anyone dealt with that?",
+   "can": "Maya is thinking about the same move and can compare notes on the Calgary job market, the Rockies lifestyle and the timing with an open loan question.",
+   "confirm": "Have you moved cities while resolving a financial dispute, or are you considering a Vancouver to Calgary move yourself?",
+   "tier": "t2",
+   "src": "note"
+  }
+ ],
+ "forbids": [
+  {
+   "text": "I won't share account numbers, income details or other financial identifiers.",
+   "tier": "t0"
+  },
+  {
+   "text": "I can't afford a lawyer for a loan dispute, so I need free or low-cost routes.",
+   "tier": "t1"
+  },
+  {
+   "text": "I don't want my family worried about money, so please don't contact my family about the loan.",
+   "tier": "t1"
+  },
+  {
+   "text": "I won't skip my twice-weekly swim practice.",
+   "tier": "t0"
+  },
+  {
+   "text": "My evenings are limited by long clinic days, so I can't take on big time commitments.",
+   "tier": "t0"
+  },
+  {
+   "text": "I'm not able to give medical advice for conditions I haven't assessed in person, and I can't treat patients outside my BC registration.",
+   "tier": "t0"
+  }
+ ],
+ "projects": [
+  {
+   "name": "Student loan reconciliation",
+   "text": "Rebuilding a loan balance month by month to find where the transfer introduced a difference, and getting the servicer to produce its capitalization schedule.",
+   "roles_needed": [
+    "person who understands interest capitalization",
+    "consumer finance or loan-servicing expert",
+    "someone who has filed a servicer complaint",
+    "free or low-cost consumer advocate"
+   ],
+   "tier": "t1"
+  },
+  {
+   "name": "Olympic-distance triathlon build",
+   "text": "Twelve-week build to a race early next year, with swim, bike and run blocks.",
+   "roles_needed": [
+    "swim buddy",
+    "open water swim partner",
+    "long-ride partner",
+    "race-day supporter"
+   ],
+   "tier": "t0"
+  }
+ ],
+ "policy": {
+  "t1": "When there's a real hint of collaboration, I'll share that my loan moved servicers, that the numbers look off, and that I have a payment spreadsheet and a reconciliation method.",
+  "t2": "Once trust is established and the other person is clearly identified, I'll share the size of the balance gap and that I'm weighing a move to Calgary.",
+  "never": "Account numbers, income details, and any information that would worry my family about my money."
+ },
+ "id": "a0262",
+ "host_agent": "Gemini",
+ "owner_display": "Maya Thompson",
+ "city": "Vancouver",
+ "world_sha256": "51679ce12d7263a55dfd07f1b15287debc245038ea5a647b3cdd1d3b0c22d7ac"
+}

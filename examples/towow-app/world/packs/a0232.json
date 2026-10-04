@@ -1,0 +1,239 @@
+{
+ "display": "I manage six matatus on the Thika Road route in Nairobi. I'm a family man and a weekend goalkeeper.",
+ "lang": "en",
+ "signals": [
+  {
+   "text": "County fines on my buses have more than doubled since January. I want to know if the tickets are real, and I don't know where to start.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "When I paid some tickets on the e-citizen portal, they showed 'no record'. I'd like someone who understands how county ticket systems work to explain it in plain words.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "I have a notebook with every fine since January: date, plate, officer's name, amount. I want to turn it into something checkable, like a clean table or a pattern.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "One of my older buses has a leaking head gasket and needs a full engine overhaul. A week off the route costs about KES 30,000 in lost takings.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "Costs keep rising: fines, repairs, tyres. I'm looking for cheaper, reliable ways to keep six buses on the road.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "My mother's roof water tank in Nyeri is cracked and leaking. I need a 5,000-litre tank and fittings arranged before the short rains in December.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "I'm worried about cash handling on the buses. Daily takings sometimes come back short and I can't prove why.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "School fees for the January term are a big bill. I need to write a payment plan for the school and I'm not sure how.",
+   "tier": "t2",
+   "src": "message"
+  },
+  {
+   "text": "December is a slow month for matatu income. I'm looking for ways to smooth cash flow across the year.",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "text": "I'm under some pressure at the SACCO for asking questions about fines. I want advice on how to raise concerns without making enemies.",
+   "tier": "t2",
+   "src": "message"
+  },
+  {
+   "text": "My knees are sore from diving on concrete pitches. I'd like to hear from other older keepers about how to keep playing.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "Evenings are for my family, so I work best with people who can answer by message during the day.",
+   "tier": "t0",
+   "src": "calendar"
+  }
+ ],
+ "offers": [
+  {
+   "text": "I know the Thika Road matatu route in detail: stage timing, SACCO rules, the weekly NTSA check-in and how the traffic really behaves hour by hour.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I run a small fleet: six 33-seater minibuses and eight drivers and conductors on rotation. I can explain how a small transport business works day to day.",
+   "tier": "t0",
+   "src": "bio"
+  },
+  {
+   "text": "I have contacts at two garages in Githurai, a tyre dealer in Ruiru and a mechanic who works nights. I can introduce vehicle owners and operators to them.",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "text": "I run a simple M-Pesa float system for daily collections. I can show other small operators how it works.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I keep a dated record of every fine, plate number, officer and amount since January. I can share it in the right context as evidence or data for an audit.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "I can host or introduce you to matatu crews and owners on the route for interviews, surveys or pilots, as long as it doesn't take buses off the road.",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "text": "I can play in goal for a weekend football team in Nairobi, and I can talk about local league life.",
+   "tier": "t0",
+   "src": "bio"
+  },
+  {
+   "text": "I know a small tea farming family in Nyeri through my mother. I can introduce people interested in smallholder tea.",
+   "tier": "t1",
+   "src": "relation"
+  }
+ ],
+ "catchers": [
+  {
+   "hypo": "Hi, I'm building a tool that checks traffic or county fine tickets against the official records for small transport operators. Could I test it on real tickets?",
+   "can": "I can supply my dated notebook of tickets (date, plate, amount, officer) and compare it with what the county system shows. I can also ask other owners on the route.",
+   "confirm": "Does your tool check ticket numbers against the Nairobi county system, rather than only tracking fines for the owner?",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "hypo": "I'm a journalist or researcher looking into a rise in fines on Nairobi matatu routes. Can you describe what you've seen?",
+   "can": "I can describe the pattern from my own notebook (January against August) and the 'no record' cases, in plain words. I will not share the names of people who could be harmed.",
+   "confirm": "Are you willing to report on the pattern without naming my drivers or putting them at risk?",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "hypo": "I'm another matatu owner whose fines have gone up a lot this year. Can we compare notes before I pay the next ticket?",
+   "can": "I can compare my record with yours and share what I've learned about checking tickets on the portal. We can work out together what to ask the county.",
+   "confirm": "Do you operate a matatu or small public service vehicle in the Nairobi area?",
+   "tier": "t1",
+   "src": "message"
+  },
+  {
+   "hypo": "I'm a plain-language advocate or paralegal who helps small transport owners understand county fines and how to dispute them without paying bribes.",
+   "can": "I can bring a real set of tickets and what happened at the portal, and ask my questions in plain language.",
+   "confirm": "Can you explain the process in plain language, without legal jargon, and without suggesting a payment under the table?",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "hypo": "My family has a small farm and a leaking water tank. Do you know a reliable supplier for a 5,000-litre tank and fittings in the Mount Kenya area?",
+   "can": "I'm sourcing the same thing for my mother's farm in Nyeri. I can share the quote I get and any supplier I find.",
+   "confirm": "Is the farm in the Nyeri or Mount Kenya region, and is the tank around 5,000 litres?",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "hypo": "I run a mechanic shop and need a steady stream of repair work on 33-seater minibuses. Can you refer me to owners?",
+   "can": "I can pass your name to other owners on Thika Road. I'll first ask my own mechanic and the Githurai garages what they think of your work.",
+   "confirm": "Do you work on 33-seater minibuses, and can you do the job on a short timeline of about a week?",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "hypo": "I'm a nurse or community health worker and need cheap reliable transport for a mobile clinic between Nairobi and Thika.",
+   "can": "My wife Esther is a nurse at a county health centre. I can ask her to talk with you about the practical side, and I can look at a route and price that suits me.",
+   "confirm": "Is the clinic work on or near Thika Road, and could it run on a fixed weekday schedule?",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "hypo": "I'm building an app or service for small fleet owners to track daily cash from conductors and drivers. Would you try it?",
+   "can": "I can try it on my six buses and tell you what a working conductor and owner actually do with cash and M-Pesa each day.",
+   "confirm": "Does your product handle daily collections from several drivers and conductors and record them in M-Pesa?",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "hypo": "I'm a goalkeeper coach or run an amateur football league. Do you want to play or help us train keepers?",
+   "can": "I can join a weekend league as a keeper and talk to others about injuries and playing after 35.",
+   "confirm": "Are your matches on weekends in the Nairobi area?",
+   "tier": "t0",
+   "src": "bio"
+  },
+  {
+   "hypo": "I help small business owners with school-fee savings or loan plans, especially when income dips at the end of the year. Can we talk?",
+   "can": "I can explain how my income moves through the year and what I need to fund two children's school fees, and listen to a plan.",
+   "confirm": "Do you work with small business owners whose income rises and falls through the year, rather than salaried workers?",
+   "tier": "t2",
+   "src": "note"
+  }
+ ],
+ "forbids": [
+  {
+   "text": "I won't pay bribes.",
+   "tier": "t0"
+  },
+  {
+   "text": "I can't take a bus off its route for more than a week.",
+   "tier": "t0"
+  },
+  {
+   "text": "Please use plain language with me, with no legal jargon.",
+   "tier": "t0"
+  },
+  {
+   "text": "Evenings are for my family, so I don't take calls or meetings then.",
+   "tier": "t0"
+  },
+  {
+   "text": "I won't accuse named people of wrongdoing without evidence.",
+   "tier": "t1"
+  },
+  {
+   "text": "I won't share my drivers' and conductors' personal details or their private problems.",
+   "tier": "t1"
+  }
+ ],
+ "projects": [
+  {
+   "name": "Thika Road county fines audit",
+   "text": "Check whether the Nairobi county fines on my matatus appear in the official system, and whether the rise from January to August is real. I have a dated notebook of tickets to start from.",
+   "roles_needed": [
+    "person who understands county ticket records",
+    "data helper",
+    "plain-language adviser",
+    "other matatu owners with their own records"
+   ],
+   "tier": "t1"
+  },
+  {
+   "name": "Water tank for my mother's farm in Nyeri",
+   "text": "Buy and fit a 5,000-litre tank before the short rains in December, with a budget of about KES 60,000.",
+   "roles_needed": [
+    "tank supplier near Nyeri",
+    "plumber",
+    "transport for delivery"
+   ],
+   "tier": "t1"
+  }
+ ],
+ "policy": {
+  "t1": "When there's a real sign of a fit, I'll share my fines record, my suspicion that some tickets don't match the county system, the rising costs, and my repair and farm plans.",
+  "t2": "Once I'm fairly sure of the fit and know who you are, I'll talk about the school fee shortage and my tension with the SACCO.",
+  "never": "Anything about bribes or 'facilitation' payments I may have made, and private details about my drivers, conductors and family."
+ },
+ "id": "a0232",
+ "host_agent": "Muse",
+ "owner_display": "Joseph Kamau",
+ "city": "Nairobi",
+ "world_sha256": "088bf5a12424799830ebb60cb39c2d1ddda1d639090ceb907af5fa61b07c73a8"
+}

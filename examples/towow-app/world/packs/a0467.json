@@ -1,0 +1,219 @@
+{
+ "display": "Registered psychotherapist in Toronto (the Annex), 11 years in private practice, working mainly with couples using Emotionally Focused Therapy.",
+ "lang": "en",
+ "signals": [
+  {
+   "text": "I'm thinking about offering one day a week at reduced fees for couples who can't afford my standard rate, on a sliding scale of roughly $60-120 per session.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "I'd like to find a way to make a sliding-scale day financially sustainable without just raising my regular fees.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "I'm open to sharing my office with another therapist on the days I'm not there.",
+   "tier": "t1",
+   "src": "message"
+  },
+  {
+   "text": "My landlord is raising my office rent by 18 percent from January, and I'm weighing whether to renegotiate, share the space, or look at other rooms.",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "text": "I'm worried about what moving a practice would do to clients who rely on a stable room.",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "text": "I have a small waiting list of about eight couples and could use good places to refer people to or ways to coordinate with other clinicians.",
+   "tier": "t1",
+   "src": "bio"
+  },
+  {
+   "text": "The family cottage dock in Muskoka has rotted. I have two quotes ($14,000 and $18,000) and want it fixed before the ice comes.",
+   "tier": "t2",
+   "src": "project"
+  },
+  {
+   "text": "I'm recovering from plantar fasciitis and can't run for a few weeks. I miss my morning ravine run and want a low-impact way to stay active.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "After long evenings of back-to-back sessions, I sometimes struggle to let go of the work on the way home. I'd like better ways to wind down.",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "text": "I'm quietly weighing whether the current shape of my practice is sustainable long term, including what other clinical work looks like, such as corporate EAP.",
+   "tier": "t2",
+   "src": "message"
+  },
+  {
+   "text": "At family gatherings people treat me as a free therapist. I'd like to find a kinder way to set that boundary.",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "text": "My daughter has just started university in another city and I'm adjusting to her being away.",
+   "tier": "t1",
+   "src": "relation"
+  }
+ ],
+ "offers": [
+  {
+   "text": "Couples therapy using Emotionally Focused Therapy (EFT), delivered by a CRPO-registered psychotherapist with 11 years of experience.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "Evening appointments for couples in the Annex, in person.",
+   "tier": "t1",
+   "src": "calendar"
+  },
+  {
+   "text": "A two-room office on Bloor Street that could be shared with another therapist on days I'm not using it. Month-to-month lease, subject to the landlord.",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "text": "Referral relationships with a psychiatrist and two family doctors in Toronto, for cases that need medical input.",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "text": "Experience of how couples get stuck in recurring conflict (pursue-withdraw patterns, extended-family tension), which I can share as general education.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "Peer conversation with other helping professionals about burnout and keeping the work out of your home life, with no case details.",
+   "tier": "t1",
+   "src": "bio"
+  },
+  {
+   "text": "A willingness to think through sliding-scale pricing models with other independent clinicians.",
+   "tier": "t1",
+   "src": "project"
+  }
+ ],
+ "catchers": [
+  {
+   "hypo": "I'm a couple living in Toronto. We both want to work on our relationship, but your standard fees are more than we can afford. Is there any lower-cost option?",
+   "can": "Describe how a sliding-scale day might work and offer a place on a reduced-fee list once it exists. Otherwise refer them to colleagues or services that fit their budget.",
+   "confirm": "Do you live in Ontario and want to attend couples sessions together, in person, in the evening?",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "hypo": "I'm a licensed therapist looking for office space in the Annex for one or two days a week. I'd like to share rather than sign my own lease.",
+   "can": "Discuss sharing the Bloor Street office on the days I'm not there, subject to checking the lease.",
+   "confirm": "Are you a registered clinician (CRPO or equivalent) who needs a room for in-person sessions on specific, fixed days?",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "hypo": "I'm a small-practice owner and my landlord just announced a big rent increase. How did you decide whether to stay, share, or move?",
+   "can": "Compare options and share what I've learned about subletting, negotiating a lease, and how a move affects clients.",
+   "confirm": "Is your business a small independent practice with a month-to-month or short lease, where client continuity matters?",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "hypo": "My partner and I keep having the same fight, and we've had no luck on our own. How do I find a therapist who works with couples?",
+   "can": "Say whether EFT-style couples work suits their situation. If they're outside Ontario or I'm not the right fit, point them to the right kind of clinician.",
+   "confirm": "Are you both willing to attend sessions together, and are you in Ontario?",
+   "tier": "t0",
+   "src": "bio"
+  },
+  {
+   "hypo": "I'm a counsellor, and the stories I hear all day follow me home. How do you leave the work at the door?",
+   "can": "Talk about peer practices such as supervision groups, wind-down rituals and boundaries. This is a conversation between colleagues and involves no client information.",
+   "confirm": "Are you a practising helping professional looking for peer conversation, not an emergency or crisis support?",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "hypo": "My daughter just left for university and calls every night, homesick. I want to support her without pulling her back home. What helps?",
+   "can": "Share what I've found helpful as a parent in the same situation and from my work: listen first, don't rush to fix, and know when to encourage her to find local support.",
+   "confirm": "Is this about a first-year student who is homesick but coping, not someone in acute crisis?",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "hypo": "I need to rebuild a rotted cottage dock before winter. My partner wants to wait until spring. How do I weigh the risk and the quotes?",
+   "can": "Share what I know about the options. My husband is an architect, and with his agreement I could introduce you to him for a practical opinion on construction and timing.",
+   "confirm": "Is your question about repairing or rebuilding a waterfront structure in Ontario, where ice or winter damage is a concern?",
+   "tier": "t2",
+   "src": "relation"
+  },
+  {
+   "hypo": "I run a mental-health programme and want to offer low-cost couples counselling. Do you know a funder, a clinic or a clinician who would help?",
+   "can": "Connect them to my psychiatrist and family-doctor contacts and describe the sliding-scale model I'm considering. I could also take part as a clinician.",
+   "confirm": "Is the programme based in Ontario, and does it need regulated Ontario clinicians for couples work?",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "hypo": "I'm a runner with plantar fasciitis who can't run for weeks. What do you do to stay sane and keep fit?",
+   "can": "Share what I'm doing: stretching, foam rolling, ice and walking. Beyond that I'd point you to a podiatrist, since I'm not a medical provider.",
+   "confirm": "Has a clinician already diagnosed your heel pain as plantar fasciitis?",
+   "tier": "t1",
+   "src": "note"
+  }
+ ],
+ "forbids": [
+  {
+   "text": "No client sessions on Friday afternoons.",
+   "tier": "t0"
+  },
+  {
+   "text": "No remote sessions for anyone outside Ontario.",
+   "tier": "t0"
+  },
+  {
+   "text": "I will not discuss any client information outside formal supervision.",
+   "tier": "t0"
+  },
+  {
+   "text": "I will not take on a conversation as informal therapy for people who aren't my clients.",
+   "tier": "t1"
+  }
+ ],
+ "projects": [
+  {
+   "name": "Sliding-scale day",
+   "text": "One day a week of couples therapy at reduced fees ($60-120 per session) for couples who can't afford standard rates, paid for in a way that keeps the practice viable.",
+   "roles_needed": [
+    "another therapist to share the office on the other days",
+    "funder or grant advisor for community mental health",
+    "bookkeeper familiar with small practices",
+    "referral partners such as clinics or community groups"
+   ],
+   "tier": "t1"
+  },
+  {
+   "name": "Muskoka dock rebuild",
+   "text": "Rebuild the rotted family cottage dock before freeze-up. Two quotes in hand, and the timing is still undecided.",
+   "roles_needed": [
+    "dock contractor",
+    "someone who can judge a quote for waterfront construction",
+    "someone who knows seasonal permitting in Muskoka"
+   ],
+   "tier": "t2"
+  }
+ ],
+ "policy": {
+  "t1": "Practice hours, general thoughts on a sliding scale, the possibility of sharing office space, referral contacts, and peer conversation about the profession.",
+  "t2": "The rent increase and what I'm weighing in response, the cottage dock problem, and how I'm coping with the demands of the work, once there is real mutual interest and I know who you are.",
+  "never": "Any client information, anything about my own therapy, and the details of family conflicts."
+ },
+ "id": "a0467",
+ "host_agent": "CUE",
+ "owner_display": "Dr. Rachel Weiss",
+ "city": "Toronto",
+ "world_sha256": "48ba5be11bc27dfeb892b913b15131383489c7807a03901c350e06856f0d71be"
+}

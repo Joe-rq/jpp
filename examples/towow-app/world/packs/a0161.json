@@ -1,0 +1,204 @@
+{
+ "display": "Night-shift nurse in a Manchester dementia care home, twenty years in nursing, owner of a border collie called Biscuit.",
+ "lang": "en",
+ "signals": [
+  {
+   "text": "I'm learning to drive at 42 and sitting my third test on 14 October. Roundabouts are what failed me twice.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "I want a car so I can stop taking two buses and a thirty-minute walk home at 7 a.m. after a night shift.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "I'm building a memory box for each resident on my corridor. Seven of twelve are done, and I'd like cheap, good ideas for the rest.",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "text": "My unit manager says the memory boxes take too much time, so I do them on quiet nights. I'd like to find out whether other care homes have made this work.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "I work four nights on and three off, and my body clock is permanently confused. I'd like sleep and daylight tips from other shift workers.",
+   "tier": "t1",
+   "src": "calendar"
+  },
+  {
+   "text": "My unit is short-staffed and I've been asked to cover an extra night a week. I keep saying 'I'll think about it' when I should be deciding.",
+   "tier": "t1",
+   "src": "message"
+  },
+  {
+   "text": "Money is tight this month because of test fees and lessons, so I'm looking for low-cost ways to get things done.",
+   "tier": "t1",
+   "src": "bio"
+  },
+  {
+   "text": "I haven't had a proper holiday in three years and I'm quietly worried about burning out.",
+   "tier": "t2",
+   "src": "bio"
+  },
+  {
+   "text": "I'm eating badly. Cereal is a meal when I wake up at 5 p.m.",
+   "tier": "t2",
+   "src": "message"
+  },
+  {
+   "text": "Biscuit needs two long walks a day, which is hard to fit around sleeping through the afternoons. I'd welcome dog-walking company or a trusted sitter.",
+   "tier": "t0",
+   "src": "bio"
+  },
+  {
+   "text": "I don't get much time with people outside work. Most of my social life is handovers and swapped shifts.",
+   "tier": "t2",
+   "src": "note"
+  }
+ ],
+ "offers": [
+  {
+   "text": "Registered nurse with twenty years of experience, six of them in dementia care. I can explain what is happening and how to respond to someone with dementia.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I know practical dementia-care routines: handling sundowning in the late afternoon, easing night waking, using familiar objects and light, and getting someone to accept medication calmly.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I can talk families through visiting a relative with dementia, such as what to say, what not to correct, and what to bring in.",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "text": "I can show a care home or family how to build memory boxes: choosing photos, fabrics and small objects, and how residents respond.",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "text": "I'm free most afternoons, though I sleep through some of them, and I have three nights off a week.",
+   "tier": "t1",
+   "src": "calendar"
+  },
+  {
+   "text": "I have a network of night-shift nurses and carers who swap shifts without fuss, and I can ask around for them.",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "text": "I'm a first-hand guide to learning to drive in your forties and failing tests. I can share how I practise on empty roundabouts, which is slow but works.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "I have a small back yard in Stretford and a friendly, energetic border collie. I can swap dog walks with someone nearby.",
+   "tier": "t0",
+   "src": "bio"
+  }
+ ],
+ "catchers": [
+  {
+   "hypo": "My mum has just been diagnosed with dementia and keeps asking for my dad, who died years ago. Do I tell her the truth every time?",
+   "can": "Explain from twenty years of care experience how to answer without causing fresh grief each time, and what to try instead of correcting her.",
+   "confirm": "Is this about a real person with dementia, rather than a general question about the ethics of lying?",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "hypo": "I run a small residential home and want to start memory boxes for each resident. How do I make it work without eating all the staff's time?",
+   "can": "Share how I do it on quiet nights, what goes in a box, how to involve families, and how to pitch it to a busy manager.",
+   "confirm": "Is this for people living with dementia or memory loss, not a general craft or reminiscence project?",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "hypo": "My dad becomes agitated and wanders around four every afternoon at his care home. Is this normal, and what can we do about it?",
+   "can": "Explain sundowning, which times and triggers are common, and what families and carers can change, such as light, routine and a familiar face.",
+   "confirm": "Does the agitation happen late afternoon or evening in someone with a dementia diagnosis, rather than all day?",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "hypo": "I'm a night-shift worker with a dog and I'm struggling to walk him around my sleep schedule. Does anyone in Manchester swap walks?",
+   "can": "Arrange a regular dog-walk swap in Stretford or Chorlton, since I already walk Biscuit twice a day and can fit a second dog.",
+   "confirm": "Are you within a short distance of Stretford or Chorlton, with a dog that gets along with other dogs?",
+   "tier": "t0",
+   "src": "bio"
+  },
+  {
+   "hypo": "I'm a nurse thinking about moving into night work or care-home work. What is it really like?",
+   "can": "Describe the rhythm of four-on, three-off nights, sleep, the emotional load, and what helps. Fiona, a fellow night nurse, could also talk to them.",
+   "confirm": "Are you a qualified nurse or healthcare worker, rather than someone wanting a general career chat?",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "hypo": "I'm learning to drive in my forties after failing a test and feel embarrassed. Any advice on getting through the next attempt?",
+   "can": "Share what worked: practising one roundabout repeatedly in an empty industrial estate, and a calm instructor. I can also introduce my instructor Colm if they are in Greater Manchester.",
+   "confirm": "Is the learner an adult in or near Greater Manchester who has already failed at least one test?",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "hypo": "I'm a care worker whose colleague was hit by a resident. How do you stay kind and keep going after something like that?",
+   "can": "Talk through how experienced night nurses reframe it as the illness rather than the person, and how teams look after each other, with a cup of tea if nothing else works.",
+   "confirm": "Is this about being on the receiving end of aggression from a person with dementia, rather than a workplace dispute?",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "hypo": "I work nights and can't sleep, eat or think straight. Does it ever get easier?",
+   "can": "Share routines that help with blackout curtains, meals and daylight, and be a peer who understands how disorienting waking up at 5 p.m. feels.",
+   "confirm": "Do you work regular night shifts at the moment, rather than occasional late shifts?",
+   "tier": "t1",
+   "src": "note"
+  }
+ ],
+ "forbids": [
+  {
+   "text": "I won't discuss my ex-husband or my son with strangers."
+  },
+  {
+   "text": "I won't share anything that could identify residents or their families."
+  },
+  {
+   "text": "I can't work more than four nights in a row."
+  },
+  {
+   "text": "I'm not available mornings before school time. I need to be home by 8:30 a.m."
+  },
+  {
+   "text": "I can't give medical advice about a specific person's treatment or medication, or replace their own clinicians."
+  },
+  {
+   "text": "I'm only practical around Greater Manchester until I pass my driving test."
+  }
+ ],
+ "projects": [
+  {
+   "name": "Memory boxes for dementia care homes",
+   "text": "Shoebox memory boxes holding photos, fabric and a small personal object, made for each resident with their family. Seven of twelve are done on my corridor, and I'd like to turn the approach into something other homes can copy.",
+   "roles_needed": [
+    "care home manager or activities coordinator",
+    "family volunteer",
+    "occupational therapist or dementia specialist",
+    "someone to help write a short how-to guide"
+   ],
+   "tier": "t1"
+  }
+ ],
+ "policy": {
+  "t1": "Shift patterns, availability and the driving test, plus specific dementia-care know-how, for someone showing real interest.",
+  "t2": "Once trust is clear: my worries about burnout, tiredness and a stretched work-life balance, with no family specifics.",
+  "never": "Anything about my ex-husband or my son, my feelings about the end of my marriage, and any identifying detail about residents, their families or colleagues."
+ },
+ "id": "a0161",
+ "host_agent": "ChatGPT",
+ "owner_display": "Deirdre Hallam",
+ "city": "Manchester",
+ "world_sha256": "b567515f81e8de5dd67b1cd26740623e0a51fe40ee7390bca4aac3e63f4e5b2a"
+}

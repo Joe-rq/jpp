@@ -1,0 +1,216 @@
+{
+ "display": "Marama, an ex-restaurant chef in Auckland who now teaches low-cost community cooking classes from a church hall kitchen in Mt Albert.",
+ "lang": "en",
+ "signals": [
+  {
+   "text": "My Thursday evening class for men is down to six regulars and I need to get to eight by the end of the quarter.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "I'm looking for ways to reach men who are recently widowed, divorced or retrenched, and who would never walk into a cooking class on their own.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "I put a flyer up at the local pools and talked to the barber next door, but it's slow going and I need more channels to get the word out.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "The local board grant that pays for hall hire and ingredients is at risk, and the quarter-end decision is on 31 October.",
+   "tier": "t1",
+   "src": "calendar"
+  },
+  {
+   "text": "I'm worn out by funding paperwork and attendance reporting, and I would happily hand some of it to someone who is good at it.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "I want to show the funder that the class matters in ways that a headcount doesn't capture.",
+   "tier": "t1",
+   "src": "message"
+  },
+  {
+   "text": "Some of my regulars have told me this is the only evening of the week they don't feel alone, and I'm worried about what happens to them if the class closes.",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "text": "I'm tired, and I quietly wonder whether what I'm doing is enough.",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "text": "I'd like to find other community kitchens or men's groups that have kept their attendance up, so I can learn what worked for them.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "I'm studying te reo Māori at night school (level 2, aiming for level 3) and would like people to practise with.",
+   "tier": "t0",
+   "src": "bio"
+  },
+  {
+   "text": "I'm coaching my son's waka ama team ahead of a regatta in mid-October.",
+   "tier": "t0",
+   "src": "calendar"
+  },
+  {
+   "text": "I'm growing Scotch Bonnet and Thai chillies on a small balcony and would like to swap tips with other growers.",
+   "tier": "t0",
+   "src": "note"
+  }
+ ],
+ "offers": [
+  {
+   "text": "Twenty years in professional kitchens as a sous-chef and head chef, including menu development.",
+   "tier": "t0",
+   "src": "bio"
+  },
+  {
+   "text": "I teach beginners to cook proper dinners on a budget of about $20 per person, in a way that builds confidence.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "A church hall kitchen in Mt Albert with six induction hobs, two ovens and a large prep table. It is free on weeknights, so another group could use it.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "A self-printed booklet of 40 budget recipes, which I can share or adapt for community programmes.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "Local connections with butchers, greengrocers and a community garden, which I can use to source cheap or donated ingredients.",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "text": "I can run a one-off cooking evening or demonstration for a social service, a men's group, a workplace or a school.",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "text": "I have a working model for a community class that includes a shared meal at the end, and I can help others set one up.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "I'm comfortable talking with men going through grief, job loss or separation. I can offer a table to sit at and something to do with their hands.",
+   "tier": "t0",
+   "src": "bio"
+  },
+  {
+   "text": "I have experience coaching teenagers in a sport and getting them out on the water at dawn.",
+   "tier": "t0",
+   "src": "bio"
+  }
+ ],
+ "catchers": [
+  {
+   "hypo": "Hi, I run a men's shed (or sports club) nearby. A lot of our members are retired or recently on their own, and some of them can't cook. Would you do a session with us?",
+   "can": "Run a cooking evening for their group, or invite their members to Thursday's class. The shared meal at the end is a good way to bring a new group together.",
+   "confirm": "Are the men you have in mind based in or near Auckland, and able to get to a Thursday evening session?",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "hypo": "I work in a social service. Many of our clients are men who have recently lost a partner or a job, and they're isolated. Is there somewhere I can send them?",
+   "can": "Offer a place at Thursday's Blokes Cook, and a regular evening out where they can eat with others and no one asks them to talk.",
+   "confirm": "Are these men able to cook safely and independently enough to join a group in a kitchen with hobs and ovens?",
+   "tier": "t0",
+   "src": "relation"
+  },
+  {
+   "hypo": "I write grant applications and reports for community groups. Would you want some help making a case for continued funding?",
+   "can": "Share the programme's real outcomes and attendance patterns, and work together on a stronger case for the funder.",
+   "confirm": "Have you worked with local board or council community grants in Auckland before?",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "hypo": "My dad has been alone since mum died and he has never cooked. He won't go to anything. Is there anything that might work for him?",
+   "can": "Welcome him to Thursday's class and let him start with a simple job, without any pressure to talk. I can also pass him on through the barber next door or a friend of the class who is already coming.",
+   "confirm": "Is your father local to Auckland and well enough to stand and work in a kitchen for a couple of hours in the evening?",
+   "tier": "t0",
+   "src": "relation"
+  },
+  {
+   "hypo": "I'm a barber or a business owner with a lot of male regulars. How can I tell them about a cooking class without it feeling awkward?",
+   "can": "Give them a short pitch they can use (there's pie and a meal at the end), and a flyer. A barber next door is already doing this for me, and I can pass on what works.",
+   "confirm": "Do your customers live or work close enough to Mt Albert to get to a Thursday 6 p.m. class?",
+   "tier": "t0",
+   "src": "relation"
+  },
+  {
+   "hypo": "I run a community garden or food rescue group. We have surplus vegetables and would like them to go to people who will use them.",
+   "can": "Use the produce in class, cook with it, and send people home with recipes and a way to use it. The community garden has already given me silverbeet for the soup.",
+   "confirm": "Can you supply surplus produce on a regular basis, say weekly, and not only once?",
+   "tier": "t0",
+   "src": "relation"
+  },
+  {
+   "hypo": "I'm a researcher or journalist writing about male loneliness and community food programmes. Would you talk to me about what you've seen?",
+   "can": "Talk in general terms about what makes the class work. I can't share names or personal stories of participants.",
+   "confirm": "Are you able to describe the programme without identifying any of the men who attend?",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "hypo": "I teach te reo Māori or coach waka ama. I heard you're learning te reo and your son paddles. Do you want to connect?",
+   "can": "Practise te reo with them, swap ideas about community teaching, and ask for tips on getting teenagers involved.",
+   "confirm": "Are you based in Auckland and happy to meet outside weekends?",
+   "tier": "t0",
+   "src": "bio"
+  }
+ ],
+ "forbids": [
+  {
+   "text": "I won't turn the class into a profit-making venture.",
+   "tier": "t0"
+  },
+  {
+   "text": "I won't cook or teach anything labelled 'easy' or 'quick'.",
+   "tier": "t0"
+  },
+  {
+   "text": "Ingredients have to stay under about $20 per person.",
+   "tier": "t0"
+  },
+  {
+   "text": "New commitments have to fit on Thursday evenings, and weekends are for my family.",
+   "tier": "t0"
+  },
+  {
+   "text": "I won't share details about the people who come to class, including their stories, their circumstances or their money.",
+   "tier": "t0"
+  }
+ ],
+ "projects": [
+  {
+   "name": "Blokes Cook",
+   "text": "A Thursday 6 p.m. community cooking and shared-meal class for men in Mt Albert, Auckland. It needs eight regular attendees by the end of October for the grant to continue.",
+   "roles_needed": [
+    "outreach to men's groups and local businesses",
+    "referrer from social services or health",
+    "grant-writing or funder-reporting help",
+    "regular produce supplier"
+   ],
+   "tier": "t1"
+  }
+ ],
+ "policy": {
+  "t1": "When there looks to be a real fit, I will share that Thursday's Blokes Cook is at six regulars, that the grant needs eight, and that we eat together after class.",
+  "t2": "Once the match looks strong and I know who I'm talking to, I will share how real the grant risk is and how I feel about it.",
+  "never": "Anything about the people who come to class: their personal details, their stories or their finances."
+ },
+ "id": "a0450",
+ "host_agent": "Dot",
+ "owner_display": "Marama Whitcombe",
+ "city": "Auckland",
+ "world_sha256": "9b6b764a16c9e6abe9a345e9b0cc6a29b634a78eb8f1e90c0a600a2de65221db"
+}

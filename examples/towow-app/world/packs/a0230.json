@@ -1,0 +1,232 @@
+{
+ "display": "Paris hand bookbinder (11th arr.) making limited editions for collectors and small presses. I'm currently looking for about 4 metres of hand-dyed woven indigo silk for a 40-copy poetry edition.",
+ "lang": "en",
+ "signals": [
+  {
+   "text": "I need about 4 metres of woven silk, hand-dyed deep indigo, with a fine herringbone pattern, for a 40-copy poetry edition cover.",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "text": "Every mill I've asked wants a 100-metre minimum, and I need 4. I'm looking for a small weaver or a sample workshop that will make a tiny run.",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "text": "The cover has to be genuinely woven silk. Printed cloth, velvet and imitations won't do.",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "text": "Mills in Lyon and Como both quoted 100 m minimums per colour, and neither would budge.",
+   "tier": "t1",
+   "src": "message"
+  },
+  {
+   "text": "The finished copies are due to the collector in mid-February, and the cloth has to arrive well before then so I can bind. I'm getting nervous about the schedule.",
+   "tier": "t1",
+   "src": "calendar"
+  },
+  {
+   "text": "I can pay up to about 180 euros per metre for the right cloth, and I'd happily pay more per metre to avoid buying 100.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "I'm hunting for unusual cover cloth in flea markets, Marais fabric shops and online. I keep finding almost-right fabrics: faded indigo velvet, silk twill with no woven pattern.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "I've been wondering whether an indigo-dyed silk could be commissioned from a dyer and a small hand-loom weaver working together.",
+   "tier": "t1",
+   "src": "message"
+  },
+  {
+   "text": "I'm restoring a 1920s hotel guestbook with broken hinges. It's slow paste-and-patience work, and I'd like to talk to others who restore signed or autograph volumes.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "I'm thinking about two-day beginner bookbinding workshops in the atelier this spring, and I'd like advice or a way to find participants.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "I'd like to train my young assistant further, especially in layout, page order and finishing, so he stops making avoidable mistakes.",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "text": "Atelier costs are rising in January, and I'm looking for steady income that doesn't depend on a single commission.",
+   "tier": "t2",
+   "src": "note"
+  }
+ ],
+ "offers": [
+  {
+   "text": "Fine hand binding: full leather, half cloth, Coptic and Japanese stab, with rounded spines and linen thread.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "Limited editions of 20–50 copies for collectors and small presses, made by hand. I don't do machine-made books.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "Restoration of old bound volumes and hinge repair, using wheat paste and traditional methods.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "A 38 m² Paris atelier in the 11th arrondissement with a 1930s lying press, a Schärfmaschine and Dutch bone folders. I can host small groups.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "A network of about 20 collectors and small presses who send commissions. I can introduce a weaver, dyer or printer when there is a real fit.",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "text": "Introductions to a gilder in Paris's 18th arrondissement and a marbler in Montreuil, both trusted collaborators.",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "text": "A good eye for cover cloth and materials, plus knowledge of Paris suppliers for thread, leather and fabric. I can advise on which cloths bind well.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "Mentoring a young apprentice: I teach sewing, paste work and finishing to someone who is learning fast.",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "text": "Calf skin tanned in Annonay and similar leathers. I can share sourcing experience.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "I volunteer weekly at a food bank in Paris, and I'm willing to help organise or connect people there.",
+   "tier": "t1",
+   "src": "note"
+  }
+ ],
+ "catchers": [
+  {
+   "hypo": "Hello, I run a small hand-loom studio. We weave silk in short runs and could do a few metres in a custom herringbone, dyed indigo by a partner dyer.",
+   "can": "I'd send the exact spec: 4 m, fine herringbone, deep indigo, 100% woven silk. I'd order samples, pay a fair price per metre, and credit the studio in the colophon.",
+   "confirm": "Can you weave true silk (not a blend or print) in a fine herringbone, in a run of around 4 metres?",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "hypo": "I'm a natural-dye artisan. I dye silk in indigo vats and often have undyed woven silk left over, with no minimum quantity.",
+   "can": "I'd test dyeing silk samples and could pair you with a weaver if the base cloth is the problem.",
+   "confirm": "Do you dye woven silk yardage by hand, in lengths of a few metres rather than bulk?",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "hypo": "I work at a textile archive or deadstock reseller. We have remnants of woven silk, including indigo herringbone, in lengths of 2–10 metres.",
+   "can": "I'd check the cloth against the spec (woven silk, herringbone, deep indigo, enough for 4 m in one piece) and buy it if it fits the 180 euros per metre budget.",
+   "confirm": "Is the remnant genuinely woven silk (not printed, not velvet), in one continuous piece of at least 4 metres?",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "hypo": "I'm a small press in Paris or Lyon. I print 30–100 copies and can't find a binder who works by hand and in small numbers.",
+   "can": "I'd take on binding for small hand-bound runs, and refer larger or machine-made jobs elsewhere.",
+   "confirm": "Is your edition a small run of under about 100 copies that you want bound by hand?",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "hypo": "I'm a collector who inherited a damaged signed volume (guestbook, album or manuscript). It's fragile and I don't know who can repair it without harming it.",
+   "can": "I'd assess the damage, advise on repair versus rebinding, and carry out the restoration.",
+   "confirm": "Is the damage to the binding (hinges, spine, boards) rather than extensive water or mould damage?",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "hypo": "I'm a young person who wants a craft trade. I'm looking for an atelier where I can learn bookbinding hands-on as an apprentice or intern.",
+   "can": "I can't promise a post, but I'd talk about the atelier, point to training schools, and perhaps arrange a trial day or short workshop.",
+   "confirm": "Are you looking to learn bookbinding by hand, and can you commit to regular time in Paris?",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "hypo": "I'm an organiser of craft events or a cultural venue in Paris. I'd like a bookbinding workshop for beginners over a weekend.",
+   "can": "I'd run a two-day beginner workshop in my atelier or at your venue, with materials and a bound book per participant.",
+   "confirm": "Is the workshop for a small group (up to about 6 people) of beginners, over two days?",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "hypo": "I'm a hotel or heritage owner with a historic register or guestbook that needs repair, and I'd like to keep its signatures and condition.",
+   "can": "I'd do the work with period-appropriate methods, and I can introduce a gilder for the lettering.",
+   "confirm": "Is the item a bound book that needs repair, rather than loose pages or a modern volume?",
+   "tier": "t1",
+   "src": "project"
+  }
+ ],
+ "forbids": [
+  {
+   "text": "I don't make machine-made books or industrial runs.",
+   "tier": "t0"
+  },
+  {
+   "text": "I won't substitute printed or imitation cloth for the woven silk cover this edition requires.",
+   "tier": "t0"
+  },
+  {
+   "text": "The cloth must arrive early enough to bind before the mid-February delivery. Otherwise I'll have to renegotiate with the collector.",
+   "tier": "t1"
+  },
+  {
+   "text": "I won't pay beyond about 180 euros per metre for cover cloth.",
+   "tier": "t1"
+  },
+  {
+   "text": "I can't take binding work outside Paris on site. The atelier is in the 11th arrondissement.",
+   "tier": "t0"
+  }
+ ],
+ "projects": [
+  {
+   "name": "Forty-copy Occitan poetry edition, woven indigo silk cover",
+   "text": "A limited edition of a contemporary Occitan poet, letterpress-printed in Lyon and bound by hand in Paris for a Geneva collector. The cover is hand-dyed woven indigo silk with a fine herringbone, about 4 metres in total.",
+   "roles_needed": [
+    "small-batch silk weaver",
+    "natural dyer (indigo)",
+    "textile archive or deadstock supplier",
+    "letterpress printer (Lyon, already engaged)",
+    "marbler (already engaged)",
+    "gilder (already engaged)"
+   ],
+   "tier": "t0"
+  },
+  {
+   "name": "Beginner bookbinding workshops in the atelier",
+   "text": "Two-day workshops for beginners in a 38 m² Paris atelier, planned for spring.",
+   "roles_needed": [
+    "workshop co-organiser or promoter",
+    "venue or craft network partner"
+   ],
+   "tier": "t1"
+  }
+ ],
+ "policy": {
+  "t1": "When there is a real lead on the cloth, I'll share the mill minimums I've met, my timeline (mid-February delivery), and my per-metre budget.",
+  "t2": "Once the match is strong and I know who I'm dealing with, I'll share atelier finances, such as costs and rent pressure.",
+  "never": "Nothing about my family or private life, including my children and my past relationships."
+ },
+ "id": "a0230",
+ "host_agent": "Muse",
+ "owner_display": "Hélène Marchetti",
+ "city": "Paris",
+ "world_sha256": "ab9c3c30bc1decd67b55240d4d911c6589ab1f02b8d51994b5bcc47221cb6a19"
+}

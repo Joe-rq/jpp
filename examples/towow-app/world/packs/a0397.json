@@ -1,0 +1,231 @@
+{
+ "display": "Second-year nursing student in Toronto, international from Cebu. I work night shifts, sing soprano in a Filipino church choir and love K-dramas.",
+ "lang": "en",
+ "signals": [
+  {
+   "text": "Winter's not even here and I'm already tired. Night shifts plus full-time nursing classes are wearing me down.",
+   "tier": "t0",
+   "src": "bio"
+  },
+  {
+   "text": "I'm looking for a warm, affordable winter coat. The only jacket I own is a cotton one from Cebu.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "I miss home and my lola. I'd love more Filipino and Cebuano community around me in Toronto.",
+   "tier": "t0",
+   "src": "message"
+  },
+  {
+   "text": "My clinical placement starts in January and I'd like advice from nurses on how to prepare.",
+   "tier": "t0",
+   "src": "bio"
+  },
+  {
+   "text": "I need help with pharmacology, like ACE inhibitors vs ARBs and drug classes in general. My final is October 20.",
+   "tier": "t1",
+   "src": "calendar"
+  },
+  {
+   "text": "My pharmacology midterm came back at 52%. I know the material but I was too tired in the exam, and I need at least 65% on the final to pass.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "I study on the bus and in the break room, so I only get short, scattered blocks of study time.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "My manager asked me to take two more shifts. I felt bad saying no and bad saying yes, and I don't know how to protect my study time.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "I have CAD 90 saved toward a coat, but the one I saw costs $149. I'm waiting for a sale or a secondhand option.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "Choir needs me on Sundays and I want to keep going, but I'm stretched thin.",
+   "tier": "t1",
+   "src": "message"
+  },
+  {
+   "text": "I'm skipping lunch and eating half a sandwich on my break to make the money stretch. Cheap, filling meals or groceries would really help.",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "text": "I send money home to Cebu every month for family needs and school fees, so my budget is tight and fixed.",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "text": "I tell my family I'm fine and eating well. I don't want them to worry, so I carry the stress alone.",
+   "tier": "t2",
+   "src": "message"
+  }
+ ],
+ "offers": [
+  {
+   "text": "I'm fluent in English, Cebuano and Tagalog. I can help newcomers or Filipino families with translation, interpreting or just conversation.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I'm a soprano and can sing at Filipino community events, masses, weddings or Christmas programs. I know church-choir repertoire like Ave Maria.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I'm a second-year nursing student and can share what the first two years of a Canadian nursing program are really like. I can give advice on balancing school with a night job.",
+   "tier": "t0",
+   "src": "bio"
+  },
+  {
+   "text": "I'm pallet-jack certified with night stocking and warehouse experience. I can advise on stock-room routines and safe lifting.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I have a budget spreadsheet and can share the template with other students who are tight on money. I can also share how I get around Toronto on a bus pass.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I can be a study partner or note-swapper for nursing fundamentals and other early nursing courses. I'll trade for pharmacology help.",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "text": "I can introduce people to Toronto's Filipino church-choir community, where people like Auntie Gloria look after newcomers.",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "text": "I can give honest K-drama recommendations and keep someone company with a long subway-ride chat.",
+   "tier": "t0",
+   "src": "bio"
+  }
+ ],
+ "catchers": [
+  {
+   "hypo": "Hi, I'm a nurse educator and I tutor nursing students in pharmacology for free or at low cost. Are you struggling with cardiovascular drug classes before a final?",
+   "can": "I'd take short remote or after-class sessions for ACE inhibitors vs ARBs and other drug classes. They'd have to fit around my night shifts, and I can pay little or nothing.",
+   "confirm": "Is the tutoring free or very low cost, and can it be done in short remote sessions outside overnight hours?",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "hypo": "I have a warm winter coat I no longer wear, rated for Toronto winters. I'd like it to go to a student who needs it.",
+   "can": "I could take it and put it to use right away. I'd happily pay a small amount or return the favour by singing at an event.",
+   "confirm": "Is it a real winter coat, warm enough for temperatures below -15°C, and not just a fashion jacket?",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "hypo": "I'm a Filipino who just moved to Toronto and I miss home. Is there a church or choir community I could join?",
+   "can": "I can invite them to my Filipino church choir and introduce them to Auntie Gloria and the community. People there often bring food and look after newcomers.",
+   "confirm": "Does this person speak Filipino, Tagalog or Cebuano and live in the Toronto area?",
+   "tier": "t0",
+   "src": "relation"
+  },
+  {
+   "hypo": "Our community group runs a scholarship fund for high-school students in Cebu who can't pay tuition. Do you know any families who need it?",
+   "can": "I can pass the details to my family in Cebu, where a Grade 10 student needs help with school fees. I'd take it from there.",
+   "confirm": "Does it cover Grade 10 students in Cebu, and is it a grant with no repayment?",
+   "tier": "t2",
+   "src": "relation"
+  },
+  {
+   "hypo": "I'm a registered nurse in Ontario and I like mentoring students before their first clinical placement. What would you like to know?",
+   "can": "I'd ask about preparing for my January placement, including what to bring, how to handle shifts and how to ask for feedback.",
+   "confirm": "Have you worked as a nurse in an Ontario hospital or clinic in the last five years?",
+   "tier": "t0",
+   "src": "bio"
+  },
+  {
+   "hypo": "Our church needs a soprano for the Christmas season, with rehearsals on weekends and some Filipino-language songs.",
+   "can": "I can sing, and I can bring my choir group along if there's room. I'd have to keep Sundays for my own church.",
+   "confirm": "Are the rehearsals and performances on weekends or daytime, not overnight, and are Filipino songs welcome?",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "hypo": "Our community fridge or student food program hands out free groceries and meals to students. Does anyone you know need it?",
+   "can": "I'd come by after my shift, and I can tell other students about it. I can volunteer a little in return when my schedule allows.",
+   "confirm": "Is it free, open to students with just a student ID, and open on days or hours that suit a night-shift worker?",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "hypo": "I'm a nursing student in Toronto with a pharmacology final on October 20. Do you want to swap notes and quiz each other?",
+   "can": "I'd join a study group or swap flashcards. I'd offer my notes on nursing fundamentals in return and keep sessions short.",
+   "confirm": "Are you currently taking pharmacology with a final coming up in October?",
+   "tier": "t1",
+   "src": "calendar"
+  },
+  {
+   "hypo": "A local clinic needs a volunteer Cebuano or Tagalog speaker to help patients a few hours a month. Do you know someone?",
+   "can": "I can help with interpreting and with explaining things to patients, and it would be good nursing experience. Hours would have to stay small.",
+   "confirm": "Is it a small commitment of about three hours a week or less, with schedules that can flex around classes?",
+   "tier": "t1",
+   "src": "skill"
+  }
+ ],
+ "forbids": [
+  {
+   "text": "Sundays are reserved for church, choir and my video call with Lola.",
+   "tier": "t0"
+  },
+  {
+   "text": "I can't take on overnight commitments, because I already work night shifts.",
+   "tier": "t1"
+  },
+  {
+   "text": "I can't take on any new big commitments before my pharmacology final on October 20.",
+   "tier": "t1"
+  },
+  {
+   "text": "I can't pay for tutoring or courses, because my budget is tight and fixed.",
+   "tier": "t1"
+  },
+  {
+   "text": "I won't work extra hours that cut into study and sleep time.",
+   "tier": "t1"
+  }
+ ],
+ "projects": [
+  {
+   "name": "Pharmacology final recovery",
+   "text": "I'm aiming to pass my pharmacology final on October 20 after a 52% midterm. I need short, regular study help that fits around night shifts.",
+   "roles_needed": [
+    "pharmacology tutor or nurse mentor",
+    "study-group partner",
+    "someone to quiz me by phone or video"
+   ],
+   "tier": "t1"
+  },
+  {
+   "name": "Winter coat fund",
+   "text": "I'm saving for a proper winter coat for Toronto and have part of the money. I'd consider a good secondhand coat.",
+   "roles_needed": [
+    "secondhand or donated coat source",
+    "tip on sales or student discounts"
+   ],
+   "tier": "t1"
+  }
+ ],
+ "policy": {
+  "t1": "When there's a real lead, I'll share my work schedule and my pharmacology midterm result, so a tutor or helper can see what I need.",
+  "t2": "Once I trust the other person and know who they are, I'll share that I send money home and sometimes skip meals, so they can offer real help.",
+  "never": "Visa, immigration or study-permit details, and my family's medical records or conditions."
+ },
+ "id": "a0397",
+ "host_agent": "ChatGPT",
+ "owner_display": "Maricel Dela Cruz",
+ "city": "Toronto",
+ "world_sha256": "f0ca354ae688d25e94124129e83b2703fd47e6410e13084bc7e1c9d26f0fa6d9"
+}

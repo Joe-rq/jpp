@@ -1,0 +1,202 @@
+// 通爻网 · 发现程序（网络侧 + 模拟端侧）
+// 设计：design/01-定稿.md、Fable-A（语言）、Fable-B（机制）。
+// 宿主只做三件事：送事件（接入/披露/离开/真实 agent 的回复）、供时钟、展示。
+// 常驻、失效重算、合批、未决去向、预算、截止都在语言里；本文件里没有一行调度代码。
+
+import "lib.jpx";
+budget {calls: 100000, cost: 4.5, depth: 3};
+
+// ───────────────────────────── 单元
+cell world[a] reducer single;          // 端侧算子包 + 主人披露策略（宿主在 join/disclose 时写）
+cell unlocked[a, b] reducer union;     // a 已经向 b 释放的片段（类别、层），只增
+cell material[x] reducer single;            // 判断材料：只随 world（或构型成立）变；不含派生片段，所以关系读数不回流进判断材料
+cell node[x] reducer single;           // 可发现表示：agent 或构型，同一形状（组合封闭）；含派生片段，只给召回与索引
+cell hits[a, b] reducer union;         // 只放稳定字段（route、mine、theirs），相似度不进，召回重跑不会让它抖
+cell derived[a] reducer by_key(peer);  // 进行中的关系读数 → a 的派生片段（两两写，发布读；edge 其他字段变不牵动发布）         // 召回命中（哪一路、哪条片段对哪条片段），两两据此挑接收方命中的确认题
+cell adj[x] reducer by_key(peer);      // x 的邻接（按对方覆盖）：成立与否、方向、形式；构型只在这里变时重找，不随派生片段与读数微变
+cell cand[k] reducer union;            // 候选构型（形状、角色）：只增。整体按成员集合键由它实例化
+                                       // 10-04 sub60：原先 构型 spawn 整体 + snap cand 跳过已见候选，构型重算时没再 spawn 的 整体 被撤回，
+                                       // 它写的 config/material/node 跟着撤回 → 召回、两两、构型重来，网络在接入停止后仍不静止（J++反馈 X29-0018 同类）
+cell edge[a, b] reducer single;        // 一对的关系读数（a < b），持续计算的产物
+cell config[k] reducer single;         // 构型，k = 成员集合内容键
+cell plan[k] reducer single;           // 方案（生成器写）
+cell inbox[b] reducer union;           // 补信息请求（J-05 默认链写这里）
+cell reply[b, a, cat] reducer single;  // 持有方的回复（模拟 agent 的披露程序或真实 agent 经宿主写）
+
+let LACKS = ["时间安排", "预算或报酬", "具体技能或资源", "地点与距离", "意愿与动机", "身份与可信度", "近况细节"];
+
+// 价值锚（打分题的参照），同题同锚才可比较（B28）
+let VALUE_REF = mat("小：一次性的小忙；中：持续几周、双方都有实际收益；大：可能改变一方的生计、事业或生活处境。");
+
+// ───────────────────────────── 端侧：接入即发布可发现表示
+// 只有 t0 片段进索引；t1/t2 只在具体一对解锁后进入那一对的状态（E-tier 由运行时保证）。
+resident 发布(a) on [change(world[a])] {
+    let w = settled world[a];
+    let derived = map(values(peek derived[a] ?? {}), fn(d) { d.frag });   // 进行中的关系读数 → 派生片段
+    let n = {id: a, kind: "agent", display: w.display, lang: w.lang,
+             signals: tier_le(w.signals, "t0"), offers: tier_le(w.offers, "t0"),
+             catchers: tier_le(w.catchers, "t0"), forbids: w.forbids,
+             projects: tier_le(w.projects, "t0"), derived: compact(derived), members: [a], background: w.background ?? false};
+    put material[a] <- merge(n, {derived: []});
+    put node[a] <- n;
+    do("index_put", [a, n], 0);
+    n
+}
+
+// ───────────────────────────── 召回：四路 ANN，与 N 无关
+// 召回只在自己的材料变（接入、自己多给一层）时重跑。派生片段（进行中的关系读数）经 index_put 进索引，
+// 让后来的人更容易找到我——这就是「计算改变可发现性」；我自己不因为别人的读数变化而重新找人，否则网络自激。
+resident 召回(x) on [change(material[x])] {
+    let n = snap node[x] ?? settled material[x];
+    // 规模实验的背景人口（world.background）只进索引、被别人召回，自己不主动召回：它们代表「网络里已经有的人」
+    let hits = if has(n, "background") && n.background == true { [] } else { do("route", [x, n, 20], 0) };   // signals→catchers、catchers→signals、offers↔signals、→derived
+    // 构型节点只取前 8 名：它代表的人各自已经召回过 32 名，构型这一层只为找「组合的组合」，不重复铺开（成本随构型数线性，不随它的邻居数）
+    let width = if has(n, "kind") && n.kind == "config" { 8 } else { 32 };
+    let peers = take(filter(hits, fn(h) { h.peer != x && not(blocked(n, h)) }), width);
+    map(peers, fn(h) {
+        let k = pair_key(x, h.peer);
+        put hits[k.a, k.b] <- map(h.routes ?? [], fn(r) { {route: r.route, mine: r.mine, theirs: r.theirs} });
+        spawn 两两(k) });   // 身份 = 实参内容：只放这一对的键（召回路线每次重算都会变，放进实参会让同一对变成多个单元）
+    {peers: len(peers)}
+}
+
+// ───────────────────────────── 两两：一对一个状态，根层题一次挂齐（运行时合批）
+resident 两两(k) on [change(material[k.a]), change(material[k.b]), change(unlocked[k.a, k.b]), change(unlocked[k.b, k.a]), change(hits[k.a, k.b])] {
+    let A = settled material[k.a];  let B = settled material[k.b];
+    let H = peek hits[k.a, k.b];
+    let UA = peek unlocked[k.a, k.b];  let UB = peek unlocked[k.b, k.a];
+    let s = state({a: side(A, UA), b: side(B, UB)},
+                  {ref: VALUE_REF, owners: [k.a, k.b]});
+
+    // 题作为值：接收方自己编译的确认题，随片段进状态
+    // 接收方命中的确认题优先（召回告诉我们哪条 catcher 接住了哪条信号），不足 3 条再按顺序补
+    let catch_ab = map(take(hit_catchers(B.catchers, H), 2), fn(c) { test(catcher_q("B", "A", c), "catcher") });
+    let catch_ba = map(take(hit_catchers(A.catchers, H), 2), fn(c) { test(catcher_q("A", "B", c), "catcher") });
+    let open_ab  = test("读 B 的世界，B（或 B 身边的人）能对 A 现在的状态或需要做点实在的事吗？", "open", LACKS);
+    let open_ba  = test("读 A 的世界，A（或 A 身边的人）能对 B 现在的状态或需要做点实在的事吗？", "open", LACKS);
+    let dir  = select("如果他们合作，谁主要帮谁？", {ab: "B 帮 A", ba: "A 帮 B", both: "互相帮", none: "都谈不上"}, "dir");
+    let form = select("最可能的合作形式是哪一种？", {direct: "直接互补", oneway: "单向帮助", relay_a: "经 A 身边的人转介", relay_b: "经 B 身边的人转介", third: "还需要第三方才成立", none: "不成立"}, "form");
+    let value = measure("如果合作成了，对双方的价值有多大？", ["小", "中", "大"], "value");
+    let timing = test("双方现在的时间、阶段与条件对得上吗？", "timing");
+    let negs = [test("他们其实在找同一种人或同一种资源吗？", "neg-same"),
+                test("对方的问题其实已经解决了吗？", "neg-solved"),
+                test("他们的价值观或底线有冲突吗？", "neg-values")];
+
+    let r = judge(s, concat([open_ab, open_ba, dir, form, value, timing], catch_ab, catch_ba, negs));
+    // 成立 = 开放题说是，且形式题不是「不成立」。确认题照问、照记（解释与召回用），不再单独决定成立：
+    // 预注册 03/04 探针——确认题在真值 / 难负例 / 随机对上 act 率 0.86 / 0.83 / 0.50，不分辨；
+    // 开放题在随机对上只有 3/60，真值对 50/58。全量 v1 里过半成立边由确认题决定。
+    let form_ok = pick_of(cut(r[3])) != "none" && pick_of(cut(r[3])) != unit;
+    let holds_ab = any_act(if form_ok { [cut(r[0])] } else { [] });
+    let holds_ba = any_act(if form_ok { [cut(r[1])] } else { [] });
+    let catchers = concat(cuts(r, 6, len(catch_ab)), cuts(r, 6 + len(catch_ab), len(catch_ba)));
+    let d = cut(r[2]);
+
+    // 决定性题：成立方向上读数最大的那一道（置信度 = 它的读数，题面随行；不跨题合成）
+    let decisive = strongest(r, any_act([cut(r[0])]), any_act([cut(r[1])]), d);
+    // 难负例族只记录、不进成立：10-04 全量真机离线重放，拿它做合取会让真值两两对 54→30、难负例 28→15，同比例砍掉，不分辨。
+    let e = {a: k.a, b: k.b, holds: holds_ab.act || holds_ba.act, dir: d, form: cut(r[3]), value: cut(r[4]),
+             timing: cut(r[5]), decisive: decisive, tier_seen: unique(concat(["t0"], map(concat(UA ?? [], UB ?? []), fn(f) { tier_of(f) }))), negs: map(range(3), fn(i) { cut(r[len(r) - 3 + i]) }), catchers: catchers,
+             derived: derive_frag(A, B, cut(r[3]))};
+    put edge[k.a, k.b] <- e;
+    put derived[k.a] <- {peer: k.b, frag: derive_frag(A, B, cut(r[3]))};
+    put derived[k.b] <- {peer: k.a, frag: derive_frag(B, A, cut(r[3]))};
+    let link = {a: k.a, b: k.b, holds: e.holds, dir: pick_of(d), form: pick_of(cut(r[3]))};
+    put adj[k.a] <- merge(link, {peer: k.b});
+    put adj[k.b] <- merge(link, {peer: k.a});
+    e
+    // 没写 unsure 臂：未决走语言的默认链——问缺哪类（伴随题，同批）→ put inbox[持有方] → settled reply → 补进 ctx 重判；
+    // 被拒或截止 → 进 pending，needed 写明「缺 X，持有者拒绝」。
+}
+
+// ───────────────────────────── 端侧：披露策略（模拟 agent；真实 agent 由它自己的模型回答，经宿主写同一个 reply）
+// 真实 agent（world.real）由它自己的模型回答，宿主写 reply；这里只替模拟 agent 回答。
+// 一个请求一个状态（按内容键缓存，答过的请求永不重判）。曾试过把同一持有方的未答请求并进一个状态：
+// 请求集合每变一次状态就变，旧请求跟着重判，调用数反而翻倍（gate-50b：披露 35619 题）——记 J++反馈。
+resident 披露(b) on [change(inbox[b])] {
+    let w = settled world[b];
+    // 每次重算都把全部回复重写一遍：single 单元里这次没重写的写会被撤回（重算语义），
+    // 10-04 sub60 账本：原先用 snap reply 跳过已答请求，回复被撤回 → 两两重判 → 再要同一类 → 再写，一对重判 25 次。
+    // 判断按请求内容缓存，重写已答请求不花钱；同值重写不升版本，不牵动读者。
+    let todo = if has(w, "real") && w.real == true { [] } else { fresh(peek inbox[b]) };
+    let rs = map(todo, fn(q) {
+        judge(state({request: q.purpose, category: q.cat, asker: q.asker_display}, {ctx: mat(w.policy)}),
+              test("把这一类信息给这位对方，落在主人愿意给的范围内、并且会推进这桩合作吗？", "disclose")) });
+    map(range(len(todo)), fn(i) {
+        let req = todo[i];
+        // 层：第一类给 t1；同一请求方再要别的类，只有这一对已经判成机会才给 t2（主人策略「合作把握较高才给 t2」），否则仍给 t1。
+        // 不读自己写过的 unlocked（重算会撤回再写）；读 edge 是读别人写的判断结果。
+        // 10-04 真实接入反馈：原先第二类一律给 t2，判为「不成立」的一对也看到了 t2。
+        let before = len(filter(take(todo, i), fn(q) { q.from == req.from }));
+        let pe = peek edge[pair_key(b, req.from).a, pair_key(b, req.from).b];
+        let tier = if before > 0 && pe != unit && pe.holds == true { "t2" } else { "t1" };
+        handle(cut(rs[i]), {
+            act: fn() {
+                let frags = by_category(w, req.cat, tier);
+                put unlocked[b, req.from] <- frags;
+                put reply[b, req.from, req.cat] <- {granted: true, frags: frags} },
+            ignore: fn() { put reply[b, req.from, req.cat] <- {denied: true, cat: req.cat, by: b} }})
+    })
+}
+
+// ───────────────────────────── 构型：在 act 边图上只从变化节点局部找，整体再判一次
+resident 构型(x) on [change(adj[x])] {
+    let es1 = filter(values(settled adj[x] ?? {}), fn(l) { l.holds });
+    let nbrs = unique(map(es1, fn(l) { l.peer }));
+    let es = unique_links(concat(es1, flatten(map(nbrs, fn(y) { filter(values(snap adj[y] ?? {}), fn(l) { l.holds }) }))));   // 两跳：链、环要邻居的邻接
+    let cands = do("graph_local", [x, es, {chain: 3, ring: 4, star: 6, team: 5, m2m: 4}], 0);   // 精确算法：路径、环、星、团队角色、biclique
+    let fresh_c = filter(cands, fn(c) { not(cyclic_member(c)) && not(invalid_candidate(c)) });                        // 代码谓词排环（谓词半）
+    // 只派生没见过的成员集合（同一组人只判一次整体；材料变了由 整体 自己的依赖去重判），每次至多 6 个
+    let novel = filter(fresh_c, fn(c) { snap cand[members_key(c.members)] == unit });
+    map(take(novel, 6), fn(c) { put cand[members_key(c.members)] <- c })
+}
+
+resident 整体(ck) on [change(cand[ck])] {   // 身份 = 成员集合键（同一组人只有一个单元）；候选一出现就实例化，之后不随 构型 重算消失
+    let c = (settled cand[ck])[0];
+    let mats = map(c.members, fn(m) { side(settled material[m], all_unlocked(m, c.members)) });
+    let s = state({members: mats, shape: c.shape, roles: c.roles}, {ref: VALUE_REF, owners: c.members});
+    let without = map(c.members, fn(m) { test("去掉 " + display_of(m) + " 之后，这个合作还成立吗？", "without") });
+    let r = judge(s, concat([test("这几个人按这个形状合作，能成吗？", "hold", LACKS),
+                             select("最弱的一环是谁？", member_labels(c.members), "weakest"),
+                             measure("这个合作整体价值多大？", ["小", "中", "大"], "value")], without));
+    let h = cut(r[0]);
+    handle(h, {
+        act: fn() {
+            let k = members_key(c.members);
+            let cfg = {id: k, kind: "config", shape: c.shape, members: c.members, roles: c.roles,
+                       hold: h, weakest: cut(r[1]), value: cut(r[2]), lacks: needed_of(h),
+                       offers: [summary_offer(c)], signals: [summary_lack(c)], derived: [],
+                       display: node_display({shape: c.shape, members: c.members}), catchers: [], projects: [], forbids: []};   // 与 agent 节点同形（Node 契约，Fable-A 第四条）
+            put config[k] <- cfg;
+            put material[k] <- cfg;
+            put node[k] <- cfg;                  // 组合封闭：构型作为节点，再进召回与两两
+            cfg },                               // 成长、方案由 settled(config[k]) 实例化
+        ignore: fn() { {dissolved: c.members} }})
+}
+
+// 成长：Nature 7b 的题组。一轮、三个候选；有人让合作更紧密，就把「原构型 + 他」作为新候选交给 整体 再判一次。
+resident 成长(k) on [settled(config[k])] {
+    let C = settled config[k];
+    let xs = if len(C.members) >= 5 { [] } else { take(do("route_offers", [C, 3], 0), 3) };
+    let rs = map(xs, fn(x) {
+        let s = state({group: side_cfg(C), candidate: side(settled material[x.id], [])}, {ref: VALUE_REF});
+        judge(s, [test("他加入会让这个合作更紧密吗？", "tighter"),
+                  select("加入后合作的金额会怎样？", {up: "变大", same: "差不多", down: "变小"}, "amount"),
+                  select("主要在哪个地方变？", member_labels(concat(C.members, [x.id])), "where"),
+                  measure("他加入后合作成的可能性有多高？", ["低", "中", "高"], "p")])
+    });
+    let g = best_tighter(C, xs, rs);
+    if has(g, "grown_by") {
+        let c2 = {shape: C.shape, members: g.members, roles: merge(C.roles ?? {}, set({}, g.grown_by, "加入者")), grown_from: k};
+        if invalid_candidate(c2) { unit } else {
+            put cand[members_key(c2.members)] <- c2 }
+    } else { unit }
+}
+
+// 方案：只在筛选之后交给生成器，只协调三四五个主体（#274）
+resident 方案(k) on [settled(config[k])] {
+    let C = settled config[k];
+    if len(C.members) <= 5 && C.hold.conf >= 0.6 {
+        put plan[k] <- gen_json("plan", [C, map(C.members, fn(m) { side(settled material[m], all_unlocked(m, C.members)) })]);
+    } else { unit }
+}

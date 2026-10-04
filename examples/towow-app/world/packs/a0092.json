@@ -1,0 +1,227 @@
+{
+ "display": "I run the fungal herbarium at a university lab in Vancouver: about 9,000 dried specimens, microscopy and DNA barcoding, and a standing collaboration with the regional poison control centre.",
+ "lang": "en",
+ "signals": [
+  {
+   "text": "I need a regular, recorded community outreach activity that counts toward my lab's annual review, and I don't know what form it should take.",
+   "tier": "t1",
+   "src": "message"
+  },
+  {
+   "text": "I have logged 6 of the 20 outreach hours I need by 1 December, so about 14 are still missing.",
+   "tier": "t1",
+   "src": "calendar"
+  },
+  {
+   "text": "A few school talks haven't added up to a 'regular' commitment on my log. I'm looking for something small and steady.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "I have very little free time in autumn. Weekday evenings and weekends are the only slots I can offer.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "I don't do well with crowds. I would rather work with small groups or one-to-one than stand in front of a big room.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "Neighbours and friends keep sending me photos asking whether a mushroom is safe, and I'd like a better way to point them to safe, useful learning.",
+   "tier": "t0",
+   "src": "message"
+  },
+  {
+   "text": "I'm training for three days on the Chief at Squamish in November. I do gym sessions twice a week and hangboard in my kitchen, and my finger strength is still stubbornly poor.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "I'm fostering a ten-year-old beagle who has stayed four weeks instead of two, and I'm close to keeping her. I'd welcome tips on senior-dog care.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "My first sourdough starter smells like nail polish remover and my loaf came out as a brick. I'm looking for someone to help me rescue it.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "I like cataloguing and labelling specimens so they stay useful for decades. I'd enjoy more collections like the chanterelle batch from a citizen scientist.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "My lab contract is renewed year to year, so I'm quietly thinking about job security.",
+   "tier": "t2",
+   "src": "bio"
+  },
+  {
+   "text": "Some autumn weeks I feel worn down, because the urgent identification work carries weight.",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "text": "My mum wants me at Thanksgiving, and I keep putting off an answer. We're a bit tense about it.",
+   "tier": "t2",
+   "src": "message"
+  }
+ ],
+ "offers": [
+  {
+   "text": "Ten years of fungal taxonomy and microscopy: spore prints, Melzer's reagent, working with keys.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "Access to a university fungal herbarium of about 9,000 dried specimens, a cold room and reference books, for study visits or deposits arranged through the lab.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "A DNA barcoding bench (ITS sequencing) for cases where the microscope isn't enough, mainly for research and collections.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "A standing working relationship with a regional poison control centre. I can explain how voucher identification fits into clinical safety, without any case details.",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "text": "Specimen curation: drying, accessioning, careful hand-written labels, and documentation so that citizen-science collections stay usable.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "Short, small-group sessions on mushroom biology, lookalike risks and safe foraging principles. These are educational, not identification for eating.",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "text": "Reach into university channels and a lab group of mycology colleagues who will gladly look at an interesting find.",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "text": "Practical experience fostering a senior dog and training for multi-pitch climbing, which I can share informally.",
+   "tier": "t0",
+   "src": "note"
+  }
+ ],
+ "catchers": [
+  {
+   "hypo": "Hi, I coordinate a community garden / library / nature society in Metro Vancouver. We'd love a regular, small-group mushroom evening, but we need someone who knows fungi and we'd handle all the logistics.",
+   "can": "Co-host a recurring small-scale session on fungal biology and safe-foraging principles, with the partner doing the organising and promotion, so it can be logged as regular outreach.",
+   "confirm": "Would you be handling venue, sign-ups and promotion yourselves, with groups small enough for a quiet, hands-on format?",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "hypo": "I'm an amateur mycologist and I've been collecting dried mushrooms for years. I'd like to deposit them somewhere they'll be properly catalogued and kept.",
+   "can": "Assess the collection, suggest how to dry and document it, and where it fits, deposit it in the university herbarium through the lab's normal accession process.",
+   "confirm": "Are the specimens dried, with collection date and location noted, and are you happy for them to go into a public scientific collection?",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "hypo": "I run a foraging club. Several members have started asking about lookalikes and poisoning, and I want a trained mycologist to explain the risks properly.",
+   "can": "Give a small-group, evening or weekend talk on dangerous lookalikes and why photo identification isn't enough, within my time limits.",
+   "confirm": "Is this a talk about how to avoid mistakes, rather than a request for me to certify which mushrooms are safe to eat?",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "hypo": "I'm a science teacher or youth leader and want a hands-on microscope session with real fungi for a small class.",
+   "can": "Run a short, small-group microscopy session with spore prints and herbarium examples, and have it recorded as outreach.",
+   "confirm": "Would the group be small (roughly a class or smaller) and able to meet on an evening or weekend?",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "hypo": "I'm a researcher studying fungi in Pacific Northwest forests and I need someone to verify identifications or sequence a few specimens.",
+   "can": "Offer microscopy checks and ITS barcoding on the lab bench, subject to lab policy and capacity, and point to relevant herbarium material.",
+   "confirm": "Is this a research or collection question where the specimens are for science rather than for eating?",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "hypo": "I'm a clinician or poison-line coordinator in another region and want to set up a voucher identification arrangement with a local mycologist.",
+   "can": "Introduce them to how my poison control collaboration is set up, and, where appropriate, connect them via my contact Dr. Okafor. I won't share any case information.",
+   "confirm": "Are you asking about how to set up a process, rather than asking me to disclose anything about specific patient cases?",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "hypo": "I'm climbing the Chief in Squamish this autumn and want a partner or advice on approaches and conditions.",
+   "can": "Share what I learned scouting the approach in cold, wet weather, and possibly connect them with my climbing partner Sam, who knows the routes.",
+   "confirm": "Are you an experienced roped climber looking for conditions beta, rather than a beginner wanting to be guided?",
+   "tier": "t0",
+   "src": "relation"
+  },
+  {
+   "hypo": "I run a small dog rescue and am looking for people who take in senior dogs, or for advice on keeping a long-term foster.",
+   "can": "Share what fostering a ten-year-old beagle has been like and how I arranged life around her sleep and vet visits.",
+   "confirm": "Are you looking for peer experience from a foster, rather than asking me to take additional animals now?",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "hypo": "I'm someone who has had a worrying autumn doing high-stakes work and I'd like to talk to someone who understands that kind of quiet pressure.",
+   "can": "Offer a patient, non-clinical conversation as a peer, without discussing any specific cases.",
+   "confirm": "Are you looking for a peer to talk with about work stress in general, rather than professional counselling?",
+   "tier": "t2",
+   "src": "note"
+  }
+ ],
+ "forbids": [
+  {
+   "text": "I will not share details of poison control cases or anything that could identify a patient.",
+   "tier": "t0"
+  },
+  {
+   "text": "I will not identify mushrooms from photos for people who intend to eat them.",
+   "tier": "t0"
+  },
+  {
+   "text": "I can't lead a public workshop series on my own.",
+   "tier": "t0"
+  },
+  {
+   "text": "I'm unavailable on weekdays during working hours; evenings and weekends are possible, though autumn is tight.",
+   "tier": "t0"
+  },
+  {
+   "text": "I'm not comfortable with large crowds or big public events.",
+   "tier": "t0"
+  },
+  {
+   "text": "I'm based in Vancouver, so I can only do in-person work in the Metro Vancouver area.",
+   "tier": "t0"
+  }
+ ],
+ "projects": [
+  {
+   "name": "A regular, small-scale community outreach activity",
+   "text": "Looking to build a recurring activity of roughly 14 more hours before 1 December that counts as outreach on the lab review. It should be run with a community partner, in small groups, on evenings or weekends.",
+   "roles_needed": [
+    "community host or venue",
+    "co-facilitator or organiser",
+    "participant group",
+    "someone to help record hours and impact"
+   ],
+   "tier": "t1"
+  }
+ ],
+ "policy": {
+  "t1": "When there is a real lead, I will share that I need about 14 more outreach hours by 1 December, which kinds of sessions I can run, and when I'm free.",
+  "t2": "Once trust is established, I may share my year-to-year contract concerns, how work pressure affects me, and family circumstances.",
+  "never": "Anything specific about patient cases or voucher details from the poison control centre."
+ },
+ "id": "a0092",
+ "host_agent": "Gemini",
+ "owner_display": "Mei-Ling Tran",
+ "city": "Vancouver",
+ "world_sha256": "08eedd1e6f096501e6c2942934cb209b04eaf8c4045be756dda0b41bd5d06a42"
+}

@@ -1,0 +1,224 @@
+{
+ "display": "Anurak Chaiwong, a longtail boat guide in Chiang Khong on the Mekong. My family has fished this river for three generations, and I run sunrise tours down toward Sop Ruak.",
+ "lang": "en",
+ "signals": [
+  {
+   "text": "I'm looking for a way to tell guests about my family's fishing history that isn't just 'a little'. They keep asking, and I keep changing the subject.",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "text": "My family has handwritten daily fish-catch notebooks from 1987 onward, kept in pencil in a tin box. I think they are valuable but I don't know how to use them.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "I want someone to help me make sense of the catch notebooks: read the trends, turn them into a story, or tell me whether they matter to researchers.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "My boat engine is old and close to failing. It needs a major repair or a replacement soon, and I'm working out how to pay for it.",
+   "tier": "t2",
+   "src": "message"
+  },
+  {
+   "text": "I have a 10-guest hotel group booked for 28 October, but my boat holds only 8. I need a second boat or a trustworthy second driver.",
+   "tier": "t1",
+   "src": "calendar"
+  },
+  {
+   "text": "My Chiang Khong Food Map has 30 stalls photographed but no text yet. I'm stuck on writing English that sounds local instead of like a brochure.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "Rain and high water keep cancelling my tours in the rainy season, so my income is unpredictable.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "I'm interested in making my tours more than scenery, adding something real about river life and fishing that guests will care about.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "I'm unsure whether to keep guiding, go back to fishing, or combine both. Looking at my father's boat feels like a pull.",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "text": "I feel pulled to keep my family's river knowledge alive but don't know how to start.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "I'm very tired after long days. Two boats and 12 hours on a holiday weekend wore me out.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "My Facebook food page had its best post ever recently. I'd like to turn that audience into something more than likes.",
+   "tier": "t0",
+   "src": "note"
+  }
+ ],
+ "offers": [
+  {
+   "text": "Longtail boat tours on the Mekong from Chiang Khong, for up to 8 guests. The boat has a safety certificate and insurance.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "A sunrise river tour (5:30 am, mist and working fishermen, then khao soi at a family stall), 800 baht per person with a minimum of four.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "Detailed knowledge of the river from Chiang Khong to Sop Ruak: sandbars, fish habitats, and where the Giant Mekong Catfish used to be caught.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "Languages: Thai, Northern Thai, fluent English, good Lao, and tourist-level Chinese.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "A 6,000-follower Facebook page on Chiang Khong street food, and 30 photographed stalls.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "A network of food stalls and homestays along the river that I can introduce guests or collaborators to.",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "text": "Access to my family's 40-year-old fishing nets and traps, and to the old catch notebooks through my aunt, for photography, documentary or research use.",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "text": "Local guiding: introductions to fishermen, the market and the riverside, and help with permits or practical logistics for visitors in Chiang Khong.",
+   "tier": "t1",
+   "src": "skill"
+  }
+ ],
+ "catchers": [
+  {
+   "hypo": "I'm a fisheries researcher looking for long-term, handwritten catch records from the Mekong in northern Thailand, especially from before the dams.",
+   "can": "Introduce them to my family's catch notebooks (daily entries since 1987). My aunt keeps them and my father can explain the entries.",
+   "confirm": "Are you looking for daily or seasonal fish-catch records from the Chiang Khong stretch of the Mekong, covering the 1980s to today?",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "hypo": "I'm making a documentary or long-form story about families who live from the Mekong and how the river is changing. Can you introduce me to someone?",
+   "can": "Take them out on the boat and introduce them to my father and my aunt Pa Noi, who remember the Giant Catfish era and keep the notebooks.",
+   "confirm": "Is your project specifically about Mekong fishing families, and are you able to spend a few days in Chiang Khong, with respect for the family's pace?",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "hypo": "I run a small travel business and want a local operator for dawn river trips and street-food visits for groups of 8 or fewer in the Golden Triangle area.",
+   "can": "Run sunrise tours on the boat and arrange a meal at a stall or homestay on my network.",
+   "confirm": "Are your groups 8 people or fewer and fine with early starts that may be cancelled when the river is high?",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "hypo": "I'm writing a food guide or blog about northern Thailand and want to meet someone who knows Chiang Khong's street food and its stories.",
+   "can": "Show them the stalls, share my photos and Facebook audience, and trade notes on the food map.",
+   "confirm": "Is your focus street food in Chiang Khong itself, and are you comfortable with a casual, local voice rather than a polished brochure style?",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "hypo": "My longtail boat's 4-stroke engine is struggling and the carburetor may be failing. Where can I get it checked near Chiang Rai or Chiang Saen?",
+   "can": "Introduce my cousin Pong, a mechanic who works on boat engines, and share what I know about the workshop in Chiang Saen.",
+   "confirm": "Is it a small longtail boat engine (4-stroke) on the Mekong, rather than a large marine or inboard engine?",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "hypo": "I'm a photographer wanting misty dawn pictures of fishermen working on the Mekong. Do you know a boat that goes out early?",
+   "can": "Take them out at 5:30 am on the sunrise route and point to the best sandbars and spots for fishermen.",
+   "confirm": "Are you able to leave at 5:30 am and accept that the trip may be cancelled if the river is too high?",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "hypo": "I run a hotel or tour company and have a group of 10 or more guests who want a river trip around Chiang Khong. Can you take them?",
+   "can": "Take 8 on my boat now and coordinate with a second boat or driver to carry a larger group.",
+   "confirm": "Can your group be split across two boats, and is the date outside the high-water rainy-season risk?",
+   "tier": "t1",
+   "src": "calendar"
+  },
+  {
+   "hypo": "I grew up in a family trade that I was a bit ashamed of, and now I'm unsure how to talk about it. Have you been through anything like that?",
+   "can": "Listen and share how I'm slowly learning to say that my family fishes and that I'm proud of it.",
+   "confirm": "Are you looking for someone to talk with about family heritage or origins, rather than for professional counselling?",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "hypo": "I'm a data or history person who would like to digitise or transcribe old handwritten records from a rural community. Is there anything like that near you?",
+   "can": "Arrange access to the catch notebooks through my aunt, who keeps them, with the family's agreement.",
+   "confirm": "Are you offering to handle handwritten Thai records carefully, with the originals staying with the family?",
+   "tier": "t1",
+   "src": "relation"
+  }
+ ],
+ "forbids": [
+  {
+   "text": "I cannot take guests into Lao waters without a permit."
+  },
+  {
+   "text": "My boat carries at most 8 guests, so I can't take large groups on one boat."
+  },
+  {
+   "text": "I won't run tours when the river is too high, however much the schedule or the client wants it."
+  },
+  {
+   "text": "I'm mostly available at dawn and sunset, so midday and overnight commitments are hard."
+  },
+  {
+   "text": "I won't hand over the family notebooks permanently or let them leave my family's hands without agreement."
+  }
+ ],
+ "projects": [
+  {
+   "name": "Chiang Khong Food Map",
+   "text": "A small printed and online guide to the street food stalls of Chiang Khong, kept on the boat for travellers. I have photos of 30 stalls but the text is unwritten, and I want it to sound local.",
+   "roles_needed": [
+    "English writer or editor with a local voice",
+    "layout designer",
+    "local-food storyteller",
+    "small-batch printer"
+   ],
+   "tier": "t1"
+  },
+  {
+   "name": "Fishing Notebooks Story",
+   "text": "Turn my family's handwritten daily catch notebooks (from 1987) into something that can be understood, preserved and shared, for example a tour story, an exhibition or a research dataset.",
+   "roles_needed": [
+    "archivist or digitiser",
+    "Thai-English translator",
+    "river ecology or fisheries researcher",
+    "storyteller or documentary maker"
+   ],
+   "tier": "t1"
+  }
+ ],
+ "policy": {
+  "t1": "When a real collaboration looks possible, I'm happy to share tour details, the sunrise route, the existence of the family catch notebooks at my aunt's house, and introductions to relatives such as my mechanic cousin.",
+  "t2": "When trust is high and the other person is clearly identified, I'll talk about how I feel about my family's fishing past and about the money needed for the boat engine.",
+  "never": "I never share details about my girlfriend or my bank balance."
+ },
+ "id": "a0113",
+ "host_agent": "ChatGPT",
+ "owner_display": "Anurak Chaiwong",
+ "city": "Chiang Khong",
+ "world_sha256": "b0bb4aaa79e6ecd00cd389afde55264b82ebf52749f17cc33bf47803d233c80f"
+}

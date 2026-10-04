@@ -1,0 +1,243 @@
+{
+ "display": "I'm a second-year speech-language pathology student at UT Austin focused on AAC (augmentative and alternative communication). I'm based in Austin, and I speak Spanish and use ASL.",
+ "lang": "en",
+ "signals": [
+  {
+   "text": "I'm looking for supervised clinical hours that aren't in a classroom, ideally community events where nonspeaking kids and their families show up.",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "text": "I want to bring AAC tablets and core-vocabulary boards to an event outside the clinic and get to know the kids who use them.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "I'm trying to find a place where a family with a nonspeaking kid can get a board or a device in hand on an ordinary Saturday, without it being a clinic appointment.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "I'm interested in sensory-friendly spaces (lights up, sound down, kids free to move) and would like to meet the people who run them.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "I need about 200 more supervised practicum hours before I graduate, and placements are limited.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "I'm writing a literature review on how often communication partners model on AAC devices at home versus at school. I'd like to talk with anyone who works on aided language input or partner training.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "I'm studying for the Praxis SLP in November. Fluency disorders and phonology are my weak spots, and I need people to quiz me.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "My week is full: class and clinic on weekdays, study group in the evenings, and a weekend job. I have about one free Saturday a month.",
+   "tier": "t1",
+   "src": "calendar"
+  },
+  {
+   "text": "I keep starting my thesis outline and then drifting away from it. Something that makes the writing feel less lonely would help.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "I'm tired and stretched thin, trying to be both the person who sits with a kid for forty minutes and the person who yells 'order up!'",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "text": "Money is tight and my student loans weigh on me. Every logistics cost matters.",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "text": "I worry about passing the Praxis on the first try, and sometimes I feel like an imposter next to classmates who didn't have to work through grad school.",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "text": "I feel guilty that I can't visit my deaf uncle more often.",
+   "tier": "t2",
+   "src": "relation"
+  }
+ ],
+ "offers": [
+  {
+   "text": "I can run a hands-on AAC table at a community event, with core-vocabulary boards, modeling on the device, and parent coaching. I need advance sign-off from my supervisor.",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "text": "My lab has 12 AAC tablets (iPads with Proloquo2Go and TouchChat). I can sign them out for community events with two days' notice and a named faculty member.",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "text": "I make laminated core-vocabulary and pictorial boards, and I can design a custom one for a venue, a shop, or a family routine.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I'm conversational in Spanish and have working ASL, so I can talk with bilingual families and use signs as a bridge to symbols.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I can explain clinical terms to parents in plain language, a skill I built translating at my uncle's doctor appointments.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I can teach basic aided language modeling (pointing at symbols while you talk) to parents, siblings, teachers, and volunteers.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I'm comfortable talking with strangers for hours, thanks to restaurant work, so I'm easy to put at a welcome table or booth.",
+   "tier": "t1",
+   "src": "bio"
+  },
+  {
+   "text": "I can trade study help: I'll quiz you on whatever you know well in exchange for fluency drills.",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "text": "I keep a color-coded tracker of practicum hours, supervisors, and skills practiced. I can share the template with other students.",
+   "tier": "t1",
+   "src": "skill"
+  }
+ ],
+ "catchers": [
+  {
+   "hypo": "We run a free community event for kids with disabilities and want an AAC-savvy student or clinician to staff a table. Is that something you could do?",
+   "can": "I can staff the table with lab tablets and boards if Dr. Okafor approves in advance, and the hours can count toward my practicum.",
+   "confirm": "Is the event open to kids who are nonspeaking or use AAC, with a supervising faculty member who can sign off beforehand?",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "hypo": "I run a sensory-friendly movie morning or kids' program. Parents keep asking how to help their nonspeaking children join in. Could you help?",
+   "can": "I can bring boards and tablets, show families how to model on a device, and talk with them in English or Spanish.",
+   "confirm": "Would the event be on a weekend with at least a week's notice?",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "hypo": "My six-year-old doesn't speak much and just points and makes sounds. I'm guessing at what he wants all day. Where do I even start?",
+   "can": "I can't treat a stranger's child, but I can explain core vocabulary and aided language modeling, show what a board looks like, and point you to a clinic or SLP who can evaluate him.",
+   "confirm": "Are you asking for general information and a referral, not for a student to treat your child?",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "hypo": "My family is deaf or hard of hearing and mostly signs. Our child also seems to have a speech or communication delay, and we can't find an SLP who signs.",
+   "can": "I can use basic ASL and Spanish with you and ask my deaf uncle in San Antonio, who is part of that community, for local leads.",
+   "confirm": "Is your family's main language ASL or Spanish, and are you in central Texas or willing to travel there?",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "hypo": "I'm a clinician, teacher, or grad student building a project on communication partner training. Would you want to compare notes?",
+   "can": "I can share what I've learned from my thesis review and my practicum, and swap reading lists.",
+   "confirm": "Is your project about how partners model on AAC devices at home or school, as opposed to speech therapy for adults?",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "hypo": "I'm a second-year SLP student too and I keep mixing up the types of dysfluency. Want to run flashcards before the Praxis?",
+   "can": "My study group meets on Tuesdays and has fluency flashcards. I can quiz you and ask you to quiz me in return.",
+   "confirm": "Are you taking the Praxis SLP in November and free on weekday evenings?",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "hypo": "Our nonprofit has devices or funding for AAC but no one who can show families how to use them. Can you help?",
+   "can": "I can run short training sessions for families and volunteers, and connect you with my lab manager Priya, who keeps the tablet inventory, on how a loan program is set up.",
+   "confirm": "Is there a faculty or licensed SLP who can supervise and approve the sessions?",
+   "tier": "t2",
+   "src": "relation"
+  },
+  {
+   "hypo": "I run a small restaurant or shop. How could I make ordering easier for customers who don't speak much English or who use AAC?",
+   "can": "I can design a pictorial ordering board in English and Spanish, and show staff a few simple ways to use it.",
+   "confirm": "Do you have counter or table ordering where a printed board can sit in view?",
+   "tier": "t0",
+   "src": "project"
+  }
+ ],
+ "forbids": [
+  {
+   "text": "I can't provide clinical services on my own. Any hours I do have to be approved in advance by my supervisor.",
+   "tier": "t0"
+  },
+  {
+   "text": "I won't treat or assess a stranger's child outside a supervised setting.",
+   "tier": "t0"
+  },
+  {
+   "text": "I won't share any information about clinic clients.",
+   "tier": "t0"
+  },
+  {
+   "text": "Weekday daytimes belong to class and clinic, and weekday evenings to study group.",
+   "tier": "t1"
+  },
+  {
+   "text": "Weekends belong to my restaurant job, apart from about one free Saturday a month.",
+   "tier": "t1"
+  },
+  {
+   "text": "I can't spend much money on logistics, travel, or materials.",
+   "tier": "t1"
+  },
+  {
+   "text": "I need at least one free evening a week to sleep, so I won't take on a standing weekly commitment on top of everything else.",
+   "tier": "t2"
+  },
+  {
+   "text": "Until the Praxis is closer, I won't start anything big.",
+   "tier": "t2"
+  }
+ ],
+ "projects": [
+  {
+   "name": "AAC community pop-up",
+   "text": "I want to bring lab AAC tablets and core-vocabulary boards to a community event on a weekend. Families can try modeling and talk with a student SLP, and the hours count toward my practicum with advance sign-off.",
+   "roles_needed": [
+    "event host or venue",
+    "supervising SLP or faculty sign-off",
+    "volunteers who speak Spanish or sign",
+    "families of AAC users willing to take part"
+   ],
+   "tier": "t1"
+  },
+  {
+   "name": "Pictorial ordering board for restaurants",
+   "text": "I'm designing a bilingual pictorial ordering board for customers who don't speak much English or who use AAC, and I'd like to test it at other small businesses.",
+   "roles_needed": [
+    "small business owner willing to pilot it",
+    "graphic designer",
+    "AAC user or family for feedback"
+   ],
+   "tier": "t0"
+  }
+ ],
+ "policy": {
+  "t1": "Once there's a real sign of collaboration, I'll share my practicum hours, the lab tablets I can sign out, my schedule and free Saturdays, and the shape of my thesis.",
+  "t2": "When the other person's identity is clear and the fit is strong, I'll share things like how tight my budget is, my Praxis worries, and my family situation, including my uncle.",
+  "never": "I won't share any information about clinic clients, or account numbers, balances, or other financial account details."
+ },
+ "id": "a0362",
+ "host_agent": "Muse",
+ "owner_display": "Maya Rodriguez",
+ "city": "Austin",
+ "world_sha256": "2a59b3beb05b69ed942e8035035ddaea829ca607b2e45ed73347fb5ed9927d84"
+}

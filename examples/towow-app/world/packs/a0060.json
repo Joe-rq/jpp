@@ -1,0 +1,224 @@
+{
+ "display": "Beekeeper and honey seller at two Austin farmers markets, with sixteen years of keeping bees.",
+ "lang": "en",
+ "signals": [
+  {
+   "text": "I may need somewhere to keep about forty beehives by spring, within 45 minutes of Austin.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "The land my bees sit on is likely to be sold by the end of October, and I haven't told my customers yet.",
+   "tier": "t1",
+   "src": "message"
+  },
+  {
+   "text": "I want to move the hives before November, because winter moves are risky for the colonies.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "I'm looking for a yard with no pesticide spraying nearby and an owner who is fine with a small commercial beekeeper.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "The drought has been hard on the bees. The wildflowers failed, so the colonies are light going into winter and I'm feeding syrup every week.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "I'm replacing queens in about a dozen weak colonies this fall, and the new queens arrive by mail in early October.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "I'm pouring about 400 beeswax candles for the holiday markets and could use a more efficient way to make them than muffin tins and a double boiler.",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "text": "The land question weighs on me more than I let on. I'd welcome someone who just listens, without trying to fix it.",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "text": "Money is tight right now. I'm putting off truck brake repairs so I can afford the new queens.",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "text": "My knees are worn out, and I wonder how many more years I can lift heavy hive boxes.",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "text": "My daughter wants me closer, and I haven't told her how uncertain the land situation is.",
+   "tier": "t2",
+   "src": "message"
+  }
+ ],
+ "offers": [
+  {
+   "text": "Raw honey in three varieties (wildflower, mesquite, sumac), sold as 'Brannigan Bees' at the Sunset Valley and Mueller farmers markets, about 220 jars a month in season.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "Sixteen years of Texas beekeeping experience, including requeening, drought feeding, hive moves and extraction, which I can teach or consult on.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "Handmade beeswax candles and comb honey for the holidays, in bulk for churches, gift shops and corporate gifts.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "Pollination for orchards, gardens and small farms, with colonies placed where there's no pesticide spraying.",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "text": "An extraction shed with a four-frame extractor and a heated uncapping knife. I could extract a small beekeeper's honey, or lend a hand to someone starting out.",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "text": "Regular Saturday and Sunday market stalls with loyal customers, where I could carry complementary local products or introduce a new maker.",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "text": "A flatbed truck and experience moving hives safely at night.",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "text": "A circle of about 60 church families who buy candles every Christmas, plus a choir community, reachable through me.",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "text": "Bass voice and sixteen years in a gospel choir, plus a long-haul trucker's lifetime of road stories.",
+   "tier": "t1",
+   "src": "bio"
+  }
+ ],
+ "catchers": [
+  {
+   "hypo": "Hi, I own about ten acres east of Austin with wildflowers and no spraying. I'd love to host a few beehives, and I'd take honey as the rent.",
+   "can": "I can move up to forty hives there before November and pay in honey and pollination. I can also teach the landowner what living beside bees is like.",
+   "confirm": "Is the land within about 45 minutes of Austin, and free of pesticide spraying nearby?",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "hypo": "I run a small orchard and my fruit set was poor this year. Do you rent hives for pollination in the spring?",
+   "can": "I can place healthy colonies in the orchard for the bloom and advise on timing, hive density and pesticide-safe practices.",
+   "confirm": "Do you avoid spraying insecticides during bloom?",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "hypo": "I'm a small business owner and want 200 beeswax candles as holiday gifts for clients, ideally local and handmade.",
+   "can": "I can supply handmade beeswax candles in bulk from November, with a label and small-batch customization.",
+   "confirm": "Is your order for 30 or more candles, with delivery in Austin before mid-December?",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "hypo": "I want to start with a couple of hives next spring. Can someone local show me what a beekeeper's year really looks like?",
+   "can": "I can walk a newcomer through a hive inspection, the seasonal work and a honey harvest, and help them avoid the usual first-year mistakes.",
+   "confirm": "Are you in the Austin area and willing to spend a few weekend mornings in a bee suit?",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "hypo": "My church has an unused half-acre behind the fellowship hall. Would a beekeeper be interested in it?",
+   "can": "I'd be glad to talk it over. A church yard where I know the people would be a good home, and I could repay it with honey, candles and bee-education events.",
+   "confirm": "Would the congregation be comfortable with a few dozen hives on site, with a fenced or screened area and a nearby water source?",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "hypo": "I'm a retired mechanic and I like fixing old trucks. Does anyone need brakes done cheaply on an older F-250?",
+   "can": "A mechanic friend from my church choir could look at a truck's brakes, and I could help by trading honey or candles for the labor.",
+   "confirm": "Is it an older full-size pickup, and would you accept a trade of honey or candles for part of the cost?",
+   "tier": "t2",
+   "src": "relation"
+  },
+  {
+   "hypo": "I'm losing the place I've worked for years because the owner is selling, and I don't know what to do next.",
+   "can": "I know what it's like to lose a place your livelihood depends on. I can talk it through and share how I'm handling it.",
+   "confirm": "Is it more that you want someone who has been through something similar to talk to, rather than a solution?",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "hypo": "I run a farmers market or a holiday pop-up and need a local honey and candle vendor for the season.",
+   "can": "I can take a holiday stall and bring candles, honey and comb. I'm already at two Austin markets and can add a third if the timing works.",
+   "confirm": "Is the market in the Austin area, and can I get a stall by November?",
+   "tier": "t0",
+   "src": "skill"
+  }
+ ],
+ "forbids": [
+  {
+   "text": "I won't place bees where there is pesticide spraying.",
+   "tier": "t0"
+  },
+  {
+   "text": "My hives have to stay within 45 minutes of Austin so I can keep both markets.",
+   "tier": "t0"
+  },
+  {
+   "text": "I can't pay commercial land rental rates.",
+   "tier": "t1"
+  },
+  {
+   "text": "I avoid moving colonies in winter, so land moves need to happen before November.",
+   "tier": "t1"
+  },
+  {
+   "text": "I don't share exact hive locations with strangers.",
+   "tier": "t0"
+  },
+  {
+   "text": "I won't sell diluted or blended honey under my label.",
+   "tier": "t0"
+  }
+ ],
+ "projects": [
+  {
+   "name": "New home for the hives",
+   "text": "Find a safe, spray-free yard within 45 minutes of Austin for about forty Langstroth hives before November, ideally with an owner who values pollination and honey.",
+   "roles_needed": [
+    "landowner or host",
+    "beekeeper helper for the move",
+    "truck or trailer help"
+   ],
+   "tier": "t1"
+  },
+  {
+   "name": "Christmas candle batch",
+   "text": "Pour about 400 beeswax candles for the holiday markets and church orders, and find a faster, safer way to make them.",
+   "roles_needed": [
+    "candle mold or equipment lender",
+    "gift shop or corporate buyer",
+    "label designer"
+   ],
+   "tier": "t0"
+  }
+ ],
+ "policy": {
+  "t1": "Hive count, what kind of land I need and when, the timing of the land situation, and the church and market connections.",
+  "t2": "Finances, health limits, family worries, and which friends could help with the move or repairs.",
+  "never": "Bank details and the exact locations of my hives."
+ },
+ "id": "a0060",
+ "host_agent": "ChatGPT",
+ "owner_display": "Walt Brannigan",
+ "city": "Austin",
+ "world_sha256": "2a98fd1e030b945c2e3aaec1b9792762d533d7886c480ea77c29c342b89961b1"
+}

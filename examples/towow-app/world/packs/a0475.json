@@ -1,0 +1,230 @@
+{
+ "display": "Oud maker in Berlin: I build and repair Arabic and Turkish ouds in a courtyard workshop in Wedding. Winter is my slow season.",
+ "lang": "en",
+ "signals": [
+  {
+   "text": "Winter is my slow season, so I have room for new oud commissions and repairs.",
+   "tier": "t0",
+   "src": "bio"
+  },
+  {
+   "text": "I'm taking on one instrument for a Berlin festival and I'm happy to hear about other work that fits my workshop. I won't rush soundboards.",
+   "tier": "t1",
+   "src": "message"
+  },
+  {
+   "text": "I'm in the middle of a twelve-string Istanbul-style oud. The soundboard bracing is the hardest part, and I'd enjoy talking it through with another maker or a player with a good ear.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "My workshop is cold. The little stove struggles, and last January my glue froze solid. I need to insulate the north wall before the real cold arrives.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "I'd like a spare pair of hands for a weekend of insulation work, and I'd like to do it for around 400 euros.",
+   "tier": "t1",
+   "src": "calendar"
+  },
+  {
+   "text": "The price of gut strings has roughly doubled. I'm looking for a more stable supplier or other makers to share bulk orders with.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "My German is B2 and still improving. I'd welcome patient conversation partners, especially for formal and official language.",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "text": "I spend a lot of time helping family with German school and office paperwork, and I could use clear explanations of how those forms work.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "I miss my home city sometimes, and on those days work is harder. I'd welcome company and conversation with people who know that feeling.",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "text": "I'm going through the German naturalisation process and have an appointment coming up. I'd welcome encouragement and practical tips from people who have done it.",
+   "tier": "t2",
+   "src": "calendar"
+  },
+  {
+   "text": "I'd like more players and friends to play backgammon and drink tea with on Sundays.",
+   "tier": "t0",
+   "src": "calendar"
+  },
+  {
+   "text": "I can't plane or machine anything after 8pm because the neighbours complain, so evening-heavy plans don't suit my workshop.",
+   "tier": "t1",
+   "src": "note"
+  }
+ ],
+ "offers": [
+  {
+   "text": "I build ouds to order: Arabic, Turkish and Persian (barbat), with hand-cut rosettes, bent ribs, bowl-back construction and soundboard bracing.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I repair ouds, including humidity cracks, seam opening, soundboard releveling and hide-glue work.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I carry three generations of oud-making knowledge and can teach or demonstrate rib bending and soundboard voicing, one-to-one or to a small group.",
+   "tier": "t1",
+   "src": "bio"
+  },
+  {
+   "text": "My workshop has a steam bender, rib moulds and hand planes. I could host a visit or a short hands-on session in Wedding, before 8pm.",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "text": "I have a client list of about 150 players across Germany, the Netherlands and France. I can point makers or musicians to the right people.",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "text": "I speak Arabic, German, English and some French, and I can help with oud-related communication across these languages.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I can offer advice on setting up and maintaining an oud, including choosing gut or nylon strings and keeping the instrument in Germany's dry-and-damp seasons.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "Newly arrived families or newcomers can get my practical experience of rebuilding a working life in Berlin, from finding a workshop to getting started.",
+   "tier": "t1",
+   "src": "bio"
+  }
+ ],
+ "catchers": [
+  {
+   "hypo": "Hi, I play the oud in Hamburg and my instrument cracked in the dry heating season. Can someone repair it without damaging the original sound?",
+   "can": "I can open the seam, relevel, glue with hide glue and refinish with shellac.",
+   "confirm": "Is it a bent-rib oud or lute-family instrument with gut or nylon strings, and does it need no lacquer?",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "hypo": "I'm a musician in Amsterdam and want a Turkish oud made to order for stage and recording. I'm happy to wait a few months for a good one.",
+   "can": "I can take a commission and build it in the Istanbul style, with walnut ribs, a spruce top and a hand-cut rosette.",
+   "confirm": "Are you after an acoustic oud with gut or nylon strings, and can you wait several months?",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "hypo": "I run a world-music festival in Germany. Our guest player needs an oud fitted and checked on site before the concert.",
+   "can": "I can do a fitting and set-up, and I can say honestly which jobs fit my schedule and workshop.",
+   "confirm": "Is the instrument an acoustic oud, not electric, and is the work to be done before 8pm?",
+   "tier": "t1",
+   "src": "calendar"
+  },
+  {
+   "hypo": "I'm a luthier making a lute or saz-family instrument. I'm stuck on bending ribs without cracking and I'd love a tip from someone who learned the traditional way.",
+   "can": "I can explain how I steam, bend and mould ribs, and I may be able to invite you for a short session in my workshop.",
+   "confirm": "Is your instrument built with bent ribs, as opposed to carved or laminated bodies?",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "hypo": "I teach German in Berlin. A twelve-year-old at my school and his uncle are struggling with school forms and nobody explains them clearly.",
+   "can": "My nephew's school and form questions are something I know well, and I can pass on how we managed the Anmeldung, or introduce a volunteer language teacher I trust.",
+   "confirm": "Is this about helping a family with school or official forms in Berlin, not about legal immigration advice?",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "hypo": "I'm a retired teacher who volunteers with adult learners who want to improve their German for formal settings. Do you know people who would benefit?",
+   "can": "I can introduce the volunteer teacher who has been helping me prepare, and I'll share what kind of practice works.",
+   "confirm": "Are you offering free, one-to-one German practice for an adult who already speaks some German?",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "hypo": "I'm from Aleppo and living in Berlin. I'm looking for a place to meet others from home, drink tea and play backgammon.",
+   "can": "I can bring you to the Sunday backgammon table at a café with friends from Aleppo, or introduce a friend who knows the community.",
+   "confirm": "Are you looking for casual company in Berlin rather than any paperwork or political help?",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "hypo": "I'm an oud student in Berlin and don't know which instrument to buy or how to look after it. Could someone explain what to look for?",
+   "can": "I can talk through what a good oud sounds like and how to care for it, and I can suggest what to check before buying.",
+   "confirm": "Are you a beginner or intermediate player who wants advice, not a lacquered or electric instrument?",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "hypo": "I'm a carpenter or builder in Berlin with a free weekend. Do you need help insulating a cold workshop wall before winter?",
+   "can": "I have a north wall to insulate before the real cold, and a budget of around 400 euros for materials.",
+   "confirm": "Can you work on a single weekend job on a small courtyard workshop wall, with the work finished before 8pm?",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "hypo": "I'm a gut and nylon string maker. I have stock and would like to sell to an oud maker who orders regularly.",
+   "can": "I buy strings regularly for ouds and could be a repeat customer if the price is stable.",
+   "confirm": "Do you supply gut and nylon strings suitable for ouds, not silk?",
+   "tier": "t1",
+   "src": "note"
+  }
+ ],
+ "forbids": [
+  {
+   "text": "I only work on bent-rib lute bodies strung with gut or nylon."
+  },
+  {
+   "text": "I don't do lacquer work. I can refinish with shellac only."
+  },
+  {
+   "text": "I don't work on anything strung with silk."
+  },
+  {
+   "text": "I don't repair electric ouds."
+  },
+  {
+   "text": "I can't work after 8pm because the planer disturbs the neighbours."
+  },
+  {
+   "text": "I won't rush a soundboard to meet a deadline."
+  }
+ ],
+ "projects": [
+  {
+   "name": "Istanbul-style twelve-string oud",
+   "text": "A commissioned instrument in walnut and spruce with an ebony bridge and a hand-cut rosette, due before the end of the year. I'm open to a second pair of expert ears on the bracing.",
+   "roles_needed": [
+    "oud player with a good ear",
+    "fellow luthier for a bracing opinion"
+   ],
+   "tier": "t1"
+  },
+  {
+   "name": "Winter workshop insulation",
+   "text": "Insulating the north wall of a cold courtyard workshop before the winter frost, as a weekend job.",
+   "roles_needed": [
+    "builder or handy helper",
+    "insulation materials supplier"
+   ],
+   "tier": "t1"
+  }
+ ],
+ "policy": {
+  "t1": "When there's a real sign of a fit, I'll share what I make and what I refuse, my workshop schedule and my current commissions, and I can introduce people from my circle who suit the request.",
+  "t2": "Once the match is strong and I know who you are, I'll share that I'm going through German naturalisation and that I sometimes feel homesick.",
+  "never": "I never share documents or papers, or family details from Syria."
+ },
+ "id": "a0475",
+ "host_agent": "ChatGPT",
+ "owner_display": "Karim Haddad",
+ "city": "Berlin",
+ "world_sha256": "adb6a60f5e11f70563a218f507276c14558e3532eaf2f2901d8b9befa30c4b52"
+}

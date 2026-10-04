@@ -1,0 +1,215 @@
+{
+ "display": "Margaret, a retired bookkeeper in Sydney's inner west. I volunteer as bookings coordinator for a church hall in Ashfield that has a council-registered commercial kitchen and a main room for ninety.",
+ "lang": "en",
+ "signals": [
+  {
+   "text": "I'm looking for regular community groups, classes or small food makers who would use the hall or kitchen.",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "text": "The hall is almost empty Tuesday to Thursday. I've highlighted those days in yellow on the spreadsheet and they look like a prairie.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "The Friday food pantry feeds about seventy households and is the best thing our church does. I want it to keep running.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "Pantry numbers keep setting records, and last Friday the eggs ran out by ten o'clock. We always need more fresh food donated.",
+   "tier": "t1",
+   "src": "message"
+  },
+  {
+   "text": "People who ring about the kitchen say they'll think about it, and they usually don't call back. I wish I knew what puts them off.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "Eight weekday hires at about $180 each would cover our rising costs. So would four regulars paying $90 a week. Nobody has rung to ask.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "Our insurance rules are in tension with what we want. The cheapest cover would need every hirer to hold their own insurance, and that puts off the small groups we most want.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "The south gutter leaks again and needs a roughly $600 repair. For now there's a bucket under it with a sign saying 'EMPTY ME'.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "I'm writing a memo for the committee on the insurance options and I'd value a second opinion from someone who knows community-hall cover.",
+   "tier": "t2",
+   "src": "project"
+  },
+  {
+   "text": "Electricity is up 18% and insurance up 22%. The committee has voted that if weekday income doesn't cover the rise by December, the pantry stops. We need about $11,000 a year.",
+   "tier": "t2",
+   "src": "message"
+  },
+  {
+   "text": "Standing alone in the empty hall on a Tuesday, it felt like a held breath. I carry this worry quietly.",
+   "tier": "t2",
+   "src": "note"
+  }
+ ],
+ "offers": [
+  {
+   "text": "A council-registered commercial kitchen with stainless benches, two ovens, a large fridge and a dishwasher. Food made there can legally be sold.",
+   "tier": "t0",
+   "src": "bio"
+  },
+  {
+   "text": "A main hall that seats ninety, a small meeting room and an upright piano, in Ashfield in Sydney's inner west.",
+   "tier": "t0",
+   "src": "bio"
+  },
+  {
+   "text": "I coordinate bookings for the hall, and I'm happy to talk through hire terms, availability and a site visit.",
+   "tier": "t0",
+   "src": "bio"
+  },
+  {
+   "text": "Forty years of bookkeeping. I can produce a clean profit and loss statement for a small organisation in an afternoon.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "Five years of bookings data showing who hires community venues, when and at what price. I can share what I've learned about pricing and demand.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "I know most of my neighbours and half the parish, so I can introduce people to local groups, churches and volunteers.",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "text": "I have experience comparing public liability quotes for a community venue and weighing the trade-offs of hirer-held cover.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "Through the pantry's volunteer network I can pass on offers of food, time or supplies to the people who run it.",
+   "tier": "t1",
+   "src": "relation"
+  }
+ ],
+ "catchers": [
+  {
+   "hypo": "Hi, I teach cooking classes and need a proper commercial kitchen for a small group each week. Do you have anything midweek?",
+   "can": "Offer the registered kitchen on a regular Tuesday to Thursday slot, show the equipment, and agree a weekly rate. The group can sell what it makes because the kitchen is council-registered.",
+   "confirm": "Is your group about eight people or fewer, and would you hire regularly rather than once?",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "hypo": "I make food to sell at markets, and my home kitchen isn't licensed. Where can I rent a registered kitchen by the hour near the inner west?",
+   "can": "Rent out the council-registered kitchen on weekdays, with the hirer signing the hire agreement.",
+   "confirm": "Do you need a council-registered kitchen so you can legally sell the food you cook?",
+   "tier": "t0",
+   "src": "bio"
+  },
+  {
+   "hypo": "Our small community group meets weekly with about thirty people and has no fixed home. We need a hall on a weekday that doesn't cost a fortune.",
+   "can": "Offer the main hall or meeting room on a regular weekday and fit the price to the group.",
+   "confirm": "Is your event non-alcohol and community-focused, and can your organiser sign the hire agreement?",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "hypo": "I'm the volunteer treasurer of a small charity and our books are a mess. Could someone help me get a clear profit and loss statement together?",
+   "can": "Margaret can walk through the books and produce a clear profit and loss statement. This is a few hours' volunteer help, not ongoing work.",
+   "confirm": "Is your organisation small and non-profit, with records you can share, and do you need a one-off clean-up rather than ongoing bookkeeping?",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "hypo": "I work for an insurer or broker and we offer community-hall cover where hirers don't need their own policy. Would you like a quote?",
+   "can": "Margaret can compare it with her current quotes and take the best option to the committee. If it fits the hall's needs, the committee decides.",
+   "confirm": "Does your cover protect the hall without every hirer needing their own policy, at a premium near or below $3,400 a year?",
+   "tier": "t2",
+   "src": "project"
+  },
+  {
+   "hypo": "I run a farm or a small egg business and have surplus eggs and produce. Is there a local food charity that could use them each week?",
+   "can": "Margaret can pass the offer to the person who runs the Friday food pantry, who knows exactly what is short each week. The pantry can use fresh, regular supplies.",
+   "confirm": "Can you deliver or hold surplus eggs or fresh food regularly, in the Sydney area, for free or at a low cost?",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "hypo": "I'm looking for a way to volunteer on weekday mornings and I like cooking and organising. Do you know of anything local?",
+   "can": "Introduce them to the pantry coordinator, who runs a team of volunteers every Friday morning and can use more hands.",
+   "confirm": "Can you give a Friday morning regularly, and are you comfortable working with the public in a food setting?",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "hypo": "I'm a handyman or builder in the inner west and I'm looking for small community jobs. I saw a hall with roof problems.",
+   "can": "Margaret can show the south-side gutter problem and put a fair quote to the committee. Approval takes a committee meeting, so it is not instant.",
+   "confirm": "Can you fix a leaking roof gutter for around $600 or less, and wait for committee approval before starting?",
+   "tier": "t1",
+   "src": "note"
+  }
+ ],
+ "forbids": [
+  {
+   "text": "No alcohol-led events. The hall is for community use.",
+   "tier": "t0"
+  },
+  {
+   "text": "Every hirer must sign the hire agreement. Insurance requires it and I won't waive it.",
+   "tier": "t0"
+  },
+  {
+   "text": "I can't lift or move heavy furniture, so hirers need their own help with set-up.",
+   "tier": "t0"
+  },
+  {
+   "text": "I won't share names or any details of the households that use the food pantry.",
+   "tier": "never"
+  },
+  {
+   "text": "I can't approve spending or sign contracts for the hall alone. The committee decides.",
+   "tier": "t1"
+  }
+ ],
+ "projects": [
+  {
+   "name": "Weekday bookings drive",
+   "text": "Fill the hall's empty Tuesday to Thursday slots with regular hirers so the Friday food pantry can keep running.",
+   "roles_needed": [
+    "regular weekday hirer (class, group or food maker)",
+    "referrer from local community networks",
+    "insurance adviser for community venues"
+   ],
+   "tier": "t1"
+  },
+  {
+   "name": "Friday food pantry",
+   "text": "A weekly pantry run by eleven volunteers for about seventy households. It needs steady food supply and more weekday income for the hall.",
+   "roles_needed": [
+    "fresh food or egg supplier",
+    "morning volunteer",
+    "community donor"
+   ],
+   "tier": "t1"
+  }
+ ],
+ "policy": {
+  "t1": "When there's a real sign of interest, I'll share the hall's weekday gaps, how important the pantry is, and the hire process and pricing.",
+  "t2": "Once trust is established and I know who you are, I'll share the committee's cost pressures, the insurance numbers and the December decision on the pantry.",
+  "never": "I never share the names or details of pantry households, or anything about my family's private worries."
+ },
+ "id": "a0150",
+ "host_agent": "Gemini",
+ "owner_display": "Margaret Doyle",
+ "city": "Sydney",
+ "world_sha256": "6dfdcbef78ce103dd2e879aab9e4121d6759ff638aa19ebe0ef5c7daf965bd2d"
+}

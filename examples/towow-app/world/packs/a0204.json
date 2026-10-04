@@ -1,0 +1,255 @@
+{
+ "display": "Dale Whitcombe, a wild mushroom foraging guide in Victoria, BC. After 15 years in forestry I now lead small-group walks on southern Vancouver Island: chanterelles in fall, morels in spring. I get a steady stream of Mandarin inquiries and want to launch Mandarin-language tours in spring 2027.",
+ "lang": "en",
+ "signals": [
+  {
+   "text": "I keep getting Mandarin emails and WeChat messages asking for a Chinese-speaking foraging guide, and I keep having to say no. That is three times this month.",
+   "tier": "t0",
+   "src": "message"
+  },
+  {
+   "text": "I want to launch Mandarin-language walks in spring 2027, starting with early morels around April, but I haven't worked out who would guide them.",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "text": "Half the Asian cruise-ship tourists on my walks ask about matsutake, and we only get a few. I need an honest way to handle that.",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "text": "On my last walk, two couples from Taipei were whispering about whether to eat what we found. I wish I could have explained the real ID details in their language.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "A Vancouver tour operator asked about a group of 12 retired teachers from Shanghai. I had to say English only for now and keep in touch.",
+   "tier": "t1",
+   "src": "message"
+  },
+  {
+   "text": "I can't offer tasting on walks because my insurance doesn't clearly cover it. My broker wants a written protocol with a species list, an ID method and a named sign-off.",
+   "tier": "t1",
+   "src": "message"
+  },
+  {
+   "text": "My own ID skill is solid, but it is one person's opinion. I need a mycologist willing to review and co-sign an ID protocol.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "I'm looking for a way to turn the Mandarin interest into bookings and not leave it at 'next year'. Spring 2027 is six months away.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "Park permit applications open November 1, and I have to log my harvest numbers.",
+   "tier": "t1",
+   "src": "calendar"
+  },
+  {
+   "text": "My cabin deck rebuild is behind schedule and the joists are sitting under a tarp. Rain delays and the cost are both a drag.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "Last year's cider went flat by March. This year I have 60 litres in the carboy and would like advice on keeping it from stalling.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "I'm tired after a heavy season of weekend walks, long drives and not enough field bags. It has been a good year, though.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "Income drops sharply from January to March, and I want an off-season line of work.",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "text": "I worry about a poisoning claim if a client eats something wrong, and that worry is why I haven't moved faster on tasting.",
+   "tier": "t2",
+   "src": "note"
+  }
+ ],
+ "offers": [
+  {
+   "text": "Small-group guided foraging walks, six at a time and capped at eight, on southern Vancouver Island, with a hot field lunch.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "Nine years of guiding and about 1,100 clients. I know 40+ edible species well, with a field ID set and a pressed spore-print collection.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "Commercial guiding permits for four provincial and regional park areas near Sooke and Port Renfrew.",
+   "tier": "t1",
+   "src": "bio"
+  },
+  {
+   "text": "A client email list of about 2,300 and a website with a booking calendar, which could carry a launch announcement.",
+   "tier": "t1",
+   "src": "bio"
+  },
+  {
+   "text": "A 2017 Ford Transit with seats for eight and a gear trailer, for ground transport on tours.",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "text": "First Aid Level 3 and a wilderness first responder ticket.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "Fifteen years in forestry, including timber cruising and tree planting. I can read forest terrain, land and access.",
+   "tier": "t0",
+   "src": "bio"
+  },
+  {
+   "text": "Home cider pressing with a hand press, and field soup for groups (lentil and chorizo, three litres at a time).",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "A relationship with Vancouver tour operators who already send Mandarin-speaking group inquiries.",
+   "tier": "t1",
+   "src": "message"
+  }
+ ],
+ "catchers": [
+  {
+   "hypo": "I'm a Mandarin-English bilingual who loves mushrooms and the outdoors. Would you want a co-guide or interpreter for Mandarin walks next spring?",
+   "can": "Trial them as an interpreter or co-guide on spring 2027 walks, train them on species and safety, and set up a paid or revenue-share arrangement.",
+   "confirm": "Are you fluent in spoken Mandarin and comfortable with a full day outdoors on uneven forest ground, up to six hours of walking?",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "hypo": "I run tours out of Vancouver for Chinese-speaking groups. I have 12 retired teachers from Shanghai who want a foraging experience on the Island. Can you host them in Mandarin?",
+   "can": "Run the walk in spring or fall with an interpreter, in groups of eight or fewer. Dale can arrange transport in his van and work out pricing.",
+   "confirm": "Can your group be split into parties of eight or fewer per guide, and will it travel in the April-to-October season?",
+   "tier": "t1",
+   "src": "message"
+  },
+  {
+   "hypo": "I'm visiting from Taiwan in October and would love to find matsutake. Can you guide me, and in Chinese?",
+   "can": "Be honest that matsutake are scarce. Offer a chanterelle walk now, or put them on the Mandarin list for 2027 with an interpreter.",
+   "confirm": "Are you happy to go on a walk where matsutake are possible but not guaranteed, and do you understand you must not eat anything the guide hasn't confirmed?",
+   "tier": "t0",
+   "src": "message"
+  },
+  {
+   "hypo": "I'm a mycologist at a university or a mushroom society. I could review an ID protocol for commercial foraging tours and sign off on it.",
+   "can": "Write the species list, ID method and sign-off into a documented protocol, which is what Dale's insurance broker asked for before any tasting.",
+   "confirm": "Are you a practising mycologist or credentialed ID expert for Pacific Northwest edible species, willing to put your name on a written protocol?",
+   "tier": "t1",
+   "src": "message"
+  },
+  {
+   "hypo": "I'm an insurance broker who writes cover for outdoor-guide businesses. I've covered wild-food tours with a documented ID protocol before.",
+   "can": "Compare cover options for tasting on tours and learn what protocol the underwriter needs, so Dale can decide whether Mandarin tasting walks are viable.",
+   "confirm": "Have you actually placed liability cover for tours where clients eat foraged wild mushrooms, in Canada?",
+   "tier": "t1",
+   "src": "message"
+  },
+  {
+   "hypo": "I'm a nurse educator and we want a short talk on wild mushroom poisoning for hospital or health-unit staff.",
+   "can": "Dale can give a practical talk on look-alikes and safe ID. He can also reach nursing colleagues through his wife, who works as a nurse at a Victoria hospital.",
+   "confirm": "Is this an educational talk on safe identification and look-alikes, and not a request for medical diagnosis or treatment advice?",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "hypo": "I have an apple tree and don't know what to do with the fruit. I'd love someone to press it or teach me to make cider.",
+   "can": "Connect them with Howard, Dale's neighbour and cider partner, to share pressing and fermentation experience.",
+   "confirm": "Do you have at least 50 kg of apples within driving distance of Sooke, and are you open to sharing the cider?",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "hypo": "I'm a Mandarin-speaking student or translator in Victoria. I'd love a weekend field gig and I'd like to learn about wild food.",
+   "can": "Bring them on as a paid or in-kind interpreter on fall or spring walks, and teach them species and safety.",
+   "confirm": "Are you available on weekends in the fall or spring, and comfortable with long walks in the forest and with translating safety instructions?",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "hypo": "I run a cruise or tourism business bringing Asian visitors to Victoria. I want to add a nature-based half-day with a licensed local guide.",
+   "can": "Add a scheduled walk of eight or fewer guests with a hot lunch, with Mandarin support from spring 2027.",
+   "confirm": "Can your guests be split into groups of eight or fewer and travel about an hour to Sooke or Port Renfrew?",
+   "tier": "t1",
+   "src": "project"
+  }
+ ],
+ "forbids": [
+  {
+   "text": "Groups are capped at eight, because the permits allow no more.",
+   "tier": "t0"
+  },
+  {
+   "text": "I don't guide in the heat of August.",
+   "tier": "t0"
+  },
+  {
+   "text": "I won't offer tasting on walks without proper insurance cover and a documented ID protocol.",
+   "tier": "t0"
+  },
+  {
+   "text": "I won't confirm or tell clients to eat any wild mushroom I haven't identified myself.",
+   "tier": "t0"
+  },
+  {
+   "text": "I can't run walks every weekend, and Sundays in winter are family time.",
+   "tier": "t1"
+  },
+  {
+   "text": "I only guide in the four permitted areas near Sooke and Port Renfrew, not elsewhere on the Island.",
+   "tier": "t1"
+  },
+  {
+   "text": "I limit steep descents on long routes.",
+   "tier": "t1"
+  },
+  {
+   "text": "I don't currently guide in Mandarin and won't claim to until there is a qualified guide or interpreter.",
+   "tier": "t0"
+  }
+ ],
+ "projects": [
+  {
+   "name": "Mandarin-language foraging tours, spring 2027",
+   "text": "Launch Mandarin tours around April for early morels, and fold in chanterelles in the fall. Open questions: who guides, how to handle tasting, and what insurance allows.",
+   "roles_needed": [
+    "Mandarin-speaking co-guide or interpreter",
+    "Mycologist for the ID protocol",
+    "Insurance broker with experience of tasting cover",
+    "Mandarin-speaking tour operator or marketing partner (WeChat)"
+   ],
+   "tier": "t0"
+  },
+  {
+   "name": "Documented ID and tasting protocol",
+   "text": "A written protocol with a species list, ID method and named sign-off, to satisfy the insurer so tasting can be offered safely.",
+   "roles_needed": [
+    "Mycologist",
+    "Insurance broker",
+    "Bilingual technical writer or translator"
+   ],
+   "tier": "t1"
+  }
+ ],
+ "policy": {
+  "t1": "When there is a real lead, share group sizes, pricing, permits, and the insurance and ID-protocol hurdles.",
+  "t2": "Once trust is high and the other party is clear, share the seasonal income gaps in winter and my personal concerns about poisoning risk.",
+  "never": "My home address, family medical details, and any health information about me or my family."
+ },
+ "id": "a0204",
+ "host_agent": "ChatGPT",
+ "owner_display": "Dale Whitcombe",
+ "city": "Victoria (Vancouver Island)",
+ "world_sha256": "3dca55cfcffac72397499b85e93ece2c766e7b3a98200fecd0c5fec076474f38"
+}

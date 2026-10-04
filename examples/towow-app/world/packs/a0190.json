@@ -1,0 +1,228 @@
+{
+ "display": "Bangkok-based documentary producer making a feature film about the Mekong giant catfish and the people who fished it, looking for river data, river sound, and the upstream half of the story.",
+ "lang": "en",
+ "signals": [
+  {
+   "text": "A European broadcaster likes my Mekong giant catfish film but wants 'data and sound, not just faces', and I don't have either yet.",
+   "tier": "t0",
+   "src": "message"
+  },
+  {
+   "text": "I'm looking for hydrological and river-monitoring data on the Mekong (flow, water level, sediment, fish migration) that a film can use.",
+   "tier": "t0",
+   "src": "message"
+  },
+  {
+   "text": "I want a sound world that feels like the river itself, so I need someone who can record or design a Mekong soundscape.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "The film has only the downstream side. I need upstream voices, such as engineers, scientists and river-basin people on the Chinese side, who are people on the same water and not villains.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "I have almost no Chinese-language sources or contacts, and I need someone to help me read, translate and make introductions.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "I have a pitch slot at a regional documentary forum in March 2027, a submission deadline in January, and a first pitch deck draft due at the end of October. The team is still forming.",
+   "tier": "t1",
+   "src": "calendar"
+  },
+  {
+   "text": "I have a development budget but no production budget, so I'm looking for collaborators who can join at the development stage on modest terms or in-kind.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "My grandfather's photos and catch notebooks are scattered across boxes and houses. I need help with digitising, cataloguing and reading them (the notebooks may be in Lao or northern Thai).",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "My treatment is a lament and I want it to become an investigation. I'd like to talk with someone who has made data-driven or science-led documentaries.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "I'm stretched between the film, a half-finished home renovation that is three months late, and family. I'd welcome anyone who has carried a big creative project through this kind of overload.",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "text": "I have doubts about whether I can turn the promise into a full package in six months and would value a frank outside reader.",
+   "tier": "t2",
+   "src": "note"
+  }
+ ],
+ "offers": [
+  {
+   "text": "Fifteen years in documentary production, with credits on two broadcast nature documentaries.",
+   "tier": "t0",
+   "src": "bio"
+  },
+  {
+   "text": "I can write and pitch documentary treatments and decks for international forums and broadcasters.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I have a working relationship with a commissioning editor at a European public broadcaster, and I'm happy to bring a good collaborator into the conversation when there is a real fit.",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "text": "A pitch slot at a regional documentary forum in March 2027, where I can credit and showcase collaborators on the team.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "Contacts in Thai, Lao and Cambodian fishing communities along the Mekong, through my late grandfather, who fished the river.",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "text": "I'm a Thai–British bilingual speaker (Thai and English) and can host and guide visiting researchers, sound recordists and crews in Bangkok and northern Thailand.",
+   "tier": "t0",
+   "src": "bio"
+  },
+  {
+   "text": "A production office above a noodle shop in Talat Noi, Bangkok, by the river, which can serve as a base for meetings or short work stays.",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "text": "Archive material: family photographs from the 1980s Chiang Khong catfish fishery and my grandfather's catch notebooks, which can be used in a film with the family's consent.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "I'm a futsal player who will happily take part in a casual Bangkok match with other players.",
+   "tier": "t0",
+   "src": "note"
+  }
+ ],
+ "catchers": [
+  {
+   "hypo": "I'm a hydrologist working on Lancang-Mekong flow data. I'd like to see my data used in a film that treats upstream engineers as people and not as villains.",
+   "can": "Ploy can describe the film's structure, explain what data the broadcaster expects, and offer a credited role as scientific adviser. Whether she can use specific datasets depends on the source's licence.",
+   "confirm": "Is your data something you are allowed to share for use in a film, with credit?",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "hypo": "I'm a field recordist who has captured river and fishing sounds along the Mekong, and I'm looking for a long-form film to build a soundscape for.",
+   "can": "Ploy can bring the recordist into the development of the film's sound design and give access to fishing communities for new field recordings.",
+   "confirm": "Have you recorded or sound-designed on a river or fishing site, and are you available to work at development-stage rates?",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "hypo": "I'm a Chinese-speaking researcher or journalist in Yunnan or Beijing who has covered the Lancang dams. I'd like to talk to someone making a balanced film about the river.",
+   "can": "Ploy can talk through the film's perspective, and introduce the upstream voice she is missing as a contributor or interviewee, with respect to the permissions needed for any filming in China.",
+   "confirm": "Are you willing to speak on the record or help her find people who are, and do you read Chinese sources fluently?",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "hypo": "I'm a translator of Lao or northern Thai texts, and I have just been asked to read handwritten fishing notebooks.",
+   "can": "Ploy's cousin Nok in Chiang Khong holds their late grandfather's catch notebooks and can photograph them. Ploy can connect the translator with Nok and brief them on what the film needs from the notebooks.",
+   "confirm": "Can you read handwritten Thai or Lao fishing records, and can you take on a small paid or in-kind job?",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "hypo": "I'm a documentary editor or story consultant who has helped turn a portrait film into an argument-driven one.",
+   "can": "Ploy can share her treatment and the broadcaster's feedback, and have a working conversation on how to turn the film into an investigation.",
+   "confirm": "Have you edited or consulted on a feature documentary that mixes personal story with data or science?",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "hypo": "I'm a director of a regional documentary forum or a co-production fund looking for projects from Southeast Asia that already have broadcaster interest.",
+   "can": "Ploy can describe the project, her pitch slot and what she still lacks, and discuss funding or partnership routes for the production stage.",
+   "confirm": "Do you fund or co-produce at production stage, and not only provide grants for development?",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "hypo": "I'm a freshwater fish biologist who studies the Mekong giant catfish and I'm worried that the story is disappearing from public view.",
+   "can": "Ploy can offer the film as a vehicle for the science, and ask for help fact-checking the fish and fishery history. Her family's archive, including the 1987 Chiang Khong catch photo, can ground the story.",
+   "confirm": "Have you published or done fieldwork on the giant catfish or the Mekong fishery?",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "hypo": "I run a shared studio or archive space in Bangkok and I'm looking for projects about the Mekong river that need a place to meet.",
+   "can": "Ploy can host meetings at her production office in Talat Noi and bring the people who are working on the film's development.",
+   "confirm": "Are you based in Bangkok and able to meet in person in the next few weeks?",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "hypo": "My family has fished the Mekong for generations around Chiang Khong or Chiang Saen, and I'd like to tell our story before it is lost.",
+   "can": "Ploy's cousin Nok lives near Chiang Khong and knows the community. Ploy can introduce the family to the film and talk through what taking part would involve.",
+   "confirm": "Does your family have a direct history of fishing the giant catfish on the Mekong, and are you willing to be filmed?",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "hypo": "I'm a parent of a teenager who wanted to leave school for online study. I've been through a hard family conversation about it.",
+   "can": "Ploy can listen and compare notes, and Tom, her husband, could join the conversation as the other parent.",
+   "confirm": "Have you gone through this decision with a teenager yourself, and would you share what happened?",
+   "tier": "t2",
+   "src": "relation"
+  }
+ ],
+ "forbids": [
+  {
+   "text": "I can't pay production-level fees yet, because my budget only covers development until the pitch.",
+   "tier": "t1"
+  },
+  {
+   "text": "I won't film in China without the proper permission.",
+   "tier": "t0"
+  },
+  {
+   "text": "I won't portray people on the upstream side as villains. The film should present everyone as sharing the same water.",
+   "tier": "t0"
+  },
+  {
+   "text": "I won't use my grandfather's photographs or notebooks, or my family's story, without the family's consent.",
+   "tier": "t1"
+  },
+  {
+   "text": "I can't take on large new commitments before the pitch deck draft is due on 31 October.",
+   "tier": "t1"
+  }
+ ],
+ "projects": [
+  {
+   "name": "The Last Giants (working title)",
+   "text": "A feature documentary about the collapse of Mekong giant catfish fishing, told through three generations of a fishing family, with an upstream perspective and real river data and sound. It is being developed for a pitch slot at a regional documentary forum in March 2027.",
+   "roles_needed": [
+    "Hydrologist or river data scientist",
+    "Field recordist or sound designer",
+    "Chinese-speaking researcher, translator or fixer for the upstream perspective",
+    "Lao or northern Thai translator for archive material",
+    "Story consultant or editor for the data-driven structure",
+    "Freshwater fish biologist as scientific adviser",
+    "Co-producer or production-stage funder"
+   ],
+   "tier": "t1"
+  }
+ ],
+ "policy": {
+  "t1": "When there is a real sign of fit, I'll share the pitch date, what the package lacks (the upstream perspective, data and sound), and the limits of my development budget.",
+  "t2": "Once trust and fit are clear, I'll talk openly about family pressures and my doubts about the project.",
+  "never": "Family medical details and the contract terms with the broadcaster."
+ },
+ "id": "a0190",
+ "host_agent": "Gemini",
+ "owner_display": "Ploy Hartley",
+ "city": "Bangkok",
+ "world_sha256": "950ca7342c0ca5d13df974b391be1bdc0dbb7200e342b21e6a4a606b6ed7eb75"
+}

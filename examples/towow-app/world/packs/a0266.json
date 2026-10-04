@@ -1,0 +1,238 @@
+{
+ "display": "Australian cook from Perth working the broth station at a small ramen shop in Koenji, Tokyo.",
+ "lang": "en",
+ "signals": [
+  {
+   "text": "My apartment renewal contract is three pages of formal keigo Japanese and I can't read it. Someone who can explain it would help a lot.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "The contract mentions a one-month renewal fee, a cleaning fee and a guarantor company. I don't know whether that is normal in Japan or whether I'm being overcharged.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "The renewal deadline is October 20 and I keep opening the PDF and closing it.",
+   "tier": "t1",
+   "src": "calendar"
+  },
+  {
+   "text": "I'm scared of signing something I can't read, and of being asked to leave if I don't sign.",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "text": "My working holiday visa ends in April. I want to know whether switching to a work visa is realistic, and what a sponsor needs to do. My boss says he'll think about it.",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "text": "I work long shifts, from 6am to about 9pm, so I have almost no time or energy for paperwork or errands.",
+   "tier": "t1",
+   "src": "message"
+  },
+  {
+   "text": "I miss Perth, the beaches and the Cottesloe water. I'd like to meet other Aussies or homesick expats in Tokyo.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "My Japanese is kitchen vocabulary only (about N4). I want to learn everyday and formal Japanese, like reading letters and contracts.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "I want to ride the whole Tamagawa cycling road, 50 km each way, before winter, and I'd like a riding buddy.",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "text": "I've logged every broth batch for 18 months and can now explain why the Tuesday batch is thinner. I'd like to turn the notebook into something useful.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "I'm torn between staying in Tokyo, where I've only just got good at this craft, and going home to Perth as my friends keep telling me to.",
+   "tier": "t2",
+   "src": "message"
+  },
+  {
+   "text": "I need to work out what comes after the working holiday year, whether that's another kitchen, another visa or going home.",
+   "tier": "t1",
+   "src": "note"
+  }
+ ],
+ "offers": [
+  {
+   "text": "I make tonkotsu broth with a 14-hour pork bone simmer and run two 60-litre pots, and I can explain the process and the pitfalls.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I prepare shoyu tare and chashu, and I can talk through ratios, timing and technique.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I keep a batch-by-batch log (bone weight, water, simmer time, ambient temperature, tasting notes) and know how to find why a stock varies. I can share that method with anyone running a stock kitchen.",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "text": "I know two former head chefs in Perth who rate me, and I can make introductions in the Perth hospitality scene.",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "text": "I have an Instagram account with 900 followers, mostly broth photos, that can feature a small food project or collaboration.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I'm a native English speaker and can do English conversation practice in exchange for Japanese practice.",
+   "tier": "t0",
+   "src": "bio"
+  },
+  {
+   "text": "I know restaurant Japanese and can help a visitor or newcomer with kitchen and ramen shop vocabulary around Koenji.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I have a road bike and know the Zenpukuji river route. On days off I can ride with someone.",
+   "tier": "t0",
+   "src": "bio"
+  },
+  {
+   "text": "I hold a valid Australian driver licence and a Japanese international permit, and can share driving on a trip.",
+   "tier": "t1",
+   "src": "skill"
+  }
+ ],
+ "catchers": [
+  {
+   "hypo": "Hi, I'm learning English and want a language exchange partner. I'll help with Japanese, including formal writing and keigo, if you help with English.",
+   "can": "Liam is a native English speaker and wants to improve his reading. He can do regular exchange sessions, and he could bring the renewal contract as a real practice text.",
+   "confirm": "Is this a real two-way exchange where Liam would also get help with practical Japanese, rather than a paid English class?",
+   "tier": "t0",
+   "src": "bio"
+  },
+  {
+   "hypo": "I'm opening a small ramen or noodle place overseas and my broth is inconsistent from batch to batch. Could I talk through my process with someone who runs big pots?",
+   "can": "Liam can walk through his batch-logging method and the variables he tracks, drawing on 18 months of tonkotsu and shoyu work in a working kitchen. He can't give out his shop's own recipe.",
+   "confirm": "Is your problem consistency or scale in pork-bone or soy-based broth, rather than a vegan or non-Japanese stock?",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "hypo": "I'm a food writer or photographer working on a piece about foreign cooks in Tokyo ramen shops. Could I talk with you about your day?",
+   "can": "Liam can tell his story of the 6am start and the 14-hour broth, and share photos from his Instagram. The shop's name and the boss's approval would need to be handled separately.",
+   "confirm": "Are you after a story about the craft and daily life in the kitchen, rather than a promotional piece or anything involving the shop's recipes?",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "hypo": "I'm an Aussie visiting Tokyo for a week and want to eat proper ramen in the neighbourhood with someone who speaks both languages.",
+   "can": "Liam can recommend ramen shops in Koenji and help with ordering and kitchen vocabulary on a day off. Beyond that he can talk about home, including the Perth surf.",
+   "confirm": "Are you visiting for a few days and happy to meet on one of Liam's days off?",
+   "tier": "t0",
+   "src": "bio"
+  },
+  {
+   "hypo": "I run a café or restaurant in Perth and I'm looking for someone with real Japanese kitchen experience when they come home next year.",
+   "can": "Liam can pass this to his friend Jack in Perth and to his two former head chefs there, who rate him. He would also consider it himself, but only after April.",
+   "confirm": "Is the role in Perth and is it for someone who can start from next April or later?",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "hypo": "I'm a foreign tenant in Japan who got a renewal contract with a renewal fee, a cleaning fee and a guarantor company. I want to talk to others who have been through it.",
+   "can": "Liam is dealing with exactly the same thing before October 20. He can swap what he learns, and he can share the clauses he's unsure about with people who are willing to look at them.",
+   "confirm": "Are you also in Tokyo with a Japanese-language renewal contract that you'd read together, rather than asking Liam to pay for a service?",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "hypo": "I moved abroad and I'm homesick. I saw that you're an Aussie in Tokyo missing the ocean. Would you want to chat sometimes?",
+   "can": "Liam knows that feeling and can talk with a fellow expat on a day off or a quiet evening. It is friendship, not counselling.",
+   "confirm": "Are you looking for peer company from someone who is also far from home, rather than professional counselling?",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "hypo": "I'd love to ride the Tamagawa cycling road before winter. Do you know the route and want company?",
+   "can": "Liam wants to ride all 50 km each way before winter and has a road bike, so he can plan a day-off ride with a partner.",
+   "confirm": "Can you ride about 100 km round trip at a steady pace on one of Liam's days off?",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "hypo": "I'd like to spend a few days seeing how a small ramen shop works. I can't pay, but I can help with prep.",
+   "can": "Liam can ask his boss Kobayashi, who has thirty years at the stove and speaks little. Liam can't promise anything for him and would only pass on the request.",
+   "confirm": "Are you asking for a short, unpaid observation visit that Liam passes on to the boss, rather than a job or a formal training place?",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "hypo": "My friend and I fish near Tokyo on Sundays and are looking for someone new to come along.",
+   "can": "Liam and his coworker Tanaka already fish on Sundays. Liam would join an outing on a day off, and could connect Tanaka's group with another one.",
+   "confirm": "Is this a casual Sunday fishing trip near Tokyo that someone can join without any experience?",
+   "tier": "t0",
+   "src": "relation"
+  }
+ ],
+ "forbids": [
+  {
+   "text": "I can't make long-term commitments in Japan because my working holiday visa ends in April.",
+   "tier": "t0"
+  },
+  {
+   "text": "I'm only free outside my shop shifts of roughly 6am to 9pm, so mainly on days off.",
+   "tier": "t0"
+  },
+  {
+   "text": "I can't pay for a lawyer or a paid agent.",
+   "tier": "t1"
+  },
+  {
+   "text": "I won't sign a contract I can't understand.",
+   "tier": "t1"
+  },
+  {
+   "text": "I won't share my savings or my passport details with anyone.",
+   "tier": "t0"
+  }
+ ],
+ "projects": [
+  {
+   "name": "Broth consistency log",
+   "text": "An 18-month notebook of every tonkotsu and shoyu batch (bone weight, water, simmer time, ambient temperature, tasting notes), which Liam wants to turn into something others can use.",
+   "roles_needed": [
+    "data-minded collaborator",
+    "food writer or editor",
+    "ramen shop owner willing to test the method"
+   ],
+   "tier": "t1"
+  },
+  {
+   "name": "Cycling the Tamagawa",
+   "text": "A day-off ride of the whole Tamagawa cycling road, 50 km each way, before winter.",
+   "roles_needed": [
+    "riding companion",
+    "someone who knows the route"
+   ],
+   "tier": "t0"
+  }
+ ],
+ "policy": {
+  "t1": "When someone seems genuinely able to help, I'll share the specific contract clauses I'm unsure about, my long shifts and my broth-log method.",
+  "t2": "Once I trust someone and know who they are, I'll tell them how scared I am about signing and my visa timeline, including that it ends in April.",
+  "never": "I never share my savings or my passport details."
+ },
+ "id": "a0266",
+ "host_agent": "Dot",
+ "owner_display": "Liam Carter",
+ "city": "Tokyo",
+ "world_sha256": "19265401034f9781fd509d53366108a0a5f165945240d01edb8e391491cc345a"
+}

@@ -1,0 +1,242 @@
+{
+ "display": "Retired London geography teacher, clearing her late father's flat, who is looking for someone to identify and care for an old seven-string instrument.",
+ "lang": "en",
+ "signals": [
+  {
+   "text": "I have a long, fretless, seven-string wooden instrument with cracked lacquer, and I still don't know exactly what it is.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "I posted a photo of it online and asked who repairs fretless instruments. The replies so far have been 'looks Chinese, maybe antique' and 'are you selling?'.",
+   "tier": "t0",
+   "src": "message"
+  },
+  {
+   "text": "I would rather the instrument were played again than sold.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "I'm clearing a flat that has to be empty by the end of November, and the study is the one room I haven't touched.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "Two auction houses and a dealer have looked at the instrument. The dealer said the finish looks like very old Chinese lacquer over cloth, and warned me not to varnish it or let anyone glue it.",
+   "tier": "t1",
+   "src": "message"
+  },
+  {
+   "text": "I found a notebook of Chinese characters in my father's handwriting, with a pencil sketch of the instrument beside one of them, and I can't read any of it.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "There are rolled scrolls and a box of slides in the study that I can't identify or date.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "I'm worried the instrument will be damaged if it is moved. It has stayed in one place for over fifty years and is fragile.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "My father worked on China for the Foreign Office in the 1960s. I know very little about those years and would like to understand them before the flat is emptied.",
+   "tier": "t2",
+   "src": "bio"
+  },
+  {
+   "text": "My daughter wants everything consigned to auction because it's tidier, and I'm holding out. She has a fair point that I can't even say what the instrument is.",
+   "tier": "t2",
+   "src": "message"
+  },
+  {
+   "text": "I feel I'm clearing someone else's flat. Much of my father's life is in a script and a history I can't follow.",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "text": "My grandson wants to cycle across Central Asia on his gap year and thinks phones are enough. I'd like him to have proper maps and some planning help.",
+   "tier": "t0",
+   "src": "relation"
+  },
+  {
+   "text": "Slugs ate my whole row of lettuce. Eggshells did nothing and the beer trap caught 41, so I'm looking for tips that actually work.",
+   "tier": "t0",
+   "src": "note"
+  }
+ ],
+ "offers": [
+  {
+   "text": "Thirty-four years of teaching geography. I'm good with maps, atlases and archives, and patient with detail.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I can help a young traveller plan a route with maps and terrain, or explain what a place is actually like on the ground.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I'm an alto in a community choir and can sing in a group or help with an amateur concert.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I have an allotment in Archway and can give practical advice on a winter plot, manure, bed covers and slug control.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I have access to my father's 1960s papers, photographs and slides, and I can photograph and catalogue them for a researcher.",
+   "tier": "t1",
+   "src": "bio"
+  },
+  {
+   "text": "I can host a careful in-person visit to see the instrument in a stable-temperature room, in London and by appointment.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "I can give a player, teacher or museum a long-term loan or a place to play the instrument, if it stays in the UK and is handled carefully.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "My daughter is a solicitor and can advise on the legal side of a loan or donation.",
+   "tier": "t2",
+   "src": "relation"
+  },
+  {
+   "text": "I have time before the end of November to sort the study methodically, and I'm happy to give useful materials to anyone who can read them.",
+   "tier": "t1",
+   "src": "calendar"
+  }
+ ],
+ "catchers": [
+  {
+   "hypo": "I play and teach the guqin, the seven-string Chinese zither. From your description it sounds like one. Could I see photos and the strings?",
+   "can": "She can send photos and arrange a careful visit in London so a player can confirm what the instrument is, and she would welcome it being played.",
+   "confirm": "Do you personally play or teach the seven-string fretless guqin, as opposed to the guzheng or pipa?",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "hypo": "I'm a conservator of East Asian lacquer and stringed instruments. Please don't glue or varnish anything. I can assess the cracking and advise on safe storage.",
+   "can": "She can arrange an assessment on site, with no shipping, and has a limited repair budget of a few thousand pounds at most.",
+   "confirm": "Can you assess and stabilise old cracked Chinese lacquer on cloth without relining or revarnishing it, and do the work in London?",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "hypo": "I read classical and modern Chinese. If you send a photo of a handwritten notebook page, I can tell you what the columns of characters are.",
+   "can": "She can photograph the notebook pages and scrolls and send them for a first reading, which could also identify the instrument her father sketched.",
+   "confirm": "Can you read mid-20th-century handwritten Chinese notes and brush-written scrolls, not just printed text?",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "hypo": "I research British diplomats and Hong Kong in the 1960s. Do you have photographs or papers from that period that might be worth cataloguing?",
+   "can": "She can share dated photographs and slides, and later more of her father's papers once trust is established.",
+   "confirm": "Do you work on 1960s British Foreign Office or Hong Kong history, and can you look at private family papers carefully?",
+   "tier": "t2",
+   "src": "bio"
+  },
+  {
+   "hypo": "I'm at a UK museum or Chinese music society. We could take a long-term loan of an old guqin so it can be played and studied, with no sale and no export.",
+   "can": "She is open to a loan or donation to a UK institution where the instrument will be played and not shipped abroad. Her daughter can handle the paperwork.",
+   "confirm": "Can your institution keep the instrument in the UK, in stable conditions, and let it be played?",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "hypo": "I'm planning a long cycle trip across Central Asia and have never learned to read terrain maps properly. Could someone help me prepare?",
+   "can": "She can teach map and terrain reading and route planning herself, and she can pass the request to her grandson Oscar, who is planning the same kind of trip.",
+   "confirm": "Are you planning a self-supported cycle trip through Central Asia in the next year?",
+   "tier": "t0",
+   "src": "relation"
+  },
+  {
+   "hypo": "I'm clearing my late parent's house and found things I can't identify. How did you decide what to keep and what to sell?",
+   "can": "She can listen and share what has worked for her, including taking the time to wait for answers.",
+   "confirm": "Are you in the middle of clearing a late parent's home under a deadline, and not looking for a house-clearance or auction service?",
+   "tier": "t1",
+   "src": "bio"
+  },
+  {
+   "hypo": "I run a community choir and need an experienced alto for a winter concert or an occasional workshop.",
+   "can": "She sings alto with an existing choir, so she can join occasionally and introduce her choir friend Pam.",
+   "confirm": "Is this an amateur community choir in London, rather than a paid professional engagement?",
+   "tier": "t0",
+   "src": "relation"
+  },
+  {
+   "hypo": "I'm a London allotment holder who has beaten slugs organically. This is what worked on my lettuces.",
+   "can": "She can swap trial results and try the method on her own plot.",
+   "confirm": "Have you controlled slugs on an allotment without slug pellets, and can you show it worked?",
+   "tier": "t0",
+   "src": "note"
+  }
+ ],
+ "forbids": [
+  {
+   "text": "I won't sell the instrument.",
+   "tier": "t0"
+  },
+  {
+   "text": "I won't have the instrument shipped abroad. It is old and fragile and has been in this flat since 1971.",
+   "tier": "t0"
+  },
+  {
+   "text": "No one is to varnish, re-lacquer or glue the instrument.",
+   "tier": "t1"
+  },
+  {
+   "text": "I can't pay more than a few thousand pounds for repairs.",
+   "tier": "t1"
+  },
+  {
+   "text": "I can't take anything on that conflicts with clearing the flat by the end of November.",
+   "tier": "t1"
+  },
+  {
+   "text": "I won't hand over my father's personal letters, or discuss the finances of his estate.",
+   "tier": "t0"
+  }
+ ],
+ "projects": [
+  {
+   "name": "Find a future for the seven-string instrument",
+   "text": "Identify the old fretless seven-string instrument from my father's study, have it assessed without damage, and place it where it will be played again, in the UK and not sold.",
+   "roles_needed": [
+    "guqin player or teacher",
+    "East Asian lacquer or instrument conservator",
+    "museum or music-society curator",
+    "Chinese-language reader"
+   ],
+   "tier": "t1"
+  },
+  {
+   "name": "Reading my father's study",
+   "text": "Read and catalogue the 1960s Foreign Office-era notebook, scrolls, slides and photographs in my father's study before the flat is emptied at the end of November.",
+   "roles_needed": [
+    "Chinese-language reader",
+    "historian of 1960s Hong Kong and Britain",
+    "archivist or photograph cataloguer"
+   ],
+   "tier": "t2"
+  }
+ ],
+ "policy": {
+  "t1": "When there's a real lead, I'll share what dealers and auction houses said, my wish to see the instrument played, the end-of-November deadline, photos and measurements of the instrument and non-personal pages of the notebook, and my limits on repair budget and handling.",
+  "t2": "Once the other party is clearly identified and a collaboration looks likely, I'll share family context, my father's China-era history, my grief, and the tension with my daughter about selling.",
+  "never": "I won't share the financial details of the estate or the contents of my father's personal letters."
+ },
+ "id": "a0421",
+ "host_agent": "Muse",
+ "owner_display": "Eleanor Whitcombe",
+ "city": "London",
+ "world_sha256": "61c98e92cf48f8b5c58e3eb0ebd3ca24b01cc5ef2b3a8688ee5f50be91104ac9"
+}

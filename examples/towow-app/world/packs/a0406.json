@@ -1,0 +1,210 @@
+{
+ "display": "Music therapist in Berlin running weekly music groups for Arabic-speaking refugee children, with a cupboard of donated instruments and a small instrument budget to spend.",
+ "lang": "en",
+ "signals": [
+  {
+   "text": "I'm looking for someone who can build or source a child-sized (short-scale) oud, because the children recognise the instrument from home and can't hold the adult-sized ones we have.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "I have about €3,000 of instrument budget that has to be committed by 30 November, and I'd rather spend it on something the children asked for than on the list I drafted.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "I don't know what a child-sized oud costs or who makes one, and every shop I've found is in Istanbul or Cairo and very expensive.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "I have one donated oud with a soundboard crack of about 15 cm running from the bridge. Glue won't hold it and I can't bring myself to throw it out.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "I need two written quotes for any outside repair or commission, so I'm looking for makers or repairers willing to give a proper quote quickly.",
+   "tier": "t1",
+   "src": "message"
+  },
+  {
+   "text": "I'd like to know how other music therapists keep a group going when families can be moved at short notice.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "I'd like to connect with Arabic-speaking musicians or oud players who could safely visit a children's group, within child-protection rules.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "I'm learning Arabic (lesson eleven) and want more song material in Arabic, especially lullabies and children's songs.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "I'm training for a half-marathon on 18 October, so I can't take on unpaid extra work right now.",
+   "tier": "t0",
+   "src": "calendar"
+  },
+  {
+   "text": "Some sessions are emotionally heavy. I try not to build too much into a group that may vanish, but I do anyway.",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "text": "I'm short on sleep and my own stress is creeping up, and I haven't taken a proper holiday.",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "text": "A housing problem at home (recurring mould) is wearing me down.",
+   "tier": "t2",
+   "src": "note"
+  }
+ ],
+ "offers": [
+  {
+   "text": "Music therapist with a Master's from UDK Berlin and four years of clinical practice with children, including children who communicate mainly through sound and rhythm rather than words.",
+   "tier": "t0",
+   "src": "bio"
+  },
+  {
+   "text": "I run three weekly groups of about eight children each. They are drum, singing and improvisation sessions that don't depend on shared language.",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "text": "A cupboard of donated instruments (hand drums, kalimba, two xylophones, two adult-sized ouds, a keyboard) that I can lend for a demonstration or trial.",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "text": "A quiet room with a good floor for drum circles, in the nonprofit's building in Moabit.",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "text": "I administer an instrument and supplies budget, so I can commission a repair or a build, with two written quotes.",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "text": "About two hundred Arabic song titles and basic Arabic greetings, plus the phrases 'where does it hurt', 'do you want to play' and 'we can wait'.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I can brief a visiting musician or maker on how to be with children in a therapeutic setting, and on the consent and safety rules.",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "text": "I can give honest feedback on whether an instrument works for small hands, because I try each one out with the children.",
+   "tier": "t0",
+   "src": "project"
+  }
+ ],
+ "catchers": [
+  {
+   "hypo": "I'm a luthier in Berlin and I've built a short-scale oud for my niece. Would a child-sized oud be of any use to you?",
+   "can": "I can arrange a trial with the children, take a commission through the nonprofit's budget with two quotes, and give honest feedback on playability.",
+   "confirm": "Can you build or supply a playable oud with a scale length suited to a child aged 6–12, and give a written quote before December?",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "hypo": "I repair string instruments and I've looked at a photo of a cracked oud top. I think it could be fixed or reinforced.",
+   "can": "I can send you the oud and photos, get a quote, and use it as one of the two quotes the budget requires.",
+   "confirm": "Have you repaired a cracked soundboard on a plucked instrument (a crack of about 15 cm running from the bridge) and can you quote a price?",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "hypo": "I'm an oud player from Syria or Iraq, living in Berlin. I'd like to play for children, but I don't know how to do it safely.",
+   "can": "I can arrange a supervised visit on a Thursday afternoon once child-safety and consent rules are met, and I can brief you beforehand.",
+   "confirm": "Are you able to follow child-protection requirements (such as an extended police certificate) and to visit on a Thursday afternoon?",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "hypo": "I'm a social worker at another shelter. Our children also love music and we have nothing for them. Can you tell me how you got started?",
+   "can": "Through my social-worker colleague I can share how we run the groups and what instruments work, and suggest a first session.",
+   "confirm": "Is your shelter in Berlin, with children who speak Arabic and some staff who can accompany a music group?",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "hypo": "I'm a music therapist or teacher newly working with refugee children. How do you plan sessions when attendance is unpredictable?",
+   "can": "I can share my practice, and my supervisor's habit of recommending small things, and connect you with supervision resources.",
+   "confirm": "Do you work, or plan to work, directly with refugee or displaced children in a group setting?",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "hypo": "I run a small fund or a company with instrument stock. We'd like to donate something specific, not just money.",
+   "can": "I can tell you exactly what the children asked for, within the rules of a nonprofit budget and donations, and give a short wishlist.",
+   "confirm": "Are you offering instruments or funds for a registered nonprofit in Berlin, with a receipt or donation letter?",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "hypo": "I teach Arabic or am a native speaker. I could record children's songs or lullabies for a music group.",
+   "can": "I can use the recordings to learn songs in Arabic for the group and cross-check lyrics against my existing list of about two hundred song titles.",
+   "confirm": "Can you provide children's songs or lullabies in Arabic, with lyrics and permission to use them in a non-commercial group?",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "hypo": "I make or research small-scale instruments (a kalimba, a short-scale lute). I'd like to test them with children who would really use them.",
+   "can": "I can run a short, observed trial in a Thursday group, with consent from carers, and write up what children did with the instrument.",
+   "confirm": "Is the instrument sturdy and safe for children aged 6–12, and can you deliver it before November?",
+   "tier": "t1",
+   "src": "project"
+  }
+ ],
+ "forbids": [
+  {
+   "text": "I don't share names or case details of the children or their families with anyone."
+  },
+  {
+   "text": "I can't spend the nonprofit's budget without two written quotes, and the money has to be committed by 30 November."
+  },
+  {
+   "text": "My groups run on Thursday afternoons, so I can't schedule visits at other times."
+  },
+  {
+   "text": "I won't let any visitor work with the children without child-safety and consent checks."
+  },
+  {
+   "text": "I can't take on unpaid extra work until the half-marathon on 18 October is behind me."
+  },
+  {
+   "text": "I won't use the children's stories for fundraising or publicity."
+  }
+ ],
+ "projects": [
+  {
+   "name": "A child-sized oud for the Thursday group",
+   "text": "Find, commission or adapt an oud that children aged 6–12 can hold and play, using the remaining instrument budget, with two quotes and a decision by late November.",
+   "roles_needed": [
+    "luthier or instrument maker",
+    "string-instrument repairer",
+    "oud player or teacher",
+    "Arabic speaker for songs",
+    "small donor or fund for any gap"
+   ],
+   "tier": "t1"
+  }
+ ],
+ "policy": {
+  "t1": "When there is a real lead, I'll share what the groups need, how much instrument budget is left this year, and its rules (two quotes, a 30 November deadline).",
+  "t2": "Once I trust the other party and know who they are, I'll share anonymised descriptions of what children's situations look like, and something about my own stress and workload.",
+  "never": "Names and case details of the children and their families, and anything that could identify a child."
+ },
+ "id": "a0406",
+ "host_agent": "CUE",
+ "owner_display": "Hannah Berger",
+ "city": "Berlin",
+ "world_sha256": "67475a83278c63c5b0c06687cbad5625c8cc5eecc304b1f1747a71ac566afa9b"
+}

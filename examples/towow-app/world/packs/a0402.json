@@ -1,0 +1,221 @@
+{
+ "display": "Retired district nurse with a long career in Leeds, now volunteering in Chiang Mai.",
+ "lang": "en",
+ "signals": [
+  {
+   "text": "I'd like to use my nursing skills again for people who can't easily get to a clinic.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "I'm looking for ways to be useful in my community beyond the temple class.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "I want to meet people in Chiang Mai who would value basic first-aid and wound-care teaching.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "I'm learning Thai tones and would welcome patient conversation partners, especially around food and everyday words.",
+   "tier": "t1",
+   "src": "message"
+  },
+  {
+   "text": "Most of my week is the Tuesday and Thursday temple class, a Thai lesson and a Saturday hill walk with a hiking group, so I have free time and energy for something more.",
+   "tier": "t1",
+   "src": "calendar"
+  },
+  {
+   "text": "I met women at a market cooperative whose burns and cuts had been poorly dressed, and I'd like to help them properly if there's a way.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "I'm quietly looking for a cheaper home in or near Chiang Mai, ideally around 8,000 baht a month, and I don't know anyone in the hill areas.",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "text": "My rent is going up sharply in December and I haven't told anyone close to me yet.",
+   "tier": "t2",
+   "src": "message"
+  },
+  {
+   "text": "I'm worried about a close relative abroad with early memory problems and the search for a care-home place, and I feel guilty about being far away.",
+   "tier": "t2",
+   "src": "relation"
+  },
+  {
+   "text": "Since retiring I've felt invisible, as though nobody here knows what my career was.",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "text": "I'm not sleeping well and could use a sounding board for the family and housing decisions.",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "text": "I miss being part of a professional team and would enjoy contact with other nurses or health workers.",
+   "tier": "t1",
+   "src": "note"
+  }
+ ],
+ "offers": [
+  {
+   "text": "Thirty years of community nursing experience in wound care, leg ulcers, pressure sores and diabetic foot checks.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I can teach first aid to community groups, school staff, or village cooperatives, in plain English with simple demonstrations.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I can run a simple wound-dressing session with minimal supplies, so it works in places with poor clinic access.",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "text": "I teach conversational English twice a week to teenage novice monks and know how to keep a small group curious.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "I have a kit bag of dressings and a good collection of first-aid books I can use for teaching or lend out.",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "text": "I can check in on how a minor wound or infection is healing and say when it needs a proper clinic visit.",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "text": "I'm a good listener with years of experience sitting with anxious patients and families, and I can accompany someone through a hard health conversation.",
+   "tier": "t1",
+   "src": "bio"
+  },
+  {
+   "text": "I have free weekday afternoons and some Saturdays for volunteer work.",
+   "tier": "t1",
+   "src": "calendar"
+  },
+  {
+   "text": "I can offer English practice and a UK perspective on health-care systems, such as how district nursing and care homes work.",
+   "tier": "t1",
+   "src": "bio"
+  }
+ ],
+ "catchers": [
+  {
+   "hypo": "I run a small weaving cooperative in the hills outside Chiang Mai. Several of our women have burns and cuts, and the nearest clinic is hours away. Would anyone teach us proper first aid?",
+   "can": "Run a hands-on burn and wound first-aid session, using my own supplies and simple Thai-English demonstrations. I'd also pass on a short illustrated guide that the group can keep.",
+   "confirm": "Is this a small group that can gather in one place for a morning or afternoon, with no need for me to carry heavy equipment?",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "hypo": "I'm an NGO coordinator running a health-awareness program for migrant or hill-tribe families, and we need a volunteer with real nursing experience to teach basic wound care.",
+   "can": "Design and deliver a short wound-care and first-aid workshop, in English with a translator, for a small group.",
+   "confirm": "Is the work a short teaching session or series, rather than ongoing clinical treatment of patients?",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "hypo": "I'm a school or temple teacher who needs someone to teach our students and staff first aid, or to check on a minor injury and tell us whether it needs a doctor.",
+   "can": "Teach a first-aid class for students and staff, and advise on whether a minor wound or infection needs a doctor. I can't diagnose or prescribe.",
+   "confirm": "Is the need first-aid teaching or minor-wound advice, and not a request for diagnosis or prescriptions?",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "hypo": "I'm an expat in Chiang Mai whose parent has dementia and lives far away. I feel guilty and overwhelmed, and I'd like to talk to someone who has seen this from the nursing side.",
+   "can": "Listen and share what I know about how care homes and early dementia work in the UK. I can also explain what questions to ask a care-home manager. My brother's situation gives me firsthand understanding.",
+   "confirm": "Do you need someone to talk to and compare notes with, rather than legal, financial, or placement services?",
+   "tier": "t2",
+   "src": "relation"
+  },
+  {
+   "hypo": "I'm a Thai teacher or language partner who would like to swap English conversation for patient Thai tone practice, with plenty of laughing at mistakes.",
+   "can": "Offer regular English conversation and some pronunciation help in exchange for tone practice. I'm a humble and cheerful learner.",
+   "confirm": "Are you happy to practise with a beginner who keeps getting the rising tone wrong?",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "hypo": "I own or manage a modest room or small house in the hills near Chiang Mai and would like a quiet, reliable long-term tenant, ideally someone older who's good with neighbors.",
+   "can": "Take a long-term lease at a modest rent, as a tidy, quiet and community-minded tenant who'd gladly help neighbors with first aid.",
+   "confirm": "Is the place a private room or small unit in or within easy reach of Chiang Mai, at roughly 8,000 baht a month or a bit under?",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "hypo": "I'm a retired nurse or health professional living in Thailand, and I'd like to meet others who share the same background for coffee and for volunteer projects.",
+   "can": "Meet regularly, swap stories and ideas, and join or help start a volunteer health-teaching project.",
+   "confirm": "Are you a current or retired health professional living in or near Chiang Mai, who's interested in volunteering and not just socializing?",
+   "tier": "t1",
+   "src": "bio"
+  },
+  {
+   "hypo": "I'm a British expat in Chiang Mai who has had a hard year and feels the same invisibility after retirement. I'd like some company on walks or over tea.",
+   "can": "Walk or have tea with company. I understand the experience and can be a steady, kind presence.",
+   "confirm": "Are you looking for easy, friendly company, such as hill walks or tea, with no commitment beyond that?",
+   "tier": "t2",
+   "src": "note"
+  }
+ ],
+ "forbids": [
+  {
+   "text": "I don't diagnose, prescribe, or give clinical care as a licensed practitioner in Thailand. I teach, advise on first aid and minor wounds, and say when someone needs a clinic.",
+   "tier": "t0"
+  },
+  {
+   "text": "I have no earned-income arrangements. My volunteer work is unpaid, and I can't take on paid or commercial jobs.",
+   "tier": "t1"
+  },
+  {
+   "text": "I'm staying based in Chiang Mai and won't relocate to another city or country if I can help it.",
+   "tier": "t1"
+  },
+  {
+   "text": "I can't carry heavy loads or do physically demanding work.",
+   "tier": "t1"
+  },
+  {
+   "text": "I won't share personal documents, bank details, or my own medical history.",
+   "tier": "t0"
+  },
+  {
+   "text": "I won't do anything that could put my residence status in Thailand at risk.",
+   "tier": "t1"
+  }
+ ],
+ "projects": [
+  {
+   "name": "Village first-aid and wound-care sessions",
+   "text": "Short, practical first-aid and burn and wound-care sessions for small community groups such as cooperatives, temples, and schools in and around Chiang Mai, with a simple take-home guide.",
+   "roles_needed": [
+    "Thai-English interpreter",
+    "Local community contact or coordinator",
+    "Transport or driver for hill villages",
+    "Graphic designer for a simple illustrated guide",
+    "Local clinic or health-worker partner"
+   ],
+   "tier": "t1"
+  }
+ ],
+ "policy": {
+  "t1": "When there's a real sign of fit, I'll share my nursing skills, how I spend my week, the temple class, and my availability for volunteer teaching.",
+  "t2": "Once the other side is clear and trusted, I'll talk about housing costs, family health worries, and how I actually feel about retirement.",
+  "never": "Bank details, passport and visa documents, my own medical history, and identifying health details about the people I look after or teach."
+ },
+ "id": "a0402",
+ "host_agent": "Gemini",
+ "owner_display": "Margaret Hollis",
+ "city": "Chiang Mai",
+ "world_sha256": "692d94ef8c8a9543c433fc8d192da93075dbda204e9044a6b5d6426f19782dab"
+}
