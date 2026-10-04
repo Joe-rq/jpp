@@ -288,7 +288,7 @@ async def test_joins_persist_restore_and_leave(fake_enc, tmp_path):
 
     await host2.respond(me, "a0042|近况细节", True, "最近一个人在工作室")
     lv = await host2.leave(me)
-    assert lv["removed"]["disclosure_cells"] == 2 and "100 秒" in lv["note"]
+    assert lv["removed"]["disclosure_cells"] == 2 and "随即撤回" in lv["note"]
     assert eng2.read("world", [me]) is None and eng2.keys("unlocked", contains=me) == []
     assert eng2.keys("reply", contains=me) == [] and not host2.authorized(me, tok)
     assert json.load(open(path, encoding="utf-8")) == {}

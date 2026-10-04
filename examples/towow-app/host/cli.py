@@ -138,7 +138,7 @@ def serve(a):
     flags = {f: True for f in (a.flag or [])}
     absp = lambda x: x if (not x or os.path.isabs(x)) else os.path.join(APP_DIR, x)   # noqa: E731
     host = build_real(absp(a.program), port_judge=a.judge, seed=a.seed, flags=flags, device=a.device,
-                      judge_cache=absp(a.judge_cache), keep_text=not a.public)
+                      judge_cache=absp(a.judge_cache), keep_text=not a.public, max_cost=a.max_cost)
     if a.preload:
         from host.simulate import start_preload
         host.after_start.append(start_preload(host, absp(a.preload), n=a.preload_n, seed=a.seed,
@@ -176,6 +176,8 @@ def main(argv=None):
     s.add_argument("--preload-background", action="store_true",
                    help="预载成背景人口：只进索引、被召回、答补信息请求，彼此不判断（真实接入演示用，不花钱）")
     s.add_argument("--seed", type=int, default=0)
+    s.add_argument("--max-cost", type=float, default=None,
+                   help="只收紧：本次启动的判断花费上限（美元），低于程序 budget 时生效（实验用，如预注册 12）")
     s.add_argument("--device", default="mps")
     s.add_argument("--web", default="web/dist")
     s.add_argument("--flag", action="append", help="消融开关，如 --flag no_batch（见 Fable-A §七）")

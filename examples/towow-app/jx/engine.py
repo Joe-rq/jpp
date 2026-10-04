@@ -676,7 +676,10 @@ class Engine:
         k = (fam.name, inst.key)
         if not alive:
             if inst.alive:
-                if defer and writer != "host":
+                # 预注册 15：宿主删除（离开）引起的撤回当场生效——推迟到静止会让离开者在静止前继续进判断，
+                # 且静止前同值再接入会取消删除、不升版本，离开期间撤掉的派生再没人重算（预注册 13，X29-0023/24）
+                leaving = str(getattr(chain, "cause", "")).startswith("remove:")
+                if defer and writer != "host" and not leaving:
                     self._deferred[k] = (fam, inst, depth, chain, writer)
                     self._changed_soon()
                 else:

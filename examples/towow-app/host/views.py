@@ -431,7 +431,7 @@ def opportunities(r: Reader, me: str) -> dict:
         return {**t0_summary(node(i), i), **realness(r, i)}
 
     def gone(i):
-        # 已离开的人（或含他的构型节点）：网络撤回他的边与构型要等进行中的判断走完（实测可到百来秒），这期间不再展示
+        # 已离开的人（或含他的构型节点）：撤回即时生效（预注册 15），这里再挡一道，防止读到同一轮里还没撤完的边
         return (node(i) is None) if str(i).startswith("cfg:") else (r.read("world", [str(i)]) is None)
 
     def named(view, a, b):
