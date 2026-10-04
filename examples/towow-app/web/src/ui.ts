@@ -4,8 +4,9 @@
 import type { Net, NodeRec, ConfigRec, Story, StoryStep } from './net';
 import { shortLabel } from './net';
 import type { SrcKind } from './source';
-import { SHAPE_NAME, TIER_NAMES, MAX_TIER, Q_TEXT, Q_WORD, VALUE_LEVELS, type Shape } from './protocol';
+import { SHAPE_NAME, TIER_NAMES, formLabel, MAX_TIER, Q_TEXT, Q_WORD, VALUE_LEVELS, type Shape } from './protocol';
 import { T } from './style';
+import { formEn, shapeEn, Q_EN, STATUS_EN, TIER_EN, VALUE_EN, cap1, plural } from './captions';
 
 const STATUS: Record<string, string> = {
   sent: '已请求', granted: '已补上', denied: '被拒', escalate: '升级判断', drop: '放下', return: '退回调用方',
@@ -171,35 +172,42 @@ export class UI {
     if (!this.openId) return;
     const n = this.net.nodes.get(this.openId);
     if (!n) {
-      this.panel.innerHTML = `<p class="mine">我的 agent</p><h2>${esc(this.openId)}</h2><p class="sub">还没有接入这张网络。接入后，这里会常驻它的机会。</p>`;
+      this.panel.innerHTML = this.en
+        ? `<p class="mine">My agent</p><h2>${esc(this.openId)}</h2><p class="sub">It has not joined this network yet. Once it does, its opportunities will stay here.</p>`
+        : `<p class="mine">我的 agent</p><h2>${esc(this.openId)}</h2><p class="sub">还没有接入这张网络。接入后，这里会常驻它的机会。</p>`;
       return;
     }
-    const back = this.me && this.openId !== this.me ? `<p class="back" data-id="${esc(this.me)}">回到我的机会</p>` : '';
+    const back = this.me && this.openId !== this.me ? `<p class="back" data-id="${esc(this.me)}">${this.en ? 'Back to my opportunities' : '回到我的机会'}</p>` : '';
     this.panel.innerHTML = back + (n.kind === 'config' ? this.configHtml(n) : this.agentHtml(n));
   }
 
+  private get en() { return this.lang === 'en'; }
+  private status(s: string) { return (this.en ? STATUS_EN : STATUS)[s] ?? s; }
+  private tierName(t: string) { return tierName(t, this.en); }
+  private sep() { return this.en ? ', ' : '、'; }
   private name(id: string) { return esc(this.net.label(id)); }
   /** 角色文字里夹着 agent id（如「中段1→a0371」）：换成名字 */
   private roleText(r: string | undefined): string | undefined {
     if (!r) return r;
-    return r.replace(/\b(a\d{3,6})\b/g, (id) => (this.net.nodes.has(id) ? this.net.label(id) : id)).replace(/\d*→/g, '，交给');
+    return r.replace(/\b(a\d{3,6})\b/g, (id) => (this.net.nodes.has(id) ? this.net.label(id) : id)).replace(/\d*→/g, this.en ? ', hands to ' : '，交给');
   }
 
   private agentHtml(n: NodeRec): string {
-    const where = [n.host ? `${esc(n.host)} 托管` : '', n.city ? esc(n.city) : ''].filter(Boolean).join('，');
+    const en = this.en;
+    const where = [n.host ? (en ? `hosted by ${esc(n.host)}` : `${esc(n.host)} 托管`) : '', n.city ? esc(n.city) : ''].filter(Boolean).join(en ? ', ' : '，');
     const desc = n.full && n.full !== n.label ? `<p class="desc">${esc(n.full)}</p>` : '';
-    const mine = this.me === n.id ? '<p class="mine">我的 agent</p>' : '';
+    const mine = this.me === n.id ? `<p class="mine">${en ? 'My agent' : '我的 agent'}</p>` : '';
     const rec = this.api !== undefined ? this.opps.get(n.id) : undefined;
     let body: string;
     if (rec?.data?.opportunities) body = this.apiOppsHtml(n, rec.data);
-    else body = this.eventOppsHtml(n) + (rec?.err ? '<p class="more">没取到宿主的机会列表，以上是画面里累积的读数。</p>' : '');
+    else body = this.eventOppsHtml(n) + (rec?.err ? `<p class="more">${en ? 'Could not load the host\'s opportunity list. These are the readings gathered on screen.' : '没取到宿主的机会列表，以上是画面里累积的读数。'}</p>` : '');
     return `
       ${mine}<h2>${esc(n.label)}</h2>
-      <p class="sub">${where}${n.alive ? '' : (where ? '，' : '') + '已离开'}</p>
+      <p class="sub">${where}${n.alive ? '' : (where ? (en ? ', ' : '，') : '') + (en ? 'left' : '已离开')}</p>
       ${desc}
-      <h3>披露</h3>
-      ${ladder(n.tier)}
-      <h3>机会</h3>
+      <h3>${en ? 'Disclosure' : '披露'}</h3>
+      ${ladder(n.tier, en)}
+      <h3>${en ? 'Opportunities' : '机会'}</h3>
       ${body}
     `;
   }
@@ -207,30 +215,36 @@ export class UI {
   /** 宿主渲染的机会：顺序照宿主（按价值档位，不按置信度——不同题的读数不能互比）。 */
   private apiOppsHtml(n: NodeRec, d: ApiOpps): string {
     const items = d.opportunities ?? [];
-    if (!items.length) return `<p class="empty">${d.in_progress ? `有 ${d.in_progress} 个机会正在判断。` : '还在被判断，暂时没有成形的机会。'}</p>`;
+    const en = this.en;
+    if (!items.length) return `<p class="empty">${en ? (d.in_progress ? `${d.in_progress} ${d.in_progress === 1 ? 'opportunity is' : 'opportunities are'} being judged.` : 'Still being judged. No opportunity has formed yet.') : (d.in_progress ? `有 ${d.in_progress} 个机会正在判断。` : '还在被判断，暂时没有成形的机会。')}</p>`;
     const shown = items.slice(0, 10).map((o) => {
       const p = o.confidence?.p ?? o.confidence?.conf;
-      const others = o.with.map((w) => esc(this.net.nodes.get(w.id)?.label ?? shortLabel(w.display) ?? w.id)).join('、');
-      const title = o.shape === 'pair' || o.shape === 'relay' ? (o.form ?? SHAPE_NAME[o.shape as Shape]) : `${o.with.length + 1} 方${SHAPE_NAME[o.shape as Shape] ?? o.shape}`;
+      const others = o.with.map((w) => esc(this.net.nodes.get(w.id)?.label ?? shortLabel(w.display) ?? w.id)).join(this.sep());
+      const title = en
+        ? (o.shape === 'pair' || o.shape === 'relay' ? (o.form ? formEn(formLabel(o.form)) : shapeEn(o.shape)) : `${o.with.length + 1}-way ${shapeEn(o.shape)}`)
+        : o.shape === 'pair' || o.shape === 'relay' ? (o.form ?? SHAPE_NAME[o.shape as Shape]) : `${o.with.length + 1} 方${SHAPE_NAME[o.shape as Shape] ?? o.shape}`;
       const unsure = o.confidence?.kind === 'unsure';
       const jump = this.net.nodes.has(o.id) ? o.id : o.with[0]?.id ?? '';
       const lacks = [...(o.lacks ?? []), ...(o.pending ?? [])].map(txt).filter(Boolean).slice(0, 2);
-      const seen = o.tier_seen?.length ? `这一对已释放的层（双方合计）：${o.tier_seen.map(tierName).join('、')}` : '';
-      const meta = [o.my_role ? `我在里面是${esc(o.my_role)}` : '', o.direction && o.direction !== '方向未定' ? esc(o.direction) : '', o.value ? `价值${esc(o.value)}` : ''].filter(Boolean).join('，');
+      const seen = o.tier_seen?.length ? (en ? `Layers released for this pair (both sides): ${o.tier_seen.map((t) => this.tierName(t)).join(', ')}` : `这一对已释放的层（双方合计）：${o.tier_seen.map((t) => tierName(t)).join('、')}`) : '';
+      const meta = en
+        ? [o.my_role ? `my role: ${esc(o.my_role)}` : '', o.direction && o.direction !== '方向未定' ? esc(o.direction) : '', o.value ? `value ${esc(valueEn(o.value))}` : ''].filter(Boolean).join(', ')
+        : [o.my_role ? `我在里面是${esc(o.my_role)}` : '', o.direction && o.direction !== '方向未定' ? esc(o.direction) : '', o.value ? `价值${esc(o.value)}` : ''].filter(Boolean).join('，');
       return `
         <div class="opp" data-id="${esc(jump)}">
-          <div class="row"><span class="form">${esc(title)}</span><span class="conf${unsure ? ' unsure' : ''}">${typeof p === 'number' ? p.toFixed(2) : unsure ? '拿不准' : '—'}</span></div>
+          <div class="row"><span class="form">${esc(title)}</span><span class="conf${unsure ? ' unsure' : ''}">${typeof p === 'number' ? p.toFixed(2) : unsure ? (en ? 'unsure' : '拿不准') : '—'}</span></div>
           <div class="who">${others}</div>
           ${typeof p === 'number' ? `<div class="bar"><i style="width:${Math.round(p * 100)}%"></i></div>` : ''}
           ${o.confidence?.q ? `<div class="q">${esc(o.confidence.q)}</div>` : ''}
-          ${seen || meta ? `<div class="seen">${[seen, meta].filter(Boolean).join('；')}</div>` : ''}
-          ${lacks.length ? `<div class="miss">还缺：${lacks.map(esc).join('；')}</div>` : ''}
-          ${o.plan?.title ? `<div class="plan-line">方案：${esc(o.plan.title)}</div>` : o.plan ? '<div class="seen">方案已写好</div>' : ''}
+          ${seen || meta ? `<div class="seen">${[seen, meta].filter(Boolean).join(en ? '. ' : '；')}</div>` : ''}
+          ${lacks.length ? `<div class="miss">${en ? 'Missing: ' : '还缺：'}${lacks.map(esc).join(en ? '; ' : '；')}</div>` : ''}
+          ${o.plan?.title ? `<div class="plan-line">${en ? 'Plan: ' : '方案：'}${esc(o.plan.title)}</div>` : o.plan ? `<div class="seen">${en ? 'Plan written' : '方案已写好'}</div>` : ''}
         </div>`;
     }).join('');
-    return `<p class="note">置信度是决定这个机会的那一道题的读数，题面写在下面；不同题的读数不互相比较。</p>${shown}
-      ${items.length > 10 ? `<p class="more">另有 ${items.length - 10} 个机会</p>` : ''}
-      ${d.in_progress ? `<p class="more">另有 ${d.in_progress} 个正在判断</p>` : ''}`;
+    const note = en ? 'Confidence is the reading on the one question that decides this opportunity. The question is written below it. Readings on different questions are not comparable.' : '置信度是决定这个机会的那一道题的读数，题面写在下面；不同题的读数不互相比较。';
+    return `<p class="note">${note}</p>${shown}
+      ${items.length > 10 ? `<p class="more">${en ? `${items.length - 10} more` : `另有 ${items.length - 10} 个机会`}</p>` : ''}
+      ${d.in_progress ? `<p class="more">${en ? `${d.in_progress} more being judged` : `另有 ${d.in_progress} 个正在判断`}</p>` : ''}`;
   }
 
   /** 模拟与回放：从事件累积。置信度 = 决定性那道题的读数，题面、已看到的层、补信息的经过和还缺什么都随行。 */
@@ -239,11 +253,14 @@ export class UI {
     const max = this.me === n.id ? 12 : 8;
     const lost = [...n.edges].filter((k) => this.net.edges.get(k)?.state === 'gone').length;
     const cs = this.me === n.id && this.net.cands.size ? this.net.candStats() : null;
-    const tally = cs ? `<p class="tally">网络替我召回了 ${cs.total} 个候选：<b>${cs.held}</b> 个成了机会，<em>${cs.asking}</em> 个在要信息，${cs.dropped} 个判了「不成立」</p>` : '';
-    return `${tally}${opps.length ? '<p class="note">置信度是决定这个机会的那一道题的读数；不同题的读数不互相比较。</p>' : ''}
-      ${opps.length ? opps.slice(0, max).map((o) => this.oppHtml(o)).join('') : '<p class="empty">还在被判断，暂时没有成形的机会。</p>'}
-      ${opps.length > max ? `<p class="more">另有 ${opps.length - max} 个机会</p>` : ''}
-      ${lost ? `<p class="more">${lost} 条关系被否掉，留在海面上的灰痕里</p>` : ''}`;
+    const en = this.en;
+    const tally = cs ? (en ? `<p class="tally">The network recalled ${cs.total} candidates for me: <b>${cs.held}</b> became opportunities, <em>${cs.asking}</em> are asking for information, ${cs.dropped} were judged "no match"</p>` : `<p class="tally">网络替我召回了 ${cs.total} 个候选：<b>${cs.held}</b> 个成了机会，<em>${cs.asking}</em> 个在要信息，${cs.dropped} 个判了「不成立」</p>`) : '';
+    const note = en ? 'Confidence is the reading on the one question that decides this opportunity. Readings on different questions are not comparable.' : '置信度是决定这个机会的那一道题的读数；不同题的读数不互相比较。';
+    const empty = en ? 'Still being judged. No opportunity has formed yet.' : '还在被判断，暂时没有成形的机会。';
+    return `${tally}${opps.length ? `<p class="note">${note}</p>` : ''}
+      ${opps.length ? opps.slice(0, max).map((o) => this.oppHtml(o)).join('') : `<p class="empty">${empty}</p>`}
+      ${opps.length > max ? `<p class="more">${en ? `${opps.length - max} more` : `另有 ${opps.length - max} 个机会`}</p>` : ''}
+      ${lost ? `<p class="more">${en ? `${plural(lost, 'relationship')} rejected, left as grey traces on the sea` : `${lost} 条关系被否掉，留在海面上的灰痕里`}</p>` : ''}`;
   }
 
   private oppHtml(o: Opp): string {
@@ -251,12 +268,12 @@ export class UI {
     return `
         <div class="opp" data-id="${esc(o.jump)}">
           <div class="row"><span class="form">${esc(o.title)}</span><span class="conf">${p === null ? '—' : p.toFixed(2)}</span></div>
-          <div class="who">${o.who}${o.role ? `，在里面是${esc(o.role)}` : ''}</div>
+          <div class="who">${o.who}${o.role ? (this.en ? `, as ${esc(o.role)}` : `，在里面是${esc(o.role)}`) : ''}</div>
           ${p === null ? '' : `<div class="bar"><i style="width:${Math.round(p * 100)}%"></i></div>`}
           ${o.qText ? `<div class="q">${esc(o.qText)}</div>` : ''}
           ${o.seen ? `<div class="seen">${o.seen}</div>` : ''}
           ${o.steps?.length ? `<ol class="steps">${o.steps.map((x) => `<li class="${x.c}">${x.h}</li>`).join('')}</ol>` : o.story ? `<div class="story">${o.story}</div>` : ''}
-          ${o.lacks.length ? `<div class="miss">还缺：${o.lacks.map(esc).join('；')}</div>` : ''}
+          ${o.lacks.length ? `<div class="miss">${this.en ? 'Missing: ' : '还缺：'}${o.lacks.map(esc).join(this.en ? '; ' : '；')}</div>` : ''}
           ${o.plan ? `<div class="plan-line">${esc(o.plan)}</div>` : ''}
         </div>`;
   }
@@ -269,10 +286,10 @@ export class UI {
       const others = c.members.filter((m) => m !== n.id);
       const st = net.stories.get(c.id);
       out.push({
-        id: c.id, jump: c.nodeId ?? others[0] ?? n.id, cfg: !(c.shape === 'pair' || c.shape === 'relay'), title: shapeTitle(c),
-        who: others.map((o) => this.name(o)).join('、'), conf: c.conf, q: 'hold', qText: Q_TEXT.hold,
-        steps: st ? this.storySteps(st, n.id, 5) : undefined, lacks: st ? lacksOf(st) : [],
-        plan: c.plan ? (c.plan.title ? `方案：${c.plan.title}` : '方案已写好') : undefined,
+        id: c.id, jump: c.nodeId ?? others[0] ?? n.id, cfg: !(c.shape === 'pair' || c.shape === 'relay'), title: shapeTitle(c, this.en),
+        who: others.map((o) => this.name(o)).join(this.sep()), conf: c.conf, q: 'hold', qText: Q_TEXT.hold,
+        steps: st ? this.storySteps(st, n.id, 5) : undefined, lacks: st ? this.lacksOf(st) : [],
+        plan: c.plan ? (c.plan.title ? `${this.en ? 'Plan: ' : '方案：'}${c.plan.title}` : this.en ? 'Plan written' : '方案已写好') : undefined,
         value: st ? net.valueOf(st) : null, pri: SHAPE_PRI[c.meta ? 'meta' : c.shape] ?? 9, role: this.roleText(c.roles[n.id]),
       });
     }
@@ -282,16 +299,19 @@ export class UI {
       const st = net.stories.get(net.pairKey(n.id, o));
       const theirs = net.nodes.get(o)?.seen.get(n.id) ?? 0;   // 对方向这边解锁到的层
       const mine = n.seen.get(o) ?? 0;                        // 这边向对方解锁到的层
-      const seen = st?.tierSeen?.length ? `这一对已释放的层（双方合计）：${st.tierSeen.map(tierName).join('、')}` : `看到对方的 ${tiers(theirs)}；对方看到这边的 ${tiers(mine)}`;
+      const en = this.en;
+      const seen = st?.tierSeen?.length
+        ? (en ? `Layers released for this pair (both sides): ${st.tierSeen.map((t) => this.tierName(t)).join(', ')}` : `这一对已释放的层（双方合计）：${st.tierSeen.map((t) => tierName(t)).join('、')}`)
+        : (en ? `This side sees their ${tiers(theirs)}. They see this side's ${tiers(mine)}` : `看到对方的 ${tiers(theirs)}；对方看到这边的 ${tiers(mine)}`);
       out.push({
-        id: k, jump: o, cfg: false, title: e.form === '不成立' ? '形式题判「不成立」' : e.form, who: this.name(o), conf: e.conf,
+        id: k, jump: o, cfg: false, title: e.form === '不成立' ? (en ? 'Judged "no match"' : '形式题判「不成立」') : en ? formEn(e.form) : e.form, who: this.name(o), conf: e.conf,
         q: st?.dq, qText: st?.dq ? (st.dqText ? this.fixNames(st.dqText, st) : this.qText(st, st.dq)) : undefined,
-        seen, steps: st ? this.storySteps(st, n.id, this.me === n.id ? 7 : 5) : undefined, lacks: st ? (st.hostLacks ?? lacksOf(st)) : [],
+        seen, steps: st ? this.storySteps(st, n.id, this.me === n.id ? 7 : 5) : undefined, lacks: st ? (st.hostLacks ?? this.lacksOf(st)) : [],
         value: st ? net.valueOf(st) : null, pri: SHAPE_PRI[/^经/.test(e.form) ? 'relay' : 'pair'],
       });
     }
     out.sort((a, b) => (Number(b.cfg) - Number(a.cfg)) || ((b.value ?? -1) - (a.value ?? -1)) || (a.pri - b.pri) || (a.id < b.id ? -1 : 1));
-    for (const o of out) if (typeof o.value === 'number' && VALUE_LEVELS[o.value]) o.title += `，价值${VALUE_LEVELS[o.value]}`;
+    for (const o of out) if (typeof o.value === 'number' && VALUE_LEVELS[o.value]) o.title += this.en ? `, value ${VALUE_EN[o.value]}` : `，价值${VALUE_LEVELS[o.value]}`;
     return out;
   }
 
@@ -325,20 +345,25 @@ export class UI {
   /** 「拿不准 → 要信息 → 披露 → 再判」的经过，压成一行。me 是读这行的那一方。 */
   storyLine(st: Story, me?: string, max = 5): string {
     const { frags, more } = this.storyFrags(st, me, max);
+    if (this.en) return frags.length ? (more ? 'Earlier steps omitted. ' : '') + frags.join('. ') : '';
     return frags.length ? (more ? '…→ ' : '') + frags.join(' → ') : '';
   }
   /** 同一份经过拆成一步一行，侧栏里画成竖向的小时间线；c：u 朱（拿不准）、b 钠灯（多给一层与再判）、m 略去 */
   storySteps(st: Story, me?: string, max = 5): { c: string; h: string }[] {
     const { frags, more } = this.storyFrags(st, me, max);
     const out = frags.map((h) => ({ c: h.startsWith('<em>') ? 'u' : h.startsWith('<b>') ? 'b' : '', h: h.replace(/<\/?(em|b)>/g, '') }));
-    if (more) out.unshift({ c: 'm', h: '更早的几步略去' });
+    if (more) out.unshift({ c: 'm', h: this.en ? 'Earlier steps omitted' : '更早的几步略去' });
     return out;
   }
   private storyFrags(st: Story, me: string | undefined, max: number): { frags: string[]; more: boolean } {
     // 两方的一对用「这边 / 对方」；构型人多，用短名
     const pair = !this.net.configs.has(st.key);
     const short = (id: string) => { const l = this.net.label(id); return esc(l.length > 7 ? l.slice(0, 6) + '…' : l); };
-    const who = (id?: string) => (me && pair ? (id === me ? '这边' : '对方') : short(id ?? ''));
+    const en = this.en;
+    const who = (id?: string) => (me && pair ? (id === me ? (en ? 'this side' : '这边') : (en ? 'the other side' : '对方')) : short(id ?? ''));
+    const Who = (id?: string) => (me && pair ? cap1(who(id)) : short(id ?? ''));
+    const qw = (q?: string) => (en ? Q_EN[q ?? ''] : Q_WORD[q ?? '']) ?? q ?? '';
+    const cq = (c?: string) => (en ? `"${esc(c ?? '')}"` : `「${esc(c ?? '')}」`);
     const frags: string[] = [];
     const steps = st.steps;
     // 连续几次披露并成一句：谁多给了、到了哪几层
@@ -346,8 +371,9 @@ export class UI {
     const flush = () => {
       if (!dis) return;
       const hs = [...new Set(dis.holders)]; const ts = [...new Set(dis.tiers)].sort();
-      const whoTxt = me && pair && hs.length > 1 ? '双方' : hs.map(who).join('、');
-      frags.push(`<b>${whoTxt}多给了一层（${ts.map((t) => 't' + t).join('、')}）</b>`);
+      const both = me && pair && hs.length > 1;
+      const ls = ts.map((t) => 't' + t).join(en ? ', ' : '、');
+      frags.push(en ? `<b>${both ? 'Both sides' : hs.map(Who).join(', ')} shared one more layer (${ls})</b>` : `<b>${both ? '双方' : hs.map(who).join('、')}多给了一层（${ls}）</b>`);
       dis = null;
     };
     for (let i = 0; i < steps.length; i++) {
@@ -356,24 +382,29 @@ export class UI {
       flush();
       switch (s.k) {
         case 'unsure': {
-          const w = Q_WORD[s.q ?? ''] ?? s.q ?? '';
+          const w = qw(s.q);
           const p = typeof s.p === 'number' ? ` ${s.p.toFixed(2)}` : '';
-          f = s.route === 'near_boundary' ? `「${w}」读数贴着判断线${p}` : s.route === 'refine' ? (steps[i + 1]?.k === 'rejudge' ? `「${w}」细化后再判` : '') : `<em>拿不准「${w}」${p}</em>`;
+          f = en
+            ? (s.route === 'near_boundary' ? `${cap1(w)}: reading near the line${p}` : s.route === 'refine' ? (steps[i + 1]?.k === 'rejudge' ? `${cap1(w)}: refined, judged again` : '') : `<em>Unsure on ${w}${p}</em>`)
+            : s.route === 'near_boundary' ? `「${w}」读数贴着判断线${p}` : s.route === 'refine' ? (steps[i + 1]?.k === 'rejudge' ? `「${w}」细化后再判` : '') : `<em>拿不准「${w}」${p}</em>`;
           break;
         }
         case 'ask': {
           const nx = steps[i + 1];
-          if (nx && nx.k === 'ask' && nx.cat === s.cat && nx.holder === s.asker) { f = `双方互要「${esc(s.cat ?? '')}」`; i++; }
-          else f = me && s.holder === me ? `对方来要「${esc(s.cat ?? '')}」` : `向${who(s.holder)}要「${esc(s.cat ?? '')}」`;
+          if (nx && nx.k === 'ask' && nx.cat === s.cat && nx.holder === s.asker) { f = en ? `Both sides asked for ${cq(s.cat)}` : `双方互要「${esc(s.cat ?? '')}」`; i++; }
+          else f = en ? (me && s.holder === me ? `The other side asked for ${cq(s.cat)}` : `Asked ${who(s.holder)} for ${cq(s.cat)}`) : me && s.holder === me ? `对方来要「${esc(s.cat ?? '')}」` : `向${who(s.holder)}要「${esc(s.cat ?? '')}」`;
           break;
         }
         case 'reply': {
           const nx = steps[i + 1];
           if (s.granted && nx && nx.k === 'disclose' && nx.holder === s.holder) break; // 紧接着的披露会说
-          f = s.granted ? `${who(s.holder)}给了「${esc(s.cat ?? '')}」` : `${who(s.holder)}没给「${esc(s.cat ?? '')}」`;
+          f = en ? `${Who(s.holder)} ${s.granted ? 'shared' : 'withheld'} ${cq(s.cat)}` : s.granted ? `${who(s.holder)}给了「${esc(s.cat ?? '')}」` : `${who(s.holder)}没给「${esc(s.cat ?? '')}」`;
           break;
         }
-        case 'rejudge': f = typeof s.p === 'number'
+        case 'rejudge': if (en) { f = typeof s.p === 'number'
+          ? `<b>Judged again: ${typeof s.p0 === 'number' ? `from ${s.p0.toFixed(2)} to ` : 'holds at '}${s.p.toFixed(2)}</b>`
+          : `Judged again: no longer holds${typeof s.pNo === 'number' ? ` (confidence in "no match" ${s.pNo.toFixed(2)})` : ''}`; break; }
+          f = typeof s.p === 'number'
           ? `<b>再判 ${typeof s.p0 === 'number' ? s.p0.toFixed(2) + ' → ' : '成立，'}${s.p.toFixed(2)}</b>`
           : `再判后不再成立${typeof s.pNo === 'number' ? `（判「不成立」的把握 ${s.pNo.toFixed(2)}）` : ''}`; break;
       }
@@ -385,39 +416,46 @@ export class UI {
 
   private configHtml(n: NodeRec): string {
     const c = this.cfgOf(n.id);
-    if (!c) return `<h2>${esc(n.label)}</h2><p class="sub">构型节点</p>`;
+    if (!c) return `<h2>${esc(n.label)}</h2><p class="sub">${this.en ? 'Group node' : '构型节点'}</p>`;
     const agent = this.agentFor(n.id);
     const api = agent ? this.opps.get(agent)?.data?.opportunities?.find((o) => o.id === c.id) : undefined;
     const p = api?.confidence?.p ?? api?.confidence?.conf ?? c.conf;
+    const en = this.en;
     const members = c.members.map((m) => `<div class="mem" data-id="${esc(m)}"><span>${this.name(m)}</span><span class="role">${esc(this.roleText(c.roles[m] || api?.roles?.[m]) ?? '')}</span></div>`).join('');
     const st = this.net.stories.get(c.id);
     const lacks = api ? [...(api.lacks ?? []), ...(api.pending ?? [])].map(txt).filter(Boolean).slice(0, 3) : [];
-    const missing = api ? lacks.map((x) => esc(x)) : (st ? lacksOf(st).map(esc) : []);
+    const missing = api ? lacks.map((x) => esc(x)) : (st ? this.lacksOf(st).map(esc) : []);
     const plan = api?.plan ?? c.plan;
     const summary = plan?.summary && !isPlaceholder(plan.summary) ? plan.summary : null;
     const planHtml = plan?.title || summary
-      ? `<h3>方案</h3>${plan?.title ? `<p class="plan-title">${esc(plan.title)}</p>` : ''}${summary ? `<p class="plan">${esc(summary)}</p>` : ''}`
-      : plan ? '<h3>方案</h3><p class="empty">方案已写好；这次运行没有开生成器，所以没有标题和正文。</p>' : '<p class="empty">方案还在写。</p>';
+      ? `<h3>${en ? 'Plan' : '方案'}</h3>${plan?.title ? `<p class="plan-title">${esc(plan.title)}</p>` : ''}${summary ? `<p class="plan">${esc(summary)}</p>` : ''}`
+      : plan ? `<h3>${en ? 'Plan' : '方案'}</h3><p class="empty">${en ? 'The plan is written, but this run had no generator, so there is no title or body.' : '方案已写好；这次运行没有开生成器，所以没有标题和正文。'}</p>` : `<p class="empty">${en ? 'The plan is still being written.' : '方案还在写。'}</p>`;
     const story = st ? this.storyLine(st, undefined, 6) : '';
     return `
       <h2>${esc(n.label)}</h2>
-      <p class="sub">${shapeTitle(c)}${typeof p === 'number' ? `，置信度 ${p.toFixed(2)}` : ''}</p>
+      <p class="sub">${shapeTitle(c, en)}${typeof p === 'number' ? (en ? `, confidence ${p.toFixed(2)}` : `，置信度 ${p.toFixed(2)}`) : ''}</p>
       ${typeof p === 'number' ? `<div class="bar"><i style="width:${Math.round(p * 100)}%"></i></div>` : ''}
       <p class="q">${esc(api?.confidence?.q ?? Q_TEXT.hold)}</p>
       ${story ? `<p class="story">${story}</p>` : ''}
       ${planHtml}
-      <h3>成员</h3>
+      <h3>${en ? 'Members' : '成员'}</h3>
       ${members}
-      ${missing.length ? `<h3>还缺</h3>${missing.map((m) => `<p class="miss">${m}</p>`).join('')}` : ''}
-      <p class="more">这座港本身也是一个节点，可以再和别的港组成更大的构型。</p>
+      ${missing.length ? `<h3>${en ? 'Missing' : '还缺'}</h3>${missing.map((m) => `<p class="miss">${m}</p>`).join('')}` : ''}
+      <p class="more">${en ? 'This group is also a node. It can join others to form a larger group.' : '这座港本身也是一个节点，可以再和别的港组成更大的构型。'}</p>
     `;
+  }
+
+  private lacksOf(st: Story): string[] {
+    const out: string[] = [];
+    for (const [cat, status] of st.lacks) if (status !== 'granted' && !/^不缺信息/.test(cat)) out.push(this.en ? `${cat} (${this.status(status)})` : `${cat}（${STATUS[status] ?? status}）`);
+    return out.slice(-3);
   }
 
   private missingFor(n: NodeRec, others: string[]): string {
     const out: string[] = [];
     for (const o of others) {
-      const m = n.missing.get(o); if (m) out.push(`还缺：${esc(m.cat)}（${STATUS[m.status] ?? m.status}）`);
-      const om = this.net.nodes.get(o)?.missing.get(n.id); if (om) out.push(`对方还缺：${esc(om.cat)}（${STATUS[om.status] ?? om.status}）`);
+      const m = n.missing.get(o); if (m) out.push(this.en ? `Missing: ${esc(m.cat)} (${this.status(m.status)})` : `还缺：${esc(m.cat)}（${STATUS[m.status] ?? m.status}）`);
+      const om = this.net.nodes.get(o)?.missing.get(n.id); if (om) out.push(this.en ? `The other side is missing: ${esc(om.cat)} (${this.status(om.status)})` : `对方还缺：${esc(om.cat)}（${STATUS[om.status] ?? om.status}）`);
     }
     return out.slice(0, 2).join('<br>');
   }
@@ -428,17 +466,19 @@ function txt(x: unknown): string {
   if (x && typeof x === 'object') { const o = x as Record<string, unknown>; return String(o.needed ?? o.cause ?? o.cat ?? o.category ?? ''); }
   return '';
 }
-function tierName(t: string) { const i = Number(String(t).replace(/^t/, '')); return TIER_NAMES[i] ? `${t} ${TIER_NAMES[i]}` : t; }
+function tierName(t: string, en = false) { const i = Number(String(t).replace(/^t/, '')); const names = en ? TIER_EN : TIER_NAMES; return names[i] ? `${t} ${names[i]}` : t; }
+function valueEn(v: string) { const i = VALUE_LEVELS.indexOf(v); return i >= 0 ? VALUE_EN[i] : v; }
 
-function shapeTitle(c: ConfigRec) {
+function shapeTitle(c: ConfigRec, en = false) {
   const k = c.members.length;
+  if (en) return c.meta ? `${k}-way larger group` : c.shape === 'pair' ? 'complementary pair' : c.shape === 'relay' ? 'referral link' : `${k}-way ${shapeEn(c.shape)}`;
   if (c.meta) return `${k} 方再组合`;
   if (c.shape === 'pair') return '互补';
   if (c.shape === 'relay') return '转介';
   return `${k} 方${SHAPE_NAME[c.shape] ?? '构型'}`;
 }
 
-function ladder(tier: number): string {
+function ladder(tier: number, en = false): string {
   // 三级台阶 t0/t1/t2：已到的层实线，未到的层虚线；每级右侧写这一层给出的是什么
   const w = 300, h = 88, sw = 52, sh = 26;
   let p = ''; let labels = '';
@@ -447,7 +487,7 @@ function ladder(tier: number): string {
     const on = i <= tier;
     p += `<line x1="${x}" y1="${y}" x2="${x + sw}" y2="${y}" class="${on ? 'on' : 'off'}"/>`;
     if (i > 0) p += `<line x1="${x}" y1="${y}" x2="${x}" y2="${y + sh}" class="${on ? 'on' : 'off'}"/>`;
-    labels += `<div class="tl ${on ? 'on' : ''}" style="left:${x + sw + 10}px;top:${y - 9}px">${TIER_NAMES[i]}</div>`;
+    labels += `<div class="tl ${on ? 'on' : ''}" style="left:${x + sw + 10}px;top:${y - 9}px">${(en ? TIER_EN : TIER_NAMES)[i]}</div>`;
   }
   return `<div class="ladder"><svg viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" aria-hidden="true">${p}</svg>${labels}</div>`;
 }
@@ -460,9 +500,4 @@ function spaceMixed(s: string) {
 }
 
 function tiers(t: number) { return Array.from({ length: Math.max(0, Math.min(MAX_TIER, t)) + 1 }, (_, i) => `t${i}`).join('+'); }
-function lacksOf(st: Story): string[] {
-  const out: string[] = [];
-  for (const [cat, status] of st.lacks) if (status !== 'granted' && !/^不缺信息/.test(cat)) out.push(`${cat}（${STATUS[status] ?? status}）`);
-  return out.slice(-3);
-}
 function qOfPurpose(t: string) { return /^读 [AB] 的世界/.test(t) ? 'open' : /^把 [AB] 当作来信的人/.test(t) ? 'catcher' : /按这个形状合作/.test(t) ? 'hold' : ''; }

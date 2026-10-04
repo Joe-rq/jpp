@@ -59,6 +59,7 @@ const director = new Director(camera, controls, net, clock);
 director.place();
 if (qs.get('cruise')) director.cruiseOnly = true;
 const ui = new UI(net);
+if (qs.get('debug') === '1') Object.assign(window as any, { __ui: ui, __net: net });   // 截图脚本用 --eval 打开面板
 director.caption = (s, p) => ui.caption(s, p);
 net.onNarrate = (s) => ui.caption(s, 1);
 net.onMoment = (m) => director.moment(m, clock());

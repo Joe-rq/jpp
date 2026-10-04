@@ -102,6 +102,7 @@ PLAN_PROMPT = """你是一个合作方案的起草人。网络里的判断已经
 - 写清谁出什么、谁得到什么、分工、第一步做什么、节奏（第一周/第一个月）、风险与对策。
 - 只用材料里有的事实；材料里没有、但方案需要的，列进「还需要确认」，不要编造。
 - 不要给出任何概率或置信度数字（置信度由网络的判断给出，不由你写）。
+- 构型里 draft 为 true 时，成员只交了公开层：这是草案，「还需要确认」至少列一项，写明补上哪类信息最能确定这件事。
 - 用成员所用的语言（中文为主）；称呼成员用材料里的 display。
 
 输出 JSON：{{"title": "一句话标题，≤24 字", "summary": "两三句话的方案摘要", "roles": {{"成员 id": "此人在方案里的角色与贡献"}},
@@ -112,7 +113,7 @@ def _plan_prompt(args):
     import json as _j
     cfg, members = (args + [None, None])[:2] if isinstance(args, list) else (args, [])
     cfg = cfg or {}
-    slim = {k: cfg.get(k) for k in ("id", "shape", "members", "roles", "lacks") if isinstance(cfg, dict)}
+    slim = {k: cfg.get(k) for k in ("id", "shape", "members", "roles", "lacks", "draft") if isinstance(cfg, dict)}
     return PLAN_PROMPT.format(shape=slim.get("shape"), config=_j.dumps(slim, ensure_ascii=False, default=str)[:3000],
                               members=_j.dumps(members, ensure_ascii=False, default=str)[:9000])
 
@@ -122,6 +123,10 @@ async def _gen_json(self, kind, args):
         out = await self.json(_plan_prompt(args))
         if not isinstance(out, dict):
             raise GenFail("方案不是 JSON 对象")
+        cfg = (args[0] if isinstance(args, list) and args else args) or {}
+        if isinstance(cfg, dict) and cfg.get("draft"):      # 预注册 11：只看过公开层的方案标草案，不靠生成器自己写
+            out["draft"] = True
+            out["title"] = "草案（只看了公开层）：" + str(out.get("title") or "")
         return out
     raise GenFail(f"未知的 gen_json 种类：{kind}")
 

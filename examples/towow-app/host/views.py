@@ -215,7 +215,7 @@ class EventMapper:
     def _name(self, a: str) -> str:
         w = self.world_meta.get(a) or {}
         d = str(w.get("display_name") or w.get("display") or a)
-        return re.split(r"[，,。；;：:]", d)[0][:12] or a
+        return _clip_name(d) or a
 
     def _world(self, a: str) -> dict:
         if a in self.world_meta:
@@ -497,7 +497,9 @@ def opportunities(r: Reader, me: str) -> dict:
             "value": value_label(c.get("value")),
             "lacks": c.get("lacks") or [], "pending": _pending(r, "config", k),
             "plan": ({"title": plan.get("title"), "summary": plan.get("summary") or plan.get("text"),
-                      "steps": plan.get("steps") or plan.get("分工")} if isinstance(plan, dict) else None),
+                      "steps": plan.get("steps") or plan.get("分工"), "first_step": plan.get("first_step"),
+                      "to_confirm": plan.get("to_confirm"), "draft": bool(plan.get("draft"))}
+                     if isinstance(plan, dict) else None),
         })
     vrank = {"大": 0, "中": 1, "小": 2}
     has_real = lambda o: any(w.get("real") for w in o.get("with") or [])          # noqa: E731
@@ -532,10 +534,21 @@ def _disp(r: Reader, x: str) -> str:
     return (str(d)[:40] if d else x)
 
 
+def _clip_name(d: str) -> str:
+    """展示名的第一个分句做短称：中文至多 12 字；拉丁文字按词截到 28 字符以内（验收实测「Retired Sydn」读不通）。"""
+    head = re.split(r"[，,。；;：:]", d)[0].strip()
+    if sum(c.isascii() for c in head) > len(head) * 0.6:
+        if len(head) <= 28:
+            return head
+        cut = head[:28].rsplit(" ", 1)[0]
+        cut = re.sub(r"\s+(in|of|at|the|and|for|with|from|to|a|an)$", "", cut, flags=re.I)
+        return cut if len(cut) >= 8 else head[:28]
+    return head[:12]
+
+
 def _short(r: Reader, x: str) -> str:
-    """题面里替换 A/B 用的短称：展示名的第一个分句，至多 12 字。"""
-    d = _disp(r, x)
-    return re.split(r"[，,。；;：:]", d)[0][:12] or x
+    """题面里替换 A/B 用的短称。"""
+    return _clip_name(_disp(r, x)) or x
 
 
 def inbox(r: Reader, me: str) -> dict:
