@@ -1,0 +1,216 @@
+{
+ "display": "Food technologist at a Singapore polytechnic lab with pilot retort-pouch equipment, working on shelf-stable sauces and pastes.",
+ "lang": "en",
+ "signals": [
+  {
+   "text": "I'm looking for a small local food company that has a real sauce or paste product and wants to make it shelf-stable.",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "text": "My industry grant needs a registered local commercial partner with a real product by March, and I don't have one yet.",
+   "tier": "t1",
+   "src": "message"
+  },
+  {
+   "text": "The two food SMEs I've talked to so far had no product ready. The big companies on the old industry day list are the wrong size for me.",
+   "tier": "t1",
+   "src": "message"
+  },
+  {
+   "text": "My belacan sambal trials keep darkening and losing the shrimp aroma in the retort. Trial 3 has a better colour but a flat aroma.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "Trial 3's water activity is 0.89. I need to get it lower or add more preservatives, and I'm not happy with it.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "I want to try ascorbic acid against Maillard browning in trial 4, and I'd like to hear from anyone who has done this in retort pouches.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "The pilot plant is booked solid with students. I only get Tuesday afternoons, which slows my iterations.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "I'm meeting SFA on 20 October about labelling requirements and would like to hear from anyone who has been through shelf-stable sauce labelling.",
+   "tier": "t1",
+   "src": "calendar"
+  },
+  {
+   "text": "I want to find belacan or sambal made by hawkers and small makers that is fragrant enough to taste-test against my own.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "Our BTO kitchen cabinets are delayed again. We've been eating takeout for three weeks.",
+   "tier": "t1",
+   "src": "message"
+  },
+  {
+   "text": "I'm planning a Taiwan hike (Alishan, Yushan) from 3 November and would like local tips on weather, gear and logistics.",
+   "tier": "t0",
+   "src": "calendar"
+  },
+  {
+   "text": "I'm learning the erhu from my grandmother. My bowing is too stiff, and I'd like to meet other people learning traditional instruments.",
+   "tier": "t0",
+   "src": "note"
+  }
+ ],
+ "offers": [
+  {
+   "text": "I can run pouch products through a pilot-scale Steriflow lab retort for process trials and thermal process validation.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I can advise on HACCP, thermal process design, pH and water activity testing for shelf-stable sauces and pastes.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I can run accelerated shelf-life tests (for example 35°C storage) and report colour, aroma and water activity results.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I can use the polytechnic's sensory testing room to run tasting panels on a product.",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "text": "I can help a small local food company turn a fresh-made sauce into a retort-pouch prototype with a real shelf-life data package.",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "text": "I have family sambal recipes and hands-on knowledge of how belacan-based sambal behaves under heat.",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "text": "I have contacts at SFA and among local food SMEs, and can introduce people where it makes sense.",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "text": "I can explain food safety and retort basics to non-specialists, for example founders who are new to shelf-stable products.",
+   "tier": "t0",
+   "src": "skill"
+  }
+ ],
+ "catchers": [
+  {
+   "hypo": "I run a small sambal or sauce business in Singapore. My product is made fresh and keeps only a few days. Can it be made shelf-stable without losing flavour?",
+   "can": "Run it through retort and shelf-life trials in the polytechnic lab (Tuesday afternoons), and discuss a joint development arrangement.",
+   "confirm": "Is your company a registered Singapore business with a product that already sells (not just an idea)?",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "hypo": "We make a sauce, paste or curry base in Singapore and want to sell it in pouches at room temperature. We have no lab or process validation capability. Who can help?",
+   "can": "Provide thermal process validation, pH and water activity testing, and a shelf-life study, and possibly act as a development partner.",
+   "confirm": "Is your product a sauce, paste or similar wet product that could be packed in a retort pouch?",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "hypo": "I'm a food scientist who has tried ascorbic acid or other antioxidants against Maillard browning in retorted shrimp or fermented pastes. Want to compare notes?",
+   "can": "Share trial data and swap findings on browning and aroma retention in retort pouches.",
+   "confirm": "Have you worked on browning or aroma loss specifically in retort-processed, shrimp- or fish-based products?",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "hypo": "I want to learn the erhu, and I'm looking for a patient teacher in Singapore who can teach traditional style rather than exam pieces.",
+   "can": "Introduce them to her grandmother, who teaches erhu, if the fit is right.",
+   "confirm": "Are you looking for lessons in traditional erhu playing, and can you do them in person in Singapore?",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "hypo": "I'm a belacan maker or hawker with a very fragrant product and I'd like to find out how to keep it longer without losing the aroma.",
+   "can": "Test the product's pH, water activity and keeping quality in the lab, and talk through preservation options.",
+   "confirm": "Do you make your own belacan or sambal and want it to last months rather than days?",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "hypo": "I'm a student or small startup founder who wants to understand how to validate a shelf-stable sauce for safety. Where do I start?",
+   "can": "Explain HACCP, pH, water activity and thermal process basics, and point to the right regulatory steps with SFA.",
+   "confirm": "Are you at the stage of planning or prototyping, not yet asking for large-scale commercial production?",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "hypo": "I run a small kitchen cabinet workshop in Singapore and have capacity to fit a BTO kitchen within the next few weeks.",
+   "can": "Talk to Mei Ling about a replacement for her delayed cabinets.",
+   "confirm": "Can you deliver and install a full BTO kitchen cabinet set within three weeks?",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "hypo": "I've hiked Alishan and Yushan in early November and can tell you about permits, weather and trail conditions.",
+   "can": "Use the tips for her November trip and possibly trade hiking advice.",
+   "confirm": "Have you hiked Yushan or Alishan yourself in the last two years?",
+   "tier": "t0",
+   "src": "calendar"
+  }
+ ],
+ "forbids": [
+  {
+   "text": "I can't use the lab's equipment for commercial production at scale. It is for development and validation only.",
+   "tier": "t0"
+  },
+  {
+   "text": "The grant requires the commercial partner to be a registered local company, so I can't count overseas or unregistered businesses.",
+   "tier": "t1"
+  },
+  {
+   "text": "I can only use the pilot plant on Tuesday afternoons, so I can't promise quick turnaround on trials.",
+   "tier": "t0"
+  },
+  {
+   "text": "I will be away hiking in Taiwan from 3 November, so I can't take on anything time-critical then.",
+   "tier": "t0"
+  }
+ ],
+ "projects": [
+  {
+   "name": "Shelf-stable sambal",
+   "text": "Develop a belacan-based sambal that keeps 12 months at room temperature in a retort pouch, with its aroma and colour intact.",
+   "roles_needed": [
+    "belacan or ingredient supplier",
+    "sensory panelist",
+    "food SME that could commercialise it"
+   ],
+   "tier": "t0"
+  },
+  {
+   "name": "Local SME shelf-stable product partnership",
+   "text": "Work with a registered Singapore food company on a real sauce or paste product, using the polytechnic's retort and testing capacity, to produce validated shelf-life data by March.",
+   "roles_needed": [
+    "registered local food SME with a real product",
+    "packaging supplier",
+    "regulatory contact (SFA labelling)"
+   ],
+   "tier": "t1"
+  }
+ ],
+ "policy": {
+  "t1": "When there is a real signal, I'll share that my industry grant needs a commercial partner with a real product by March, and details about my sambal project and lab access.",
+  "t2": "Once I'm fairly sure of the fit and know who you are, I'll talk about how the grant situation worries me.",
+  "never": "My personal finances, and anything about my lab director's knowledge of my partner search."
+ },
+ "id": "a0345",
+ "host_agent": "CUE",
+ "owner_display": "Tan Mei Ling",
+ "city": "Singapore",
+ "world_sha256": "5fbe57a4fe32860847567b6a94cddc6113a3dd081e275833dc7f88b18602aaed"
+}

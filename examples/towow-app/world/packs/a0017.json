@@ -1,0 +1,225 @@
+{
+ "display": "Ceramicist in Coyoacán, Mexico City, making hand-painted, lead-free talavera-inspired tableware.",
+ "lang": "en",
+ "signals": [
+  {
+   "text": "I'm getting ready for the Day of the Dead market in Coyoacán on 28 October and I'm making a large autumn tableware collection.",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "text": "A client wants me to recreate her grandmother's plate, which had a little yellow flower. I've finished the sketches and a test tile.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "My electric kiln overshoots its target temperature by about 40 degrees and I can't trust it yet. Two firings have been ruined this month.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "I can't tell whether the fault is the controller, the relay or the elements. I'm replacing the relay on 4 October and doing a 20-piece test firing on 11 October.",
+   "tier": "t1",
+   "src": "calendar"
+  },
+  {
+   "text": "Only 12 of my 40 dinner sets are finished. The other 28 are waiting to be fired and I won't rush them.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "I'd like a reliable backup kiln I can book for a few firings before late October, in case mine fails again.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "A cafe in Roma wants 60 mugs for its opening on 14 November. I have to give them a decision by mid-October and I don't want to promise anything yet.",
+   "tier": "t1",
+   "src": "message"
+  },
+  {
+   "text": "I'd like regular customers beyond my weekend markets, such as cafes, restaurants and small shops that would reorder.",
+   "tier": "t1",
+   "src": "bio"
+  },
+  {
+   "text": "I'm practising English twice a week and would like conversation practice, especially for dealing with clients and suppliers.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "I lost a lot of work this month and I'm tired. I could use someone who understands what it's like to open a kiln and find everything ruined.",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "text": "Money is tight right now and kiln repairs are using up my cushion. A new kiln is out of the question this year.",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "text": "My partner is moving to Madrid for two years and I'm unsure what that means for my studio and my career. I'm curious whether I could keep making and selling in Spain.",
+   "tier": "t2",
+   "src": "message"
+  }
+ ],
+ "offers": [
+  {
+   "text": "I hand-paint talavera-inspired plates, bowls and mugs using tin glaze, cobalt blue and a yucca brush, after two years of training in a family workshop in Puebla.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I make custom sets and can recreate a family pattern from a photo of a broken plate.",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "text": "I work only with lead-free glazes, so my tableware is safe for food.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I can make small batches of matching tableware for cafes, restaurants and shops, with a fixed palette and a delivery date.",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "text": "I run a stall at the Sunday market in Parque México once a month and sell through a few shops in Roma and Condesa. I have about 1,200 Instagram followers and a mailing list of 300.",
+   "tier": "t1",
+   "src": "bio"
+  },
+  {
+   "text": "I can teach a short hands-on workshop on talavera brush painting and blue-on-white glaze work for small groups.",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "text": "I have a notebook of pyrometer readings from empty-kiln tests, including overshoot at the top and undershoot on cooling. I can share it with anyone diagnosing a similar fault.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "I can throw on the wheel and fire in my own 80-litre electric kiln in a shared workshop in Coyoacán.",
+   "tier": "t1",
+   "src": "skill"
+  }
+ ],
+ "catchers": [
+  {
+   "hypo": "Hi, I repair electric ceramic kilns in Mexico City. A digital controller that overshoots and then undershoots often means a sticking relay or a drifting thermocouple. Could I look at your temperature logs?",
+   "can": "Lucía can share her pyrometer logs and the history of what she has already replaced (thermocouple, relay), and test a hypothesis in her 11 October firing.",
+   "confirm": "Do you have hands-on experience with electric kilns, meaning controllers, relays and elements, rather than only gas kilns?",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "hypo": "I have a kiln with free slots in the next two weeks and can't use all of it. Does anyone need to fire a few shelves of earthenware?",
+   "can": "Lucía could fire part of her 28 unfired dinner sets there as insurance before 28 October, and pay for the shelf space.",
+   "confirm": "Can your kiln fire glazed earthenware at about 1,000 °C, and is it free before 25 October?",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "hypo": "We're opening a restaurant in Condesa and want handmade blue-and-white plates, about 30 of them, with a consistent look.",
+   "can": "Lucía can quote a matching hand-painted set, with delivery after the Day of the Dead market.",
+   "confirm": "Is your delivery date in November or later, so after the Day of the Dead market?",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "hypo": "My grandmother's hand-painted plate broke. I have photos of the pieces. Could someone make a plate with the same pattern so we can use it at family meals again?",
+   "can": "Lucía can paint a new plate or a small set from the photo. She is already doing this for another client.",
+   "confirm": "Is the original hand-painted earthenware, rather than porcelain or a mass-produced transfer-printed plate?",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "hypo": "Our group of friends wants a half-day workshop to paint our own ceramic plates. We're about eight people in Mexico City.",
+   "can": "Lucía can run a small brush-painting session at her workshop, after the late-October market rush.",
+   "confirm": "Is your group between 4 and 10 people, in Mexico City, and flexible about a date after the first week of November?",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "hypo": "I'm an interior designer in Madrid working on a small restaurant. I'm looking for handmade Mexican tableware, lead-free and food-safe, in small runs.",
+   "can": "Lucía can send samples. A close contact who works in architecture in Madrid could also help her meet local designers and venues.",
+   "confirm": "Is your project in Madrid or elsewhere in Spain, and does it need handmade, food-safe tableware in runs of under 100 pieces?",
+   "tier": "t2",
+   "src": "relation"
+  },
+  {
+   "hypo": "I'm a self-employed craftsperson in Mexico and I don't know how small-business accounts or an equipment loan work for someone like me.",
+   "can": "Lucía can pass the question to a relative who works in a bank and can point to the right type of product. Lucía can also say how she handles it herself.",
+   "confirm": "Are you self-employed and running a small craft business in Mexico, rather than a registered company with employees?",
+   "tier": "t2",
+   "src": "relation"
+  },
+  {
+   "hypo": "I'm a maker too, and I just lost a whole batch to a bad firing. I don't want advice, I just want to talk to someone who has been there.",
+   "can": "Lucía can listen and share her own experience of opening a ruined kiln. She can't offer professional counselling.",
+   "confirm": "Are you looking for peer support from another maker, not professional mental-health care?",
+   "tier": "t0",
+   "src": "note"
+  }
+ ],
+ "forbids": [
+  {
+   "text": "I only use lead-free glazes on tableware.",
+   "tier": "t0"
+  },
+  {
+   "text": "I won't rush or skip steps in firings before the Day of the Dead market.",
+   "tier": "t0"
+  },
+  {
+   "text": "I can't commit to the Roma cafe's 60 mugs, or to any new volume order, until my kiln is proven reliable.",
+   "tier": "t1"
+  },
+  {
+   "text": "I can't buy a new kiln this year.",
+   "tier": "t1"
+  },
+  {
+   "text": "I can't take any new work with a delivery date before 28 October.",
+   "tier": "t1"
+  },
+  {
+   "text": "I'm unavailable on Tuesday and Thursday evenings (English class) and on the 28th, when the market stall opens at 7 am.",
+   "tier": "t1"
+  }
+ ],
+ "projects": [
+  {
+   "name": "Autumn tableware collection",
+   "text": "A collection of 40 hand-painted dinner sets for the Day of the Dead market on 28 October. Twelve are finished and the rest are waiting to be fired.",
+   "roles_needed": [
+    "electric kiln technician",
+    "backup kiln host",
+    "packing and stall-setup helper",
+    "product photographer"
+   ],
+   "tier": "t1"
+  },
+  {
+   "name": "Mugs for a Roma cafe opening",
+   "text": "About 60 mugs for a cafe opening on 14 November. I need to decide by mid-October, once the kiln is proven reliable.",
+   "roles_needed": [
+    "kiln technician",
+    "backup kiln host",
+    "cafe owner or buyer"
+   ],
+   "tier": "t1"
+  }
+ ],
+ "policy": {
+  "t1": "When there's a real lead, I'll share details of my kiln fault and test data, my firing and market deadlines, the cafe mug order, and my production capacity.",
+  "t2": "Once the person and the collaboration are clear, I'll share in general terms my financial constraints, my thoughts on possibly working from Madrid, and who among my relatives could help.",
+  "never": "I never share my exact savings or amounts, my family's conflicts and private conversations, or details of my relationships."
+ },
+ "id": "a0017",
+ "host_agent": "CUE",
+ "owner_display": "Lucía Hernández",
+ "city": "Mexico City",
+ "world_sha256": "0b87856a1d7322d3753d41f883a12126c77217ddd1e7e39fc0e27cbce2554df2"
+}

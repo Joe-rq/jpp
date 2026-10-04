@@ -1,0 +1,249 @@
+{
+ "display": "I'm a recreation coordinator at a long-term care home in East York, Toronto. I plan weekly programs for about ninety residents: sing-alongs, chair yoga, gardening club and reminiscence sessions.",
+ "lang": "en",
+ "signals": [
+  {
+   "text": "I'm looking for a decent piano, donated or second-hand, for our weekly sing-along. The home's upright has been out of tune for two years.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "The home can't fund a piano repair this year, so any piano help has to come as a donation approved through the foundation.",
+   "tier": "t1",
+   "src": "message"
+  },
+  {
+   "text": "Our volunteer pianist, a retired music teacher, says he'll play every week if I find him a good instrument. Until then I'm making do with a Casio keyboard and a playlist.",
+   "tier": "t1",
+   "src": "message"
+  },
+  {
+   "text": "I'm trying to put up a memory wall in a hallway for families' photos and keepsakes. Six families are in, but I have no budget, and I'm hunting for cheap second-hand frames.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "I want the memory wall up before the holidays and could use hands or donated frames.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "I keep a binder of every resident's favourite song and the year they first heard it. I'd like a better way to turn it into playlists and sessions without exposing anyone's details.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "I could use more volunteers who can sing, play or just sit and listen for short sessions, because residents tire after about 40 minutes.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "I'm saving hard for a condo and feel behind. I have about $41,000 and need roughly $18,000 more, which is realistically a year and a half away.",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "text": "I sometimes wonder whether I should move to a cheaper city, but my work and my residents are here.",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "text": "Grief from residents passing is harder than I tell people. I mostly cope by going back to work and running the next activity.",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "text": "I'm quietly tired and sometimes imagine leaving care work, but I can't picture doing anything else.",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "text": "October is crowded: a bridesmaid dress fitting in Mississauga, a train to Montreal for my sister's wedding, and family pressure to be home for Thanksgiving. I'm trying to fit it all in on a tight budget.",
+   "tier": "t2",
+   "src": "calendar"
+  },
+  {
+   "text": "I'm trying not to adopt a shelter cat before I own a condo, and it isn't going well.",
+   "tier": "t0",
+   "src": "note"
+  }
+ ],
+ "offers": [
+  {
+   "text": "I have a Recreation Therapy diploma from Humber College and seven years in long-term care. I can design short, low-fatigue activity programs for older adults.",
+   "tier": "t0",
+   "src": "bio"
+  },
+  {
+   "text": "I run sing-alongs and reminiscence sessions, including for people with dementia. I know how to use familiar songs to bring someone back into the room.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I can show you how to build a personal music-memory system, with favourite song, year first heard and who they danced to it with. It works as a template for care homes or families.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I can coordinate a volunteer list of about thirty people, including a few musicians, and match them to short sessions that suit them.",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "text": "I keep a list of local community choirs and music students I've called over the years, and I can introduce a choir or student looking for a place to perform.",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "text": "I can offer a stage and an audience: a weekly Thursday 2 pm sing-along in a main lounge, where visiting musicians are warmly received.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "I have a small activity budget of about $400 a month, and I can portable-host with a Bluetooth speaker and a Casio keyboard I carry between floors.",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "text": "I volunteer Saturdays at an animal shelter and can help with socializing cats and with shelter-side volunteer coordination.",
+   "tier": "t0",
+   "src": "bio"
+  },
+  {
+   "text": "I can talk with someone who works in care, or is losing someone, because I have a lot of practice sitting with grief and then carrying on with the day.",
+   "tier": "t0",
+   "src": "bio"
+  }
+ ],
+ "catchers": [
+  {
+   "hypo": "Hi, I'm a piano technician. I can assess and tune pianos in institutions, and I sometimes do it at reduced rates for good causes.",
+   "can": "I'll check what the foundation can accept as an in-kind service. If it works, I'll connect you with our administrator and our volunteer pianist, and a repair that keeps the home's own piano alive becomes possible.",
+   "confirm": "Are you able to assess an upright piano on site in Toronto (East York) and give a written estimate, or do the work for a donation-type arrangement?",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "hypo": "My family is moving out and we have a decent upright piano we'd like to give to a place where people will actually play it.",
+   "can": "I can take it through the foundation's donation approval process and put the instrument in front of a retired music teacher, who has offered to play weekly if the piano is good.",
+   "confirm": "Is the piano playable and in tune, or tunable, and can it be delivered to Toronto at your side or with a mover?",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "hypo": "I'm a retired music teacher and I'd like to help find or judge a good second-hand piano for a community space.",
+   "can": "Our volunteer pianist is a proud retired high school music teacher. I'd introduce you so that two people who care about the instrument can choose one together.",
+   "confirm": "Can you check a piano's action, keys and tuning stability in person before a donation is accepted?",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "hypo": "I run a small community choir and we want to sing for seniors on weekday afternoons, but we don't know who to ask.",
+   "can": "I can fit your choir into the Thursday sing-along series, or into another day if the afternoon works, with songs matched to what residents grew up with.",
+   "confirm": "Can your group sing for about 30–40 minutes on a weekday afternoon, with a repertoire of older popular songs?",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "hypo": "I work with people who have dementia in my family, and I want to build a playlist from the songs my mother loved. Where do I begin?",
+   "can": "I can walk you through the method I use: favourite song, year first heard, who they danced to, and how to run a short listening session.",
+   "confirm": "Do you want to make music a regular part of your relative's day, and not just a one-off playlist?",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "hypo": "I have a box of picture frames and some wall hooks and I'd like to donate them to a project that honours older people's stories.",
+   "can": "I'd use them for the memory wall in our second-floor hallway, where families bring photos and keepsakes.",
+   "confirm": "Are the frames in good condition and can they be dropped off in Toronto, preferably in a mix of standard sizes?",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "hypo": "I'm a first-time buyer in Toronto who also works in a low-paid caring job. Do you know programs that help with a down payment?",
+   "can": "I'm walking this path myself, so I can trade notes honestly. A mortgage broker I've spoken to gave me a realistic target, and I can share what I've learned.",
+   "confirm": "Are you earning a care-sector or public-service wage and saving toward a one-bedroom in the Toronto area?",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "hypo": "My sister's wedding is coming up and I've been told I shouldn't spend on shoes, but I feel bad about it. How do bridesmaids on a budget manage?",
+   "can": "My sister is getting married in Montreal in October. I can tell you what's worked for me and who offered to pitch in, and introduce you to second-hand and rental options I came across.",
+   "confirm": "Are you looking for lower-cost options for a bridesmaid outfit, such as renting, borrowing or second-hand?",
+   "tier": "t2",
+   "src": "relation"
+  },
+  {
+   "hypo": "I'm a care worker who has just lost someone I looked after, and I don't know how to carry on with my shift.",
+   "can": "I know that feeling. I can talk with you about it, and about the small routines that help.",
+   "confirm": "Are you a care worker or recreation worker who has lost someone in your care recently and needs peer support, not clinical help?",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "hypo": "I'm an animal-shelter coordinator looking for reliable Saturday volunteers who are good with shy or older animals.",
+   "can": "I already volunteer there on Saturdays and I'm good with older or anxious animals. I can share the volunteer list I keep and recommend people who fit.",
+   "confirm": "Do you need steady weekend volunteers with some experience of handling cats, in Toronto?",
+   "tier": "t0",
+   "src": "relation"
+  }
+ ],
+ "forbids": [
+  {
+   "text": "I won't share residents' names, medical information or any detail that could identify them.",
+   "tier": "t0"
+  },
+  {
+   "text": "Anything for the home goes through the foundation approval process, so I can't accept money, equipment or repairs outside it.",
+   "tier": "t1"
+  },
+  {
+   "text": "I can't pay for repairs out of my own activity fund.",
+   "tier": "t1"
+  },
+  {
+   "text": "I work Monday to Friday, 8 to 4, and don't do weekend work for the home without admin approval.",
+   "tier": "t0"
+  },
+  {
+   "text": "Sessions for residents have to be short, about 40 minutes at most.",
+   "tier": "t1"
+  },
+  {
+   "text": "I'm not looking to turn residents' stories or songs into marketing or content.",
+   "tier": "t0"
+  }
+ ],
+ "projects": [
+  {
+   "name": "Fall Sing-Along Series",
+   "text": "A weekly Thursday 2 pm sing-along in the main lounge, aimed especially at residents with dementia. The main need is a decent piano and a regular pianist.",
+   "roles_needed": [
+    "piano technician or tuner",
+    "piano donor",
+    "volunteer musician or singer",
+    "someone to judge a second-hand piano"
+   ],
+   "tier": "t1"
+  },
+  {
+   "name": "Memory Wall",
+   "text": "A hallway wall for photos and keepsakes that families bring in. Six families are on board; it needs frames, hanging materials and a small budget before the holidays.",
+   "roles_needed": [
+    "frame donor",
+    "volunteer to hang and arrange",
+    "photo printing help"
+   ],
+   "tier": "t1"
+  }
+ ],
+ "policy": {
+  "t1": "When there's a real lead, I'll share the piano problem, the sing-along program, what the home can and can't do, and how the foundation approval works.",
+  "t2": "Once the match looks strong and I know who you are, I'll talk about my own finances, how work grief affects me, and where I'm stuck with admin over the budget.",
+  "never": "Residents' names, medical information, or anything that could identify an individual resident."
+ },
+ "id": "a0105",
+ "host_agent": "Gemini",
+ "owner_display": "Maya Chen",
+ "city": "Toronto",
+ "world_sha256": "579daed33ddc3055d2dfc585b3fe4c852101f2d2d1648a9703a351d67ff4e6ba"
+}

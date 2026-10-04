@@ -1,0 +1,245 @@
+{
+ "display": "Canadian youth hockey coach in Qingdao (Level 2 Hockey Canada, 11 years coaching). Twelve local kids have signed up for a weekend club, but we have no ice time and no gear yet.",
+ "lang": "en",
+ "signals": [
+  {
+   "text": "Twelve local kids aged 7–12 signed up for the weekend hockey club. We have zero ice time and almost no gear.",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "text": "I want weekly ice time for twelve kids, ideally Saturday mornings, at a price local families can pay.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "Mall rinks quote 1,500 RMB an hour with a two-hour minimum, about 12,000 RMB a month for us. Parents can pay 100 RMB per kid per month at most.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "The school's insurance covers indoor rinks only, so natural or river ice is out. I'm looking for indoor ice or a facility that can offer liability cover.",
+   "tier": "t1",
+   "src": "message"
+  },
+  {
+   "text": "A Qingdao hockey group offered ice at 6am on Wednesday. The kids have school, so it doesn't work, but I'm still looking for off-peak slots that do.",
+   "tier": "t1",
+   "src": "message"
+  },
+  {
+   "text": "I'm meeting a rink manager in Laoshan on 10 October and want to know what to ask for and what a workable deal looks like.",
+   "tier": "t1",
+   "src": "calendar"
+  },
+  {
+   "text": "A hockey shop in Winnipeg has promised 15 used helmets and 10 pairs of skates, but shipping to China is quoted at 900 CAD. I need a cheaper way to get them here.",
+   "tier": "t1",
+   "src": "message"
+  },
+  {
+   "text": "The kids need skates, helmets, pads and sticks in children's sizes. None of them has ever stood on skates.",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "text": "I'm looking for more affordable second-hand gear, or sponsors and partners who would back kids who can't afford any.",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "text": "I'm still learning Mandarin. Tones are hard, and I'd welcome patient conversation partners for everyday and hockey vocabulary.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "I miss home, and the dog I left in Winnipeg. I'd like friends in Qingdao outside the school: other expats, home-brewers, hockey people.",
+   "tier": "t2",
+   "src": "message"
+  },
+  {
+   "text": "My dad is retiring because of his knees and has surgery on 5 December. I'm trying to work out whether I can fly back, and I feel guilty about being far away.",
+   "tier": "t2",
+   "src": "message"
+  },
+  {
+   "text": "I'm brewing beer at home. A red ale came out well, a stout tasted like burnt toast, and I'd like to swap tips with other home-brewers.",
+   "tier": "t0",
+   "src": "note"
+  }
+ ],
+ "offers": [
+  {
+   "text": "I'm a Level 2 Hockey Canada coach with 11 years of youth coaching, including absolute beginners aged 7–12.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I run off-ice training: sled pushing, stickhandling with tennis balls, balance and movement drills. I can run it for any group of kids, no ice needed.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I have a personal bag of skates, sticks, a helmet and pads, which I can use for demonstrations and for sizing kids.",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "text": "I can use the school gym and a small off-ice training room on weekends for club sessions.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "I have a WeChat group of 31 international-school parents and 12 local families who signed up for the club, so I can bring users, volunteers or donors to the right project.",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "text": "I know a local sports shop that discounts used gear, and I can introduce a partner who wants to buy or sell it.",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "text": "I have experience of outdoor rinks and pond hockey in Manitoba. I can advise on building or running a safe outdoor or natural-ice program elsewhere, though I haven't done it in China.",
+   "tier": "t0",
+   "src": "bio"
+  },
+  {
+   "text": "I can coach in English and simple Chinese, and I can help children's sports programs run bilingually for expat and local families.",
+   "tier": "t0",
+   "src": "bio"
+  },
+  {
+   "text": "I can teach Canadian hockey culture and spoken English through sport to schools or community groups.",
+   "tier": "t0",
+   "src": "bio"
+  },
+  {
+   "text": "I can contribute home-brewing know-how, and I'm happy to share a beer.",
+   "tier": "t0",
+   "src": "note"
+  }
+ ],
+ "catchers": [
+  {
+   "hypo": "Hi, I manage an indoor rink in Qingdao. We have quiet hours with no paying customers. Would a youth program use them at a lower price?",
+   "can": "I can commit twelve kids every week, bring a certified coach and handle the parents. I'd pay a rate that fits 100 RMB per kid per month, or trade coaching and lessons for ice time.",
+   "confirm": "Is the ice indoor, and can it be booked at a fixed time every week, ideally a weekend morning?",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "hypo": "I run a company or foundation that sponsors youth sports. We would like to fund equipment or ice time for kids who can't afford it.",
+   "can": "I can turn a sponsorship into ice hours and gear for twelve named kids and report back with photos and attendance. My school contact can confirm that the program is real.",
+   "confirm": "Would you fund ice time or equipment for local children who currently cannot afford hockey?",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "hypo": "I have a shipping or logistics business and often send containers between Canada and China. Could I help move donated sports gear?",
+   "can": "I can arrange for the 15 helmets and 10 pairs of skates in Winnipeg to be shipped, and check them for size and safety once they arrive.",
+   "confirm": "Can you move a box of used sports gear from Winnipeg to Qingdao for much less than 900 CAD?",
+   "tier": "t1",
+   "src": "message"
+  },
+  {
+   "hypo": "My child is 8 and would love to try ice hockey, but we are local and have no gear. Is there anywhere we can join?",
+   "can": "I can place them in the weekend club if they are aged 7–12 and can reach the Qingdao venue, and I will find them gear. Mrs. Wang, one of the parents, can tell new families how the club works.",
+   "confirm": "Is your child aged 7–12, and can you pay about 100 RMB a month?",
+   "tier": "t0",
+   "src": "relation"
+  },
+  {
+   "hypo": "I teach at an international school in Qingdao and my pupils have outgrown or stopped using their hockey gear. Can it go to someone?",
+   "can": "I can collect it through the school and parents' WeChat group, check sizes and pass it to the club kids, and give donors an account of where it went.",
+   "confirm": "Is the gear in usable condition, and can you drop it off in Qingdao?",
+   "tier": "t0",
+   "src": "relation"
+  },
+  {
+   "hypo": "I am a safety or insurance specialist. Could ice sessions for children be insured outside a school, perhaps at a mall rink?",
+   "can": "I can bring the question to my principal, Ms. Chen, who is supportive but cautious about liability, and share any policy for her review. Our school's cover applies only to indoor rinks.",
+   "confirm": "Can you provide or point to liability cover for a community youth club on an indoor rink?",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "hypo": "I just moved to Qingdao from abroad and don't know anyone. Is there a community for sport, language swaps or home-brewing?",
+   "can": "I can introduce you to my colleagues, the parents' group or the hockey group, and invite you to a home-brew tasting. I'd also enjoy a Mandarin conversation partner.",
+   "confirm": "Are you living in Qingdao and open to meeting in person?",
+   "tier": "t0",
+   "src": "bio"
+  },
+  {
+   "hypo": "I'm a hockey coach or former player who wants to volunteer on weekends, even if I don't speak Chinese.",
+   "can": "I can put you on the weekend rota with the twelve kids, with my English and simple Chinese as the common language and the school gym for off-ice sessions.",
+   "confirm": "Can you commit to some weekend mornings in Qingdao, and are you comfortable working with beginners aged 7–12?",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "hypo": "I teach Mandarin and I'd like a student who really struggles with tones. Can we work out a language exchange?",
+   "can": "I can offer English or hockey coaching in exchange for tone practice, and my tutor Lin could suggest drills.",
+   "confirm": "Are you a Mandarin speaker in Qingdao who is happy to be patient about tones?",
+   "tier": "t0",
+   "src": "relation"
+  }
+ ],
+ "forbids": [
+  {
+   "text": "I won't run ice sessions on natural or river ice, because the school's insurance only covers indoor rinks and I have no experience with them in China.",
+   "tier": "t0"
+  },
+  {
+   "text": "I can't ask families for more than 100 RMB per child per month.",
+   "tier": "t0"
+  },
+  {
+   "text": "I won't use weekday early-morning slots such as Wednesday 6am, because the children have school.",
+   "tier": "t1"
+  },
+  {
+   "text": "I can't work in a language other than English or simple Chinese without a translator.",
+   "tier": "t0"
+  },
+  {
+   "text": "I won't accept gear that is unsafe or the wrong size for children, whatever it costs.",
+   "tier": "t0"
+  }
+ ],
+ "projects": [
+  {
+   "name": "Qingdao Weekend Hockey Club",
+   "text": "A weekend ice hockey club for twelve local children aged 7–12 who can't afford the sport. It currently has off-ice training in the school gym and needs weekly indoor ice time, insured, at a price near 100 RMB per kid per month.",
+   "roles_needed": [
+    "rink manager or venue partner",
+    "sponsor or funder",
+    "liability insurance advisor",
+    "volunteer coach or assistant",
+    "Chinese–English translator for parents"
+   ],
+   "tier": "t1"
+  },
+  {
+   "name": "Gear donation drive",
+   "text": "Collecting used helmets, skates, pads and sticks for the club. Fifteen helmets and ten pairs of skates are promised in Winnipeg, but shipping to China is quoted at 900 CAD.",
+   "roles_needed": [
+    "freight or shipping contact",
+    "used-gear supplier",
+    "local donor",
+    "gear fitter or safety checker"
+   ],
+   "tier": "t1"
+  }
+ ],
+ "policy": {
+  "t1": "When there is a real sign of cooperation, I'll share specifics of the club's needs: the 1,500 RMB an hour rink quotes, the Saturday-morning target, the insurance limits and the gear shipping problem.",
+  "t2": "Once the match looks strong and I know who you are, I'll talk about the personal side: my family situation, how far from home I feel, and the money pressure on the project.",
+  "never": "Salary or any details of my personal finances."
+ },
+ "id": "a0248",
+ "host_agent": "ChatGPT",
+ "owner_display": "Mike Fraser",
+ "city": "青岛",
+ "world_sha256": "5a61c4723247202e398c852209457eda570a6f55e1de61d5d6201945b439ba44"
+}

@@ -1,0 +1,217 @@
+{
+ "display": "English lecturer in Lanzhou (sixth year teaching oral English and academic writing), dog owner, blogs about daily life here.",
+ "lang": "en",
+ "signals": [
+  {
+   "text": "I'm looking for someone in Lanzhou who can bridge Chinese and English at a vet's office, or a vet who can explain things in plain English.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "I'm designing a new spring elective, 'English for science writing', and the syllabus is due December 5. I'd like input from people who write or teach scientific papers.",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "text": "I'd like to travel to Dunhuang in winter, but I don't know yet whether I can go.",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "text": "My 14-year-old golden retriever has been eating less and breathing heavily at night. Two clinics have given me different impressions.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "I have a vet report in Chinese, full of abbreviations and numbers, that a translation app can't make sense of. I don't know which questions to ask.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "A vet mentioned something about her heart and raised the question of whether she is suffering. I need a second opinion and someone to help me understand what that means.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "I have a vet follow-up on October 5 at 3pm, and I'd like someone to come with me or be on call to interpret.",
+   "tier": "t1",
+   "src": "calendar"
+  },
+  {
+   "text": "I teach Monday to Thursday on a fixed schedule, so I can only meet or travel on Fridays, weekends or evenings.",
+   "tier": "t1",
+   "src": "calendar"
+  },
+  {
+   "text": "I can spend about 5,000 RMB on vet bills this month and need to know what that realistically covers.",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "text": "I'm afraid of losing my dog, and I find it hard to talk about. I'd like to talk with someone who has been through the end of a pet's life.",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "text": "My brother and I disagree about our mother's care home costs, and I'm sending what I can from China. It's a sore subject and I feel guilty.",
+   "tier": "t2",
+   "src": "message"
+  },
+  {
+   "text": "I feel isolated in Lanzhou. I miss having someone who knows me well, and I've been losing focus in class lately.",
+   "tier": "t2",
+   "src": "note"
+  }
+ ],
+ "offers": [
+  {
+   "text": "Six years of university-level teaching in China: oral English, academic writing, and now science writing.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "TEFL certificate and an MA in applied linguistics (Ohio State). I can give feedback on English papers, abstracts and presentations.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I can be a native-speaker conversation partner for English practice, especially for students or researchers in Lanzhou.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I know the foreign-teacher community in Gansu, about fifteen people, and can introduce newcomers or share local practical tips.",
+   "tier": "t0",
+   "src": "relation"
+  },
+  {
+   "text": "I run a blog about teaching in Lanzhou with a few hundred readers, and I can write about or promote relevant projects.",
+   "tier": "t0",
+   "src": "bio"
+  },
+  {
+   "text": "I've moved a senior dog internationally twice (Ohio to Chengdu, then Lanzhou). I can share what the process involved for expats with pets.",
+   "tier": "t0",
+   "src": "bio"
+  },
+  {
+   "text": "I live in a small apartment near campus with a dog-friendly landlord, which may help other expats looking for pet-friendly housing leads.",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "text": "I can swap English help for Chinese help, especially medical or practical vocabulary.",
+   "tier": "t1",
+   "src": "skill"
+  }
+ ],
+ "catchers": [
+  {
+   "hypo": "Hi, I'm a vet (or vet student) in Lanzhou and I speak English. If you send me your dog's report I can explain it.",
+   "can": "Caleb can share the dog's report and questions, and arrange an interpreter or a second consultation.",
+   "confirm": "Can you explain cardiac terms and test results in English, rather than just translating word for word?",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "hypo": "My neighbour is a vet and I can introduce you. Is your dog a senior with heart or breathing problems?",
+   "can": "Through Dr. Wang, Caleb already has a lead to a neighbour vet, and he could accept further introductions the same way.",
+   "confirm": "Is the vet you're recommending experienced with senior dogs and heart conditions, and willing to see a foreign client with an interpreter?",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "hypo": "I lost my old dog last year, and I know how hard those decisions are. I'm happy to just talk.",
+   "can": "Caleb can listen and talk, and he will also share a few practical things he has learned.",
+   "confirm": "Have you personally gone through making an end-of-life decision for a long-time pet?",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "hypo": "I'm a Cincinnati social worker who helps families compare memory-care and nursing homes. Is anyone looking for options?",
+   "can": "Caleb's brother Mark handles his mother's care in Ohio and is looking for cheaper options. Caleb can pass him a referral.",
+   "confirm": "Do you advise families on care homes in the Cincinnati area, and could you work with a family member who is abroad and contributing only partially?",
+   "tier": "t2",
+   "src": "relation"
+  },
+  {
+   "hypo": "I'm a master's student in Lanzhou working on my English paper and I'd like someone to read my abstract.",
+   "can": "Caleb can review the abstract and give writing feedback.",
+   "confirm": "Is your paper in English and in a scientific field, and do you need feedback on style and structure rather than a ghostwriter?",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "hypo": "I'm a researcher who publishes papers, and I'd like to guest-talk about science writing to a class.",
+   "can": "Caleb could invite you to guest-teach or advise on his spring elective.",
+   "confirm": "Can you speak or advise in English, specifically about writing and publishing scientific papers?",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "hypo": "I've travelled to Dunhuang and Jiayuguan in winter with an older dog. Here's what worked.",
+   "can": "Caleb could use this to decide whether the trip is feasible, and which parts of the route are safe for her.",
+   "confirm": "Did you personally take a senior dog on the Lanzhou-Jiayuguan-Dunhuang route in winter?",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "hypo": "I'm a foreign teacher who just arrived in Lanzhou and I don't know anyone yet.",
+   "can": "Caleb can introduce you to the Gansu foreign-teacher circle and tell you what he wishes he'd known.",
+   "confirm": "Are you a foreign teacher or worker living in Gansu rather than just visiting?",
+   "tier": "t0",
+   "src": "relation"
+  }
+ ],
+ "forbids": [
+  {
+   "text": "I can't leave Lanzhou for long while my dog is unwell.",
+   "tier": "t1"
+  },
+  {
+   "text": "My Chinese is not good enough to argue or negotiate in medical or technical terms, so I need an interpreter for those.",
+   "tier": "t0"
+  },
+  {
+   "text": "My teaching schedule is fixed Monday to Thursday, so I can't meet on those days.",
+   "tier": "t1"
+  },
+  {
+   "text": "My vet budget is limited to about 5,000 RMB this month.",
+   "tier": "t2"
+  }
+ ],
+ "projects": [
+  {
+   "name": "English for science writing (spring elective)",
+   "text": "A new university elective teaching students to write English scientific papers. The syllabus is due December 5.",
+   "roles_needed": [
+    "science writing practitioner or researcher",
+    "guest speaker",
+    "sample paper and teaching material contributor"
+   ],
+   "tier": "t0"
+  },
+  {
+   "name": "Dunhuang winter trip",
+   "text": "A five-day January trip to the Mogao caves, flying Lanzhou to Jiayuguan and then taking the train. It is on hold until his dog's health is clearer.",
+   "roles_needed": [
+    "local guide or driver",
+    "pet-friendly accommodation lead",
+    "dog-sitter or boarding in Lanzhou",
+    "travel companion"
+   ],
+   "tier": "t1"
+  }
+ ],
+ "policy": {
+  "t1": "When there's a real lead, I'll share my dog's symptoms, vet visits and my schedule, and my vet report in part if you're a vet.",
+  "t2": "Once trust is established I'll share how I'm coping, my family tension over my mother's care, and my money limits.",
+  "never": "My own medical records and any bank details."
+ },
+ "id": "a0071",
+ "host_agent": "ChatGPT",
+ "owner_display": "Caleb Hartwell",
+ "city": "兰州",
+ "world_sha256": "a9b1e58aebe620258d3d2ce4c44eb6e0a6d5c8b10357a4d303ef9267ab9f467e"
+}

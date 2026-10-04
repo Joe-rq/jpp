@@ -1,0 +1,220 @@
+{
+ "display": "Second-year nursing student in western Sydney who runs a small weekend cleaning team with two classmates around Parramatta and Auburn.",
+ "lang": "en",
+ "signals": [
+  {
+   "text": "I'm starting a three-week surgical ward placement at a hospital in Westmead on October 12, with 6:30 am starts, and I'm preparing for it.",
+   "tier": "t0",
+   "src": "calendar"
+  },
+  {
+   "text": "I need a pair of comfortable, non-slip work shoes for long hospital shifts and I haven't found the right ones yet.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "I'm looking for a reflective journal template or good examples for daily nursing placement notes. My supervisor wants a paper journal with dates and times.",
+   "tier": "t0",
+   "src": "message"
+  },
+  {
+   "text": "My handwriting is messy, and I want to improve it before I have to chart and keep paper notes on placement.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "I'm looking for a roommate in western Sydney, because my current one just moved out and the rent went up.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "Clients keep asking for Friday evening or Monday morning cleans and I have to turn them down. I'd like to find a way to serve them within my weekend-only availability.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "My weekends are full and I'm tired. I fell asleep on the train recently and missed my stop. I'd like study and rest routines that work around the cleaning jobs.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "I'm still working out anatomy memory tricks, such as the branches of the facial nerve, and I'd like to swap study methods with other nursing students.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "I miss Nepali food and home cooking, and most days I eat instant noodles because I'm short on time.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "I can't go home to Nepal for Dashain this year because of placement, and I feel the distance from family.",
+   "tier": "t2",
+   "src": "message"
+  },
+  {
+   "text": "I want to keep my paid hours safely under a strict weekly ceiling, so I'm wary of any extra work that could push me over.",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "text": "Money is tight, and I'd like to send some home to my family without hurting my own rent budget.",
+   "tier": "t2",
+   "src": "note"
+  }
+ ],
+ "offers": [
+  {
+   "text": "Reliable weekend home and small-office cleaning around Parramatta and Auburn, done by a team of three with a printed room-by-room checklist for every job and no missed-spot complaints so far.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "End-of-lease and regular home cleaning, with our own vacuums, a steam cleaner and eco-friendly products.",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "text": "Printed checklists for kitchen, bathroom, bedroom and balcony that I can share or adapt for other small cleaning crews.",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "text": "Typical pricing of $180 to $260 per house depending on size, invoiced through a registered ABN.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "First aid and manual handling certificates and nursing-student training, so I can give practical help on basic safety, hygiene and handling.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "Careful handling of client homes: I photograph before and after, and I put things like plants back exactly where they were.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "A WhatsApp network of about 40 clients and neighbours who regularly refer us for local work.",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "text": "Experience as an international student from Nepal balancing study, placement and part-time work, and I can share practical tips with newcomers.",
+   "tier": "t0",
+   "src": "bio"
+  },
+  {
+   "text": "I keep a clear spreadsheet system for hours, pay and job splits among team members, and I can show how it works.",
+   "tier": "t1",
+   "src": "project"
+  }
+ ],
+ "catchers": [
+  {
+   "hypo": "Hi, I'm moving out of a rental in Auburn at the end of the month and need an end-of-lease clean on a Saturday. Do you cover that?",
+   "can": "Quote and book a Saturday or Sunday end-of-lease clean with the team of three, using our checklists and our own equipment.",
+   "confirm": "Is the job in the Parramatta or Auburn area and can it be done on a Saturday or Sunday?",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "hypo": "I run a small office in western Sydney and need someone to clean it every weekend. Would your team consider a regular contract?",
+   "can": "Take on a regular weekend small-office clean with a fixed checklist, within what the team can fit around study.",
+   "confirm": "Can the cleaning be done on weekends only, with no weekday or evening hours?",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "hypo": "I'm a first-year nursing student about to start my first placement and I'm nervous. Could you tell me how you prepare, and how you keep notes?",
+   "can": "Share how I'm preparing for a surgical ward placement, including my reflective journal approach, early-shift routine and study tricks.",
+   "confirm": "Are you a nursing or health student asking about placement preparation, rather than looking for medical advice?",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "hypo": "My family has a small trekking equipment shop in Pokhara and we're thinking about reaching customers in Australia. Do you know anyone who could help?",
+   "can": "Introduce them through my father, who runs a small trekking equipment shop in Pokhara, and who would be glad to talk with someone who can help.",
+   "confirm": "Is this about trekking gear or travel in Nepal's Pokhara region rather than a general import business?",
+   "tier": "t2",
+   "src": "relation"
+  },
+  {
+   "hypo": "I'm an older person living alone near Granville and need a gentle, trustworthy cleaner who respects my things and doesn't fuss. Do you know someone?",
+   "can": "Offer our team's careful approach, and pass along the kind of regular, respectful service our existing older clients value.",
+   "confirm": "Is the home within the Parramatta or Auburn area and is a weekend morning slot acceptable?",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "hypo": "I'm a Nepali student new to Sydney and don't know how to find part-time work, a room, or a community. Can you point me somewhere?",
+   "can": "Connect them to the Nepali students society, its cricket matches and community, and share practical tips from my own experience.",
+   "confirm": "Are you a student or newcomer from Nepal or South Asia based in Sydney?",
+   "tier": "t0",
+   "src": "bio"
+  },
+  {
+   "hypo": "I'm looking for a room in western Sydney near Westmead or Parramatta. Are you sharing a place?",
+   "can": "Meet in a public place first, and if it seems a good fit, discuss sharing a room.",
+   "confirm": "Are you a student or working professional looking for a long-term shared room and happy to meet in a public place first?",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "hypo": "I run a small cleaning crew of students and want to set up checklists and job-split spreadsheets like a professional. Can I learn from you?",
+   "can": "Share a checklist template and the way we track hours, pay and who did what.",
+   "confirm": "Are you running or starting a small cleaning team yourself, rather than looking for free cleaning work?",
+   "tier": "t1",
+   "src": "skill"
+  }
+ ],
+ "forbids": [
+  {
+   "text": "Cleaning jobs only on Saturdays and Sundays; no weekday, Friday evening or Monday morning bookings, even for extra pay.",
+   "tier": "t0"
+  },
+  {
+   "text": "Sunday evenings are kept free for sleep before early placement shifts.",
+   "tier": "t1"
+  },
+  {
+   "text": "No physically unsafe jobs, such as heavy lifting or ladders above two metres.",
+   "tier": "t0"
+  },
+  {
+   "text": "Only western Sydney areas such as Parramatta, Auburn and Granville; I don't take jobs far outside them.",
+   "tier": "t0"
+  },
+  {
+   "text": "I won't take on paid work that risks exceeding my allowed work hours.",
+   "tier": "t1"
+  },
+  {
+   "text": "I don't share anyone's home address or personal details, including clients'.",
+   "tier": "t0"
+  }
+ ],
+ "projects": [
+  {
+   "name": "Weekend cleaning team",
+   "text": "A small checklist-based cleaning team that serves homes and small offices in Parramatta and Auburn on weekends only, and could grow carefully within the team's limited hours.",
+   "roles_needed": [
+    "extra weekend cleaner",
+    "small-office client",
+    "property manager for end-of-lease jobs",
+    "equipment or supplies supplier"
+   ],
+   "tier": "t1"
+  }
+ ],
+ "policy": {
+  "t1": "When there are signs of a real fit, I'll share rates, weekend schedule, available days, checklists and how the team works.",
+  "t2": "Once the match looks strong and I know who you are, I'll talk about my work-hours limit and the earlier warning, and about my family situation.",
+  "never": "Visa number, bank details and home address."
+ },
+ "id": "a0112",
+ "host_agent": "ChatGPT",
+ "owner_display": "Sandeep Thapa",
+ "city": "Sydney",
+ "world_sha256": "79fb8e8d546fe55e30f472c7cec1a7025fe4e5402ffe8a6d67d182f41484f545"
+}

@@ -1,0 +1,233 @@
+{
+ "display": "Category buyer for airport retail in Singapore. I'm looking for real hawker names that can be turned into gifts a traveller can carry. I also run half marathons and collect Peranakan tiles.",
+ "lang": "en",
+ "signals": [
+  {
+   "text": "Travellers keep asking our floor staff for gifts 'from a hawker', and the shelves still show the same three biscuit brands.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "I'm looking for food gifts with a recognisable hawker or heritage name that already come in a shelf-stable retail format.",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "text": "Brands with a name often have no giftable format, and makers with a format have no name. I keep hitting this gap and haven't found anyone who closes it.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "I'm training for the December half marathon in Sentosa and doing long runs of 18–20 km on weekends.",
+   "tier": "t0",
+   "src": "calendar"
+  },
+  {
+   "text": "I have 31 Peranakan tiles in a box and no wall to put them on.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "The heritage wall has 6 slots, 2 are filled and 4 are open. The range review is mid-December, and the mid-review slides are due on 21 October.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "I'm interested in sauces and pastes from known stalls (chilli crab, bak chor mee, laksa) if they can be made to last 12 months in a bag.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "I'm rebuilding my supplier scorecard so small suppliers aren't penalised for lacking a QA department. I'm stuck on how to weigh packaging damage in transit.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "Good small makers keep failing on shelf life. One I met was making to order in a home kitchen with an eight-week life, and I had to say no.",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "text": "The director keeps asking why the heritage wall only has two products, and the rule sheet leaves little room.",
+   "tier": "t2",
+   "src": "message"
+  },
+  {
+   "text": "I'm travelling to Johor most weekends, so my free time is tight.",
+   "tier": "t1",
+   "src": "calendar"
+  }
+ ],
+ "offers": [
+  {
+   "text": "Fifteen years of retail buying, six in food gifting, covering about 140 SKUs across four airport shops. I can give frank feedback on whether a product suits airport retail.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "A supplier onboarding checklist I wrote myself, covering shelf life, labelling, halal pathway, minimum order and retail margin. I can walk a small maker through it.",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "text": "A scorecard approach that accepts a third-party lab report in place of in-house QA, which helps small suppliers get through.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "Contacts at two logistics firms that handle ambient and chilled air freight from Changi, including consolidated ambient pallets from Johor twice a week.",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "text": "A weekly sell-through view by brand and month, so I can tell a maker what actually sells in airport gifting without sharing internal tables.",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "text": "Tasting sessions at the Terminal 2 back office. I give structured feedback on taste, packaging, price and shelf life.",
+   "tier": "t1",
+   "src": "calendar"
+  },
+  {
+   "text": "A sample drawer of rejected products, which I can use to show what usually fails (shelf life, labelling, leakage).",
+   "tier": "t2",
+   "src": "skill"
+  },
+  {
+   "text": "I can pace a running partner at 6:40/km on weekend long runs at East Coast Park.",
+   "tier": "t0",
+   "src": "message"
+  },
+  {
+   "text": "I know Peranakan tiles and the Joo Chiat flea market, and I'm happy to talk heritage design.",
+   "tier": "t0",
+   "src": "note"
+  }
+ ],
+ "catchers": [
+  {
+   "hypo": "I'm a manufacturer with a co-packing line and a 12-month shelf-stable pouch format. I'm looking for a known hawker name to partner with and make a product together.",
+   "can": "I can introduce the idea to my heritage range as a candidate for one of the open slots. I can also share the onboarding checklist and the halal-pathway requirements.",
+   "confirm": "Is your product ambient and shelf-stable for at least 12 months, made under your own name or the hawker's, rather than as a white-label from an anonymous lab?",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "hypo": "I run a well-known hawker stall. Customers often ask for something to take home, but I have no packaging or food safety setup.",
+   "can": "I can explain what a stall needs to become a giftable product, and suggest co-packers or labs who can help turn the recipe into a format. I can't promise a shelf slot.",
+   "confirm": "Would you be willing to partner with a manufacturer to turn your recipe into an ambient, 12-month shelf-stable product?",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "hypo": "I'm a food scientist or lab. I can extend shelf life for small makers and issue test reports. How do I get the report accepted by retailers?",
+   "can": "I can show how my scorecard treats a lab report in place of in-house QA, and tell you which fields buyers actually look at.",
+   "confirm": "Do your reports cover shelf life, labelling and packaging in transit, rather than just a safety test?",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "hypo": "I run a family food business in or near Johor. I produce ambient goods and want a route into Singapore retail.",
+   "can": "I can put you in touch with my logistics contact for consolidated ambient pallets from Johor, and I can visit your site in person on one of my Johor weekends.",
+   "confirm": "Are your products entirely ambient, with no chilled or frozen items, and can they be exported with halal certification or a clear pathway to it?",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "hypo": "I work on halal certification or food labelling for small brands. Do you know anyone who needs help planning a certification pathway?",
+   "can": "I can introduce your service to makers who need a halal pathway for the heritage range, and share which questions retail buyers ask first.",
+   "confirm": "Do you work with small food producers on first-time certification and labelling, rather than only large manufacturers?",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "hypo": "I'm a packaging designer. I want to make a heritage food gift that survives travel without leaking or breaking.",
+   "can": "I can give a buyer's view of what damages gifts in transit and gate sales, and suggest where you could test a prototype with my team.",
+   "confirm": "Have you designed packaging for food that must survive a long bag journey, such as sauces, rather than only boxes for display?",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "hypo": "I'm a merchandiser or retail designer. I want to create a story wall that a stranger can understand in ten seconds at a gate.",
+   "can": "I can connect you with Priya, my merchandising colleague, who knows what the director actually thinks and how walls are signed off.",
+   "confirm": "Have you designed a physical retail display for a travel or airport environment, rather than only online or standard supermarkets?",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "hypo": "I'm a half-marathon runner in Singapore looking for a long-run partner at a slow pace this season.",
+   "can": "I can join you on a weekend long run at East Coast Park. I'm training for the Sentosa half in December.",
+   "confirm": "Are you comfortable running about 6:40/km on 16–20 km runs early on weekend mornings?",
+   "tier": "t0",
+   "src": "message"
+  },
+  {
+   "hypo": "I sell old Peranakan tiles or run a heritage craft stall, and I'm looking for people who appreciate chipped, honest pieces.",
+   "can": "I can talk about tiles and Joo Chiat, and consider a purchase. I don't have wall space.",
+   "confirm": "Are you selling genuine vintage Peranakan tiles at flea-market prices, rather than modern reproductions?",
+   "tier": "t0",
+   "src": "note"
+  }
+ ],
+ "forbids": [
+  {
+   "text": "I can't list chilled or frozen products. I'm limited to ambient freight.",
+   "tier": "t0"
+  },
+  {
+   "text": "Nothing goes on the heritage wall unless it is shelf-stable for 12 months and has a clear halal pathway.",
+   "tier": "t1"
+  },
+  {
+   "text": "I don't take white-label or lab-only products with no recognisable name behind them.",
+   "tier": "t1"
+  },
+  {
+   "text": "I don't take a single hawker without a product format.",
+   "tier": "t1"
+  },
+  {
+   "text": "I can't promise a listing. Wall decisions go through my director and the range review.",
+   "tier": "t1"
+  },
+  {
+   "text": "Weekends are mostly taken by travel, so I don't take weekend meetings.",
+   "tier": "t1"
+  }
+ ],
+ "projects": [
+  {
+   "name": "Heritage food gifting range ('Taste of Singapore' wall)",
+   "text": "I'm filling the 4 open slots on a wall of 6 near the main gates. Products need a recognisable heritage name, 12 months of shelf stability and a halal pathway. The range review is mid-December.",
+   "roles_needed": [
+    "heritage food brand or hawker with a name",
+    "co-packer or manufacturer with a shelf-stable format",
+    "food scientist or lab for shelf-life reports",
+    "halal certification adviser",
+    "packaging designer for travel"
+   ],
+   "tier": "t1"
+  },
+  {
+   "name": "Supplier scorecard v3",
+   "text": "A scorecard that doesn't penalise small suppliers for lacking QA. It accepts a lab report in lieu of in-house QA, and I still need a way to weigh packaging damage in transit.",
+   "roles_needed": [
+    "packaging or transit-testing expert",
+    "food safety consultant",
+    "retail operations person"
+   ],
+   "tier": "t1"
+  }
+ ],
+ "policy": {
+  "t1": "When there's a real lead, I can share the heritage wall rules, open slots, review dates, and rough order-size and margin ranges.",
+  "t2": "Once trust is established I can share what has failed so far, the pressure on the project, and the general fact that I travel to see family in Johor.",
+  "never": "Mum's medical details, my salary and bonus, internal margin tables, and my private feelings about my job."
+ },
+ "id": "a0301",
+ "host_agent": "ChatGPT",
+ "owner_display": "Janice Tan",
+ "city": "Singapore",
+ "world_sha256": "3a98dd660c314031c9e214073ca3c641ec3d012c22560eaa0c807f9b6a66b763"
+}

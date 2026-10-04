@@ -1,0 +1,245 @@
+{
+ "display": "I coordinate a 14-woman cold-process soap cooperative in Kibera, Nairobi, and we sell at weekend markets and in a few small shops.",
+ "lang": "en",
+ "signals": [
+  {
+   "text": "Our soaps sell well at weekend markets, but I'm looking for a cheaper, natural alternative to imported lavender oil.",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "text": "Our curing room has space for about 800 bars but only about 380 are curing, so I need either more sales or cheaper ingredients to fill it.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "Imported lavender essential oil is our biggest single cost. It is KES 62 of about KES 240 per bar, and the price went up twice this year.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "Our bar sells for KES 350 and costs about KES 240 to make. Without the lavender, the contribution margin would rise from about KES 110 to about KES 172 per bar.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "My Mombasa supplier wants a 10-litre minimum for a bulk discount, and I can't afford to buy that much at once.",
+   "tier": "t1",
+   "src": "message"
+  },
+  {
+   "text": "I'd like to find a way to buy ingredients (oils, lye) in bulk without credit, such as group buying, deposits or staged payments.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "Some members want to try cheaper scents, but others fear customers will notice. We want a change that keeps customers' trust.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "My weekend stall fees are rising (Village Market goes up next month), so I'd like more sales channels that don't charge per-stall rent.",
+   "tier": "t1",
+   "src": "message"
+  },
+  {
+   "text": "I'd like to sell more bars in bulk or on repeat, for example to hotels, guesthouses, gift shops or corporate gifting.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "I have a decision on the next lavender oil order due on 25 October, and I'd like input before then.",
+   "tier": "t1",
+   "src": "calendar"
+  },
+  {
+   "text": "I'm studying cost accounting in the evenings and would like to swap notes with someone who does costing or pricing for small producers.",
+   "tier": "t0",
+   "src": "calendar"
+  },
+  {
+   "text": "My cash float is very small, about KES 4,300, and no bank will lend to us, so every purchase is a tight decision.",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "text": "I sometimes cover payments to members from my own savings, and I'd like a more sustainable buffer, such as a small working-capital facility or a group savings arrangement.",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "text": "I'm tired from juggling the cooperative, evening classes and training, and I could use help with the books or markets.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "I'm training for a December 10k charity run for a girls' school fund and would welcome running partners or sponsors.",
+   "tier": "t0",
+   "src": "project"
+  }
+ ],
+ "offers": [
+  {
+   "text": "Cold-process soap made by hand in olive, coconut and shea butter bars, with goat-milk and charcoal variants.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "Fourteen trained women, each with a role (mixing, pouring, cutting, wrapping, selling), able to produce at scale on soap-making days.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "A 4 by 6 metre curing room in Kibera with racks for about 800 bars, currently half empty, that could cure other makers' cold-process products or take on more of our own volume.",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "text": "Regular weekend market stalls at Karen, Village Market and Kilimani Sunday market, with an established customer base.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "Real sales data from the market stalls, such as one 72-bar Saturday and customer feedback, for anyone testing scents or prices.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "Practical bookkeeping for a small cooperative (notebook, Excel, M-Pesa till), plus cost-accounting training in progress.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "Supplier negotiation experience. I regularly argue prices down on oils and lye, for example cutting a 15 percent increase to 8 percent.",
+   "tier": "t1",
+   "src": "message"
+  },
+  {
+   "text": "A small, trusted retail presence where partners can test a new natural product, such as a soap, balm or scent, with market customers.",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "text": "Experience organising a group of women around shared tasks and fair pay. We guarantee every member at least KES 6,000 a month.",
+   "tier": "t1",
+   "src": "bio"
+  }
+ ],
+ "catchers": [
+  {
+   "hypo": "Hi, I grow lavender (or another aromatic plant) near Nairobi and distil small batches of essential oil. Would a soap maker buy it?",
+   "can": "I can test it in small batches, tell you honestly how it performs in cold-process soap, and become a repeat buyer if the price and consistency work. I can also bring it to the 25 October order decision.",
+   "confirm": "Is your oil a pure, natural essential oil (no synthetic fragrance), and can you supply at least a few litres per order?",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "hypo": "I run a hotel/guesthouse/spa and want local, natural handmade soap for our rooms. How many could you supply each month?",
+   "can": "We can supply branded or plain bars in volume. With the curing room half empty, we have capacity to take a regular order.",
+   "confirm": "Would you order at least 100 bars a month on a recurring basis?",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "hypo": "I sell essential oils / soap-making ingredients and want to offer group-buy pricing to small producers.",
+   "can": "I can pool orders with the cooperative, and possibly with other small soap makers I know, to reach your minimums, and pay promptly on delivery.",
+   "confirm": "Can you offer a bulk discount on smaller minimums than 10 litres, or split a bulk order between buyers?",
+   "tier": "t1",
+   "src": "message"
+  },
+  {
+   "hypo": "I'm a food scientist/cosmetic chemist and want to help a small natural soap brand test cheaper natural scents.",
+   "can": "I'll run blind tests with market customers at our Saturday stalls and ask the members for honest feedback. Rose, our longest-standing member, is respected and speaks plainly, so I can ask her to lead the member trial.",
+   "confirm": "Are the scents you propose fully natural (no synthetic fragrance), and can you support a small trial of a few dozen bars?",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "hypo": "I'm a small-business accountant/trainer and want to coach women's groups on costing and pricing.",
+   "can": "I can use the cooperative's real numbers as a live case, and compare notes with my cost-accounting course.",
+   "confirm": "Would you work with a group that can pay little or nothing, in exchange for a real case study?",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "hypo": "I run a microfinance, savings group or social-impact fund and want to support women's production cooperatives with small working capital.",
+   "can": "I can share simple, honest books (costs, volumes, margin) and show how a small working-capital facility lets us buy in bulk and fill the curing room.",
+   "confirm": "Is your product suited to a cooperative with no bank credit, with a loan size of tens of thousands of shillings rather than millions?",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "hypo": "I organise a market/fair or an online shop and have a place for a handmade natural-products maker at a good rate.",
+   "can": "We can take a stall or a consignment slot and bring stock, since our current markets raise stall fees.",
+   "confirm": "Are your stall or listing fees at or below about KES 1,500 per weekend, with reasonable notice before changes?",
+   "tier": "t1",
+   "src": "message"
+  },
+  {
+   "hypo": "I'm a university or bursary officer, or an engineering alum, and want to help first-year engineering students from low-income families.",
+   "can": "I can pass information on to my younger brother Peter, a first-year engineering student at Kenyatta University, and help him apply.",
+   "confirm": "Is your programme open to first-year engineering students at Kenyatta University?",
+   "tier": "t2",
+   "src": "relation"
+  }
+ ],
+ "forbids": [
+  {
+   "text": "Our soap stays natural: no synthetic fragrances, whatever the saving.",
+   "tier": "t0"
+  },
+  {
+   "text": "Every member must still earn at least KES 6,000 a month from the cooperative; I won't accept a deal that cuts that.",
+   "tier": "t0"
+  },
+  {
+   "text": "I won't share details of members' personal circumstances with anyone.",
+   "tier": "t0"
+  },
+  {
+   "text": "I can't take on credit or large upfront purchases such as 10-litre minimums, because the cash float is small and banks won't lend to us.",
+   "tier": "t1"
+  },
+  {
+   "text": "I'm only available for calls outside Tuesday and Thursday evenings (class) and weekend market mornings.",
+   "tier": "t1"
+  },
+  {
+   "text": "I work only in Nairobi and the surrounding area for in-person work.",
+   "tier": "t0"
+  }
+ ],
+ "projects": [
+  {
+   "name": "Margin repair",
+   "text": "Cut the cost of scent and bulk ingredients so a bar clears a healthier margin, then fill the half-empty curing room with more production.",
+   "roles_needed": [
+    "natural fragrance/essential oil supplier",
+    "cosmetic or soap formulator",
+    "group-purchasing partner",
+    "small-business accountant"
+   ],
+   "tier": "t1"
+  },
+  {
+   "name": "More buyers for the curing room",
+   "text": "Find bulk and recurring buyers (hotels, gift shops, corporate gifts) so the 800-bar curing room runs full.",
+   "roles_needed": [
+    "hospitality or retail buyer",
+    "packaging/branding designer",
+    "distributor"
+   ],
+   "tier": "t1"
+  }
+ ],
+ "policy": {
+  "t1": "When there is a real lead, I can share our margin pressure from imported lavender, the half-empty curing room, and typical prices and volumes (for example a bar at KES 350, cost about KES 240, and about 380 bars curing).",
+  "t2": "Once I trust the person and know who they are, I can share the cash float, the limits on our financing, and that I sometimes cover members from my own savings, as well as family education needs where it's relevant to a specific opportunity.",
+  "never": "I never share members' personal circumstances (their family, health or money troubles) or anything that identifies them."
+ },
+ "id": "a0246",
+ "host_agent": "Muse",
+ "owner_display": "Wanjiru Achieng",
+ "city": "Nairobi",
+ "world_sha256": "a3643962f81bfe922c55ce5d9c431c62583d60cf2afbb97aca156a737f62e65c"
+}

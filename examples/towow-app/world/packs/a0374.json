@@ -1,0 +1,230 @@
+{
+ "display": "Retired IELTS speaking examiner, twenty years across Asia, now living in Ho Chi Minh City.",
+ "lang": "en",
+ "signals": [
+  {
+   "text": "I'm recovering from knee surgery and can't stand for long yet, so most of what I do right now has to be done sitting down.",
+   "tier": "t1",
+   "src": "bio"
+  },
+  {
+   "text": "I'm bored stiff. If someone asked me to examine or assess something, I'd happily do it from a chair.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "I'm writing a memoir about twenty years of examining, about 31,000 words in, and I have no idea who might publish it.",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "text": "I'd like a reader or editor who understands teaching or testing, to tell me honestly whether the memoir works.",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "text": "I'm thinking about a weekly speaking-practice chat for local university students, but I won't commit until I can sit through a session comfortably.",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "text": "I'm more physically limited than I'd like, so short, seated sessions suit me better than anything with travel or long standing.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "Recovery means regular nursing visits and the costs add up, so I'd welcome simpler or cheaper ways to arrange aftercare.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "A cross-border insurance claim has become a time sink. I've been passed between departments, and it's wearing me down more than I admit.",
+   "tier": "t2",
+   "src": "message"
+  },
+  {
+   "text": "Since retiring and then having surgery, I've felt less useful. I miss being asked for something only I can do.",
+   "tier": "t2",
+   "src": "bio"
+  },
+  {
+   "text": "I'm awake at 3am for the cricket and short on conversation. I'd enjoy talking with someone who loves the game.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "I live alone with a dog and mostly eat noodles. My daughter worries, and a regular meal with company would do me good.",
+   "tier": "t2",
+   "src": "message"
+  },
+  {
+   "text": "Walking on busy Saigon streets is nerve-racking while I'm still unsteady, and I'd like safer, flatter places to build up my distance.",
+   "tier": "t1",
+   "src": "note"
+  }
+ ],
+ "offers": [
+  {
+   "text": "Twenty years as an IELTS speaking examiner in Hanoi, Bangkok, Kuala Lumpur, Seoul and Ho Chi Minh City.",
+   "tier": "t0",
+   "src": "bio"
+  },
+  {
+   "text": "I can run a realistic mock IELTS speaking test, all three parts, and give calibrated feedback on band 6, 7 and 8 performance.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I can coach a candidate from band 6 to 6.5 or 7 by working on specific habits: fluency, hesitation, extending answers and using better vocabulary.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I know the typical errors of Vietnamese, Thai, Korean and Chinese speakers of English, including pronunciation, grammar and the cultural habits behind short answers.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I have a stack of past speaking cue cards and examiner notes that I'm allowed to keep and use.",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "text": "I can train teachers or tutors to examine and give feedback consistently, so their students get honest bands.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I have a spare room, a standing desk and good internet in a Thao Dien flat for short in-person sessions. The room is seated-friendly, and it's also usable as a quiet workspace.",
+   "tier": "t1",
+   "src": "bio"
+  },
+  {
+   "text": "I know a small circle of expat English teachers and a couple of Vietnamese university lecturers I trust, and I can make introductions.",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "text": "I can talk through the memoir craft of writing about strangers with care, and can tell stories from the examiner's chair.",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "text": "I have time on weekday mornings and evenings, and I'm happy to sit and talk.",
+   "tier": "t1",
+   "src": "calendar"
+  }
+ ],
+ "catchers": [
+  {
+   "hypo": "Hi, I teach at a university in Thu Duc and my students need IELTS 6.5 for study abroad. They almost never get to talk to a native speaker. Could someone come and run a mock test?",
+   "can": "He can run a seated mock speaking test or a weekly half-hour chat, give examiner-style feedback, and tell the teacher what each student needs to work on.",
+   "confirm": "Are the students at or near IELTS 5.5–7 and short of speaking practice, and would a seated session of about 30–40 minutes work for you?",
+   "tier": "t0",
+   "src": "relation"
+  },
+  {
+   "hypo": "My son has an IELTS test next month and he freezes when he has to talk for two minutes. Can anyone just talk with him and tell us honestly where he is?",
+   "can": "He can sit down with the candidate for a relaxed mock Part 1–3 chat and say plainly what band it sounds like and what to fix first.",
+   "confirm": "Is the candidate preparing for the speaking section of IELTS and able to meet in person in Thao Dien?",
+   "tier": "t0",
+   "src": "message"
+  },
+  {
+   "hypo": "I'm a teacher at a language centre in HCMC. Our staff mark speaking differently from each other and our students notice. Could someone calibrate us?",
+   "can": "He can run a calibration session with recorded or live samples, so the staff score against the same IELTS band descriptors.",
+   "confirm": "Do you need teachers to agree on IELTS-style speaking bands, as opposed to general conversation marking?",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "hypo": "I'm moving to Sydney from Vietnam and I'm nervous about whether anyone will help me settle. Do you know someone there who could point me in the right direction?",
+   "can": "Through his daughter in Sydney he may be able to make a friendly introduction for practical local advice. He can offer this only if the daughter agrees.",
+   "confirm": "Are you a person or family moving to Sydney who needs friendly local orientation, as opposed to a business or legal service?",
+   "tier": "t2",
+   "src": "relation"
+  },
+  {
+   "hypo": "I'm a nurse, and I'd like to work with people recovering at home in District 2 and Thao Dien. Do you know anyone who needs regular visits?",
+   "can": "He can say honestly what a good home-care visit looks like from the patient's side, and pass on a recommendation to anyone who's looking, if the carer is willing to be named.",
+   "confirm": "Do you provide home-based post-operative nursing in the Ho Chi Minh City area, and are you looking for referrals?",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "hypo": "I'm a writer, and I'm working on a book about my years in a profession few people see. How do you decide what's worth keeping and what's too private?",
+   "can": "He can talk through the practical and ethical craft of writing a memoir about strangers, without naming real candidates.",
+   "confirm": "Are you writing narrative non-fiction drawn from your own career, not asking for help with fiction or ghostwriting?",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "hypo": "I'm a retiree abroad and I've lost my sense of purpose since finishing work. How did you fill the gap?",
+   "can": "He can talk honestly about how he's been finding use in small seated tasks like coaching and writing, and about the dull parts too.",
+   "confirm": "Are you looking for an honest peer conversation about retirement abroad, rather than formal counselling?",
+   "tier": "t1",
+   "src": "bio"
+  },
+  {
+   "hypo": "Does anyone around here follow the cricket? I'm up at 3am watching the Test and I'd love to talk about it.",
+   "can": "He can happily go through the day's play over tea, at any hour.",
+   "confirm": "Do you actually follow Test cricket, and would you be happy to talk about it at odd hours?",
+   "tier": "t0",
+   "src": "note"
+  }
+ ],
+ "forbids": [
+  {
+   "text": "I can't stand or travel for long right now, so I'll only take seated sessions of about 30–40 minutes close to home.",
+   "tier": "t0"
+  },
+  {
+   "text": "I won't issue official IELTS scores or certificates, and I won't promise a band outcome. I give practice feedback only.",
+   "tier": "t0"
+  },
+  {
+   "text": "I won't share identifiable details of past candidates, whatever the story.",
+   "tier": "t0"
+  },
+  {
+   "text": "I won't share medical records or financial details with anyone.",
+   "tier": "never"
+  },
+  {
+   "text": "I'm not taking on unpaid full-time or long-hours commitments while I'm recovering.",
+   "tier": "t1"
+  }
+ ],
+ "projects": [
+  {
+   "name": "Forty Thousand Candidates (memoir)",
+   "text": "A memoir about the odd intimacy of examining: eleven minutes with a stranger in which you see exactly where they are afraid. About 31,000 words written so far.",
+   "roles_needed": [
+    "manuscript reader",
+    "developmental editor",
+    "literary agent or small publisher contact"
+   ],
+   "tier": "t0"
+  },
+  {
+   "name": "Weekly speaking partner for local students",
+   "text": "A weekly half-hour seated conversation or mock test for Vietnamese university students who need IELTS 6.5 for study abroad.",
+   "roles_needed": [
+    "university lecturer or coordinator",
+    "student groups",
+    "someone to help with logistics near Thu Duc"
+   ],
+   "tier": "t1"
+  }
+ ],
+ "policy": {
+  "t1": "Once there's a real lead, I'll say that I'm recovering from knee surgery, what sessions I can manage, when I'm free, and which teachers I can introduce.",
+  "t2": "When it looks promising and I know who you are, I'll talk about loneliness, my family and the insurance stress, and name people I trust.",
+  "never": "My medical records and financial details, including amounts, will never leave my side."
+ },
+ "id": "a0374",
+ "host_agent": "ChatGPT",
+ "owner_display": "Graham Hollis",
+ "city": "Ho Chi Minh City",
+ "world_sha256": "4ac114ea4c3da14d672723e84331b5ce42fc07689ed747a767a9c2c2e1c243f2"
+}

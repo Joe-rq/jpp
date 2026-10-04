@@ -1,0 +1,251 @@
+{
+ "display": "Priya Naidoo, caseworker at a tenants' union in south Manchester. Ex-estate agent, now on the tenants' side. I handle damp, disrepair, deposits and section 21 notices, and I keep a casebook of 380 cases and a sheet of 412 landlords and agents.",
+ "lang": "en",
+ "signals": [
+  {
+   "text": "I'm three cases short of the 30 well-documented Levenshulme damp-and-mould cases I need, and the deadline to finalise the file is 14 October.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "I'm looking for Levenshulme households with mould or damp who have photos, dated emails with the landlord or agent, or a medical letter, and who are willing to be in a collective file.",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "text": "I have a meeting with the council's housing enforcement team on 28 October and want the file to show a pattern across landlords, not 23 separate complaints they can each shrug off.",
+   "tier": "t1",
+   "src": "calendar"
+  },
+  {
+   "text": "I'm cleaning up a 412-row landlord and agent sheet. The same landlord often appears under four company names, and I need Companies House numbers to merge them.",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "text": "I want to publish an anonymised 'worst agents' league table in the union newsletter. Legal says every entry needs two corroborated cases, so I need help checking that.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "Tenants keep learning too late that once the council serves an improvement notice, a retaliatory no-fault eviction is blocked for six months. I want that sentence in front of people before the notice arrives.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "Timing is the cruellest part of my job. People reach us after the eviction notice has already arrived, when the clock is tight.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "Getting heating or repairs sorted often needs a formal request to environmental health. I'd like a simple way to get tenants to make that request early.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "I'm double-booked on a weekend between a union 'know your rights' stall and my greyhound walking club, and I could use another volunteer for stalls.",
+   "tier": "t0",
+   "src": "calendar"
+  },
+  {
+   "text": "I'm trying to learn Portuguese before a trip to Lisbon in April with my sister, and my study streak keeps slipping when casework piles up.",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "text": "I'm on the allotment waiting list at number 61 with a six-year wait, so I'm growing cress on the windowsill and would like to find someone with shared growing space.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "My rescue greyhound is scared of bin lorries and busy roads. I'd like to meet other owners of nervous rescue dogs.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "Doing this work is heavy on me. I had a burnout break earlier this year and still see a counsellor monthly.",
+   "tier": "t2",
+   "src": "bio"
+  },
+  {
+   "text": "My own flat has a damp patch I haven't reported because I don't want to fight my landlord.",
+   "tier": "t2",
+   "src": "bio"
+  }
+ ],
+ "offers": [
+  {
+   "text": "A casebook of 380 closed and open cases since 2020, tagged by landlord, managing agent, ward and defect type. I can say whether a landlord or agent shows a repeat pattern.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I can explain how the Housing Act 2004 HHSRS process works, how Category 1 hazards get scored, and what the council's private-sector housing team will and won't act on.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I know the rule that once the council serves an improvement notice, the landlord can't serve a retaliatory section 21 for six months, and I can explain how to trigger it in practice.",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "text": "Template letters for disrepair, deposit protection and Tenant Fees Act breaches.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "Nine years inside estate agency in Didsbury. I know how listings, rent rises and agent excuses work from the inside.",
+   "tier": "t0",
+   "src": "bio"
+  },
+  {
+   "text": "Six years of contacts I can introduce you to once there's a concrete case: housing solicitors, environmental health officers and a local councillor on the housing committee.",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "text": "A damp meter, a borrowed thermal camera and a phone camera. I know how to photograph mould, such as mould under fresh paint, so it works as evidence.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I can cover deposit-dispute drop-ins and run 'know your rights' stalls in south Manchester.",
+   "tier": "t0",
+   "src": "calendar"
+  },
+  {
+   "text": "I can help organise a pattern-evidence file for a council enforcement meeting: how many cases, what documentation, and how to structure them.",
+   "tier": "t1",
+   "src": "project"
+  }
+ ],
+ "catchers": [
+  {
+   "hypo": "My landlord painted over black mould in the back bedroom. I'm in Levenshulme and I have photos and dated emails. Is that any use to anyone?",
+   "can": "Priya can add the household to the Levenshulme damp-and-mould file, advise on what evidence to gather, and show how it supports a collective case.",
+   "confirm": "Is the property in Levenshulme or the surrounding area, with damp or mould, and does the tenant have dated photos or written complaints to the landlord or agent?",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "hypo": "I got a no-fault eviction notice shortly after reporting mould to my landlord. I never asked anyone for help before. Is it too late?",
+   "can": "Priya can check whether a council improvement notice is in place or can still be requested, explain the six-month protection, and say how tight the timing is. She'll refer on to a solicitor if the case needs court representation.",
+   "confirm": "Did the tenant report the disrepair before the eviction notice arrived, and is the property in the Manchester area?",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "hypo": "The same landlord seems to own several flats under different company names, and the agent ignores every repair request. How do I find out whether others are affected?",
+   "can": "Priya can check her landlord and agent sheet for duplicates and a repeat pattern. Naming anyone publicly needs two corroborated cases first.",
+   "confirm": "Do you have the landlord or agent's name or company number, and are the properties in Greater Manchester?",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "hypo": "I'm a researcher or journalist looking at patterns of landlord neglect in Manchester. Is there any data I could use?",
+   "can": "Priya can describe the shape of her casebook at t0, share anonymised patterns once a purpose is clear, and point to her published league table when it's ready.",
+   "confirm": "Is the work about private-rented-sector disrepair in Greater Manchester, and will it anonymise tenants and avoid naming landlords without two corroborated cases?",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "hypo": "I'm a housing solicitor who'd like to see a documented pattern of damp cases before talking to the council. Who has that?",
+   "can": "Priya can share the Levenshulme case list structure once there's a concrete legal-support need. A solicitor friend of hers has already offered an hour at the enforcement meeting.",
+   "confirm": "Is the solicitor willing to review case evidence without tenants' names or medical details, and does the work relate to private-rented-sector disrepair?",
+   "tier": "t2",
+   "src": "relation"
+  },
+  {
+   "hypo": "I'm on benefits and my landlord says I owe rent, but the flat has been damp for months. Who looks at both issues?",
+   "can": "Priya's colleague Marcus, who shares her office and handles benefits cases, can look at the benefits side, and Priya can handle the disrepair side.",
+   "confirm": "Does the tenant have both a benefits or rent-arrears issue and a disrepair problem, and live in south Manchester?",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "hypo": "I teach primary school in Leeds and several of my pupils live in damp, mouldy homes. Is there anyone who can speak to parents about their rights?",
+   "can": "Priya's sister Anita is a primary school teacher in Leeds, so she can be the point of contact for school-side questions. Priya can offer a general 'know your rights' talk or leaflet.",
+   "confirm": "Is the request from a school or community group, and is it about tenants' rights in general and not individual case advice?",
+   "tier": "t2",
+   "src": "relation"
+  },
+  {
+   "hypo": "I'm a council officer or councillor trying to understand where private rented sector complaints cluster. Who's tracking this?",
+   "can": "Priya can talk about the pattern at a high level and, once purpose and trust are clear, discuss the enforcement meeting and the case file.",
+   "confirm": "Is the contact from a Greater Manchester council or housing committee, and is it about enforcement against repeat landlords or agents?",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "hypo": "I run a community energy group and have damp or thermal imaging kit and volunteers. Would that help tenants with mould?",
+   "can": "Priya already borrows a thermal camera from a community energy group and can coordinate surveys of damp homes, with tenants' consent.",
+   "confirm": "Is the group in the Manchester area, and can it do surveys with tenant consent and share findings without naming tenants?",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "hypo": "My rescue greyhound panics at bin lorries and I'm looking for people who've trained one through that. Any tips?",
+   "can": "Priya's greyhound Mabel is a nervous three-year-old rescue in training with a trainer, and Priya can swap tips on treats, distance and gradual exposure. She also loves a radiator.",
+   "confirm": "Is the dog a rescue greyhound or similar and afraid of loud noises or traffic, and are you in or near south Manchester?",
+   "tier": "t0",
+   "src": "relation"
+  }
+ ],
+ "forbids": [
+  {
+   "text": "I won't take cases that need court representation unless a solicitor is involved.",
+   "tier": "t0"
+  },
+  {
+   "text": "I can't see walk-ins outside the drop-in hours because of my caseload.",
+   "tier": "t0"
+  },
+  {
+   "text": "I work 9 to 5, four days a week.",
+   "tier": "t0"
+  },
+  {
+   "text": "I won't name a landlord or agent publicly without two corroborated cases.",
+   "tier": "t0"
+  },
+  {
+   "text": "I won't share tenants' names or addresses, or any client's medical details.",
+   "tier": "t0"
+  }
+ ],
+ "projects": [
+  {
+   "name": "Levenshulme damp-and-mould case file",
+   "text": "A file of at least 30 well-documented damp and mould cases across three landlords and one managing agent, for the council's housing enforcement meeting on 28 October. The finalising deadline is 14 October.",
+   "roles_needed": [
+    "Levenshulme tenants with mould or damp and documentation",
+    "housing solicitor or legal reviewer",
+    "volunteer to help chase evidence",
+    "community energy or damp survey helper"
+   ],
+   "tier": "t1"
+  },
+  {
+   "name": "Landlord and agent league table",
+   "text": "Cleaning and de-duplicating a 412-row sheet of landlords and agents, with Companies House numbers, into an anonymised newsletter league table. Every entry needs two corroborated cases.",
+   "roles_needed": [
+    "data cleaner or spreadsheet helper",
+    "Companies House researcher",
+    "legal checker",
+    "newsletter editor"
+   ],
+   "tier": "t1"
+  }
+ ],
+ "policy": {
+  "t1": "When there's a concrete lead I'll share the improvement notice rule, case numbers, the Levenshulme file and the enforcement meeting.",
+  "t2": "Once trust is clear and the other party's identity is established, I'll share how I cope with the work and my own flat.",
+  "never": "Tenants' names and addresses, and any medical details of clients."
+ },
+ "id": "a0206",
+ "host_agent": "Muse",
+ "owner_display": "Priya Naidoo",
+ "city": "Manchester",
+ "world_sha256": "f03e7b07e0e0e0a2fd04150ff7468a34bef0cc868b997be907c6963bfb99a3d6"
+}

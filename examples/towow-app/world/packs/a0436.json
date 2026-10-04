@@ -1,0 +1,249 @@
+{
+ "display": "Social worker who coordinates a sewing circle for refugee women in Western Sydney.",
+ "lang": "en",
+ "signals": [
+  {
+   "text": "The sewing circle has outgrown its host's lounge room: more women than machines, and someone is always standing.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "Two new members joined recently, and I want to keep welcoming people without turning anyone away.",
+   "tier": "t1",
+   "src": "message"
+  },
+  {
+   "text": "I need a weekday-morning space with power points for about six machines, because school hours are the only time the women are free.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "The women want to take small alteration orders (hems, zips, school uniforms) to earn some money, and I don't yet know how to set that up.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "I'd like a way for the women to find paying neighbours for alterations, with fair pay and no charity framing.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "I need an overlocker (or a way to get one), because alterations don't work without finished edges.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "The overlocker we borrow has to go back in about three weeks, and our petty cash is $63 against a $480 second-hand machine.",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "text": "I've emailed three councils and a church about space and got kind replies but no keys. A hall at $38 an hour is out of reach, and the next grant round isn't until February.",
+   "tier": "t1",
+   "src": "message"
+  },
+  {
+   "text": "I'm anxious about rent and housemates after my housemate moves out at the end of October.",
+   "tier": "t2",
+   "src": "message"
+  },
+  {
+   "text": "I sometimes feel that my social work degree only counts for something because of this circle, and I'm worried about leaning that hard on it.",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "text": "I'm stretched across a part-time legal centre job, volunteer firefighter training, the circle and a wedding in March, and I'm often tired.",
+   "tier": "t2",
+   "src": "calendar"
+  },
+  {
+   "text": "I'm planning a $6,000 wedding in Penrith and making my own dress, so I'm looking for ideas and favours that keep costs down.",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "text": "My family doesn't see the circle as real work, and I'd like examples that show it has value.",
+   "tier": "t2",
+   "src": "message"
+  }
+ ],
+ "offers": [
+  {
+   "text": "Four years of casework with newly arrived families, and a social work degree.",
+   "tier": "t0",
+   "src": "bio"
+  },
+  {
+   "text": "I run a sewing circle of about nine regular members, meeting twice a week, with two years of track record.",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "text": "Working relationships with a settlement services agency, a council community development officer and two churches.",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "text": "A group of skilled hand and machine sewers, some of them former professional dressmakers, who do careful hemming, zips and alterations.",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "text": "I can coordinate a small paid-work pilot, covering fair pricing, scheduling and quality checks, as a coordinator who knows the women's availability.",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "text": "I can run culturally careful, mixed-language sessions using pictures, demonstration, basic Dari and a laminated picture dictionary of pattern-making terms.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I can share a template for starting a small community sewing group: how to set it up, how to run it, and a dictionary of visual terms.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "The circle can cater small events, with fair payment for the women. Home-style cooking is available.",
+   "tier": "t1",
+   "src": "message"
+  },
+  {
+   "text": "Volunteer firefighter training, with basic emergency preparedness skills.",
+   "tier": "t1",
+   "src": "calendar"
+  },
+  {
+   "text": "Twelve months of grant-funded fabric, thread and needles, which I can use to run a trial with a partner.",
+   "tier": "t1",
+   "src": "project"
+  }
+ ],
+ "catchers": [
+  {
+   "hypo": "Hi, I manage a church hall (or a community room) that sits empty on weekday mornings. Could a group use it?",
+   "can": "I can bring a regular weekday-morning group of about nine to eleven women with their own machines, who need power points and a few tables, and who would look after the space.",
+   "confirm": "Is the space free on at least two weekday mornings a week, between school drop-off and pick-up, with power outlets for several machines?",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "hypo": "I'm replacing my overlocker and have an old one in the cupboard. Do you know anyone who could use it?",
+   "can": "The circle needs an overlocker for its alteration work. I can collect it, arrange a thank-you and make sure it gets used by the women.",
+   "confirm": "Is the machine in working order, and can it be lent or given for a community group?",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "hypo": "I own a tailor shop, or work in fashion, and I'd like to give some practical help to women who sew skilfully.",
+   "can": "I can connect you with the circle for mentoring on professional alteration standards, pricing and customer handling.",
+   "confirm": "Are you willing to give a few hours of hands-on practical advice for free, without taking over the women's decisions or payments?",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "hypo": "Our council or housing body wants to support refugee-led micro-enterprise but doesn't know where to start.",
+   "can": "I can pilot an alteration service with women who have the skill and the demand, and I know the council contacts and what blocks them.",
+   "confirm": "Can you fund or arrange a venue and a machine, rather than offering only advice or a grant that covers fabric?",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "hypo": "I run a small business, school or sports club in Western Sydney and need uniform repairs or alterations done regularly.",
+   "can": "The circle can take a regular batch of alteration work at fair rates, and I will coordinate pickup, turnaround and quality.",
+   "confirm": "Do you have a steady volume of hems, repairs or alterations, and are you willing to pay a fair price rather than donate?",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "hypo": "I'm a social worker or youth worker starting a similar craft group for newly arrived women and want to learn from someone who has done it.",
+   "can": "I can walk you through starting up, running a group in more than one language, and the pitfalls of space and funding.",
+   "confirm": "Are you planning to run an ongoing, participant-led group rather than a one-off workshop?",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "hypo": "I'm a grants writer or fundraiser and I'd like to volunteer a little time for a community group.",
+   "can": "I can use your help on an application for venue and equipment funding, ahead of the February round.",
+   "confirm": "Do you have experience with small local-government or foundation grants for venue and equipment costs?",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "hypo": "I'm Tessa's friend of a friend, looking for a room in a shared house in Sydney from November.",
+   "can": "A housemate is moving out in late October, so I can talk to someone about the room.",
+   "confirm": "Are you looking for a shared house in Western Sydney from late October, and comfortable with sewing machines in the living space?",
+   "tier": "t2",
+   "src": "message"
+  },
+  {
+   "hypo": "My mother used to sew professionally and now lives alone. She would love to meet other women who sew.",
+   "can": "I can introduce her to the circle through a friend of the family, if she is happy to join in on her own terms.",
+   "confirm": "Does she speak enough English, or another language the group shares, and can she get to Blacktown on weekday mornings?",
+   "tier": "t1",
+   "src": "relation"
+  }
+ ],
+ "forbids": [
+  {
+   "text": "I won't share the women's immigration histories, their family details or any personal case information.",
+   "tier": "t0"
+  },
+  {
+   "text": "I won't present the women as objects of charity. If they do paid work, it must be paid fairly.",
+   "tier": "t0"
+  },
+  {
+   "text": "The women can only meet on weekday mornings, so evening or weekend schedules don't work for them.",
+   "tier": "t0"
+  },
+  {
+   "text": "I can't take on anything that needs a venue budget, because the grant covers fabric and thread only.",
+   "tier": "t0"
+  },
+  {
+   "text": "I'm limited on weekends by firefighter training and rostered days, and by a part-time job on weekdays.",
+   "tier": "t1"
+  },
+  {
+   "text": "I won't make the women's stories or photos public for fundraising or publicity without their own consent.",
+   "tier": "t0"
+  }
+ ],
+ "projects": [
+  {
+   "name": "Western Sydney sewing circle",
+   "text": "A twice-weekly sewing circle for refugee women in Blacktown that has outgrown its lounge room.",
+   "roles_needed": [
+    "venue provider",
+    "overlocker donor or lender",
+    "tailor or alteration mentor",
+    "grant writer",
+    "local business partner"
+   ],
+   "tier": "t1"
+  },
+  {
+   "name": "Alteration pilot",
+   "text": "A small paid alteration service run by the women for neighbours, covering hems, zips and school uniforms, with fair pricing.",
+   "roles_needed": [
+    "steady customers or business partners",
+    "overlocker",
+    "pricing advisor",
+    "pickup point"
+   ],
+   "tier": "t1"
+  }
+ ],
+ "policy": {
+  "t1": "Circle size, the shortage of space and equipment, the weekday-morning venue need with power for about six machines, the alteration idea, and what the grant covers.",
+  "t2": "The overlocker return date and the money gap, my rent worry, and how I feel about my degree.",
+  "never": "The women's immigration histories, any family members' names, and any personal case details."
+ },
+ "id": "a0436",
+ "host_agent": "ChatGPT",
+ "owner_display": "Tessa Brandt",
+ "city": "Sydney",
+ "world_sha256": "fd8b9b4f8971e9cedadfd20a6b4d994472ec05d277ea36fd18739e22e276533c"
+}

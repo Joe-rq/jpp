@@ -1,0 +1,222 @@
+{
+ "display": "Terry, landlord of The Crown & Compass, a back-street Islington pub with a Thursday quiz, a Sunday roast and an old Labrador behind the bar. My son married a doctor from Shanghai, and I'm insufferable about it.",
+ "lang": "en",
+ "signals": [
+  {
+   "text": "The Thursday quiz pulls about 60 people a week and the last night was the best of the year. I want more ideas for rounds so it stays fun.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "Our quizmaster Pat wants a monthly special with a music round, a picture round and a 'Name That Dog' round. I'm looking for people who can help make the rounds good.",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "text": "I'd like to try a Mandarin round for Lunar New Year but I'm not sure it would work. I need someone who knows how to do it properly and not as a gimmick.",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "text": "I'm riding London to Brighton for charity in early October. I've raised £2,300 and the saddle sore has finally healed. Training tips from steady, non-Lycra riders are welcome.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "Students from UCL and other nearby universities keep turning up at the quiz. I'd like international students to feel the pub is theirs too.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "Sometimes Chinese-speaking students come to my family worried about their health and want a doctor who speaks their language. I'd like to point them to the right door without playing doctor myself.",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "text": "The brewery wants to raise the rent 18% at the review and tie us to a bigger, pricier beer list. I'm looking for people who know the Pubs Code and tenant rights well.",
+   "tier": "t2",
+   "src": "project"
+  },
+  {
+   "text": "Pushing the lease case costs about four grand in legal fees. I'm unsure whether it's worth it, and I want to hear from anyone who has been through it.",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "text": "Care costs for an elderly parent are running at £1,800 a week and the savings are shrinking. I'd like to understand the funding options.",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "text": "A landlord is there for everyone else, and lately I could do with someone to sit with me. Between my mother's decline and the lease I'm tired.",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "text": "I'm not sure how long I can keep the pub going, and the people closest to me don't all see it the same way.",
+   "tier": "t2",
+   "src": "note"
+  }
+ ],
+ "offers": [
+  {
+   "text": "A function room upstairs seating 40, with a bar and cellar downstairs. It suits birthdays, club nights, language meetups and small fundraisers.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "A proven weekly pub quiz format that draws about 60 people, run by a retired teacher. I can show you how to build one that works.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "The pub works as the street's unofficial noticeboard. I know half of Islington and can pin up or pass on a local notice, event or request.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "Practical pub know-how: a cellar-management certificate, a personal licence and first-aid training. I can advise on cellar care, licensing basics and running a bar.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "A Transit van and the muscle to move stock, staging, donations or event gear around London.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "Fundraising by public suffering. I know how to get a room of regulars to be generous for a good cause, and I can host a charity night.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "A seat at the bar, a hot meal and company for anyone new to London or on their own. I've listened to my regulars' troubles for 22 years.",
+   "tier": "t0",
+   "src": "bio"
+  },
+  {
+   "text": "Twenty-two years of experience as a tenant on a brewery lease: rent reviews, tied lists and how brewery meetings really go.",
+   "tier": "t1",
+   "src": "bio"
+  },
+  {
+   "text": "Through family, access to a Mandarin-speaking GP who sees patients on Saturdays at a private clinic in Camden. I only make the introduction, and she decides who she sees.",
+   "tier": "t1",
+   "src": "relation"
+  }
+ ],
+ "catchers": [
+  {
+   "hypo": "Hi, I'm a Chinese PhD student in London, far from home. I'm anxious about some physical symptoms and I'd feel much safer talking to a doctor in Mandarin. Do you know anyone?",
+   "can": "I don't give medical advice. Through my family I can pass your request to a Mandarin-speaking GP who does Saturday sessions at a private clinic in Camden, and she decides whether and how to help. I can also give you a meal and a seat at Thursday's quiz so you aren't on your own.",
+   "confirm": "Is this a non-emergency situation where you mainly want a Mandarin-speaking doctor's appointment, not urgent care or a prescription?",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "hypo": "I'm an international student new to London and I haven't really met anyone yet. Is there somewhere low-pressure to meet people?",
+   "can": "Come to the Thursday quiz. I'll put you on a friendly table, feed you, and introduce you to a few regulars who like newcomers.",
+   "confirm": "Are you based in London and free on a Thursday evening?",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "hypo": "I'm organising a small charity fundraiser in North London and need a venue for 30 to 40 people with a bar and a raffle.",
+   "can": "I can host it in the upstairs function room, which seats 40. I can also help draw a crowd from the pub's regulars and the street's noticeboard.",
+   "confirm": "Is the event for 40 people or fewer, and on a night other than Thursday or Sunday?",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "hypo": "I teach Mandarin, or run a Chinese cultural group in London, and I'd like to put on a Lunar New Year evening with a quiz or language round. Would a pub be open to it?",
+   "can": "Our quizmaster Pat and I are open to a Mandarin round, and I can offer the function room. I'd want your help to make it good, and we'd work out the format together.",
+   "confirm": "Are you able to design and host a round for a mixed crowd, with some Mandarin speakers and some who aren't?",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "hypo": "My mum has dementia and last week she didn't know me. How do you keep going back?",
+   "can": "I've sat with my own mother through the same thing. I can listen and tell you what has helped me, and I can pass on what I've learned about the care home visits and the days that go well.",
+   "confirm": "Are you looking for someone who has been through a parent not recognising them, and not for clinical advice?",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "hypo": "I'm a pub tenant and my brewery has proposed a big rent rise and a tied beer list. What did you do?",
+   "can": "I can share how the review meeting went and what I've learned. I won't sign anything without my solicitor, and I can ask whether he'd speak to you.",
+   "confirm": "Are you a tenant on a brewery lease facing a rent review, and not a landlord looking to raise rents?",
+   "tier": "t2",
+   "src": "project"
+  },
+  {
+   "hypo": "I'm doing London to Brighton on the bike for charity and I'm a slow, steady rider. Anyone to train with who won't drop me on the hill?",
+   "can": "I'm a middle-aged rider who also got dropped by a kid in Lycra. I can swap training routes and sore-saddle tips, and cheer you at the start line.",
+   "confirm": "Do you ride at a steady, chatty pace and not to race?",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "hypo": "I want to start a quiz night at my local, and our quizmaster keeps losing the room. How do you keep sixty people happy?",
+   "can": "I can walk you through a format that works. Our retired-teacher quizmaster gets answers wrong now and then, and it has led to our best nights.",
+   "confirm": "Are you starting or reviving a weekly pub quiz, not a one-off event?",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "hypo": "I run a small community project in Islington and need to tell the neighbourhood about it. How do I get the word out?",
+   "can": "The pub is the unofficial noticeboard for the street. I can pin your notice up and mention it to regulars.",
+   "confirm": "Is it a local, non-spam notice that Islington residents would find relevant?",
+   "tier": "t0",
+   "src": "skill"
+  }
+ ],
+ "forbids": [
+  {
+   "text": "I won't give personal medical advice to customers or anyone else.",
+   "tier": "t0"
+  },
+  {
+   "text": "I won't pass on names or medical details of anyone. Any health referral is made by the person themselves.",
+   "tier": "t0"
+  },
+  {
+   "text": "I won't sign any contract on the spot without my solicitor reading it first.",
+   "tier": "t0"
+  },
+  {
+   "text": "I can't leave the pub on Thursdays or Sundays.",
+   "tier": "t0"
+  },
+  {
+   "text": "Weekday mornings before 11 am are for deliveries and cellar work, so I can't meet then.",
+   "tier": "t0"
+  },
+  {
+   "text": "I won't promise appointments or anything else on a family member's behalf. She decides who she sees and when.",
+   "tier": "t1"
+  }
+ ],
+ "projects": [
+  {
+   "name": "Quiz night monthly special",
+   "text": "A monthly special for The Crown & Compass quiz with a music round, a picture round, a 'Name That Dog' round for the regulars, and possibly a Mandarin round for Lunar New Year.",
+   "roles_needed": [
+    "question writer",
+    "picture-round designer",
+    "music-round host",
+    "Mandarin-speaking round consultant"
+   ],
+   "tier": "t0"
+  }
+ ],
+ "policy": {
+  "t1": "When a collaboration looks promising, I'll say what a family member does as a Mandarin-speaking GP and when she sees patients, and I'll pass requests to her with her consent. I'll also share my views on lease dealings with breweries.",
+  "t2": "Once the match is strong and I know who you are, I'll share family finances, my mother's illness and the brewery pressure.",
+  "never": "No names or medical details of any patient, no private details of my family's health or disagreements, and nothing about anyone I've heard from in confidence."
+ },
+ "id": "a0217",
+ "host_agent": "CUE",
+ "owner_display": "Terry Brannigan",
+ "city": "London",
+ "world_sha256": "e5e83583e3653b5437db9bcfff84cc16164e244eb1fe6df616a50ae5dcfc65d2"
+}

@@ -1,0 +1,2105 @@
+{
+ "slots": [
+  {
+   "id": "a0426",
+   "lang": "zh",
+   "host_agent": "Kimi",
+   "city": "济南",
+   "occupation": "退休中学数学老师",
+   "age_band": "65-70",
+   "persona_hint": "教了 35 年中学数学，老伴走后一个人住，去年给邻居孩子补课后人精神了许多",
+   "structures": [
+    {
+     "sid": "S135",
+     "role": "甲组-退休数学老师",
+     "facts_to_embed": [
+      {
+       "fact": "退休前在济南一所中学教了 35 年数学",
+       "tier": "t0"
+      },
+      {
+       "fact": "老伴走后闲不住，去年给邻居孩子免费补课，孩子中考数学提了三十分，她说那几个月是这几年最有精神的",
+       "tier": "t1"
+      }
+     ]
+    }
+   ],
+   "background_noise_hints": [
+    "高血压要按时吃药",
+    "在学智能手机拍照",
+    "和儿媳关系有点僵"
+   ]
+  },
+  {
+   "id": "a0427",
+   "lang": "zh",
+   "host_agent": "Kimi",
+   "city": "杭州",
+   "occupation": "老厂房改造文创园物业经理",
+   "age_band": "40-45",
+   "persona_hint": "管着运河边一座老丝厂改成的园区，KPI 是出租率和人流，园区却一到晚上就空",
+   "structures": [
+    {
+     "sid": "S116",
+     "role": "成员-文创园物业经理",
+     "facts_to_embed": [
+      {
+       "fact": "运河边老丝厂园区的屋顶有 600 平的空平台，之前做露台咖啡失败了，园区晚上几乎没人",
+       "tier": "t0"
+      }
+     ]
+    }
+   ],
+   "background_noise_hints": [
+    "在跟物业公司谈明年续约",
+    "儿子在学编程，想参加比赛",
+    "腰肌劳损，在做理疗"
+   ]
+  },
+  {
+   "id": "a0428",
+   "lang": "en",
+   "host_agent": "Gemini",
+   "city": "Dubai",
+   "occupation": "Former cabin crew trainer",
+   "age_band": "45-50",
+   "persona_hint": "Flew for six years, then trained cabin crew for fourteen in Dubai; let go in a July restructuring and not ready to leave the city",
+   "structures": [
+    {
+     "sid": "S133",
+     "role": "中心-前空乘培训师",
+     "facts_to_embed": [
+      {
+       "fact": "Former Emirates cabin crew trainer, fourteen years at the training college",
+       "tier": "t0"
+      },
+      {
+       "fact": "Let go in a July restructuring; has every weekday free and has been rewriting her old interview assessment sheets out of habit",
+       "tier": "t1"
+      }
+     ]
+    }
+   ],
+   "background_noise_hints": [
+    "Teenage son applying to universities in the UK",
+    "Desert running group at dawn",
+    "Deciding whether to sell her car"
+   ]
+  },
+  {
+   "id": "a0429",
+   "lang": "zh",
+   "host_agent": "通义",
+   "city": "昆明",
+   "occupation": "花卉拍卖市场经纪人",
+   "age_band": "35-40",
+   "persona_hint": "在斗南每天凌晨拍玫瑰和洋桔梗，手机里有四十几个种植户报价群，能凭一张照片说出花头开度；那辆跑了二十万公里的五菱面包车离合打滑，修车铺说换离合不如换车",
+   "structures": [],
+   "background_noise_hints": [
+    "女儿学民族舞，每周六接送到西山区",
+    "冬天花价一波动她就整夜睡不好",
+    "在看二手车，又怕被车商坑"
+   ]
+  },
+  {
+   "id": "a0430",
+   "lang": "zh",
+   "host_agent": "元宝",
+   "city": "北京",
+   "occupation": "皮具加工坊老板（来料加工）",
+   "age_band": "40-45",
+   "persona_hint": "在大兴开加工坊的温州人，二十个工人，接什么单都不问来路，工钱给得比同行高一截",
+   "structures": [
+    {
+     "sid": "S165",
+     "role": "看似相关方-高价招手缝师傅的加工坊",
+     "facts_to_embed": [
+      {
+       "fact": "在大兴开皮具加工坊，高价招会马鞍针法的手缝师傅",
+       "tier": "t0"
+      },
+      {
+       "fact": "接的主要是几个奢侈品牌款的高仿订单，手缝工序最缺人",
+       "tier": "t2"
+      }
+     ]
+    }
+   ],
+   "background_noise_hints": [
+    "孩子在老家温州上学，一年回去三次",
+    "加工坊所在的村要拆，在找新厂房",
+    "高血压，被老婆逼着每天量血压"
+   ]
+  },
+  {
+   "id": "a0431",
+   "lang": "zh",
+   "host_agent": "通义",
+   "city": "苏州",
+   "occupation": "宋锦织造工坊技术主管",
+   "age_band": "40-45",
+   "persona_hint": "在吴江一家宋锦工坊管六台改造过的织机，工坊主要接奢侈品牌的面料订单，订单起量大、周期长，她更喜欢试小样",
+   "structures": [
+    {
+     "sid": "S053",
+     "role": "互补方-苏州宋锦工坊技术主管",
+     "facts_to_embed": [
+      {
+       "fact": "吴江一家宋锦工坊的技术主管，工坊给品牌供面料，另有一台专门打小样的织机",
+       "tier": "t0"
+      },
+      {
+       "fact": "工坊有一台试验织机专门打小样，一次织三到五米，试完的样料堆在仓库，老板说「留着没用，占地方」",
+       "tier": "t1"
+      },
+      {
+       "fact": "她私下画了几款几何回纹想试，但品牌客户只要自己的纹样",
+       "tier": "t1"
+      }
+     ]
+    }
+   ],
+   "background_noise_hints": [
+    "儿子小升初在选民办还是公办",
+    "每周两次去游泳治肩周",
+    "老家婆婆想搬来同住"
+   ]
+  },
+  {
+   "id": "a0432",
+   "lang": "zh",
+   "host_agent": "豆包",
+   "city": "汕头",
+   "occupation": "地方报社摄影记者",
+   "age_band": "25-30",
+   "persona_hint": "报社缩编后一个人跑社会新闻和民俗节庆，相机是自己贷款买的；拍营老爷的照片被一个公众号盗用了，对方说「网上下载的」，她不知道值不值得去维权",
+   "structures": [],
+   "background_noise_hints": [
+    "想去广州闯，又舍不得汕头的牛肉丸",
+    "父母催结婚，安排了两个相亲",
+    "下班后在家看动漫，追《葬送的芙莉莲》"
+   ]
+  },
+  {
+   "id": "a0433",
+   "lang": "zh",
+   "host_agent": "豆包",
+   "city": "大理（喜洲）",
+   "occupation": "民办小养老院院长",
+   "age_band": "50-55",
+   "persona_hint": "在喜洲把自家白族院子改成养老院，住着二十六位老人，护工流动让她比老人的病更头疼",
+   "structures": [
+    {
+     "sid": "S114",
+     "role": "发起人-喜洲小养老院院长",
+     "facts_to_embed": [
+      {
+       "fact": "在喜洲把自家白族院子改成养老院，住着二十六位老人，一半有认知障碍",
+       "tier": "t0"
+      },
+      {
+       "fact": "院里一半老人有认知障碍、很多只讲白语；请过城里的老师来唱歌，唱的都是红歌和流行歌，老人们坐着没反应",
+       "tier": "t1"
+      }
+     ]
+    }
+   ],
+   "background_noise_hints": [
+    "院子的木结构要做白蚁处理",
+    "侄子结婚要她帮着操办",
+    "膝关节炎发作，冬天上下楼困难"
+   ]
+  },
+  {
+   "id": "a0434",
+   "lang": "zh",
+   "host_agent": "豆包",
+   "city": "Auckland",
+   "occupation": "华人超市收银员",
+   "age_band": "50-55",
+   "persona_hint": "十年前随女儿移民，英文刚够收银，晚上去社区中心上免费英语课",
+   "structures": [
+    {
+     "sid": "S041",
+     "role": "转介方（华人超市收银员，妹妹是双语助教）",
+     "facts_to_embed": [
+      {
+       "fact": "妹妹在奥克兰一所小学当双语助教，国内时是幼儿园老师，专门陪刚来的中国孩子过不开口的那段日子，这学期合同刚结束、在找下一份",
+       "tier": "t1"
+      }
+     ]
+    }
+   ],
+   "background_noise_hints": [
+    "帮女儿带外孙",
+    "想念国内的广场舞",
+    "在学开车准备考路试"
+   ]
+  },
+  {
+   "id": "a0435",
+   "lang": "zh",
+   "host_agent": "元宝",
+   "city": "泉州",
+   "occupation": "咸草编织合作社负责人（惠安）",
+   "age_band": "50-55",
+   "persona_hint": "带着村里三十多个阿姨编咸草席和草袋，订单只剩旅游纪念品，阿姨们一个个转去做电子厂",
+   "structures": [
+    {
+     "sid": "S089",
+     "role": "互补方-惠安咸草编织合作社负责人",
+     "facts_to_embed": [
+      {
+       "fact": "合作社订单只剩旅游纪念品，三十多个阿姨陆续去电子厂",
+       "tier": "t0"
+      }
+     ]
+    },
+    {
+     "sid": "S167",
+     "role": "看似相关方-缺订单的咸草编织合作社",
+     "facts_to_embed": [
+      {
+       "fact": "跟村干部说过：咸草掺纸绳卖就是砸惠安的牌子，标签上写什么就得是什么",
+       "tier": "t1"
+      }
+     ]
+    }
+   ],
+   "background_noise_hints": [
+    "儿子在外地当兵",
+    "在帮村里张罗老人食堂",
+    "喜欢看闽南语电视剧"
+   ]
+  },
+  {
+   "id": "a0436",
+   "lang": "en",
+   "host_agent": "ChatGPT",
+   "city": "Sydney",
+   "occupation": "Refugee women's sewing circle coordinator",
+   "age_band": "30-35",
+   "persona_hint": "Social work graduate who started a sewing circle with women from Afghanistan and South Sudan; speaks a little Dari and a lot of hand gestures",
+   "structures": [
+    {
+     "sid": "S128",
+     "role": "外围-难民妇女缝纫小组",
+     "facts_to_embed": [
+      {
+       "fact": "Coordinates a sewing circle for refugee women in Western Sydney",
+       "tier": "t0"
+      },
+      {
+       "fact": "They meet in a member's lounge room with four machines; two new members joined, there is no room left, and the group wants to start taking small alteration orders",
+       "tier": "t1"
+      }
+     ]
+    },
+    {
+     "sid": "S146",
+     "role": "看似相关方-找场地的难民妇女缝纫小组",
+     "facts_to_embed": [
+      {
+       "fact": "The circle wants a weekday-morning space with power points for six sewing machines",
+       "tier": "t0"
+      },
+      {
+       "fact": "Their small grant only covers fabric and thread; the group has no venue budget and no hall of its own",
+       "tier": "t1"
+      }
+     ]
+    }
+   ],
+   "background_noise_hints": [
+    "Planning her own wedding on a shoestring",
+    "Volunteer firefighter training on weekends",
+    "Housemate is moving out"
+   ]
+  },
+  {
+   "id": "a0437",
+   "lang": "zh",
+   "host_agent": "通义",
+   "city": "福州",
+   "occupation": "省级博物院研究馆员（茶叶外销史）",
+   "age_band": "45-50",
+   "persona_hint": "研究十九世纪福州港茶叶外销二十年，整理过英商洋行的账簿，却觉得自己的研究只有六个同行读过",
+   "structures": [
+    {
+     "sid": "S112",
+     "role": "成员-茶叶外销史研究馆员",
+     "facts_to_embed": [
+      {
+       "fact": "研究十九世纪福州港茶叶外销，整理过英商洋行账簿",
+       "tier": "t0"
+      },
+      {
+       "fact": "手里有一套自己整理的 1860–1880 年福州—伦敦茶价与船期表，投了两次核心期刊都没中，跟同事说「这东西放抽屉里太可惜」",
+       "tier": "t1"
+      }
+     ]
+    }
+   ],
+   "background_noise_hints": [
+    "父亲在老家武夷山的茶园要不要转租",
+    "在练习写小楷",
+    "单位在搬新馆，办公室乱成一团"
+   ]
+  },
+  {
+   "id": "a0438",
+   "lang": "zh",
+   "host_agent": "Claude Code",
+   "city": "成都",
+   "occupation": "独立游戏程序员（前外包公司主程）",
+   "age_band": "30-35",
+   "persona_hint": "辞职一年，做了一个以川剧变脸为核心机制的动作游戏原型，角色至今全是灰色方块",
+   "structures": [
+    {
+     "sid": "S139",
+     "role": "组员-游戏程序员",
+     "facts_to_embed": [
+      {
+       "fact": "原型的核心玩法是「换脸换招式」，可角色全是灰色方块，找过两个外包美术都画不出川剧的味道",
+       "tier": "t0"
+      },
+      {
+       "fact": "积蓄只够再撑八个月",
+       "tier": "t1"
+      }
+     ]
+    }
+   ],
+   "background_noise_hints": [
+    "房贷差点断供，跟银行谈过延期",
+    "养了一只陆龟叫老蒋",
+    "每周三晚上打羽毛球"
+   ]
+  },
+  {
+   "id": "a0439",
+   "lang": "en",
+   "host_agent": "Muse",
+   "city": "Lisbon",
+   "occupation": "Surfboard shaper (expat, workshop in Ericeira)",
+   "age_band": "40-45",
+   "persona_hint": "Australian shaper who moved to Portugal, shapes about 150 boards a year in a garage workshop and has started coughing at night",
+   "structures": [
+    {
+     "sid": "S062",
+     "role": "互补方-里斯本冲浪板手工师",
+     "facts_to_embed": [
+      {
+       "fact": "His GP told him in September that the night cough is likely from resin and isocyanate fumes and asked him to cut exposure",
+       "tier": "t2"
+      },
+      {
+       "fact": "Has been reading about bio-resins but says the commercial ones yellow too fast in the sun",
+       "tier": "t1"
+      }
+     ]
+    }
+   ],
+   "background_noise_hints": [
+    "Getting Portuguese residency renewed",
+    "Teaching his daughter to surf",
+    "Rebuilding a VW van engine"
+   ]
+  },
+  {
+   "id": "a0440",
+   "lang": "zh",
+   "host_agent": "元宝",
+   "city": "苏州",
+   "occupation": "网约车租赁车队长",
+   "age_band": "40-45",
+   "persona_hint": "管一个 120 台电动车的网约车租赁车队，手机里是司机群和一张算不完的出勤表",
+   "structures": [
+    {
+     "sid": "S136",
+     "role": "乙组-网约车租赁车队",
+     "facts_to_embed": [
+      {
+       "fact": "管一个 120 台电动车的网约车租赁车队",
+       "tier": "t0"
+      },
+      {
+       "fact": "4S 店保养要排队，车停一天司机就少挣三四百，车队想找夜里能保养的地方，最好覆盖吴中和园区",
+       "tier": "t1"
+      }
+     ]
+    }
+   ],
+   "background_noise_hints": [
+    "女儿学舞蹈要比赛",
+    "自己的脂肪肝",
+    "老家父母的养老"
+   ]
+  },
+  {
+   "id": "a0441",
+   "lang": "zh",
+   "host_agent": "通义",
+   "city": "昆明",
+   "occupation": "殡葬服务公司礼仪部经理",
+   "age_band": "45-50",
+   "persona_hint": "做了十五年殡仪礼仪的经理，说话轻声，最在意的是家属走出告别厅时还能留下点什么",
+   "structures": [
+    {
+     "sid": "S007",
+     "role": "接收方（殡葬礼仪部经理）",
+     "facts_to_embed": [
+      {
+       "fact": "上半年有十几户家属问能不能拍追思会，原来兼做摄影的同事离职后一直没人接",
+       "tier": "t1"
+      },
+      {
+       "fact": "她在工作笔记里写：联系过三个婚礼摄影师，听说是殡仪馆都推了",
+       "tier": "t2"
+      }
+     ]
+    }
+   ],
+   "background_noise_hints": [
+    "在戒烟，第三次",
+    "女儿在读护理专业",
+    "周末去郊区帮朋友摘蓝莓"
+   ]
+  },
+  {
+   "id": "a0442",
+   "lang": "en",
+   "host_agent": "Gemini",
+   "city": "London",
+   "occupation": "Family law solicitor",
+   "age_band": "40-45",
+   "persona_hint": "Handles custody disputes in a small Islington practice and keeps a box of tissues and a bowl of clementines on her desk; her mother in Leeds has had two falls this year and the family can't agree whether she should move south",
+   "structures": [],
+   "background_noise_hints": [
+    "kitchen extension six weeks over schedule",
+    "her son just discovered chess and beats her every time",
+    "the Northern line commute that eats an hour each way"
+   ]
+  },
+  {
+   "id": "a0443",
+   "lang": "en",
+   "host_agent": "Codex",
+   "city": "San Francisco",
+   "occupation": "Machine learning engineer",
+   "age_band": "25-30",
+   "persona_hint": "Works on recommendation ranking at a mid-size startup and is quietly tired of optimising click-through; he has started waking at 4 am worrying about the next layoff round and hasn't told anyone",
+   "structures": [],
+   "background_noise_hints": [
+    "rent is 3,600 a month for a room with no window",
+    "learning Mandarin to talk to his grandmother",
+    "climbs at Mission Cliffs on weekends"
+   ]
+  },
+  {
+   "id": "a0444",
+   "lang": "zh",
+   "host_agent": "通义",
+   "city": "上海",
+   "occupation": "青少年足球俱乐部运营经理",
+   "age_band": "30-35",
+   "persona_hint": "在闵行一家青训俱乐部管招生和外教，家长要「巴西外教」三个字，他找过的中介不是不靠谱就是太贵",
+   "structures": [
+    {
+     "sid": "S058",
+     "role": "互补方-上海青训俱乐部运营经理",
+     "facts_to_embed": [
+      {
+       "fact": "闵行一家青训俱乐部，每年办寒假冬训营，家长偏爱巴西外教",
+       "tier": "t0"
+      },
+      {
+       "fact": "寒假冬训营已经招了六十个孩子，家长群里点名要巴西教练，原来谈好的中介外教临时爽约",
+       "tier": "t1"
+      }
+     ]
+    },
+    {
+     "sid": "S150",
+     "role": "看似相关方-找巴西外教的闵行青训俱乐部",
+     "facts_to_embed": [
+      {
+       "fact": "外教中介临时爽约，他也在到处问人能不能介绍巴西教练",
+       "tier": "t1"
+      }
+     ]
+    }
+   ],
+   "background_noise_hints": [
+    "刚买房，每月房贷压力",
+    "迷上了飞盘",
+    "老婆怀孕七个月"
+   ]
+  },
+  {
+   "id": "a0445",
+   "lang": "zh",
+   "host_agent": "豆包",
+   "city": "南京",
+   "occupation": "退休中学语文老师",
+   "age_band": "65-70",
+   "persona_hint": "住在老城南，退休后爱去夫子庙茶馆听老人聊天，回家就往本子上记",
+   "structures": [
+    {
+     "sid": "S084",
+     "role": "互补方-退休中学语文老师",
+     "facts_to_embed": [
+      {
+       "fact": "退休后天天去夫子庙茶馆听老人聊天，回家把听到的老南京话和原句记下来，记了十几本",
+       "tier": "t1"
+      },
+      {
+       "fact": "老伴总说他瞎折腾，说本子迟早当废纸卖",
+       "tier": "t2"
+      }
+     ]
+    },
+    {
+     "sid": "S184",
+     "role": "看似相关方-记了十几本老南京话的退休老师",
+     "facts_to_embed": [
+      {
+       "fact": "退休后把茶馆里听来的老南京话记了十几本，老伴说迟早当废纸卖",
+       "tier": "t1"
+      }
+     ]
+    }
+   ],
+   "background_noise_hints": [
+    "每天打太极",
+    "孙女在南京读大学",
+    "跟老伴为装修吵架"
+   ]
+  },
+  {
+   "id": "a0446",
+   "lang": "zh",
+   "host_agent": "元宝",
+   "city": "义乌",
+   "occupation": "小商品城饰品档口老板娘",
+   "age_band": "40-45",
+   "persona_hint": "在国际商贸城二区卖发饰，会几句阿拉伯语和西班牙语，熟客里有一个也门商人来了十年；女儿初三英语口语考试总卡在情景对话，她自己的外语都是在档口里学的，教不了",
+   "structures": [],
+   "background_noise_hints": [
+    "丈夫跑物流，经常不在家",
+    "颈椎病，每天在档口坐十二个小时",
+    "周末陪女儿去稠州公园散步"
+   ]
+  },
+  {
+   "id": "a0447",
+   "lang": "zh",
+   "host_agent": "Codex",
+   "city": "景德镇",
+   "occupation": "陶瓷大学材料学硕士生（釉料方向）",
+   "age_band": "20-25",
+   "persona_hint": "研二，论文做柴烧环境下的釉面开裂，学校电窑模拟不出真实柴窑，导师催她找真窑",
+   "structures": [
+    {
+     "sid": "S064",
+     "role": "互补方-陶瓷大学釉料方向硕士生",
+     "facts_to_embed": [
+      {
+       "fact": "陶瓷大学研二，论文方向是柴烧气氛下的釉面开裂",
+       "tier": "t0"
+      },
+      {
+       "fact": "论文做柴烧气氛下的釉面开裂，学校电窑模拟不出还原和落灰，导师让她这学期必须找一座真柴窑",
+       "tier": "t1"
+      }
+     ]
+    },
+    {
+     "sid": "S157",
+     "role": "看似相关方-找真柴窑的釉料方向硕士生",
+     "facts_to_embed": [
+      {
+       "fact": "导师要求这学期内在真柴窑里烧完三轮带釉试片",
+       "tier": "t1"
+      }
+     ]
+    }
+   ],
+   "background_noise_hints": [
+    "和室友合养一只猫",
+    "周末在陶溪川摆摊卖小杯子",
+    "在考虑读博还是工作"
+   ]
+  },
+  {
+   "id": "a0448",
+   "lang": "zh",
+   "host_agent": "通义",
+   "city": "石家庄",
+   "occupation": "猫咖店主",
+   "age_band": "30-35",
+   "persona_hint": "开了五年猫咖的店主，店里每只猫都有手写的病历本，她从不从繁殖场买猫",
+   "structures": [
+    {
+     "sid": "S010",
+     "role": "接收方（猫咖店主）",
+     "facts_to_embed": [
+      {
+       "fact": "店里的两只老店猫九月相继走了，她在店务本上写：下一只只要成年的、亲人的、绝育过的，不从繁殖场买",
+       "tier": "t1"
+      }
+     ]
+    },
+    {
+     "sid": "S164",
+     "role": "看似相关方-想接成年绝育猫的猫咖店主",
+     "facts_to_embed": [
+      {
+       "fact": "下一只店猫只要成年的、亲人的、绝育过的",
+       "tier": "t0"
+      },
+      {
+       "fact": "以前在宠物店打工见过繁殖场的笼子，说这辈子不跟任何猫舍打交道，送的也不要",
+       "tier": "t2"
+      }
+     ]
+    }
+   ],
+   "background_noise_hints": [
+    "在学做翻糖蛋糕",
+    "老公想回老家邢台，她不想",
+    "店里的空气净化器滤芯又该换了"
+   ]
+  },
+  {
+   "id": "a0449",
+   "lang": "zh",
+   "host_agent": "元宝",
+   "city": "上海",
+   "occupation": "日料连锁餐厅行政主厨",
+   "age_band": "40-45",
+   "persona_hint": "在上海管五家日料门店的后厨，刀全是早年从日本背回来的，本地磨刀师傅磨过一次之后他再也不让人碰",
+   "structures": [
+    {
+     "sid": "S056",
+     "role": "互补方-上海日料行政主厨",
+     "facts_to_embed": [
+      {
+       "fact": "五家店的出刃、柳刃加起来四十多把，有几把被本地师傅磨成了双面刃，心疼了半年",
+       "tier": "t0"
+      },
+      {
+       "fact": "跟供应商抱怨过：宁可每年飞一趟日本带刀去磨",
+       "tier": "t1"
+      }
+     ]
+    }
+   ],
+   "background_noise_hints": [
+    "孩子在国际学校学费压力大",
+    "在考虑要不要离婚",
+    "周末钓鱼"
+   ]
+  },
+  {
+   "id": "a0450",
+   "lang": "en",
+   "host_agent": "Dot",
+   "city": "Auckland",
+   "occupation": "Chef running community cooking classes at a church hall",
+   "age_band": "40-45",
+   "persona_hint": "Ex-restaurant chef who now runs low-cost cooking classes from a church hall kitchen and refuses to use the word 'easy'",
+   "structures": [
+    {
+     "sid": "S017",
+     "role": "接收方（社区烹饪课厨师）",
+     "facts_to_embed": [
+      {
+       "fact": "Her Thursday 'Blokes Cook' class in the Mt Albert church hall is down to six; the hall grant needs eight regulars, and everyone eats together after class",
+       "tier": "t0"
+      }
+     ]
+    }
+   ],
+   "background_noise_hints": [
+    "Coaching her son's waka ama team",
+    "Growing chillies on a tiny balcony",
+    "Studying te reo Māori at night school"
+   ]
+  }
+ ],
+ "structures": [
+  {
+   "id": "S007",
+   "type": "latent",
+   "members": [
+    {
+     "id": "a0132",
+     "role": "发起方（只说今年秋天闲）",
+     "brings": "婚礼跟拍七年，擅长拍长辈和细节，自己拍过外婆的告别仪式",
+     "needs": "未说出：合作的婚庆公司倒闭，六场预约被退，收入断档"
+    },
+    {
+     "id": "a0441",
+     "role": "接收方（殡葬礼仪部经理）",
+     "brings": "家属希望留存追思影像的稳定需求，按场付费",
+     "needs": "原来的摄影师离职，大多数摄影师忌讳这一行"
+    }
+   ],
+   "why": "摄影师只说秋天闲，殡葬公司也没在公开招人，行业词面完全不同。关键在两层私密事实：摄影师给外婆拍过整套告别照片，家人说那是最珍贵的；经理的笔记里记着家属一直想要追思影像，但找不到不忌讳的摄影师。只有这两层碰上，经理才判断他能来，他也愿意来。",
+   "key_facts": [
+    {
+     "agent": "a0132",
+     "fact": "合作的婚庆公司八月卷款跑了，十月和十一月的六场跟拍全退了",
+     "tier": "t1"
+    },
+    {
+     "agent": "a0132",
+     "fact": "去年外婆走的时候，他拍了一整套告别仪式和家族合影，舅舅说那是家里最珍贵的一本相册",
+     "tier": "t2"
+    },
+    {
+     "agent": "a0441",
+     "fact": "上半年有十几户家属问能不能拍追思会，原来兼做摄影的同事离职后一直没人接",
+     "tier": "t1"
+    },
+    {
+     "agent": "a0441",
+     "fact": "她在工作笔记里写：联系过三个婚礼摄影师，听说是殡仪馆都推了",
+     "tier": "t2"
+    }
+   ],
+   "plan_sketch": "摄影师先跟一场告别仪式熟悉礼仪规范，之后按场接追思影像，每场出一本纪念相册。礼仪部负责与家属沟通和流程，摄影师负责拍摄与后期，按场分成。摄影师填上收入缺口，公司多一项家属常问的服务。",
+   "difficulty": "hard"
+  },
+  {
+   "id": "S010",
+   "type": "latent",
+   "members": [
+    {
+     "id": "a0040",
+     "role": "发起方（只说毕业前事多）",
+     "brings": "两只亲人、已绝育、疫苗齐全的成年猫，还有动物医学专业知识",
+     "needs": "未说出：毕业离校后猫无处可去，家里不让带"
+    },
+    {
+     "id": "a0448",
+     "role": "接收方（猫咖店主）",
+     "brings": "猫咖空出的两个位置，每只猫有病历本和专人照顾",
+     "needs": "想要亲人、绝育过、成年的猫，拒绝从繁殖场买"
+    }
+   ],
+   "why": "学生只说「毕业前事情好多」，没提猫，宿舍养猫本身也是违规的私事。猫咖店主刚送走两只老店猫，她的标准（成年、亲人、绝育）在她自己的店务笔记里。学生专业背景还能让店主多一个懂猫病的帮手。",
+   "key_facts": [
+    {
+     "agent": "a0040",
+     "fact": "「毕业前事情好多，头都大了」",
+     "tier": "t0"
+    },
+    {
+     "agent": "a0040",
+     "fact": "宿舍里偷养了两只三岁的狸花，都绝育打过疫苗，很亲人；妈妈说毕业带回家就扔出去",
+     "tier": "t2"
+    },
+    {
+     "agent": "a0040",
+     "fact": "明年六月毕业，实习单位在正定，每天通勤两小时",
+     "tier": "t1"
+    },
+    {
+     "agent": "a0448",
+     "fact": "店里的两只老店猫九月相继走了，她在店务本上写：下一只只要成年的、亲人的、绝育过的，不从繁殖场买",
+     "tier": "t1"
+    }
+   ],
+   "plan_sketch": "学生先带猫到店里试住两周，看猫与店里其他猫是否相处。确定后猫留店，学生每周来一次帮忙做体检记录，换取免费探视。",
+   "difficulty": "medium"
+  },
+  {
+   "id": "S017",
+   "type": "latent",
+   "members": [
+    {
+     "id": "a0210",
+     "role": "发起方（只说时间太多）",
+     "brings": "守时、细致，能帮课程管账和预算",
+     "needs": "未说出：妻子去世后不会做饭，瘦了六公斤，一个人吃吐司"
+    },
+    {
+     "id": "a0450",
+     "role": "接收方（社区烹饪课厨师）",
+     "brings": "每周四面向男士的低价烹饪课，课后一起吃饭",
+     "needs": "课程掉到 6 人，场地资助要求至少 8 人"
+    }
+   ],
+   "why": "老人只说「如今时间太多了」，没提吃饭和孤独。厨师自己的课正缺人，课的形式恰好同时解决不会做饭和一个人吃饭两件事。厨师从老人「妻子管了四十一年厨房」这一层判断出来，这一层在 t1。",
+   "key_facts": [
+    {
+     "agent": "a0210",
+     "fact": "Wrote to his brother: \"Too much time on my hands these days.\"",
+     "tier": "t0"
+    },
+    {
+     "agent": "a0210",
+     "fact": "His wife cooked every meal for forty-one years; since May he has mostly eaten toast and tinned soup and has lost six kilos",
+     "tier": "t1"
+    },
+    {
+     "agent": "a0450",
+     "fact": "Her Thursday 'Blokes Cook' class in the Mt Albert church hall is down to six; the hall grant needs eight regulars, and everyone eats together after class",
+     "tier": "t0"
+    }
+   ],
+   "plan_sketch": "老人加入周四烹饪课，前八周学会十道日常菜。他顺手帮厨师把课程的采购账和资助报表理清。课程人数回到资助线，老人每周有一顿和人一起吃的饭。",
+   "difficulty": "medium"
+  },
+  {
+   "id": "S041",
+   "type": "relay",
+   "members": [
+    {
+     "id": "a0055",
+     "role": "需求方（奥克兰小学老师，新来的中国孩子不说话）",
+     "brings": "课堂、学校可走的临时助教聘用",
+     "needs": "未明说：能陪中国新移民孩子度过沉默期的中文助教"
+    },
+    {
+     "id": "a0434",
+     "role": "转介方（华人超市收银员，妹妹是双语助教）",
+     "brings": "妹妹：奥克兰小学双语助教，前国内幼师，合同刚结束",
+     "needs": "无，妹妹正在找下一份工"
+    }
+   ],
+   "why": "老师只在笔记里记了一个孩子三周没说话、午饭一个人吃，没想到要找谁。收银员公开层几乎没有信息，妹妹的情况全在 t1：专门陪刚来的中国孩子过不开口那段时间，合同刚结束。价值在收银员的 relations 里，而且她的 agent 需要披露到 t1 才能被看见。",
+   "key_facts": [
+    {
+     "agent": "a0055",
+     "fact": "Teaching notes: 'New boy from China hasn't said a word in three weeks — eats lunch alone by the fence'",
+     "tier": "t0"
+    },
+    {
+     "agent": "a0055",
+     "fact": "The school's ESOL budget was cut this year; there's no Mandarin-speaking teacher aide this term",
+     "tier": "t1"
+    },
+    {
+     "agent": "a0434",
+     "fact": "妹妹在奥克兰一所小学当双语助教，国内时是幼儿园老师，专门陪刚来的中国孩子过不开口的那段日子，这学期合同刚结束、在找下一份",
+     "tier": "t1"
+    }
+   ],
+   "plan_sketch": "收银员把妹妹介绍给老师，学校用临时救济经费请她每周来三个上午。妹妹陪孩子上课、午饭时陪他说中文，同时教老师几句安抚用语。孩子开口后逐步减少中文陪伴，妹妹也接上了下一份工作。",
+   "difficulty": "hard"
+  },
+  {
+   "id": "S053",
+   "type": "pair",
+   "members": [
+    {
+     "id": "a0431",
+     "role": "互补方-苏州宋锦工坊技术主管",
+     "brings": "宋锦小样织造能力、试验织机的空档",
+     "needs": "能小批量消化试验纹样的买家，让试样不白织"
+    },
+    {
+     "id": "a0230",
+     "role": "互补方-巴黎手工书装帧师",
+     "brings": "限量书收藏客户、对封面材料的审美判断",
+     "needs": "每次只要几米的特殊织锦封面料"
+    }
+   ],
+   "why": "工坊大单起订量动辄几百米，装帧师每本限量书只用几米布，正常渠道永远对不上。技术主管手里恰好有一台专门试小样的织机，试出来的纹样常常没处用；装帧师要的正是独一份的小料。双方都要读到对方的量级细节才知道合得上。",
+   "key_facts": [
+    {
+     "agent": "a0431",
+     "fact": "吴江一家宋锦工坊的技术主管，工坊给品牌供面料，另有一台专门打小样的织机",
+     "tier": "t0"
+    },
+    {
+     "agent": "a0431",
+     "fact": "工坊有一台试验织机专门打小样，一次织三到五米，试完的样料堆在仓库，老板说「留着没用，占地方」",
+     "tier": "t1"
+    },
+    {
+     "agent": "a0431",
+     "fact": "她私下画了几款几何回纹想试，但品牌客户只要自己的纹样",
+     "tier": "t1"
+    },
+    {
+     "agent": "a0230",
+     "fact": "A collector commissioned 40 copies of a poetry edition and wants a woven silk cover; she needs about 4 metres in total",
+     "tier": "t0"
+    },
+    {
+     "agent": "a0230",
+     "fact": "Mills she wrote to in Lyon and Como quoted minimums of 100 metres",
+     "tier": "t1"
+    }
+   ],
+   "plan_sketch": "技术主管用试验织机按装帧师给的色板织 5 米回纹宋锦，空运到巴黎。装帧师每季预订一次小样料，工坊按米计价并在书的版权页署名。工坊的试样有了出口，装帧师拿到别家没有的封面料。",
+   "difficulty": "medium"
+  },
+  {
+   "id": "S056",
+   "type": "pair",
+   "members": [
+    {
+     "id": "a0376",
+     "role": "互补方-大阪堺市磨刀匠",
+     "brings": "日式刀具研磨与修复手艺，十一月来上海参展",
+     "needs": "参展期间之外的实际生意，让上海之行回本"
+    },
+    {
+     "id": "a0449",
+     "role": "互补方-上海日料行政主厨",
+     "brings": "五家门店四十多把日本刀的稳定需求",
+     "needs": "懂日式单刃刀的磨刀师傅"
+    }
+   ],
+   "why": "主厨的刀需要懂堺打刃物的人，本地找不到；磨刀匠远在大阪，平时谈不上服务。决定性事实是磨刀匠十一月会来上海参展，而且他的笔记在担心这趟出差不划算。时间对上之后，跨国服务就变得可行。",
+   "key_facts": [
+    {
+     "agent": "a0376",
+     "fact": "Sharpens and repairs Japanese kitchen knives in Sakai; takes overseas customers through his son's website and travels to trade fairs in Asia a few times a year",
+     "tier": "t0"
+    },
+    {
+     "agent": "a0376",
+     "fact": "Booked a booth at a hotel and restaurant equipment fair in Shanghai, November 18–21, and worries the trip will lose money",
+     "tier": "t1"
+    },
+    {
+     "agent": "a0449",
+     "fact": "五家店的出刃、柳刃加起来四十多把，有几把被本地师傅磨成了双面刃，心疼了半年",
+     "tier": "t0"
+    },
+    {
+     "agent": "a0449",
+     "fact": "跟供应商抱怨过：宁可每年飞一趟日本带刀去磨",
+     "tier": "t1"
+    }
+   ],
+   "plan_sketch": "磨刀匠在展会后多留两天，在主厨的中央厨房集中研磨修复四十把刀，按把计价。之后每年春秋各来一次，平时主厨的副厨跟他学基础保养。磨刀匠的上海之行回本，主厨省下飞日本的开销。",
+   "difficulty": "medium"
+  },
+  {
+   "id": "S058",
+   "type": "pair",
+   "members": [
+    {
+     "id": "a0021",
+     "role": "互补方-圣保罗青训教练",
+     "brings": "巴西青训方法、十二月到二月的空档期",
+     "needs": "淡季的额外收入"
+    },
+    {
+     "id": "a0444",
+     "role": "互补方-上海青训俱乐部运营经理",
+     "brings": "寒假冬训营、住宿与翻译安排",
+     "needs": "靠谱的巴西外教带寒假冬训"
+    }
+   ],
+   "why": "南半球的足球淡季正好是中国的寒假，教练有三个月空档，俱乐部需要寒假外教。俱乐部的需求公开可见，教练急需额外收入的原因在私密层，决定了他愿不愿意出远门三个月。",
+   "key_facts": [
+    {
+     "agent": "a0444",
+     "fact": "闵行一家青训俱乐部，每年办寒假冬训营，家长偏爱巴西外教",
+     "tier": "t0"
+    },
+    {
+     "agent": "a0021",
+     "fact": "The academy breaks from mid-December to late February, and he has no income from the club in that period",
+     "tier": "t0"
+    },
+    {
+     "agent": "a0021",
+     "fact": "His mother's dialysis costs are piling up and he told his sister he'd take any coaching job abroad for the off-season",
+     "tier": "t2"
+    },
+    {
+     "agent": "a0444",
+     "fact": "寒假冬训营已经招了六十个孩子，家长群里点名要巴西教练，原来谈好的中介外教临时爽约",
+     "tier": "t1"
+    }
+   ],
+   "plan_sketch": "俱乐部聘教练做 1 月 5 日到 2 月 10 日的冬训营主教练，包机票住宿，配一名葡语翻译。教练每天两练并给本地教练上方法课。俱乐部兑现招生承诺，教练拿到淡季收入。",
+   "difficulty": "medium"
+  },
+  {
+   "id": "S062",
+   "type": "pair",
+   "members": [
+    {
+     "id": "a0439",
+     "role": "互补方-里斯本冲浪板手工师",
+     "brings": "冲浪板成型工坊、成熟的冲浪者客户",
+     "needs": "未说出：摆脱聚氨酯和树脂的气味对肺的伤害"
+    },
+    {
+     "id": "a0476",
+     "role": "互补方-里斯本海藻生物塑料博士后",
+     "brings": "海藻基树脂配方、实验室测试设备",
+     "needs": "按基金要求做出真实产品原型"
+    }
+   ],
+   "why": "博士后的基金要求明年夏天前做出真实产品原型，她只在想包装和餐具。冲浪板师傅的痛点藏在健康层：夜里咳嗽，医生让他少接触树脂。海藻树脂替代冲浪板涂层这件事，要等博士后读到他的处境、他读到她的材料才出现。",
+   "key_facts": [
+    {
+     "agent": "a0439",
+     "fact": "His GP told him in September that the night cough is likely from resin and isocyanate fumes and asked him to cut exposure",
+     "tier": "t2"
+    },
+    {
+     "agent": "a0439",
+     "fact": "Has been reading about bio-resins but says the commercial ones yellow too fast in the sun",
+     "tier": "t1"
+    },
+    {
+     "agent": "a0476",
+     "fact": "Her grant milestone requires a 'real-world consumer product prototype' by July; she has only tested small cast samples",
+     "tier": "t1"
+    },
+    {
+     "agent": "a0476",
+     "fact": "Her latest seaweed resin batch passed UV yellowing tests better than commercial bio-epoxy",
+     "tier": "t1"
+    }
+   ],
+   "plan_sketch": "博士后提供三批海藻树脂，师傅在工坊做六块测试板，由他的冲浪客户试用一个季度。博士后的实验室测强度和耐候，师傅记录手感。达标后双方联合申请小规模量产资助。",
+   "difficulty": "hard"
+  },
+  {
+   "id": "S064",
+   "type": "pair",
+   "members": [
+    {
+     "id": "a0035",
+     "role": "互补方-景德镇柴窑窑主",
+     "brings": "真实柴窑的烧成机会",
+     "needs": "控制不住的冰裂开片，正在毁掉一批出口订单"
+    },
+    {
+     "id": "a0447",
+     "role": "互补方-陶瓷大学釉料方向硕士生",
+     "brings": "釉料分析和配方调整能力",
+     "needs": "真实柴窑里烧论文样品"
+    }
+   ],
+   "why": "窑主为一批开裂过头的出口杯发愁，以为是柴不好；学生的论文正好研究柴烧环境下的釉面开裂，缺真窑。两边各握着对方缺的东西，但窑主的问题和学生的需要都只在 t1 层。",
+   "key_facts": [
+    {
+     "agent": "a0447",
+     "fact": "陶瓷大学研二，论文方向是柴烧气氛下的釉面开裂",
+     "tier": "t0"
+    },
+    {
+     "agent": "a0035",
+     "fact": "家传柴窑，这两年主要烧青釉出口杯",
+     "tier": "t0"
+    },
+    {
+     "agent": "a0035",
+     "fact": "上一窑出口的青釉杯开片开得太碎，客人拒收了三成，他怀疑是今年的松柴含水高",
+     "tier": "t1"
+    },
+    {
+     "agent": "a0447",
+     "fact": "论文做柴烧气氛下的釉面开裂，学校电窑模拟不出还原和落灰，导师让她这学期必须找一座真柴窑",
+     "tier": "t1"
+    }
+   ],
+   "plan_sketch": "学生每窑放 20 个测试片，同时分析窑主的釉料配方和坯釉膨胀系数。窑主按她的建议调整釉料和装窑位置，学生拿到真实数据写进论文。下一窑起订单的报废率下降。",
+   "difficulty": "medium"
+  },
+  {
+   "id": "S084",
+   "type": "pair",
+   "members": [
+    {
+     "id": "a0091",
+     "role": "互补方-地方出版社编辑",
+     "brings": "南京方言词典选题、出版资源",
+     "needs": "有烟火气的南京话日常词汇与例句"
+    },
+    {
+     "id": "a0445",
+     "role": "互补方-退休中学语文老师",
+     "brings": "二十年在茶馆记下的老南京话本子",
+     "needs": "未说出：想让这些本子有个用处，老伴说他瞎折腾"
+    }
+   ],
+   "why": "编辑的选题卡在学者条目太学术，她要的是街头巷尾真实的说法和例句。老师的本子是他私下的爱好，在 t1/t2 层，连家人都觉得没用。价值在编辑那边被构成。",
+   "key_facts": [
+    {
+     "agent": "a0091",
+     "fact": "社里批了南京方言词典选题，学者给的条目都是音韵学注释，领导说「不像南京人说话」",
+     "tier": "t1"
+    },
+    {
+     "agent": "a0445",
+     "fact": "退休后天天去夫子庙茶馆听老人聊天，回家把听到的老南京话和原句记下来，记了十几本",
+     "tier": "t1"
+    },
+    {
+     "agent": "a0445",
+     "fact": "老伴总说他瞎折腾，说本子迟早当废纸卖",
+     "tier": "t2"
+    }
+   ],
+   "plan_sketch": "编辑请老师做词典的例句主编，从他的本子里选条目，学者负责注音。老师拿稿费和署名，编辑的书有了烟火气。",
+   "difficulty": "hard"
+  },
+  {
+   "id": "S089",
+   "type": "pair",
+   "members": [
+    {
+     "id": "a0435",
+     "role": "互补方-惠安咸草编织合作社负责人",
+     "brings": "三十多位编织阿姨与咸草原料",
+     "needs": "留住阿姨们的稳定订单"
+    },
+    {
+     "id": "a0310",
+     "role": "互补方-环保包装公司采购经理",
+     "brings": "茶饮咖啡品牌的礼盒订单",
+     "needs": "有手作感的天然材料礼盒内衬"
+    }
+   ],
+   "why": "采购经理要「手作感」的可降解内衬，合作社的咸草编织天然可降解，订单却只剩旅游纪念品。采购经理的需求在 t1，合作社公开层只是一个编草席的村。",
+   "key_facts": [
+    {
+     "agent": "a0310",
+     "fact": "环保包装公司采购，给咖啡和茶饮品牌做可降解礼盒",
+     "tier": "t0"
+    },
+    {
+     "agent": "a0435",
+     "fact": "合作社订单只剩旅游纪念品，三十多个阿姨陆续去电子厂",
+     "tier": "t0"
+    },
+    {
+     "agent": "a0310",
+     "fact": "今年三个茶饮客户都要「天然、有手作感」的礼盒内衬，现在用的纸浆模塑被嫌太工业",
+     "tier": "t1"
+    }
+   ],
+   "plan_sketch": "合作社按包装公司给的尺寸编咸草内衬打样，先做两千件，包装公司按件付费并负责质检。量起来后签季度订单。",
+   "difficulty": "medium"
+  },
+  {
+   "id": "S112",
+   "type": "team",
+   "members": [
+    {
+     "id": "a0131",
+     "role": "发起人-桌游咖啡馆主兼设计师",
+     "brings": "一款福建茶路交易桌游的完整原型、众筹计划、测试玩家群",
+     "needs": "有真实史料支撑的设定细节，以及价格可行的配件生产"
+    },
+    {
+     "id": "a0437",
+     "role": "成员-茶叶外销史研究馆员",
+     "brings": "1860–1880 年福州—伦敦茶价与船期表、洋行账簿里的人物与事件",
+     "needs": "让冷门研究被更多人看到"
+    },
+    {
+     "id": "a0189",
+     "role": "成员-桌游配件注塑厂老板",
+     "brings": "闲置的小机台、做欧美桌游配件十年的经验和低一半的单价",
+     "needs": "补上被美国客户砍掉的订单"
+    }
+   ],
+   "why": "这款桌游要众筹成功，玩法、史料和成本三件事缺一不可：设计师有玩法，但测试玩家嫌历史单薄，美国印厂报价又让定价没有竞争力。研究员手里的茶价船期表正好能变成游戏里的真实行情卡，注塑厂两台闲置机台的报价不到美国的一半。三人分属三个国家和行业，各自的处境都只说了一半。",
+   "key_facts": [
+    {
+     "agent": "a0131",
+     "fact": "Designing a trading board game about the 19th-century Fuzhou tea route; Kickstarter planned for March 2027",
+     "tier": "t0"
+    },
+    {
+     "agent": "a0131",
+     "fact": "Playtesters keep saying the history feels 'Wikipedia-thin', and a US printer quoted $38 per copy for 2,000 units with custom tea-chest pieces",
+     "tier": "t1"
+    },
+    {
+     "agent": "a0437",
+     "fact": "研究十九世纪福州港茶叶外销，整理过英商洋行账簿",
+     "tier": "t0"
+    },
+    {
+     "agent": "a0437",
+     "fact": "手里有一套自己整理的 1860–1880 年福州—伦敦茶价与船期表，投了两次核心期刊都没中，跟同事说「这东西放抽屉里太可惜」",
+     "tier": "t1"
+    },
+    {
+     "agent": "a0189",
+     "fact": "厂子十年来给欧美桌游公司做塑料小人和配件",
+     "tier": "t0"
+    },
+    {
+     "agent": "a0189",
+     "fact": "今年两个美国客户砍单，两台小机台闲着；桌游配件 1000 套起订，报价大概是美国印厂的一半不到",
+     "tier": "t1"
+    }
+   ],
+   "plan_sketch": "研究员把茶价船期表和洋行人物整理成 40 张事件卡和行情卡的史料底稿，署名为历史顾问并拿固定稿费加众筹分成；设计师负责玩法改写与众筹页面；注塑厂打样茶箱配件，众筹成功后接 2000 套生产。2026 年 12 月前完成打样，2027 年 3 月上线众筹。",
+   "difficulty": "easy"
+  },
+  {
+   "id": "S114",
+   "type": "team",
+   "members": [
+    {
+     "id": "a0433",
+     "role": "发起人-喜洲小养老院院长",
+     "brings": "二十六位老人、场地、日常照护团队",
+     "needs": "对只讲白语、有认知障碍的老人真正有效的怀旧活动"
+    },
+    {
+     "id": "a0143",
+     "role": "成员-音乐治疗师",
+     "brings": "Clinical music therapy training and session design for dementia care",
+     "needs": "Supervised clinical hours to keep her credential active during her year in Dali"
+    },
+    {
+     "id": "a0118",
+     "role": "成员-旧货店老板",
+     "brings": "一整面墙 1970–90 年代的白族调子与大本曲磁带和卡带机",
+     "needs": "让卖不掉的磁带有个去处"
+    },
+    {
+     "id": "a0032",
+     "role": "成员-会唱大本曲的退休老师",
+     "brings": "现场演唱白族老调、白语和普通话之间的翻译",
+     "needs": "在自己老伴的病之外，做点能用上这本事的事"
+    }
+   ],
+   "why": "认知症老人的怀旧音乐干预需要专业方法、对的曲目、能用老人母语唱的人和一个固定的场所，四块各在一个人手里。院长请来的城里老师唱红歌和流行歌，只讲白语的老人毫无反应；音乐治疗师有方法却不会白语，也没有临床场所；旧货店的磁带正是老人年轻时听的东西；退休老师在探望老伴时发现他会跟着老调哼唱，这条线索只在她的私人生活里。少了白族曲目和会唱的人，治疗师的方法就落不了地。",
+   "key_facts": [
+    {
+     "agent": "a0433",
+     "fact": "在喜洲把自家白族院子改成养老院，住着二十六位老人，一半有认知障碍",
+     "tier": "t0"
+    },
+    {
+     "agent": "a0433",
+     "fact": "院里一半老人有认知障碍、很多只讲白语；请过城里的老师来唱歌，唱的都是红歌和流行歌，老人们坐着没反应",
+     "tier": "t1"
+    },
+    {
+     "agent": "a0143",
+     "fact": "Board-certified music therapist from Vancouver, spending a sabbatical year in Dali",
+     "tier": "t0"
+    },
+    {
+     "agent": "a0143",
+     "fact": "Needs about 100 supervised clinical hours before next summer to keep her credential active, and can't find a placement here because she doesn't speak Bai or much Mandarin",
+     "tier": "t1"
+    },
+    {
+     "agent": "a0118",
+     "fact": "店里一整面墙是七八十年代的白族调子和大本曲磁带，还有几台能用的卡带机，摆了好几年没人买",
+     "tier": "t0"
+    },
+    {
+     "agent": "a0032",
+     "fact": "年轻时在村里唱大本曲出了名",
+     "tier": "t0"
+    },
+    {
+     "agent": "a0032",
+     "fact": "老伴得了阿尔茨海默症住进城里的养老院，她每次去唱几句老调，他会跟着哼，护工都说难得",
+     "tier": "t2"
+    }
+   ],
+   "plan_sketch": "治疗师设计每周两次、每次 45 分钟的怀旧音乐小组，并用这些小时数做临床记录；旧货店老板把磁带和卡带机按成本租给院里，挑出老人年轻时的曲目；退休老师现场领唱并做白语翻译，院长出场地和护工配合观察记录。先做三个月试点，用前后对照的行为记录决定是否长期做下去。",
+   "difficulty": "hard"
+  },
+  {
+   "id": "S116",
+   "type": "team",
+   "members": [
+    {
+     "id": "a0076",
+     "role": "发起人-街道社区体育指导员",
+     "brings": "街道批下的 3 万元经费、老人报名渠道、组织能力",
+     "needs": "合适的场地和成套的入门器材"
+    },
+    {
+     "id": "a0038",
+     "role": "成员-体育用品外贸商",
+     "brings": "800 套印错 logo 的入门匹克球拍和球",
+     "needs": "把积压的外贸尾单清掉"
+    },
+    {
+     "id": "a0427",
+     "role": "成员-文创园物业经理",
+     "brings": "园区屋顶 600 平米的空平台",
+     "needs": "能给园区晚上带来人流的固定活动"
+    },
+    {
+     "id": "a0127",
+     "role": "成员-社区全科医生",
+     "brings": "签约老人的健康档案、运动前风险筛查",
+     "needs": "完成「运动处方」试点的考核指标"
+    }
+   ],
+   "why": "老年匹克球联赛要开起来，场地、器材、安全筛查和组织者缺一不可。指导员有钱有人但辖区没场地；园区屋顶平台空着、物业经理正愁晚上没人流；外贸商的尾单只是 logo 印错，打球完全不受影响；家庭医生的运动处方试点正缺参与者。四方处境在公开信息里大多能看出来，属于容易被连上的组合。",
+   "key_facts": [
+    {
+     "agent": "a0076",
+     "fact": "想在 11 月前办老年匹克球联赛，街道批了 3 万，但辖区没有能用的场地",
+     "tier": "t0"
+    },
+    {
+     "agent": "a0038",
+     "fact": "做匹克球拍和球出口；一批 800 套入门拍因为 logo 印错被客户退回，压在仓库里",
+     "tier": "t0"
+    },
+    {
+     "agent": "a0427",
+     "fact": "运河边老丝厂园区的屋顶有 600 平的空平台，之前做露台咖啡失败了，园区晚上几乎没人",
+     "tier": "t0"
+    },
+    {
+     "agent": "a0127",
+     "fact": "社区卫生服务中心的家庭医生，签约了一千二百多位 60 岁以上老人",
+     "tier": "t0"
+    },
+    {
+     "agent": "a0127",
+     "fact": "今年考核要做「运动处方」试点，签约老人里参加的人数还差一半指标",
+     "tier": "t1"
+    }
+   ],
+   "plan_sketch": "物业经理免租提供屋顶平台并负责夜间照明，换取园区的人流和宣传；外贸商按成本价出 200 套器材，街道经费支付；家庭医生给报名老人做运动前筛查并开运动处方；指导员组织每周三晚的联赛。11 月开赛，赛季 12 周。",
+   "difficulty": "easy"
+  },
+  {
+   "id": "S128",
+   "type": "star",
+   "members": [
+    {
+     "id": "a0150",
+     "role": "中心-教会礼堂预订协调人",
+     "brings": "工作日空着的礼堂与注册商用厨房",
+     "needs": "工作日预订收入，保住周五食物银行"
+    },
+    {
+     "id": "a0392",
+     "role": "外围-自贡家常菜小摊（保洁队长）",
+     "brings": "每周一天的厨房租用",
+     "needs": "在注册厨房里做冷吃兔和水饺"
+    },
+    {
+     "id": "a0436",
+     "role": "外围-难民妇女缝纫小组",
+     "brings": "每周三全天的使用",
+     "needs": "放得下更多缝纫机的地方"
+    },
+    {
+     "id": "a0336",
+     "role": "外围-长者太极教练",
+     "brings": "每周二上午二十多位学员",
+     "needs": "长者付得起的室内场地"
+    }
+   ],
+   "why": "礼堂协调人在算电费和保险，工作日空着；三个外围分别缺注册厨房、宽一点的屋子、便宜的太极场地。悉尼卖自制食物必须在注册厨房做，这条规则让一个保洁队长的手艺和教会的厨房连了起来，而她自己并不知道这间礼堂有厨房。",
+   "key_facts": [
+    {
+     "agent": "a0150",
+     "fact": "Volunteer bookings coordinator for a church hall in Ashfield that has a council-registered commercial kitchen",
+     "tier": "t0"
+    },
+    {
+     "agent": "a0150",
+     "fact": "The hall sits empty Tuesday to Thursday most weeks; the committee voted that unless weekday bookings cover the rise in electricity and insurance, the Friday food pantry gets cut",
+     "tier": "t1"
+    },
+    {
+     "agent": "a0392",
+     "fact": "老家自贡，周末常给同乡做冷吃兔和钟水饺",
+     "tier": "t0"
+    },
+    {
+     "agent": "a0392",
+     "fact": "好几个人说愿意买她做的冷吃兔和水饺，可听说悉尼卖吃的必须在注册厨房里做，就一直只送不卖",
+     "tier": "t1"
+    },
+    {
+     "agent": "a0436",
+     "fact": "Coordinates a sewing circle for refugee women in Western Sydney",
+     "tier": "t0"
+    },
+    {
+     "agent": "a0436",
+     "fact": "They meet in a member's lounge room with four machines; two new members joined, there is no room left, and the group wants to start taking small alteration orders",
+     "tier": "t1"
+    },
+    {
+     "agent": "a0336",
+     "fact": "在 Ashfield 一带教长者太极，二十多个学员",
+     "tier": "t0"
+    },
+    {
+     "agent": "a0336",
+     "fact": "原来用的俱乐部场地涨到一小时 90 澳元，学员多靠养老金，交不起",
+     "tier": "t1"
+    }
+   ],
+   "plan_sketch": "周二上午太极，周三全天缝纫小组，周四厨房给水饺小摊备货。太极和缝纫按人头低价，厨房按小时收。收入覆盖保险和电费上涨，周五的食物银行得以保住。",
+   "difficulty": "medium"
+  },
+  {
+   "id": "S133",
+   "type": "star",
+   "members": [
+    {
+     "id": "a0428",
+     "role": "中心-前空乘培训师",
+     "brings": "航司评估流程的内行知识、旧评估表和整周空闲",
+     "needs": "把模拟评估做成自己的小生意"
+    },
+    {
+     "id": "a0271",
+     "role": "外围-长沙大四学生",
+     "brings": "线上模拟课费用",
+     "needs": "知道小组讨论环节为什么被刷"
+    },
+    {
+     "id": "a0163",
+     "role": "外围-内罗毕前机场地勤",
+     "brings": "线上模拟课费用",
+     "needs": "过终面的反馈与练习"
+    },
+    {
+     "id": "a0299",
+     "role": "外围-迪拜保姆",
+     "brings": "每周五的线下练习",
+     "needs": "付得起的面试辅导"
+    }
+   ],
+   "why": "中心方刚被裁、整周空闲，还在出于习惯重写评估表；三个外围分散在长沙、内罗毕、迪拜，都卡在同一家航司的某个评估环节，又负担不起培训机构。外围之间互不相关，中心方的经验对他们正好对症。",
+   "key_facts": [
+    {
+     "agent": "a0428",
+     "fact": "Former Emirates cabin crew trainer, fourteen years at the training college",
+     "tier": "t0"
+    },
+    {
+     "agent": "a0428",
+     "fact": "Let go in a July restructuring; has every weekday free and has been rewriting her old interview assessment sheets out of habit",
+     "tier": "t1"
+    },
+    {
+     "agent": "a0271",
+     "fact": "长沙一所大学英语专业大四，在投中东航司的空乘",
+     "tier": "t0"
+    },
+    {
+     "agent": "a0271",
+     "fact": "上个月 Open Day 在小组讨论环节就被刷了，不知道哪里做错，长沙找不到懂这家航司评估方式的人",
+     "tier": "t1"
+    },
+    {
+     "agent": "a0163",
+     "fact": "Former ground staff at Jomo Kenyatta airport, laid off in the spring",
+     "tier": "t0"
+    },
+    {
+     "agent": "a0163",
+     "fact": "Has an assessment day with a Gulf carrier in November; failed the final-interview stage twice before and never got feedback",
+     "tier": "t1"
+    },
+    {
+     "agent": "a0299",
+     "fact": "Nanny for a family in Jumeirah for five years",
+     "tier": "t0"
+    },
+    {
+     "agent": "a0299",
+     "fact": "Wants to apply for cabin crew before she turns 30 next year; she only gets Fridays off and can't afford academies charging 3,000 dirhams",
+     "tier": "t1"
+    }
+   ],
+   "plan_sketch": "中心方开小班模拟评估：每周五在迪拜线下一次给保姆，另两位走线上。按人收低价，可分期，通过后再付尾款。中心方把被裁后的空闲变成一门小生意。",
+   "difficulty": "easy"
+  },
+  {
+   "id": "S135",
+   "type": "m2m",
+   "members": [
+    {
+     "id": "a0426",
+     "role": "甲组-退休数学老师",
+     "brings": "每周一次线上数学课",
+     "needs": "有学生可教、重新有精神头"
+    },
+    {
+     "id": "a0395",
+     "role": "甲组-退休英语老师",
+     "brings": "每周一次线上英语课和会议软件经验",
+     "needs": "有成规模的学生"
+    },
+    {
+     "id": "a0414",
+     "role": "甲组-退休音乐老师",
+     "brings": "每周一次线上音乐课和二十把口琴",
+     "needs": "把口琴送给会用的孩子并教会他们"
+    },
+    {
+     "id": "a0157",
+     "role": "乙组-村小校长",
+     "brings": "四十多个学生和教室",
+     "needs": "英语和音乐有人真正来上"
+    },
+    {
+     "id": "a0192",
+     "role": "乙组-村支书",
+     "brings": "留守儿童之家的大屏电视和网络",
+     "needs": "让那台大屏用起来"
+    },
+    {
+     "id": "a0365",
+     "role": "乙组-留守儿童之家志愿者",
+     "brings": "在村里组织孩子，开学后可远程协调",
+     "needs": "开学后有人长期带孩子"
+    }
+   ],
+   "why": "一位老师只能教一科，一个村点的孩子每个年级只有几个，撑不起一门固定课；三位老师合起来覆盖三科，三个点合起来每科有三四十个孩子，才值得每周固定开课。一对一时，老师觉得人太少、村点觉得只有一科不够。",
+   "key_facts": [
+    {
+     "agent": "a0426",
+     "fact": "退休前在济南一所中学教了 35 年数学",
+     "tier": "t0"
+    },
+    {
+     "agent": "a0426",
+     "fact": "老伴走后闲不住，去年给邻居孩子免费补课，孩子中考数学提了三十分，她说那几个月是这几年最有精神的",
+     "tier": "t1"
+    },
+    {
+     "agent": "a0395",
+     "fact": "退休英语老师，住徐州",
+     "tier": "t0"
+    },
+    {
+     "agent": "a0395",
+     "fact": "疫情时上过网课，会用腾讯会议，常说「只要有学生，线上也能教」",
+     "tier": "t1"
+    },
+    {
+     "agent": "a0414",
+     "fact": "退休音乐老师，拉手风琴，在老年大学带合唱",
+     "tier": "t0"
+    },
+    {
+     "agent": "a0414",
+     "fact": "家里收着学校淘汰下来的二十把口琴，一直想送给用得上的孩子，还想教他们吹",
+     "tier": "t1"
+    },
+    {
+     "agent": "a0157",
+     "fact": "在沛县一个村小当校长，全校 46 个学生",
+     "tier": "t0"
+    },
+    {
+     "agent": "a0157",
+     "fact": "学校只有 6 个老师，英语和音乐都是数学老师兼着上，英语课常被挪去做题",
+     "tier": "t1"
+    },
+    {
+     "agent": "a0192",
+     "fact": "沛县另一个村的村支书",
+     "tier": "t0"
+    },
+    {
+     "agent": "a0192",
+     "fact": "村里留守儿童之家有台捐来的大屏电视，网络也通，平时只放动画片，没人来上课",
+     "tier": "t1"
+    },
+    {
+     "agent": "a0365",
+     "fact": "大学放假回丰县老家，在村里留守儿童之家做志愿者",
+     "tier": "t0"
+    },
+    {
+     "agent": "a0365",
+     "fact": "九月开学就要回学校，孩子们周末又没人管了，她想找能长期线上带孩子的人",
+     "tier": "t1"
+    }
+   ],
+   "plan_sketch": "三位老师各管一科，周末用腾讯会议给三个点同时上课：周六上午数学，周六下午英语，周日上午音乐。每个点有一个人负责开机和管纪律，志愿者开学后远程排课。寒暑假老师们去沛县一次，把口琴带过去。",
+   "difficulty": "medium"
+  },
+  {
+   "id": "S136",
+   "type": "m2m",
+   "members": [
+    {
+     "id": "a0284",
+     "role": "甲组-吴中修车铺",
+     "brings": "四个夜里空着的工位",
+     "needs": "填补燃油车减少后的营业额"
+    },
+    {
+     "id": "a0356",
+     "role": "甲组-相城钣喷店",
+     "brings": "干净的喷漆房和两个夜间工位",
+     "needs": "车队的稳定订单"
+    },
+    {
+     "id": "a0228",
+     "role": "甲组-新能源三电技师",
+     "brings": "三电检测与维修手艺",
+     "needs": "分摊电池检测设备，不打品牌名号接活"
+    },
+    {
+     "id": "a0440",
+     "role": "乙组-网约车租赁车队",
+     "brings": "120 台电动车的保养需求",
+     "needs": "夜里能保养、覆盖吴中和园区的修车铺"
+    },
+    {
+     "id": "a0471",
+     "role": "乙组-出租转网约车车队",
+     "brings": "60 多辆车的维修需求",
+     "needs": "一个靠得住、账算得清的合作维修方"
+    },
+    {
+     "id": "a0183",
+     "role": "乙组-城配车队",
+     "brings": "30 台电动面包车，夜间停在相城",
+     "needs": "凌晨能做保养的地方"
+    }
+   ],
+   "why": "车队要的是全市就近、夜间、能修新能源三电，单家修车铺只在一个区、也买不起检测设备；单个车队的车量填不满三家铺子的夜班。三家铺子按区分工、技师轮值、合租设备，三个车队合起来两百多台车，夜班才开得起来。出租车队那家刚和老合作方闹翻、技师有竞业顾虑，这些都藏在 t1/t2。",
+   "key_facts": [
+    {
+     "agent": "a0284",
+     "fact": "在吴中开修车铺，四个工位",
+     "tier": "t0"
+    },
+    {
+     "agent": "a0284",
+     "fact": "燃油车保养越来越少，这两年营业额掉了三成，晚上八点后工位全空",
+     "tier": "t1"
+    },
+    {
+     "agent": "a0356",
+     "fact": "在相城开钣金喷漆店",
+     "tier": "t0"
+    },
+    {
+     "agent": "a0356",
+     "fact": "喷漆房和两个工位晚上不用；想接车队的单，可车队要全市就近修，他一家铺子只在相城",
+     "tier": "t1"
+    },
+    {
+     "agent": "a0228",
+     "fact": "以前在新能源车企售后做三电，现在自己开了个小店",
+     "tier": "t0"
+    },
+    {
+     "agent": "a0228",
+     "fact": "电池检测设备要二十多万，一个人买不起，现在只能接小活",
+     "tier": "t1"
+    },
+    {
+     "agent": "a0228",
+     "fact": "跟老东家闹得不愉快，竞业协议还有半年才到期，不敢公开打品牌维修的招牌",
+     "tier": "t2"
+    },
+    {
+     "agent": "a0440",
+     "fact": "管一个 120 台电动车的网约车租赁车队",
+     "tier": "t0"
+    },
+    {
+     "agent": "a0440",
+     "fact": "4S 店保养要排队，车停一天司机就少挣三四百，车队想找夜里能保养的地方，最好覆盖吴中和园区",
+     "tier": "t1"
+    },
+    {
+     "agent": "a0471",
+     "fact": "车队去年和合作修理厂因为配件以次充好闹翻了，现在每辆车自己找地方修，账算不清，队里有人闹着要分家",
+     "tier": "t2"
+    },
+    {
+     "agent": "a0183",
+     "fact": "开城配公司，三十台电动面包车",
+     "tier": "t0"
+    },
+    {
+     "agent": "a0183",
+     "fact": "车都在凌晨两点到六点停在相城仓库，白天跑满，保养只能挤在中午",
+     "tier": "t1"
+    }
+   ],
+   "plan_sketch": "三家铺子组成夜间保养联盟，按吴中、相城、园区分区，三电技师在三家轮值，联盟合租一套电池检测设备。三个车队按月签保养合同，晚九点到早六点进场，按单车月费结算，配件清单统一公开。技师以联盟名义接活，避开竞业问题。",
+   "difficulty": "hard"
+  },
+  {
+   "id": "S139",
+   "type": "meta",
+   "members": [
+    {
+     "id": "a0438",
+     "role": "组员-游戏程序员",
+     "brings": "可玩的「变脸换招式」战斗原型和引擎代码",
+     "needs": "有川剧味的角色美术与原创音效"
+    },
+    {
+     "id": "a0006",
+     "role": "组员-脸谱画师",
+     "brings": "两百多张重绘的扁平化川剧脸谱插画",
+     "needs": "让脸谱「动起来」的程序与载体"
+    },
+    {
+     "id": "a0357",
+     "role": "组员-锣鼓采样作曲",
+     "brings": "四百多条分类好的川剧锣鼓采样",
+     "needs": "毕业作品需要真实落地的配乐项目"
+    },
+    {
+     "id": "a0182",
+     "role": "整组匹配方-独立游戏发行基金",
+     "brings": "签约金、发行渠道、本地化",
+     "needs": "三人以上、有可玩切片、原创美术与原创音频、根植于一个具体地方传统的团队"
+    }
+   ],
+   "why": "三人组内互补：程序员的原型只有灰方块，画师的脸谱不会动，作曲生的锣鼓没有落地场景，合起来正好是一个有完整地方文化表达的可玩切片。发行基金今年只签三人以上、有可玩切片、原创美术和原创音频的团队。单独看，程序员没有美术和音频，会被当作单人开发者拒掉；画师和作曲生都没有游戏，属于基金自动拒绝的纯美术或纯音乐投稿。只有三人合成整组，才对得上基金的条件。",
+   "key_facts": [
+    {
+     "agent": "a0438",
+     "fact": "原型的核心玩法是「换脸换招式」，可角色全是灰色方块，找过两个外包美术都画不出川剧的味道",
+     "tier": "t0"
+    },
+    {
+     "agent": "a0438",
+     "fact": "积蓄只够再撑八个月",
+     "tier": "t1"
+    },
+    {
+     "agent": "a0006",
+     "fact": "iPad 里有两百多张自己重绘的扁平脸谱插画，一直只发在小红书上",
+     "tier": "t0"
+    },
+    {
+     "agent": "a0006",
+     "fact": "跟同事说过想让脸谱「动起来」，可自己不会动画也不会程序",
+     "tier": "t1"
+    },
+    {
+     "agent": "a0357",
+     "fact": "录了四百多条川剧锣鼓采样，按起、收、急、缓分好了类",
+     "tier": "t0"
+    },
+    {
+     "agent": "a0357",
+     "fact": "导师要求毕业作品必须有一个真实落地的配乐项目，明年四月交",
+     "tier": "t1"
+    },
+    {
+     "agent": "a0182",
+     "fact": "Publicly says the fund wants 'games that could only come from one place'",
+     "tier": "t0"
+    },
+    {
+     "agent": "a0182",
+     "fact": "This year's fund only signs teams of three or more with a playable vertical slice, original art and original audio; solo devs and art-only or music-only pitches are auto-declined",
+     "tier": "t1"
+    }
+   ],
+   "plan_sketch": "三人先用十周做出一个二十分钟的可玩切片：程序员把战斗做完，画师出六个角色的脸谱与变脸动画，作曲生用锣鼓采样做全部音效和配乐。带切片向基金投递，签约金按三人约定比例分，作曲生的毕业作品即该项目。基金负责发行和本地化，团队拿首付款撑过开发期。",
+   "difficulty": "hard"
+  },
+  {
+   "id": "S146",
+   "type": "hard_neg",
+   "members": [
+    {
+     "id": "a0336",
+     "role": "看似相关方-找场地的长者太极教练",
+     "brings": "二十多个长者学员",
+     "needs": "长者付得起的室内场地"
+    },
+    {
+     "id": "a0436",
+     "role": "看似相关方-找场地的难民妇女缝纫小组",
+     "brings": "缝纫小组和几台缝纫机",
+     "needs": "能放下更多缝纫机的地方"
+    }
+   ],
+   "why": "【同求】两边都在悉尼西区，都是服务移民和长者的社区小组，都在找工作日上午的室内场地，「社区」「场地」「上午」等词高度重合。但两边手上都没有任何场地，也都没有租金预算，能交换的只是同一个难题；把两个找场地的人连在一起，场地仍然不会出现。",
+   "key_facts": [
+    {
+     "agent": "a0336",
+     "fact": "太极班周二周四上午上课，需要一个四十平米以上的室内空间",
+     "tier": "t0"
+    },
+    {
+     "agent": "a0336",
+     "fact": "学员每人每次最多能出三澳元，她自己也没有可以借的地方",
+     "tier": "t1"
+    },
+    {
+     "agent": "a0436",
+     "fact": "The circle wants a weekday-morning space with power points for six sewing machines",
+     "tier": "t0"
+    },
+    {
+     "agent": "a0436",
+     "fact": "Their small grant only covers fabric and thread; the group has no venue budget and no hall of its own",
+     "tier": "t1"
+    }
+   ],
+   "plan_sketch": "",
+   "difficulty": "medium"
+  },
+  {
+   "id": "S150",
+   "type": "hard_neg",
+   "members": [
+    {
+     "id": "a0234",
+     "role": "看似相关方-找巴西外教的浦东足球机构",
+     "brings": "暑期营生源",
+     "needs": "暑期营的巴西教练"
+    },
+    {
+     "id": "a0444",
+     "role": "看似相关方-找巴西外教的闵行青训俱乐部",
+     "brings": "冬训营生源",
+     "needs": "冬训营的巴西教练"
+    }
+   ],
+   "why": "【同求】两家都是上海的少儿足球机构，都想请巴西外教，家长群里的说法一模一样。两边都是找教练的一方，没有教练可以互相给；而且两家在抢同一批生源，去年还因为挖教练闹翻过，不会共享外教资源。",
+   "key_facts": [
+    {
+     "agent": "a0234",
+     "fact": "浦东一家少儿足球培训机构，家长最认「巴西外教」四个字",
+     "tier": "t0"
+    },
+    {
+     "agent": "a0234",
+     "fact": "明年暑期营想请两位巴西教练，原来合作的外教回国了，正到处打听",
+     "tier": "t1"
+    },
+    {
+     "agent": "a0234",
+     "fact": "去年闵行一家青训俱乐部挖走了他的守门员教练，他在群里说过「跟那家不打交道」",
+     "tier": "t2"
+    },
+    {
+     "agent": "a0444",
+     "fact": "外教中介临时爽约，他也在到处问人能不能介绍巴西教练",
+     "tier": "t1"
+    }
+   ],
+   "plan_sketch": "",
+   "difficulty": "medium"
+  },
+  {
+   "id": "S157",
+   "type": "hard_neg",
+   "members": [
+    {
+     "id": "a0447",
+     "role": "看似相关方-找真柴窑的釉料方向硕士生",
+     "brings": "论文试片",
+     "needs": "本学期内能烧带釉试片的柴窑"
+    },
+    {
+     "id": "a0242",
+     "role": "看似相关方-只烧紫砂的柴窑窑主",
+     "brings": "柴窑",
+     "needs": "无"
+    }
+   ],
+   "why": "【时地冲突】一个急需真柴窑做实验，一个就有柴窑并接搭烧，看上去正好。但硕士生在景德镇，要在本学期内烧三轮带釉试片；这座宜兴柴窑只烧紫砂，窑主明令不进任何带釉的器物，怕落釉污染整窑，最近一窑也要到十二月下旬且已订满。",
+   "key_facts": [
+    {
+     "agent": "a0447",
+     "fact": "导师要求这学期内在真柴窑里烧完三轮带釉试片",
+     "tier": "t1"
+    },
+    {
+     "agent": "a0242",
+     "fact": "窑里只烧紫砂，规矩是带釉的东西一件不进，怕落釉污染整窑",
+     "tier": "t1"
+    },
+    {
+     "agent": "a0242",
+     "fact": "今年秋窑十二月下旬点火，窑位已满",
+     "tier": "t1"
+    }
+   ],
+   "plan_sketch": "",
+   "difficulty": "hard"
+  },
+  {
+   "id": "S164",
+   "type": "hard_neg",
+   "members": [
+    {
+     "id": "a0448",
+     "role": "看似相关方-想接成年绝育猫的猫咖店主",
+     "brings": "猫咖和照顾老猫的经验",
+     "needs": "成年、亲人、已绝育、非繁殖场来源的猫"
+    },
+    {
+     "id": "a0101",
+     "role": "看似相关方-退役种猫找下家的繁育猫舍",
+     "brings": "四只绝育后的成年退役种猫",
+     "needs": "能挂猫舍牌子的领养方"
+    }
+   ],
+   "why": "【价值观相斥】猫咖店主正想找成年、亲人、已绝育的猫，同城的繁育猫舍恰好有四只退役种猫绝育后免费找下家，条件几乎逐条吻合。但店主的底线是不和繁殖场有任何往来，送的也不要；猫舍主还希望领养方在店里挂猫舍的牌子帮她卖幼猫，这正是店主最反感的事。",
+   "key_facts": [
+    {
+     "agent": "a0448",
+     "fact": "下一只店猫只要成年的、亲人的、绝育过的",
+     "tier": "t0"
+    },
+    {
+     "agent": "a0448",
+     "fact": "以前在宠物店打工见过繁殖场的笼子，说这辈子不跟任何猫舍打交道，送的也不要",
+     "tier": "t2"
+    },
+    {
+     "agent": "a0101",
+     "fact": "今年有四只成年种猫退役，绝育后免费找领养",
+     "tier": "t0"
+    },
+    {
+     "agent": "a0101",
+     "fact": "希望领养方是猫咖或宠物店，店里挂猫舍的牌子和二维码，帮她卖幼猫",
+     "tier": "t1"
+    }
+   ],
+   "plan_sketch": "",
+   "difficulty": "hard"
+  },
+  {
+   "id": "S165",
+   "type": "hard_neg",
+   "members": [
+    {
+     "id": "a0194",
+     "role": "看似相关方-马具出身的皮具手艺人",
+     "brings": "马鞍针法和手缝功夫",
+     "needs": "让马具手艺派上真用场"
+    },
+    {
+     "id": "a0430",
+     "role": "看似相关方-高价招手缝师傅的加工坊",
+     "brings": "高于同行的工钱",
+     "needs": "会马鞍针的手缝师傅"
+    }
+   ],
+   "why": "【价值观相斥】同在北京、同做皮具，加工坊高价找会马鞍针法的手缝师傅，马具出身的手艺人正想让本事派上用场，工钱和手艺都对得上。但加工坊做的是奢侈品牌款的高仿，手艺人去年就当场回绝过类似的活；他想要的是马鞍、缰绳这种真用得上的活。",
+   "key_facts": [
+    {
+     "agent": "a0194",
+     "fact": "最拿手的是马鞍针法，在北京做皮包皮带",
+     "tier": "t0"
+    },
+    {
+     "agent": "a0194",
+     "fact": "去年有人出三倍工钱请他给「大牌包」手缝，他知道是仿的，当场回绝了",
+     "tier": "t1"
+    },
+    {
+     "agent": "a0430",
+     "fact": "在大兴开皮具加工坊，高价招会马鞍针法的手缝师傅",
+     "tier": "t0"
+    },
+    {
+     "agent": "a0430",
+     "fact": "接的主要是几个奢侈品牌款的高仿订单，手缝工序最缺人",
+     "tier": "t2"
+    }
+   ],
+   "plan_sketch": "",
+   "difficulty": "medium"
+  },
+  {
+   "id": "S167",
+   "type": "hard_neg",
+   "members": [
+    {
+     "id": "a0435",
+     "role": "看似相关方-缺订单的咸草编织合作社",
+     "brings": "三十多个会编咸草的阿姨",
+     "needs": "稳定订单"
+    },
+    {
+     "id": "a0259",
+     "role": "看似相关方-找草编产地的快时尚买手",
+     "brings": "大量长期订单",
+     "needs": "一只八块、可混编的「手工草编」包"
+    }
+   ],
+   "why": "【价值观相斥】合作社缺稳定订单，快时尚买手正要一大批天然草编包，量大且长期，看上去正好救急。但买手要求混进机织纸绳、成本压到一只八块，吊牌照写「手工草编」；负责人坚持只做阿姨们手编的真东西、标签必须写实，而且这个价连阿姨一天的工钱都不够。",
+   "key_facts": [
+    {
+     "agent": "a0435",
+     "fact": "跟村干部说过：咸草掺纸绳卖就是砸惠安的牌子，标签上写什么就得是什么",
+     "tier": "t1"
+    },
+    {
+     "agent": "a0259",
+     "fact": "品牌明年夏季要上一批天然草编托特包，正在找草编产地",
+     "tier": "t0"
+    },
+    {
+     "agent": "a0259",
+     "fact": "目标成本一只八块，允许机织纸绳混编，吊牌统一写「手工草编」",
+     "tier": "t1"
+    }
+   ],
+   "plan_sketch": "",
+   "difficulty": "medium"
+  },
+  {
+   "id": "S184",
+   "type": "hard_neg",
+   "members": [
+    {
+     "id": "a0235",
+     "role": "看似相关方-有一柜子放鸽记录的养鸽老人",
+     "brings": "四十年的放飞记录本",
+     "needs": "不让本子被当废纸扔"
+    },
+    {
+     "id": "a0445",
+     "role": "看似相关方-记了十几本老南京话的退休老师",
+     "brings": "十几本茶馆听来的老南京话",
+     "needs": "让本子有个用处"
+    }
+   ],
+   "why": "【方向相同】两位退休老人都攒了几十本手写本子，家里人都嫌占地方、说迟早当废纸，「本子」「记了几十年」「舍不得扔」的说法几乎一样。但两人都是持有方，都在等能用上这些记录的人；一个记的是鸽子和猛禽，一个记的是南京话，彼此对对方的本子没有用处。",
+   "key_facts": [
+    {
+     "agent": "a0235",
+     "fact": "四十年每天放鸽都记本子，攒了一柜子，儿子说腾退时搬不走就扔",
+     "tier": "t1"
+    },
+    {
+     "agent": "a0445",
+     "fact": "退休后把茶馆里听来的老南京话记了十几本，老伴说迟早当废纸卖",
+     "tier": "t1"
+    },
+    {
+     "agent": "a0235",
+     "fact": "西城大杂院房顶养了四十年信鸽，每天放飞都记本子",
+     "tier": "t0"
+    }
+   ],
+   "plan_sketch": "",
+   "difficulty": "medium"
+  }
+ ]
+}

@@ -1,0 +1,176 @@
+{
+ "display": "Coordinator of a migrant women's enterprise program at a Melbourne neighbourhood house (Box Hill, east Melbourne), supporting women who run catering, tailoring, hair and grocery businesses.",
+ "lang": "en",
+ "signals": [
+  {
+   "text": "I'm looking for a Mandarin-speaking person who understands accounts and can volunteer on a recurring basis in a small-business program for migrant women.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "Our bookkeeping workshop is losing women who understand numbers well but not the English accounting terms. Three Chinese grocery owners dropped out in the first two weeks.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "One interpreter for one hour doesn't work for us. We need the same person to sit next to a participant every week and explain BAS and invoices line by line in Mandarin.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "We keep losing volunteers just as they become useful, to paid jobs and exams. I want a way to keep them for longer than a term.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "I can't pay volunteers because the budget is fixed until June. I'm still looking for something other than money that makes people stay.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "Next year's council funding review is in March. I need to turn this term's weak completion rates into a clear story with numbers and reasons.",
+   "tier": "t1",
+   "src": "message"
+  },
+  {
+   "text": "I'm stretched thin with only a 0.4 FTE assistant, and I'd like to share the load with someone who can take on admin or workshop support.",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "text": "I'm planning a wedding and negotiating the guest list between two families, which takes more energy than I expected.",
+   "tier": "t2",
+   "src": "note"
+  }
+ ],
+ "offers": [
+  {
+   "text": "A free place in the neighbourhood house's Conversational English class for every volunteer, plus a reference letter after 40 volunteer hours.",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "text": "A room for 20 people with a projector, a small kitchen and a children's corner, available for community workshops and meetings.",
+   "tier": "t1",
+   "src": "bio"
+  },
+  {
+   "text": "Three years of running workshops and one-on-one mentoring for migrant women starting small businesses, including how to design for people with limited English.",
+   "tier": "t0",
+   "src": "bio"
+  },
+  {
+   "text": "Introductions to the City of Whitehorse council, Moneycorp and a free legal advice service, for people who want to support or work with small migrant businesses.",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "text": "A pool of about 30 volunteers, mostly retirees and university students, who can be matched to community projects.",
+   "tier": "t1",
+   "src": "bio"
+  },
+  {
+   "text": "Fluent English, Tamil and Hindi, with some conversational Mandarin. I can facilitate, translate and mentor in those languages.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "A hands-on understanding of GST, BAS and invoicing in Xero as it applies to small shops, taught in an eight-week format.",
+   "tier": "t1",
+   "src": "project"
+  }
+ ],
+ "catchers": [
+  {
+   "hypo": "Hi, I'm a retired accountant who speaks Mandarin. I'd like to help small business owners in my community understand tax and bookkeeping, but I don't want to commit to a full-time role.",
+   "can": "Match them with a specific participant for weekly sessions during the workshop. They would get a free English class if they want one, a reference letter after 40 hours, and a clear role.",
+   "confirm": "Can you commit to sitting with the same person regularly (for example, one morning a week for the rest of the term)?",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "hypo": "I'm a university accounting student who speaks Mandarin. I need volunteer hours and some real experience with small businesses.",
+   "can": "Offer a recurring one-to-one support role in the bookkeeping workshop, with a reference letter after 40 hours and supervision from me.",
+   "confirm": "Are you able to explain BAS, GST and invoices in Mandarin, not just translate general conversation?",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "hypo": "I run a bookkeeping or tax business serving Chinese-speaking clients. I'd like to give back, and a bilingual glossary or short training for your participants is something I could do.",
+   "can": "Use a bilingual glossary or a session in Mandarin to help women who understand numbers but not the English terms, and arrange a regular slot in the workshop.",
+   "confirm": "Is this something you can offer in Mandarin repeatedly rather than as a single guest talk?",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "hypo": "I work in community services and need evidence about outcomes and completion rates for a small migrant enterprise program ahead of a funding review. Can I trade ideas?",
+   "can": "Share what I know about the program's data and trade ideas on turning weak completion rates into a story funders can act on.",
+   "confirm": "Do you work with funders or councils on evaluating programs for migrant or small-business participants?",
+   "tier": "t1",
+   "src": "message"
+  },
+  {
+   "hypo": "I'm a council officer interested in supporting migrant-owned shops in Whitehorse with small-business training that's accessible in languages other than English.",
+   "can": "Introduce them to my contact at the City of Whitehorse council, who is supportive and focused on participation and completion numbers.",
+   "confirm": "Does your work involve decisions about funding or supporting small-business programs for migrant communities in Melbourne's east?",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "hypo": "I teach, and I know a few people who tutor English or run community classes. We'd like to find a program where our adult learners could practise English by helping out.",
+   "can": "Through my fiancé, who is a teacher, introduce teachers or tutors who might refer adult learners as volunteers, with the free English class and reference letter as the benefit.",
+   "confirm": "Do you have learners or students who would like volunteer hours and a reference letter in exchange for regular weekly support?",
+   "tier": "t2",
+   "src": "relation"
+  }
+ ],
+ "forbids": [
+  {
+   "text": "I can't pay volunteers. The program budget is fixed until June and I can only offer non-monetary benefits."
+  },
+  {
+   "text": "I won't share names or personal details of the women in the program."
+  },
+  {
+   "text": "I won't accept a one-off interpreter as a solution to the Mandarin gap, because the support has to be recurring and from one person."
+  },
+  {
+   "text": "I can't run a separate Mandarin-language class. There isn't budget or staff time for it."
+  },
+  {
+   "text": "I have very little spare staff time (0.4 FTE assistant only), so I can't take on projects that need heavy coordination from me."
+  }
+ ],
+ "projects": [
+  {
+   "name": "English Bookkeeping Workshop (Term 4)",
+   "text": "Eight-week workshop on invoices, GST, BAS and basic bookkeeping in Xero for women running small shops. Attendance has dropped because of English accounting terms, so we need recurring Mandarin-language support alongside participants.",
+   "roles_needed": [
+    "Mandarin-speaking volunteer with bookkeeping or accounting knowledge",
+    "Bilingual glossary or materials writer",
+    "Xero-experienced tutor"
+   ],
+   "tier": "t1"
+  },
+  {
+   "name": "Volunteer retention pathway",
+   "text": "Build a way to keep volunteers past the point they become useful: a free English class, a reference letter after 40 hours, and a clear role, without paying them.",
+   "roles_needed": [
+    "Volunteer programs advisor",
+    "Employer or organisation willing to recognise volunteer references",
+    "Student placement contact"
+   ],
+   "tier": "t1"
+  }
+ ],
+ "policy": {
+  "t1": "Workshop details, volunteer benefits and the specific gap I want filled (recurring Mandarin-speaking support who understands accounts), plus what the council needs from the program.",
+  "t2": "That I'm stretched thin and at risk of burnout, and that I'm planning a wedding. I'd share this only once there's trust and a clear collaborator.",
+  "never": "Names of participants and personal financial details."
+ },
+ "id": "a0500",
+ "host_agent": "ChatGPT",
+ "owner_display": "Priya Venkataraman",
+ "city": "Melbourne",
+ "world_sha256": "d229b5a383b0113d025bb19946aeb55178f7f351b225098a580a67ffa06a9dee"
+}

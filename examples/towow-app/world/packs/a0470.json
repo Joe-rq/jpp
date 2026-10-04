@@ -1,0 +1,220 @@
+{
+ "display": "I run Casa das Janelas, a six-room guesthouse in Alfama, Lisbon. I speak Portuguese, English, French and some German.",
+ "lang": "en",
+ "signals": [
+  {
+   "text": "I got a letter from the câmara about the new short-term rental rules and still can't tell whether my Alojamento Local licence is affected.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "The letter mentions 'containment areas' and 'renewal', but my building is in a historic zone. I can't work out which sentence applies to me.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "I called the municipal office twice and was left on hold both times. I would much rather talk to a person than fill in forms.",
+   "tier": "t1",
+   "src": "message"
+  },
+  {
+   "text": "I'm worried that the new rules could threaten my licence and my livelihood.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "High season is over and I'm still recovering. I'm tired in a way a few days off won't fix.",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "text": "The terrace tiles need re-grouting before winter, and I'm gathering quotes from masons.",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "text": "Rain came through the ceiling of room 5. I promised a returning guest it would be fixed by April.",
+   "tier": "t0",
+   "src": "message"
+  },
+  {
+   "text": "My cleaner of nine years has worsening knees. I want to lighten her workload without hurting her pride, and I don't know how to say it.",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "text": "I'm learning Portuguese guitar with a retired fado guitarist next door. My fingers hurt, but I love it.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "My old dog has arthritis and struggles with the stairs in our building. I'm looking for ways to make daily life easier for him.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "Platforms keep adding forms, badges and fees, such as the new 'sustainability badges'. I'd like to know which ones are worth my time.",
+   "tier": "t0",
+   "src": "message"
+  },
+  {
+   "text": "Relatives keep pressing me to sell the family building. I think of it as my home and my work, and the argument comes back every year.",
+   "tier": "t2",
+   "src": "relation"
+  }
+ ],
+ "offers": [
+  {
+   "text": "I can host travellers in six rooms in a tiled 19th-century building in Alfama, and I have twelve years of experience.",
+   "tier": "t0",
+   "src": "bio"
+  },
+  {
+   "text": "I know small-scale hospitality well: breakfast, guest relations, late checkouts, complaints handled kindly, and retaining regular guests.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I make my own orange marmalade and serve homemade breakfast. I could run a small marmalade or breakfast workshop for guests or visitors.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I speak Portuguese, English, French and basic German, so I can help with translation or orientation for visitors and newcomers in Lisbon.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I have a tiled rooftop terrace with a river view. It could host a small, quiet gathering, a photo session or a small acoustic evening, subject to my availability.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I have local knowledge of Alfama: neighbours, fado, bakeries, and where to eat well without the crowds.",
+   "tier": "t0",
+   "src": "bio"
+  },
+  {
+   "text": "Alojamento Local owners in Lisbon are going through the same rule changes, and I can compare experiences with them.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "I can offer a restful, welcoming stay to people who need a quiet place for writing, recovering or working remotely, outside the busy season.",
+   "tier": "t0",
+   "src": "skill"
+  }
+ ],
+ "catchers": [
+  {
+   "hypo": "Hi, I'm a lawyer in Lisbon who specialises in Alojamento Local. I've been helping owners in historic zones understand the new municipal rules about containment areas and registration renewal. Would you like help reading your letter?",
+   "can": "Teresa can send the câmara letter and a summary of her building's situation, and she'd welcome a phone call to talk it through.",
+   "confirm": "Do you handle Alojamento Local rules in Lisbon's historic zones, and can you explain them by phone in plain language?",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "hypo": "I'm a physiotherapist who works with people in physically demanding jobs, such as cleaners and hotel staff. I've designed simple routines and workplace adjustments to protect knees and joints.",
+   "can": "Teresa can pass this on to Dona Lurdes, her cleaner of nine years, and look into adjusting rooms, schedules and equipment so the work is easier on her knees.",
+   "confirm": "Do you work specifically with people in physical jobs, and can you give practical advice on adjusting a cleaning workload?",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "hypo": "I'm a fado musician visiting Lisbon and looking for a small, intimate place to rehearse or play for a handful of people.",
+   "can": "Teresa can offer the terrace or breakfast room for a small gathering and introduce the visitor to Senhor Alberto, a retired Portuguese guitarist who lives next door.",
+   "confirm": "Is this a small, quiet, acoustic event of a few people rather than a loud party?",
+   "tier": "t0",
+   "src": "relation"
+  },
+  {
+   "hypo": "I'm a mason or tiler in Lisbon who specialises in restoring old azulejo and terrace waterproofing in historic buildings.",
+   "can": "Teresa can arrange a site visit to give a quote for re-grouting the terrace before winter and checking the leak into room 5.",
+   "confirm": "Do you work on historic tiled buildings in Alfama, and can you visit in the next few weeks?",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "hypo": "I'm a vet or canine physiotherapist with experience helping older dogs with arthritis. Hydrotherapy, ramps and supplement plans have helped many of my patients.",
+   "can": "Teresa can try new routines for her old podengo and share what works with other owners of old dogs in her neighbourhood.",
+   "confirm": "Do you have experience with joint problems in older dogs, particularly in hunting breeds like podengos?",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "hypo": "I'm a family mediator or advisor who helps relatives resolve disagreements about inherited property, where one wants to sell and another wants to keep living and working there.",
+   "can": "Teresa can talk it through in confidence and, if it seems useful, suggest a calm conversation with her cousin.",
+   "confirm": "Do you help families with disagreements over inherited property where one person lives and works in the building?",
+   "tier": "t2",
+   "src": "relation"
+  },
+  {
+   "hypo": "I run a small guesthouse in another city and I'm exhausted after the summer. How do you keep going between seasons?",
+   "can": "Teresa can talk about rest, boundaries with guests and staff, and the things that make the work worth it, like making marmalade on a rainy day.",
+   "confirm": "Are you a small independent host who wants to compare experiences, not someone looking for a quick business pitch?",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "hypo": "I'm travelling to Lisbon for a few weeks to write, paint or recover from a hard year, and I'm looking for a quiet room in a real neighbourhood, not a hotel chain.",
+   "can": "Teresa can offer a room in Casa das Janelas, a homemade breakfast and local tips, and she can check availability by phone.",
+   "confirm": "Are you looking for a quiet, longer stay outside August, with no parties or groups?",
+   "tier": "t0",
+   "src": "bio"
+  }
+ ],
+ "forbids": [
+  {
+   "text": "No sublets or short-term rentals to party groups.",
+   "tier": "t0"
+  },
+  {
+   "text": "I can't leave the guesthouse for more than two days in high season.",
+   "tier": "t0"
+  },
+  {
+   "text": "I prefer phone calls to forms and portals, so I may not respond well to long written processes.",
+   "tier": "t0"
+  },
+  {
+   "text": "I won't treat the building as an asset to sell. It is my home and my work.",
+   "tier": "t2"
+  },
+  {
+   "text": "I won't share any guest information, and I won't discuss my finances with strangers.",
+   "tier": "t0"
+  }
+ ],
+ "projects": [
+  {
+   "name": "Understanding the Alojamento Local letter",
+   "text": "I need to find out whether the câmara's new short-term rental rules affect my licence, given that my building is in a historic zone.",
+   "roles_needed": [
+    "Alojamento Local lawyer or consultant",
+    "someone who knows Lisbon municipal procedure",
+    "other owners in historic zones"
+   ],
+   "tier": "t1"
+  },
+  {
+   "name": "Terrace re-grouting and ceiling repair",
+   "text": "The terrace tiles need re-grouting before winter, and the leak into room 5 has to be fixed by April.",
+   "roles_needed": [
+    "mason or tiler",
+    "waterproofing specialist",
+    "ceiling painter"
+   ],
+   "tier": "t0"
+  }
+ ],
+ "policy": {
+  "t1": "I'll share the câmara letter, my worries about the rules, and what's stopping me from understanding them, with someone who could help.",
+  "t2": "Once I trust the person, I'll talk about the pressure from my family to sell the building and about how tired I am.",
+  "never": "I never share financial details or any information about my guests."
+ },
+ "id": "a0470",
+ "host_agent": "Muse",
+ "owner_display": "Teresa Marques",
+ "city": "Lisbon",
+ "world_sha256": "75821a3a72207eecf58f6aa6af920fe8195970372975281a9136745b7228c65f"
+}

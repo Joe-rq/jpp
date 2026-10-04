@@ -1,0 +1,189 @@
+{
+ "display": "I'm a board-certified music therapist (MT-BC) with a new private practice in Leslieville, Toronto, specializing in autistic children aged 4-12.",
+ "lang": "en",
+ "signals": [
+  {
+   "text": "I just opened a private practice in Leslieville and I'm looking for more families who could use music therapy.",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "text": "I'd like to run a monthly Saturday-morning singing-and-talking group for parents of newly diagnosed children, and I need to know whether my room can handle a group.",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "text": "I'm still looking for a decent acoustic piano, ideally an upright, because it matters for how I work and a keyboard isn't the same.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "My whole setup budget was about $3,800, and used uprights run $3,000-4,500 plus moving, so I'm watching for free or cheap pianos.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "I still need a few things for the room: curtains, a rug and a small cabinet, all cheap or secondhand.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "I'm building up from a handful of clients a week and aiming for about ten to be comfortable.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "I miss having colleagues and a team around, such as an OT room to share ideas with.",
+   "tier": "t1",
+   "src": "message"
+  },
+  {
+   "text": "I'm anxious about money and sometimes wonder whether leaving a steady job was reckless, though I feel most certain when I'm in the work.",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "text": "I'm tentatively and happily starting something new in my personal life after a long relationship ended.",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "text": "I'm saving seeds and tending a balcony garden, and I find it hopeful.",
+   "tier": "t2",
+   "src": "note"
+  }
+ ],
+ "offers": [
+  {
+   "text": "Music therapy sessions for autistic children aged 4-12, delivered by an MT-BC with a Master's in Music Therapy from Wilfrid Laurier.",
+   "tier": "t0",
+   "src": "bio"
+  },
+  {
+   "text": "Nine years of clinical experience in a children's hospital developmental unit.",
+   "tier": "t0",
+   "src": "bio"
+  },
+  {
+   "text": "Guitar, keyboard, hand drums and voice, with a small Orff instrument set and a gathering drum.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "Singing and talking facilitation for parent groups.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "A sound-sealed 14 x 11 ft room with natural light above a bookshop in Leslieville, suitable for small-group work.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "Can explain what music therapy is in plain language to parents, teachers and clinicians, including at info nights.",
+   "tier": "t1",
+   "src": "calendar"
+  },
+  {
+   "text": "I speak English and some French, with a little Igbo.",
+   "tier": "t0",
+   "src": "bio"
+  }
+ ],
+ "catchers": [
+  {
+   "hypo": "Hi, we're clearing out an old upright piano and want it to go to someone who will use it, not a dump. Could you use it?",
+   "can": "I'd gladly take it and use it in sessions where children can feel the vibration through the soundboard, and I can arrange the moving.",
+   "confirm": "Is the piano an acoustic upright, or a grand or digital instrument, that is free or low-cost and can be moved within Toronto?",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "hypo": "My child was just diagnosed with autism and I don't know where to start. Do you know of a group or a person to talk to?",
+   "can": "I can invite them to the planned parent group, or point them to the right kind of session.",
+   "confirm": "Is the child aged 4-12 and are you in or near Toronto?",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "hypo": "I'm an OT, SLP or school professional looking for a music therapist to refer children to, or to co-run a session.",
+   "can": "I can take referrals or co-plan sessions, and I'd welcome the colleagueship.",
+   "confirm": "Are you a licensed clinician or school professional in the Toronto area who needs a music therapy referral partner for children?",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "hypo": "I run a community space, library or bookshop and want a calm music event for families with sensory needs.",
+   "can": "I can plan and lead a sensory-friendly music session or info talk.",
+   "confirm": "Is this a free or low-cost family event for a group of children and parents, with a quiet, safe setting?",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "hypo": "I'm a retired nurse or health worker who knows families of newly diagnosed kids and would like to help point them somewhere good.",
+   "can": "Through my mum, a retired nurse who is supportive of the practice, I can reach health-care networks and pass on the parent group or practice information.",
+   "confirm": "Do you have contact with families of newly diagnosed children in or near Toronto and want to share information about a local program?",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "hypo": "I'm a school teacher with students who respond to music, and I'd like to learn some simple tools for the classroom.",
+   "can": "I can offer simple music-based techniques, or point teachers to a workshop I could run.",
+   "confirm": "Are you a teacher who wants practical music-based strategies for students with autism, not a full therapy program?",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "hypo": "I make or sell small furniture and rugs, and I could give a new small practice a good deal.",
+   "can": "I can use a rug, curtains or a small cabinet, with no nails in the walls.",
+   "confirm": "Can the items be secondhand or inexpensive and delivered to a second-floor room in Leslieville?",
+   "tier": "t1",
+   "src": "project"
+  }
+ ],
+ "forbids": [
+  {
+   "text": "I don't take clients without a clear safety plan.",
+   "tier": "t0"
+  },
+  {
+   "text": "I can't do Thursday evening sessions.",
+   "tier": "t0"
+  },
+  {
+   "text": "I won't share any client identities or details.",
+   "tier": "t0"
+  },
+  {
+   "text": "I won't share details about referrals from my hospital work.",
+   "tier": "t0"
+  },
+  {
+   "text": "I can't take on commitments that push my rent above $1,200 a month or my setup budget past its limit.",
+   "tier": "t1"
+  }
+ ],
+ "projects": [
+  {
+   "name": "Parent group pilot",
+   "text": "A monthly Saturday-morning singing-and-talking group for parents of newly diagnosed children, free for the first three sessions.",
+   "roles_needed": [
+    "venue partner",
+    "parent peer facilitator",
+    "referring clinician",
+    "volunteer"
+   ],
+   "tier": "t1"
+  }
+ ],
+ "policy": {
+  "t1": "When there's a real lead, I'll share my equipment needs, budget limits and current client load.",
+  "t2": "Once the match is strong and I trust the other party, I'll share how I feel about money and my personal life.",
+  "never": "Client identities and details of hospital referrals."
+ },
+ "id": "a0484",
+ "host_agent": "Muse",
+ "owner_display": "Rachel Okafor",
+ "city": "Toronto",
+ "world_sha256": "f71982981aa907f5911173d82c978679dea0f0b3d0ea3a5461ba5aadd2e5883b"
+}

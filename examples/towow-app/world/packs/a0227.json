@@ -1,0 +1,196 @@
+{
+ "display": "English teacher at an international school in Xiamen, owner of a dachshund recovering from back surgery.",
+ "lang": "en",
+ "signals": [
+  {
+   "text": "My dachshund Pickle had spinal disc (IVDD) surgery in August, and his vet recommends hydrotherapy (underwater treadmill) twice a week. I haven't found any in Xiamen.",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "text": "I have three price lists from a pet physio in Fuzhou. I can't tell what the session cards, first-evaluation fee and boarding actually cover.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "My Chinese colleague helped with the Fuzhou price list, but neither of us knows the veterinary terms. I need someone who really understands pet rehab packages.",
+   "tier": "t1",
+   "src": "message"
+  },
+  {
+   "text": "I'm looking for any Xiamen vet or physio who does canine rehab, even something simpler than a pool, or someone who knows someone.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "I can only travel on weekends because of school, so I'm weighing a Saturday routine or a day trip to Fuzhou against rehab closer to home.",
+   "tier": "t1",
+   "src": "calendar"
+  },
+  {
+   "text": "I'm planning a day trip to Fuzhou on 18 October to see the rehab centre, and it would help to bring a checklist of questions to ask.",
+   "tier": "t1",
+   "src": "calendar"
+  },
+  {
+   "text": "I'm going to Leeds for Christmas and Pickle can't fly while he's recovering. I need someone trustworthy in Xiamen who can look after a dog with spinal-surgery needs for about two weeks.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "Rehab costs on top of the surgery bill are a worry. I can spend roughly 6,000 RMB a month at most.",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "text": "I can't leave Pickle alone for more than four hours, so my weekends and Golden Week are built around him.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "My Mandarin covers menus and ordering beer, not contracts or medical documents, so I need things explained in English or very simple Chinese.",
+   "tier": "t0",
+   "src": "bio"
+  }
+ ],
+ "offers": [
+  {
+   "text": "Qualified English teacher (CELTA, PGCE) with experience teaching literature to Years 7 to 11. I can offer English conversation practice or help with essays and texts.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "Practical home setup for a dog recovering from spinal surgery: a padded recovery pen, foam ramps and a homemade support harness. I'm happy to share what worked.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "A WeChat account where about 40 school parents follow Pickle's recovery. I can ask in that circle for local pet-care contacts.",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "text": "A native English speaker's help with English-language materials, such as proofreading, a rehab centre's English intro, or an expat-facing pet-care guide.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I can write up Pickle's recovery as a clear English-language case log, covering what the surgeon advised and what progress to expect. It could help other IVDD dog owners in China.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "A Saturday five-a-side football game, and a pub afterwards, for anyone new to Xiamen.",
+   "tier": "t0",
+   "src": "bio"
+  },
+  {
+   "text": "A second-hand van that carries a dog crate comfortably, for weekend trips.",
+   "tier": "t1",
+   "src": "skill"
+  }
+ ],
+ "catchers": [
+  {
+   "hypo": "Hi, I run a small pet rehab clinic in Fuzhou. I could explain our package prices to an English speaker and hold a Saturday slot for a dog after spinal surgery.",
+   "can": "Tom can compare the three price lists with them, and book a first evaluation on a Saturday if the terms fit his budget.",
+   "confirm": "Do you offer hydrotherapy or underwater treadmill sessions for dogs after IVDD surgery, with a Saturday slot, and can you explain the package contents in English?",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "hypo": "I'm a vet nurse in Xiamen and I've helped dogs recover from back surgery. I can look at what rehab options exist locally.",
+   "can": "Tom can ask for a home-exercise plan or a local referral, and bring Pickle in on a weekend.",
+   "confirm": "Have you personally worked on post-operative rehabilitation for dogs with IVDD, in or near Xiamen?",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "hypo": "I'm a Mandarin speaker with a veterinary background. I can read pet clinic packages and tell you what 'session card' and 'first evaluation' usually mean.",
+   "can": "Tom's colleague Li Na already helps him with documents but lacks the vet vocabulary. A vet-literate translator would close that gap.",
+   "confirm": "Can you read a Chinese pet physio price list and explain in English which items are one-off fees and which are per session?",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "hypo": "I'm a dog lover in Xiamen who can house-sit over Christmas. I've looked after a dog on crate rest before.",
+   "can": "Tom could introduce them to Pickle and arrange a trial visit before he flies to Leeds on 23 December.",
+   "confirm": "Are you able to keep a post-surgery dog on strict crate rest, and be present for most of the day, for around two weeks in late December?",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "hypo": "My dog has just had back surgery and I'm panicking. What did you do in the first weeks?",
+   "can": "Tom can talk through the early weeks with them, including the recovery pen, ramps, harness and crate rest.",
+   "confirm": "Is your dog currently recovering from spinal or disc surgery, rather than a minor injury?",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "hypo": "I just moved to Xiamen for a school job and don't know anyone. Is there a casual weekend football group?",
+   "can": "Tom can invite them to Saturday five-a-side on the school astro pitch, and the pub afterwards.",
+   "confirm": "Do you want a friendly, low-skill weekend game and are you fine with a team that mostly loses?",
+   "tier": "t0",
+   "src": "bio"
+  },
+  {
+   "hypo": "I'm an international school teacher in China planning a trip to Leeds and I'd like a local to show me round.",
+   "can": "Tom's sister Becca lives in Leeds and organises things, so he could ask her for local advice on restaurants and logistics.",
+   "confirm": "Are you travelling to Leeds, and is what you need local advice rather than a place to stay?",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "hypo": "I teach English literature and am designing a role-play trial for 'An Inspector Calls'. Do you have ideas for classroom activities?",
+   "can": "Tom is running a role-play trial of the Birling family with his Year 10 class and can swap materials and ideas.",
+   "confirm": "Are you teaching 'An Inspector Calls' or a similar class-and-guilt text to teenagers?",
+   "tier": "t0",
+   "src": "project"
+  }
+ ],
+ "forbids": [
+  {
+   "text": "I can't leave Xiamen on weekdays, so any trip has to fit a weekend.",
+   "tier": "t0"
+  },
+  {
+   "text": "Pickle can't be left alone for more than four hours.",
+   "tier": "t1"
+  },
+  {
+   "text": "I won't put Pickle in airline cargo, and he can't fly at all while he is recovering.",
+   "tier": "t1"
+  },
+  {
+   "text": "I need everything explained in English or very simple Chinese. I can't handle Chinese contracts or technical documents alone.",
+   "tier": "t0"
+  },
+  {
+   "text": "My rehab budget is roughly 6,000 RMB a month at most.",
+   "tier": "t2"
+  }
+ ],
+ "projects": [
+  {
+   "name": "Pickle recovery plan",
+   "text": "My dachshund had IVDD back surgery in August. The surgeon recommends hydrotherapy twice a week for at least eight weeks. I'm looking for a workable rehab setup, in Xiamen or a weekend-friendly option in Fuzhou.",
+   "roles_needed": [
+    "canine rehab physio",
+    "vet-literate Chinese-English translator",
+    "pet sitter for crate-rest dog",
+    "dog owner who has been through IVDD recovery"
+   ],
+   "tier": "t1"
+  }
+ ],
+ "policy": {
+  "t1": "What rehab was recommended, where I have looked, the price-list confusion, my weekend availability, and my Christmas pet-care need.",
+  "t2": "The cost of the surgery, my monthly rehab budget and the money strain.",
+  "never": "Family arguments, and how lonely I sometimes feel."
+ },
+ "id": "a0227",
+ "host_agent": "ChatGPT",
+ "owner_display": "Tom Hargreaves",
+ "city": "Xiamen",
+ "world_sha256": "048c29ae2dc9518e6033baf8cc45be6c0077a03f7e45ceac9a0c907c3a9c3e7d"
+}

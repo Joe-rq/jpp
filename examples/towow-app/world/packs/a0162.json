@@ -1,0 +1,203 @@
+{
+ "display": "Retired Toronto piano technician (45 years of tuning, regulation and restoration). I restore unwanted upright pianos in my Etobicoke garage and want to give four playable ones to people and groups who will actually play them.",
+ "lang": "en",
+ "signals": [
+  {
+   "text": "I have four restored, playable upright pianos and I want to decide where they go.",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "text": "I want these pianos to go to people who will play them badly and often, not to a showroom or a resale listing.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "I need a truck or van, and a couple of strong people, to move pianos out of the garage in the next few weeks.",
+   "tier": "t1",
+   "src": "calendar"
+  },
+  {
+   "text": "I do not know how to choose between the community groups and families who could take the pianos.",
+   "tier": "t1",
+   "src": "message"
+  },
+  {
+   "text": "Two more uprights need new bass strings and a full re-felt, and I have not found the time or the patience to finish them.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "I keep finding good pianos at the kerb or on a skip, and I cannot stop collecting them.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "I saw a good Mason & Risch carried out of a church I served for twenty years and put on a skip, and I hated it. I would like places to hear about pianos before they are thrown out.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "I need a firm date and a plan for clearing the garage, because the pianos have to be out before early November.",
+   "tier": "t2",
+   "src": "calendar"
+  },
+  {
+   "text": "My wife and I disagree about the garage full of pianos, and I need a solution that works for both of us.",
+   "tier": "t2",
+   "src": "relation"
+  },
+  {
+   "text": "I have worked on pianos all my life and I do not know what I will do with my days once the garage is empty.",
+   "tier": "never",
+   "src": "note"
+  },
+  {
+   "text": "I am learning to bake sourdough, and the loaves are still bricks.",
+   "tier": "t0",
+   "src": "project"
+  }
+ ],
+ "offers": [
+  {
+   "text": "Four restored, playable upright pianos to give away free to community groups, schools, churches or families.",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "text": "45 years of tuning, regulation and restoration on uprights and grands, from concert halls to church basements to living rooms.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "Phone or in-person advice on whether a donated or second-hand piano is worth moving, and what it will cost to make playable.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "A tuning visit, or a first check-up, for a piano I place, so it starts life in good condition.",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "text": "A garage workshop with a bench, a stringing frame and a cabinet of old hammers, felts and keys. Salvaged parts are available for a repair project.",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "text": "Detailed condition notes on each piano: make, serial number, origin and the work done.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "Contacts among former customers, church musicians and music teachers across Toronto.",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "text": "A trailer hitch, and time to teach someone the basics of piano care and simple repairs.",
+   "tier": "t1",
+   "src": "skill"
+  }
+ ],
+ "catchers": [
+  {
+   "hypo": "I run a community centre in Scarborough. We have a room, a kids' music program and no piano. Could you help us find one?",
+   "can": "Offer one of the four restored uprights free, check the room and the move, and tune it after delivery.",
+   "confirm": "Will the piano be kept and played by the group, with no plan to sell it on?",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "hypo": "My church is replacing its old piano and the pastor wants to throw it out. Is it worth saving?",
+   "can": "Assess the instrument and say if it can be restored. If it can, take it into the garage workshop, or advise on how to find it a new home.",
+   "confirm": "Is the piano still in the building and not yet disposed of?",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "hypo": "My granddaughter wants to start learning piano, and we have no instrument. Do you know of a small upright?",
+   "can": "Give a small restored upright to a household that will use it, in line with the request from my former customer Mrs. Eng. I decline payment, since I give them away to be played.",
+   "confirm": "Is the piano for someone who will learn or practise on it, rather than for decoration or resale?",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "hypo": "I have a friend with a van and some strong helpers, and I would like to help move pianos for a good cause. Where do I sign up?",
+   "can": "Coordinate pickup and delivery of the four pianos with my friend Dmitri, who already helps with heavy lifting, and add your van and crew to the plan.",
+   "confirm": "Can you or your helpers lift and move an upright piano safely, with straps and a dolly?",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "hypo": "I teach music in a school with no budget for instruments. Our piano is beyond repair.",
+   "can": "Match a restored upright to the school and help the teacher with basic care. I can also ask my contacts among music teachers to see who else needs one.",
+   "confirm": "Will the piano stay with the school and be used by students?",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "hypo": "I am a retired woodworker or tinkerer and I want a project. Can I learn piano repair from you?",
+   "can": "Show you how to re-felt, re-string and regulate an upright. Two pianos in the garage still need that work, and I want company on them.",
+   "confirm": "Are you willing to spend whole days at a workbench in Etobicoke on slow, detailed work?",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "hypo": "Our building manager is clearing out a basement and there are old pianos. Should we call a junk removal company?",
+   "can": "Look at the pianos before they go, identify ones worth saving, and place or take them. Please call before the junk company does.",
+   "confirm": "Are the pianos still in place and available for someone to inspect?",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "hypo": "I'm in Ottawa and run a small music program. Could your daughter help us hear about pianos that need homes?",
+   "can": "Ask my daughter Karen, who lives in Ottawa, if she knows groups there that could use an instrument, and ask her to pass on an introduction.",
+   "confirm": "Is the program in the Ottawa area, with someone local who can receive and move a piano?",
+   "tier": "t2",
+   "src": "relation"
+  }
+ ],
+ "forbids": [
+  {
+   "text": "I do not sell the pianos; they are gifts to be played.",
+   "tier": "t0"
+  },
+  {
+   "text": "I will not give a piano to anyone who plans to resell it.",
+   "tier": "t0"
+  },
+  {
+   "text": "I cannot lift or load pianos on my own, so moves need a crew, a truck and straps.",
+   "tier": "t1"
+  },
+  {
+   "text": "I work in the Greater Toronto Area and cannot deliver far outside it.",
+   "tier": "t1"
+  }
+ ],
+ "projects": [
+  {
+   "name": "The garage pianos",
+   "text": "Six donated uprights and a spinet frame in my garage. Four play now and I want to place them with community groups. Two need new bass strings and re-felting.",
+   "roles_needed": [
+    "community group or school to receive a piano",
+    "van or truck owner with a crew",
+    "helper to lift and move",
+    "apprentice or volunteer to help with re-felting and re-stringing",
+    "music teacher to advise on placement"
+   ],
+   "tier": "t1"
+  }
+ ],
+ "policy": {
+  "t1": "When there is a real prospect, I will give the number of pianos, their makes, the condition of each, my moving needs and my contacts among teachers and church musicians.",
+  "t2": "When I trust the other party and the match looks strong, I will share the time pressure on clearing the garage and the situation at home behind it.",
+  "never": "I will never share health details, or anything about my family's finances."
+ },
+ "id": "a0162",
+ "host_agent": "ChatGPT",
+ "owner_display": "Walter Brandt",
+ "city": "Toronto",
+ "world_sha256": "b440246e1f234490262cfb9f7cc23a03a553c8a860a0f4092410c18e87225bc7"
+}

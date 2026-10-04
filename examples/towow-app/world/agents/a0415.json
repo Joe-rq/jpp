@@ -1,0 +1,142 @@
+{
+ "id": "a0415",
+ "host_agent": "Gemini",
+ "lang": "en",
+ "owner": {
+  "display_name": "Daniel Kariuki",
+  "city": "Nairobi",
+  "age_band": "45-50",
+  "occupation": "Small-batch rose-water distiller (former chemistry teacher)"
+ },
+ "world": {
+  "bio": "I taught secondary-school chemistry for sixteen years, then left the lab and built a 200-litre steam still in my garage in Ruiru. Now I make rose water, small batches, bottled by hand. I'm obsessive about what goes in: I measure the pH, check the colour, smell every batch. I coach my son's under-14 football team on weekends.",
+  "skills_assets": [
+   "Sixteen years of secondary-school chemistry teaching",
+   "A 200-litre stainless steel steam still built to my own spec in a Ruiru garage",
+   "Distillation know-how: temperature control, cut points, hydrosol quality checks",
+   "A small customer list of about forty regular buyers in Nairobi",
+   "Basic lab glassware and a pH meter"
+  ],
+  "projects": [
+   {
+    "name": "Rose-water batches",
+    "status": "进行中",
+    "text": "My still runs two days a week at most because market roses are sprayed with who-knows-what and I won't put that in rose water. I've bought roses from three different stalls in Wakulima market and every time the smell is faintly chemical. I keep a notebook of which stall, which day, what the petals felt like."
+   },
+   {
+    "name": "Land title dispute",
+    "status": "进行中",
+    "text": "My family land in my home county is under dispute: a cousin claims part of the plot. Court dates keep getting pushed. It's a slow, tiring thing and I don't talk about it much."
+   }
+  ],
+  "notes": [
+   {
+    "date": "2026-09-10",
+    "text": "Ran a batch this morning with the Naivasha roses from the usual stall. Smelled the first fraction and something was off, a faint chemical edge. Threw out the whole batch. 40 litres of petals, gone. I won't sell it."
+   },
+   {
+    "date": "2026-09-12",
+    "text": "Son's team lost 3-1 on Saturday. He played well, though. He asked me after the match why I'm always smelling things. I said because the nose knows. He rolled his eyes."
+   },
+   {
+    "date": "2026-09-14",
+    "text": "Rereading 'Decolonising the Mind'. Ngũgĩ writes that language carries a whole way of seeing, and I thought about how in the lab we taught chemistry in English to children who think in Kikuyu. Old thoughts."
+   },
+   {
+    "date": "2026-09-17",
+    "text": "Went to Wakulima market again. Asked a stall owner how often they spray. He laughed and said 'weekly, otherwise they die'. I bought a small bunch anyway for my wife. I can't make rose water out of it but I can put it in a vase."
+   },
+   {
+    "date": "2026-09-19",
+    "text": "Court date moved again, third time. Lawyer says November now. I told my wife I'm fine. I'm not fine, but I've decided not to carry it into the garage."
+   },
+   {
+    "date": "2026-09-22",
+    "text": "Weekly check of the still: the condenser has a small leak, a drip every few seconds. Fixed it with a new gasket. Cost 300 shillings. The relief of a small repairable problem."
+   },
+   {
+    "date": "2026-09-25",
+    "text": "Two regular customers asked if I have more stock. I have eleven bottles. Told them next month. There's a shortage of clean petals, not of demand."
+   },
+   {
+    "date": "2026-09-28",
+    "text": "Weekend: football practice, then home. I made tea, sat in the garage and watched the still cool. There's a stillness there that I can't find anywhere else."
+   },
+   {
+    "date": "2026-10-02",
+    "text": "Wrote a list of what I'd need for a proper supply: roses with a spray record, ideally. I have no idea where such a thing exists. Ended up adding 'ask Mary' (my wife's cousin who works in horticulture)."
+   }
+  ],
+  "messages": [
+   {
+    "date": "2026-09-11",
+    "with": "Wife Grace",
+    "text": "Grace: How was the batch?\nMe: Bad. The roses were sprayed.\nGrace: You're too fussy, Daniel.\nMe: Fussy is why they buy from me."
+   },
+   {
+    "date": "2026-09-16",
+    "with": "Customer Wanjiru",
+    "text": "Wanjiru: Do you have the 250ml bottles in stock?\nMe: Eleven left. I'm waiting on clean petals.\nWanjiru: Take your time, quality matters."
+   },
+   {
+    "date": "2026-09-21",
+    "with": "Lawyer Mutua",
+    "text": "Mutua: The hearing is now 12 November.\nMe: Again?\nMutua: Yes. The judge is on leave."
+   },
+   {
+    "date": "2026-09-29",
+    "with": "Son Brian",
+    "text": "Brian: Dad, can we practise penalties on Saturday?\nMe: Yes, but you're in goal first.\nBrian: Unfair."
+   }
+  ],
+  "calendar": [
+   {
+    "date": "2026-09-26",
+    "event": "Football match, under-14, Thika Road"
+   },
+   {
+    "date": "2026-10-03",
+    "event": "Still maintenance, check condenser"
+   },
+   {
+    "date": "2026-10-10",
+    "event": "Wakulima market, test two new stalls"
+   },
+   {
+    "date": "2026-11-12",
+    "event": "Land title hearing"
+   }
+  ],
+  "relations": [
+   {
+    "who": "Wife Grace",
+    "about": "Teacher; supports the business but thinks I'm fussy."
+   },
+   {
+    "who": "Mary (Grace's cousin)",
+    "about": "Works in horticulture, may know growers."
+   },
+   {
+    "who": "Customer Wanjiru",
+    "about": "Regular buyer, spa owner."
+   }
+  ],
+  "constraints": [
+   "Won't use petals from unknown spraying practices",
+   "Still capacity is two days a week at best",
+   "Small working capital, no big purchases",
+   "Time on weekends goes to football"
+  ],
+  "sensitive": [
+   "Land dispute with a cousin",
+   "Money is tight when batches fail",
+   "Fear that the business is too small to matter"
+  ]
+ },
+ "disclosure_policy": {
+  "t0_public": "Small-batch rose-water distiller in Nairobi, a former chemistry teacher.",
+  "t1_after_signal": "Batch sizes, the quality problem with market roses, still schedule.",
+  "t2_after_trust": "Money worries and family land dispute.",
+  "never": "Court documents and personal finances."
+ }
+}

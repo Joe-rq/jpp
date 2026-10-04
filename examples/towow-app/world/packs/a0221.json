@@ -1,0 +1,229 @@
+{
+ "display": "Newtown jazz guitarist and teacher who plays in a few bands, tours around Australia, and has a Superhost spare room on Airbnb.",
+ "lang": "en",
+ "signals": [
+  {
+   "text": "I'm looking for someone reliable in Newtown or the inner west who can do Airbnb changeovers at short notice while I'm on tour.",
+   "tier": "t1",
+   "src": "message"
+  },
+  {
+   "text": "I'm away on a Melbourne tour from Thursday 8 October, and the spare room will sit empty while I'm gone.",
+   "tier": "t1",
+   "src": "calendar"
+  },
+  {
+   "text": "I need a venue and a PA for a student recital on 14 November. Church halls in Enmore are my first choice.",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "text": "I'm finishing my debut album with Monday Ghosts. Mixing is in October, mastering in November, and I'll press 300 vinyl in Melbourne.",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "text": "The album budget is $14,000 and I've raised about $9,500, so I'm still short on the pressing costs.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "One bad cleanliness review could cost me Superhost status. The hosting income pays a big part of my rent, so I need the room's quality to stay dependable.",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "text": "Money is tight. If my rating slips I'll have to find about $450 a month from somewhere.",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "text": "I can't be home on tour weekends, so I'd like a way to check the room's condition remotely or have someone check it for me.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "I want to build up my weekly teaching income and get more adult beginners, because those lessons are the part of my work I love most.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "I'm tired of playing wedding gigs just to cover rent and would like more paid work that is actual jazz.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "I want to improve how I protect myself on loud gigs, and I'd like to hear from other touring musicians about what works.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "I find it hard to explain playing behind the beat on purpose to people who weren't in the room, so I'd like to talk it through with a listener or writer.",
+   "tier": "t0",
+   "src": "note"
+  }
+ ],
+ "offers": [
+  {
+   "text": "I'm a jazz guitarist with ten years of gigging in Sydney and Melbourne and a Berklee online diploma. I can play sessions, support slots and live gigs.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I teach guitar to twelve students a week from my front room in Newtown at $60 an hour, from nine-year-olds to people in their sixties, including adult beginners.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I own a 1978 Ibanez semi-hollow and a Gibson ES-175 reissue, both in good order, and can bring either to a session.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I run a wedding and event quartet and can play a five-hour set with a mix of standards and requests.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "My Newtown spare room has a queen bed, a shared ensuite and a 4.9-star Superhost listing. It suits visiting musicians or touring acts, and it's free when I'm not touring.",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "text": "I share a 2012 Toyota HiAce with my bassist for touring, and I know the Melbourne, Adelaide and Byron gig circuits.",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "text": "I'm part-way through self-funding a debut album: crowdfunding, a Marrickville studio, and vinyl pressing in Melbourne. I can share what I've learned about each step.",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "text": "I have experience running a recital for students of mixed ages and abilities, and I can coach nervous first-time performers.",
+   "tier": "t0",
+   "src": "bio"
+  }
+ ],
+ "catchers": [
+  {
+   "hypo": "Hi, I'm a bass player visiting Sydney for a few weeks and need a cheap place to stay near the Newtown gig scene. Do you know anyone with a room?",
+   "can": "I can offer my spare room on the nights I'm away, or point them to local venues and musicians.",
+   "confirm": "Are you a touring or visiting musician who needs a short stay in Sydney's inner west?",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "hypo": "I'm 40 and have wanted to play guitar since I was a teenager. I've never had a lesson. Is it too late to start?",
+   "can": "I can offer a first lesson with a simple song and a practice plan for adult beginners.",
+   "confirm": "Are you an adult with little or no guitar experience who wants regular weekly lessons in Newtown?",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "hypo": "We run a small church hall in Enmore and have a free Saturday in November. Would a student recital work for you?",
+   "can": "I can hold the recital there on 14 November, bring the students and their families, and bring or arrange a PA.",
+   "confirm": "Is your hall in or near Enmore, available in mid-November, and able to seat around 40 to 60 people?",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "hypo": "I run a small PA hire business in the inner west. Does anyone you know need gear for a community event?",
+   "can": "I can hire a PA for my student recital and recommend you to other musicians I work with.",
+   "confirm": "Can you supply a PA and a sound person for a small hall in Sydney's inner west in November?",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "hypo": "I'm a bassist looking for a trio to play originals. I like jazz that sits behind the beat. Do you know of anyone?",
+   "can": "I can introduce them to Tom, my bassist, who has played with me for ten years, or recommend other players in the Sydney jazz scene.",
+   "confirm": "Do you play jazz bass or drums and want to work on original material rather than standards?",
+   "tier": "t0",
+   "src": "relation"
+  },
+  {
+   "hypo": "I do short-notice cleaning and laundry for Airbnb hosts in Newtown and Marrickville and have openings in October. Do you need anyone?",
+   "can": "I'd book you for the weeks I'm on tour and for the changeovers I need covered.",
+   "confirm": "Are you in the inner west, available on a few days' notice, and able to supply references from other hosts?",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "hypo": "I've started a small pressing run for my own record. Can you tell me about vinyl plants in Melbourne?",
+   "can": "I can share what I've found about pressing costs, lead times and artwork requirements.",
+   "confirm": "Are you a self-funded artist planning a short vinyl run of a few hundred copies?",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "hypo": "I've been on the road for years and my ears are suffering. What do other musicians do to keep playing?",
+   "can": "I can talk through my own experience with moulded earplugs and the advice I've been given.",
+   "confirm": "Are you a working musician asking about hearing protection on stage?",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "hypo": "I'm a Superhost with a small spare room and I'm worried about a bad review. How do I protect my rating?",
+   "can": "I can swap notes on changeover routines and cleaning checklists.",
+   "confirm": "Are you a small Airbnb host in Sydney, dealing with cleaning consistency while you're away?",
+   "tier": "t2",
+   "src": "note"
+  }
+ ],
+ "forbids": [
+  {
+   "text": "I won't take Sunday wedding gigs after October.",
+   "tier": "t0"
+  },
+  {
+   "text": "I'm not available to check the room in person on tour weekends.",
+   "tier": "t1"
+  },
+  {
+   "text": "I won't change the listing price during tour weeks.",
+   "tier": "t1"
+  },
+  {
+   "text": "I don't take on cleaning or changeover help that can't give reliable short-notice cover.",
+   "tier": "t1"
+  },
+  {
+   "text": "I won't share my health details or anything about my past relationships.",
+   "tier": "t0"
+  }
+ ],
+ "projects": [
+  {
+   "name": "Monday Ghosts debut album",
+   "text": "A ten-song original jazz trio album recorded in Marrickville, with six tracks done. Mixing is in October, mastering in November, and vinyl pressing in Melbourne.",
+   "roles_needed": [
+    "mixing engineer",
+    "mastering engineer",
+    "graphic designer for the sleeve",
+    "vinyl pressing contact",
+    "publicist"
+   ],
+   "tier": "t0"
+  },
+  {
+   "name": "Student recital",
+   "text": "A recital on 14 November for students aged 9 to 61, with parents and friends in the audience. It needs a venue in Enmore and a PA.",
+   "roles_needed": [
+    "venue host",
+    "PA and sound operator",
+    "photographer or videographer"
+   ],
+   "tier": "t0"
+  }
+ ],
+ "policy": {
+  "t1": "I'll share my tour dates, when the room is empty, and that I need reliable short-notice cleaning while away.",
+  "t2": "Once trust is established, I'll talk about the Superhost review risk and how much the rent depends on the hosting income.",
+  "never": "I won't share details about my ex-partner or any health records."
+ },
+ "id": "a0221",
+ "host_agent": "Muse",
+ "owner_display": "Callum Reyes",
+ "city": "Sydney",
+ "world_sha256": "082875cc20fe719b0046a22b886db91f8173410369ad5c373a1732d303d27a82"
+}

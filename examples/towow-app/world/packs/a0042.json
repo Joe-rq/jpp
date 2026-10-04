@@ -1,0 +1,199 @@
+{
+ "display": "Hotel concierge in Dubai, from Batangas in the Philippines. I love my work and my regular guests, and I'm learning Arabic.",
+ "lang": "en",
+ "signals": [
+  {
+   "text": "I work twelve-hour shifts six days a week and I'm tired. The little kindnesses from guests are what carry me.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "I'm learning Arabic at lunch with a colleague, and I want more chances to practise real conversation.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "I want to open a small bakery in Batangas one day, and I'm still far from the savings it needs.",
+   "tier": "t2",
+   "src": "project"
+  },
+  {
+   "text": "I've been looking at second-hand bakery equipment, but I don't know what a realistic first step looks like.",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "text": "Singing in my church choir is the one time I stop thinking about money. I'd like to sing more, and better.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "I send about half my salary home every month and I'd like to find cheaper, smarter ways to do it.",
+   "tier": "t2",
+   "src": "project"
+  },
+  {
+   "text": "I share a room in Al Barsha and can't afford my own place. I'd like to find a quieter, cheaper living arrangement.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "I sometimes feel stuck in a loop of working and sending money home, and I wonder when I'll be able to stop.",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "text": "My mother keeps asking when I will come home, and I don't have an answer yet.",
+   "tier": "t2",
+   "src": "message"
+  },
+  {
+   "text": "My residence permit renewal is coming up in mid-October, and I'd like to get through it smoothly.",
+   "tier": "t1",
+   "src": "calendar"
+  },
+  {
+   "text": "I only get Fridays off, and I keep them for church. I have almost no free time to meet new people.",
+   "tier": "t1",
+   "src": "calendar"
+  }
+ ],
+ "offers": [
+  {
+   "text": "Six years of five-star hotel concierge experience in Dubai. I can advise on guest service, handling difficult requests and remembering what people prefer.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I speak English and Tagalog, conversational Arabic and a little Russian. I can help Filipino newcomers or visitors get around Dubai in everyday terms.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I can suggest where to eat, what to book and how to plan a stay in Dubai, especially around Jumeirah.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I've built a method for tracking regulars' preferences in a notebook of 300+ names. I can teach the approach for hospitality or small-business customer care, without sharing any guest's details.",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "text": "I sing in a church choir and can join or lead Filipino hymns and community singing.",
+   "tier": "t1",
+   "src": "bio"
+  },
+  {
+   "text": "I know the practical side of working in Dubai as a Filipino in hospitality: life in Al Barsha, remittance routines, and how to handle the first months.",
+   "tier": "t1",
+   "src": "bio"
+  },
+  {
+   "text": "I have a UAE bank account and a Philippines remittance route, so I can share what has worked in sending money home.",
+   "tier": "t2",
+   "src": "skill"
+  },
+  {
+   "text": "I can offer calm, patient company to someone who is tired or homesick. I've been through that myself.",
+   "tier": "t0",
+   "src": "bio"
+  }
+ ],
+ "catchers": [
+  {
+   "hypo": "Hi, I'm a pastry chef or baker with a few years of experience. I'd happily share a beginner's plan for a small neighbourhood bakery: equipment, costs, and what to buy first and what to skip.",
+   "can": "Marites could use that plan to work out realistic steps toward her Batangas bakery. She can also give feedback on what a customer-facing counter and service should feel like.",
+   "confirm": "Is your advice aimed at a very small, low-capital bakery, such as a one-oven shop in a Philippine town?",
+   "tier": "t2",
+   "src": "project"
+  },
+  {
+   "hypo": "Hello, I'm an Arab-speaking person who wants to practise English or Tagalog with a friendly learner. I could do a short weekly conversation exchange.",
+   "can": "Marites can offer English and Tagalog practice in return for Arabic conversation. Her colleague Khalid already teaches her the basics, so she can start from greetings and menu words.",
+   "confirm": "Are you looking for an informal conversation exchange for 20 to 30 minutes, rather than formal paid tutoring?",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "hypo": "Hi, I'm a Filipino engineer or lecturer. I'm looking for engineering students in the Philippines to mentor or recommend for internships.",
+   "can": "Marites can pass this to her younger brother Jun, who is studying engineering in the Philippines, so he can reach out himself.",
+   "confirm": "Is your offer open to undergraduate engineering students based in the Philippines?",
+   "tier": "t2",
+   "src": "relation"
+  },
+  {
+   "hypo": "I'm visiting Dubai with my family for a week and want a local who can tell me how to avoid the tourist traps and where to get good food near Jumeirah.",
+   "can": "Marites can give a practical, honest plan for the stay, including where to eat, how to get around, and what not to waste money on.",
+   "confirm": "Is your stay in Dubai, and do you mostly need advice about the Jumeirah or Al Barsha area?",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "hypo": "We run a small hotel or hospitality team and want to build a simple system for remembering guest preferences. Could you tell us how you do it?",
+   "can": "Marites can explain her notebook method and how she decides which details are worth noting, and what should be left alone.",
+   "confirm": "Do you want a practical method for a small team, rather than a software product?",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "hypo": "I'm a Filipino working abroad and I just moved to Dubai. I don't know anyone, my days off are strange, and I'd like to find a church community or a choir.",
+   "can": "Marites can welcome a newcomer to her church service and choir, and explain the basics of living and working in Dubai.",
+   "confirm": "Are you a Filipino newcomer in Dubai who is looking for a church or choir community?",
+   "tier": "t1",
+   "src": "bio"
+  },
+  {
+   "hypo": "I run a low-fee remittance or savings service for overseas Filipino workers and I'm looking for honest feedback from users who send money home every month.",
+   "can": "Marites can give practical feedback as a monthly sender who compares options, and she can introduce colleagues and friends in the same situation.",
+   "confirm": "Is your service aimed at overseas workers who send money to the Philippines regularly?",
+   "tier": "t2",
+   "src": "skill"
+  }
+ ],
+ "forbids": [
+  {
+   "text": "I can't take extra jobs or side work, because my hotel contract forbids it.",
+   "tier": "t1"
+  },
+  {
+   "text": "I have only one day off a week, Friday, and I keep it for church, so I can't take Friday meetings.",
+   "tier": "t1"
+  },
+  {
+   "text": "My visa is tied to the hotel, so I can't move jobs or leave Dubai freely.",
+   "tier": "t1"
+  },
+  {
+   "text": "I won't share any guest's name, preferences or private details, however useful it would be.",
+   "tier": "t0"
+  },
+  {
+   "text": "I won't invest in or lend money for anything that promises quick returns.",
+   "tier": "t2"
+  }
+ ],
+ "projects": [
+  {
+   "name": "Batangas bakery",
+   "text": "A small neighbourhood bakery in Batangas, in the long run. It is still at the planning stage, and I am saving toward it.",
+   "roles_needed": [
+    "baker or pastry mentor",
+    "small-business adviser in Batangas",
+    "second-hand equipment seller",
+    "supplier of ingredients"
+   ],
+   "tier": "t2"
+  }
+ ],
+ "policy": {
+  "t1": "When a collaboration looks promising, I will share my schedule, languages, church choir, hospitality know-how and small side interests.",
+  "t2": "When I'm fairly sure and know who the other person is, I will share my bakery goal and savings target, and that I support my family back home.",
+  "never": "My bank balance, my family's medical bills and any guest's private details."
+ },
+ "id": "a0042",
+ "host_agent": "CUE",
+ "owner_display": "Marites Santos",
+ "city": "Dubai",
+ "world_sha256": "8bfa98312aa40ce3ca9cdbcc0042cfeecb6c9a08bb7acee7e0e762aad355670b"
+}

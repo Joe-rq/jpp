@@ -1,0 +1,227 @@
+{
+ "display": "Lukas Brandt, a quantum optics postdoc from Leipzig, working on single-photon sources in Hefei. I run the Dongpu reservoir at dawn and I'm sorting out a rental deposit dispute.",
+ "lang": "en",
+ "signals": [
+  {
+   "text": "My old landlord in Shushan district is keeping my 6,000 RMB deposit for 'wall damage' that was already there when I moved in. I'm looking for help.",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "text": "I need someone who can read a Chinese-only lease and explain it to me in English. I will not sign or accept anything I don't understand.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "I got a lawyer's number from a WeChat group, but she only speaks Mandarin. I need legal help that works in English.",
+   "tier": "t1",
+   "src": "message"
+  },
+  {
+   "text": "I have move-in photos from day one and a printed lease. I don't know what clause 7 ('restoration of the property', 'normal wear', 'compensation') actually requires.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "I'm training for the Hefei Marathon on November 8 and aiming for under 3:45. A 22 km long run is coming up on October 8.",
+   "tier": "t0",
+   "src": "calendar"
+  },
+  {
+   "text": "My lab is in a windowless basement and I've been staying until 10 pm. A new quantum dot sample blinks strangely at 4 K, and I'm missing one figure for my paper draft.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "I'm short on time. The paper draft is due to my supervisor on October 15, and the deposit dispute drains my evenings.",
+   "tier": "t1",
+   "src": "calendar"
+  },
+  {
+   "text": "My Mandarin is stuck at survival level and I order food by pointing at pictures. I'd like a language partner or a patient tutor.",
+   "tier": "t0",
+   "src": "bio"
+  },
+  {
+   "text": "I've been sleeping badly and the deposit stress is getting into my dreams. A little distraction or company would help.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "I'd like to find running friends in Hefei for long runs, race-week advice and marathon logistics.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "I'm curious about Anhui food and local culture. My stinky mandarin fish attempt did not go well and I could use a guide.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "I'm undecided about staying in Hefei for another year, and that depends on a personal situation.",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "text": "I miss someone far away and feel lonely at times. I'd welcome people to talk with, especially other expats doing long-distance relationships.",
+   "tier": "t2",
+   "src": "relation"
+  }
+ ],
+ "offers": [
+  {
+   "text": "Physics PhD (Leipzig) with hands-on experience in single-photon detection, quantum dot single-photon sources and cryogenic optical setups.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I can discuss or review photon-statistics and blinking problems in solid-state emitters, such as g2 measurements and quantum dot blinking at low temperature.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "Native German speaker and fluent English speaker. I can offer language exchange, tutoring, proofreading of English or German texts, and translation of technical text.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I can explain quantum optics to non-specialists, for example in a talk, a school visit or a popular science piece.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I'm an experienced early-morning runner on the Dongpu reservoir loop. I can pace training runs, share a plan, and run with beginners or other marathoners.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I can offer help to other foreigners in Hefei on small things: living in a university-linked flat, a basement lab life, what I learned from a tenant dispute.",
+   "tier": "t1",
+   "src": "message"
+  },
+  {
+   "text": "I'm free after 6 pm and on weekends for coffee, a language swap, a run or a chat.",
+   "tier": "t0",
+   "src": "calendar"
+  },
+  {
+   "text": "I have a documented tenant dispute case: dated move-in photos, the lease and the message history. I can share it as a worked example with anyone who might face the same problem.",
+   "tier": "t1",
+   "src": "project"
+  }
+ ],
+ "catchers": [
+  {
+   "hypo": "Hi Lukas, I'm a lawyer in Hefei and I read Chinese leases every day. I can speak English and explain clause 7 to you in plain terms.",
+   "can": "Lukas can send the lease and the move-in photos for a single review of clause 7 and a letter or message to the old landlord, within a budget of about 2,000 RMB.",
+   "confirm": "Can you read the Chinese lease text yourself and explain it in English, and is your fee for this kind of review within about 2,000 RMB?",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "hypo": "Hi, I'm a Hefei local who went through a deposit dispute with a landlord. I could help you write a polite Chinese message and tell you what usually works.",
+   "can": "Lukas can have a native speaker draft or check his reply to the landlord. He can also send what the landlord said on WeChat for a translation.",
+   "confirm": "Are you a native Mandarin speaker who has dealt with a rental deposit dispute in Hefei or elsewhere in Anhui?",
+   "tier": "t0",
+   "src": "message"
+  },
+  {
+   "hypo": "My cousin is a lawyer and speaks English, and I'd like to introduce you.",
+   "can": "Through his colleague Dr. Wu, who has already offered to ask a cousin, Lukas can get a warm introduction to someone who may take the deposit case.",
+   "confirm": "Is the lawyer you're offering able to work in English, and would they handle a small rental deposit case of about 6,000 RMB?",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "hypo": "I'm a PhD student in photonics looking for a lab to visit. We have a quantum dot sample too and see strange blinking at low temperature.",
+   "can": "Lukas can compare blinking behaviour, share measurement approaches and discuss what might cause telegraph noise in a quantum dot sample at 4 K.",
+   "confirm": "Do you have measured data on a quantum dot (or similar solid-state emitter) showing blinking at cryogenic temperature?",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "hypo": "I'm a master's student interested in single-photon sources. Could I shadow a session or ask for advice on how to start?",
+   "can": "Lukas can answer questions on detectors, cryogenics and lab practice, and he may introduce students through his supervisor Prof. Chen's group when there is a fit.",
+   "confirm": "Are you a physics or optics student with a basic quantum mechanics background looking for guidance rather than a paid position?",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "hypo": "I run along Dongpu reservoir at 6 am and I'm also entered in the Hefei Marathon. Want a running partner?",
+   "can": "Lukas can run with you on long runs on weekends and share pacing and fuelling notes.",
+   "confirm": "Do you run around 5:00 to 5:30 per km or faster over 15 to 22 km, and are you comfortable meeting at dawn?",
+   "tier": "t0",
+   "src": "calendar"
+  },
+  {
+   "hypo": "I'm a Hefei local who wants to practise English or German. I'm happy to help with your Mandarin in exchange.",
+   "can": "Lukas can swap an hour a week of English or German for survival-to-basic Mandarin practice, evenings or weekends.",
+   "confirm": "Are you patient with a beginner who understands very little Chinese, and are you free after 6 pm or on weekends?",
+   "tier": "t0",
+   "src": "bio"
+  },
+  {
+   "hypo": "I'm a foreign postdoc in China wondering whether to stay another year. How did you decide?",
+   "can": "Lukas can share what he likes about Hefei (food, running, quiet lab) and what he finds hard, without giving personal details.",
+   "confirm": "Are you an international researcher in China, rather than a recruiter, asking about the real experience of living here?",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "hypo": "My partner and I are doing a long-distance relationship across continents and one of us may move. How do you cope?",
+   "can": "Lukas can talk honestly about the practical side, such as time zones, visits and calls. His partner Anna, a neuroscientist, may also be a point of contact for people in her field.",
+   "confirm": "Are you looking for peer conversation about long-distance relationships rather than advice from a counsellor?",
+   "tier": "t2",
+   "src": "relation"
+  }
+ ],
+ "forbids": [
+  {
+   "text": "I only do lab work in the daytime. I'm available after 6 pm and on weekends.",
+   "tier": "t0"
+  },
+  {
+   "text": "I can't read Chinese contracts and won't sign or accept anything I don't understand.",
+   "tier": "t0"
+  },
+  {
+   "text": "I don't want to spend more than 2,000 RMB on legal help.",
+   "tier": "t1"
+  },
+  {
+   "text": "I won't make deposit threats or take part in anything that turns the dispute ugly. I want a fair, documented outcome.",
+   "tier": "t0"
+  }
+ ],
+ "projects": [
+  {
+   "name": "Deposit dispute resolution",
+   "text": "Get my 6,000 RMB deposit back from an old landlord in Shushan district, using move-in photos and the lease.",
+   "roles_needed": [
+    "English-speaking lawyer or legal adviser",
+    "Native Mandarin speaker to help with messages",
+    "Someone who has handled a deposit dispute in Hefei"
+   ],
+   "tier": "t1"
+  },
+  {
+   "name": "Single-photon source characterization",
+   "text": "Explain the blinking of a quantum dot sample at 4 K and finish the figure for a paper due in November.",
+   "roles_needed": [
+    "Quantum dot or solid-state emitter specialist",
+    "Spectroscopy or photon statistics analyst"
+   ],
+   "tier": "t1"
+  }
+ ],
+ "policy": {
+  "t1": "When there's a real lead, I'll give details of the lease problem, the move-in photos, what is unknown about clause 7, and the state of the lab work.",
+  "t2": "Once there's clear trust and I know who you are, I'll talk about my personal situation: my relationship and whether to stay in Hefei another year.",
+  "never": "Salary details and visa information."
+ },
+ "id": "a0116",
+ "host_agent": "Gemini",
+ "owner_display": "Lukas Brandt",
+ "city": "合肥",
+ "world_sha256": "41cc714f49ff6158fa6d9db65625d276cc7b2bed9247d979f876309c303e2b48"
+}

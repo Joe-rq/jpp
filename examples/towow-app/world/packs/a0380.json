@@ -1,0 +1,224 @@
+{
+ "display": "Pharmacist and owner of an independent pharmacy in the Annex, Toronto. I offer MedsCheck medication reviews for seniors.",
+ "lang": "en",
+ "signals": [
+  {
+   "text": "I'm looking for a health-sciences student who wants to learn the profession properly and stay, not someone treating the job as a short stop.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "The student assistant position at my pharmacy is open: paid, flexible hours, with real teaching.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "I'd like more seniors who take three or more medications to come in for a MedsCheck review, but I have no time for outreach.",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "text": "I'm renovating the back room into a quiet consultation space and the contractor keeps slipping. I could use a reliable contractor or project-manager perspective.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "The counter is chaotic right now and the team is swamped without an extra pair of hands.",
+   "tier": "t2",
+   "src": "message"
+  },
+  {
+   "text": "I've been tired for weeks and I'm running on little slack.",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "text": "Cash flow is tight while the renovation drags on.",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "text": "I'd like to find ways to cut the paperwork load so I can spend more time on conversations with patients.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "I'm training for a half-marathon and happiest when I'm running; I'd welcome running partners or club contacts in Toronto.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "Neighbours keep asking me about their pets' medications, and I only do people. I wonder who I could point them to.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "I'd like to share duplicate-prescription catches with local doctors in a smoother way than ad hoc phone calls.",
+   "tier": "t1",
+   "src": "message"
+  },
+  {
+   "text": "I want safer checking steps for blister-pack preparation so tired staff are less likely to make errors.",
+   "tier": "t2",
+   "src": "note"
+  }
+ ],
+ "offers": [
+  {
+   "text": "MedsCheck medication reviews, funded by the province, for seniors on three or more medications. I look for duplicated or conflicting prescriptions.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "Licensed Ontario pharmacist with 22 years of experience, certified to give injections including vaccines.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "Blister-pack medication packaging for retirement residences and home-living seniors.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "Small-scale pharmacy compounding.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "A paid, mentored placement where a health-sciences student learns pharmacy practice at the counter, with the experience of supervising pharmacy students.",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "text": "Working relationships with neighbourhood family doctors and a visiting nurse program, so I can route a senior's concern to the right clinician.",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "text": "A consultation room in the pharmacy for private one-on-one conversations (a second quiet room is being built).",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "text": "Explaining medications in plain language to seniors and their families, face to face.",
+   "tier": "t0",
+   "src": "bio"
+  }
+ ],
+ "catchers": [
+  {
+   "hypo": "Hi, I'm helping my 78-year-old mother in the Annex. She takes about six pills a day from two different doctors and has started feeling dizzy. Who can review everything together?",
+   "can": "Book a free MedsCheck review, check the full medication list for overlaps and interactions, and contact the prescribing doctors if something doubles up.",
+   "confirm": "Does the senior live in Ontario, take three or more regular medications, and have a health card, and can they or a family member visit the pharmacy in person?",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "hypo": "I'm a second-year health-sciences student looking for a part-time job in a community pharmacy where I'd learn something real, and I plan to stay at least a couple of years.",
+   "can": "Offer the open paid, flexible student assistant position and teach them properly on the job.",
+   "confirm": "Are they a health-sciences or pharmacy-track student who can commit to staying for a year or more and can work around class hours in Toronto?",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "hypo": "I run a home-care or visiting-nurse program and many of our clients are confused about their medications. Is there a pharmacist who could partner with us?",
+   "can": "Provide MedsCheck reviews and blister-pack packaging for those clients, coordinated with the visiting nurse program I already work with.",
+   "confirm": "Are the clients seniors in or near central Toronto who could be served by a pharmacy visit or delivery within pharmacy opening hours?",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "hypo": "I'm a family doctor and I keep finding that patients get overlapping prescriptions from different specialists. Can a pharmacist help catch these early?",
+   "can": "Flag duplicates found in medication reviews directly to the prescriber, as I already do with a neighbourhood doctor who asked me to send them all.",
+   "confirm": "Is the prescriber in the Toronto area and willing to take calls or faxes from the pharmacy about specific prescription changes?",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "hypo": "I'm a pharmacy technician looking for a stable shop with a small team, where I can work with a pharmacist who cares about getting things right.",
+   "can": "Pass the contact to my senior technician, who has ten years with the shop and can say whether the team needs one more person, or consider them if budget allows.",
+   "confirm": "Is the person a certified or registered pharmacy technician in Ontario who is looking for a long-term role, not a short-term fill?",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "hypo": "I'm a community organizer for a seniors' group in Toronto. Could a pharmacist give a short talk on medication safety at our centre?",
+   "can": "Offer a short medication-safety talk or drop-in MedsCheck sign-up, scheduled outside pharmacy hours.",
+   "confirm": "Can the event happen outside the pharmacy's opening hours, in person, in downtown Toronto?",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "hypo": "I run a half-marathon training group on Saturdays along the lake and we have room for another runner at a steady pace.",
+   "can": "Join the training group and possibly bring other runners from the neighbourhood.",
+   "confirm": "Does the group train in Toronto at a pace suited to someone preparing for a half-marathon, and at times that don't clash with pharmacy hours?",
+   "tier": "t0",
+   "src": "calendar"
+  },
+  {
+   "hypo": "I'm a general contractor or renovation project manager and I can take on a small stalled commercial renovation in a shop.",
+   "can": "Talk with them about taking over or supporting the back-room consultation space, if the schedule and cost are workable.",
+   "confirm": "Do they work in Toronto, handle small retail or healthcare interior renovations, and have capacity to start within a few weeks?",
+   "tier": "t2",
+   "src": "project"
+  }
+ ],
+ "forbids": [
+  {
+   "text": "I will not hire someone who treats the job as temporary.",
+   "tier": "t1"
+  },
+  {
+   "text": "I cannot close the pharmacy during opening hours for events or meetings.",
+   "tier": "t0"
+  },
+  {
+   "text": "I prefer face-to-face contact with patients and do not offer remote-only medication reviews.",
+   "tier": "t0"
+  },
+  {
+   "text": "I only treat people as patients and cannot advise on animal medications.",
+   "tier": "t0"
+  },
+  {
+   "text": "The budget for part-time help is limited, so I can't offer high pay.",
+   "tier": "t1"
+  },
+  {
+   "text": "I will not share patient names, records or any personal medical information.",
+   "tier": "t0"
+  }
+ ],
+ "projects": [
+  {
+   "name": "MedsCheck outreach",
+   "text": "Bring more eligible seniors into free MedsCheck reviews so duplicated or conflicting medications are caught earlier, through word of mouth and local partners.",
+   "roles_needed": [
+    "community organizer for seniors",
+    "family doctor or clinic partner",
+    "home-care or visiting-nurse coordinator",
+    "volunteer or student helper for outreach"
+   ],
+   "tier": "t1"
+  },
+  {
+   "name": "Student pharmacy assistant position",
+   "text": "A paid, flexible, mentored position for a health-sciences student who wants to learn community pharmacy and stay for the long run.",
+   "roles_needed": [
+    "health-sciences student",
+    "campus career or placement office contact"
+   ],
+   "tier": "t1"
+  }
+ ],
+ "policy": {
+  "t1": "When there's a real lead, I can share details of the open student assistant position (paid, flexible hours, long-term commitment wanted), the MedsCheck partnership options, and my working relationships with local doctors and nurses.",
+  "t2": "Once trust is established and the counterpart is clear, I can share that staffing is stretched, that I'm tired, and that renovation cash flow is tight.",
+  "never": "Patient names and records, and any personal medical information."
+ },
+ "id": "a0380",
+ "host_agent": "Muse",
+ "owner_display": "Margaret Chen",
+ "city": "Toronto",
+ "world_sha256": "0e2e441858d9aeb66df416592b5f0a846a17384378a1a2526e884a431c5806bb"
+}

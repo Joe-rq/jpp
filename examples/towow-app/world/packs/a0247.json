@@ -1,0 +1,223 @@
+{
+ "display": "Specialty coffee roaster and café owner in Mangwon-dong, Seoul.",
+ "lang": "en",
+ "signals": [
+  {
+   "text": "I'm looking for a good caffeine-free drink to serve after 7pm, and I can't find one I like.",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "text": "After 7pm about half my customers order decaf or nothing. The decaf I can buy tastes flat and papery, like cardboard.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "I've done 40 test batches re-roasting barley and hojicha on my drum roaster. The 'lighter' barley is the best result so far. Hojicha turns smoky above 170°C, so the sweet spot is narrow.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "I roast grain on the same drum as my coffee, so the roaster smells of toast for a day afterwards. I need a way to separate the two.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "A wholesale customer asked me for a new decaf. I don't have one I'm happy to sell him.",
+   "tier": "t1",
+   "src": "message"
+  },
+  {
+   "text": "Customers and my barista keep asking whether we have anything non-coffee at night.",
+   "tier": "t1",
+   "src": "message"
+  },
+  {
+   "text": "A condenser unit from the apartment above drips onto my roastery ceiling. The third notice to the building owner got no reply, and I've already lost two bags of green beans to moisture. There's a meeting with the owner on 16 Oct.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "I'm learning film photography on a borrowed Pentax K1000. Most frames come out blurry because of manual focus, but a few are perfect.",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "text": "I'd like to meet people who work with roasted grains, tea or other non-coffee things that can be roasted.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "My experiment budget is capped at KRW 500,000, so I need cheap ways to test ideas.",
+   "tier": "t1",
+   "src": "bio"
+  },
+  {
+   "text": "I've been bored at the roaster lately, when I used to rush to it. I wonder if I still love coffee.",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "text": "The café's margins are thin and I pay myself very little.",
+   "tier": "t2",
+   "src": "bio"
+  }
+ ],
+ "offers": [
+  {
+   "text": "Q-grader certified with eight years in specialty coffee, five of them roasting. I can cup and score samples and give honest sensory feedback.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "A library of about 200 logged roast curves in Artisan, plus detailed roast notes from 40 barley and hojicha test batches. I can help design roast profiles for coffee or grain.",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "text": "A 5kg drum roaster in Mangwon-dong. I can do small-batch test roasts on non-roast days.",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "text": "Wholesale to six cafés in Mapo and Yeonnam. I can give a good product a path to other cafés in that area.",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "text": "An eleven-seat café with an espresso machine, a pour-over bar and a retail wall of beans. I can host small tastings, tester evenings or pop-ups.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "About 4,800 Instagram followers and a mailing list of 600, mostly local and coffee-minded.",
+   "tier": "t0",
+   "src": "bio"
+  },
+  {
+   "text": "Good English and Korean and basic Japanese. I grew up in California and moved back to Seoul to start the roastery.",
+   "tier": "t0",
+   "src": "bio"
+  },
+  {
+   "text": "I can tell you honestly how customers react to a new drink, because I serve it at the bar and watch.",
+   "tier": "t1",
+   "src": "project"
+  }
+ ],
+ "catchers": [
+  {
+   "hypo": "Hi, I make roasted barley or hojicha in small lots and want a café to test it as a latte or cold drink. Can you roast or brew it and tell me what you think?",
+   "can": "Run small test batches, brew them at the bar, log the curves and report back on flavor and customer reaction.",
+   "confirm": "Is the product a roasted grain or tea that you can send as a sample of 1kg or less?",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "hypo": "I source decaf green coffee in small lots, using Swiss Water or sugarcane EA processing. Would you cup samples and maybe buy?",
+   "can": "Cup the samples as a Q-grader, give lot-level scores and honest notes, and buy if one works for the evening menu and the wholesale customer.",
+   "confirm": "Can you supply decaf green coffee in lots under 60kg with sample roasts available to cup first?",
+   "tier": "t1",
+   "src": "message"
+  },
+  {
+   "hypo": "I run a café in Seoul and want to serve a caffeine-free evening drink that doesn't feel like a compromise. Have you solved this?",
+   "can": "Share what I've learned about roasting grain and tea, and trade notes on evening menus.",
+   "confirm": "Do you serve the drink in a café or bar, rather than selling a packaged product?",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "hypo": "I'm a beginner with a manual-focus film camera and most of my shots are blurry. Want to go on a photo walk in Seoul and learn zone focusing together?",
+   "can": "Join the 24 Oct walk. Through Minho, a photographer friend who already teaches me zone focus, I can pass on technique.",
+   "confirm": "Are you a beginner with a manual film camera, and free for a weekend walk in Seoul?",
+   "tier": "t0",
+   "src": "relation"
+  },
+  {
+   "hypo": "I'm a photographer who shoots film and wants to show a few small prints somewhere that isn't a gallery. Does your café have wall space?",
+   "can": "Offer the café wall for a small print display, and introduce the work to my Instagram followers and mailing list.",
+   "confirm": "Are the prints small enough, around A4 or less, to hang on a café wall?",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "hypo": "I run a café in Mapo or Yeonnam and want a small roaster with consistent profiles who delivers locally.",
+   "can": "Supply wholesale beans roasted to a logged curve, with a cupping before the first order.",
+   "confirm": "Is your café in Seoul, and would you buy at least a few kilos a week?",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "hypo": "I roast tea or grain on a single-drum coffee roaster and the smell carries over. How do you handle cleaning and scheduling?",
+   "can": "Share my cleaning approach and my plan to keep grain days separate from coffee days.",
+   "confirm": "Do you use one drum for both coffee and non-coffee roasting?",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "hypo": "I can't sleep if I have coffee, but I still want something good to drink in the evening in Seoul. Where can I go?",
+   "can": "Invite them to taste the evening menu tests, such as barley tea lattes and hojicha affogato, and ask for feedback.",
+   "confirm": "Can you get to Mangwon-dong after 7pm, and do you avoid caffeine entirely at night?",
+   "tier": "t0",
+   "src": "message"
+  },
+  {
+   "hypo": "I've been in a craft for years and lately it feels flat, though it used to be all I wanted. Have you been there?",
+   "can": "Talk as a peer about getting restless in a craft and what has helped, such as side experiments and a new medium.",
+   "confirm": "Do you work in a hands-on craft like food, drink or making, and want a peer to talk with rather than formal counselling?",
+   "tier": "t2",
+   "src": "note"
+  }
+ ],
+ "forbids": [
+  {
+   "text": "The evening menu must be caffeine-free, so I won't serve a caffeinated drink as the evening option.",
+   "tier": "t0"
+  },
+  {
+   "text": "I won't sell or serve a product I'm not satisfied with, even if the customer says 'whatever is fine'.",
+   "tier": "t0"
+  },
+  {
+   "text": "I can't roast grain and coffee on the same day without cleaning the drum.",
+   "tier": "t1"
+  },
+  {
+   "text": "Roast days are fixed by wholesale orders, so I can't take meetings or calls on those days.",
+   "tier": "t0"
+  },
+  {
+   "text": "My experiment budget is KRW 500,000, so I can't fund expensive equipment or large minimum orders.",
+   "tier": "t1"
+  },
+  {
+   "text": "I'm based in Seoul and can't commit to in-person work elsewhere.",
+   "tier": "t0"
+  }
+ ],
+ "projects": [
+  {
+   "name": "Evening menu experiment",
+   "text": "Building a caffeine-free evening menu for the café: roasted barley tea lattes, hojicha affogato and a chilled roasted grain drink. It needs better decaf or grain ingredients and a way to roast grain without affecting the coffee drum.",
+   "roles_needed": [
+    "roasted grain or tea supplier",
+    "decaf green coffee sourcer",
+    "small roaster with spare capacity",
+    "menu or drink developer",
+    "evening tasters"
+   ],
+   "tier": "t1"
+  }
+ ],
+ "policy": {
+  "t1": "When there is a real lead, I'll share the evening decaf problem, the barley and hojicha roast experiments with curves and notes, the wholesale channel, the café space and my experiment budget and constraints.",
+  "t2": "Once the match is strong and I know who they are, I'll talk about the café's thin margins and my doubts about whether I still love coffee.",
+  "never": "Anything about my family."
+ },
+ "id": "a0247",
+ "host_agent": "Gemini",
+ "owner_display": "Daniel Park",
+ "city": "Seoul",
+ "world_sha256": "01c5365ab9b6d7f1b13bf9a648a49f41778e8b648d2c7dc13a3034a599e18760"
+}

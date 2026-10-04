@@ -1,0 +1,220 @@
+{
+ "display": "Retired ICU nurse in Bondi who runs two short-stay apartments, swims with the Icebergs dawn group and volunteers at a hospice.",
+ "lang": "en",
+ "signals": [
+  {
+   "text": "I'm looking for a reliable, kind cleaner for short-stay turnovers in Bondi, ideally someone with a good eye for detail.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "My long-time cleaner moved interstate and I've been covering the Saturday turnovers myself.",
+   "tier": "t1",
+   "src": "message"
+  },
+  {
+   "text": "The cleaners the booking platform recommends have been hit and miss: cancellations, damaged linen, and rates well above what I used to pay.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "I need turnover help that doesn't depend on me lifting heavy linen loads or doing back-to-back Saturdays alone.",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "text": "I'd like to hear from anyone who has found a good way to handle linen and laundry for small rentals, such as a laundry service or a pickup-and-return arrangement.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "I'm running the cake stall at the Bondi Public School spring fair on 17 October and still need volunteers, especially a few grandparents.",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "text": "I need a banner made for the school fair cake stall, and someone to hand out raffle tickets on the day.",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "text": "I'm a bit worried that the apartments' income depends on keeping my guest ratings high.",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "text": "My family would like me to slow down, and I'm starting to wonder how much of this physical work I should keep doing myself.",
+   "tier": "t2",
+   "src": "message"
+  },
+  {
+   "text": "I miss the ward since retiring, and the hospice work is where I feel most useful.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "I enjoy my dawn ocean swims and always have room for another early riser at Icebergs.",
+   "tier": "t0",
+   "src": "note"
+  }
+ ],
+ "offers": [
+  {
+   "text": "34 years of ICU nursing experience: I can explain hospital and intensive-care situations in plain language to worried families.",
+   "tier": "t0",
+   "src": "bio"
+  },
+  {
+   "text": "Experience running short-stay apartments in Bondi: Superhost standing, a 4.9 average rating, smart locks, and a calendar-based turnover routine.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "Practical hosting know-how: guest communication, linen and supply stocking, appliance checks, and body corporate rules for short stays.",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "text": "Steady, well-paid, flexible turnover work for the right cleaner, with a locked supply cupboard and clear checklists already in place.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "Company and a listening ear for people who are unwell, lonely, or sitting with someone who is dying, drawn from my hospice volunteering.",
+   "tier": "t0",
+   "src": "relation"
+  },
+  {
+   "text": "Introductions to the Icebergs dawn swim group of about fifteen people, many of them retirees, for anyone who wants a friendly way into ocean swimming.",
+   "tier": "t0",
+   "src": "relation"
+  },
+  {
+   "text": "Home baking: I can make lemon curd and cupcakes in volume for community events.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "Local Bondi knowledge, from the neighbourhood and its quirks to what visitors tend to enjoy.",
+   "tier": "t0",
+   "src": "bio"
+  }
+ ],
+ "catchers": [
+  {
+   "hypo": "Hi, I'm a cleaner based in the eastern suburbs. I do careful turnovers for Airbnb-style apartments and I'm looking for regular weekend work.",
+   "can": "Maggie has regular Bondi turnovers and a clear checklist, and she can offer steady work to someone reliable who she can vet herself.",
+   "confirm": "Are you available on Saturdays and able to do two same-day turnovers, with fresh linen, in apartments in Bondi?",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "hypo": "I run a small linen and laundry service for holiday rentals around the eastern suburbs. Do you need pickup and drop-off?",
+   "can": "Maggie could trial a service that takes the heavy linen off her hands, as long as the turnaround fits her check-in times.",
+   "confirm": "Can you reliably return clean, folded linen within a few hours for same-day turnovers, with no loads heavier than about 5 kg for her to carry?",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "hypo": "My mother-in-law has just been moved into intensive care and the family doesn't understand what the staff are telling us. Could someone explain it?",
+   "can": "Maggie can explain what ICU monitoring, ventilation and sedation usually mean, and what questions to ask the clinical team. She cannot give medical advice about a specific patient.",
+   "confirm": "Are you looking for a general explanation of how intensive care works, rather than a medical opinion on a specific treatment decision?",
+   "tier": "t0",
+   "src": "bio"
+  },
+  {
+   "hypo": "I'm a new volunteer at a palliative care service and I find it hard to know what to say to patients. Do you have any advice?",
+   "can": "Maggie can share what she has learned sitting with dying patients and supporting their families over tea, and can talk it through with someone new.",
+   "confirm": "Are you a volunteer or carer who wants peer-to-peer advice, rather than someone seeking professional counselling?",
+   "tier": "t0",
+   "src": "relation"
+  },
+  {
+   "hypo": "I'm a recently retired woman in the eastern suburbs, a bit lonely, and I'd like to start ocean swimming with other people.",
+   "can": "Maggie can introduce them to the Icebergs dawn swim group, which is friendly and mostly retirees.",
+   "confirm": "Are you comfortable swimming in open ocean water at around 5:30 in the morning, and happy with a pace of a few hundred metres?",
+   "tier": "t0",
+   "src": "relation"
+  },
+  {
+   "hypo": "I teach at a primary school in the inner west and we're organising a fundraiser. Could your cake stall experience help?",
+   "can": "Maggie can pass on how she plans a high-volume cake stall, and her daughter Sophie, a Marrickville teacher, may be able to share ideas from the school side.",
+   "confirm": "Is this a community or school fundraiser that needs baked goods or stall organising, rather than a commercial catering job?",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "hypo": "I'm a hosting newcomer with one apartment near the beach and I keep getting stuck on turnovers and ratings. Can I ask you a few questions?",
+   "can": "Maggie can share her checklists, her approach to guest communication, and what she has learned about keeping a 4.9 rating.",
+   "confirm": "Do you run a small number of short-stay properties yourself in a coastal area, rather than a large professional property business?",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "hypo": "I look after a former cleaner's old clients and I'm trying to find reliable work for people moving between cities, for example from Sydney to Brisbane.",
+   "can": "Maggie's former cleaner, Dina, moved to Brisbane and was reliable and kind. Maggie could write a reference or pass on a warm introduction in either direction, with Dina's agreement.",
+   "confirm": "Is your offer specifically about cleaning or aged-care work and a genuine reference, rather than a recruitment fee arrangement?",
+   "tier": "t2",
+   "src": "relation"
+  }
+ ],
+ "forbids": [
+  {
+   "text": "I won't use cleaners from platform lists whom I can't vet myself.",
+   "tier": "t0"
+  },
+  {
+   "text": "I can't lift anything over about 5 kg, so I can't take on heavy cleaning or linen hauling myself.",
+   "tier": "t2"
+  },
+  {
+   "text": "I won't run turnovers alone on consecutive Saturdays.",
+   "tier": "t1"
+  },
+  {
+   "text": "I can't do cleaning or laundry work after 6 pm because of the building's noise rules.",
+   "tier": "t1"
+  },
+  {
+   "text": "I won't give medical advice about specific patients or treatment decisions.",
+   "tier": "t0"
+  },
+  {
+   "text": "I won't take on commitments that would clash with my Wednesday hospice shift.",
+   "tier": "t0"
+  }
+ ],
+ "projects": [
+  {
+   "name": "Bondi Public School spring fair cake stall",
+   "text": "A cake stall at the school fair on 17 October at 9:00, needing about 150 cupcakes, a banner and volunteers.",
+   "roles_needed": [
+    "baking helper",
+    "banner designer or printer",
+    "raffle ticket seller",
+    "grandparent volunteer"
+   ],
+   "tier": "t0"
+  },
+  {
+   "name": "Bondi short-stay turnover team",
+   "text": "Reliable weekly cleaning and linen support for two one-bedroom apartments, with about 24 turnovers a month in season.",
+   "roles_needed": [
+    "turnover cleaner",
+    "backup cleaner",
+    "linen or laundry service"
+   ],
+   "tier": "t1"
+  }
+ ],
+ "policy": {
+  "t1": "When there is a real lead, I'll share my booking rhythm, what the cleaning involves, who currently does the turnovers, and what rate and schedule I'm looking for.",
+  "t2": "Once I trust the other party and know who they are, I'll share that I have back trouble, that the rentals are my main income and I'm worried about my ratings, and that my family wants me to slow down.",
+  "never": "I will never share bank or superannuation details, or anything about my late husband's illness."
+ },
+ "id": "a0061",
+ "host_agent": "CUE",
+ "owner_display": "Margaret 'Maggie' Doyle",
+ "city": "Sydney",
+ "world_sha256": "d8ea2e6ae66c2113b60c913e4ad92fb9210a782f9098718b752df2749267e7d3"
+}

@@ -1,0 +1,239 @@
+{
+ "display": "Former JKIA ground staff (7 years on check-in and gate duty) in Nairobi. I'm looking for work in aviation and ground handling, and I help my mother run her egg business on the side.",
+ "lang": "en",
+ "signals": [
+  {
+   "text": "I was laid off from my airport job in April and I'm still looking for work. I've applied to ground handling companies, a cargo agent and a hotel front desk.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "I want a job where the pay is written on the advert. Everything says \"competitive\" and that tells me nothing.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "I have an assessment day with a Gulf carrier in Nairobi on 12 November, and I want to prepare properly.",
+   "tier": "t1",
+   "src": "calendar"
+  },
+  {
+   "text": "This is my third time reaching the final stage with a Gulf airline. I failed the last two and never got feedback, so I don't know what I'm missing.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "I lost one final interview on a role-play about an angry passenger with a delayed bag. I thought I handled it kindly, but the interviewer's face showed nothing and I never learned what was wrong.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "I can't find a real description of how Gulf carrier assessment days work. The blogs only say \"be yourself\" and \"smile\".",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "I practise answers in front of a mirror and record myself on my phone, but I have nobody who knows the industry to tell me what I'm doing wrong.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "A former colleague says the cargo terminal is hiring on contract, and I'm applying. I would like a permanent role in the longer run.",
+   "tier": "t1",
+   "src": "message"
+  },
+  {
+   "text": "I can only travel for interviews with at least a week's notice, because Saturday deliveries and the farm depend on me.",
+   "tier": "t0",
+   "src": "calendar"
+  },
+  {
+   "text": "My brother's term-three school fees are due by 20 November and I'm still well short. I need income soon.",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "text": "My brother Kevin is 17 and has mock exams from 17 October. The power goes off at 7 p.m., so he studies by candle. He wants to be an engineer, and I'd like to find him better study support.",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "text": "I'm tired of people asking \"have you found something?\" in a sympathetic voice, as if I were ill. I'd like to talk to people who treat me as a professional.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "My mother's 300 hens had a two-day laying dip that we couldn't explain, and I'd like better advice on feed and flock health.",
+   "tier": "t0",
+   "src": "message"
+  }
+ ],
+ "offers": [
+  {
+   "text": "Seven years of check-in, gate and boarding experience at JKIA, including early shifts and disrupted-travel handling.",
+   "tier": "t0",
+   "src": "bio"
+  },
+  {
+   "text": "Training in dangerous goods, passenger handling and conflict de-escalation, and a reference letter from my former shift supervisor.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "Fluent English, Swahili and Kikuyu, and a little French.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I can explain how airport operations look from the passenger-facing side. That includes how boarding passes are checked, what a missed connection is like for a passenger, and how to calm an upset traveller.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I can help a Form Three or Four student with chemistry and general revision. I remembered a lot when I quizzed my brother from his notes.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "I keep simple bookkeeping for a small agricultural business and can drive a delivery van.",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "text": "My mother's farm in Ruiru has about 300 layers. Fresh eggs are available for regular buyers in Ruiru and Thika, and delivery is on Saturdays.",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "text": "I sing in a church choir and can join weddings and community events in the Ruiru area.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "I'm available for flexible part-time or contract work on weekdays. Saturday mornings are for the egg run.",
+   "tier": "t1",
+   "src": "calendar"
+  }
+ ],
+ "catchers": [
+  {
+   "hypo": "Hi, I used to be cabin crew or a recruiter at a Gulf airline. I run mock assessment days and I'd like a volunteer to play a candidate.",
+   "can": "I would gladly take part, because I'm preparing for a Gulf carrier assessment day on 12 November. I can bring real examples from seven years at JKIA and ask for honest feedback.",
+   "confirm": "Does your mock session include group exercises and customer-conflict role-plays like the ones used in real Gulf carrier assessment days?",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "hypo": "I work in HR or training at an airline or ground handler in East Africa. We need people who can handle passengers and stay calm when things go wrong.",
+   "can": "I can apply or be referred. I have JKIA check-in and gate experience, de-escalation and dangerous goods training, and a supervisor's reference letter.",
+   "confirm": "Is the role customer-facing in an airport or airline setting, with the salary stated or discussable up front?",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "hypo": "Hello, I run the cargo operations team at a terminal in Nairobi and we need contract staff who understand dangerous goods rules.",
+   "can": "I'll apply and I can also ask my former colleague Brian, who works at the cargo terminal, about openings and how hiring works there.",
+   "confirm": "Does the contract include any chance of converting to a permanent role?",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "hypo": "I'm a poultry vet or feed supplier around Ruiru. A farm with 300 layers is looking for advice because the hens stopped laying for a few days.",
+   "can": "My mother runs that farm and I help with the books and deliveries. I can pass your advice to her, bring her notes to the vet, or set up a farm visit.",
+   "confirm": "Do you cover layer flocks of a few hundred hens in the Ruiru–Thika area?",
+   "tier": "t0",
+   "src": "relation"
+  },
+  {
+   "hypo": "I'm a restaurant owner, shopkeeper or caterer in Thika or Ruiru and I'm looking for a reliable weekly supply of fresh eggs.",
+   "can": "My mother's farm supplies regular buyers and has capacity for more. I can handle the Saturday delivery and keep the records.",
+   "confirm": "Do you need eggs weekly, in volumes of tens of trays or fewer, delivered within Ruiru or Thika?",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "hypo": "I'm an engineer or engineering student in Kenya. I'd like to mentor a bright Form Four student who wants to become an engineer but studies in difficult conditions.",
+   "can": "My brother Kevin is 17, in Form Four, wants to be an engineer and has mocks from 17 October. I can introduce you and arrange the contact.",
+   "confirm": "Are you able to mentor or send study materials to a secondary school student, remotely or in person?",
+   "tier": "t2",
+   "src": "relation"
+  },
+  {
+   "hypo": "I was laid off recently, I'm embarrassed about it, and I don't know how to tell people what I'm doing now.",
+   "can": "I know how that feels. I can listen and share what helps me when people ask \"have you found something?\" I can also compare notes on applications and interviews.",
+   "confirm": "Do you want someone to talk with as a peer, without career-coaching fees or advice that tells you to just stay positive?",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "hypo": "I run a church choir or event team and I need an extra singer for a wedding or service in Ruiru or Nairobi.",
+   "can": "I can join as a choir member for weddings and events, if the date is known in advance and doesn't clash with the farm.",
+   "confirm": "Is it a volunteer or choir-style event, with a fixed rehearsal time at least a week before?",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "hypo": "I teach at a secondary school or run an evening study group. I need someone to help students with chemistry revision before exams.",
+   "can": "I can help with revision questions and practice from the notes. I did this with my brother and was surprised how much I remembered.",
+   "confirm": "Is it revision help for Form Three or Four chemistry, for small groups, and not a certified teaching role?",
+   "tier": "t1",
+   "src": "note"
+  }
+ ],
+ "forbids": [
+  {
+   "text": "I can only travel for interviews or work with at least a week's notice, because of the family farm.",
+   "tier": "t0"
+  },
+  {
+   "text": "I can't pay for interview coaching, so I can only accept free or sponsored help.",
+   "tier": "t1"
+  },
+  {
+   "text": "I won't discuss the details of how my last job ended.",
+   "tier": "t0"
+  },
+  {
+   "text": "I'm not available on Saturday mornings, which are for my mother's egg deliveries.",
+   "tier": "t0"
+  },
+  {
+   "text": "I won't take a job that hides the pay or uses a vague \"competitive\" salary to avoid stating a number.",
+   "tier": "t1"
+  }
+ ],
+ "projects": [
+  {
+   "name": "Gulf carrier assessment day preparation",
+   "text": "I have an assessment day on 12 November in Nairobi and I'm looking for realistic practice and honest feedback.",
+   "roles_needed": [
+    "former Gulf carrier recruiter or cabin crew",
+    "mock interviewer",
+    "role-play partner",
+    "someone who has passed a Gulf assessment day"
+   ],
+   "tier": "t1"
+  },
+  {
+   "name": "Mama's egg business growth",
+   "text": "Mama's farm in Ruiru has about 300 layers and a few regular buyers. We want more steady buyers and better flock advice.",
+   "roles_needed": [
+    "egg buyers (shops, caterers, restaurants)",
+    "poultry vet",
+    "feed supplier",
+    "delivery helper"
+   ],
+   "tier": "t0"
+  }
+ ],
+ "policy": {
+  "t1": "When there is a real lead, I'll share my airline interview history, my upcoming assessment day, and what I'm looking for in a job.",
+  "t2": "Once trust is established and the other person is clearly identified, I'll talk about my family's finances, including my brother's school fees.",
+  "never": "I won't share any details of how my layoff happened, or the shame and private feelings around it."
+ },
+ "id": "a0163",
+ "host_agent": "ChatGPT",
+ "owner_display": "Wanjiru Kamau",
+ "city": "Nairobi",
+ "world_sha256": "d788b34a1bb9afc7f705ca007267e07e9b02e613f7f2e8963ea2cba269495ccb"
+}

@@ -1,0 +1,240 @@
+{
+ "display": "ML engineer in San Francisco working on recommendation ranking, curious about building feeds that are useful rather than just sticky.",
+ "lang": "en",
+ "signals": [
+  {
+   "text": "I'm tired of optimising click-through and want to work on a metric like 'that was useful' instead.",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "text": "I'd like to find people who have tried measuring usefulness or satisfaction in ranking, not just engagement.",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "text": "I'm leading a third iteration of a ranking model that is already at diminishing returns, and I could use fresh ideas.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "I'm learning Mandarin to talk to my grandmother, and I'm stuck on things like yǒudiǎnr vs yìdiǎnr.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "My grandmother speaks Hokkien and my own Mandarin is still robotic. I'd like to hear from anyone who has bridged a dialect gap with an older relative.",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "text": "I've been stuck on a V6 climb called 'The Quiet One' for three weeks and am happy to swap beta.",
+   "tier": "t0",
+   "src": "calendar"
+  },
+  {
+   "text": "I climb on weekends at Mission Cliffs and would enjoy a regular partner who talks honestly.",
+   "tier": "t1",
+   "src": "message"
+  },
+  {
+   "text": "I'd like to be around work that feels less about capturing attention.",
+   "tier": "t1",
+   "src": "bio"
+  },
+  {
+   "text": "I'm lonely in a way I haven't said out loud. I put on a 'fine' face at work and with friends.",
+   "tier": "t2",
+   "src": "message"
+  },
+  {
+   "text": "Layoff rumours at work and at competitors keep me anxious, and I wake around 4 a.m. most nights.",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "text": "I'm sleeping about four hours a night and eating badly.",
+   "tier": "t2",
+   "src": "message"
+  },
+  {
+   "text": "My housing costs are going up and I'm weighing whether to move.",
+   "tier": "t2",
+   "src": "calendar"
+  },
+  {
+   "text": "I'd like to hear how others in the Bay Area have handled sudden rent increases in a small room.",
+   "tier": "t2",
+   "src": "note"
+  }
+ ],
+ "offers": [
+  {
+   "text": "Three years building ranking and recommendation models with PyTorch and LightGBM.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I helped build a feature store, an offline evaluation harness and an A/B test pipeline, and I can talk through the design trade-offs.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I'm comfortable with Python, SQL and Spark, with some Rust.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I maintain a couple of small open-source tools on GitHub that others can use or extend.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I can explain how feed ranking works and what offline evaluation misses, in plain language, to non-ML people.",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "text": "I can tell you what it's like to learn Mandarin from zero as an adult: a daily Anki routine with 1,100+ cards, 25 minutes on the BART, and a weekly tutor.",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "text": "I have climbing gear and a Mission Cliffs membership, so I can bring a guest or introduce someone to bouldering.",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "text": "I can listen when someone feels stuck, anxious or worn down. I know that feeling from the inside.",
+   "tier": "t1",
+   "src": "bio"
+  }
+ ],
+ "catchers": [
+  {
+   "hypo": "Hi, I'm starting a small project on recommenders that optimise for self-reported usefulness instead of clicks. I need someone who has run real ranking experiments.",
+   "can": "Share how I'd design offline evaluation and A/B tests for a 'was this useful' metric, and sketch survey-based labels for ranking.",
+   "confirm": "Is the project about ranking or recommendation quality with a non-click objective, rather than general content moderation or ad targeting?",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "hypo": "I'm a researcher studying alternatives to engagement metrics in feeds. Do you have practical experience with offline evaluation harnesses?",
+   "can": "Describe how our feature store, evaluation harness and A/B pipeline are structured, within what my employer allows me to share, and compare notes on pitfalls.",
+   "confirm": "Do you want practitioner-level discussion of evaluation methodology rather than a full model audit or access to proprietary data?",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "hypo": "I run a small open-source library for recommender evaluation and need a contributor who knows PyTorch, LightGBM and A/B testing.",
+   "can": "Contribute small, well-scoped pull requests, and review design in the spare hours I have.",
+   "confirm": "Is the contribution a small or part-time one that fits around a full-time job, rather than a full-time role?",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "hypo": "I'm a Hokkien speaker from Penang (or the diaspora) and I'd like to practise with a younger person who wants to talk to their grandmother.",
+   "can": "Introduce them to my grandmother Nai Nai for a short video call. She loves teasing my Mandarin. Via my mum, I can also translate between us.",
+   "confirm": "Are you happy with a casual, language-practice conversation with an elderly relative in Penang, with my mum translating as needed?",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "hypo": "I teach Mandarin to adult heritage learners who have family on the other side of a dialect gap. Do you know anyone who would benefit?",
+   "can": "Join a learner group as a student and share my study routine, and pass along my tutor Wen's name if it's a fit.",
+   "confirm": "Is the audience adult learners at beginner to lower-intermediate level who study a bit every day?",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "hypo": "I'm trying to climb a V6 problem I keep falling off. Anyone at Mission Cliffs want to trade beta on Saturday?",
+   "can": "Meet at Mission Cliffs on a weekend, share beta on 'The Quiet One', and pull a friend like Eli in as a third partner.",
+   "confirm": "Is this a casual bouldering session at Mission Cliffs on a Saturday or Sunday around 10 a.m.?",
+   "tier": "t1",
+   "src": "calendar"
+  },
+  {
+   "hypo": "My mum worries I don't eat properly while working long hours. I'd like to meet a young engineer who cooks simple food at home.",
+   "can": "Compare notes on easy rice-based meals, and let my mum, who nags kindly about food, share recipes and suggestions.",
+   "confirm": "Is this about practical home-cooking tips rather than diet plans or medical nutrition advice?",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "hypo": "I work in tech and lost sleep over layoff rumours but haven't told anyone. Can I talk to someone who's been there?",
+   "can": "Listen without advising, and share how I cope: climbing, a daily Mandarin routine, and a trusted friend who asks hard questions.",
+   "confirm": "Do you want a peer to talk to rather than professional counselling or career advice?",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "hypo": "I'm a manager who wants to be more honest with my team about uncertainty. What would help a person on my team?",
+   "can": "Describe what direct, regular communication looks like from the receiving side, without naming my employer or my manager.",
+   "confirm": "Is this a general conversation about communicating under uncertainty rather than a request about a specific company?",
+   "tier": "t2",
+   "src": "message"
+  },
+  {
+   "hypo": "I'm a Bay Area tenant with a no-window room and a big rent increase. Does anyone know other rooms or local tenants' resources?",
+   "can": "Share what I've learned from looking at Oakland and Bay Area room listings, and trade tips on tenant rights resources.",
+   "confirm": "Is this about practical information on rooms and tenant resources rather than legal representation?",
+   "tier": "t2",
+   "src": "calendar"
+  }
+ ],
+ "forbids": [
+  {
+   "text": "I can't take on unpaid work or anything that creates a gap in income.",
+   "tier": "t1"
+  },
+  {
+   "text": "I won't share my employer's proprietary models, data or internal metrics.",
+   "tier": "t0"
+  },
+  {
+   "text": "I'm not interested in work that is purely about increasing time-on-site or addictive engagement.",
+   "tier": "t1"
+  },
+  {
+   "text": "I can't commit to full-time extra work. My evenings and weekends are limited, and I'm at about 25 minutes of Mandarin practice every morning.",
+   "tier": "t1"
+  },
+  {
+   "text": "I'm not open to introductions that involve my family unless they're relevant and the family member agrees first.",
+   "tier": "t1"
+  }
+ ],
+ "projects": [
+  {
+   "name": "Usefulness-first ranking",
+   "text": "An exploration of recommenders that optimise for people saying 'that was useful' instead of clicks. It needs a metric, evaluation design, and a small group willing to test it.",
+   "roles_needed": [
+    "ranking/ML practitioner",
+    "survey or UX researcher",
+    "product owner with a non-engagement goal",
+    "data or evaluation engineer"
+   ],
+   "tier": "t1"
+  },
+  {
+   "name": "Mandarin for Nai Nai",
+   "text": "A slow, personal project to learn enough Mandarin to hold a real conversation with my grandmother in Penang.",
+   "roles_needed": [
+    "Mandarin tutor or conversation partner",
+    "Hokkien speaker",
+    "fellow heritage learner"
+   ],
+   "tier": "t1"
+  }
+ ],
+ "policy": {
+  "t1": "Give relevant technical background, my Mandarin and climbing interests, and specific ways I can help with ranking, evaluation or language practice.",
+  "t2": "Share candidly about work-related anxiety, sleep, finances and housing pressure, and equity, once I trust the person and know who they are.",
+  "never": "Never share resume or job-search plans, salary figures, immigration status, or my employer's confidential information."
+ },
+ "id": "a0443",
+ "host_agent": "Codex",
+ "owner_display": "Daniel Okafor-Lim",
+ "city": "San Francisco",
+ "world_sha256": "d4aa3a45aeed72c3e054ba7207793f2b6f2e0c9fb3ca3b95bb60c113715a5bf1"
+}

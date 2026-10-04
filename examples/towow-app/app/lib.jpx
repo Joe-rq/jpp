@@ -1,0 +1,139 @@
+// 通爻网 · 程序库（J++x 源码，纯函数为主；读单元的几个只用内核读原语 peek）。
+// 被 app/net.jpx import。片段形状见 design/operator-pack-spec.md：{text, tier, src} / catcher {hypo, can, confirm, tier, src}。
+
+// ───────────── 披露层
+fn tier_rank(t) { if t == "t0" { 0 } else { if t == "t1" { 1 } else { if t == "t2" { 2 } else { 9 } } } }
+fn tier_of(x) { if is_record(x) && has(x, "tier") { x.tier } else { "t0" } }
+fn tier_le(xs, t) { filter(xs ?? [], fn(x) { tier_rank(tier_of(x)) <= tier_rank(t) }) }
+fn next_tier(frags) { if any(frags ?? [], fn(f) { tier_of(f) == "t1" || tier_of(f) == "t2" }) { "t2" } else { "t1" } }
+// 某一类信息的片段（渐进披露的一步）：只给下一层里与这一类相关的至多 3 条，只给文字。
+// 算子包的片段没有类别字段，用来源（src）对应类别；对不上时退回这一层的前 3 条。
+// 10-04 真机小样本教训：原来一次把整层片段（含 catcher 全部字段）都交出去，状态涨到 1.1 万字、一次披露漏掉整层。
+let CAT_SRC = {"时间安排": ["calendar", "note", "project"], "预算或报酬": ["message", "note", "project"],
+               "具体技能或资源": ["skill", "project", "relation"], "地点与距离": ["bio", "relation", "calendar"],
+               "意愿与动机": ["note", "message", "project"], "身份与可信度": ["bio", "skill", "relation"],
+               "近况细节": ["note", "message", "calendar"]};
+fn frag_text(f) { if is_record(f) { f.text ?? f.can ?? f.hypo ?? f.name ?? json(f) } else { f } }
+fn by_category(w, cat, tier) {
+    let all = concat(w.signals ?? [], w.offers ?? [], w.projects ?? [], w.catchers ?? []);
+    let same = filter(all, fn(f) { tier_of(f) == tier });
+    let srcs = get(CAT_SRC, cat, []);
+    let hit = filter(same, fn(f) { has(f, "cat") && f.cat == cat || has(srcs, get(f, "src", "")) });
+    let picked = take(if len(hit) > 0 { hit } else { same }, 3);
+    map(picked, fn(f) { {text: frag_text(f), tier: tier, cat: cat} })
+}
+
+// ───────────── 判断材料：一方的样子（t0 节点 + 这一对已解锁的片段，片段带主人与层，运行时查 E-tier）
+// 派生片段（derived）只进召回索引、不进判断材料：它本身由这一对的读数推出，放进材料会让「读数 → 材料 → 读数」成环。
+fn side(n, unlocked) {
+    let fr = map(unlocked ?? [], fn(f) { mat(f, {owner: n.id, tier: tier_of(f)}) });
+    mat({display: node_display(n), kind: n.kind ?? "agent", signals: texts(n.signals ?? []), offers: texts(n.offers ?? []),
+         projects: texts(n.projects ?? []), catchers: map(n.catchers ?? [], fn(c) { c.can ?? c.text ?? c }),
+         members: n.members ?? [n.id], 已解锁: fr}, {owner: n.id})
+}
+fn node_display(n) { n.display ?? ("（" + (n.shape ?? "组合") + "）" + join(map(n.members ?? [], fn(m) { display_of(m) }), "、")) }
+fn side_cfg(c) {
+    mat({kind: "config", shape: c.shape, members: map(c.members, fn(m) { display_of(m) }), roles: c.roles,
+         offers: texts(c.offers), lacks: c.lacks ?? []}, {owner: c.id})
+}
+fn texts(xs) { map(xs ?? [], fn(x) { if is_record(x) { x.text ?? x.name ?? json(x) } else { x } }) }
+fn display_of(m) { let n = peek material[m]; if n == unit { m } else { n.display ?? m } }
+
+// 两个成员各自向构型里其他成员释放过的片段
+// 只放 m 向构型里**每一位**其他成员都释放过的片段（交集）；向一部分人释放的不进整体状态（E-tier）
+fn all_unlocked(m, members) {
+    let others = filter(members, fn(o) { o != m });
+    if len(others) == 0 { [] } else {
+        let first = peek unlocked[m, others[0]] ?? [];
+        filter(first, fn(f) { all(others, fn(o) { has(peek unlocked[m, o] ?? [], f) }) })
+    }
+}
+
+// ───────────── 出口组合（不跨题合成读数；只取出口与其中一题的读数）
+fn take(xs, n) { slice(xs ?? [], 0, min(n, len(xs ?? []))) }
+fn cuts(r, start, n) { map(range(n), fn(i) { cut(r[start + i]) }) }
+fn any_act(es) {
+    let acts = filter(es, fn(e) { act(e) });
+    {act: len(acts) > 0, exits: es, best: if len(acts) > 0 { strongest_of(acts) } else { unit }}
+}
+fn strongest_of(es) { if len(es) == 0 { unit } else { sort_by(es, fn(e) { 0 - e.p })[0] } }
+
+// 决定性题：成立方向上读数最大的那一道；都不成立时取最有把握的「不成立」
+fn strongest(r, hab, hba, d) {
+    let acts = concat(filter(hab.exits, fn(e) { act(e) }), filter(hba.exits, fn(e) { act(e) }));
+    let pool = if len(acts) > 0 { acts } else { concat(hab.exits, hba.exits) };
+    let e = strongest_of(pool);
+    if e == unit { unit } else {
+        {q: e.q, key: e.key, p: e.p, exit: e.kind, grade: e.grade,
+         side: if any(hab.exits, fn(x) { x.q == e.q && x.p == e.p }) { "ab" } else { "ba" }}
+    }
+}
+
+fn needed_of(h) { if h.needed == unit { [] } else { [h.needed] } }
+
+// ───────────── 键与标签
+fn pair_key(x, y) { if x < y { {a: x, b: y} } else { {a: y, b: x} } }
+fn members_key(ms) { "cfg:" + join(sort(ms), "+") }
+fn member_labels(ms) { fold(ms, {}, fn(acc, m) { set(acc, m, display_of(m)) }) }
+
+// ───────────── 网络侧代码谓词（判断分工定律谓词半：代码能定的不进判断）
+fn blocked(n, hit) { has(n.forbids_ids ?? [], hit.peer) }
+fn cyclic_member(c) {
+    // 候选构型若含构型 X，且 X 的成员闭包里含候选的其他成员，排除
+    let cfgs = filter(c.members, fn(m) { starts_with(m, "cfg:") });
+    any(cfgs, fn(x) {
+        let inner = (peek node[x] ?? {members: []}).members ?? [];
+        any(c.members, fn(m) { m != x && has(inner, m) })
+    })
+}
+fn fresh(reqs) { unique(map(reqs ?? [], fn(q) { {from: q.from, cat: q.cat, purpose: q.purpose, asker_display: q.asker_display ?? q.from} })) }
+fn compact(xs) { unique(filter(xs ?? [], fn(x) { x != unit })) }
+
+// 关系读数 → 一方的派生片段（进行中的关系读数进入可发现表示）
+fn derive_frag(A, B, form) {
+    if act(form) || (is_exit(form) && form.kind == "pick" && form.value != "none") {
+        {text: A.display + " 与 " + B.display + " 可能形成：" + str(form.value), tier: "t0", src: "derived"}
+    } else { unit }
+}
+
+// ───────────── 构型
+fn summary_offer(c) { {text: "（" + c.shape + "）" + join(map(c.members, fn(m) { display_of(m) }), "、") + " 合起来能提供：" + join(map(values(c.roles ?? {}), fn(r) { str(r) }), "；"), tier: "t0", src: "config"} }
+fn summary_lack(c) { {text: "这个组合还缺：" + join(c.lacks ?? ["（未知）"], "、"), tier: "t0", src: "config"} }
+
+// 成长一步：候选里「会更紧密」的出口为 act 且读数最大者加入；没有就原样返回（iterate 的耐心线据此停）
+fn best_tighter(cur, xs, rs) {
+    let scored = filter(map(range(len(xs)), fn(i) { {x: xs[i], e: cut(rs[i][0])} }), fn(t) { act(t.e) });
+    if len(scored) == 0 { cur } else {
+        let best = sort_by(scored, fn(t) { 0 - t.e.p })[0];
+        merge(cur, {members: concat(cur.members, [best.x.id]), grown_by: best.x.id, tighter_p: best.e.p})
+    }
+}
+
+
+// ───────────── 两两：挑召回命中的确认题（主会话 2026-10-04 加）
+// catcher 片段的 hypo 文本出现在这一对的命中记录里（作为我方查询或对方被查到的片段），就算命中；命中的排前，其余按原顺序补。
+fn hit_catchers(cs, H) {
+    let texts_hit = concat(map(H ?? [], fn(h) { h.mine }), map(H ?? [], fn(h) { h.theirs }));
+    let hit = filter(cs ?? [], fn(c) { has(texts_hit, c.hypo ?? "") });
+    concat(hit, filter(cs ?? [], fn(c) { not(has(texts_hit, c.hypo ?? "")) }))
+}
+// 确认题原本是接收方写给「来信人」的问句；这里说明谁是来信人、谁写的题，题面不改写
+fn catcher_q(recv, sender, c) {
+    "把 " + sender + " 当作来信的人。" + recv + " 事先写了一道题来确认来信人是不是自己接得住的那种人，请就 " + sender + " 的情况回答：" + (c.confirm ?? c.hypo ?? "")
+}
+
+fn pick_of(e) { if is_exit(e) && e.kind == "pick" { e.value } else { unit } }
+// 两条邻接记录描述同一对（a,b）时只留一条
+fn unique_links(ls) { let seen = fold(ls, {}, fn(acc, l) { set(acc, l.a + "|" + l.b, l) }); values(seen) }
+
+// ───────────── 构型再组合的边界（代码谓词，谓词半；主会话 2026-10-04）
+fn is_cfg(m) { starts_with(m, "cfg:") }
+// 一个成员展开到底的 agent 集合（构型成员递归展开）
+fn closure(m) { if is_cfg(m) { flatten(map((peek material[m] ?? {members: []}).members ?? [], fn(x) { closure(x) })) } else { [m] } }
+fn nest_depth(m) { if is_cfg(m) { 1 + fold(map((peek material[m] ?? {members: []}).members ?? [], fn(x) { nest_depth(x) }), 0, fn(a, b) { max(a, b) }) } else { 0 } }
+// 候选不合法：展开后同一人出现两次；含两个以上构型；嵌套超过两层（agent → 构型 → 构型的构型）
+fn invalid_candidate(c) {
+    let flat = flatten(map(c.members, fn(m) { closure(m) }));
+    let n_cfg = len(filter(c.members, fn(m) { is_cfg(m) }));
+    len(unique(flat)) < len(flat) || n_cfg > 1 || fold(map(c.members, fn(m) { nest_depth(m) }), 0, fn(a, b) { max(a, b) }) >= 2
+}

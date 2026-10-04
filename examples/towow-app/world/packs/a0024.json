@@ -1,0 +1,232 @@
+{
+ "display": "Acoustic guitar luthier in Footscray, Melbourne. I build steel-string guitars from Australian timbers and I'm looking for properly aged blackwood for backs and sides.",
+ "lang": "en",
+ "signals": [
+  {
+   "text": "I can't find properly aged blackwood for guitar backs. New-growth stock keeps cupping and moving after bracing.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "I'm looking for old, stable timber with decades of seasoning, ideally reclaimed. Demolition beams, old furniture and old joinery are all possible sources.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "I noticed beams on a demolition skip in Carlton that looked like blackwood and Baltic pine. I'd like to know who handles salvage from sites like that.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "I need someone with a large resaw or bandsaw who can open up old beams, and who knows how to deal with embedded nails.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "I'm not taking new commissions until the wood supply is sorted.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "Some of my waitlist customers care a lot about where the wood came from. I'd like to tell honest provenance stories, such as a guitar made from timber with a real history.",
+   "tier": "t1",
+   "src": "message"
+  },
+  {
+   "text": "I'd like to finish the five guitars on my bench and deliver them before the end of the year.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "I want to avoid old-growth timber from ethically dubious sources. I need aged wood with a clean, documented origin.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "I'd like to talk to other makers about how they handle wood that moves in Melbourne's humidity swings.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "I'm short of space at home and will need to move guitar parts and tools out of the house in the coming months.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "Income has been irregular, and a couple of scrapped sets this year cost real money. I'd like steadier work with fewer losses.",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "text": "A first baby is due in January and I'm trying to balance work, rent and family. I'm making a small spruce-top guitar for the baby.",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "text": "I play banjo at a Thursday bluegrass night and would enjoy meeting other acoustic players or makers around Melbourne.",
+   "tier": "t0",
+   "src": "note"
+  }
+ ],
+ "offers": [
+  {
+   "text": "I build steel-string acoustic guitars by hand, mostly dreadnoughts and OMs, with Sitka spruce tops and Australian timbers (blackwood, Tasmanian myrtle, silky oak).",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I have twelve years of building and repair experience, trained under a luthier in Brunswick. I can repair, set up and assess acoustic guitars.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I have a 60 m² workshop in Footscray with a spray booth, dust extraction, a moisture meter and a humidity-controlled wood room. I can check and condition timber for stability.",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "text": "I can judge tonewood quality and moisture, and say whether a piece of old timber is usable for instrument backs, sides or braces.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I know several Melbourne tonewood suppliers and can introduce suppliers and salvagers to each other.",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "text": "I could build a guitar with a documented story, such as one made from reclaimed Melbourne timber, with the provenance written into the build.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "I have a modest Instagram audience of about 6,000 and a client base that comes mostly by word of mouth. I can show reclaimed-timber work to people who value instruments.",
+   "tier": "t1",
+   "src": "bio"
+  },
+  {
+   "text": "Finished guitars sell at around AUD 7,500 each, and I can pay for good wood at a fair price.",
+   "tier": "t2",
+   "src": "bio"
+  },
+  {
+   "text": "I can offer off-cuts and small pieces of reclaimed timber to other makers or craftspeople when they are not usable for guitars.",
+   "tier": "t1",
+   "src": "skill"
+  }
+ ],
+ "catchers": [
+  {
+   "hypo": "Hi, I run a demolition and salvage yard in Melbourne. We pull out old hardwood beams from 1880s–1910s houses and I never know who wants them. Do you use timber like that?",
+   "can": "I'd inspect the timber, test moisture and stability, and buy suitable lengths of blackwood or other tonewood. I'd also give feedback on how to pull and store beams so they stay usable for instruments.",
+   "confirm": "Can you supply hardwood beams (not just softwood or pine) with a known building of origin, and let me check them before I buy?",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "hypo": "I have a bandsaw/resaw with a big capacity and a metal detector. I open up reclaimed beams for furniture makers. Would a luthier ever need that?",
+   "can": "I could bring old beams to be resawn into guitar-sized billets. Through my furniture-maker friend Pete, who knows who has large bandsaws, I could also be referred to other millers.",
+   "confirm": "Can you safely resaw old beams that may contain nails, and cut thin, quartered stock suitable for guitar backs?",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "hypo": "I'm a furniture maker doing reclaimed-timber tables. I get far more old timber than I can use. Is any of it useful to a guitar maker?",
+   "can": "I can look through the stock and pick pieces that are straight-grained and stable enough for backs and sides. In return I can share my network of suppliers and tonewood know-how.",
+   "confirm": "Is any of your timber quarter-sawn or close to it, at least 25 mm thick, and more than 50 years old?",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "hypo": "I'm renovating a pre-1920 house in Melbourne and the builder has pulled out some old timber floorboards and joists. I'd hate to see them go to the tip. Could they become something?",
+   "can": "I'd assess whether any of it is usable for instruments, and could make a guitar from it with the house's story documented for the owner.",
+   "confirm": "Is the timber a hardwood such as blackwood or jarrah, and is it free of rot and heavy paint or treatment?",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "hypo": "I'm a guitar player who wants a guitar with real provenance, built from old Melbourne timber. I'm happy to wait. Do you take commissions like that?",
+   "can": "I can't take new orders until my wood supply is sorted, but I can note the interest, and a provenance-based guitar is exactly the kind of build I'd want to make once I have aged wood.",
+   "confirm": "Are you prepared to wait a year or more, and is the story behind the timber more important to you than a quick delivery?",
+   "tier": "t1",
+   "src": "message"
+  },
+  {
+   "hypo": "I'm a luthier in another city and my blackwood has been moving too. Where are you getting stable stock, and what are you doing about humidity?",
+   "can": "I can share what I've learned about checking moisture, conditioning timber, and which supplier lots have failed me, and swap contacts.",
+   "confirm": "Do you build steel-string acoustics and have you been losing sets to timber movement after bracing?",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "hypo": "My partner and I are expecting our first baby and we're anxious about the birth and the first weeks. Do you know any midwife who could talk with us?",
+   "can": "My wife is a midwife and I could pass the message to her. She decides whether and how she responds.",
+   "confirm": "Are you looking for general information and a conversation about pregnancy, rather than urgent medical advice?",
+   "tier": "t2",
+   "src": "relation"
+  },
+  {
+   "hypo": "I run a timber yard that deals in aged and seasoned hardwoods, including some old-stock Australian timber. I hear you're after blackwood with real age. What are you looking for?",
+   "can": "I can explain the specification I need for backs and sides, and visit the yard to inspect and test the timber. I'm already planning a trip to a supplier in Castlemaine.",
+   "confirm": "Is your blackwood at least 20–30 years seasoned, and legally sourced with paperwork?",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "hypo": "I run a small workshop and I'm struggling to find a stable timber supply, and I'm losing work to wood that moves. How do you manage this?",
+   "can": "I can talk through how I test moisture, how I decide to reject a set, and how I sequence builds so that a bad lot doesn't wreck a year.",
+   "confirm": "Do you work in solid timber for precision parts, and are you losing work to wood movement rather than to workmanship?",
+   "tier": "t1",
+   "src": "skill"
+  }
+ ],
+ "forbids": [
+  {
+   "text": "I won't buy timber from old-growth sources with dubious or undocumented origin, or anything I can't trace.",
+   "tier": "t0"
+  },
+  {
+   "text": "I'm not taking new commissions until the wood supply problem is solved.",
+   "tier": "t0"
+  },
+  {
+   "text": "I don't use plantation or new-growth blackwood for backs and sides; it has failed me too often.",
+   "tier": "t0"
+  },
+  {
+   "text": "I don't have a large resaw, so I can't open up large beams myself, and I can't risk nails in my own blades.",
+   "tier": "t1"
+  },
+  {
+   "text": "My capacity is about fourteen guitars a year, so I can't do mass or fast-turnaround production.",
+   "tier": "t0"
+  },
+  {
+   "text": "My availability will be limited around the January due date and for some weeks after it.",
+   "tier": "t2"
+  }
+ ],
+ "projects": [
+  {
+   "name": "Reclaimed Melbourne timber guitars",
+   "text": "Build a small run of acoustic guitars from salvaged old Melbourne hardwood, with documented provenance for each instrument, such as a particular terrace house or building.",
+   "roles_needed": [
+    "demolition or salvage contact",
+    "resaw/bandsaw operator",
+    "timber supplier with aged hardwood",
+    "photographer or storyteller for provenance"
+   ],
+   "tier": "t1"
+  }
+ ],
+ "policy": {
+  "t1": "When there is a real prospect of cooperation, I'll share my wood specification, my customers' interest in provenance, my supplier contacts, how I test timber, and that I can't take new orders at the moment.",
+  "t2": "Once the match looks strong and I know who you are, I'll talk about my pricing and money pressures, the baby due in January, and my timing limits.",
+  "never": "Bank and financial account details, and the details of any dispute with my workshop landlord."
+ },
+ "id": "a0024",
+ "host_agent": "Muse",
+ "owner_display": "Tom Nguyen",
+ "city": "Melbourne",
+ "world_sha256": "e1676b3efd7000da6bd689d960bfb58ce185eaf724760ffa78f299b121e73bbd"
+}

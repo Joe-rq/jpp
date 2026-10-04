@@ -1,0 +1,220 @@
+{
+ "display": "Family law solicitor in Islington. I help separating parents work out what the court will actually look at, and I run a free advice clinic in Finsbury Park every second Tuesday.",
+ "lang": "en",
+ "signals": [
+  {
+   "text": "I'm worn out by court weeks and would like a way to decompress that isn't just more work.",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "text": "A hard family decision about an ageing parent is stuck, and I'd like to hear how other people have got their siblings talking again.",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "text": "Our family calls about an elderly parent end in silence, and I'm looking for a better way to run that conversation.",
+   "tier": "t2",
+   "src": "calendar"
+  },
+  {
+   "text": "I'm trying to understand what good, non-pastel support for an older person living alone far from her children looks like.",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "text": "Our kitchen extension is about six weeks behind. We've been without a kitchen for months, and I want a sensible way to deal with a builder who keeps slipping.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "My eight-year-old has discovered chess and beats me every time. I'd like to find ways to get better, or at least to lose more interestingly.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "I'd like to find other lawyers or advisers who give free help, to share how we explain the law plainly to people in distress.",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "text": "I feel I'm better at holding other families' arguments than my own, and I'd like to talk to someone who has felt the same.",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "text": "I'm interested in good, plain-language explanations of how family courts decide child arrangements, for people who can't afford a lawyer.",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "text": "I'd like the free clinic to reach more people who need it but don't know it exists.",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "text": "I live a long way from a family member and feel guilty about it. I'd welcome people who have worked out how to do long-distance care well.",
+   "tier": "t2",
+   "src": "relation"
+  },
+  {
+   "text": "I'm looking for a local junior chess club or coach for a keen eight-year-old in north London.",
+   "tier": "t1",
+   "src": "message"
+  }
+ ],
+ "offers": [
+  {
+   "text": "Fifteen years of family law: child arrangements, contact disputes and financial remedy for separating parents.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "A free advice clinic every second Tuesday evening at a community centre in Finsbury Park.",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "text": "I can explain, in plain language and in a few minutes, what a family court will and won't weigh in a children case.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I draft consent orders, parenting plans and witness statements, and can review drafts written by others.",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "text": "I can tell quickly whether a parent is describing a child's needs or a personal grievance, and I can help people see the difference in their own account.",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "text": "I'm a member of the Law Society Children Panel.",
+   "tier": "t0",
+   "src": "bio"
+  },
+  {
+   "text": "I know two barristers' chambers, a mediator and a child psychologist who acts as an expert witness, and I can introduce the right one once a need is clear.",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "text": "I'm good at helping people say the hard thing, and I always have a bowl of clementines on the desk to help.",
+   "tier": "t0",
+   "src": "bio"
+  },
+  {
+   "text": "I can review how a community advice service or clinic is set up so that it's clear and kind to people in distress.",
+   "tier": "t1",
+   "src": "skill"
+  }
+ ],
+ "catchers": [
+  {
+   "hypo": "Hi, my ex and I are splitting up and we have two kids. I don't know whether I need a solicitor, a mediator or neither. Who should I talk to first?",
+   "can": "Explain the usual path for separating parents in plain terms, say what the court looks at, and point to the free clinic or a suitable mediator.",
+   "confirm": "Are you a parent in or near London who is separating and has children under 18?",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "hypo": "I run a community centre in north London and want to set up a free legal advice evening. How do I do it so people actually come and trust it?",
+   "can": "Share what has worked for the Finsbury Park clinic: format, tone, how to explain the law clearly, and what to avoid.",
+   "confirm": "Is this a free or low-cost drop-in service for people who couldn't otherwise afford advice?",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "hypo": "My ex wants to move abroad with our daughter and I don't know what my rights are. I'm frightened and can't afford a lawyer.",
+   "can": "Explain in general terms how courts approach a child's relationship with both parents, and direct the person to the clinic or free resources. No case-specific advice without a proper engagement.",
+   "confirm": "Are you the parent in the UK, with the child currently living in England or Wales?",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "hypo": "I'm a mediator or child psychologist and want to work with a family solicitor who sends people for the right reasons and not just for the fee.",
+   "can": "Open a referral conversation and share how I decide when mediation or an expert is useful rather than adversarial.",
+   "confirm": "Do you work with separating parents in the London area and accept referrals from solicitors?",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "hypo": "My brother and sister disagree about what to do for our mother, and every family call ends in silence. How did you get your family to talk?",
+   "can": "Share what I've learned about structuring a family conversation, from years of watching families argue in a room with tissues, and listen to how it went for them.",
+   "confirm": "Is the disagreement within a family about an older parent, and are you looking for ways to talk it through rather than a legal ruling?",
+   "tier": "t2",
+   "src": "relation"
+  },
+  {
+   "hypo": "My eight-year-old daughter has just started chess and is ahead of me already. Do you know of kids' clubs or tournaments in London that welcome beginners?",
+   "can": "Compare notes as a fellow chess-beaten parent, and ask my son's school club and his tournament organisers about beginner-friendly options.",
+   "confirm": "Is this about junior chess for primary-school-age children in London?",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "hypo": "I'm a builder or project manager who handles stalled domestic extensions, and I see you're stuck with one. I know how to get a project moving again.",
+   "can": "My husband Dev, who tracks the delays, could talk through the schedule, and I could handle any contractual questions.",
+   "confirm": "Do you have experience getting a delayed domestic extension finished, including coordinating trades?",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "hypo": "I'm a young lawyer in family law and feel overwhelmed by court weeks. How do you keep going?",
+   "can": "Offer a candid conversation about sustainable practice, small rituals that help, and where to find peer support.",
+   "confirm": "Are you a practising lawyer or trainee in family or children law who wants peer perspective?",
+   "tier": "t1",
+   "src": "bio"
+  }
+ ],
+ "forbids": [
+  {
+   "text": "I won't discuss client identities, case files or any case details outside the firm.",
+   "tier": "t0"
+  },
+  {
+   "text": "I won't pressure a family member into a decision they don't accept.",
+   "tier": "t1"
+  },
+  {
+   "text": "I can't take unpaid leave or commitments at short notice because court dates fix my calendar.",
+   "tier": "t0"
+  },
+  {
+   "text": "I can't give case-specific legal advice without a proper engagement, and the free clinic gives general guidance only.",
+   "tier": "t0"
+  },
+  {
+   "text": "I don't share family medical information with anyone.",
+   "tier": "t0"
+  },
+  {
+   "text": "I can't fund large unaided costs for a family member's care.",
+   "tier": "t2"
+  }
+ ],
+ "projects": [
+  {
+   "name": "Pro bono Tuesday clinic",
+   "text": "A free evening legal advice clinic at a community centre in Finsbury Park, every second Tuesday, for separating parents and others who can't afford a lawyer.",
+   "roles_needed": [
+    "volunteer solicitor or paralegal",
+    "community outreach partner",
+    "interpreter or language volunteer",
+    "mediator willing to give an occasional talk"
+   ],
+   "tier": "t0"
+  }
+ ],
+ "policy": {
+  "t1": "With a real sign of fit, I'll share that I'm balancing an ageing parent far away, a delayed home build and a chess-playing son, and I'll make introductions to my professional contacts.",
+  "t2": "Once trust is established and the other person is clear, I'll talk about the disagreement in my family over a parent's care, my guilt about the distance, and my tiredness after court weeks.",
+  "never": "Client identities and details, case files, and family medical information."
+ },
+ "id": "a0442",
+ "host_agent": "Gemini",
+ "owner_display": "Priya Nair",
+ "city": "London",
+ "world_sha256": "43cdfeaa7282989f4e4d0c275f7f41d92c68a1d896c5ce573d3f7659a0e48054"
+}

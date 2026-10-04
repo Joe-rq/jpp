@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>通爻网</title>
+  <link rel="icon" href="data:,">
+  <meta name="description" content="几百到一万个 personal agent 之间的陌生发现网络：判断在空中飞，关系落成航线，谈成的构型开垦一座新港。" />
+  <style>
+    :root {
+      --sea: #05080C; --text: #EDE6DA; --dim: rgba(237, 230, 218, 0.55); --faint: rgba(237, 230, 218, 0.28);
+      --sodium: #FFB35C; --ver: #FF5A36; --ash: #46505A; --blue: #D6E6FF;
+      --serif: "Songti SC", "Noto Serif SC", "STSong", serif;
+      --sans: "PingFang SC", "Hiragino Sans GB", "Noto Sans SC", system-ui, sans-serif;
+    }
+    html, body { margin: 0; height: 100%; background: var(--sea); color: var(--text); overflow: hidden; font-family: var(--sans); }
+    #gl { position: fixed; inset: 0; width: 100vw; height: 100vh; display: block; cursor: grab; touch-action: none; }
+    #gl:active { cursor: grabbing; }
+
+    /* 字幕：屏幕下方 14% 处居中，同一时刻只有一行 */
+    #caption {
+      position: fixed; left: 50%; bottom: 14vh; transform: translate(-50%, 6px); max-width: min(88vw, 900px);
+      font-family: var(--serif); font-size: 22px; letter-spacing: 0.04em; line-height: 1.5; text-align: center;
+      color: var(--text); opacity: 0; pointer-events: none; text-shadow: 0 0 18px rgba(5, 8, 12, 0.9), 0 0 2px rgba(5, 8, 12, 0.9);
+      transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1), transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    #caption.in { opacity: 1; transform: translate(-50%, 0); }
+    #caption.out { opacity: 0; transform: translate(-50%, -4px); transition-duration: 0.9s; transition-timing-function: cubic-bezier(0.7, 0, 0.84, 0); }
+
+    #stat {
+      position: fixed; left: 28px; bottom: 24px; font-size: 13px; color: var(--faint); font-variant-numeric: tabular-nums;
+      pointer-events: none; letter-spacing: 0.02em;
+    }
+    #fps { position: fixed; right: 16px; top: 12px; font-size: 12px; color: var(--faint); display: none; font-variant-numeric: tabular-nums; }
+
+    /* 信息层：右侧一列，从右往左的夜海色渐隐，不画卡片 */
+    #panel {
+      position: fixed; top: 0; right: 0; bottom: 0; width: 380px; box-sizing: border-box; padding: 56px 36px 40px 56px;
+      background: linear-gradient(to left, rgba(5, 8, 12, 0.94) 0%, rgba(5, 8, 12, 0.86) 70%, rgba(5, 8, 12, 0) 100%);
+      overflow-y: auto; transform: translateX(24px); opacity: 0; pointer-events: none;
+      transition: opacity 0.45s cubic-bezier(0.16, 1, 0.3, 1), transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+      scrollbar-width: none;
+    }
+    #panel.open { opacity: 1; transform: none; pointer-events: auto; }
+    #panel h2 { font-family: var(--serif); font-weight: 400; font-size: 24px; margin: 0 0 6px; letter-spacing: 0.03em; }
+    #panel h3 { font-size: 13px; font-weight: 500; color: var(--dim); margin: 30px 0 12px; letter-spacing: 0.06em; }
+    #panel .sub { margin: 0; color: var(--dim); font-size: 14px; }
+    #panel .opp { padding: 14px 16px 14px; margin: 0 0 12px; cursor: pointer; border-radius: 12px; background: rgba(237, 230, 218, 0.035); transition: background 0.25s; }
+    #panel .opp:hover { background: rgba(237, 230, 218, 0.06); }
+    #panel .opp:hover .who { color: var(--text); }
+    #panel .row { display: flex; justify-content: space-between; align-items: baseline; }
+    #panel .form { font-size: 15px; }
+    #panel .conf { font-variant-numeric: tabular-nums; color: var(--sodium); font-size: 15px; }
+    #panel .who { color: var(--dim); font-size: 13px; margin-top: 2px; transition: color 0.2s; }
+    #panel .bar { height: 2px; background: rgba(237, 230, 218, 0.08); margin-top: 8px; }
+    #panel .bar i { display: block; height: 2px; background: var(--sodium); }
+    #panel .miss { color: var(--ver); font-size: 13px; margin: 8px 0 0; opacity: 0.9; }
+    #panel .empty, #panel .more { color: var(--faint); font-size: 13px; line-height: 1.7; }
+    #panel .plan-title { font-size: 16px; margin: 0 0 6px; }
+    #panel .plan { color: var(--dim); font-size: 14px; line-height: 1.7; margin: 0; }
+    #panel .mem { display: flex; justify-content: space-between; padding: 7px 0; cursor: pointer; font-size: 14px; }
+    #panel .mem .role { color: var(--dim); font-size: 13px; }
+    #panel .conf.unsure { color: var(--ver); font-size: 13px; }
+    #panel .q { color: var(--dim); font-size: 12.5px; line-height: 1.6; margin-top: 6px; }
+    #panel p.q { margin: 10px 0 0; }
+    #panel .seen { color: var(--faint); font-size: 12px; margin-top: 4px; }
+    /* 补信息的经过：朱色是拿不准，钠灯色是对方多给了一层与再判 */
+    #panel .story { color: var(--dim); font-size: 12.5px; line-height: 1.65; margin-top: 6px; }
+    #panel p.story { margin: 10px 0 0; }
+    #panel .story em { font-style: normal; color: var(--ver); }
+    #panel .story b { font-weight: 400; color: var(--sodium); }
+    /* 补信息的经过：竖向小时间线，一步一行，朱色是拿不准，钠灯色是多给一层与再判 */
+    #panel .steps { list-style: none; margin: 12px 0 0 4px; padding: 0 0 0 14px; border-left: 1px solid rgba(237, 230, 218, 0.12); }
+    #panel .steps li { position: relative; padding: 3px 0 3px 4px; font-size: 12.5px; line-height: 1.55; color: var(--dim); }
+    #panel .steps li::before { content: ''; position: absolute; left: -18px; top: 10px; width: 5px; height: 5px; border-radius: 50%; background: rgba(237, 230, 218, 0.28); }
+    #panel .steps li.u { color: var(--ver); } #panel .steps li.u::before { background: var(--ver); }
+    #panel .steps li.b { color: var(--sodium); } #panel .steps li.b::before { background: var(--sodium); }
+    #panel .steps li.m { color: var(--faint); font-size: 12px; }
+    #panel .tally { color: var(--dim); font-size: 13px; line-height: 1.7; margin: 0 0 14px; }
+    #panel .tally b { font-weight: 400; color: var(--sodium); } #panel .tally em { font-style: normal; color: var(--ver); }
+    #panel .plan-line { font-size: 13px; margin-top: 6px; color: var(--blue); opacity: 0.85; }
+    #panel .note { color: var(--faint); font-size: 12px; line-height: 1.6; margin: -4px 0 6px; }
+    #panel .desc { color: var(--faint); font-size: 13px; line-height: 1.7; margin: 10px 0 0; }
+    #panel .mine { color: var(--sodium); font-size: 12px; letter-spacing: 0.08em; margin: 0 0 8px; }
+    #panel .back { color: var(--dim); font-size: 13px; margin: 0 0 18px; cursor: pointer; }
+    #panel .back:hover { color: var(--text); }
+    #panel .ladder { position: relative; height: 88px; width: 300px; }
+    #panel .ladder svg { position: absolute; left: 0; top: 0; }
+    #panel .ladder line { stroke-width: 1.5; }
+    #panel .ladder line.on { stroke: var(--sodium); }
+    #panel .ladder line.off { stroke: rgba(237, 230, 218, 0.22); stroke-dasharray: 3 4; }
+    #panel .ladder .tl { position: absolute; font-size: 12px; line-height: 18px; color: var(--faint); white-space: nowrap; }
+    #panel .ladder .tl.on { color: var(--dim); }
+
+    /* 「我的 agent」侧栏常驻：桌面上画面让出右侧一列，侧栏不压在画面上 */
+    @media (min-width: 721px) {
+      body.me #gl { width: calc(100vw - 380px); }
+      body.me #caption { left: calc((100vw - 380px) / 2); max-width: min(calc(100vw - 440px), 900px); }
+      body.me #panel { background: #070C12; box-shadow: -1px 0 0 rgba(237, 230, 218, 0.06); }
+    }
+    @media (max-width: 720px) {
+      #caption { font-size: 17px; bottom: 18vh; }
+      #stat { left: 16px; bottom: 16px; font-size: 12px; }
+      #panel {
+        top: auto; left: 0; width: 100%; height: 62vh; padding: 28px 16px 24px;
+        background: linear-gradient(to top, rgba(5, 8, 12, 0.96) 0%, rgba(5, 8, 12, 0.9) 80%, rgba(5, 8, 12, 0) 100%);
+        transform: translateY(24px);
+      }
+      #panel .ladder, #panel .ladder svg { width: 100%; }
+      body.panel-open #caption { opacity: 0 !important; }
+      /* 「我的 agent」侧栏常驻：手机上只占下方 40%，留出画面 */
+      body.me #panel { height: 40vh; }    }
+  </style>
+</head>
+<body>
+  <canvas id="gl"></canvas>
+  <div id="caption" aria-live="polite"></div>
+  <div id="stat"></div>
+  <div id="fps"></div>
+  <aside id="panel" aria-label="信息层"></aside>
+  <script type="module" src="./src/main.ts"></script>
+</body>
+</html>

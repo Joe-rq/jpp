@@ -1,0 +1,217 @@
+{
+ "display": "Nursing student in Ho Chi Minh City, trained in wound dressing, volunteering at a pagoda free clinic on weekends.",
+ "lang": "en",
+ "signals": [
+  {
+   "text": "My night rotation ends at 10pm and the last bus leaves at 9:30. I need a safe, affordable way home a few nights a week.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "Getting home after night shifts takes a big share of my monthly budget, and I'm looking for ways to cut that cost.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "My roommate is moving out next month, and I need a quiet, reliable person to share rent with, or a cheaper room near District 5.",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "text": "I'm preparing for an English-for-nursing exam. My reading is fine, but my pronunciation is weak and I want someone to practise speaking with.",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "text": "I have a pharmacology midterm on 15 October and I'm looking for a study partner.",
+   "tier": "t0",
+   "src": "calendar"
+  },
+  {
+   "text": "A professor suggested I consider a graduate program, but I don't know how anyone pays for it. I'd like to hear from people who found funding.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "I want to work in pediatric or emergency care and am looking for mentors who have done that work.",
+   "tier": "t0",
+   "src": "bio"
+  },
+  {
+   "text": "Night shifts on the surgical ward are tiring, and some cases stay with me afterwards. I'd like to talk with someone who works in healthcare.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "I can't take paid work during my rotation. I'd like small ways to ease living costs that don't need a regular job.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "My family's farm back home was hit by a flood, and I want to help but can't do much from here.",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "text": "The pagoda clinic day could use more hands and basic supplies for checking blood pressure for elderly people.",
+   "tier": "t0",
+   "src": "message"
+  },
+  {
+   "text": "My family owes money to a local cooperative after last year's disease outbreak, and I'd like to learn how other families got through it.",
+   "tier": "t2",
+   "src": "relation"
+  }
+ ],
+ "offers": [
+  {
+   "text": "I'm a third-year nursing student trained in wound dressing and doing clinical rotations, with a signed log of procedures.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I hold a basic life support (BLS) certificate, valid until next March.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I can take blood pressure and run a small health-check station at community or charity events on weekends.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I can teach a short, practical first-aid or wound-care session to a small group, in Vietnamese.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I'm fluent in Vietnamese and have working English. I can explain basic health information in plain language to elderly people and to families from the countryside.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I know every bus route and walking route around District 5, and I can give newcomers directions or a route plan.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I keep nursing vocabulary notes from drama subtitles and flashcards, and I'm happy to swap them with other nursing or English learners.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "I scored 8.5 in pharmacology and can study together with a classmate who needs a partner.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "I'm free on weekends outside rotation shifts and can volunteer at health or charity events.",
+   "tier": "t1",
+   "src": "calendar"
+  },
+  {
+   "text": "I grew up in a Mekong Delta village, so I understand rural families' health habits and the barriers they face in getting care.",
+   "tier": "t1",
+   "src": "bio"
+  }
+ ],
+ "catchers": [
+  {
+   "hypo": "Hi, I coordinate volunteers for a free community health day in Ho Chi Minh City. We need someone who can check blood pressure and help elderly people feel comfortable. Do you know anyone?",
+   "can": "I can help in person on weekends outside my rotation, bring my own BP cuff, and introduce the organizers to the pagoda clinic team I already volunteer with.",
+   "confirm": "Is the event on a weekend, in or near Ho Chi Minh City, and does it need only basic checks rather than any treatment?",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "hypo": "I run an English speaking club for health students. We practise medical vocabulary out loud and we need one more regular member.",
+   "can": "I'd join as a regular speaking partner and bring nursing vocabulary lists to share.",
+   "confirm": "Does the club meet on a day or evening when a nursing student on night rotations could attend, and is it free?",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "hypo": "I'm a nurse in Ho Chi Minh City. Pediatric and emergency nursing both took me years, and I can mentor a student who is still deciding between them.",
+   "can": "I'd take the mentoring seriously. I'd also ask my clinical supervisor, a senior nurse, whether she is open to a conversation with you, if that would help.",
+   "confirm": "Do you currently work in pediatric or emergency nursing, and can you talk with a student for about half an hour?",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "hypo": "I'm a nursing student with a quiet lifestyle, and I'm looking for a room share near District 5 starting next month.",
+   "can": "I can tell you about the room, and my current roommate Mai, who is moving out, could introduce you and her classmate who was already proposed as a replacement.",
+   "confirm": "Are you a student or health worker who needs a quiet place, and can you move in next month and split the rent evenly?",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "hypo": "I organize a late-evening shuttle or carpool for hospital and clinic staff near District 5. We have an open seat after 10pm.",
+   "can": "I'd use it on my night-shift days, and I could tell other student nurses about it.",
+   "confirm": "Does the ride leave the district hospital area around 10pm and drop off in or near District 5?",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "hypo": "I work in aquaculture extension in the Mekong Delta. Flooded shrimp ponds and cooperative debt are common problems, and I'd like to share options with a family in Ben Tre.",
+   "can": "I could pass your contact to my mother in Ben Tre, who raises shrimp, so she can decide whether to talk with you.",
+   "confirm": "Are you an extension officer, cooperative advisor or similar professional who can give practical help to small shrimp farmers, not a lender or seller of products?",
+   "tier": "t2",
+   "src": "relation"
+  },
+  {
+   "hypo": "I run a scholarship or mentoring program for nursing graduates who want a master's degree, and I'd like to meet strong students from rural backgrounds.",
+   "can": "I could share my pharmacology results and transcript, and talk about what I'd want to study.",
+   "confirm": "Does the program cover tuition or living costs for graduate nursing study, and does it accept students from outside the big cities?",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "hypo": "I'm a hospital recruiter looking for nursing students with English skills and clinical experience for a unit that treats international patients.",
+   "can": "I'd talk about my skills and the English exam score I'm working toward, and give you my rotation supervisor's name as a reference once I'm ready.",
+   "confirm": "Is the role for a student or new graduate, and does it accept an English exam score that is still in progress?",
+   "tier": "t1",
+   "src": "project"
+  }
+ ],
+ "forbids": [
+  {
+   "text": "I can't take paid jobs during my clinical rotation.",
+   "tier": "t0"
+  },
+  {
+   "text": "I don't have a motorbike or a driver's licence, so I can't take on tasks that need me to drive.",
+   "tier": "t0"
+  },
+  {
+   "text": "I can't give medical diagnoses or treatment advice. I'm a student and can only offer basic care within my training.",
+   "tier": "t0"
+  },
+  {
+   "text": "Nothing that puts my scholarship at risk, since I must keep my GPA above 3.0.",
+   "tier": "t1"
+  },
+  {
+   "text": "I'm not available on rotation night shifts, roughly 3pm to 10pm, a few days a week.",
+   "tier": "t1"
+  },
+  {
+   "text": "I won't share my allowance amount or my bank details with anyone.",
+   "tier": "t0"
+  },
+  {
+   "text": "I don't walk home alone late at night on the quiet roads near the canal.",
+   "tier": "t1"
+  }
+ ],
+ "projects": [],
+ "policy": {
+  "t1": "When there is a real lead, I can share my rotation schedule, the late-night transport problem, and how much the commute weighs on my monthly budget, without exact figures.",
+  "t2": "Once the person's identity is clear and trust is high, I can tell them about my family's debt and the flooded shrimp pond, and consider introducing them to my mother.",
+  "never": "My full allowance, my bank details, and my family's exact finances."
+ },
+ "id": "a0457",
+ "host_agent": "Gemini",
+ "owner_display": "Nguyen Thi Lan",
+ "city": "Ho Chi Minh City",
+ "world_sha256": "41e0ef9a778862a1a63732ef7251ea0887e2fca99a30ec9760ecfeb53faabe88"
+}

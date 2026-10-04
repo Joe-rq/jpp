@@ -1,0 +1,205 @@
+{
+ "display": "Retired music teacher who directs a thirty-voice community choir in a church basement in Scarborough, Toronto. For years we rehearsed with a cheap keyboard.",
+ "lang": "en",
+ "signals": [
+  {
+   "text": "We have only three tenors, and I am rewriting parts down an octave to cope. I would love a few more tenors or baritones who can read music.",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "text": "I am recruiting singers for the Christmas concert on December 13. We need at least 24 and have about 14 confirmed.",
+   "tier": "t0",
+   "src": "message"
+  },
+  {
+   "text": "A couple of sopranos moved away this autumn, and the choir is leaner than it was in June.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "Our budget comes from bake sales and donations, and every extra cost is a real decision.",
+   "tier": "t0",
+   "src": "bio"
+  },
+  {
+   "text": "People arrive tired on Thursday nights, but they keep coming. I am looking for ways to keep rehearsals warm and worth the trip.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "A kind donation gave us a good upright piano, and now the rehearsal room barely fits it. The altos sit sideways.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "Our board has said no more instruments or donations because of fire code and room capacity. I accept the decision, but I'm still a little sad about it.",
+   "tier": "t1",
+   "src": "message"
+  },
+  {
+   "text": "Four Christmas pieces use brass, and one of our lenders is eighty and unsure about the high notes. I am transposing parts so he can keep playing.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "I am looking at the whole December plan: eight pieces plus a carol sing-along, with a brass rehearsal on October 22 and a concert budget meeting on October 31.",
+   "tier": "t1",
+   "src": "calendar"
+  },
+  {
+   "text": "My evenings outside Thursday rehearsal are limited right now because of family commitments at home.",
+   "tier": "t1",
+   "src": "calendar"
+  },
+  {
+   "text": "I have been wondering who could eventually take the baton, and how long I will keep directing.",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "text": "I am teaching myself sourdough with a moody starter named Gerald. The loaves are getting better, but the crumb is still gummy.",
+   "tier": "t0",
+   "src": "note"
+  }
+ ],
+ "offers": [
+  {
+   "text": "Thirty-two years of teaching choral and instrumental music in Ontario public schools, including rehearsal planning, warm-ups and managing mixed-ability groups.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I can adapt choral parts to the voices you have: transposing, rewriting parts down an octave, and simplifying for weaker sections.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I have a large library of SATB arrangements, mostly photocopied over the decades, and I can suggest repertoire for community choirs.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I direct a welcoming community choir with singers aged 19 to 84 and mixed abilities. Beginners are welcome on Thursday evenings.",
+   "tier": "t0",
+   "src": "bio"
+  },
+  {
+   "text": "I can run a short coaching session or workshop for another community or church choir on rehearsing, blend or sight-reading.",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "text": "Our choir sings at Christmas, Easter and funerals, and we can provide music for a memorial service.",
+   "tier": "t1",
+   "src": "bio"
+  },
+  {
+   "text": "I have access to a borrowed brass quartet for concerts, arranged through a retired trumpeter in a neighbouring parish.",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "text": "I know a retired engineer who can advise on practical problems such as room layout and building constraints.",
+   "tier": "t1",
+   "src": "relation"
+  }
+ ],
+ "catchers": [
+  {
+   "hypo": "Hi, I'm a tenor in my fifties. I haven't sung in a choir for years, but I read music and live in Scarborough. Do you have room for me?",
+   "can": "Invite them to a Thursday 7pm rehearsal and give them a part and a folder. We need tenors badly.",
+   "confirm": "Can you attend Thursday evening rehearsals in Scarborough from now until the December 13 concert?",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "hypo": "I'm a retired brass player. I'm a bit rusty and my range isn't what it was, but I'd love to play in a group again.",
+   "can": "Transpose parts into a comfortable key, as I did for my trumpeter, and add them to the Christmas programme if the brass line has room.",
+   "confirm": "Are you happy to play from parts transposed into a comfortable key and to rehearse with the choir before the concert?",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "hypo": "My father died last year, and I want to honour him with music. Could a choir dedicate a piece to him at a service or concert?",
+   "can": "Dedicate a piece at the Christmas concert or sing at a memorial. A parishioner gave us a piano in memory of her husband, so I know how much that can mean.",
+   "confirm": "Do you want a piece dedicated in someone's memory within a service or concert, rather than a paid performance?",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "hypo": "I'm a music teacher starting a community choir. Do you have advice on repertoire, part-writing for a weak section, or running rehearsals?",
+   "can": "Share my SATB library, suggest repertoire and give practical advice on rewriting parts and structuring rehearsals.",
+   "confirm": "Are you working with an amateur or community choir rather than a professional ensemble?",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "hypo": "I'm a young conductor looking for a mentor and a real choir to work with. Could I shadow rehearsals and take part of one?",
+   "can": "Offer a place beside me in rehearsal and some time on the podium. This also gives me a way to think about who might one day carry the choir on.",
+   "confirm": "Can you commit to regular Thursday evenings over several months rather than a single visit?",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "hypo": "I'm a structural or building-safety engineer. I'd happily look at how a basement rehearsal room could be laid out for a piano and a choir of thirty.",
+   "can": "Introduce them through my husband, a retired engineer, who can talk through room layout and constraints.",
+   "confirm": "Is your offer about advice on layout or safety within the existing space, rather than adding furniture or equipment?",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "hypo": "I'm learning sourdough and my starter is sulking. The crust is great but the crumb is gummy. Any tips?",
+   "can": "Trade notes. I keep a log of times and temperatures for my starter, as I would for a choir warm-up.",
+   "confirm": "Are you a home baker comparing notes rather than someone selling a bread course or product?",
+   "tier": "t0",
+   "src": "note"
+  }
+ ],
+ "forbids": [
+  {
+   "text": "No more instruments, furniture or donations in the church basement. It is at fire-code capacity.",
+   "tier": "t1"
+  },
+  {
+   "text": "I cannot add chairs or singers beyond what the room safely holds.",
+   "tier": "t1"
+  },
+  {
+   "text": "I have no budget for fees. The choir runs on bake sales and donations.",
+   "tier": "t0"
+  },
+  {
+   "text": "I am not available on most evenings other than Thursday rehearsal.",
+   "tier": "t1"
+  },
+  {
+   "text": "I only work in the Toronto area, mainly Scarborough.",
+   "tier": "t0"
+  }
+ ],
+ "projects": [
+  {
+   "name": "Christmas concert, December 13",
+   "text": "Eight pieces plus a carol sing-along, with a brass quartet on four of them. We need more singers, especially tenors.",
+   "roles_needed": [
+    "tenor",
+    "baritone",
+    "soprano",
+    "brass player",
+    "volunteer helper for concert logistics"
+   ],
+   "tier": "t1"
+  }
+ ],
+ "policy": {
+  "t1": "When there is a real sign of fit, I will share details of the Christmas concert plan, the Yamaha donation, the room capacity and the board's decision.",
+  "t2": "Once there is trust and I know who you are, I will share my personal worries about the choir's future and who might eventually carry it on.",
+  "never": "Medical details of anyone in my family and any family finances."
+ },
+ "id": "a0193",
+ "host_agent": "Gemini",
+ "owner_display": "Eleanor Whitfield",
+ "city": "Toronto",
+ "world_sha256": "87ec6462b2312fcf9e03762223b76b85784da6958aa88a0b494626a7b8d756c6"
+}

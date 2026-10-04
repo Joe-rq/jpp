@@ -1,0 +1,229 @@
+{
+ "display": "Third-generation knife sharpener in Sakai, Osaka. I sharpen and repair Japanese kitchen knives by hand, take mail-in knives from overseas, and attend trade fairs in Asia.",
+ "lang": "en",
+ "signals": [
+  {
+   "text": "I'm going to a hotel and restaurant equipment fair in Asia this autumn and want chefs to see a live edge on a Japanese knife.",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "text": "I'll be at the Shanghai hotel and restaurant equipment fair, November 18–21, booth B214 in the middle row, sharpening live samples on a folding bench.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "I keep redoing the numbers for the Shanghai trip. Booth, flights, hotel and shipping the bench add up to more than I made at the last fair, and I'm afraid it will lose money.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "I don't want to be a salesman. I want buyers to see the edge and judge the work themselves, and I need a way to show it that doesn't feel like pitching.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "I want to know what restaurant buyers in China actually want before deciding whether fairs are worth the cost.",
+   "tier": "t1",
+   "src": "message"
+  },
+  {
+   "text": "I'd like a Mandarin speaker I can trust to help me talk with visitors at the booth. My English is slow and my Chinese is nonexistent.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "Overseas parcels keep arriving badly packed, sometimes a bare blade in a thin envelope, and customs forms cause delays. I'm looking for a better way to handle this.",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "text": "Overseas customers keep asking for engraving, and I'd like to add it as a paid extra.",
+   "tier": "t0",
+   "src": "message"
+  },
+  {
+   "text": "A fourteen-year-old in my neighbourhood wants to learn sharpening, and I'm thinking about how to teach a beginner properly.",
+   "tier": "t0",
+   "src": "relation"
+  },
+  {
+   "text": "After decades of leaning over the stones my body is tired, and I'm looking for ways to keep working with less strain.",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "text": "I'd like to find buyers who value careful hand sharpening, since I can't win on price against cheap factory knives.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "I'm worried about the shop's long-term income and lean on overseas mail-in work to keep it steady.",
+   "tier": "t2",
+   "src": "project"
+  }
+ ],
+ "offers": [
+  {
+   "text": "Hand sharpening and restoration of Japanese kitchen knives (yanagiba, deba, usuba, santoku) on whetstones from 1000 to 8000 grit plus natural Aoto.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "Repairs: re-handling, rust removal, chip repair, and re-grinding warped blades.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "A mail-in service for overseas customers with a free padded sleeve. Turnaround is two weeks, and I don't rush an edge.",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "text": "A family shop in Sakai with a bench for four people, two water-cooled grinders and a small display counter.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "Thirty-two years of customer notebooks recording each knife, its steel and what the owner wanted. This is practical knowledge about how knives age and how people use them.",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "text": "A live sharpening demonstration at trade fairs, with a folding bench, sample knives and leaflets in simplified Chinese.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "Advice for home cooks and chefs on hand washing, stones and edge care, and on what rust removal will and won't restore.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "Willing to teach the basics of sharpening to a curious beginner, starting by watching at the bench.",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "text": "Some experience with fairs in Bangkok and Shanghai and with how Asian restaurant buyers respond to craft knives. I can share what I've seen.",
+   "tier": "t1",
+   "src": "project"
+  }
+ ],
+ "catchers": [
+  {
+   "hypo": "I run a restaurant in Singapore, and my chefs' knives are dull and chipped. Can you take regular batches by mail and sharpen them?",
+   "can": "Take a batch by mail through the English website and sharpen each knife by hand in about two weeks. My son handles bookings and payment.",
+   "confirm": "Are your knives Japanese-style single-bevel or double-bevel kitchen knives that can be posted in padded packaging?",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "hypo": "My father's old yanagiba is rusty and I can't bear to throw it away. Can it be saved?",
+   "can": "Remove the rust and restore the edge. The finish will change slightly, and I treat each knife as if it were my own.",
+   "confirm": "Are you happy with a restored blade whose finish looks slightly different from the original?",
+   "tier": "t0",
+   "src": "message"
+  },
+  {
+   "hypo": "I'm a buyer for a restaurant group in Shanghai. Would you let our head chef try your edge in person at the fair?",
+   "can": "Sharpen sample knives live at booth B214, talk through the work, and take the chef's own knife.",
+   "confirm": "Are you interested in hand-sharpened Japanese knives, rather than only buying new knives?",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "hypo": "I speak Mandarin and English and I'm in Shanghai in November. Do you need someone to help you at your booth?",
+   "can": "Tell them exactly which days I need help, and what I can cover within a tight budget.",
+   "confirm": "Can you be at the Shanghai fair between November 18 and 21 and do you understand knives well enough to explain a sharpening demo?",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "hypo": "I run a small business that ships fragile goods between Japan and other countries. Can I help with your customs forms and packaging?",
+   "can": "Compare my current routine with theirs and use whatever makes parcels and customs forms simpler.",
+   "confirm": "Do you have hands-on experience with customs paperwork and packing for blades or other sharp metal goods?",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "hypo": "Our tea class has a few pairs of scissors that are dull. Can you sharpen them?",
+   "can": "Through my wife's tea class in Sakai, I sharpen scissors for the students. The first pair is free.",
+   "confirm": "Are the scissors something that can be dropped off in Sakai, rather than shipped from overseas?",
+   "tier": "t0",
+   "src": "relation"
+  },
+  {
+   "hypo": "My teenager is curious about traditional crafts. Could they come and watch you work?",
+   "can": "Invite the young person to watch first at the shop on a Saturday. A neighbour's grandson who may start an apprenticeship next spring is in the same position.",
+   "confirm": "Is the young person nearby, and willing to start by just watching for a few visits?",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "hypo": "I'm a craftsperson in a similar trade and I'm planning my first overseas fair. How do you decide whether it will pay?",
+   "can": "Share my own numbers and worries about the Bangkok and Shanghai fairs. Mr. Sugiura, an old friend in the guild, knows many fair stories and can add his own.",
+   "confirm": "Is this a hand craft that sells on the quality of the work rather than on the price?",
+   "tier": "t1",
+   "src": "relation"
+  }
+ ],
+ "forbids": [
+  {
+   "text": "I will not rush an edge, so I don't take jobs that need one.",
+   "tier": "t0"
+  },
+  {
+   "text": "I don't want to compete with cheap factory knives on price.",
+   "tier": "t0"
+  },
+  {
+   "text": "I can't be away from the shop for more than ten days in a row, because my regular restaurants need their knives.",
+   "tier": "t0"
+  },
+  {
+   "text": "I won't borrow money for the trip.",
+   "tier": "t1"
+  },
+  {
+   "text": "I won't promise a turnaround shorter than two weeks.",
+   "tier": "t0"
+  },
+  {
+   "text": "I'm not a salesman, and I won't do pushy selling.",
+   "tier": "t0"
+  }
+ ],
+ "projects": [
+  {
+   "name": "Shanghai fair booth, November 18–21",
+   "text": "A live sharpening booth at a hotel and restaurant equipment fair, with a folding bench, sample knives, and leaflets in simplified Chinese. The aim is to show the edge to buyers and cover the trip's cost.",
+   "roles_needed": [
+    "Mandarin-speaking booth helper",
+    "Restaurant buyer or chef who can try an edge",
+    "Local guide for logistics in Shanghai",
+    "Shipper or courier for the folding bench"
+   ],
+   "tier": "t1"
+  },
+  {
+   "name": "Overseas mail-in service",
+   "text": "About fifteen parcels a month from the US, Australia and Singapore. We want better packing, simpler customs handling, and a paid engraving option.",
+   "roles_needed": [
+    "Engraver",
+    "Shipping and customs advisor"
+   ],
+   "tier": "t0"
+  }
+ ],
+ "policy": {
+  "t1": "When there is a real sign of a fit, I'll share the fair dates, booth details, how many parcels I get a month, and my worries about whether the trip will pay.",
+  "t2": "Once trust is established, I'll share the real revenue picture, my physical condition, and my son's offer to share costs.",
+  "never": "My exact income, medical records, and the names of my regular restaurants."
+ },
+ "id": "a0376",
+ "host_agent": "Gemini",
+ "owner_display": "Hiroshi Tanabe",
+ "city": "Osaka",
+ "world_sha256": "63acc2a93800c8314e6497038dc830b2376bbf5133822bc9689f99451bc507ea"
+}

@@ -1,0 +1,200 @@
+{
+ "display": "Pack-house supervisor at an export rose farm on Lake Naivasha. About two tonnes of export-rejected stems a week go into our compost pit, and I'm looking for a better use for them.",
+ "lang": "en",
+ "signals": [
+  {
+   "text": "About two tonnes of export-rejected stems (short, bent, bruised) go into our compost pit every week, because the Dutch buyer won't take them.",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "text": "The compost pit is nearly full and smells, and the farm needs a plan for the rejects before the rainy season.",
+   "tier": "t0",
+   "src": "message"
+  },
+  {
+   "text": "A co-worker's cousin dries rejected petals and sells them as potpourri at the market. I'd like to know whether that could work at farm scale.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "I counted roughly 25,000 stems a week going into the pit. If even a third could be used, it would matter.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "I want to find out who could use fresh or dried rose stems and petals, such as craft, cosmetics, food, dye, packaging or biogas.",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "text": "The Valentine's early shipment starts on 1 November and we need volume. The grading lines are running slow and the workers are tired.",
+   "tier": "t1",
+   "src": "calendar"
+  },
+  {
+   "text": "Our rejection rate has crept up this month, and I'm trying to work out why line three has so many bruised petals.",
+   "tier": "t1",
+   "src": "message"
+  },
+  {
+   "text": "Cold room and handling practice for reducing bruising on a grading line is something I'd like to compare notes on.",
+   "tier": "t1",
+   "src": "message"
+  },
+  {
+   "text": "A road washout has doubled my commute, so my days are long and I leave home at 4:30 am.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "I'm learning a new Kikuyu hymn with my church choir, and the alto line is tricky.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "I'm after practical, low-cost ways to earn a bit of extra income alongside my shifts, using what I know about flowers and compliance.",
+   "tier": "t1",
+   "src": "bio"
+  }
+ ],
+ "offers": [
+  {
+   "text": "I supervise a pack-house of 140 workers across three grading lines for weekly export to Amsterdam, and I can explain how it runs.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I know flower grading standards: sorting by stem length, bud size and quality, then bunching and boxing for the Dutch auction.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I know cold chain handling for cut flowers.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I know EU residue and phytosanitary record-keeping and what buyers' agents ask for.",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "text": "I can quantify the reject stream (volume, stem lengths, defect types) and arrange samples from a steady weekly supply, with the farm's agreement.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "I have contacts in the farm's quality and agronomy teams and a good reputation with the Dutch buyers' agents.",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "text": "I can train and organise a line of workers quickly to sort or pre-process material.",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "text": "I sing alto in a church choir and can join or help a community choir.",
+   "tier": "t0",
+   "src": "bio"
+  }
+ ],
+ "catchers": [
+  {
+   "hypo": "Hi, I make dried-flower products (potpourri, sachets, tea blends, natural dye) and need a steady supply of petals and stems in Kenya. Do you know where to get them?",
+   "can": "Wanjiru can describe the weekly reject volume and quality, and take the idea to the farm's management and quality team, who decide commercial terms. She cannot commit the farm herself.",
+   "confirm": "Could you use petals or stems that failed export grading (short, bent or lightly bruised) in volumes of hundreds of kilos a week, collected near Naivasha?",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "hypo": "I run a biogas or composting operation and want rose and other flower waste as feedstock. Is there a farm near Lake Naivasha with a surplus?",
+   "can": "She can confirm the volume and how it is handled today, and introduce the person on the farm who could agree to a pilot.",
+   "confirm": "Can you collect about two tonnes a week from a farm gate and handle the transport yourself?",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "hypo": "I'm a researcher or startup working on products from floriculture waste (extracts, fibre, pigment). Can we get samples of reject stems and the spray history of each batch?",
+   "can": "Wanjiru can arrange samples through the farm. Through agronomist Peter she can ask for batch spray and residue records, once the farm agrees and the relationship is trusted.",
+   "confirm": "Do you need documented spray and residue history for the material, and are you able to sign an agreement with the farm before receiving samples?",
+   "tier": "t2",
+   "src": "relation"
+  },
+  {
+   "hypo": "I'm a flower-farm quality manager and my rejection rate has risen. Which handling steps on a grading line most affect bruising?",
+   "can": "She can share practical checks on cold room temperature, line speed and handling, and compare notes.",
+   "confirm": "Are you asking about post-harvest handling and grading on an export pack-house line, rather than field agronomy or growing?",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "hypo": "I'm a buyer or compliance officer for cut flowers and want to understand how a Kenyan farm keeps EU residue records for every bed.",
+   "can": "She can explain how the records are organised and used. Her agronomist colleague Peter keeps the underlying spray records.",
+   "confirm": "Is your question about how pack-house and bed-level records are kept and checked, rather than a request to see a specific farm's records?",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "hypo": "I run a small enterprise in Naivasha and want to hire people with pack-house experience for seasonal work. Who do you know?",
+   "can": "She can point to experienced line workers and supervisors she trusts, after checking they are free of farm commitments.",
+   "confirm": "Is this seasonal or part-time work in the Naivasha area that does not clash with export-farm shifts?",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "hypo": "Our choir needs an alto for a Kikuyu hymn programme in Naivasha. Do you know anyone?",
+   "can": "Wanjiru can sing alto herself, and her choir leader can connect your choir to others nearby.",
+   "confirm": "Is this a church or community choir that rehearses on evenings or weekends in or near Naivasha?",
+   "tier": "t0",
+   "src": "relation"
+  }
+ ],
+ "forbids": [
+  {
+   "text": "I cannot speak for farm management on commercial decisions such as pricing, contracts or releasing material.",
+   "tier": "t0"
+  },
+  {
+   "text": "I do not share the farm's spray and residue records with strangers before the farm agrees and trust is established.",
+   "tier": "t0"
+  },
+  {
+   "text": "I cannot take on work during my pack-house shift (5am to 3pm, longer in peak season).",
+   "tier": "t0"
+  },
+  {
+   "text": "I will not cut corners on EU compliance or traceability.",
+   "tier": "t0"
+  },
+  {
+   "text": "I only work around Naivasha and cannot travel far.",
+   "tier": "t0"
+  }
+ ],
+ "projects": [
+  {
+   "name": "Reject stem disposal",
+   "text": "Find a use for about two tonnes a week of export-rejected rose stems and petals, currently going into a compost pit that is nearly full.",
+   "roles_needed": [
+    "dried-flower or potpourri producer",
+    "biogas or composting operator",
+    "natural dye, cosmetics or food ingredient maker",
+    "waste-to-product researcher",
+    "logistics partner near Naivasha"
+   ],
+   "tier": "t0"
+  }
+ ],
+ "policy": {
+  "t1": "When there is a real lead, I will share production and quality details: reject volumes, defect types, handling and cold chain practice.",
+  "t2": "When fit is clear and the farm has agreed, I will share spray and residue records for the relevant beds, including the rejects.",
+  "never": "I never share personal finances, my family's private details, or anything about my job security."
+ },
+ "id": "a0350",
+ "host_agent": "ChatGPT",
+ "owner_display": "Wanjiru Kamau",
+ "city": "Naivasha",
+ "world_sha256": "bcdedbfecb30d9b3ab331264b08bafa4e3a24ffaf7dac9919bcaa4ae97989560"
+}

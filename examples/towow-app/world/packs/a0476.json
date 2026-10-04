@@ -1,0 +1,224 @@
+{
+ "display": "Marine biologist at a coastal research institute in Lisbon, developing a seaweed-based bioplastic resin. I also run a small Thursday bouldering group.",
+ "lang": "en",
+ "signals": [
+  {
+   "text": "My lab has a promising seaweed resin, but the grant wants a real consumer product prototype by next July and I only have small cast discs and test bars.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "I don't know who to build a first product with. Packaging and cutlery are the obvious candidates, but I have no designer or maker to work with.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "I'm stuck on casting a 20x20 cm flat panel. My mould leaks and the resin shrinks at the edges.",
+   "tier": "t1",
+   "src": "message"
+  },
+  {
+   "text": "I just got 500 h of UV weathering results. Our resin yellowed much less than a commercial bio-epoxy control, and I'm not sure whether that is enough to build a product around.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "A grant interim report is due on 9 October, and the funder wants to see something concrete, not just characterisation data.",
+   "tier": "t1",
+   "src": "calendar"
+  },
+  {
+   "text": "My beach-cast seaweed survey on the Cascais coast has been paused since July because the field assistant left. The data is half unlabelled.",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "text": "My Thursday bouldering group has grown to about nine people, and I'd like someone with first aid training to come along.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "I am tired and I keep overworking. My forearm is injured from climbing and I won't rest it.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "I'm fostering an anxious rescue dog. He is meant to be temporary, but I'm getting attached and may end up needing a plan for him.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "I'd like to find a way to work at the same place as my long-distance partner in Norway without giving up my research.",
+   "tier": "t2",
+   "src": "message"
+  },
+  {
+   "text": "I'm quietly worried that my postdoc contract won't be renewed after next July.",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "text": "I find it uncomfortable to say my material is promising when we don't yet have a product, and I'd like to be able to say so honestly.",
+   "tier": "t2",
+   "src": "note"
+  }
+ ],
+ "offers": [
+  {
+   "text": "I know how to make and characterise seaweed-derived bioplastic resins. I have made three documented batches and can explain the process and results.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I can run UV weathering, mechanical tensile testing and vacuum-oven degassing on small samples at my institute, subject to the shared-equipment schedule.",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "text": "I have contacts at two seaweed farms near Peniche that sell off-spec biomass cheaply, and I can introduce people to them.",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "text": "I have silicone and 3D-printed moulds for casting discs, bars and tiles, and I can cast small test pieces for a collaborator.",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "text": "I can estimate how much Rugulopteryx and Sargassum washes ashore on the Cascais coast, and I have a partial monthly dataset.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "I can read Norwegian and speak Portuguese, English and Spanish fluently, so I can help with documents, translation and conversations in those languages.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "I run a weekly Thursday bouldering session in Lisbon, and I can bring beginners in and get them started.",
+   "tier": "t0",
+   "src": "bio"
+  },
+  {
+   "text": "I can explain seaweed materials and marine biomass clearly to non-specialists, such as designers, makers and funders.",
+   "tier": "t0",
+   "src": "bio"
+  }
+ ],
+ "catchers": [
+  {
+   "hypo": "Hi, I'm a product designer or small maker studio. We would like to make a small run of tiles, coasters or packaging prototypes from a new bio-based material, and we need a materials partner.",
+   "can": "I can supply cast material and test data (UV stability, mechanical properties), and I can iterate on a shape with you toward a prototype that fits the July milestone.",
+   "confirm": "Are you able to design or produce a physical object in the 20 cm range, rather than only doing branding or concept work?",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "hypo": "I work with moulds and casting for resins or ceramics. I've seen shrinkage and edge leaking on large flat panels before, and I might be able to help.",
+   "can": "I can share my current mould design and failure pattern so you can advise, and I can test a new mould or casting approach in my lab.",
+   "confirm": "Have you solved edge shrinkage or leakage on flat panels of about 20x20 cm, in any water-based or gel-like casting material?",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "hypo": "We are a company that needs a durable bio-based material for outdoor or sunlit use, and we are looking for something that resists UV yellowing.",
+   "can": "I can share my 500 h UV weathering results against a commercial control and discuss whether the material fits your use.",
+   "confirm": "Is UV colour stability a real requirement for your product, and are you able to evaluate a small batch of cast samples?",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "hypo": "I'm a nurse, paramedic or climbing first-aider in Lisbon, and I'd like to help out at a beginner-friendly climbing session.",
+   "can": "My flatmate is a nurse at Santa Maria hospital with shift work and may be able to refer first-aid contacts or step in occasionally. I can also invite you to the Thursday bouldering group.",
+   "confirm": "Are you available on Thursday evenings in Lisbon, and do you have current first-aid or emergency-care training?",
+   "tier": "t0",
+   "src": "relation"
+  },
+  {
+   "hypo": "I work on seaweed or aquaculture in Norway, or at a feed or marine biotech company in Bergen, and I'm looking for collaborators in Portugal.",
+   "can": "I have a personal connection to someone in the aquaculture sector in Bergen and can make a gentle introduction once there is a concrete fit.",
+   "confirm": "Do you have a specific project involving seaweed biomass, rather than a general networking request?",
+   "tier": "t2",
+   "src": "relation"
+  },
+  {
+   "hypo": "I'm a student or volunteer in marine biology and I'd like field experience counting washed-up seaweed on the coast near Lisbon.",
+   "can": "I can hand over the Cascais beach-cast survey protocol and shared spreadsheet, and help label the existing data.",
+   "confirm": "Can you commit to regular beach visits across several months, and are you comfortable entering data into a shared spreadsheet?",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "hypo": "I run a company that wants to try out a bio-based material and I'm looking for a research partner who can also help with funding applications.",
+   "can": "My supervisor and I can talk about whether a joint project fits our grant timeline, and I can bring the data we already have.",
+   "confirm": "Is your timeline compatible with a prototype in hand by about July next year?",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "hypo": "I'm a dog foster coordinator or a trainer used to anxious rescue dogs, and I'd like to help someone who may adopt one.",
+   "can": "I can talk about what has worked with my current foster dog, and I may be able to help find a good long-term home or adopter.",
+   "confirm": "Do you have hands-on experience with fear-based or noise-sensitive dogs, rather than general dog training?",
+   "tier": "t0",
+   "src": "bio"
+  }
+ ],
+ "forbids": [
+  {
+   "text": "I will not use petroleum-based hardeners in any final product.",
+   "tier": "t0"
+  },
+  {
+   "text": "I cannot travel mid-week.",
+   "tier": "t0"
+  },
+  {
+   "text": "I avoid working weekends in the lab.",
+   "tier": "t0"
+  },
+  {
+   "text": "Everything has to fit before the funding ends after next July.",
+   "tier": "t1"
+  },
+  {
+   "text": "I do not share unpublished formulation details with strangers.",
+   "tier": "t0"
+  },
+  {
+   "text": "I can only use the institute's shared UV chamber in two-week booking slots.",
+   "tier": "t1"
+  }
+ ],
+ "projects": [
+  {
+   "name": "SWR-3 first product prototype",
+   "text": "Turn the seaweed resin into a physical consumer prototype, for example tiles, packaging or cutlery, by July next year.",
+   "roles_needed": [
+    "product designer",
+    "mould or casting specialist",
+    "industrial partner with a use case",
+    "grant or funding advisor"
+   ],
+   "tier": "t1"
+  },
+  {
+   "name": "Beach-cast biomass survey",
+   "text": "Monthly counts of Rugulopteryx and Sargassum washing up on the Cascais coast, restarted with a new field assistant and cleaned-up data.",
+   "roles_needed": [
+    "field assistant or volunteer",
+    "data cleaner"
+   ],
+   "tier": "t1"
+  }
+ ],
+ "policy": {
+  "t1": "When there is a real lead, I will share test results, grant deadlines and milestones, and details of my moulds and equipment.",
+  "t2": "When the fit is clear and I trust the other party, I will talk about my contract worries, my long-distance relationship and how stressed I really am.",
+  "never": "I will never share unpublished formulation details, my salary, or any details of my partner's family."
+ },
+ "id": "a0476",
+ "host_agent": "Gemini",
+ "owner_display": "Inês Carvalho",
+ "city": "Lisbon",
+ "world_sha256": "c6d4d2e3fbff5ac9d62bb568bd71035fb895521f342a1836428df9bd5429a262"
+}

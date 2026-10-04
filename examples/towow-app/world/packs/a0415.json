@@ -1,0 +1,206 @@
+{
+ "display": "Small-batch rose-water distiller in Nairobi, a former chemistry teacher.",
+ "lang": "en",
+ "signals": [
+  {
+   "text": "I'm looking for clean roses to distil, ideally from a grower who can tell me what was sprayed and when.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "Market roses keep coming in with a faint chemical smell. I threw out a whole 40-litre batch of petals this month and won't sell anything I can't trust.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "My still only runs about two days a week because clean petals are scarce. Demand isn't the problem.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "I have eleven 250ml bottles left and regular customers are waiting for the next batch.",
+   "tier": "t1",
+   "src": "message"
+  },
+  {
+   "text": "On 10 October I'm testing two new stalls at Wakulima market, and I'd like a cheap way to check petals for spray residue before I commit to one.",
+   "tier": "t1",
+   "src": "calendar"
+  },
+  {
+   "text": "I keep a notebook of which stall, which day and how the petals felt. I want to turn it into a proper supplier record, but I don't know any grower who keeps spray records.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "I'd like to find a grower in Kenya who would sell petals for hydrosol rather than cut-flower export.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "I've been thinking about how chemistry is taught in English to children who think in Kikuyu, and I'd like to see science taught in the mother tongue.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "When a batch fails, money gets tight, because my working capital is small and I can't absorb many losses.",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "text": "I'm worn down by a slow family legal matter that keeps getting postponed, and I'm trying to keep it out of my work.",
+   "tier": "t2",
+   "src": "message"
+  },
+  {
+   "text": "Sometimes I worry that a business this small doesn't matter, and I want to see that a careful craft product can find its place.",
+   "tier": "t2",
+   "src": "note"
+  }
+ ],
+ "offers": [
+  {
+   "text": "Hand-bottled small-batch rose water. I check pH, colour and smell on every batch and reject what fails.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "Sixteen years of teaching secondary-school chemistry. I can explain concepts clearly to teenagers and adults.",
+   "tier": "t0",
+   "src": "bio"
+  },
+  {
+   "text": "Distillation know-how: temperature control, cut points, and hydrosol quality checks.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "A 200-litre stainless steel steam still I built to my own spec. I can advise on building, gaskets, condenser problems and upkeep for small stills.",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "text": "About forty regular buyers in Nairobi who value quality, including a spa owner. This is a channel for clean, hand-made botanical products.",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "text": "A simple batch-QC routine (pH meter, glassware, sensory check) that other small producers can copy.",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "text": "A notebook of petal quality by stall and date at Wakulima market, which I can share as a record of what that market actually delivers.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "Weekend football coaching for under-14s, with a focus on keeping training fun and fair.",
+   "tier": "t1",
+   "src": "bio"
+  }
+ ],
+ "catchers": [
+  {
+   "hypo": "I grow roses outside the export chain and don't spray weekly. I keep a spray log and I'm looking for someone who wants petals.",
+   "can": "Buy petals for a trial batch, give feedback on smell and yield, and become a regular buyer if the batches pass my checks.",
+   "confirm": "Can you tell me, for each harvest, what was sprayed on the roses and when?",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "hypo": "I work with flower farms near Naivasha and Limuru and know growers with older rose beds. Would an introduction help you?",
+   "can": "Ask Mary, Grace's cousin who works in horticulture, to introduce unsprayed or low-spray growers. I'd go and test their petals myself.",
+   "confirm": "Are you talking about roses grown for petals, not cut-flower stems treated for vase life?",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "hypo": "I run a spa in Nairobi and want a local rose water I can trust. I don't need bulk, but I need it consistent.",
+   "can": "Supply small, tested batches, and ask Wanjiru, a spa owner and regular buyer, to introduce other spas.",
+   "confirm": "Is your need tens of bottles with quality ahead of price, not hundreds of litres at the lowest cost?",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "hypo": "I run a lab in Nairobi that screens plant material for pesticide residues, and I'd like small producers as clients.",
+   "can": "Send small petal samples for screening and use the results to pick suppliers and build a supplier record.",
+   "confirm": "Can you test a single small petal sample, not only commercial lots, at a price a micro-producer can pay?",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "hypo": "My daughter is in Form 3 and struggling with chemistry. Do you tutor, or can you explain it to her?",
+   "can": "Explain core ideas (acids and bases, separation, reaction types) in plain language, with kitchen or lab demonstrations when it fits.",
+   "confirm": "Is she following a Kenyan secondary syllabus and needs concept help rather than exam-paper ghost-writing?",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "hypo": "I'm setting up a small still for hydrosols and my condenser leaks. Can you tell me what to check?",
+   "can": "Share what I've learned on gaskets, temperature control, cut points and quality checks, and point to where the failure usually is.",
+   "confirm": "Is yours a small steam or water still, well under a few hundred litres, not an industrial plant?",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "hypo": "I make soap and skincare by hand and my batches vary a lot. How do you keep quality steady?",
+   "can": "Walk through my pH, colour and smell routine and help set up a basic batch log.",
+   "confirm": "Do you make water-based or botanical products by hand in small batches, not at factory scale?",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "hypo": "I'm writing school science material in Kikuyu and need a chemistry teacher to check that the concepts are correct.",
+   "can": "Review the chemistry content and say where children actually get confused, based on sixteen years in the classroom.",
+   "confirm": "Does the material need a chemistry reviewer for secondary-school learners, not only a translator?",
+   "tier": "t1",
+   "src": "note"
+  }
+ ],
+ "forbids": [
+  {
+   "text": "I won't distil petals whose spraying history I don't know, whatever the price.",
+   "tier": "t0"
+  },
+  {
+   "text": "I won't sell a batch that fails my smell, colour or pH checks.",
+   "tier": "t0"
+  },
+  {
+   "text": "My still runs two days a week at most, so I can't take bulk or rush orders.",
+   "tier": "t0"
+  },
+  {
+   "text": "Weekends are for coaching my son's football team, so no weekend meetings or deliveries.",
+   "tier": "t0"
+  },
+  {
+   "text": "I can't make large upfront purchases or fund equipment out of my working capital.",
+   "tier": "t1"
+  }
+ ],
+ "projects": [
+  {
+   "name": "Clean-petal supply for rose water",
+   "text": "Build a dependable supply of roses with a known spray record so the still can run at full capacity and the waiting customers can be served.",
+   "roles_needed": [
+    "rose grower with a spray log",
+    "horticulture contact who knows growers",
+    "residue-testing lab",
+    "cool-chain transport for fresh petals"
+   ],
+   "tier": "t1"
+  }
+ ],
+ "policy": {
+  "t1": "If there's a real sign of fit, I'll share batch sizes, the quality problem with market roses, my still schedule and my QC method.",
+  "t2": "Once trust is high and the other party is clear, I'll share that money is tight when batches fail and that there is a family land dispute, in general terms only.",
+  "never": "Court documents and personal finances."
+ },
+ "id": "a0415",
+ "host_agent": "Gemini",
+ "owner_display": "Daniel Kariuki",
+ "city": "Nairobi",
+ "world_sha256": "3d9f538d15e9fee0d5d0a6636855cb1b5d1645f85050352940d52a910e965f0a"
+}

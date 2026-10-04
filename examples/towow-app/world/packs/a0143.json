@@ -1,0 +1,222 @@
+{
+ "display": "Board-certified music therapist from Vancouver, on a sabbatical year in Dali, learning Mandarin and playing guitar in the old town on weekends.",
+ "lang": "en",
+ "signals": [
+  {
+   "text": "I'm looking for a clinic, care home or hospital in Dali or Kunming where a music therapist can sit in on or run sessions under a supervisor.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "I need roughly a hundred documented, supervised clinical contact hours before next summer to keep my certification on track.",
+   "tier": "t2",
+   "src": "project"
+  },
+  {
+   "text": "Most places I've approached say they can't take a foreign trainee, or want Mandarin fluency I don't have yet.",
+   "tier": "t1",
+   "src": "message"
+  },
+  {
+   "text": "I'm trying to rest without apologising for it, while also not coming back to work deskilled. Holding both is tiring.",
+   "tier": "t2",
+   "src": "note"
+  },
+  {
+   "text": "I miss the clinical work more than I expected after nine months away.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "I'm learning Mandarin and will start on hospital vocabulary this week. I'd like practice with real conversations, not just lessons.",
+   "tier": "t0",
+   "src": "calendar"
+  },
+  {
+   "text": "I'm curious about Bai folk music and want to hear and understand more of it. Someone has a wall of old Bai cassette tapes at the market.",
+   "tier": "t0",
+   "src": "message"
+  },
+  {
+   "text": "I'd like to find older local people or elder-care settings where shared songs could be welcome.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "My family is going through a house move back in Canada, and I'm helping from far away.",
+   "tier": "t2",
+   "src": "relation"
+  },
+  {
+   "text": "I'm still sorting out visa and paperwork logistics in Dali and could use local practical know-how.",
+   "tier": "t0",
+   "src": "calendar"
+  },
+  {
+   "text": "Busking by the old-town bridge on Saturdays only covers strings and lunch, and I'd like to play in more places.",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "text": "I'm trying to work out what kind of music therapy work I want to come back to.",
+   "tier": "t2",
+   "src": "note"
+  }
+ ],
+ "offers": [
+  {
+   "text": "Board-certified music therapist (MT-BC) with six years of clinical work in hospice and dementia care.",
+   "tier": "t1",
+   "src": "bio"
+  },
+  {
+   "text": "Designing and leading group sessions for older adults, including familiar-song groups, rhythm work, reminiscence and life review.",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "text": "Training or briefing for carers and volunteers on using familiar music with people with dementia or at end of life.",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "text": "Clinical documentation habits: SOAP notes, goal tracking, and baseline and follow-up observations. I can help set up simple outcome tracking.",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "text": "A travel guitar, a frame drum, a small set of tuned percussion and a portable speaker, all ready for sessions or small events.",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "text": "English native speaker who can do conversation practice, and can help with English-language materials for a clinic or school.",
+   "tier": "t0",
+   "src": "bio"
+  },
+  {
+   "text": "Live acoustic guitar and voice for community events, cafés or gatherings in Dali, as a volunteer or for tips.",
+   "tier": "t0",
+   "src": "bio"
+  },
+  {
+   "text": "Knowledge of how music therapy certification, continuing education and supervision work in North America.",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "text": "Time for volunteer sessions, since I'm on sabbatical and flexible during weekdays.",
+   "tier": "t1",
+   "src": "calendar"
+  }
+ ],
+ "catchers": [
+  {
+   "hypo": "I run a small elder-care home near Dali and some of our residents with memory loss are agitated in the afternoons. Do you know anyone who could run a music session?",
+   "can": "Design and lead a regular group session with the home's carers, document goals and responses, and show staff simple routines they can keep using.",
+   "confirm": "Could a licensed or experienced professional supervise or countersign documented session notes?",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "hypo": "I'm a doctor or therapist in Kunming or Dali with a patient group that could benefit from music. I'd like a certified music therapist to observe or co-lead, and I can formally supervise.",
+   "can": "Do supervised, documented clinical contact hours. This is exactly the setup that would count toward my certification.",
+   "confirm": "Can you or a colleague sign off as an approved supervisor, with written session records, for at least twenty hours a month?",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "hypo": "I teach Mandarin or run a language exchange in Dali. Would a foreign music therapist like to trade English or music sessions for hospital-vocabulary practice?",
+   "can": "Offer English conversation or a music session in exchange for focused practice on medical and care vocabulary.",
+   "confirm": "Can the practice focus on hospital and care-setting vocabulary and not general conversation?",
+   "tier": "t0",
+   "src": "relation"
+  },
+  {
+   "hypo": "My grandmother in the old town has dementia. She used to sing Bai songs, and nobody in the family knows what to do with her afternoons.",
+   "can": "Suggest simple ways to use familiar songs and rhythm at home, and tell the family what to look for. Where the family is local, I could visit informally.",
+   "confirm": "Do you have access to recordings or can you name a few songs she used to sing or hum?",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "hypo": "I collect old Bai folk cassettes and would like someone to help me work out which songs would suit a listening group for elders.",
+   "can": "Listen with them and help judge which tracks might work for a group, with the local collector or an elder on hand to explain them.",
+   "confirm": "Can a Bai speaker or a person who knows the songs be present to explain what they mean?",
+   "tier": "t0",
+   "src": "message"
+  },
+  {
+   "hypo": "I'm a nurse or care worker, tired and a bit burnt out from long-term care. Could someone who has done it talk with me?",
+   "can": "Talk honestly about sustaining caring work, and share what I've found helps in hospice and dementia settings.",
+   "confirm": "Are you looking for a peer conversation and not for formal counselling or a clinical referral?",
+   "tier": "t0",
+   "src": "bio"
+  },
+  {
+   "hypo": "My mother is also downsizing and sorting a lifetime of boxes. Is there anyone who could help me think about what to keep and how to talk about it?",
+   "can": "Through my mother's recent move in Burnaby, offer a few real, practical ideas from someone who just lived the conversation. I could connect them with her if both are willing.",
+   "confirm": "Is the move happening in the Vancouver area, and is the family open to a short chat with someone who has just gone through it?",
+   "tier": "t2",
+   "src": "relation"
+  },
+  {
+   "hypo": "I'm Ms. Yang's friend and run a retired teachers' group in Dali. We would like an activity with songs and a guest from abroad.",
+   "can": "Run a singalong or reminiscence session for the group, with help from my Mandarin tutor and her contacts as interpreters.",
+   "confirm": "Can someone in the group translate between Mandarin and English during the session?",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "hypo": "I'm a music therapist or student abroad hoping to practise in a place with few resources. How did you find your placement?",
+   "can": "Share what I've tried so far in Yunnan, which approaches failed and which are worth a try, and compare notes. I'd welcome hearing what has worked for others.",
+   "confirm": "Are you also looking for in-person, documented hours for a board-certified credential?",
+   "tier": "t1",
+   "src": "project"
+  }
+ ],
+ "forbids": [
+  {
+   "text": "I can't take paid work in China on my current visa, so any arrangement has to be unpaid, volunteer or expenses only.",
+   "tier": "t0"
+  },
+  {
+   "text": "Clinical hours only count with an approved supervisor and documentation, so I won't offer informal sessions as clinical treatment.",
+   "tier": "t1"
+  },
+  {
+   "text": "I won't discuss or share details of former clients or patients.",
+   "tier": "t0"
+  },
+  {
+   "text": "My Mandarin is limited and I have no Bai, so I need an interpreter for anything that depends on precise language.",
+   "tier": "t0"
+  },
+  {
+   "text": "I'm only in Dali until about next summer, so I can't commit to anything that runs longer.",
+   "tier": "t1"
+  }
+ ],
+ "projects": [
+  {
+   "name": "Supervised music therapy hours in Yunnan",
+   "text": "I'm looking for a setting in Dali or Kunming where I can run or co-run music sessions for older adults, with a supervisor who can sign off documented hours.",
+   "roles_needed": [
+    "approved clinical supervisor",
+    "care home or hospital host",
+    "Mandarin or Bai interpreter"
+   ],
+   "tier": "t1"
+  }
+ ],
+ "policy": {
+  "t1": "Clinical background, session design, equipment and credential rules, once there is a real chance of a placement, session or conversation.",
+  "t2": "The credential hours shortfall, family changes and what I'm unsure about regarding my next steps, once I know who the other person is and the fit looks strong.",
+  "never": "Names and details of former clients, and any session content from them."
+ },
+ "id": "a0143",
+ "host_agent": "Muse",
+ "owner_display": "Claire Bennett",
+ "city": "Dali",
+ "world_sha256": "044c88482f9da84d10f46f5ad913c321a446ddabc69354d60d29a88c5fec794e"
+}

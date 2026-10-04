@@ -1,0 +1,256 @@
+{
+ "display": "Fashion-design lecturer in Manchester who runs a sustainable dye lab and grows woad and madder on an allotment. My funded natural-dye project is stuck because batches never come out the same twice, and the part-time technician post is unfilled.",
+ "lang": "en",
+ "signals": [
+  {
+   "text": "I've run fourteen woad vats since March with the same recipe, and the blues range from pale duck-egg to deep indigo. I can't explain the pattern.",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "text": "Madder reds drift from batch to batch as well. Two kids dyeing socks in the same pot at the same time got orange-pink and brick red.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "I log temperature, pH, plant age, water hardness and fermentation time, and still can't predict the colour. I suspect I'm missing a way of looking at the data, not more data.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "I need a part-time technician who understands both plant dyes and process control. Chemists who've never touched a plant and dyers who've never kept a log have both come up short.",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "text": "The spectrophotometer says my batches differ by delta-E 8 to 15. The instrument is fine, so the variation is in the vat.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "I'm reading about CIELAB drift and want a sound way to make my batches comparable.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "I'd love to talk to someone who remembers how old dye-house colour matchers corrected a shade by eye, with no machine.",
+   "tier": "t0",
+   "src": "note"
+  },
+  {
+   "text": "Any technician hire has to start by early January, so I have a hiring clock running.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "A funder mid-term review is coming up and I'd like to show real progress on reproducibility, even if the progress is a better question.",
+   "tier": "t1",
+   "src": "calendar"
+  },
+  {
+   "text": "My third-year students are being assessed on matching swatches in a collection about variation. They're working with local plant colour, so it's an ironic brief.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "The Slow Colour student show is on 12 December, and the students could use dye-literate people to talk to or to host them.",
+   "tier": "t1",
+   "src": "calendar"
+  },
+  {
+   "text": "Students learn colour best when they dig madder at the allotment. I'd like more ways to get them outdoors and into the soil.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "I'm training for a fell race in the Peak District and would be glad of running company or advice for the climbs.",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "text": "The allotment woad has gone to seed. I'm saving seed and the last harvest is in early November.",
+   "tier": "t1",
+   "src": "calendar"
+  },
+  {
+   "text": "I'm stretched across teaching, research, family and the repair café, and it's hard to find time to think about the vat problem properly.",
+   "tier": "t1",
+   "src": "bio"
+  }
+ ],
+ "offers": [
+  {
+   "text": "A dye lab with eight stainless-steel pots, a fume cupboard, and a pH and temperature logging setup. I can host a trial or a visit.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "Fourteen-plus vats of logged woad and madder data (pH, temperature, plant age, water hardness, fermentation time) that I'm willing to share for analysis.",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "text": "Practical knowledge of growing woad, madder, weld and dyer's chamomile, and of turning them into colour.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "A natural-dye research project with a part-time technician post I can offer to the right person.",
+   "tier": "t0",
+   "src": "project"
+  },
+  {
+   "text": "Access to a university spectrophotometer, shared and booked about two weeks ahead, for colour measurement collaborations.",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "text": "Teaching experience in fashion design and the ability to explain colour and sustainability to students and non-specialists.",
+   "tier": "t0",
+   "src": "bio"
+  },
+  {
+   "text": "Knitwear repair and darning, including visible, memorial repairs that don't try to hide the damage.",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "text": "A network of knitters and weavers through a Chorlton repair café and a Northern Quarter yarn shop.",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "text": "A supply of second-best fleece from a Derbyshire farmer, traded for dyed samples.",
+   "tier": "t1",
+   "src": "relation"
+  },
+  {
+   "text": "Allotment days where visitors can dig madder or harvest woad in season.",
+   "tier": "t1",
+   "src": "skill"
+  }
+ ],
+ "catchers": [
+  {
+   "hypo": "I'm a dyer with a few years' experience and I've been keeping detailed batch logs for years. I'd like a part-time lab role where the logs actually matter.",
+   "can": "Hannah can discuss the part-time technician post and arrange a lab visit.",
+   "confirm": "Have you dyed with plant materials (not only synthetic or mordant dyes) and kept batch-by-batch records yourself?",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "hypo": "I'm a process or analytical chemist who has never dyed, but I'd like to learn plants and run the controls. Is there a technician post for me?",
+   "can": "Hannah can talk to them about whether they'd pair well with the dye knowledge she already has.",
+   "confirm": "Are you willing to learn hands-on plant dyeing, and can you work part time on site in Manchester?",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "hypo": "I'm a statistician with experience in design of experiments, and I enjoy messy biological data. Would you share your vat logs?",
+   "can": "Hannah can share anonymised logs and discuss what variables might be confounded.",
+   "confirm": "Have you analysed noisy natural-process data (fermentation, agriculture, food or similar), and not only industrial data?",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "hypo": "I work in colour science and know CIELAB drift well. Could I help you make plant-dye batches comparable?",
+   "can": "Hannah can talk through her delta-E results and what she measures.",
+   "confirm": "Have you worked with spectrophotometer data from textiles or other variable organic materials?",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "hypo": "My mother worked in a dye house, or I'm a retired colour matcher. I remember how shades were corrected by eye.",
+   "can": "Hannah would be glad to interview them and record how they corrected colour.",
+   "confirm": "Did you or someone you know do hands-on colour matching, adjusting a dye bath by eye?",
+   "tier": "t1",
+   "src": "note"
+  },
+  {
+   "hypo": "I run a small fashion label and want plant-dyed colour I can reorder and repeat. What's realistic?",
+   "can": "Hannah can tell them what current research shows about repeatability and where it breaks down.",
+   "confirm": "Do you work in small batches and care about plant dyes specifically, not simply 'eco-friendly' dyes?",
+   "tier": "t1",
+   "src": "project"
+  },
+  {
+   "hypo": "My small studio or charity needs a plain-spoken person to look at its basic IT and data security. Do you know anyone?",
+   "can": "Hannah can ask Rob, her husband, who works in IT security, whether he can recommend someone or give a short steer.",
+   "confirm": "Is this a small organisation that needs practical, basic advice and not a full security audit?",
+   "tier": "t2",
+   "src": "relation"
+  },
+  {
+   "hypo": "I've just lost someone and I have their knitted jumper with a moth hole. Can it be repaired?",
+   "can": "Hannah can do a visible, respectful repair at the Saturday repair café, or point to someone local.",
+   "confirm": "Is it a knitted or darned garment that you can bring in person on a Saturday morning in Manchester?",
+   "tier": "t0",
+   "src": "skill"
+  },
+  {
+   "hypo": "I teach textiles and want my students to see real plant dyeing. Could we visit the allotment or dye lab?",
+   "can": "Hannah can host a limited visit, depending on season and school-run days.",
+   "confirm": "Is it an educational group that can come on a day other than Wednesday and outside school holidays?",
+   "tier": "t1",
+   "src": "skill"
+  },
+  {
+   "hypo": "I grow dye plants or keep sheep and wonder whether anyone uses the fleece or the harvest.",
+   "can": "Hannah can swap dyed samples for fleece or exchange growing knowledge, and can introduce them to her Derbyshire farmer.",
+   "confirm": "Do you grow dye plants or keep sheep in the Manchester/Derbyshire area?",
+   "tier": "t1",
+   "src": "relation"
+  }
+ ],
+ "forbids": [
+  {
+   "text": "I won't work on Wednesdays because of the school run.",
+   "tier": "t0"
+  },
+  {
+   "text": "I can't travel during school holidays.",
+   "tier": "t0"
+  },
+  {
+   "text": "The project stays natural-only. I won't use synthetic dyes for it, and I won't call synthetics sustainable.",
+   "tier": "t0"
+  },
+  {
+   "text": "The allotment is seasonal and tied to light and weather, so I can't promise year-round field work.",
+   "tier": "t0"
+  }
+ ],
+ "projects": [
+  {
+   "name": "Woad & Madder Reproducibility project",
+   "text": "A two-year funded study to make plant dyes repeatable enough for small-batch fashion labels. It is stuck on batch-to-batch variation.",
+   "roles_needed": [
+    "Part-time dye technician with process-control habits",
+    "Statistician or experimental-design adviser",
+    "Colour scientist (CIELAB, spectrophotometry)",
+    "Retired colour matcher or dye-house historian"
+   ],
+   "tier": "t1"
+  },
+  {
+   "name": "Slow Colour student show",
+   "text": "A capsule collection by seven third-year students, dyed only with plants grown within thirty miles, shown on 12 December.",
+   "roles_needed": [
+    "Guest critic or speaker on natural dye",
+    "Local plant or fibre supplier",
+    "Show venue or photographer"
+   ],
+   "tier": "t1"
+  }
+ ],
+ "policy": {
+  "t1": "Teaching, the repair café, running and the Slow Colour show; the technician hire's timing; and the research data and lab access for serious collaborators.",
+  "t2": "Detail on the project's batch-variation problem and the unfilled technician post, once there's a real fit.",
+  "never": "Salary, budget and contract details, family names and private worries, and the grant's financial situation."
+ },
+ "id": "a0286",
+ "host_agent": "Manus",
+ "owner_display": "Dr. Hannah Whitlow",
+ "city": "Manchester",
+ "world_sha256": "3bba42f3c076fcc7e482ef512ade7bf8b2d96194c05db3bef867df0a4cc69de5"
+}
