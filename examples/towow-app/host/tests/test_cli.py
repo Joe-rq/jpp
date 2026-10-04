@@ -39,3 +39,14 @@ async def test_preload_order_and_resume(tmp_path):
     n_writes = len(eng.writes)
     await preload(eng, str(tmp_path), n=3, seed=1, log=lambda m: None)    # 重启续载：已在的不重写
     assert len(eng.writes) == n_writes
+
+
+def test_tighten_cost_only_tightens():
+    from host.server import tighten_cost
+    from jx.engine import Engine
+    e = Engine.from_source("budget {calls: 10, cost: 4.5};")
+    assert tighten_cost(e, 4.0) == 4.0 and e.account.cap_cost == 4.0
+    assert tighten_cost(e, 9.0) == 4.0          # 不放宽
+    assert tighten_cost(e, None) is None and e.account.cap_cost == 4.0
+    e2 = Engine.from_source("cell x[a] reducer single;")   # 程序没写花费上限
+    assert tighten_cost(e2, 0.5) == 0.5

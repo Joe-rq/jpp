@@ -23,10 +23,13 @@ class Fake(Ports):
 
     def index_put(self, x, n): self.index[x] = n
     def index_del(self, x): self.index.pop(x, None)
+    def present(self, x): return sorted(y for y, n in self.index.items() if y != x and n["kind"] == "agent")
 
     async def judge(self, state, qs):
         self.states.append(state)
         out = []
+        if "我" in state:                                   # 召回两段：全体都给高分（这里只测增量与撤回）
+            return [Reading(act=True, p=0.9) for _ in qs]
         if len(state.get("sides", [])) == 2 and len(state["owners"]) == 2:
             A, B = state["sides"]
             vis = lambda S, k: {t.split(":")[-1] for t in S[k]} | {f["text"].split(":")[-1] for f in S["已解锁"] if f["text"].startswith(k[:-1] if k=="offers" else "need")}

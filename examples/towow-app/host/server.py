@@ -409,8 +409,8 @@ class Host:
                 self._save_joins(joins)
         return {"ok": True, "epoch": epoch,
                 "removed": {"pack": True, "index_entries": True, "disclosure_cells": n_disc, "saved_join": bool(self.joins_path)},
-                "note": "你的算子包、索引条目和补充信息已删除，别人那里立刻不再显示你；由你算出的边与构型在进行中的判断走完后撤回"
-                        "（实测约 100 秒）。已经发给 TypeSafe JEV 判断和 Claude 写方案的文字，按这两家的数据政策保留，网络删不到。"}
+                "note": "你的算子包、索引条目和补充信息已删除，别人那里立刻不再显示你；由你算出的边与构型随即撤回"
+                        "（已经发出、还没答完的判断会答完，但结果不再写回）。已经发给 TypeSafe JEV 判断和 Claude 写方案的文字，按这两家的数据政策保留，网络删不到。"}
 
     # ------------------------------------------------------------ 展示时钟（宿主供时钟：每秒一条 stats 给前端）
     def stats_event(self, prev: dict | None, dt: float) -> dict:
@@ -627,9 +627,20 @@ class Host:
 
 # ---------------------------------------------------------------- 真实进程
 
+def tighten_cost(engine: Any, cap: float | None) -> float | None:
+    """只收紧：把引擎 run 账户的花费上限降到 cap 美元（实验用，如预注册 12 的总上限 $4）。
+    程序 budget 更紧时不变；程序语义不变——超出后判断照语言的预算规则记为未观察。返回生效的上限。"""
+    acct = getattr(engine, "account", None)
+    if cap is None or acct is None:
+        return None
+    acct.cap_cost = min(acct.cap_cost, float(cap))
+    return acct.cap_cost
+
+
 def build_real(program: str, *, port_judge: str = "live", ledger_dir: str | None = None, seed: int = 0,
                flags: dict | None = None, enc_cache: str | None = None, join_budget=None, join_deadline_s=None,
-               device: str = "mps", judge_cache: str | None = None, keep_text: bool = True):
+               device: str = "mps", judge_cache: str | None = None, keep_text: bool = True,
+               max_cost: float | None = None):
     """装配真实进程：EncPort(bge-m3) + 索引 + J++x 引擎（jx.engine，lang 实现）+ 宿主。
     judge_cache：判断单元按内容键（模型|state|题）持久化的 sqlite（引擎 Sched 已支持），只在真判断器下用——
     伪读数写进去会冒充真读数，所以 fixture 模式拒绝它。
@@ -655,6 +666,7 @@ def build_real(program: str, *, port_judge: str = "live", ledger_dir: str | None
     eng = Engine.load(program, ports=ports, flags=flags or {}, seed=seed, cache_path=judge_cache,
                       ledger_path=os.path.join(runs, f"serve-{stamp}.ledger.jsonl"),
                       events_path=os.path.join(runs, f"serve-{stamp}.events.jsonl") if keep_text else None)
+    tighten_cost(eng, max_cost)
     index = FragmentIndex(enc)
     return Host(eng, index, join_budget=join_budget, join_deadline_s=join_deadline_s, owns_engine=True,
                 view_path=os.path.join(runs, f"serve-{stamp}.view.jsonl") if keep_text else None,
