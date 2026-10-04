@@ -9,6 +9,6 @@ sleep 1
 nohup cloudflared tunnel --no-autoupdate --url http://localhost:8794 --http-host-header localhost:8794 > runs/real/tunnel.log 2>&1 &
 until grep -qoE 'https://[a-z0-9-]+\.trycloudflare\.com' runs/real/tunnel.log; do sleep 2; done
 ORIGIN=$(grep -oE 'https://[a-z0-9-]+\.trycloudflare\.com' runs/real/tunnel.log | head -1)
-sed -i '' "s|^ORIGIN = .*|ORIGIN = \"$ORIGIN\"|" deploy/worker/wrangler.toml
-(cd deploy/worker && npx --no-install wrangler deploy >/dev/null)
+echo "$ORIGIN" > runs/real/origin.txt          # 当前隧道地址只记在本机，不进仓库
+"${0:A:h}/worker.sh"                          # 带前端一起重新部署 Worker
 echo "隧道 $ORIGIN → https://net.towow.ai"

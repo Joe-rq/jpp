@@ -80,6 +80,8 @@ async def roundtrip(client_factory, eng):
         j = data(await c.call_tool("towow_join", {"pack": PACK, "agent_name": "Nature", "host_agent": "Claude Code"}))
         me = j["agent_id"]
         assert me == agent_id_for("Nature", "Claude Code") and j["eta_first_batch_s"] > 0 and j["t0_fragments"] == 3
+        import hashlib as _h                                # 加盐：不能由称呼与宿主名直接算出
+        assert me != "u" + _h.sha256("Claude Code\x00Nature".encode()).hexdigest()[:10]
         w = eng.read("world", [me])
         tok = j["token"]
         # 服务端只收 t0：t1/t2 在 join 时丢掉、不进 world，策略也不交给网络
@@ -114,6 +116,8 @@ async def roundtrip(client_factory, eng):
         assert ring["plan"]["title"] == "三方互助环" and ring["value"] == "大" and ring["lacks"][0]["denied"]
         assert pair["shape"] == "pair" and pair["confidence"]["p"] == 0.83 and pair["direction"] == "对方帮你"
         assert pair["confidence"]["kind"] == "act" and "孤立" in pair["confidence"]["q"]
+        assert " A " not in pair["confidence"]["q"] and "A 的" not in pair["confidence"]["q"]   # A/B 换成名字
+        assert o["discovery"]["pairs_judged"] == 1 and o["discovery"]["opportunities"] == 2
         assert pair["with"][0]["display"] == "心理咨询师老周" and pair["value"] == "中" and pair["form"] == "直接互补"
         # 演示网络里对方是虚构居民时要标出来（真实接入者不能误以为是真人）
         assert pair["with"][0]["real"] is False and "虚构" in pair["with"][0]["who"] and "real" in o["who_means"]
@@ -271,6 +275,7 @@ async def test_joins_persist_restore_and_leave(fake_enc, tmp_path):
     j = await host.join(PACK, "Nature", "Claude Code")
     me, tok = j["agent_id"], j["token"]
     assert j["network"]["real_agents"] == 1
+    assert "budget_note" not in j          # FakeEngine 没有预算账户：不提示
     raw = open(path, encoding="utf-8").read()
     assert tok not in raw and "睡眠很差" not in raw and me in raw
     import os
@@ -282,7 +287,8 @@ async def test_joins_persist_restore_and_leave(fake_enc, tmp_path):
     assert eng2.read("world", [me])["real"] is True and host2.authorized(me, tok) and not host2.authorized(me, "x")
 
     await host2.respond(me, "a0042|近况细节", True, "最近一个人在工作室")
-    await host2.leave(me)
+    lv = await host2.leave(me)
+    assert lv["removed"]["disclosure_cells"] == 2 and "100 秒" in lv["note"]
     assert eng2.read("world", [me]) is None and eng2.keys("unlocked", contains=me) == []
     assert eng2.keys("reply", contains=me) == [] and not host2.authorized(me, tok)
     assert json.load(open(path, encoding="utf-8")) == {}
@@ -291,3 +297,66 @@ async def test_joins_persist_restore_and_leave(fake_enc, tmp_path):
     from host import views
     eng2.sim_put("inbox", ["u-other"], [{"from": me, "cat": "近况细节", "purpose": "p", "q": "q", "asker_display": "Nature"}])
     assert views.inbox(eng2, "u-other")["n"] == 0
+
+
+@pytest.mark.anyio
+async def test_budget_visible_when_exhausted(fake_enc):
+    """程序预算用完时：/healthz 与 join、opportunities 的回复都说清楚，不让新接入者静静地拿不到机会。"""
+    from jx.sched import Account
+    eng, host = make_host(fake_enc)
+    eng.account = Account("run", 100, 4.5)
+    j = await host.join(PACK, "Nature", "Claude Code")
+    assert "budget_note" not in j and host.budget()["cost_left_usd"] == 4.5
+    eng.account.charge(10, 4.48)
+    assert host.budget()["exhausted"] is True
+    j2 = await host.join(PACK, "Other", "Claude Code")
+    assert "预算" in j2["budget_note"]
+
+
+def test_closed_after_disclosure_says_who_disclosed(fake_enc):
+    """10-05 Codex 实测：自己没给 t1，却看到「双方多给了一层」。放下的机会要说清是谁多给了。"""
+    from host import views
+    eng, host = make_host(fake_enc)
+    me, other = "u1", "a0042"
+    eng.sim_put("world", [other], {"id": other, "real": False, "display": "老周"})
+    eng.sim_put("node", [other], {"id": other, "kind": "agent", "display": "老周"})
+    eng.sim_put("node", [me], {"id": me, "kind": "agent", "display": "我"})
+    eng.sim_put("edge", [other, me], {"holds": False, "tier_seen": ["t0", "t1"], "decisive": None})
+    eng.sim_put("unlocked", [other, me], [{"text": "x", "tier": "t1"}])
+    c = views.opportunities(host.eng, me)["closed_after_disclosure"][0]
+    assert c["you_disclosed"] is False and c["they_disclosed"] is True and c["why"].startswith("对方多给了一层")
+
+
+def test_public_live_stream_whitelist(fake_enc):
+    """公开画面（/live）：白名单字段；真人显示 t0 但不出补充信息内容、含真人的方案不出标题摘要；不认识的类型与错误不发。"""
+    from host import views
+    real = {"u1"}
+    pe = lambda ev: views.public_event(ev, real)        # noqa: E731
+    j = pe({"type": "node_join", "id": "u1", "kind": "agent", "label": "插画师", "city": "杭州", "host_agent": "Codex"})
+    assert j["real"] is True and j["label"] == "插画师" and "city" not in j
+    assert pe({"type": "node_join", "id": "a1", "kind": "agent", "label": "老周"})["real"] is False
+    dr = pe({"type": "disclose_request", "id": "u1|a1|近况", "to": "u1", "from": "a1", "category": "近况",
+             "purpose": "想知道你最近为什么失眠", "status": "sent"})
+    assert "purpose" not in dr and dr["category"] == "近况"
+    assert pe({"type": "disclose", "id": "u1", "to": "a1", "tier": 1, "added_chars": 30, "reason": "unlock",
+               "text": "秘密"}) == {"type": "disclose", "id": "u1", "to": "a1", "tier": 1, "added_chars": 30}
+    p_real = pe({"type": "plan", "config": "cfg:a1+u1", "title": "三方互助", "summary": "含 t1 的细节", "conf": 0.7})
+    assert p_real["title"] is None and p_real["summary"] is None
+    assert pe({"type": "plan", "config": "cfg:a1+a2", "title": "两位虚构居民", "summary": "s"})["title"] == "两位虚构居民"
+    assert pe({"type": "error", "where": "host.map", "msg": "Traceback ... 秘密"}) is None
+    assert pe({"type": "publish", "cell": "unlocked", "value": [{"text": "秘密"}]}) is None
+    snap = pe({"type": "snapshot", "nodes": [{"id": "u1", "kind": "agent", "label": "插画师", "city": "杭州", "real": True}],
+               "edges": [{"a": "a1", "b": "u1", "conf": 0.6, "secret": 1}],
+               "configs": [{"id": "cfg:a1+u1", "members": ["a1", "u1"], "plan_title": "含 t1"}], "stats": {"agents": 2}})
+    assert "city" not in snap["nodes"][0] and "secret" not in snap["edges"][0] and "plan_title" not in snap["configs"][0]
+
+    eng, host = make_host(fake_enc)                     # 宿主：公开客户端收过滤后的事件，满员拒绝
+    host.tokens["u1"] = "x"
+    q = host.hub.subscribe_public()
+    host.hub.emit({"type": "disclose_request", "id": "u1|a1|c", "to": "u1", "from": "a1", "category": "c",
+                   "purpose": "秘密", "status": "sent"})
+    host.hub.emit({"type": "error", "msg": "秘密"})
+    got = q.get_nowait()
+    assert "purpose" not in got and q.empty()
+    host.hub.max_public = 1
+    assert host.hub.subscribe_public() is None
