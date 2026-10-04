@@ -1,0 +1,7 @@
+name = "towow-net"
+main = "worker.js"
+compatibility_date = "2026-10-01"
+routes = [{ pattern = "net.towow.ai", custom_domain = true }]
+
+[vars]
+ORIGIN = "https://cigarettes-allocated-relaxation-raid.trycloudflare.com"

@@ -21,7 +21,7 @@ def anyio_backend():
 async def test_join_three_agents_on_real_engine(fake_enc):
     eng = engine_mod.Engine.load("app/net.jpx", seed=0)
     host = Host(eng, FragmentIndex(fake_enc))
-    calls = {"index_put": 0, "route": 0}
+    calls = {"index_put": 0, "present": 0}
     def counted(f, n):
         async def g(*a):
             calls[n] += 1
@@ -42,7 +42,7 @@ async def test_join_three_agents_on_real_engine(fake_enc):
     try:
         assert eng.read_host("world", [ids[0]])["real"] is True
         # 宿主侧：do 动作被调用、node_join 映射出来、机会与快照渲染不报错
-        assert calls["index_put"] >= 3 and calls["route"] >= 3
+        assert calls["index_put"] >= 3 and calls["present"] >= 3     # agent 召回不经向量：present 给出在场全体（预注册 10）
         assert sum(e["type"] == "node_join" for e in evs) >= 3
         o = views.opportunities(host.eng, ids[0])
         assert o["published"] is True

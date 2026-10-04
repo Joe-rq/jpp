@@ -149,4 +149,12 @@ fn rerank_q(m) {
         "对方：" + first_clause(m.display ?? m.id) + "。对方在找：" + join(map(take(texts(m.signals ?? []), 2), fn(t) { substr(t, 0, 60) }), "；")
         + "。对方能提供：" + join(map(take(texts(m.offers ?? []), 2), fn(t) { substr(t, 0, 60) }), "；")
         + "。读「我」的世界：我和这位对方之间，可能有一桩实在的合作吗（我帮他、他帮我，或经身边的人转介都算）？" } }
+// 预注册 10 第二段：问法同 rerank_q，对方信息换成完整 t0（展示语全文、全部在找 / 能提供、接得住的来信与能怎么接）
+fn rerank_q_full(m) {
+    if m == unit { rerank_q(m) } else {
+        let cat = map(m.catchers ?? [], fn(c) { if is_record(c) { "若有人说「" + str(c.hypo ?? "") + "」，能" + str(c.can ?? "") } else { str(c) } });
+        "对方：" + str(m.display ?? m.id) + "。对方在找：" + join(texts(m.signals ?? []), "；")
+        + "。对方能提供：" + join(texts(m.offers ?? []), "；")
+        + "。对方接得住的来信：" + (if len(cat) == 0 { "无" } else { join(cat, "；") })
+        + "。读「我」的世界：我和这位对方之间，可能有一桩实在的合作吗（我帮他、他帮我，或经身边的人转介都算）？" } }
 fn p_yes(e) { if is_exit(e) && e.kind == "act" { e.p } else { if is_exit(e) && e.p != unit { 1 - e.p } else { 0 } } }

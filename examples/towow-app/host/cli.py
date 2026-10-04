@@ -138,15 +138,24 @@ def serve(a):
     flags = {f: True for f in (a.flag or [])}
     absp = lambda x: x if (not x or os.path.isabs(x)) else os.path.join(APP_DIR, x)   # noqa: E731
     host = build_real(absp(a.program), port_judge=a.judge, seed=a.seed, flags=flags, device=a.device,
-                      judge_cache=absp(a.judge_cache))
+                      judge_cache=absp(a.judge_cache), keep_text=not a.public)
     if a.preload:
         from host.simulate import start_preload
         host.after_start.append(start_preload(host, absp(a.preload), n=a.preload_n, seed=a.seed,
                                               interval=a.preload_interval, background=a.preload_background))
     web = a.web if os.path.isabs(a.web) else os.path.join(APP_DIR, a.web)
-    app = host.build_app(bind_host=a.bind, web_dir=web)
+    if a.public:
+        host.max_real_agents = a.max_real_agents
+        host.joins_path = absp(a.joins_file)       # 真实接入存盘（只有 t0 包与 token 摘要），重启后恢复
+        os.makedirs(os.path.dirname(host.joins_path), exist_ok=True)
+        host.load_tokens()
+        from host.simulate import start_restore
+        host.after_start.append(start_restore(host))
+        if not os.environ.get("TOWOW_DISPLAY_TOKEN"):
+            print("注意：--public 时没设 TOWOW_DISPLAY_TOKEN，3D 展示端点对所有人关闭", file=sys.stderr)
+    app = host.build_app(bind_host=a.bind, web_dir=web, public=a.public)
     print(connect_lines(f"http://localhost:{a.port}"), file=sys.stderr)
-    uvicorn.run(app, host=a.bind, port=a.port, log_level="info")
+    uvicorn.run(app, host=a.bind, port=a.port, log_level="info", access_log=not a.public)   # 公网时不记访问日志（查询串里有展示 token）
 
 
 def main(argv=None):
@@ -170,6 +179,9 @@ def main(argv=None):
     s.add_argument("--device", default="mps")
     s.add_argument("--web", default="web/dist")
     s.add_argument("--flag", action="append", help="消融开关，如 --flag no_batch（见 Fable-A §七）")
+    s.add_argument("--public", action="store_true", help="经隧道对公网开放：展示端点要 TOWOW_DISPLAY_TOKEN，接入数受 --max-real-agents 限制")
+    s.add_argument("--max-real-agents", type=int, default=200)
+    s.add_argument("--joins-file", default="runs/real/joins.json", help="--public 时真实接入的存盘位置（0600）")
 
     sp.add_parser("spec")
     j = sp.add_parser("join")
@@ -200,7 +212,7 @@ def main(argv=None):
         return
     if a.cmd == "state":
         import httpx
-        show(httpx.get(url.rstrip("/") + "/api/state", timeout=30).json())
+        show(httpx.get(url.rstrip("/") + "/api/state", params={"display_token": os.environ.get("TOWOW_DISPLAY_TOKEN", "")}, timeout=30).json())
         return
     if a.cmd == "leave":
         import httpx

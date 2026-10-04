@@ -307,6 +307,12 @@ class FragmentIndex:
             own = {str(m) for m in (node or {}).get("members") or []} - {x}   # 构型查询时排除自己的成员
             return self._aggregate(self._search(x, qs, k, own))
 
+    def present(self, x: str) -> list[str]:
+        """在场的全体 agent（不含构型节点与自己），按 id 排序。预注册 10：1 万人以内召回不经向量，JEV 判断全体。"""
+        with self.lock:
+            return sorted(o for o, n in self.nodes.items()
+                          if o != str(x) and not str(o).startswith("cfg:") and (n or {}).get("kind", "agent") != "config")
+
     def route_offers(self, config_node: dict | None, k: int = 5) -> list[dict]:
         """构型的「还缺」查 offers 子索引：还缺 = 构型的 signals + lacks 的类别文字。
         返回 [{id, peer, score, routes}]，排除构型本身与它的成员。"""
@@ -346,4 +352,5 @@ def make_do_actions(index: FragmentIndex) -> dict:
         "index_put": lambda owner, node: index.index_put(owner, node),
         "route": lambda x, node, k=20: index.route(x, node, k),
         "route_offers": lambda cfg, k=5: index.route_offers(cfg, k),
+        "present": lambda x: index.present(x),
     }
