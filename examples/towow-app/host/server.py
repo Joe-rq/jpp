@@ -49,6 +49,8 @@ INSTRUCTIONS = """通爻（Towow）是一个陌生人合作发现网络。你是
 
 
 DENY = "需要这个 agent 首次 join 时拿到的 token"
+FRAG_KEYS = ("signals", "offers", "catchers", "forbids", "projects")
+PACK_KEYS = set(FRAG_KEYS) | {"display", "lang", "policy"}     # policy 收下即清空；其余键丢掉
 
 
 def agent_id_for(agent_name: str, host_agent: str) -> str:
@@ -216,17 +218,22 @@ class Host:
         aid = agent_id_for(agent_name, host_agent)
         if aid in self.tokens and not secrets.compare_digest(self.tokens[aid], str(token or "")):
             return {"error": "这个称呼已经被接入；更新算子包要带上首次 join 返回的 token"}
-        pack = {"lang": "zh", "signals": [], "offers": [], "catchers": [], "forbids": [], "projects": [],
-                "policy": {}, **pack}                       # 算子包可选字段补默认值（operator-pack-spec）
-        # 服务端只收 t0：t1/t2 留在 agent 端，有人来要时经 respond 逐类给出（10-04 反驳：t2 原文曾随 join 落进事件日志）
-        n_dropped = 0
-        for k in ("signals", "offers", "catchers", "projects"):
-            keep = [f for f in pack.get(k) or [] if not isinstance(f, dict) or str(f.get("tier", "t0")) == "t0"]
-            n_dropped += len(pack.get(k) or []) - len(keep)
-            pack[k] = keep
-        pack["policy"] = {}                                 # 披露策略由真实 agent 自己执行，不交给网络
+        # 服务端只收 t0：t1/t2 留在 agent 端，有人来要时经 respond 逐类给出（10-04 反驳：t2 原文曾随 join 落进事件日志）。
+        # 顶层只认白名单里的键；片段类（含 forbids）按层过滤；其余键（自定义字段、owner 详情、策略）一律丢掉，不进任何单元与日志。
+        n_dropped = sum(1 for k in pack if k not in PACK_KEYS)
+        clean: dict = {"lang": str(pack.get("lang") or "zh")[:8]}
+        if isinstance(pack.get("display"), str):
+            clean["display"] = pack["display"][:300]
+        for k in FRAG_KEYS:
+            xs = pack.get(k) or []
+            xs = xs if isinstance(xs, list) else []
+            keep = [f for f in xs if (isinstance(f, str) or (isinstance(f, dict) and str(f.get("tier", "t0")) == "t0"))]
+            n_dropped += len(xs) - len(keep)
+            clean[k] = keep
+        clean["policy"] = {}                                # 披露策略由真实 agent 自己执行，不交给网络
+        pack = clean
         world = {**pack, "id": aid, "real": True, "host_agent": host_agent,
-                 "owner": {**(pack.get("owner") or {}), "display_name": agent_name},
+                 "owner": {"display_name": agent_name},
                  "display": pack.get("display") or agent_name, "joined_at": time.time()}
         kw = {}
         if self.join_budget:
