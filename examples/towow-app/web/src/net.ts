@@ -4,6 +4,7 @@
 import { Scene, Vector3 } from 'three';
 import type { NetEvent, ConfigEv, Shape, StatsFields, Judge, Probe } from './protocol';
 import { SHAPE_NAME, MAX_TIER, formLabel } from './protocol';
+import { plural } from './captions';
 import { Layout, hash } from './layout';
 import { Ports } from './scene/ports';
 import { Routes, EDGE_STATE } from './scene/routes';
@@ -118,6 +119,8 @@ export class Net {
   cands = new Map<string, CandRec>();
   /** 画面叙述：由前端按事件自己数出来的一句话，交给字幕 */
   onNarrate?: (text: string) => void;
+  /** 旁白语言：首页 ?lang=en 时为 'en'，默认 'zh' */
+  lang: 'zh' | 'en' = 'zh';
   /** 一次召回已到、正排队等镜头与光落地：接入字幕让位给叙述 */
   storyPending = false;
   private pend: { due: number; seq: number; e: NetEvent; lag: number }[] = [];
@@ -242,11 +245,14 @@ export class Net {
     this.storyPending = false;
     this.onMoment?.({ kind: 'recall', id: A.id, to: ids, t: now });
     const others = Math.max(0, this.agentCount() - 1);
-    this.narrate(this.recalls++ === 0 ? `${A.label}接入。网络在 ${others} 个 agent 里召回 ${ids.length} 个候选` : `网络又为 ${A.label}召回 ${ids.length} 个候选`, now + 0.3);
+    const first = this.recalls++ === 0;
+    this.narrate(this.lang === 'en'
+      ? (first ? `${A.label} joined. The network recalled ${plural(ids.length, 'candidate')} among ${plural(others, 'agent')}` : `The network recalled ${plural(ids.length, 'more candidate')} for ${A.label}`)
+      : (first ? `${A.label}接入。网络在 ${others} 个 agent 里召回 ${ids.length} 个候选` : `网络又为 ${A.label}召回 ${ids.length} 个候选`), now + 0.3);
     this.later.push({ t: now + 5.6, fn: () => {
       let dropped = 0, asking = 0;
       for (const id of ids) { const c = this.cands.get(id); if (!c) continue; if (c.dropped) dropped++; else if (c.unsure) asking++; }
-      this.onNarrate?.(`${dropped} 个判「不成立」，暗了下去；${asking} 个拿不准，去向对方要信息`);
+      this.onNarrate?.(this.lang === 'en' ? `${dropped} judged no match and dimmed; ${asking} unsure, asking the other side for information` : `${dropped} 个判「不成立」，暗了下去；${asking} 个拿不准，去向对方要信息`);
     } });
   }
   private allocSlot(): number {
@@ -286,7 +292,10 @@ export class Net {
         g.armed = true;
         this.later.push({ t: now + 1.4, fn: () => {
           const rng = g.hi > 0 ? `（判「不成立」的把握 ${g.lo.toFixed(2)}${g.hi - g.lo > 0.004 ? '–' + g.hi.toFixed(2) : ''}）` : '';
-          this.onNarrate?.(`${g.n} 个看过的候选放下了${rng}`);
+          if (this.lang === 'en') {
+            const r = g.hi > 0 ? ` (no-match confidence ${g.lo.toFixed(2)}${g.hi - g.lo > 0.004 ? ' to ' + g.hi.toFixed(2) : ''})` : '';
+            this.onNarrate?.(`${plural(g.n, 'candidate')} reviewed and set aside${r}`);
+          } else this.onNarrate?.(`${g.n} 个看过的候选放下了${rng}`);
           g.n = 0; g.lo = 1; g.hi = 0; g.armed = false;
         } });
       }

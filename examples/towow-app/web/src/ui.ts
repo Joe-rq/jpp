@@ -44,7 +44,7 @@ export class UI {
   connected = true;
   /** 数据出处（实时 / 回放（真机数据）/ 模拟数据 …）与回放倍速 */
   origin?: string;
-  /** 首页英文版只把左下角这一行换成英文；旁白取自居民的中文资料，保持原文 */
+  /** 首页英文版的左下角状态行（旁白的英文在 director.ts、net.ts，见 captions.ts） */
   lang: 'zh' | 'en' = 'zh';
   speed = 1;
   /** 真后端 HTTP 根；undefined 表示没有后端（模拟、回放） */
