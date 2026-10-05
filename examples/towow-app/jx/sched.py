@@ -96,14 +96,18 @@ class Chain:
     sent_questions: int = 0
     reruns: int = 0
     ids: list = field(default_factory=list)
+    cascade_used: int = 0          # 这条链上参与级联的尝试已发出的调用数（预注册 16）
+    cascade_reserved: int = 0      # 已准入、还没结束的尝试预留的调用数
+    cascade_open: dict = field(default_factory=dict)   # 已登记未发出的级联题：state → 题数（一个 state 约一次调用）
 
 
 # ---------------------------------------------------------------- 可等待物
 
 class Waitable:
-    __slots__ = ("done", "value", "blocked", "fut", "exc")
+    __slots__ = ("done", "value", "blocked", "fut", "exc", "is_gen")
 
     def __init__(self):
+        self.is_gen = False      # 生成器的结果：在等它的尝试不挡准入与链结束（预注册 17）
         self.done = False
         self.value = None
         self.exc = None
@@ -113,7 +117,7 @@ class Waitable:
 
 class Req(Waitable):
     __slots__ = ("key", "state", "q", "wq", "chain", "account", "seq", "owners", "sent", "missing",
-                 "degraded", "batch", "density", "site", "reserved", "payer", "deadline")
+                 "degraded", "batch", "density", "site", "reserved", "payer", "deadline", "pool", "pool_cx")
 
     def __init__(self, key, state, q, chain, account, seq, site=""):
         super().__init__()
@@ -134,6 +138,8 @@ class Req(Waitable):
         self.reserved = None
         self.payer = ""          # 第一个要求者（付钱方，R11.3）
         self.deadline = None
+        self.pool = None         # 级联预算记在哪条链上（登记它的尝试是准入的级联尝试时）
+        self.pool_cx = None
 
 
 # ---------------------------------------------------------------- 端口
@@ -349,6 +355,7 @@ class Sched:
         self.latencies = []
         self.flushes = 0
         self.by_resident = {}
+        self.cascade_calls = 0
 
     # ------------------------------------------------------------ 登记
     def key(self, state, q) -> str:
@@ -375,10 +382,23 @@ class Sched:
             cx.reqs.append(old)
             self.dedup_hits += 1
             return old
+        pool = getattr(cx, "pool", None)
+        if getattr(cx, "rank", None) is not None and pool is None:
+            from .engine import ParkSignal          # 级联预算：没准入的级联尝试不发新题（预注册 16）
+            raise ParkSignal()
+        if pool is not None:
+            # 准入的尝试要开一次新调用（新的 state）时，本链级联账（已发出 + 已登记未发出）到顶就作废挂起：上限是硬的
+            sid = state.sid
+            if sid not in pool.cascade_open and pool.cascade_used + len(pool.cascade_open) >= float(self.eng.cascade["calls"]):
+                from .engine import ParkSignal
+                raise ParkSignal()
+            pool.cascade_open[sid] = pool.cascade_open.get(sid, 0) + 1
         req = Req(k, state, q, cx.chain, cx.account, next(self.seq), site)
         req.owners.add(cx)
         req.payer = cx.uid
         req.deadline = cx.deadline
+        req.pool = getattr(cx, "pool", None)
+        req.pool_cx = cx if req.pool is not None else None
         self.live[k] = req
         self.queue.append(req)
         cx.reqs.append(req)
@@ -394,8 +414,36 @@ class Sched:
                 keep.append(r)
             else:
                 self.live.pop(r.key, None)
+                self._unopen(r)
                 r.done, r.missing = True, "dropped"
         self.queue = keep
+
+    @staticmethod
+    def _unopen(r):
+        """级联题离开排队（发出、丢弃、截止）：从本链「已登记未发出」里减掉。"""
+        p = r.pool
+        if p is None:
+            return
+        sid = r.state.sid
+        n = p.cascade_open.get(sid, 0) - 1
+        if n <= 0:
+            p.cascade_open.pop(sid, None)
+        else:
+            p.cascade_open[sid] = n
+
+    def _count_pool(self, part):
+        """级联预算按发出的调用记（预注册 16）；同时记每个常驻程序单次尝试最多发了几次（准入预留用）。"""
+        first = min(part, key=lambda r: r.seq)
+        if first.pool is None:
+            return
+        first.pool.cascade_used += 1
+        self.cascade_calls += 1
+        pc = first.pool_cx
+        if pc is not None:
+            pc.pool_calls += 1
+            if pc.unit is not None:
+                rn = pc.unit.res.name
+                self.eng.cascade_max[rn] = max(self.eng.cascade_max.get(rn, 1), pc.pool_calls)
 
     # ------------------------------------------------------------ 发出
     def flush(self, only=None):
@@ -407,6 +455,8 @@ class Sched:
             reqs = [r for r in self.queue if id(r) in ids]
             self.queue = [r for r in self.queue if id(r) not in ids]
         reqs = [r for r in reqs if not r.done and not r.sent]
+        for r in reqs:
+            self._unopen(r)
         if not reqs:
             return
         self.flushes += 1
@@ -428,6 +478,7 @@ class Sched:
             for part in parts:
                 for r in part:
                     r.sent = True
+                self._count_pool(part)
                 first = min(part, key=lambda r: r.seq)
                 if no_chain:
                     prio = (first.seq,)
@@ -561,8 +612,11 @@ class Sched:
         for r in part:
             owners |= {cx.uid for cx in r.owners}
         sid = part[0].state.sid
+        f0 = min(part, key=lambda r: r.seq)
         self.eng.ledger.add("batch", id=bid, sid=sid, n=len(part), tokens=tokens, cost=round(cost, 8),
-                            latency_ms=round(latency * 1000, 1), payer=first_payer(part), n_owners=len(owners))
+                            latency_ms=round(latency * 1000, 1), payer=first_payer(part), n_owners=len(owners),
+                            chain=f0.chain.seq if f0.chain is not None else None,
+                            pool=f0.pool.seq if f0.pool is not None else None)      # 记在哪条链的级联账上（预注册 16）
         self.eng.emit("batch", id=bid, n_states=1, n_questions=len(part), latency_ms=round(latency * 1000, 1),
                       merged_from=len(owners))
         for r, raw in zip(part, raws):
@@ -619,6 +673,8 @@ class Sched:
         dead = [r for r in self.queue if _dl(r) is not None and _dl(r) <= now]
         if not dead:
             return
+        for r in dead:
+            self._unopen(r)
         ids = {id(r) for r in dead}
         self.queue = [r for r in self.queue if id(r) not in ids]
         self._finish_missing(dead, "deadline")
@@ -628,6 +684,8 @@ class Sched:
         dead = [r for r in self.queue if r.chain is chain]
         if not dead:
             return
+        for r in dead:
+            self._unopen(r)
         self.queue = [r for r in self.queue if r.chain is not chain]
         self._finish_missing(dead, "deadline")
 
@@ -635,6 +693,6 @@ class Sched:
         lat = sorted(self.latencies)
         return {"calls": self.calls, "questions": self.questions, "cost_usd": round(self.cost, 6),
                 "cache_hits": self.cache_hits, "dedup_hits": self.dedup_hits, "degraded": self.degraded_n,
-                "budget_skips": self.budget_skips, "flushes": self.flushes,
+                "budget_skips": self.budget_skips, "flushes": self.flushes, "cascade_calls": self.cascade_calls,
                 "p50_ms": round(lat[len(lat) // 2] * 1000, 1) if lat else None,
                 "p95_ms": round(lat[int(len(lat) * 0.95)] * 1000, 1) if lat else None}

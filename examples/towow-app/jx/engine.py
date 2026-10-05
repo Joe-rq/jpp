@@ -30,7 +30,7 @@ from .sched import Account, Chain, FixturePort, HashEncoder, Profile, Sched, Wai
 from .values import Closure, Fail, Handle, JxError, Lazy, LazyExit, Pend, Stop, key_of, to_py
 
 DEFAULT_FLAGS = {"no_cells": False, "no_fill": False, "no_batch": False, "no_meta": False,
-                 "no_budget_chain": False, "no_absent": False, "no_deadline": False}
+                 "no_budget_chain": False, "no_absent": False, "no_deadline": False, "no_cascade": False}
 MAX_RERUNS_PER_CHAIN = 12
 
 
@@ -159,6 +159,10 @@ class Unit:
         self.whys: set = set()        # 这次重算的原因（观测：「为什么重算」要能解释）
         self.chain_acct = None        # (链序号, 账户, 截止)：resident 的 budget/deadline 子句按链派生
         self.acct_root = None         # 继承谁的接入账户（带子句的根程序 uid）
+        self.rank_hint = None         # spawn … rank 给的排序值（取最大）
+        self.admitted = False         # 已从所在链的级联预算准入，下一次尝试照常跑程序体
+        self.cascade_chain = None     # 准入时记账的链
+        self.cascade_reserve = 0      # 准入时预留的调用数
 
     def trigger_depth(self, eng) -> int:
         """深度按触发链（Fable-A 第四条第 3 闸）：触发这个程序的来源单元版本的层数，或派生者传下来的层数。"""
@@ -170,6 +174,10 @@ class Unit:
                 if inst is not None and inst.latest is not None:
                     d = max(d, inst.latest.depth)
         return d
+
+
+class ParkSignal(BaseException):
+    """级联预算（预注册 16）：没准入的级联尝试要发新题，作废这次尝试（BaseException：不被程序里的错误处理吞掉）。"""
 
 
 class Attempt:
@@ -198,6 +206,9 @@ class Attempt:
         self.lifted: set = set()
         self.trigger_depth = 0
         self.deadline = unit.deadline if unit else None
+        self.pool = None               # 准入的级联尝试：调用记到这条链的级联账上（预注册 16）
+        self.pool_calls = 0
+        self.rank = None               # 没准入的级联尝试的排序值：要发新题时作废并挂起
 
     def add_pending(self, lx, ex: Exit):
         k = lx.lr.req.key
@@ -270,13 +281,26 @@ class Engine:
         # 预算
         b = {}
         if prog.budget is not None:
-            b = {k: (x.v if isinstance(x, (A.Num, A.Str)) else None) for k, x in prog.budget.items}
+            b = {k: _lit(x) for k, x in prog.budget.items}
         calls = b.get("calls")
         if max_calls is not None:
             calls = min(calls, max_calls) if calls is not None else max_calls
         self.budget = b
         self.account = Account("run", calls, b.get("cost"))
         self.depth_cap = int(b.get("depth") or 3)
+        # 事件链的级联预算（预注册 16）：带 rank 的常驻程序在每条宿主事件链里合计至多 calls 次调用，
+        # 按排序值准入（≥ line 的先走），用尽的挂起，等别的事件链让它变脏再排队
+        cc = b.get("cascade")
+        self.cascade = cc if isinstance(cc, dict) and cc.get("calls") is not None else None
+        self.parked: dict = {}              # uid → (排序值, 序号, 链序号)：等准入或已挂起的级联单元
+        self._pseq = itertools.count(1)
+        self.cascade_max: dict = {}         # 常驻程序名 → 单次尝试见过的最多级联调用数（准入预留用）
+        self._admit_scheduled = False
+        self._resting: dict = {}            # at_rest 程序里被标脏、等链结束的实例（预注册 17）
+        self._gen_blocked: dict = {}        # 在等生成器的尝试 → 等着的纤程数（不挡准入与链结束）
+        self._gen_memo: dict = {}           # (种类, 参数哈希) → 生成结果：同一份参数只调一次生成器
+        self.parks = 0
+        self.admits = 0
         if b.get("latency_p95"):
             self.prof.timeout_s = float(b["latency_p95"])
         self.genv = Env(self.ip.globals)
@@ -381,6 +405,14 @@ class Engine:
         """等到静止：没有脏单元、没有在跑的尝试、没有排队或在飞的判断。虚拟时钟下把时钟拨到下一个定时点继续。"""
         t_end = None if timeout is None else time.monotonic() + timeout
         while True:
+            if self.parked and self._admit_ready() and self._admit():
+                self._kick()
+                await asyncio.sleep(0)
+                continue
+            if self._resting and self._admit_ready():
+                self._start_resting()
+                await asyncio.sleep(0)
+                continue
             if self._quiet_fast() and self._deferred:
                 self._flush_removals()
                 await asyncio.sleep(0)
@@ -415,11 +447,11 @@ class Engine:
         """没静下来时，是哪一项不为零（诊断用：10-04 全量在离开阶段停在 0% CPU 却不静止）。"""
         return {"dirty": len(self._dirty), "runnable": self.runnable, "queue": len(self.sched.queue),
                 "heap": len(self.sched.heap), "active": self.sched.active, "gen_tasks": self.gen_tasks,
-                "running_attempts": self.running_attempts, "deferred": len(self._deferred),
+                "running_attempts": self.running_attempts, "deferred": len(self._deferred), "parked": len(self.parked), "resting": len(self._resting),
                 "dirty_units": [getattr(u, "uid", str(u)) for u in list(self._dirty)[:5]]}
 
     def _quiet(self):
-        return self._quiet_fast() and not self._deferred
+        return self._quiet_fast() and not self._deferred and not self._resting
 
     async def stop(self):
         self._emit_stats()
@@ -437,6 +469,8 @@ class Engine:
         self._changed.set()
         if self._deferred:
             self._changed_soon()
+        if self.parked or self._resting:
+            self._admit_soon()
 
     # ------------------------------------------------------------ 卡口：纤程与等待
     def fiber(self, coro, cx) -> Waitable:
@@ -467,9 +501,21 @@ class Engine:
                 self.runnable -= 1
                 assert self.runnable >= 0, "runnable 计数为负"
                 self._check()
-            await w.fut
+            g = w.is_gen and cx is not None and cx.unit is not None
+            if g:
+                self._gen_blocked[cx] = self._gen_blocked.get(cx, 0) + 1
+                self.changed()
+            try:
+                await w.fut
+            finally:
+                if g:
+                    n = self._gen_blocked.get(cx, 1) - 1
+                    if n <= 0:
+                        self._gen_blocked.pop(cx, None)
+                    else:
+                        self._gen_blocked[cx] = n
         if w.exc is not None:
-            if isinstance(w.exc, (JxError, Stop)):
+            if isinstance(w.exc, (JxError, Stop, ParkSignal)):    # 并发回调里的作废信号原样往上传（预注册 16）
                 raise w.exc
             import traceback
             tb = "".join(traceback.format_exception(w.exc)[-6:])
@@ -804,6 +850,9 @@ class Engine:
                 u.dirty = False
                 u.rerun = True
                 continue
+            if u.res.at_rest:                 # 链结束时才跑（预注册 17）：先放进等候表，标脏状态保留
+                self._resting[uid] = None
+                continue
             if not self.flags["no_cells"] and self._upstream_busy(u, active):
                 waiting.append(u)
                 continue
@@ -896,6 +945,14 @@ class Engine:
                 self.ledger.add("cutoff", unit=u.uid)
                 u.status = "settled" if not u.waits else "running"
                 return
+            # 级联预算（预注册 16）：带排序值的实例在要发出第一道新题（不是缓存、不是并到在飞的同一道题）时
+            # 若还没准入，这次尝试作废（不写、不撤回旧值），单元进所在链的待准入表；引擎静止时按排序值准入，
+            # 用尽的留在表里，等别的事件链让它变脏再排队。不发题的尝试（如成员离开后的撤回）照常跑完。
+            if self._cascade_on() and not u.admitted and cx.chain is not None:
+                cx.rank = await self._rank_of(u)
+            if u.admitted:
+                cx.pool = u.cascade_chain
+            saved = (u.forced, set(u.whys))
             u.forced = False
             u.runs += 1
             self.attempts += 1
@@ -922,6 +979,13 @@ class Engine:
                 return
             status = "running" if cx.waits else "settled"
             self._commit(u, cx, val, status, evh)
+        except ParkSignal:
+            u.forced = saved[0]
+            u.whys = saved[1] | u.whys
+            u.runs -= 1
+            u.chain_runs[ck] -= 1
+            rk = cx.rank if cx.rank is not None else await self._rank_of(u)   # 准入后中途碰到上限的也挂起
+            self._park(u, cx.chain, rk if rk is not None else 0.0)
         except JxError as e:
             self._fail(u, cx, e)
         except Exception as e:      # noqa: BLE001
@@ -929,6 +993,8 @@ class Engine:
             self._fail(u, cx, JxError(f"{type(e).__name__}: {e}\n{traceback.format_exc(limit=4)}"))
         finally:
             self.sched.drop_unforced(cx)
+            if u.admitted:                 # 准入只管一次尝试（含被截断的）；下次变脏再排队
+                self._release_admission(u)
             u.running = None
             self.running_attempts -= 1
             if u.rerun and not u.retracted:
@@ -937,6 +1003,141 @@ class Engine:
             if self._dirty:
                 self._kick()              # 等着它的下游可以起了
             self.changed()
+
+    # ------------------------------------------------------------ 事件链的级联预算（预注册 16）
+    def _cascade_on(self) -> bool:
+        return self.cascade is not None and not self.flags["no_cascade"]
+
+    async def _rank_of(self, u):
+        """排序值：rank 子句的值（不是 unit 时），否则 spawn … rank 给的值；都没有返回 None（不参与级联）。
+        子句里的读不记为依赖（用一次性的上下文）。"""
+        v = None
+        if u.res.rank is not None:
+            cx = Attempt(self, None, f"rank:{u.uid}", None, self.account)
+            env = Env(self.genv)
+            for p, a in zip(u.res.params, u.args):
+                env.set(p, a)
+            try:
+                v = to_py(await self.ip.deep(await self.ip.ev(u.res.rank, env, cx), cx))
+            except JxError as e:
+                self.errors.append({"unit": u.uid, "error": f"rank: {e}"})
+                self.ledger.add("error", unit=u.uid, error=f"rank: {str(e)[:500]}")
+                v = None
+        if not (isinstance(v, (int, float)) and not isinstance(v, bool)):
+            v = u.rank_hint
+        return None if v is None else float(v)
+
+    def _park(self, u, chain, rk):
+        prev = self.parked.get(u.uid)
+        same = prev is not None and prev[2] == chain.seq
+        self.parked[u.uid] = (rk, prev[1] if same else next(self._pseq), chain.seq)
+        u.status = "parked"
+        if not same:                       # 同一条链上重复挂起不再写账本（驱动按账本判静止）
+            self.parks += 1
+            self.ledger.add("park", unit=u.uid, chain=chain.seq, rank=round(rk, 4))
+        self._admit_soon()
+
+    def _release_admission(self, u):
+        ch = u.cascade_chain
+        if ch is not None:
+            ch.cascade_reserved = max(0, ch.cascade_reserved - u.cascade_reserve)
+        u.admitted, u.cascade_chain, u.cascade_reserve = False, None, 0
+
+    def _admit_ready(self) -> bool:
+        """静止（不等生成器）：没有脏单元、没有在跑的调用，在跑的尝试都只是在等生成器。"""
+        return (not self._dirty and self.runnable == 0 and not self.sched.queue and not self.sched.heap
+                and self.sched.active == 0 and self.running_attempts <= len(self._gen_blocked))
+
+    def _start_resting(self):
+        """链结束：没有能准入的挂起单元了，at_rest 程序按当时的输入各跑一次（预注册 17）。"""
+        items, self._resting = list(self._resting), {}
+        for uid in items:
+            u = self.units.get(uid)
+            if u is None or u.retracted:
+                continue
+            if u.running is not None:         # 上一次还在等生成器：跑完再来
+                u.dirty = False
+                u.rerun = True
+                continue
+            u.dirty = False
+            self._start(u)
+        self.changed()
+
+    def _admit_soon(self):
+        if self._admit_scheduled or not (self.parked or self._resting):
+            return
+        self._admit_scheduled = True
+        try:
+            asyncio.get_running_loop().call_soon(self._admit_check)
+        except RuntimeError:
+            self._admit_scheduled = False
+
+    def _admit_check(self):
+        self._admit_scheduled = False
+        if not self._admit_ready():
+            return
+        if self.parked and self._admit():
+            self._kick()
+        elif self._resting:
+            self._start_resting()
+
+    def _admit(self) -> bool:
+        """按链准入：排序值 ≥ line 的先走（本链还有线上的就不放线下的），同档按排序值降序、再按登记先后；
+        每个预留这个程序以往单次尝试的最多调用数，预留加已花到 calls 为止。"""
+        if not self.parked or not self._cascade_on():
+            return False
+        cap = float(self.cascade["calls"])
+        line = self.cascade.get("line")
+        groups: dict = {}
+        for uid, (rk, seq, _cs) in list(self.parked.items()):
+            u = self.units.get(uid)
+            if u is None or u.retracted:
+                self.parked.pop(uid, None)
+                continue
+            if u.dirty or u.running is not None or u.chain is None:
+                continue
+            groups.setdefault(id(u.chain), (u.chain, []))[1].append((rk, seq, u))
+        done = False
+        for ch, items in groups.values():
+            left = cap - ch.cascade_used - ch.cascade_reserved
+            if left < 1:
+                continue
+            above = [it for it in items if line is None or it[0] >= float(line)]
+            pool = sorted(above or items, key=lambda it: (-it[0], it[1]))
+            for rk, _seq, u in pool:
+                if left < 1:
+                    break
+                est = max(1, int(self.cascade_max.get(u.res.name, 1)))
+                if est > left:
+                    continue
+                left -= est
+                ch.cascade_reserved += est
+                u.admitted, u.cascade_chain, u.cascade_reserve = True, ch, est
+                self.parked.pop(u.uid, None)
+                self.admits += 1
+                self.ledger.add("admit", unit=u.uid, chain=ch.seq, rank=round(rk, 4), reserve=est)
+                self._mark(u, ch, None, why="准入")
+                done = True
+        return done
+
+    async def resume(self, ids=None, budget=None, cause=None) -> int:
+        """宿主事件「续算」：开一条新链，把挂起单元里实参含这些 id 的（不给就是全部）转到这条链上重新排队。"""
+        if not self.started:
+            await self.start()
+        chain = self._new_chain(cause or "resume", budget, None)
+        want = None if ids is None else {str(x) for x in ids}
+        chain.ids = sorted(want or [])
+        n = 0
+        for uid in list(self.parked):
+            u = self.units.get(uid)
+            if u is None or u.retracted:
+                continue
+            if want is None or (_strs(to_py(u.args)) & want):
+                self._mark(u, chain, None, why="续算")
+                n += 1
+        self.ledger.add("resume", chain=chain.seq, ids=chain.ids[:20], n=n)
+        self._kick()
+        return n
 
     def _fail(self, u, cx, e: JxError):
         # 出错的尝试也记下它读过什么：输入变了（例如解锁了更高一层）就重跑
@@ -1087,6 +1288,10 @@ class Engine:
             return
         u.retracted = True
         self.ledger.add("retract", unit=u.uid)
+        self.parked.pop(u.uid, None)
+        self._resting.pop(u.uid, None)
+        if u.admitted:
+            self._release_admission(u)
         for (fam, key) in list(u.contributed):
             F = self.fams[fam]
             inst = F.insts.get(key)
@@ -1184,7 +1389,7 @@ class Engine:
         self._publish(inst, None, "removed", 0, chain, u.uid)
         self._notify(("c", fam, key), chain, None, True)
 
-    def spawn(self, cx, name, args, budget=None, deadline=None, node=None):
+    def spawn(self, cx, name, args, budget=None, deadline=None, node=None, rank=None):
         res = self.residents.get(name)
         if res is None:
             raise JxError(f"spawn 的 `{name}` 不是常驻程序", node)
@@ -1197,6 +1402,8 @@ class Engine:
                 self.ledger.add("depth", unit=cx.uid, spawn=name, depth=src_d, cap=self.depth_cap)
                 return Pend("depth")
         u = self._unit(res, args, cx.uid, cx.chain)
+        if isinstance(rank, (int, float)) and not isinstance(rank, bool):     # 派生排序值取最大（预注册 16）
+            u.rank_hint = float(rank) if u.rank_hint is None else max(u.rank_hint, float(rank))
         if cx.trigger_depth > u.base_depth:
             u.base_depth = cx.trigger_depth
         new = u.runs == 0 and u.running is None
@@ -1264,6 +1471,11 @@ class Engine:
             if fam in self.fams:
                 self._record(cx, ("f", fam, None))
         pargs = to_py(args)
+        if not act["transparent"] and cx is not None and cx.unit is not None and cx.unit.retracted:
+            # 单元已撤回（如主人离开），它在途的尝试不再做有副作用的动作：不然离开后还会把他写回索引
+            # （预注册 16 差分 seed 3 暴露：发布 的尝试在离开前起、离开后才执行 index_put）
+            self.ledger.add("do", unit=cx.uid, action=name, skipped="retracted")
+            return None
         mk = None
         if act["transparent"]:
             mk = (name, canon(pargs))
@@ -1289,8 +1501,13 @@ class Engine:
         return res
 
     def gen(self, cx, kind, args, node=None):
-        """生成：一登记就发，不阻塞静止判定。"""
+        """生成：一登记就发，不阻塞静止判定。同一份参数在这次运行里只调一次生成器（预注册 17）。"""
+        mk = (kind, h(to_py(args)))
+        if mk in self._gen_memo:
+            self.ledger.add("gen_memo", unit=cx.uid, what=kind, args=mk[1])
+            return self._gen_memo[mk]
         w = Waitable()
+        w.is_gen = True
         port = self.gen_port
         self.gen_tasks += 1
 
@@ -1304,6 +1521,7 @@ class Engine:
                 else:
                     v = await port.text(str(args[0]))
                 self.ledger.add("gen", unit=cx.uid, what=kind, args=h(to_py(args)), out=h(to_py(v)))
+                self._gen_memo[mk] = v
                 self.resolve(w, v)
             except Exception as e:      # noqa: BLE001
                 self.ledger.add("gen", unit=cx.uid, what=kind, fail=str(e)[:300])
@@ -1499,7 +1717,8 @@ class Engine:
     def stats(self) -> dict:
         s = self.sched.stats()
         s.update(attempts=self.attempts, cutoffs=self.skipped, units=len(self.units), errors=len(self.errors),
-                 account_calls=self.account.calls, account_cost=round(self.account.cost, 6))
+                 account_calls=self.account.calls, account_cost=round(self.account.cost, 6),
+                 parked=len(self.parked), parks=self.parks, admits=self.admits)
         by = {}
         for rn, n in self.attempts_by.items():
             by.setdefault(rn, {})["attempts"] = n
@@ -1539,6 +1758,28 @@ def _static_eval(n, env):
             return _Wild()
         return o[i]
     raise ValueError("来源的键只能是名字、字段、下标或字面量")
+
+
+def _lit(x):
+    """程序头 budget 记录里的字面量（可嵌一层记录，如 cascade: {calls: 60, line: 0.65}）。"""
+    if isinstance(x, (A.Num, A.Str)):
+        return x.v
+    if isinstance(x, A.RecordLit):
+        return {k: _lit(v) for k, v in x.items}
+    return None
+
+
+def _strs(x) -> set:
+    out = set()
+    if isinstance(x, str):
+        out.add(x)
+    elif isinstance(x, dict):
+        for v in x.values():
+            out |= _strs(v)
+    elif isinstance(x, (list, tuple)):
+        for v in x:
+            out |= _strs(v)
+    return out
 
 
 def _has_clause(res):

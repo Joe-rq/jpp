@@ -269,6 +269,22 @@ async def drive(a):
 
 # ------------------------------------------------------------------ analyze
 
+def _by_chain(bs) -> dict:
+    out: dict = {}
+    for b in bs:
+        if b.get("pool") is not None:
+            out[str(b["pool"])] = out.get(str(b["pool"]), 0) + 1
+    return out
+
+
+def _count_by_prog(units) -> dict:
+    out: dict = {}
+    for u in units:
+        k = str(u).split("(")[0].split("#")[0]
+        out[k] = out.get(k, 0) + 1
+    return out
+
+
 def analyze(a):
     """从账本按接入窗口切：第一段（rerank）/ 第二段（rerank2）时间、按程序分的调用与花费、未观察题、召回前 32 里的真伙伴。"""
     d = json.load(open(a.drive, encoding="utf-8"))
@@ -323,6 +339,18 @@ def analyze(a):
         gp = d["gold_partners"].get(j["id"], [])
         held_with = {x for w in j.get("opps_with") or [] for x in w}
         first_edge = next((r["t"] - tp for r in win if r.get("kind") == "publish" and r.get("cell") == "edge"), None)
+        # 预注册 16：级联预算的挂起与准入；窗口结束时仍挂起的单元（按账本 park/admit/retract 回放到窗口末）；组合的组合
+        waiting: dict = {}
+        for r in rows:
+            if r.get("t", 0) >= tn:
+                break
+            if r.get("kind") == "park":
+                waiting[r["unit"]] = r.get("rank")
+            elif r.get("kind") in ("admit", "retract"):
+                waiting.pop(r.get("unit"), None)
+        jc = next((r.get("chain") for r in win if r.get("kind") == "park"), None)      # 接入事件链 = 窗口里第一次挂起所在的链
+        nested = sorted({str((r.get("key") or [""])[0]) for r in win if r.get("kind") == "publish" and r.get("cell") == "config"
+                         and r.get("status") == "settled" and "cfg:" in str((r.get("key") or [""])[0])[4:]})
         last_judge = max((b["t"] for b in bs), default=None)
         out.append({"id": j["id"], "uid": uid, "join_return_s": j.get("join_return_s"),
                     "stage1": st.get("rerank"), "stage2": st.get("rerank2"),
@@ -337,6 +365,15 @@ def analyze(a):
                     "calls": len(bs), "calls_by_program": {k: len(v) for k, v in by_prog.items()},
                     "cost_by_program": {k: round(sum(b["cost"] for b in v), 5) for k, v in by_prog.items()},
                     "calls_after_recall": sum(len(v) for k, v in by_prog.items() if k != "召回·接入者"),
+                    "cascade_calls": sum(len(by_prog.get(k, [])) for k in ("召回·构型节点", "两两", "整体", "成长")),
+                    "join_chain": jc, "cascade_calls_join_chain": sum(1 for b in bs if jc is not None and b.get("pool") == jc),
+                    "cascade_calls_by_chain": _by_chain(bs),
+                    "gen_rows": sum(1 for r in win if r.get("kind") == "gen"),
+                    "gen_memo_rows": sum(1 for r in win if r.get("kind") == "gen_memo"),
+                    "parks": sum(1 for r in win if r.get("kind") == "park"),
+                    "admits": sum(1 for r in win if r.get("kind") == "admit"),
+                    "parked_end": len(waiting), "parked_end_by_program": _count_by_prog(waiting),
+                    "nested_configs": len(nested),
                     "unobserved_questions": sum(int(r.get("n", 1)) for r in unobs),
                     "unobserved_budget_questions": unobs_budget, "skipped_for_budget_after": j.get("skipped_for_budget"),
                     "quiet_within_600s": bool(j.get("quiet")) and (j.get("last_activity_s") or 1e9) <= 600,
@@ -357,7 +394,8 @@ def analyze(a):
     summ = {"n_joins": len(ok), "preload": d.get("preload"),
             "median": {k: med(k) for k in ("join_return_s", "stage1_pre_dispatch_s", "stage1_jev_s", "stage2_wall_s",
                                            "first_edge_s", "first_opp_s", "first_plan_s", "last_activity_s", "last_judge_s",
-                                           "cost_healthz", "cost_ledger", "calls", "calls_after_recall", "opps_end")},
+                                           "cost_healthz", "cost_ledger", "calls", "calls_after_recall", "opps_end",
+                                           "cascade_calls", "gen_rows", "parked_end", "plans_end")},
             "median_stage1": {k: med("stage1", k) for k in ("calls", "questions", "cost", "q_per_call", "latency_ms_p50")},
             "median_stage2": {k: med("stage2", k) for k in ("calls", "questions", "cost")},
             "quiet": f"{sum(1 for o in ok if o.get('quiet'))}/{len(ok)}",

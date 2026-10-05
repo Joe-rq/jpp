@@ -108,7 +108,8 @@ class Net:
         self.cand, self.config, self.plan, self.inbox, self.reply, self.pending = {}, {}, {}, {}, {}, {}
         # 手写的反向依赖表
         self.pairs_of, self.cands_of, self.grow_deps = {}, {}, {}
-        self.best = {}                        # m → {构型键: 读数}（预注册 11：方案门按每位成员的前 2）
+        self.best = {}                        # m → {构型键: 读数}：直接构型的前 2 名额（预注册 11、17）
+        self.nbest = {}                       # 真实接入者 m → {嵌套构型键: 读数}：嵌套构型另排的前 2（预注册 17）
         # 调度
         self.running, self.rerun, self.busy, self.errors = set(), set(), 0, []
         self.cache, self.queue, self.parked, self.flushing = {}, {}, [], False
@@ -206,7 +207,7 @@ class Net:
 
     async def leave(self, a):
         if a not in self.world: return
-        for d in (self.world, self.material, self.node, self.derived, self.inbox, self.best): d.pop(a, None)
+        for d in (self.world, self.material, self.node, self.derived, self.inbox, self.best, self.nbest): d.pop(a, None)
         self.p.index_del(a)
         for k in list(self.pairs_of.get(a, ())): self.mark("pair", k)            # 两两发现成员缺席 → 自己撤回
         for ck in list(self.cands_of.get(a, ())): self._kill_cand(ck)
@@ -246,8 +247,11 @@ class Net:
         n = self.node.get(x) or self.material.get(x)
         if n is None: return
         cfgn = n.get("kind") == "config"      # 构型节点走向量 40 → 一段判 → 前 8；agent 节点判在场全体，两段（预注册 10）
-        raw = [] if n.get("background") is True else (await self.p.route(x, n, 40) if cfgn else [{"peer": y, "routes": []} for y in self.p.present(x)])
-        pool = [hh for hh in raw if hh["peer"] != x and hh["peer"] not in n.get("forbids_ids", [])]
+        # 预注册 16（丙）：构型节点先用代码判还能不能再组合，不能的不召回；池里去掉构型节点与组成候选必然无效的对方
+        raw = [] if n.get("background") is True else ((await self.p.route(x, n, 40) if self._nest(x) < 2 else []) if cfgn
+                                                      else [{"peer": y, "routes": []} for y in self.p.present(x)])
+        pool = [hh for hh in raw if hh["peer"] != x and hh["peer"] not in n.get("forbids_ids", [])
+                and not (cfgn and (is_cfg(hh["peer"]) or self._invalid({"members": [x, hh["peer"]]})))]
         me = {"我": rerank_me(n), "sides": [], "owners": [x]}
         rr = await self.judge(me, [tests(rerank_q(self.material.get(hh["peer"])), "rerank") for hh in pool]) if pool else []
         s1 = sorted(range(len(pool)), key=lambda i: (-p_yes(rr[i]), i))[:40 if cfgn else 200]
@@ -366,6 +370,9 @@ class Net:
     def _closure(self, m):
         return [x for y in (self.material.get(m) or {"members": []})["members"] for x in self._closure(y)] if is_cfg(m) else [m]
 
+    def _people(self, ms):
+        return list(dict.fromkeys(x for m in ms for x in self._closure(m)))
+
     def _nest(self, m):
         return 1 + max([self._nest(x) for x in (self.material.get(m) or {"members": []})["members"]] or [0]) if is_cfg(m) else 0
 
@@ -410,10 +417,22 @@ class Net:
         for ck in self.cands_of.get(m, ()):                 # m 的前 2 可能变了：含 m 的方案都要重查
             if ck in self.config: self.mark("plan", ck)
 
+    def _set_nbest(self, m, k, p):
+        b = self.nbest.get(m, {})
+        if b.get(k) == p: return
+        if p is None: b.pop(k, None)
+        else: self.nbest.setdefault(m, b)[k] = p
+        for ck in self.config:                              # 预注册 17：展开后含 m 的嵌套构型都要重查（手写反向关系）
+            if m in self._people(self.config[ck]["members"]): self.mark("plan", ck)
+
+    def _real(self, m): return bool((self.world.get(m) or {}).get("real"))
+
     def _retract_cfg(self, k):
         C = self.config.pop(k, None)
         if C is None and k not in self.material: return
-        for m in (C or self.material.get(k) or {}).get("members", []): self._set_best(m, k, None)
+        ms0 = (C or self.material.get(k) or {}).get("members", [])
+        for m in ms0: self._set_best(m, k, None)
+        for m in self._people(ms0): self._set_nbest(m, k, None)
         for d in (self.material, self.node, self.plan): d.pop(k, None)
         self.p.index_del(k)
         for pk in list(self.pairs_of.get(k, ())): self.mark("pair", pk)
@@ -458,9 +477,14 @@ class Net:
         old = self.config.get(ck)
         self.config[ck] = cfg
         if self.node.get(ck) != cfg: self.node[ck] = cfg; self.p.index_put(ck, cfg)
-        if self.material.get(ck) != cfg: self.material[ck] = cfg; self._material_changed(ck)
+        jm = {x: v for x, v in cfg.items() if x not in ("hold", "weakest", "value", "lacks", "depth")}   # 判断材料不带判断结果（预注册 17）
+        if self.material.get(ck) != jm: self.material[ck] = jm; self._material_changed(ck)
         if old != cfg: self.mark("plan", ck); self.mark("grow", ck)
-        for m in ms: self._set_best(m, ck, p)
+        if any(is_cfg(m) for m in ms):                          # 名额分开（预注册 17）：嵌套构型记进展开后真实接入者的 nbest
+            for m in self._people(ms):
+                if self._real(m): self._set_nbest(m, ck, p)
+        else:
+            for m in ms: self._set_best(m, ck, p)
 
     def _depth(self, m): return (self.config.get(m) or {}).get("depth", 0) if is_cfg(m) else 0
 
@@ -487,7 +511,13 @@ class Net:
         C = self.config.get(k)
         if C is None: self.plan.pop(k, None); return
         ms = C["members"]               # 门：每位成员都把它排进自己的前 2；有人一层都没放行就是草案（预注册 11）
-        if len(ms) <= 5 and all(k in sorted(self.best.get(m, {}), key=lambda kk: -self.best[m][kk])[:2] for m in ms):
+        top2 = lambda t, m: k in sorted(t.get(m, {}), key=lambda kk: -t[m][kk])[:2]     # noqa: E731
+        if any(is_cfg(m) for m in ms):
+            rp = [m for m in self._people(ms) if self._real(m)]
+            gate = bool(rp) and all(top2(self.nbest, m) for m in rp)
+        else:
+            gate = all(top2(self.best, m) for m in ms)
+        if len(ms) <= 5 and gate:
             draft = any(not self._all_unlocked(m, ms) for m in ms)
             mats = [self._side(self.material[m], self._all_unlocked(m, ms)) for m in ms if m in self.material]
             pl = await self.p.gen_plan({**C, "draft": draft}, mats)
