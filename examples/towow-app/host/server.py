@@ -362,7 +362,8 @@ class Host:
             return {}
         left = acct.remaining_cost()
         return {"cost_cap_usd": acct.cap_cost, "cost_used_usd": round(acct.cost, 4), "cost_left_usd": round(left, 4),
-                "skipped_for_budget": getattr(sched, "budget_skips", 0), "exhausted": left < 0.05}
+                "skipped_for_budget": getattr(sched, "budget_skips", 0), "exhausted": left < 0.05,
+                "cascade_parked": len(getattr(self.engine, "parked", {}) or {})}   # 级联预算挂起、等下次事件续算的单元（预注册 16）
 
     def budget_note(self) -> str | None:
         b = self.budget()

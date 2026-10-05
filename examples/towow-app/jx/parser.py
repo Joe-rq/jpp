@@ -201,7 +201,8 @@ class Parser:
                         break
                     sources.append(self.source())
             self.eat_sym("]")
-        budget = deadline = None
+        budget = deadline = rank = None
+        at_rest = False
         while True:
             if self.at_kw("budget"):
                 self.i += 1
@@ -211,13 +212,19 @@ class Parser:
             elif self.at("ident", "deadline"):
                 self.i += 1
                 deadline = self.unary()
+            elif self.at("ident", "rank"):
+                self.i += 1
+                rank = self.unary()
+            elif self.at("ident", "at_rest"):
+                self.i += 1
+                at_rest = True
             else:
                 break
         if not self.at_sym("{"):
             self.err("resident 的程序体要用 { } 包起来")
         body = self.block()
         return self.mk(A.ResidentDecl, t, name=name, params=params, sources=sources, body=body,
-                       budget=budget, deadline=deadline)
+                       budget=budget, deadline=deadline, rank=rank, at_rest=at_rest)
 
     def source(self) -> A.Source:
         t = self.t
@@ -385,6 +392,9 @@ class Parser:
                 elif self.at("ident", "deadline"):
                     self.i += 1
                     node.deadline = self.unary()
+                elif self.at("ident", "rank"):
+                    self.i += 1
+                    node.rank = self.unary()
                 else:
                     break
             return node

@@ -539,7 +539,8 @@ class Interp:
                 return a
         bud = await self.deep(await self.ev(n.budget, env, cx), cx) if n.budget is not None else None
         dl = await self.force(await self.ev(n.deadline, env, cx), cx) if n.deadline is not None else None
-        return self.eng.spawn(cx, n.name, args, bud, dl, n)
+        rk = await self.deep(await self.ev(n.rank, env, cx), cx) if n.rank is not None else None
+        return self.eng.spawn(cx, n.name, args, bud, dl, n, rank=rk)
 
     # ============================================================ 惰性与强制
     async def force(self, v, cx, chain=True):

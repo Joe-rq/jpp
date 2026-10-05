@@ -158,3 +158,40 @@ fn rerank_q_full(m) {
         + "。对方接得住的来信：" + (if len(cat) == 0 { "无" } else { join(cat, "；") })
         + "。读「我」的世界：我和这位对方之间，可能有一桩实在的合作吗（我帮他、他帮我，或经身边的人转介都算）？" } }
 fn p_yes(e) { if is_exit(e) && e.kind == "act" { e.p } else { if is_exit(e) && e.p != unit { 1 - e.p } else { 0 } } }
+
+// ───────────── 事件链的级联预算：排序值（预注册 16）。只用 peek 读；运行时不把这些读记为依赖。
+fn hold_p(c) { if c == unit || c.hold == unit { 0 } else { c.hold.p ?? 0 } }
+// 构型节点的召回按它的决定性读数排；agent 的召回不进级联
+fn recall_rank(x) { let m = peek material[x]; if m != unit && has(m, "kind") && m.kind == "config" { hold_p(peek config[x]) } else { unit } }
+// 整体：候选里成员之间已成立边的决定性读数取最小；成长派生的候选按它所长自的构型；都没有时排最后
+fn cand_rank(ck) {
+    let c = (peek cand[ck] ?? [unit])[0];
+    if c == unit { 0 } else {
+        if has(c, "grown_from") && c.grown_from != unit { hold_p(peek config[c.grown_from]) } else {
+            let ms = c.members ?? [];
+            let ps = flatten(map(range(len(ms)), fn(i) { flatten(map(range(len(ms)), fn(j) {
+                if j <= i { [] } else {
+                    let pk = pair_key(ms[i], ms[j]);
+                    let e = peek edge[pk.a, pk.b];
+                    if e != unit && e.holds == true && e.decisive != unit { [e.decisive.p] } else { [] } } })) }));
+            if len(ps) == 0 { 0 } else { fold(ps, 1, fn(a, b) { min(a, b) }) } } } }
+fn cfg_rank(k) { hold_p(peek config[k]) }
+
+// ───────────── 构型节点再组合的代码前判（预注册 16，Fable 丙）
+fn people_of(ms) { unique(flatten(map(ms ?? [], fn(m) { closure(m) }))) }
+// 再嵌一层仍合法：自己的嵌套层数 < 2（agent → 构型 → 构型的构型）
+fn recombinable(x) { nest_depth(x) < 2 }
+// 对方不是构型节点，且两者组成的候选不违反 invalid_candidate（同一人两次、两个构型、嵌套过深）
+fn recombine_ok(x, p) { not(is_cfg(p)) && not(invalid_candidate({members: [x, p]})) }
+
+// ───────────── 方案名额与判断材料（预注册 17，Fable 复裁）
+// 真实接入者：宿主 towow_join 在 world 里写 real: true；预载的背景不标
+fn is_real(m) { let w = peek world[m]; w != unit && has(w, "real") && w.real == true }
+fn is_nested(ms) { any(ms ?? [], fn(m) { is_cfg(m) }) }
+fn real_people(ms) { filter(people_of(ms), fn(m) { is_real(m) }) }
+fn in_top2(bs, k) { has(take(map(sort_by(values(bs ?? {}), fn(b) { 0 - b.p }), fn(b) { b.k }), 2), k) }
+// 构型的判断材料：只放判断要读的东西，不带 hold / weakest / value / lacks（这些在 config 与 node 里）
+fn judge_mat(c) { {id: c.id, kind: c.kind, shape: c.shape, members: c.members, roles: c.roles, offers: c.offers, signals: c.signals,
+                   derived: c.derived, display: c.display, catchers: c.catchers, projects: c.projects, forbids: c.forbids} }
+// 缺项只记类别：默认链被拒后 needed 是「缺X，持有者 … 拒绝」，取回 X
+fn lack_cat(s) { if is_str(s) && starts_with(s, "缺") { split(substr(s, 1, len(s)), "，")[0] } else { s } }

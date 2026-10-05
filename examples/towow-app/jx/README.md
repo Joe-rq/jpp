@@ -13,7 +13,7 @@ eng = Engine.load(
            "gen": gen_port,          # 可选：有 async gen_json(template: str, args: list) -> 纯 Python 值
            "enc": encoder},          # 可选：有 encode(texts) -> np.ndarray（缺席降级用；不给用内置哈希编码器）
     flags={"no_cells": False, "no_fill": False, "no_batch": False, "no_meta": False,
-           "no_budget_chain": False, "no_absent": False, "no_deadline": False},
+           "no_budget_chain": False, "no_absent": False, "no_deadline": False, "no_cascade": False},
     seed=0, ledger_path="runs/x.ledger.jsonl", events_path="runs/x.events.jsonl",
     clock=None)                      # 可选：callable -> 秒。不给用 time.monotonic；宿主不用供拍，timer/截止由引擎自己排
 await eng.start()                    # 在当前 asyncio 事件循环里起引擎（与 FastAPI 同一个循环）
@@ -42,6 +42,7 @@ eng.register_action(name, fn, cost_usd=0.0, transparent=True, depends_on=None)
 epoch = await eng.put_source("world", ["a0001"], value)        # 宿主写单元（也用于 reply[b,a,cat]、unlocked[b,a]）
 epoch = await eng.remove_source("world", ["a0001"])            # 离开：实例删除，读者被标脏，读到 None
 epoch = await eng.event("join", value, budget={"calls": 64}, deadline_s=15)   # 给 `on [event(join)]` 的常驻程序
+n = await eng.resume(["a0001"])                                # 级联预算挂起的单元续算（开一条新链；预注册 16）
 ```
 
 - `put_source` 对 union 单元是追加一个元素，其余归约器按归约器合入；宿主是一个写者（writer id = `host`）。
@@ -118,14 +119,14 @@ cd 应用/通爻网
 file     ::= {import "相对路径";} [budget 记录;] {decl} [结果表达式]
 decl     ::= let 名 = 表达式; | fn 名(参数…) { … } | 表达式; | cell … | resident …
 cell     ::= cell 名[键名, …] [reducer single | union | by_key(字段) | claim | override];
-resident ::= resident 名(参数…) [on [来源, …]] [budget 记录] [deadline 秒] { … }
+resident ::= resident 名(参数…) [on [来源, …]] [budget 记录] [deadline 秒] [rank 表达式] [at_rest] { … }
 来源      ::= event(名) | timer(秒) | change(单元引用) | settled(单元引用)
 单元引用   ::= 名[表达式, …]
 表达式     ::= 现行表达式（字面量、记录、列表、块、fn、if/else、调用、字段、下标、! - * / % + - 比较 == != && ||）
            | a ?? b                                    （J++x 扩展：a 是 unit 或字段不存在时取 b）
            | ev | peek 单元引用 | settled 单元引用
            | put 单元引用 <- 表达式 | claim 单元引用 <- 表达式
-           | spawn 名(实参…) [budget 记录] [deadline 秒]
+           | spawn 名(实参…) [budget 记录] [deadline 秒] [rank 表达式]
 ```
 
 名字支持中文。`//` 与 `/* */` 注释。`budget {calls, cost, depth?, latency_p95?}` 是整场账户；`depth` 是组合层数上限（缺省 3）。
@@ -139,6 +140,8 @@ resident ::= resident 名(参数…) [on [来源, …]] [budget 记录] [deadlin
 - **`put c <- v`**：尝试提交时经归约器合入。值里有未决的写记跳过。
 - **`claim c <- v`**：即时占用，引擎串行化；成功得 `Act`，被占得 `Unsure(claim_conflict)`（`needed` 是占用者），走未决去向。占用者下次尝试不再占就释放，被拒者被标脏重跑。
 - **`spawn 名(实参) [budget {…}] [deadline 秒]`**：显式派生下游程序单元，返回它的句柄（可 `peek`/`settled`/`status`）。预算从派生者账户派生、截止取较早，只收紧。派生者重算后不再派生它，它就被撤回（贡献撤回、发布 removed）。
+- **`budget {…, cascade: {calls: N, line: L}}` 与 `rank`**（预注册 16）：事件链的级联预算。每条宿主事件链里，有排序值的程序实例（`resident … rank 表达式` 的值是数，或被 `spawn … rank 表达式` 派生过）合计至多 N 次判断调用。这样的实例在要发出第一道新题（不是缓存、不是并到在飞的同一道题）而还没准入时，这次尝试作废（不写、不撤回旧值），进本链的待准入表；引擎静止时（不等生成器）按排序值准入：≥ L 的先走（本链还有线上的就不放线下的），同档按值降序。登记新调用时本链「已发出 + 已登记未发出」到 N 就作废挂起，上限是硬的。挂起的实例不进静止判定，也不记未观察；别的事件链让它变脏（它读的单元被写、被再次派生）时转到那条链的账上重新排队，宿主也可 `await eng.resume(ids)`（不给 ids 是全部）。不发题的尝试（如成员离开后的撤回）不受影响。`rank` 子句里的读只用 `peek`，不记为依赖；值是 `unit` 时这个实例不参与。账本：`park`（每条链首次挂起）、`admit`、`resume`。`flags={"no_cascade": True}` 关掉。
+- **`resident … at_rest`**（预注册 17）：链结束时才跑。实例被标脏后先等着，引擎到「链结束」——没有别的脏单元、没有在跑的判断，在跑的尝试都只是在等生成器，也没有能准入的挂起单元——才按当时的输入跑一次；链内被标脏多少次都只跑这一次。在等生成器的尝试也不再挡级联准入。同一次运行里同一份生成参数只调一次生成器，再要时给上次的结果（账本 `gen_memo`）。
 - **`resident … budget {calls, cost} deadline S`**：接入预算与截止子句。这个程序被一条新的宿主事件链触发时，从链账户派生子账户（只收紧）、截止 = 当时 + S；它 spawn 的下游与默认链发的补信息请求都继承这个账户与截止。宿主不必传。`--no-budget-chain` / `--no-deadline` 时子句不生效。
 - **`ev`**：触发这次尝试的事件值（`change` 来源是新值，`event` 来源是事件载荷）。
 

@@ -147,6 +147,7 @@ class Spawn(Node):
     args: list = field(default_factory=list)
     budget: Node | None = None
     deadline: Node | None = None
+    rank: Node | None = None        # 派生排序值：被派生的实例在事件链的级联预算里按它排（预注册 16）
 
 
 # ---------------------------------------------------------------- 语句与声明
@@ -195,6 +196,8 @@ class ResidentDecl(Node):
     body: Block | None = None
     budget: Node | None = None       # 接入预算子句：这个程序被一条事件链触发时，从链账户派生（只收紧）
     deadline: Node | None = None     # 截止子句（秒）
+    rank: Node | None = None         # 级联排序子句：值是数时这个实例参与事件链的级联预算、按它排；unit 不参与（预注册 16）
+    at_rest: bool = False            # 链结束时才跑：被标脏后等引擎到链结束再按当时输入跑一次（预注册 17）
 
 
 @dataclass(eq=False)

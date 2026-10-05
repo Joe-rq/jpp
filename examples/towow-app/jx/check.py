@@ -110,6 +110,8 @@ def check_program(path) -> list[str]:
                     if s.kind in ("change", "settled"):
                         scope_check(s.arg, set(st.params), st.name)
                 scope_check(st.body, set(st.params), st.name)
+                if st.rank is not None:
+                    scope_check(st.rank, set(st.params), st.name)
         if p.final is not None:
             scope_check(p.final, set(), "main")
     for c, ws in writers.items():

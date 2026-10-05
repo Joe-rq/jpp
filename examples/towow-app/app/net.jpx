@@ -4,7 +4,10 @@
 // 常驻、失效重算、合批、未决去向、预算、截止都在语言里；本文件里没有一行调度代码。
 
 import "lib.jpx";
-budget {calls: 100000, cost: 4.5, depth: 3};
+// cascade：每条宿主事件链里，带排序值的程序（构型节点的召回、两两、整体、成长）合计至多 60 次判断调用；
+// 排序值 ≥ 0.65 的先走（作者声明的线，依据预注册 14：<0.65 盲标精度 0.28、≥0.65 为 0.67；只定先后，不定成立），
+// 用不完的挂起，等下一次相关事件续算（预注册 16，Fable 裁定甲乙戊；Fable-B §5 每次接入 60–90 次调用）
+budget {calls: 100000, cost: 4.5, depth: 3, cascade: {calls: 60, line: 0.65}};
 
 // ───────────────────────────── 单元
 cell world[a] reducer single;          // 端侧算子包 + 主人披露策略（宿主在 join/disclose 时写）
@@ -20,7 +23,8 @@ cell cand[k] reducer union;            // 候选构型（形状、角色）：�
 cell edge[a, b] reducer single;        // 一对的关系读数（a < b），持续计算的产物
 cell config[k] reducer single;         // 构型，k = 成员集合内容键
 cell plan[k] reducer single;           // 方案（生成器写）
-cell best[m] reducer by_key(k);        // m 所在的成立构型与读数（整体写，方案据此每人取前 2；预注册 11）
+cell best[m] reducer by_key(k);        // m 直接在内的成立构型（成员里没有构型节点）与读数：每人直接构型的前 2 名额（预注册 11、17）
+cell nbest[m] reducer by_key(k);       // 真实接入者 m 经构型节点间接在内的成立构型与读数：嵌套构型另排的前 2 名额（预注册 17，Fable 复裁 1）
 cell inbox[b] reducer union;           // 补信息请求（J-05 默认链写这里）
 cell reply[b, a, cat] reducer single;  // 持有方的回复（模拟 agent 的披露程序或真实 agent 经宿主写）
 
@@ -47,7 +51,8 @@ resident 发布(a) on [change(world[a])] {
 // ───────────────────────────── 召回：四路 ANN，与 N 无关
 // 召回只在自己的材料变（接入、自己多给一层）时重跑。派生片段（进行中的关系读数）经 index_put 进索引，
 // 让后来的人更容易找到我——这就是「计算改变可发现性」；我自己不因为别人的读数变化而重新找人，否则网络自激。
-resident 召回(x) on [change(material[x])] {
+// 排序值：构型节点按它的决定性读数进级联；agent 的召回（接入者自己的两段召回）不进级联（rank unit）
+resident 召回(x) on [change(material[x])] rank recall_rank(x) {
     let n = snap node[x] ?? settled material[x];
     // 规模实验的背景人口（world.background）只进索引、被别人召回，自己不主动召回：它们代表「网络里已经有的人」
     // 宽召回 + 同状态重排（预注册 06）：向量召回取前 200 名，再在「我」的状态上每个候选一道题，一次调用答完，按读数取前 32。
@@ -57,9 +62,12 @@ resident 召回(x) on [change(material[x])] {
     // 构型节点仍走向量（40 → 8）：它代表的人各自已经判过全体，构型这一层只为找「组合的组合」。
     let is_cfg_node = has(n, "kind") && n.kind == "config";
     let me = state({我: rerank_me(n)}, {owners: [x]});
+    // 预注册 16（Fable 丙）：构型节点先用代码判它还能不能再组合（nest_depth、n_cfg、同一人出现两次，同 invalid_candidate），
+    // 不能的不召回；召回池去掉其他构型节点和组成候选必然无效的对方。原先这些对先判两两、再被 构型 否掉，钱白花。
     let raw = if has(n, "background") && n.background == true { [] } else {
-        if is_cfg_node { do("route", [x, n, 40], 0) } else { map(do("present", [x], 0), fn(p) { {peer: p, routes: []} }) } };
-    let pool = filter(raw, fn(h) { h.peer != x && not(blocked(n, h)) });
+        if is_cfg_node { if recombinable(x) { do("route", [x, n, 40], 0) } else { [] } }
+        else { map(do("present", [x], 0), fn(p) { {peer: p, routes: []} }) } };
+    let pool = filter(raw, fn(h) { h.peer != x && not(blocked(n, h)) && (not(is_cfg_node) || recombine_ok(x, h.peer)) });
     let rr = if len(pool) == 0 { [] } else { judge(me, map(pool, fn(h) { test(rerank_q(snap material[h.peer]), "rerank") })) };
     let s1 = take(sort_by(map(range(len(pool)), fn(i) { {h: pool[i], p: p_yes(cut(rr[i])), i: i} }), fn(z) { [0 - z.p, z.i] }),
                   if is_cfg_node { 40 } else { 200 });
@@ -68,10 +76,13 @@ resident 召回(x) on [change(material[x])] {
     let s2 = if is_cfg_node { s1 } else { map(range(len(s1)), fn(i) { {h: s1[i].h, p: p_yes(cut(rr2[i])), i: i} }) };
     let width = if is_cfg_node { 8 } else { 32 };
     let peers = map(take(sort_by(s2, fn(z) { [0 - z.p, z.i] }), width), fn(z) { z.h });
+    // 两两的排序值：接入者自己召回的前 32 对是这次接入的根，排 1（先于一切派生工作）——它们还没有决定性读数，
+    // 召回读数是另一道题，与 hold 跨题不可比（J-01）；构型节点召回派生的对，按这个构型的决定性读数排
+    let pr = if is_cfg_node { hold_p(n) } else { 1 };
     map(peers, fn(h) {
         let k = pair_key(x, h.peer);
         put hits[k.a, k.b] <- map(h.routes ?? [], fn(r) { {route: r.route, mine: r.mine, theirs: r.theirs} });
-        spawn 两两(k) });   // 身份 = 实参内容：只放这一对的键（召回路线每次重算都会变，放进实参会让同一对变成多个单元）
+        spawn 两两(k) rank pr });   // 身份 = 实参内容：只放这一对的键（召回路线每次重算都会变，放进实参会让同一对变成多个单元）
     {peers: len(peers)}
 }
 
@@ -169,7 +180,7 @@ resident 构型(x) on [change(adj[x])] {
     map(take(novel, 6), fn(c) { put cand[members_key(c.members)] <- c })
 }
 
-resident 整体(ck) on [change(cand[ck])] {   // 身份 = 成员集合键（同一组人只有一个单元）；候选一出现就实例化，之后不随 构型 重算消失
+resident 整体(ck) on [change(cand[ck])] rank cand_rank(ck) {   // 排序值：成员之间已成立边的决定性读数取最小（最弱的一环）   // 身份 = 成员集合键（同一组人只有一个单元）；候选一出现就实例化，之后不随 构型 重算消失
     let c = (settled cand[ck])[0];
     // 有成员离开（material 被撤回）就不再判、不写：上一次写的 config/material/node 随重算撤回，构型节点的召回与两两跟着撤。
     // 10-05 公网离开实测：原先这里 settled 读已撤回的 material 会一直等，旧构型和它的边留在网里，离开的人仍出现在别人的机会里。
@@ -187,9 +198,11 @@ resident 整体(ck) on [change(cand[ck])] {   // 身份 = 成员集合键（同�
                        offers: [summary_offer(c)], signals: [summary_lack(c)], derived: [],
                        display: node_display({shape: c.shape, members: c.members}), catchers: [], projects: [], forbids: []};
             put config[k] <- cfg;
-            put material[k] <- cfg;
+            put material[k] <- judge_mat(cfg);   // 判断材料不带判断结果的状态字段（预注册 17）
             put node[k] <- cfg;
-            map(c.members, fn(m) { put best[m] <- {k: k, p: e.decisive.p} });
+            // 名额分开（预注册 17，Fable 复裁 1）：直接构型记进直接成员的 best；嵌套构型记进展开后真实接入者的 nbest
+            if is_nested(c.members) { map(real_people(c.members), fn(m) { put nbest[m] <- {k: k, p: e.decisive.p} }) }
+            else { map(c.members, fn(m) { put best[m] <- {k: k, p: e.decisive.p} }) };
             cfg }
     } else {
     let mats = map(c.members, fn(m) { side(settled material[m], all_unlocked(m, c.members)) });
@@ -203,13 +216,14 @@ resident 整体(ck) on [change(cand[ck])] {   // 身份 = 成员集合键（同�
         act: fn() {
             let k = members_key(c.members);
             let cfg = {id: k, kind: "config", shape: c.shape, members: c.members, roles: c.roles,
-                       hold: h, weakest: cut(r[1]), value: cut(r[2]), lacks: needed_of(h),
+                       hold: h, weakest: cut(r[1]), value: cut(r[2]), lacks: map(needed_of(h), fn(s) { lack_cat(s) }),
                        offers: [summary_offer(c)], signals: [summary_lack(c)], derived: [],
                        display: node_display({shape: c.shape, members: c.members}), catchers: [], projects: [], forbids: []};   // 与 agent 节点同形（Node 契约，Fable-A 第四条）
             put config[k] <- cfg;
-            put material[k] <- cfg;
+            put material[k] <- judge_mat(cfg);   // 判断材料不带 hold/weakest/value/lacks：补信息从「在等」变「被拒」不再唤醒构型节点的召回
             put node[k] <- cfg;                  // 组合封闭：构型作为节点，再进召回与两两
-            map(c.members, fn(m) { put best[m] <- {k: k, p: h.p} });
+            if is_nested(c.members) { map(real_people(c.members), fn(m) { put nbest[m] <- {k: k, p: h.p} }) }
+            else { map(c.members, fn(m) { put best[m] <- {k: k, p: h.p} }) };
             cfg },                               // 成长、方案由 settled(config[k]) 实例化
         ignore: fn() { {dissolved: c.members} }})
     }
@@ -217,7 +231,7 @@ resident 整体(ck) on [change(cand[ck])] {   // 身份 = 成员集合键（同�
 }
 
 // 成长：Nature 7b 的题组。一轮、三个候选；有人让合作更紧密，就把「原构型 + 他」作为新候选交给 整体 再判一次。
-resident 成长(k) on [settled(config[k])] {
+resident 成长(k) on [settled(config[k])] rank cfg_rank(k) {   // 成长归入级联预算，按构型的决定性读数排（Fable 戊）
     let C = settled config[k];
     let xs = if len(C.members) >= 5 { [] } else { take(do("route_offers", [C, 3], 0), 3) };
     let rs = map(xs, fn(x) {
@@ -238,9 +252,14 @@ resident 成长(k) on [settled(config[k])] {
 // 方案：只在筛选之后交给生成器，只协调三四五个主体（#274）
 // 预注册 11：门是「决定性题出口 act」（config 只在 act 时写）加「每位成员都把它排在自己的前 2」；原先的 0.6 线没有校准依据，
 // 只交 t0 时读数挤在 0.5–0.65，公网上一份方案都出不来。有成员一层都没向其他成员放行时是草案（生成端加标注）。
-resident 方案(k) on [settled(config[k])] {
+// 预注册 17（Fable 复裁 1）：直接构型——每位直接成员都把它排进自己直接构型的前 2；
+// 嵌套构型——展开后至少有一位真实接入者，且每位真实接入者都把它排进自己嵌套构型的前 2。两组名额互不占用。
+// at_rest（复裁附）：链结束时按当时的前 2 生成一次，链内 best 的变动不触发生成。
+resident 方案(k) on [settled(config[k])] at_rest {
     let C = settled config[k];
-    let top = all(C.members, fn(m) { has(take(map(sort_by(values(peek best[m] ?? {}), fn(b) { 0 - b.p }), fn(b) { b.k }), 2), k) });
+    let rp = real_people(C.members);
+    let top = if is_nested(C.members) { len(rp) > 0 && all(rp, fn(m) { in_top2(peek nbest[m], k) }) }
+              else { all(C.members, fn(m) { in_top2(peek best[m], k) }) };
     if len(C.members) <= 5 && top {
         let draft = any(C.members, fn(m) { len(all_unlocked(m, C.members)) == 0 });   // 有一方只交了公开层就是草案（预注册 11 结果节）
         put plan[k] <- gen_json("plan", [merge(C, {draft: draft}), map(C.members, fn(m) { side(settled material[m], all_unlocked(m, C.members)) })]);

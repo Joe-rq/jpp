@@ -186,6 +186,9 @@ class JxGen:
         return self.m.gen(cfg if isinstance(cfg, dict) else {})
 
 
+JX_FLAGS: dict = {}          # run.py --jx-flags 设置（如 no_cascade：关掉事件链的级联预算，预注册 16）
+
+
 class JxSystem:
     name = "jpx"
 
@@ -195,7 +198,7 @@ class JxSystem:
         self.m = Meter(truth, fail_calls)
         enc = HashEncoder()
         self.eng = Engine.load(os.path.join(APP, "app", "net.jpx"), ports={"judge": JxPort(self.m), "enc": enc},
-                               clock=VirtualClock(), seed=0)
+                               clock=VirtualClock(), seed=0, flags=dict(JX_FLAGS))
         self.ix = FragmentIndex(enc, cap=1024, threads=1)
         for name, fn in index_actions(self.ix).items():
             self.eng.register_action(name, fn, transparent=(name != "index_put"))

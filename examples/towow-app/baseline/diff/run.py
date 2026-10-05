@@ -164,8 +164,10 @@ def main():
     ap.add_argument("--inject", default="", help="只跑这些注入，逗号分隔；空 = 全部")
     ap.add_argument("--inject-timeout", type=float, default=20.0, help="注入运行的静止上限（I6 预期挂死，不必等满 120 秒）")
     ap.add_argument("--skip-s2", action="store_true")
+    ap.add_argument("--jx-flags", default="", help="J++x 引擎开关，逗号分隔（如 no_cascade）")
     ap.add_argument("--from", dest="src", default="", help="只汇总已有的 --out 文件")
     a = ap.parse_args()
+    S.JX_FLAGS.update({f.strip(): True for f in a.jx_flags.split(",") if f.strip()})
     if a.src:
         summarize(json.load(open(a.src)))
     else:
